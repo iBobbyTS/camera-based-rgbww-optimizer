@@ -15,7 +15,10 @@ def load_location_regions(path: Path, block_indices: str | tuple[int, ...] = "al
         if wanted is not None and index not in wanted:
             continue
         points = [(float(point["x"]), float(point["y"])) for point in block["points"]]
-        regions.append({"type": "polygon", "name": f"block_{index:02d}", "index": index, "points": points})
+        region = {"type": "polygon", "name": f"block_{index:02d}", "index": index, "points": points}
+        if isinstance(block.get("patch"), dict):
+            region["patch"] = block["patch"]
+        regions.append(region)
     if not regions:
         raise ValueError(f"no location regions selected from {path}")
     return regions

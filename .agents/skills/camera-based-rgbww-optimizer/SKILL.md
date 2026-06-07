@@ -13,10 +13,10 @@ description: Use when working on camera-based RGBWW calibration, RGBWW channel c
 - Root-level compatibility scripts are intentionally not part of the current interface.
 - ESPHome device name and default host: `bedroom-rgbww-strip` / `bedroom-rgbww-strip.local`.
 - ESPHome firmware configs live under `firmware/esphome/bedroom-rgbww-strip*.yaml`.
-- `.venv/bin/python -m pip install -e .` installs the package's Python dependencies; `gphoto2` remains a system dependency.
+- `.venv/bin/python -m pip install -e .` installs the package's Python dependencies; `gphoto2` and `dcraw_emu` remain system dependencies.
 - Reference light: Aputure Amaran Ray120c at 100% brightness.
 - Camera path: Canon EOS R6 Mark III over USB PTP using `gphoto2`.
-- Measurement basis: fixed linear camera RAW RGB pipeline.
+- Measurement basis: fixed linear camera RAW RGB pipeline by default. Visual fit-check tools may explicitly use `dcraw_emu` preview decoding.
 - Calibration scene: black card, white card, 18% gray card, 24-color chart, RGBWW output, and Ray120c output.
 
 ## Workflow
@@ -29,6 +29,7 @@ description: Use when working on camera-based RGBWW calibration, RGBWW channel c
 6. For Ray120c CCT/G-M, HSI, and RGB reference control, use `camera_based_rgbww_optimizer.control.ray120c`.
 7. For RGBWW code/duty response measurement, use `camera_based_rgbww_optimizer.optimization.measure_channel_response`.
 8. For color-block location annotation, use `camera_based_rgbww_optimizer.interaction.location_picker_ui`.
+9. For checking a saved location JSON against a fresh camera capture, use `camera_based_rgbww_optimizer.interaction.location_checker <locations.json>`; it uses full-frame auto-exposure, decodes a `dcraw_emu` visual preview from the final RAW, and only uses the location JSON for outline + color-name label fit checking.
 
 ## Calibration Direction
 

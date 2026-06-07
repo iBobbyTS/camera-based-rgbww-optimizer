@@ -37,7 +37,7 @@ Install the project in editable mode before running package modules:
 This installs the package's Python runtime dependencies, including ESPHome
 Native API control, Ray120c token generation, RAW decoding, NumPy processing,
 TIFF export, and OpenCV color-chart detection. The `gphoto2` command-line tool
-is a system dependency and must still be installed separately.
+and `dcraw_emu` are system dependencies and must still be installed separately.
 
 All commands below use `python -m ...`; root-level legacy script entry points are
 not part of the current project interface.
@@ -120,10 +120,11 @@ Decode a CR3 into linear 16-bit camera RGB:
   --format tiff
 ```
 
-The decode path uses `rawpy`/LibRaw with raw color output, no camera/auto white
-balance, no auto-brightening, linear gamma, and 16-bit output. LibRaw handles RAW
-black/white level correction before demosaicing; do not apply a second manual
-black-level subtraction to the decoded output.
+By default the decode path uses `rawpy`/LibRaw with raw color output, no
+camera/auto white balance, no auto-brightening, linear gamma, and 16-bit output.
+LibRaw handles RAW black/white level correction before demosaicing; do not apply
+a second manual black-level subtraction to the decoded output. This fixed rawpy
+path is the measurement basis, not the visual preview path.
 
 Auto-exposure target:
 
@@ -160,6 +161,24 @@ runs automatic block detection, then lets the user edit quadrilaterals. Confirme
 locations are saved under `config/location/`.
 
 The Python packages used by this path are installed by `pip install -e .`.
+
+Check a saved location file against a fresh single camera capture:
+
+```bash
+.venv/bin/python -m camera_based_rgbww_optimizer.interaction.location_checker \
+  config/location/locations-20260605-225800.json
+```
+
+The checker requires a location JSON argument, uses full-frame auto-exposure,
+keeps the accepted final RAW capture, then decodes the final RAW again with
+`dcraw_emu` for visual inspection. The default visual decode uses `dcraw_emu -a`
+whole-image auto white balance; pass `--dcraw-white-balance camera` to use
+`dcraw_emu -w`, or `--dcraw-white-balance default` for dcraw defaults. The
+checker verifies the 24 saved polygons fit the decoded preview and writes a PNG
+overlay plus metadata under `tmp/location-checker/`. The overlay labels saved
+ColorChecker patches by color name, not block number. It does not fill the
+inside of each patch box; older location files without patch metadata still get
+colored outlines but no numeric fallback labels.
 
 ## Channel Response Measurement
 
