@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import importlib
 import json
+import os
 import re
 import subprocess
 import sys
@@ -41,6 +42,15 @@ CONFIG_ISO = "/main/imgsettings/iso"
 CONFIG_APERTURE = "/main/capturesettings/aperture"
 CONFIG_SHUTTER_SPEED = "/main/capturesettings/shutterspeed"
 CONFIG_IMAGE_FORMAT = "/main/imgsettings/imageformat"
+MACOS_PTP_RECOVERY_DISABLE_ENV = "CAMERA_BASED_RGBWW_OPTIMIZER_DISABLE_MACOS_PTP_RECOVERY"
+MACOS_USB_CLAIM_ERROR_MARKERS = (
+    "Could not claim the USB device",
+    "Could not claim interface 0",
+)
+MACOS_IMAGE_CAPTURE_PROCESS_PATTERNS = (
+    "/usr/libexec/ptpcamerad",
+    "/System/Library/Image Capture/Support/icdd",
+)
 
 
 class GPhoto2Error(RuntimeError):
@@ -186,10 +196,41 @@ def run_gphoto2(
         timeout=timeout,
         check=False,
     )
+    if _should_retry_after_macos_usb_claim_error(completed):
+        _release_macos_image_capture_usb_claim()
+        completed = subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            check=False,
+        )
     if completed.returncode != 0:
         details = completed.stderr.strip() or completed.stdout.strip()
         raise GPhoto2Error(f"{' '.join(command)} failed: {details}")
     return CommandOutput(stdout=completed.stdout, stderr=completed.stderr)
+
+
+def _should_retry_after_macos_usb_claim_error(completed: subprocess.CompletedProcess[str]) -> bool:
+    if completed.returncode == 0:
+        return False
+    if sys.platform != "darwin":
+        return False
+    if os.environ.get(MACOS_PTP_RECOVERY_DISABLE_ENV):
+        return False
+    output = "\n".join(part for part in (completed.stderr, completed.stdout) if part)
+    return any(marker in output for marker in MACOS_USB_CLAIM_ERROR_MARKERS)
+
+
+def _release_macos_image_capture_usb_claim() -> None:
+    for pattern in MACOS_IMAGE_CAPTURE_PROCESS_PATTERNS:
+        subprocess.run(
+            ["pkill", "-9", "-f", pattern],
+            capture_output=True,
+            text=True,
+            timeout=5.0,
+            check=False,
+        )
 
 
 def parse_auto_detect(output: str) -> list[CameraConnection]:
@@ -525,6 +566,7 @@ def auto_expose_capture(
     initial_shutter_speed: str | None = None,
     decode_output_dir: str | Path | None = None,
     decode_formats: Sequence[str] = DEFAULT_DECODE_FORMATS,
+    scratch_dir: str | Path | None = None,
     metering_regions: Sequence[dict[str, Any]] | None = None,
     port: str | None = None,
     expected_model: str = DEFAULT_CAMERA_MODEL,
@@ -599,8 +641,9 @@ def auto_expose_capture(
     target_metric = float(target_max) * 0.88
     current_index = _nearest_shutter_index(candidate_seconds, current_seconds)
     tested_indices: set[int] = set()
-    PROJECT_TMP_DIR.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix="auto-exposure-", dir=PROJECT_TMP_DIR) as tmpdir:
+    trial_parent = Path(scratch_dir) if scratch_dir is not None else PROJECT_TMP_DIR
+    trial_parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="auto-exposure-", dir=trial_parent) as tmpdir:
         trial_dir = Path(tmpdir) / "trials"
         trial_decode_dir = Path(tmpdir) / "decoded"
         trial_budget = min(max_trials, max_captures - 1)
@@ -1332,6 +1375,11 @@ def main(argv: list[str] | None = None) -> int:
     )
     auto_parser.add_argument("--decode-output-dir", help="Directory for final decoded outputs. Defaults to RAW file directory.")
     auto_parser.add_argument(
+        "--scratch-dir",
+        type=Path,
+        help="Directory for temporary auto-exposure trial captures. Defaults to the project tmp directory.",
+    )
+    auto_parser.add_argument(
         "--decode-format",
         action="append",
         choices=("npy", "tiff"),
@@ -1421,6 +1469,7 @@ def main(argv: list[str] | None = None) -> int:
                 shutter_speeds=args.shutter_speeds,
                 decode_output_dir=args.decode_output_dir,
                 decode_formats=args.decode_formats or DEFAULT_DECODE_FORMATS,
+                scratch_dir=args.scratch_dir,
                 metering_regions=metering_regions,
                 port=args.port,
                 expected_model=args.model,

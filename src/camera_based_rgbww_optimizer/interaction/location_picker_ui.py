@@ -16,6 +16,7 @@ from typing import Any
 from urllib.parse import urlparse
 
 from camera_based_rgbww_optimizer.control import camera_gphoto2
+from camera_based_rgbww_optimizer.interaction import raw_visual_preview
 from camera_based_rgbww_optimizer.paths import PROJECT_ROOT, PROJECT_TMP_DIR
 
 
@@ -35,6 +36,8 @@ COLORCHECKER_CLASSIC_ROWS = 4
 COLORCHECKER_CLASSIC_COLS = 6
 COLORCHECKER_CLASSIC_COUNT = COLORCHECKER_CLASSIC_ROWS * COLORCHECKER_CLASSIC_COLS
 SUPPORTED_COLORCHECKER_ORIENTATIONS = (0, 180)
+DCRAW_WHITE_BALANCE_CHOICES = raw_visual_preview.DCRAW_WHITE_BALANCE_CHOICES
+VISUAL_PREVIEW_SOURCE_CHOICES = raw_visual_preview.VISUAL_PREVIEW_SOURCE_CHOICES
 
 COLORCHECKER_CLASSIC_24_PATCHES = (
     {"standard_index": 1, "name": "dark_skin", "label": "Skin D", "roles": ["skin", "memory_color"]},
@@ -82,6 +85,7 @@ class ProjectionSegment:
 class AxisGridEstimate:
     luma: Any
     dark: Any
+    content: Any
     chart_bbox: tuple[int, int, int, int]
     row_segments: list[ProjectionSegment]
     col_segments: list[ProjectionSegment]
@@ -134,15 +138,31 @@ def detect_color_checker_quads(
         raise ValueError(f"expected HxWx3 image, got shape {image.shape}")
 
     try:
-        return _detect_color_checker_quads_mcc(image, rows=rows, cols=cols)
+        quads = _detect_color_checker_quads_mcc(image, rows=rows, cols=cols)
+        _validate_quads_inside_image(quads, width=image.shape[1], height=image.shape[0])
+        return quads
     except RuntimeError:
         pass
 
     estimate = _estimate_axis_grid(image, rows=rows, cols=cols)
     try:
-        return _detect_color_checker_quads_opencv(estimate, rows=rows, cols=cols, inset_ratio=inset_ratio)
+        quads = _detect_color_checker_quads_opencv(estimate, rows=rows, cols=cols, inset_ratio=inset_ratio)
+        _validate_quads_inside_image(quads, width=image.shape[1], height=image.shape[0])
+        return quads
     except RuntimeError:
-        return _detect_color_checker_quads_projection(estimate, rows=rows, cols=cols, inset_ratio=inset_ratio)
+        pass
+    quads = _detect_color_checker_quads_projection(estimate, rows=rows, cols=cols, inset_ratio=inset_ratio)
+    _validate_quads_inside_image(quads, width=image.shape[1], height=image.shape[0])
+    return quads
+
+
+def _validate_quads_inside_image(quads: list[Quad], *, width: int, height: int) -> None:
+    for quad_index, quad in enumerate(quads):
+        for point_index, (x, y) in enumerate(quad):
+            if not (0.0 <= x <= width - 1 and 0.0 <= y <= height - 1):
+                raise RuntimeError(
+                    f"detected quad {quad_index + 1} point {point_index + 1} is outside the image"
+                )
 
 
 def _detect_color_checker_quads_mcc(image: Any, *, rows: int, cols: int) -> list[Quad]:
@@ -196,18 +216,18 @@ def _estimate_axis_grid(image: Any, *, rows: int, cols: int) -> AxisGridEstimate
         raise ValueError("could not find dark chart grid pixels")
 
     x0, y0, x1, y1 = chart_bbox
-    crop_luma = luma[y0 : y1 + 1, x0 : x1 + 1]
-    content_threshold = _chart_content_threshold(luma, dark_threshold)
-    content = crop_luma > content_threshold
+    content = _color_block_content_mask(image, luma=luma, dark=dark, dark_threshold=dark_threshold)
+    crop_content = content[y0 : y1 + 1, x0 : x1 + 1]
 
-    row_segments = _select_regular_segments(_projection_segments(content.mean(axis=1)), rows)
-    col_segments = _select_regular_segments(_projection_segments(content.mean(axis=0)), cols)
+    row_segments = _select_regular_segments(_projection_segments(crop_content.mean(axis=1)), rows)
+    col_segments = _select_regular_segments(_projection_segments(crop_content.mean(axis=0)), cols)
 
     row_segments = [ProjectionSegment(segment.start + y0, segment.end + y0, segment.score) for segment in row_segments]
     col_segments = [ProjectionSegment(segment.start + x0, segment.end + x0, segment.score) for segment in col_segments]
     return AxisGridEstimate(
         luma=luma,
         dark=dark,
+        content=content,
         chart_bbox=chart_bbox,
         row_segments=row_segments,
         col_segments=col_segments,
@@ -356,10 +376,7 @@ def _opencv_visible_cell_quads(
 ) -> list[list[Quad | None]]:
     np = _import_numpy()
     x0, y0, x1, y1 = estimate.chart_bbox
-    gray = estimate.luma.astype(np.uint8)
-    crop = gray[y0 : y1 + 1, x0 : x1 + 1]
-    content_threshold = _chart_content_threshold(estimate.luma, _chart_dark_threshold(estimate.luma))
-    mask = (crop > max(20.0, content_threshold)).astype(np.uint8) * 255
+    mask = estimate.content[y0 : y1 + 1, x0 : x1 + 1].astype(np.uint8) * 255
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
     mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
     contours, _hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -529,6 +546,15 @@ def _chart_content_threshold(luma: Any, dark_threshold: float) -> float:
     np = _import_numpy()
     p50 = float(np.percentile(luma, 50))
     return min(35.0, dark_threshold + max(4.0, (p50 - dark_threshold) * 0.2))
+
+
+def _color_block_content_mask(image: Any, *, luma: Any, dark: Any, dark_threshold: float) -> Any:
+    channel_max = image.max(axis=2).astype("float32")
+    channel_min = image.min(axis=2).astype("float32")
+    chroma = channel_max - channel_min
+    bright_enough = luma > dark_threshold + 30.0
+    colorful_enough = chroma > 24.0
+    return (bright_enough | colorful_enough) & ~dark
 
 
 def _mask_bbox(mask: Any) -> tuple[int, int, int, int] | None:
@@ -1038,20 +1064,6 @@ def save_location_config(config: dict[str, Any], *, output_dir: Path | None = No
     return path
 
 
-def load_preview_from_npy(path: Path, *, white_point: int) -> Any:
-    np = _import_numpy()
-    return linear_rgb_to_preview_uint8(np.load(path), white_point=white_point)
-
-
-def find_npy_output(capture: camera_gphoto2.CaptureResult) -> Path:
-    if capture.decoded is None:
-        raise RuntimeError("auto exposure did not return decoded output")
-    for output_file in capture.decoded.output_files:
-        if output_file.suffix == ".npy":
-            return output_file
-    raise RuntimeError("auto exposure did not produce a .npy decoded output")
-
-
 def _import_numpy() -> Any:
     try:
         import numpy as np
@@ -1124,7 +1136,7 @@ class LocationPickerState:
                 executable=self.args.gphoto2,
                 timeout=self.args.timeout,
             )
-            preview = load_preview_from_npy(find_npy_output(result.final_capture), white_point=self.args.target_max)
+            preview_decoded, preview = self._decode_visual_preview(result.final_capture.saved_file, run_dir=run_dir)
         except Exception as exc:
             with self.lock:
                 self.status = f"自动曝光失败: {exc}"
@@ -1142,7 +1154,10 @@ class LocationPickerState:
         image_height, image_width = preview.shape[:2]
         image_max = result.final_capture.decoded.to_jsonable().get("image_max") if result.final_capture.decoded else None
         shutter = result.final_capture.settings.shutter_speed
-        status = f"已加载: {image_width}x{image_height}, shutter={shutter}, max={image_max}"
+        status = (
+            f"已加载: {image_width}x{image_height}, shutter={shutter}, max={image_max}, "
+            f"preview={_visual_preview_status(self.args)}"
+        )
         if auto_detect_quads is not None:
             status = f"{status}; 已自动识别 {self.args.rows}x{self.args.cols} 色块"
         elif auto_detect_error is not None:
@@ -1160,6 +1175,30 @@ class LocationPickerState:
             self.auto_detect_error = auto_detect_error
             self.auto_detect_rows = self.args.rows
             self.auto_detect_cols = self.args.cols
+
+    def _decode_visual_preview(self, raw_file: Path, *, run_dir: Path) -> tuple[camera_gphoto2.DecodeResult, Any]:
+        if self.args.preview_source == "camera-jpeg":
+            decoded = raw_visual_preview.decode_embedded_jpeg_preview(
+                raw_file,
+                output_dir=run_dir / "decoded",
+                output_stem="location-picker-preview",
+                executable=self.args.exiftool,
+                timeout=self.args.timeout,
+            )
+            preview_file = raw_visual_preview.find_output_with_suffix(decoded.output_files, ".jpg")
+            return decoded, raw_visual_preview.visual_decode_to_preview_uint8(raw_visual_preview.read_jpeg(preview_file))
+        if self.args.preview_source == "dcraw":
+            decoded = raw_visual_preview.decode_dcraw_preview(
+                raw_file,
+                output_dir=run_dir / "decoded",
+                output_stem="location-picker-preview",
+                executable=self.args.dcraw,
+                white_balance=self.args.dcraw_white_balance,
+                timeout=self.args.timeout,
+            )
+            preview_file = raw_visual_preview.find_output_with_suffix(decoded.output_files, ".tiff")
+            return decoded, raw_visual_preview.visual_decode_to_preview_uint8(raw_visual_preview.read_tiff(preview_file))
+        raise ValueError(f"unsupported preview source: {self.args.preview_source}")
 
     def snapshot(self) -> dict[str, Any]:
         with self.lock:
@@ -1256,6 +1295,14 @@ class LocationPickerState:
 
 def _quads_to_jsonable(quads: list[Quad]) -> list[list[list[float]]]:
     return [[[float(x), float(y)] for x, y in quad] for quad in quads]
+
+
+def _visual_preview_status(args: argparse.Namespace) -> str:
+    if args.preview_source == "camera-jpeg":
+        return "camera-jpeg"
+    if args.preview_source == "dcraw":
+        return f"dcraw_emu({args.dcraw_white_balance})"
+    return str(args.preview_source)
 
 
 def parse_quads_payload(raw_quads: Any, *, width: int, height: int) -> list[Quad]:
@@ -2132,6 +2179,20 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--port", dest="camera_port", help="Camera USB port passed to gphoto2.")
     parser.add_argument("--camera-port", dest="camera_port", help="Camera USB port passed to gphoto2.")
     parser.add_argument("--gphoto2", default="gphoto2")
+    parser.add_argument(
+        "--preview-source",
+        choices=VISUAL_PREVIEW_SOURCE_CHOICES,
+        default="camera-jpeg",
+        help="Visual preview source for the Web UI and automatic block detection.",
+    )
+    parser.add_argument("--exiftool", default="exiftool", help="exiftool executable used to extract camera JPEG previews.")
+    parser.add_argument("--dcraw", default="dcraw_emu", help="dcraw-compatible executable used for visual preview decode.")
+    parser.add_argument(
+        "--dcraw-white-balance",
+        choices=DCRAW_WHITE_BALANCE_CHOICES,
+        default="camera",
+        help="White balance mode for dcraw visual preview decode.",
+    )
     parser.add_argument("--timeout", type=float, default=90.0)
     return parser.parse_args(argv)
 

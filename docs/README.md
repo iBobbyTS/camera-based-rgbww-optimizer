@@ -37,7 +37,8 @@ Install the project in editable mode before running package modules:
 This installs the package's Python runtime dependencies, including ESPHome
 Native API control, Ray120c token generation, RAW decoding, NumPy processing,
 TIFF export, and OpenCV color-chart detection. The `gphoto2` command-line tool
-and `dcraw_emu` are system dependencies and must still be installed separately.
+`exiftool`, and `dcraw_emu` are system dependencies and must still be installed
+separately.
 
 All commands below use `python -m ...`; root-level legacy script entry points are
 not part of the current project interface.
@@ -143,7 +144,16 @@ Auto-exposure target:
 
 The auto-exposure routine keeps ISO and aperture fixed, starts from the current
 bounded shutter speed, meters decoded linear RGB, caps total shutter releases,
-deletes trial files, and saves only the accepted final capture.
+deletes trial files, and saves only the accepted final capture. Use
+`--scratch-dir /Volumes/4T/temp/rgbww-optimizer/scratch` when temporary
+auto-exposure trial captures should be kept off the repository disk.
+
+On macOS, Apple Image Capture may start `ptpcamerad`/`icdd` and briefly claim
+the PTP USB interface. The camera wrapper retries once after a
+`Could not claim the USB device` gphoto2 failure by killing those per-user Image
+Capture processes so gphoto2 can claim the interface first. Set
+`CAMERA_BASED_RGBWW_OPTIMIZER_DISABLE_MACOS_PTP_RECOVERY=1` to disable this
+automatic recovery when diagnosing host-side camera issues.
 
 ## Location Picker
 
@@ -160,7 +170,17 @@ The UI serves on `127.0.0.1:8765` by default. It auto-exposes, decodes a preview
 runs automatic block detection, then lets the user edit quadrilaterals. Confirmed
 locations are saved under `config/location/`.
 
-The Python packages used by this path are installed by `pip install -e .`.
+The picker keeps the linear `.npy` RAW decode for auto-exposure metering, then
+extracts the camera-rendered `JpgFromRaw` preview with `exiftool` for the visible
+Web UI image and automatic block detection. This makes the picker match the
+camera/Finder preview instead of `dcraw_emu` full RAW color reconstruction. Pass
+`--preview-source dcraw` to use the fallback `dcraw_emu` path; its default white
+balance uses `dcraw_emu -w`, while `--dcraw-white-balance auto` uses
+`dcraw_emu -a` whole-image auto white balance. Automatic detection results with
+any point outside the decoded preview are rejected instead of displayed.
+
+The Python packages used by this path are installed by `pip install -e .`;
+`exiftool` and `dcraw_emu` are separate system dependencies.
 
 Check a saved location file against a fresh single camera capture:
 
@@ -170,10 +190,9 @@ Check a saved location file against a fresh single camera capture:
 ```
 
 The checker requires a location JSON argument, uses full-frame auto-exposure,
-keeps the accepted final RAW capture, then decodes the final RAW again with
-`dcraw_emu` for visual inspection. The default visual decode uses `dcraw_emu -a`
-whole-image auto white balance; pass `--dcraw-white-balance camera` to use
-`dcraw_emu -w`, or `--dcraw-white-balance default` for dcraw defaults. The
+keeps the accepted final RAW capture, then extracts the camera-rendered
+`JpgFromRaw` preview with `exiftool` for visual inspection. Pass
+`--preview-source dcraw` to use the fallback `dcraw_emu` path. The
 checker verifies the 24 saved polygons fit the decoded preview and writes a PNG
 overlay plus metadata under `tmp/location-checker/`. The overlay labels saved
 ColorChecker patches by color name, not block number. It does not fill the
@@ -258,6 +277,40 @@ Initial CCT/G-M LUT grid:
 - CCT points: `1800, 2000, 2300, 2700, 3200, 3800, 4500, 5000, 5600, 6500, 8000, 10000, 14000, 20000`
 - G/M raw points: `0, 70, 100, 130, 200`
 - Total initial grid: `14 x 5 = 70` Ray120c target points
+
+Before optimizing a white LUT, measure the strip's WW and CW endpoints as a
+separate reusable calibration artifact. By default, the endpoint script first
+photographs the strip endpoints, estimates the white patch CCT/Duv from linear
+RAW, then controls the Ray120c through an adaptive CCT/G-M binary search to find
+the nearest reference for each endpoint:
+
+```bash
+.venv/bin/python -m camera_based_rgbww_optimizer.optimization.measure_white_endpoints \
+  --output-dir /Volumes/4T/temp/rgbww-optimizer/white-endpoints \
+  --location-config config/location/locations-20260605-225800.json \
+  --allow-high-output
+```
+
+Use `--ray-search-mode grid` to run the legacy fixed `14 x 5` Ray reference
+grid and rank references by camera-observed similarity instead of CCT/Duv search.
+
+The generated `white-endpoints.json` contains `ray_endpoint_matches` and
+`white_range`. Reuse that file in the formal white LUT run:
+
+```bash
+.venv/bin/python -m camera_based_rgbww_optimizer.optimization.measure_white_lut \
+  --output-dir /Volumes/4T/temp/rgbww-optimizer/white-lut \
+  --endpoint-calibration /Volumes/4T/temp/rgbww-optimizer/white-endpoints/<run>/white-endpoints.json \
+  --location-config config/location/locations-20260605-225800.json \
+  --allow-high-output
+```
+
+The white LUT runner's default target grid is `1800, 3200, 5600, 20000K` x G/M
+raw values `0, 100, 200`. It uses neutral patches as the primary objective and
+color patches as lower-weight auxiliary checks. Targets inside the Ray-matched
+WW/CW CCT span get stronger RGB penalty; targets outside that span allow more
+RGB participation as exploratory gamut extension. Every RGBWW candidate is
+brightness-maximized by requiring at least one channel value to be `4095`.
 
 Use model-first matching in camera-observed color space, then add sparse
 LUT/residual correction only where real captures show systematic error. If CCT

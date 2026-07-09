@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import subprocess
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -10,6 +9,7 @@ from typing import Any, Sequence
 
 from camera_based_rgbww_optimizer.control import camera_gphoto2
 from camera_based_rgbww_optimizer.interaction import location_picker_ui
+from camera_based_rgbww_optimizer.interaction import raw_visual_preview
 from camera_based_rgbww_optimizer.paths import PROJECT_TMP_DIR
 from camera_based_rgbww_optimizer.utils import location_regions
 
@@ -17,7 +17,8 @@ from camera_based_rgbww_optimizer.utils import location_regions
 DEFAULT_OUTPUT_DIR = PROJECT_TMP_DIR / "location-checker"
 DEFAULT_TARGET_MAX = camera_gphoto2.DEFAULT_AUTO_EXPOSURE_MAX
 DEFAULT_FILENAME_TEMPLATE = "%Y%m%d-%H%M%S-location-check.%C"
-DCRAW_WHITE_BALANCE_CHOICES = ("auto", "camera", "default")
+DCRAW_WHITE_BALANCE_CHOICES = raw_visual_preview.DCRAW_WHITE_BALANCE_CHOICES
+VISUAL_PREVIEW_SOURCE_CHOICES = raw_visual_preview.VISUAL_PREVIEW_SOURCE_CHOICES
 
 
 @dataclass(frozen=True)
@@ -90,8 +91,10 @@ def capture_location_check(
     expected_model: str = camera_gphoto2.DEFAULT_CAMERA_MODEL,
     camera_port: str | None = None,
     executable: str = "gphoto2",
+    preview_source: str = "camera-jpeg",
+    exiftool_executable: str = "exiftool",
     dcraw_executable: str = "dcraw_emu",
-    dcraw_white_balance: str = "auto",
+    dcraw_white_balance: str = "camera",
     timeout: float = 90.0,
 ) -> LocationCheckResult:
     regions = load_required_location_regions(location_config)
@@ -122,16 +125,18 @@ def capture_location_check(
     if capture.decoded is None:
         raise RuntimeError("auto exposure did not return decoded output")
     decoded = capture.decoded
-    preview_decoded = _decode_dcraw_preview(
+    preview_decoded = _decode_visual_preview(
         capture.saved_file,
         output_dir=decode_dir,
         output_stem="location-check-preview",
-        executable=dcraw_executable,
-        white_balance=dcraw_white_balance,
+        preview_source=preview_source,
+        exiftool_executable=exiftool_executable,
+        dcraw_executable=dcraw_executable,
+        dcraw_white_balance=dcraw_white_balance,
         timeout=timeout,
     )
-    preview_file = _find_output_with_suffix(preview_decoded.output_files, ".tiff")
-    image = _import_tifffile().imread(preview_file)
+    preview_file = _find_visual_preview_file(preview_decoded.output_files, preview_source=preview_source)
+    image = _read_visual_preview(preview_file, preview_source=preview_source)
     validate_regions_inside_image(image, regions)
 
     preview = _visual_decode_to_preview_uint8(image)
@@ -147,8 +152,8 @@ def capture_location_check(
         "region_count": len(regions),
         "target_max": target_max,
         "metering_mode": camera_gphoto2.METERING_MODE_FULL,
-        "decode_mode": "dcraw_emu_visual_preview",
-        "decode_white_balance": dcraw_white_balance,
+        "decode_mode": _visual_preview_decode_mode(preview_source),
+        "decode_white_balance": dcraw_white_balance if preview_source == "dcraw" else None,
         "auto_exposure": exposure.to_jsonable(),
         "metering_decode": decoded.to_jsonable(),
         "decode": preview_decoded.to_jsonable(),
@@ -186,11 +191,18 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--port", dest="camera_port", help="Camera USB port passed to gphoto2.")
     parser.add_argument("--camera-port", dest="camera_port", help="Camera USB port passed to gphoto2.")
     parser.add_argument("--gphoto2", default="gphoto2")
+    parser.add_argument(
+        "--preview-source",
+        choices=VISUAL_PREVIEW_SOURCE_CHOICES,
+        default="camera-jpeg",
+        help="Visual preview source used for region fit checking and overlay rendering.",
+    )
+    parser.add_argument("--exiftool", default="exiftool", help="exiftool executable used to extract camera JPEG previews.")
     parser.add_argument("--dcraw", default="dcraw_emu", help="dcraw-compatible executable used for visual preview decode.")
     parser.add_argument(
         "--dcraw-white-balance",
         choices=DCRAW_WHITE_BALANCE_CHOICES,
-        default="auto",
+        default="camera",
         help="White balance mode for dcraw visual preview decode.",
     )
     parser.add_argument("--timeout", type=float, default=90.0)
@@ -213,6 +225,8 @@ def main(argv: list[str] | None = None) -> int:
         expected_model=args.model,
         camera_port=args.camera_port,
         executable=args.gphoto2,
+        preview_source=args.preview_source,
+        exiftool_executable=args.exiftool,
         dcraw_executable=args.dcraw,
         dcraw_white_balance=args.dcraw_white_balance,
         timeout=args.timeout,
@@ -229,10 +243,62 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def _find_output_with_suffix(paths: Sequence[Path], suffix: str) -> Path:
-    for path in paths:
-        if path.suffix == suffix:
-            return path
-    raise RuntimeError(f"decoded output did not produce a {suffix} file")
+    return raw_visual_preview.find_output_with_suffix(paths, suffix)
+
+
+def _decode_visual_preview(
+    raw_file: str | Path,
+    *,
+    output_dir: str | Path,
+    output_stem: str,
+    preview_source: str,
+    exiftool_executable: str = "exiftool",
+    dcraw_executable: str = "dcraw_emu",
+    dcraw_white_balance: str = "camera",
+    timeout: float = 90.0,
+) -> camera_gphoto2.DecodeResult:
+    if preview_source == "camera-jpeg":
+        return raw_visual_preview.decode_embedded_jpeg_preview(
+            raw_file,
+            output_dir=output_dir,
+            output_stem=output_stem,
+            executable=exiftool_executable,
+            timeout=timeout,
+        )
+    if preview_source == "dcraw":
+        return raw_visual_preview.decode_dcraw_preview(
+            raw_file,
+            output_dir=output_dir,
+            output_stem=output_stem,
+            executable=dcraw_executable,
+            white_balance=dcraw_white_balance,
+            timeout=timeout,
+        )
+    raise ValueError(f"unsupported preview source: {preview_source}")
+
+
+def _find_visual_preview_file(paths: Sequence[Path], *, preview_source: str) -> Path:
+    if preview_source == "camera-jpeg":
+        return _find_output_with_suffix(paths, ".jpg")
+    if preview_source == "dcraw":
+        return _find_output_with_suffix(paths, ".tiff")
+    raise ValueError(f"unsupported preview source: {preview_source}")
+
+
+def _read_visual_preview(path: Path, *, preview_source: str) -> Any:
+    if preview_source == "camera-jpeg":
+        return raw_visual_preview.read_jpeg(path)
+    if preview_source == "dcraw":
+        return raw_visual_preview.read_tiff(path)
+    raise ValueError(f"unsupported preview source: {preview_source}")
+
+
+def _visual_preview_decode_mode(preview_source: str) -> str:
+    if preview_source == "camera-jpeg":
+        return "camera_embedded_jpeg_preview"
+    if preview_source == "dcraw":
+        return "dcraw_emu_visual_preview"
+    raise ValueError(f"unsupported preview source: {preview_source}")
 
 
 def _decode_dcraw_preview(
@@ -241,120 +307,21 @@ def _decode_dcraw_preview(
     output_dir: str | Path,
     output_stem: str = "location-check-preview",
     executable: str = "dcraw_emu",
-    white_balance: str = "auto",
+    white_balance: str = "camera",
     timeout: float = 90.0,
 ) -> camera_gphoto2.DecodeResult:
-    if white_balance not in DCRAW_WHITE_BALANCE_CHOICES:
-        raise ValueError(f"unsupported dcraw white balance mode: {white_balance}")
-
-    source_path = Path(raw_file)
-    target_dir = Path(output_dir)
-    target_dir.mkdir(parents=True, exist_ok=True)
-    output_file = target_dir / f"{output_stem}.tiff"
-    metadata_file = target_dir / f"{output_stem}.json"
-
-    wb_args = {
-        "auto": ["-a"],
-        "camera": ["-w"],
-        "default": [],
-    }[white_balance]
-    command = [
-        executable,
-        "-T",
-        *wb_args,
-        "-o",
-        "1",
-        "-q",
-        "3",
-        "-Z",
-        str(output_file),
-        str(source_path),
-    ]
-    completed = subprocess.run(
-        command,
-        capture_output=True,
-        text=True,
+    return raw_visual_preview.decode_dcraw_preview(
+        raw_file,
+        output_dir=output_dir,
+        output_stem=output_stem,
+        executable=executable,
+        white_balance=white_balance,
         timeout=timeout,
-        check=False,
-    )
-    if completed.returncode != 0:
-        details = completed.stderr.strip() or completed.stdout.strip()
-        raise RuntimeError(f"{' '.join(command)} failed: {details}")
-    if not output_file.exists():
-        raise RuntimeError(f"dcraw did not write expected preview TIFF: {output_file}")
-
-    np = _import_numpy()
-    image = _import_tifffile().imread(output_file)
-    stats = {
-        "source_file": str(source_path),
-        "image": _array_stats(np, image),
-        "postprocess_params": {
-            "decoder": executable,
-            "white_balance": white_balance,
-            "output_color": "sRGB",
-            "interpolation_quality": 3,
-            "output_format": "tiff",
-        },
-        "command": command,
-        "stdout": completed.stdout,
-        "stderr": completed.stderr,
-    }
-    metadata_file.write_text(json.dumps(stats, ensure_ascii=False, indent=2, sort_keys=True), encoding="utf-8")
-    return camera_gphoto2.DecodeResult(
-        source_file=source_path,
-        output_files=(output_file, metadata_file),
-        metadata_file=metadata_file,
-        image_shape=tuple(int(value) for value in image.shape),
-        image_dtype=str(image.dtype),
-        stats=stats,
     )
 
 
 def _visual_decode_to_preview_uint8(image: Any) -> Any:
-    np = _import_numpy()
-    if image.ndim != 3 or image.shape[2] != 3:
-        raise ValueError(f"expected HxWx3 visual image, got shape {image.shape}")
-    if image.dtype == np.uint8:
-        return image
-    if image.dtype == np.uint16:
-        return (np.clip(image, 0, 65535) / 257.0 + 0.5).astype(np.uint8)
-    return np.clip(image, 0, 255).astype(np.uint8)
-
-
-def _array_stats(np: Any, array: Any) -> dict[str, Any]:
-    return {
-        "shape": [int(value) for value in array.shape],
-        "dtype": str(array.dtype),
-        "pixel_count": _array_pixel_count(array),
-        "min": int(array.min()),
-        "max": int(array.max()),
-        "channel_min": _channel_stat(array, "min"),
-        "channel_max": _channel_stat(array, "max"),
-        "channel_mean": _channel_stat(array, "mean"),
-    }
-
-
-def _array_pixel_count(array: Any) -> int:
-    if len(array.shape) >= 3:
-        return int(array.shape[0] * array.shape[1])
-    return int(array.size)
-
-
-def _channel_stat(array: Any, stat: str) -> list[int | float] | None:
-    if len(array.shape) != 3:
-        return None
-    values: list[int | float] = []
-    for channel in range(array.shape[2]):
-        channel_array = array[..., channel]
-        if stat == "min":
-            values.append(int(channel_array.min()))
-        elif stat == "max":
-            values.append(int(channel_array.max()))
-        elif stat == "mean":
-            values.append(float(channel_array.mean()))
-        else:
-            raise AssertionError(stat)
-    return values
+    return raw_visual_preview.visual_decode_to_preview_uint8(image)
 
 
 def _draw_region_label(
@@ -455,14 +422,6 @@ def _import_cv2() -> Any:
     except ImportError as exc:
         raise RuntimeError("opencv-contrib-python-headless is required for the location checker") from exc
     return cv2
-
-
-def _import_tifffile() -> Any:
-    try:
-        import tifffile
-    except ImportError as exc:
-        raise RuntimeError("tifffile is required for the location checker") from exc
-    return tifffile
 
 
 if __name__ == "__main__":

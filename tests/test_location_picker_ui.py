@@ -1,3 +1,4 @@
+import contextlib
 import json
 import time
 import tempfile
@@ -30,18 +31,31 @@ class LocationArgsTests(unittest.TestCase):
                 "location",
                 "--metering-location-config",
                 "config/location/example.json",
+                "--preview-source",
+                "dcraw",
+                "--dcraw",
+                "/opt/bin/dcraw_emu",
+                "--dcraw-white-balance",
+                "auto",
             ]
         )
 
         self.assertEqual(default_args.max_exposure_trials, location_picker_ui.DEFAULT_MAX_EXPOSURE_TRIALS)
         self.assertEqual(default_args.rows, 4)
         self.assertEqual(default_args.cols, 6)
+        self.assertEqual(default_args.preview_source, "camera-jpeg")
+        self.assertEqual(default_args.exiftool, "exiftool")
+        self.assertEqual(default_args.dcraw, "dcraw_emu")
+        self.assertEqual(default_args.dcraw_white_balance, "camera")
         self.assertEqual(default_args.metering_mode, camera_gphoto2.METERING_MODE_FULL)
         self.assertEqual(custom_args.max_exposure_trials, 3)
         self.assertEqual(custom_args.ui_port, 0)
         self.assertEqual(custom_args.camera_port, "usb:001,010")
         self.assertEqual(custom_args.metering_mode, camera_gphoto2.METERING_MODE_LOCATION)
         self.assertEqual(custom_args.metering_location_config, Path("config/location/example.json"))
+        self.assertEqual(custom_args.preview_source, "dcraw")
+        self.assertEqual(custom_args.dcraw, "/opt/bin/dcraw_emu")
+        self.assertEqual(custom_args.dcraw_white_balance, "auto")
 
 
 class LocationPreviewTests(unittest.TestCase):
@@ -126,6 +140,32 @@ class LocationPreviewTests(unittest.TestCase):
                 x0 = left + line + col * (cell_w + line)
                 value = 6 if (row, col) == (0, 0) else 65 + row * 18 + col * 4
                 image[y0 : y0 + cell_h, x0 : x0 + cell_w] = value
+
+        quads = location_picker_ui.detect_color_checker_quads(image, rows=rows, cols=cols, inset_ratio=0.0)
+
+        self.assertEqual(len(quads), rows * cols)
+        self.assertAlmostEqual(quads[0][0][0], left + line, delta=2.0)
+        self.assertAlmostEqual(quads[0][0][1], top + line, delta=2.0)
+        self.assertAlmostEqual(quads[-1][2][0], left + width - line - 1, delta=2.0)
+        self.assertAlmostEqual(quads[-1][2][1], top + height - line - 1, delta=2.0)
+
+    def test_detect_color_checker_quads_excludes_bright_jpeg_black_grid_from_content(self):
+        image = np.full((280, 430, 3), 180, dtype=np.uint8)
+        rows = 4
+        cols = 6
+        top = 30
+        left = 80
+        cell_w = 38
+        cell_h = 34
+        line = 7
+        height = rows * cell_h + (rows + 1) * line
+        width = cols * cell_w + (cols + 1) * line
+        image[top : top + height, left : left + width] = 38
+        for row in range(rows):
+            for col in range(cols):
+                y0 = top + line + row * (cell_h + line)
+                x0 = left + line + col * (cell_w + line)
+                image[y0 : y0 + cell_h, x0 : x0 + cell_w] = 80 + row * 25 + col * 3
 
         quads = location_picker_ui.detect_color_checker_quads(image, rows=rows, cols=cols, inset_ratio=0.0)
 
@@ -245,6 +285,30 @@ class LocationPreviewTests(unittest.TestCase):
         self.assertEqual(len(quads), 24)
         self.assertEqual(quads[0], [(40.0, 37.0), (75.0, 38.0), (74.0, 70.0), (39.0, 69.0)])
         np.testing.assert_array_equal(detector.processed_image, image[..., ::-1])
+
+    def test_detect_color_checker_quads_rejects_out_of_bounds_results(self):
+        image = np.full((20, 20, 3), 120, dtype=np.uint8)
+        bad_quads = [[(-1.0, 1.0), (2.0, 1.0), (2.0, 2.0), (-1.0, 2.0)]]
+
+        with mock.patch.object(location_picker_ui, "_detect_color_checker_quads_mcc", side_effect=RuntimeError("no mcc")):
+            with mock.patch.object(location_picker_ui, "_estimate_axis_grid", return_value=object()):
+                with mock.patch.object(location_picker_ui, "_detect_color_checker_quads_opencv", side_effect=RuntimeError("no opencv")):
+                    with mock.patch.object(location_picker_ui, "_detect_color_checker_quads_projection", return_value=bad_quads):
+                        with self.assertRaisesRegex(RuntimeError, "outside the image"):
+                            location_picker_ui.detect_color_checker_quads(image, rows=1, cols=1)
+
+    def test_detect_color_checker_quads_falls_back_after_out_of_bounds_opencv_result(self):
+        image = np.full((20, 20, 3), 120, dtype=np.uint8)
+        bad_quads = [[(-1.0, 1.0), (2.0, 1.0), (2.0, 2.0), (-1.0, 2.0)]]
+        good_quads = [[(1.0, 1.0), (2.0, 1.0), (2.0, 2.0), (1.0, 2.0)]]
+
+        with mock.patch.object(location_picker_ui, "_detect_color_checker_quads_mcc", side_effect=RuntimeError("no mcc")):
+            with mock.patch.object(location_picker_ui, "_estimate_axis_grid", return_value=object()):
+                with mock.patch.object(location_picker_ui, "_detect_color_checker_quads_opencv", return_value=bad_quads):
+                    with mock.patch.object(location_picker_ui, "_detect_color_checker_quads_projection", return_value=good_quads):
+                        quads = location_picker_ui.detect_color_checker_quads(image, rows=1, cols=1)
+
+        self.assertEqual(quads, good_quads)
 
 
 class LocationGeometryTests(unittest.TestCase):
@@ -400,6 +464,10 @@ class LocationWebApiTests(unittest.TestCase):
             model=camera_gphoto2.DEFAULT_CAMERA_MODEL,
             camera_port=None,
             gphoto2="gphoto2",
+            preview_source="camera-jpeg",
+            exiftool="exiftool",
+            dcraw="dcraw_emu",
+            dcraw_white_balance="camera",
             timeout=1.0,
         )
         state = location_picker_ui.LocationPickerState(args=args)
@@ -433,6 +501,29 @@ class LocationWebApiTests(unittest.TestCase):
         thread = location_picker_ui.threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
         return server, f"http://127.0.0.1:{server.server_address[1]}"
+
+    @contextlib.contextmanager
+    def patched_camera_jpeg_preview(self, preview: np.ndarray):
+        jpg = Path("tmp/location-ui/decoded/location-picker-preview.jpg")
+        metadata = Path("tmp/location-ui/decoded/location-picker-preview.json")
+        decoded = camera_gphoto2.DecodeResult(
+            source_file=Path("tmp/location-ui/camera/test.cr3"),
+            output_files=(jpg, metadata),
+            metadata_file=metadata,
+            image_shape=tuple(int(value) for value in preview.shape),
+            image_dtype=str(preview.dtype),
+            stats={"image": {"max": int(preview.max())}},
+        )
+        with mock.patch.object(
+            location_picker_ui.raw_visual_preview,
+            "decode_embedded_jpeg_preview",
+            return_value=decoded,
+        ) as decode_preview, mock.patch.object(
+            location_picker_ui.raw_visual_preview,
+            "read_jpeg",
+            return_value=preview,
+        ):
+            yield decode_preview
 
     def test_state_and_preview_endpoints(self):
         state = self.make_state()
@@ -526,6 +617,10 @@ class LocationWebApiTests(unittest.TestCase):
             model=camera_gphoto2.DEFAULT_CAMERA_MODEL,
             camera_port=None,
             gphoto2="gphoto2",
+            preview_source="camera-jpeg",
+            exiftool="exiftool",
+            dcraw="dcraw_emu",
+            dcraw_white_balance="camera",
             timeout=1.0,
         )
         state = location_picker_ui.LocationPickerState(args=args)
@@ -538,36 +633,38 @@ class LocationWebApiTests(unittest.TestCase):
         auto_result = camera_gphoto2.AutoExposureResult(target_max=49152, final_capture=capture, trials=())
         preview = np.array([[[10, 20, 30]]], dtype=np.uint8)
 
-        with mock.patch.object(location_picker_ui.camera_gphoto2, "auto_expose_capture", side_effect=[RuntimeError("camera offline"), auto_result]):
-            with mock.patch.object(location_picker_ui, "find_npy_output", return_value=Path("unused.npy")):
-                with mock.patch.object(location_picker_ui, "load_preview_from_npy", return_value=preview):
-                    self.assertTrue(state.start_auto_exposure())
-                    self.wait_for_state(state, lambda snapshot: not snapshot["loading"])
-                    failed = state.snapshot()
-                    self.assertFalse(failed["has_image"])
-                    self.assertEqual(failed["error"], "camera offline")
-                    self.assertTrue(failed["retry_available"])
+        with mock.patch.object(
+            location_picker_ui.camera_gphoto2,
+            "auto_expose_capture",
+            side_effect=[RuntimeError("camera offline"), auto_result],
+        ), self.patched_camera_jpeg_preview(preview):
+            self.assertTrue(state.start_auto_exposure())
+            self.wait_for_state(state, lambda snapshot: not snapshot["loading"])
+            failed = state.snapshot()
+            self.assertFalse(failed["has_image"])
+            self.assertEqual(failed["error"], "camera offline")
+            self.assertTrue(failed["retry_available"])
 
-                    server, base_url = self.start_server(state)
-                    try:
-                        request = urllib.request.Request(
-                            base_url + "/api/retry",
-                            data=b"{}",
-                            headers={"Content-Type": "application/json"},
-                            method="POST",
-                        )
-                        with urllib.request.urlopen(request, timeout=5) as response:
-                            retry_payload = json.loads(response.read().decode("utf-8"))
+            server, base_url = self.start_server(state)
+            try:
+                request = urllib.request.Request(
+                    base_url + "/api/retry",
+                    data=b"{}",
+                    headers={"Content-Type": "application/json"},
+                    method="POST",
+                )
+                with urllib.request.urlopen(request, timeout=5) as response:
+                    retry_payload = json.loads(response.read().decode("utf-8"))
 
-                        self.assertTrue(retry_payload["retry_started"])
-                        self.wait_for_state(state, lambda snapshot: snapshot["has_image"])
-                        loaded = state.snapshot()
-                        self.assertTrue(loaded["has_image"])
-                        self.assertIsNone(loaded["error"])
-                        self.assertFalse(loaded["retry_available"])
-                    finally:
-                        server.shutdown()
-                        server.server_close()
+                self.assertTrue(retry_payload["retry_started"])
+                self.wait_for_state(state, lambda snapshot: snapshot["has_image"])
+                loaded = state.snapshot()
+                self.assertTrue(loaded["has_image"])
+                self.assertIsNone(loaded["error"])
+                self.assertFalse(loaded["retry_available"])
+            finally:
+                server.shutdown()
+                server.server_close()
 
     def test_capture_worker_passes_location_metering_regions(self):
         args = Namespace(
@@ -586,6 +683,10 @@ class LocationWebApiTests(unittest.TestCase):
             model=camera_gphoto2.DEFAULT_CAMERA_MODEL,
             camera_port=None,
             gphoto2="gphoto2",
+            preview_source="camera-jpeg",
+            exiftool="exiftool",
+            dcraw="dcraw_emu",
+            dcraw_white_balance="camera",
             timeout=1.0,
         )
         state = location_picker_ui.LocationPickerState(args=args)
@@ -607,16 +708,25 @@ class LocationWebApiTests(unittest.TestCase):
         preview = np.array([[[10, 20, 30]]], dtype=np.uint8)
         regions = [{"type": "full", "name": "meter"}]
 
-        with mock.patch.object(location_picker_ui.camera_gphoto2, "load_metering_regions", return_value=regions) as load_regions:
-            with mock.patch.object(location_picker_ui.camera_gphoto2, "auto_expose_capture", return_value=auto_result) as auto_expose:
-                with mock.patch.object(location_picker_ui, "find_npy_output", return_value=Path("unused.npy")):
-                    with mock.patch.object(location_picker_ui, "load_preview_from_npy", return_value=preview):
-                        with mock.patch.object(location_picker_ui, "detect_color_checker_quads", side_effect=RuntimeError("not found")):
-                            self.assertTrue(state.start_auto_exposure())
-                            self.wait_for_state(state, lambda snapshot: snapshot["has_image"])
+        with mock.patch.object(
+            location_picker_ui.camera_gphoto2,
+            "load_metering_regions",
+            return_value=regions,
+        ) as load_regions, mock.patch.object(
+            location_picker_ui.camera_gphoto2,
+            "auto_expose_capture",
+            return_value=auto_result,
+        ) as auto_expose, self.patched_camera_jpeg_preview(preview), mock.patch.object(
+            location_picker_ui,
+            "detect_color_checker_quads",
+            side_effect=RuntimeError("not found"),
+        ):
+            self.assertTrue(state.start_auto_exposure())
+            self.wait_for_state(state, lambda snapshot: snapshot["has_image"])
 
         load_regions.assert_called_once_with(Path("config/location/test.json"))
         self.assertIs(auto_expose.call_args.kwargs["metering_regions"], regions)
+        self.assertEqual(auto_expose.call_args.kwargs["decode_formats"], ("npy",))
 
     def test_capture_success_exposes_initial_auto_detect_quads(self):
         args = Namespace(
@@ -635,6 +745,10 @@ class LocationWebApiTests(unittest.TestCase):
             model=camera_gphoto2.DEFAULT_CAMERA_MODEL,
             camera_port=None,
             gphoto2="gphoto2",
+            preview_source="camera-jpeg",
+            exiftool="exiftool",
+            dcraw="dcraw_emu",
+            dcraw_white_balance="camera",
             timeout=1.0,
         )
         state = location_picker_ui.LocationPickerState(args=args)
@@ -648,15 +762,22 @@ class LocationWebApiTests(unittest.TestCase):
         preview = np.array([[[10, 20, 30], [40, 50, 60]]], dtype=np.uint8)
         quads = [[(0.0, 0.0), (1.0, 0.0), (1.0, 0.0), (0.0, 0.0)] for _index in range(24)]
 
-        with mock.patch.object(location_picker_ui.camera_gphoto2, "auto_expose_capture", return_value=auto_result):
-            with mock.patch.object(location_picker_ui, "find_npy_output", return_value=Path("unused.npy")):
-                with mock.patch.object(location_picker_ui, "load_preview_from_npy", return_value=preview):
-                    with mock.patch.object(location_picker_ui, "detect_color_checker_quads", return_value=quads) as detect:
-                        self.assertTrue(state.start_auto_exposure())
-                        self.wait_for_state(state, lambda snapshot: snapshot["has_image"])
+        with mock.patch.object(
+            location_picker_ui.camera_gphoto2,
+            "auto_expose_capture",
+            return_value=auto_result,
+        ), self.patched_camera_jpeg_preview(preview) as decode_preview, mock.patch.object(
+            location_picker_ui,
+            "detect_color_checker_quads",
+            return_value=quads,
+        ) as detect:
+            self.assertTrue(state.start_auto_exposure())
+            self.wait_for_state(state, lambda snapshot: snapshot["has_image"])
 
         snapshot = state.snapshot()
         detect.assert_called_once_with(preview, rows=4, cols=6)
+        self.assertEqual(decode_preview.call_args.kwargs["executable"], "exiftool")
+        self.assertIn("preview=camera-jpeg", snapshot["status"])
         self.assertIn("已自动识别 4x6 色块", snapshot["status"])
         self.assertEqual(snapshot["auto_detect"]["target_block_count"], 24)
         self.assertEqual(len(snapshot["auto_detect"]["quads"]), 24)
@@ -679,6 +800,10 @@ class LocationWebApiTests(unittest.TestCase):
             model=camera_gphoto2.DEFAULT_CAMERA_MODEL,
             camera_port=None,
             gphoto2="gphoto2",
+            preview_source="camera-jpeg",
+            exiftool="exiftool",
+            dcraw="dcraw_emu",
+            dcraw_white_balance="camera",
             timeout=1.0,
         )
         state = location_picker_ui.LocationPickerState(args=args)
@@ -691,12 +816,17 @@ class LocationWebApiTests(unittest.TestCase):
         auto_result = camera_gphoto2.AutoExposureResult(target_max=49152, final_capture=capture, trials=())
         preview = np.array([[[10, 20, 30], [40, 50, 60]]], dtype=np.uint8)
 
-        with mock.patch.object(location_picker_ui.camera_gphoto2, "auto_expose_capture", return_value=auto_result):
-            with mock.patch.object(location_picker_ui, "find_npy_output", return_value=Path("unused.npy")):
-                with mock.patch.object(location_picker_ui, "load_preview_from_npy", return_value=preview):
-                    with mock.patch.object(location_picker_ui, "detect_color_checker_quads", side_effect=RuntimeError("not found")):
-                        self.assertTrue(state.start_auto_exposure())
-                        self.wait_for_state(state, lambda snapshot: snapshot["has_image"])
+        with mock.patch.object(
+            location_picker_ui.camera_gphoto2,
+            "auto_expose_capture",
+            return_value=auto_result,
+        ), self.patched_camera_jpeg_preview(preview), mock.patch.object(
+            location_picker_ui,
+            "detect_color_checker_quads",
+            side_effect=RuntimeError("not found"),
+        ):
+            self.assertTrue(state.start_auto_exposure())
+            self.wait_for_state(state, lambda snapshot: snapshot["has_image"])
 
         snapshot = state.snapshot()
         self.assertTrue(snapshot["has_image"])

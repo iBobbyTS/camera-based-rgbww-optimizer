@@ -1,8 +1,10 @@
 import json
+import subprocess
 import tempfile
 import unittest
 from fractions import Fraction
 from pathlib import Path
+from unittest import mock
 
 import numpy as np
 
@@ -20,6 +22,49 @@ Canon EOS R6 Mark III          usb:001,010
             camera_gphoto2.parse_auto_detect(output),
             [camera_gphoto2.CameraConnection("Canon EOS R6 Mark III", "usb:001,010")],
         )
+
+    def test_run_gphoto2_retries_after_macos_usb_claim_failure(self):
+        first_failure = subprocess.CompletedProcess(
+            ["gphoto2", "--summary"],
+            returncode=1,
+            stdout="",
+            stderr="Could not claim the USB device",
+        )
+        pkill_result = subprocess.CompletedProcess(["pkill"], returncode=0, stdout="", stderr="")
+        success = subprocess.CompletedProcess(["gphoto2", "--summary"], returncode=0, stdout="ok\n", stderr="")
+
+        with mock.patch.object(camera_gphoto2.sys, "platform", "darwin"), mock.patch.object(
+            camera_gphoto2.subprocess,
+            "run",
+            side_effect=[first_failure, pkill_result, pkill_result, success],
+        ) as run_mock:
+            output = camera_gphoto2.run_gphoto2(["--summary"])
+
+        self.assertEqual(output.stdout, "ok\n")
+        self.assertEqual(run_mock.call_args_list[0].args[0], ["gphoto2", "--summary"])
+        self.assertEqual(run_mock.call_args_list[1].args[0], ["pkill", "-9", "-f", "/usr/libexec/ptpcamerad"])
+        self.assertEqual(
+            run_mock.call_args_list[2].args[0],
+            ["pkill", "-9", "-f", "/System/Library/Image Capture/Support/icdd"],
+        )
+        self.assertEqual(run_mock.call_args_list[3].args[0], ["gphoto2", "--summary"])
+
+    def test_run_gphoto2_can_disable_macos_ptp_recovery(self):
+        failure = subprocess.CompletedProcess(
+            ["gphoto2", "--summary"],
+            returncode=1,
+            stdout="",
+            stderr="Could not claim the USB device",
+        )
+
+        with mock.patch.object(camera_gphoto2.sys, "platform", "darwin"), mock.patch.dict(
+            camera_gphoto2.os.environ,
+            {camera_gphoto2.MACOS_PTP_RECOVERY_DISABLE_ENV: "1"},
+        ), mock.patch.object(camera_gphoto2.subprocess, "run", return_value=failure) as run_mock:
+            with self.assertRaisesRegex(camera_gphoto2.GPhoto2Error, "Could not claim"):
+                camera_gphoto2.run_gphoto2(["--summary"])
+
+        self.assertEqual(run_mock.call_count, 1)
 
     def test_read_config_current_and_choices_parses_single_gphoto2_output(self):
         def runner(args):
@@ -529,6 +574,66 @@ class CameraGPhoto2AutoExposureTests(unittest.TestCase):
         self.assertFalse(any(path.exists() for path in trial_raw_paths))
         self.assertFalse(any(path.exists() for path in trial_decode_paths))
         self.assertFalse(any(path.exists() for path in trial_workspace_roots))
+
+    def test_auto_expose_uses_custom_scratch_dir_for_trials(self):
+        current_shutter = {"value": "1/100"}
+        trial_workspace_roots = set()
+
+        def runner(args):
+            if args == ["--auto-detect"]:
+                return camera_gphoto2.CommandOutput(
+                    "Model                          Port\n"
+                    "----------------------------------------------------------\n"
+                    "Canon EOS R6 Mark III          usb:001,010\n"
+                )
+            if "--set-config" in args:
+                for value in args:
+                    if value.startswith(f"{camera_gphoto2.CONFIG_SHUTTER_SPEED}="):
+                        current_shutter["value"] = value.split("=", 1)[1]
+                return camera_gphoto2.CommandOutput("")
+            if args == ["--port", "usb:001,010", "--get-config", camera_gphoto2.CONFIG_SHUTTER_SPEED]:
+                return camera_gphoto2.CommandOutput(f"Label: Shutter Speed\nCurrent: {current_shutter['value']}\nEND\n")
+            if "--capture-image-and-download" in args:
+                filename = Path(args[args.index("--filename") + 1])
+                filename.parent.mkdir(parents=True, exist_ok=True)
+                filename.write_text(current_shutter["value"], encoding="utf-8")
+                if filename.name.startswith("trial-"):
+                    trial_workspace_roots.add(filename.parent.parent.parent)
+                return camera_gphoto2.CommandOutput(f"Saving file as {filename}\n")
+            raise AssertionError(args)
+
+        def decoder(raw_file, *, output_dir=None, formats=("npy",)):
+            raw_path = Path(raw_file)
+            target_dir = Path(output_dir) if output_dir is not None else raw_path.parent
+            target_dir.mkdir(parents=True, exist_ok=True)
+            output_file = target_dir / f"{raw_path.stem}.json"
+            output_file.write_text("{}", encoding="utf-8")
+            if raw_path.name.startswith("trial-"):
+                trial_workspace_roots.add(output_file.parent.parent.parent)
+            return camera_gphoto2.DecodeResult(
+                source_file=raw_path,
+                output_files=(output_file,),
+                metadata_file=output_file,
+                image_shape=(2, 2, 3),
+                image_dtype="uint16",
+                stats={"image": {"max": 48000}, "raw_visible": {"max": 12000}},
+            )
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            scratch_dir = Path(tmpdir) / "external-scratch"
+            result = camera_gphoto2.auto_expose_capture(
+                output_dir=Path(tmpdir) / "final",
+                filename_template="final.cr3",
+                target_max=49152,
+                shutter_speeds=("1/100", "1/50"),
+                decode_output_dir=Path(tmpdir) / "decoded",
+                scratch_dir=scratch_dir,
+                runner=runner,
+                decoder=decoder,
+            )
+
+            self.assertEqual(result.final_capture.settings.shutter_speed, "1/100")
+            self.assertEqual(trial_workspace_roots, {scratch_dir})
 
     def test_auto_expose_limits_trial_count_and_saves_best_accepted_capture(self):
         current_shutter = {"value": "1/100"}

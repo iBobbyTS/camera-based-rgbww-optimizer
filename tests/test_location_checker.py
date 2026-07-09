@@ -8,6 +8,7 @@ import numpy as np
 
 from camera_based_rgbww_optimizer.control import camera_gphoto2
 from camera_based_rgbww_optimizer.interaction import location_checker
+from camera_based_rgbww_optimizer.interaction import raw_visual_preview
 
 
 def make_location_config(count=24, *, include_patch=False):
@@ -39,6 +40,9 @@ class LocationCheckerArgsTests(unittest.TestCase):
 
         self.assertEqual(args.location_config, Path("config/location/example.json"))
         self.assertEqual(args.max_exposure_trials, 3)
+        self.assertEqual(args.preview_source, "camera-jpeg")
+        self.assertEqual(args.exiftool, "exiftool")
+        self.assertEqual(args.dcraw_white_balance, "camera")
 
 
 class LocationCheckerRenderTests(unittest.TestCase):
@@ -145,7 +149,30 @@ class LocationCheckerRenderTests(unittest.TestCase):
         self.assertNotIn("15", fake_cv2.labels)
         self.assertNotIn("16", fake_cv2.labels)
 
-    def test_decode_dcraw_preview_uses_auto_white_balance_by_default(self):
+    def test_decode_embedded_jpeg_preview_extracts_jpg_from_raw(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            raw_file = Path(tmpdir) / "input.cr3"
+            raw_file.write_bytes(b"raw")
+
+            with mock.patch.object(
+                raw_visual_preview.subprocess,
+                "run",
+                return_value=mock.Mock(returncode=0, stdout=b"jpeg-bytes", stderr=b""),
+            ) as run, mock.patch.object(
+                raw_visual_preview,
+                "read_jpeg",
+                return_value=np.full((2, 3, 3), 200, dtype=np.uint8),
+            ):
+                result = raw_visual_preview.decode_embedded_jpeg_preview(raw_file, output_dir=Path(tmpdir) / "decoded")
+
+            command = run.call_args.args[0]
+            self.assertEqual(command, ["exiftool", "-b", "-JpgFromRaw", str(raw_file)])
+            self.assertEqual(result.output_files[0].suffix, ".jpg")
+            self.assertEqual(result.output_files[0].read_bytes(), b"jpeg-bytes")
+            self.assertEqual(result.stats["postprocess_params"]["preview_source"], "camera-jpeg")
+            self.assertEqual(result.stats["postprocess_params"]["embedded_tag"], "JpgFromRaw")
+
+    def test_decode_dcraw_preview_uses_camera_white_balance_by_default(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             raw_file = Path(tmpdir) / "input.cr3"
             raw_file.write_bytes(b"raw")
@@ -155,8 +182,8 @@ class LocationCheckerRenderTests(unittest.TestCase):
                 output_file.write_bytes(b"tiff")
                 return mock.Mock(returncode=0, stdout="", stderr="")
 
-            with mock.patch.object(location_checker.subprocess, "run", side_effect=fake_run) as run, mock.patch.object(
-                location_checker,
+            with mock.patch.object(raw_visual_preview.subprocess, "run", side_effect=fake_run) as run, mock.patch.object(
+                raw_visual_preview,
                 "_import_tifffile",
                 return_value=mock.Mock(imread=lambda _path: np.full((2, 3, 3), 200, dtype=np.uint8)),
             ):
@@ -164,14 +191,15 @@ class LocationCheckerRenderTests(unittest.TestCase):
 
         command = run.call_args.args[0]
         self.assertEqual(command[:2], ["dcraw_emu", "-T"])
-        self.assertIn("-a", command)
+        self.assertIn("-w", command)
+        self.assertNotIn("-a", command)
         self.assertEqual(command[command.index("-o") + 1], "1")
         self.assertEqual(command[command.index("-q") + 1], "3")
         self.assertEqual(result.output_files[0].suffix, ".tiff")
         self.assertEqual(result.stats["postprocess_params"]["decoder"], "dcraw_emu")
-        self.assertEqual(result.stats["postprocess_params"]["white_balance"], "auto")
+        self.assertEqual(result.stats["postprocess_params"]["white_balance"], "camera")
 
-    def test_decode_dcraw_preview_can_use_camera_white_balance(self):
+    def test_decode_dcraw_preview_can_use_dcraw_auto_white_balance(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             raw_file = Path(tmpdir) / "input.cr3"
             raw_file.write_bytes(b"raw")
@@ -180,8 +208,8 @@ class LocationCheckerRenderTests(unittest.TestCase):
                 Path(command[command.index("-Z") + 1]).write_bytes(b"tiff")
                 return mock.Mock(returncode=0, stdout="", stderr="")
 
-            with mock.patch.object(location_checker.subprocess, "run", side_effect=fake_run) as run, mock.patch.object(
-                location_checker,
+            with mock.patch.object(raw_visual_preview.subprocess, "run", side_effect=fake_run) as run, mock.patch.object(
+                raw_visual_preview,
                 "_import_tifffile",
                 return_value=mock.Mock(imread=lambda _path: np.full((2, 3, 3), 200, dtype=np.uint8)),
             ):
@@ -189,13 +217,13 @@ class LocationCheckerRenderTests(unittest.TestCase):
                     raw_file,
                     output_dir=Path(tmpdir) / "decoded",
                     executable="dcraw_emu",
-                    white_balance="camera",
+                    white_balance="auto",
                 )
 
         command = run.call_args.args[0]
-        self.assertIn("-w", command)
-        self.assertNotIn("-a", command)
-        self.assertEqual(result.stats["postprocess_params"]["white_balance"], "camera")
+        self.assertIn("-a", command)
+        self.assertNotIn("-w", command)
+        self.assertEqual(result.stats["postprocess_params"]["white_balance"], "auto")
 
     def test_visual_decode_to_preview_uint8_preserves_uint8(self):
         image = np.array([[[1, 2, 3]]], dtype=np.uint8)
@@ -259,13 +287,13 @@ class LocationCheckerRenderTests(unittest.TestCase):
             def write_preview(raw_file, **kwargs):
                 output_dir = Path(kwargs["output_dir"])
                 output_dir.mkdir(parents=True, exist_ok=True)
-                tiff = output_dir / "preview.tiff"
+                jpg = output_dir / "preview.jpg"
                 metadata = output_dir / "preview.json"
-                tiff.write_bytes(b"tiff")
+                jpg.write_bytes(b"jpg")
                 metadata.write_text("{}", encoding="utf-8")
                 return camera_gphoto2.DecodeResult(
                     source_file=Path(raw_file),
-                    output_files=(tiff, metadata),
+                    output_files=(jpg, metadata),
                     metadata_file=metadata,
                     image_shape=(12, 14, 3),
                     image_dtype="uint8",
@@ -280,20 +308,21 @@ class LocationCheckerRenderTests(unittest.TestCase):
                 "auto_expose_capture",
                 side_effect=fake_auto_expose_capture,
             ), mock.patch.object(
-                location_checker,
-                "_decode_dcraw_preview",
+                raw_visual_preview,
+                "decode_embedded_jpeg_preview",
                 side_effect=write_preview,
             ) as preview_decode, mock.patch.object(
-                location_checker,
-                "_import_tifffile",
-                return_value=mock.Mock(imread=lambda _path: np.full((12, 14, 3), 200, dtype=np.uint8)),
+                raw_visual_preview,
+                "read_jpeg",
+                return_value=np.full((12, 14, 3), 200, dtype=np.uint8),
             ):
                 result = location_checker.capture_location_check(location_path, output_dir=Path(tmpdir) / "out")
 
             self.assertEqual(len(auto_exposure_calls), 1)
             self.assertEqual(preview_decode.call_count, 1)
-            self.assertEqual(preview_decode.call_args.kwargs["white_balance"], "auto")
+            self.assertEqual(preview_decode.call_args.kwargs["executable"], "exiftool")
             self.assertEqual(result.region_count, 24)
+            self.assertEqual(result.decoded_file.suffix, ".jpg")
             self.assertEqual(result.shutter_speed, "1/80")
             self.assertEqual(result.capture_count, 1)
             self.assertTrue(result.overlay_file.exists())
