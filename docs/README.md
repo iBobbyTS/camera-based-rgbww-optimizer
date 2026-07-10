@@ -67,6 +67,13 @@ temporary data to the system `/tmp`.
 Scripts that can leave the RGBWW fixture on must turn it off before exiting,
 except explicit light-on/control tools.
 
+Use the shared cleanup command after manual runs or shell-interrupted
+calibration jobs. It calls ESPHome `all_off` and sets Ray120c intensity to `0`:
+
+```bash
+.venv/bin/python -m camera_based_rgbww_optimizer.control.all_off --ray-timeout 5
+```
+
 ## RGBWW Control
 
 Use the ESPHome control module:
@@ -281,8 +288,11 @@ Initial CCT/G-M LUT grid:
 Before optimizing a white LUT, measure the strip's WW and CW endpoints as a
 separate reusable calibration artifact. By default, the endpoint script first
 photographs the strip endpoints, estimates the white patch CCT/Duv from linear
-RAW, then controls the Ray120c through an adaptive CCT/G-M binary search to find
-the nearest reference for each endpoint:
+RAW, then controls the Ray120c through target-driven CCT/G-M correction to find
+the nearest reference for each endpoint. The adaptive search starts from the
+strip-estimated CCT, corrects the next Ray setting from the observed CCT error,
+then alternates CCT and G/M correction for three rounds. Defaults are a total
+budget of up to 64 CCT samples and 16 G/M samples per endpoint:
 
 ```bash
 .venv/bin/python -m camera_based_rgbww_optimizer.optimization.measure_white_endpoints \
@@ -291,26 +301,99 @@ the nearest reference for each endpoint:
   --allow-high-output
 ```
 
+When previous measurements have already found a useful Ray starting point, seed
+the adaptive run per endpoint:
+
+```bash
+.venv/bin/python -m camera_based_rgbww_optimizer.optimization.measure_white_endpoints \
+  --output-dir tmp/white-endpoints \
+  --location-config config/location/locations-20260605-225800.json \
+  --allow-high-output \
+  --ray-start ww=2961,160 \
+  --ray-start cw=7895,100
+```
+
 Use `--ray-search-mode grid` to run the legacy fixed `14 x 5` Ray reference
 grid and rank references by camera-observed similarity instead of CCT/Duv search.
+For shell-launched endpoint runs, wrap the command with
+`camera_based_rgbww_optimizer.control.all_off` as an `EXIT` cleanup trap so the
+strip and Ray120c are explicitly turned off after success, failure, or
+interruption.
 
-The generated `white-endpoints.json` contains `ray_endpoint_matches` and
-`white_range`. Reuse that file in the formal white LUT run:
+The selected best-environment endpoint result is stored as
+`config/white/white-endpoints.json`. It contains the canonical
+`ray_endpoint_matches` and `white_range` used by the formal white LUT run:
 
 ```bash
 .venv/bin/python -m camera_based_rgbww_optimizer.optimization.measure_white_lut \
-  --output-dir /Volumes/4T/temp/rgbww-optimizer/white-lut \
-  --endpoint-calibration /Volumes/4T/temp/rgbww-optimizer/white-endpoints/<run>/white-endpoints.json \
-  --location-config config/location/locations-20260605-225800.json \
+  --output-dir tmp/white-lut-calibration \
+  --endpoint-calibration config/white/white-endpoints.json \
+  --location-config config/location/locations-20260709-012045.json \
   --allow-high-output
 ```
 
 The white LUT runner's default target grid is `1800, 3200, 5600, 20000K` x G/M
-raw values `0, 100, 200`. It uses neutral patches as the primary objective and
-color patches as lower-weight auxiliary checks. Targets inside the Ray-matched
-WW/CW CCT span get stronger RGB penalty; targets outside that span allow more
-RGB participation as exploratory gamut extension. Every RGBWW candidate is
-brightness-maximized by requiring at least one channel value to be `4095`.
+raw values `0, 100, 200`, covering the complete Ray120c G/M range from maximum
+magenta through neutral to maximum green. It uses neutral patches as the primary
+model objective and color patches as lower-weight auxiliary checks. Every RGBWW
+candidate is brightness-maximized by keeping one selected active channel at
+`4095`.
+
+RGB regularization is directional instead of using a single inside/outside CCT
+switch. The optimizer linearly interpolates a native G/M prior between the
+measured WW endpoint (`2931K`, raw G/M `176`) and CW endpoint (`7702K`, raw G/M
+`160`), clamping outside that CCT span. It then combines:
+
+- CCT extension need: release red below the WW endpoint and blue above the CW
+  endpoint.
+- G/M compensation need: release red plus blue toward magenta, or green toward
+  green.
+- Native-white preservation: keep unrelated RGB channels strongly penalized.
+
+The default penalties are `0.45` at the native white-only point, a `0.06` cap
+for the primary that extends CCT just outside the white-channel span, and `0.02`
+at full CCT/G-M compensation. The transition follows the normalized distance to
+the supported CCT or directional G/M limit. The same per-channel penalties are
+used by both the model solver and the feedback loop. Each target's complete
+policy is written into `target_plan[].rgb_policy`, including during `--dry-run`.
+
+The per-target model solution is only the starting command. The runner captures
+that command, estimates its white-patch CCT/Duv, then probes each of the four
+free channels to estimate a local Jacobian. When measured samples bracket the
+target CCT and the interpolated Duv remains within tolerance, the next command
+uses sample-pair secant interpolation. Otherwise it applies a damped, bounded
+Jacobian update and uses Broyden secant updates for up to six feedback rounds.
+The default measured stop target is `<10K` absolute CCT error and `<0.01`
+absolute Duv error.
+All samples, Jacobians, predicted steps, measured errors, and the selected best
+command are persisted in `white-lut-calibration.json`. Use each target's
+`selected_command` for the final LUT; `solver.command` is only the model's
+initial candidate. Pass
+`--feedback-rounds 0` only for a model-only one-shot diagnostic.
+
+Before every Ray reference capture, the strip is explicitly turned off. After
+the Ray capture finishes, Ray is set to intensity `0` before any RGBWW capture
+is allowed to start. Ray and strip automatic exposure use independent shutter
+caches initialized from the fixed `1/30` default: later Ray targets start from
+the previous Ray result, while each target's initial strip candidate starts
+from the previous strip result. Probe and feedback captures keep that target's
+resolved strip shutter fixed. The existing final cleanup still turns off both
+the strip and Ray120c on normal exit or exceptions.
+
+Apply the calibrated white LUT to the strip with bilinear interpolation across
+the neighboring CCT and raw G/M grid points:
+
+```bash
+.venv/bin/python -m camera_based_rgbww_optimizer.control.white_lut 4500 75 \
+  --intensity-percent 100
+```
+
+The default LUT is `config/white/white-lut.json`. Values outside its measured
+CCT/G-M range are rejected unless `--clamp` is passed. Use `--dry-run` to print
+the interpolated linear RGBWW command without controlling ESPHome. This is an
+explicit light-on control command and intentionally leaves the strip at the
+requested output; use `camera_based_rgbww_optimizer.control.all_off` or set
+`--intensity-percent 0` to turn it off.
 
 Use model-first matching in camera-observed color space, then add sparse
 LUT/residual correction only where real captures show systematic error. If CCT

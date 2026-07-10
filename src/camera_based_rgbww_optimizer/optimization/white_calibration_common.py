@@ -428,6 +428,7 @@ def capture_auto_exposed(
     max_captures: int,
     decode_formats: Sequence[str],
     metering_regions: Sequence[dict[str, Any]] | None,
+    initial_shutter_speed: str | None = None,
 ) -> camera_gphoto2.AutoExposureResult:
     return auto_expose_fn(
         output_dir=camera_dir,
@@ -444,6 +445,7 @@ def capture_auto_exposed(
         decode_formats=decode_formats,
         scratch_dir=scratch_dir,
         metering_regions=metering_regions,
+        initial_shutter_speed=initial_shutter_speed,
     )
 
 
