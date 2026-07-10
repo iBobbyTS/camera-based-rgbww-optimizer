@@ -7,6 +7,7 @@
 
 | file | summary |
 | --- | --- |
+| unresolved/20260710-white-lut-bounded-feedback-solver.md | The boundary-clipping root cause is fixed and passes offline replay, but the three original targets remain unverified on hardware by explicit request. |
 
 ## Resolved
 

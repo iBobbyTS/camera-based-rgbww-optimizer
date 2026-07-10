@@ -139,7 +139,7 @@ class WhiteLutFeedbackTests(unittest.TestCase):
 
         step = feedback.solve_damped_step(
             command,
-            {"cct_K": 4900.0, "duv": -0.01},
+            {"cct_K": 4980.0, "duv": -0.001},
             {"cct_K": 5000.0, "duv": 0.0},
             jacobian,
             active_channel="cw",
@@ -153,6 +153,38 @@ class WhiteLutFeedbackTests(unittest.TestCase):
         )
 
         self.assertGreater(step["delta_codes"]["r"], step["delta_codes"]["g"])
+
+    def test_damped_step_solves_with_channel_bounds_instead_of_clipping_afterward(self):
+        command = {"cw": 4095, "ww": 0, "r": 0, "g": 0, "b": 768}
+        jacobian = np.asarray([
+            [-1114.063, -903.814, -329.946, 2946.341],
+            [0.482, 6.536, -10.837, 6.531],
+        ])
+        initial_error = [-108.505, 1.519]
+
+        step = feedback.solve_damped_step(
+            command,
+            {"cct_K": 7965.95, "duv": 0.011986},
+            {"cct_K": 9051.0, "duv": -0.003206},
+            jacobian,
+            active_channel="cw",
+            cct_tolerance_K=10.0,
+            duv_tolerance=0.01,
+            max_code=4095,
+            max_step_code=768,
+            damping=0.05,
+            rgb_penalty=0.45,
+            channel_penalties={"r": 0.304, "g": 0.45, "b": 0.04},
+        )
+
+        self.assertEqual(step["delta_codes"]["ww"], 0)
+        self.assertEqual(step["delta_codes"]["r"], 0)
+        self.assertGreater(step["delta_codes"]["g"], 0)
+        self.assertGreater(step["delta_codes"]["b"], 0)
+        self.assertLess(
+            max(abs(value) for value in step["predicted_normalized_error"]),
+            max(abs(value) for value in initial_error),
+        )
 
     def test_bracketed_cct_step_interpolates_between_measured_samples(self):
         initial_command = {"cw": 4095, "ww": 0, "r": 0, "g": 0, "b": 1024}

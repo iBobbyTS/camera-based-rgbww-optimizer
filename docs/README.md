@@ -363,6 +363,11 @@ free channels to estimate a local Jacobian. When measured samples bracket the
 target CCT and the interpolated Duv remains within tolerance, the next command
 uses sample-pair secant interpolation. Otherwise it applies a damped, bounded
 Jacobian update and uses Broyden secant updates for up to six feedback rounds.
+The Jacobian step is solved as a box-constrained regularized least-squares
+problem: current channel headroom, the `0..4095` code range, and the per-round
+maximum step are constraints in the solve itself. Do not solve an unconstrained
+step and clip it afterward; clipping can remove compensating boundary terms and
+reverse the predicted CCT direction.
 The default measured stop target is `<10K` absolute CCT error and `<0.01`
 absolute Duv error.
 All samples, Jacobians, predicted steps, measured errors, and the selected best
@@ -408,3 +413,8 @@ Run:
 .venv/bin/python -m pip install -e .
 PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m unittest discover -s tests -v
 ```
+
+## References
+
+- [SAGE LED color-mixing reference (PDF; DOI: 10.1177/14771535211058096)](https://journals.sagepub.com/doi/pdf/10.1177/14771535211058096)
+- [NIST: Practical Use and Calculation of CCT and Duv](https://www.nist.gov/publications/practical-use-and-calculation-cct-and-duv)
