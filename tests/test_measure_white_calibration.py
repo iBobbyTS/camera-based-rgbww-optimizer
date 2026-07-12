@@ -458,7 +458,7 @@ class WhiteLutCalibrationTests(unittest.TestCase):
 
         self.assertEqual(args.target_ccts, (1800, 3200, 5600, 20000))
         self.assertEqual(args.target_gm_values, (0, 100, 200))
-        self.assertEqual(args.feedback_rounds, 6)
+        self.assertEqual(args.feedback_rounds, 10)
 
     def test_lut_dry_run_requires_and_records_endpoint_calibration(self):
         with project_temp_dir() as tmpdir:
@@ -648,6 +648,7 @@ class WhiteLutCalibrationTests(unittest.TestCase):
                 white_point_estimator_fn=fake_white_point,
             )
             data = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(list((root / "run" / "decoded").glob("*.npy")), [])
 
         self.assertEqual(data["status"], "complete")
         self.assertEqual(len(data["targets"]), 2)
@@ -686,6 +687,15 @@ class WhiteLutCalibrationTests(unittest.TestCase):
         )
         self.assertEqual(data["camera"]["exposure_cache"]["ray_final_shutter_speed"], "1/1250")
         self.assertEqual(data["camera"]["exposure_cache"]["strip_final_shutter_speed"], "1/160")
+        self.assertEqual(data["measurement"]["decoded_npy_retention"], "delete_after_measurement")
+        self.assertTrue(all(target["ray"]["removed_npy_files"] for target in data["targets"]))
+        self.assertTrue(
+            all(
+                sample["removed_npy_files"]
+                for target in data["targets"]
+                for sample in target["feedback_optimizer"]["samples"]
+            )
+        )
 
     def test_feedback_optimizer_converges_with_synthetic_camera_observations(self):
         current_command = {"cw": 0, "ww": 0, "r": 0, "g": 0, "b": 0}
@@ -801,6 +811,7 @@ class WhiteLutCalibrationTests(unittest.TestCase):
                 decoder_fn=fake_decoder,
                 white_point_estimator_fn=fake_white_point,
             )
+            self.assertEqual(list((root / "decoded").glob("*.npy")), [])
 
         self.assertEqual(result["status"], "goal_reached")
         self.assertTrue(result["best"]["white_point_comparison"]["within_goal"])

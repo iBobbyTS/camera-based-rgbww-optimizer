@@ -362,7 +362,7 @@ that command, estimates its white-patch CCT/Duv, then probes each of the four
 free channels to estimate a local Jacobian. When measured samples bracket the
 target CCT and the interpolated Duv remains within tolerance, the next command
 uses sample-pair secant interpolation. Otherwise it applies a damped, bounded
-Jacobian update and uses Broyden secant updates for up to six feedback rounds.
+Jacobian update and uses Broyden secant updates for up to ten feedback rounds.
 The Jacobian step is solved as a box-constrained regularized least-squares
 problem: current channel headroom, the `0..4095` code range, and the per-round
 maximum step are constraints in the solve itself. Do not solve an unconstrained
@@ -382,11 +382,16 @@ is allowed to start. Ray and strip automatic exposure use independent shutter
 caches initialized from the fixed `1/30` default: later Ray targets start from
 the previous Ray result, while each target's initial strip candidate starts
 from the previous strip result. Probe and feedback captures keep that target's
-resolved strip shutter fixed. The existing final cleanup still turns off both
-the strip and Ray120c on normal exit or exceptions.
+resolved strip shutter fixed. Linear `.npy` decodes are temporary measurement
+inputs: after region statistics, white-point estimation, and exposure checks
+finish, every Ray, initial strip, probe, and feedback `.npy` is deleted. RAW
+captures, decode metadata JSON, and calibration results remain. The existing
+final cleanup still turns off both the strip and Ray120c on normal exit or
+exceptions.
 
 Apply the calibrated white LUT to the strip with bilinear interpolation across
-the neighboring CCT and raw G/M grid points:
+the neighboring CCT and raw G/M grid points. The CCT-axis ratio is calculated
+directly in Kelvin while raw G/M remains linear:
 
 ```bash
 .venv/bin/python -m camera_based_rgbww_optimizer.control.white_lut 4500 75 \

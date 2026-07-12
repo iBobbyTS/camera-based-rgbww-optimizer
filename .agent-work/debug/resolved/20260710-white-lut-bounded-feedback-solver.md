@@ -37,7 +37,12 @@ The optimizer is solving the wrong mathematical problem at channel limits. Bound
 - Focused feedback tests: 8 passed.
 - Full suite: 134 passed.
 
-## Remaining verification
+## Hardware verification
 
-- The predicted commands have not been photographed because this optimization pass explicitly forbids device calls.
-- Keep this issue unresolved until the original three targets are rerun on hardware.
+- `20260711-020035-retry-1800K-gm0`: passed by probe at `-9.9631K`, `+0.0024018 Duv`, score `0.9963`.
+- `20260711-020035-retry-14000K-gm130`: passed after five rounds at `-7.8868K`, `+0.0098856 Duv`, score `0.9886`.
+- `20260711-020035-retry-20000K-gm130`: six rounds improved to `-47.7013K`, `+0.0073840 Duv` but exhausted the old budget.
+- The default feedback budget was increased from six to ten rounds; already-successful targets still stop early.
+- `20260711-020847-retry2-20000K-gm130`: passed after seven rounds at `-0.0386K`, `+0.0075307 Duv`, score `0.7531`.
+- Every retry directory retained zero `.npy` files after measurement.
+- ESPHome and Ray120c shutdown were independently verified after the retries.

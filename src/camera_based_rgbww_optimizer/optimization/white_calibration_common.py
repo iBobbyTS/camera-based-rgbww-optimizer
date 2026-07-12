@@ -514,6 +514,19 @@ def find_npy_output(capture: camera_gphoto2.CaptureResult) -> Path:
     return measure_channel_response.find_npy_output(capture)
 
 
+def remove_capture_npy_outputs(capture: camera_gphoto2.CaptureResult) -> tuple[Path, ...]:
+    if capture.decoded is None:
+        return ()
+    removed: list[Path] = []
+    for output_file in capture.decoded.output_files:
+        path = Path(output_file)
+        if path.suffix.lower() != ".npy":
+            continue
+        path.unlink(missing_ok=True)
+        removed.append(path)
+    return tuple(removed)
+
+
 def load_npy(path: Path) -> Any:
     np = import_numpy()
     return np.load(path)

@@ -571,24 +571,29 @@ def run_feedback_optimization(
                 decode_formats=decode_formats,
                 metering_regions=metering_regions,
             )
-        rgbww_seconds, rgbww_vector, rgbww_regions = common.measure_capture_regions(rgbww_capture, regions)
-        measured_comparison = common.compare_vectors(
-            common.weighted_vector(rgbww_vector, regions),
-            common.weighted_vector(target_vector, regions),
-        )
-        white_point = white_point_estimator_fn(rgbww_capture, regions)
-        white_point_comparison = white_point_metrics(
-            white_point,
-            target_white_point,
-            cct_tolerance_K=feedback_cct_tolerance_K,
-            duv_tolerance=feedback_duv_tolerance,
-        )
-        exposure_warning = common.exposure_warning(
-            rgbww_capture,
-            target_max=target_max,
-            low_signal_ratio=low_signal_ratio,
-            high_signal_ratio=high_signal_ratio,
-        )
+        try:
+            capture_json = rgbww_capture.to_jsonable()
+            auto_exposure_json = auto_exposure.to_jsonable() if auto_exposure is not None else None
+            rgbww_seconds, rgbww_vector, rgbww_regions = common.measure_capture_regions(rgbww_capture, regions)
+            measured_comparison = common.compare_vectors(
+                common.weighted_vector(rgbww_vector, regions),
+                common.weighted_vector(target_vector, regions),
+            )
+            white_point = white_point_estimator_fn(rgbww_capture, regions)
+            white_point_comparison = white_point_metrics(
+                white_point,
+                target_white_point,
+                cct_tolerance_K=feedback_cct_tolerance_K,
+                duv_tolerance=feedback_duv_tolerance,
+            )
+            exposure_warning = common.exposure_warning(
+                rgbww_capture,
+                target_max=target_max,
+                low_signal_ratio=low_signal_ratio,
+                high_signal_ratio=high_signal_ratio,
+            )
+        finally:
+            removed_npy_files = common.remove_capture_npy_outputs(rgbww_capture)
         sample = {
             "index": sample_index,
             "phase": phase,
@@ -596,8 +601,9 @@ def run_feedback_optimization(
             "command": bounded_command,
             "max_channel_value": max(bounded_command.values()),
             "payload": payload,
-            "capture": rgbww_capture.to_jsonable(),
-            "auto_exposure": auto_exposure.to_jsonable() if auto_exposure is not None else None,
+            "capture": capture_json,
+            "auto_exposure": auto_exposure_json,
+            "removed_npy_files": [str(path) for path in removed_npy_files],
             "shutter_seconds": rgbww_seconds,
             "vector_norm": common.vector_norm(rgbww_vector),
             "comparison_to_ray_weighted": measured_comparison,

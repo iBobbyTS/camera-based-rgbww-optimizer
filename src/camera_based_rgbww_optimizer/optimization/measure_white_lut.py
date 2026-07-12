@@ -34,7 +34,7 @@ DEFAULT_REFINEMENT_STEPS = (0.125, 0.0625, 0.03125, 0.015625)
 DEFAULT_LOW_SIGNAL_RATIO = 0.1
 DEFAULT_HIGH_SIGNAL_RATIO = 1.0
 DEFAULT_RAY_INTENSITY_PERCENT = 100.0
-DEFAULT_FEEDBACK_ROUNDS = 6
+DEFAULT_FEEDBACK_ROUNDS = 10
 DEFAULT_FEEDBACK_PROBE_STEP = 256
 DEFAULT_FEEDBACK_MAX_STEP = 768
 DEFAULT_FEEDBACK_DAMPING = 0.05
@@ -314,6 +314,7 @@ def run_white_lut_calibration(
                 "cct_tolerance_K": float(feedback_cct_tolerance_K),
                 "duv_tolerance": float(feedback_duv_tolerance),
             },
+            "decoded_npy_retention": "delete_after_measurement",
             "channel_response": str(channel_response),
             "channel_response_kind": basis["kind"],
             "channel_response_sources": basis["source_measurements"],
@@ -395,13 +396,17 @@ def run_white_lut_calibration(
             ray_shutter_speed = ray_capture.final_capture.settings.shutter_speed
             result["camera"]["exposure_cache"]["ray_final_shutter_speed"] = ray_shutter_speed
             print(f"  ray exposure: start={ray_initial_shutter_speed} final={ray_shutter_speed}")
-            ray_off_response = ray_set_cct_fn(
-                target["cct"],
-                intensity=0,
-                gm=target["gm"],
-            )
-            ray_seconds, target_vector, ray_regions = common.measure_auto_exposure_regions(ray_capture, regions)
-            target_white_point = white_point_estimator_fn(ray_capture.final_capture, regions)
+            try:
+                ray_auto_exposure_json = ray_capture.to_jsonable()
+                ray_off_response = ray_set_cct_fn(
+                    target["cct"],
+                    intensity=0,
+                    gm=target["gm"],
+                )
+                ray_seconds, target_vector, ray_regions = common.measure_auto_exposure_regions(ray_capture, regions)
+                target_white_point = white_point_estimator_fn(ray_capture.final_capture, regions)
+            finally:
+                removed_ray_npy_files = common.remove_capture_npy_outputs(ray_capture.final_capture)
             range_class = common.classify_target_range(
                 target["cct"],
                 cw_match=endpoint_matches["cw"],
@@ -437,7 +442,8 @@ def run_white_lut_calibration(
                     "set_response": ray_response,
                     "off_response": ray_off_response,
                     "initial_shutter_speed": ray_initial_shutter_speed,
-                    "auto_exposure": ray_capture.to_jsonable(),
+                    "auto_exposure": ray_auto_exposure_json,
+                    "removed_npy_files": [str(path) for path in removed_ray_npy_files],
                     "shutter_seconds": ray_seconds,
                     "vector_norm": common.vector_norm(target_vector),
                     "white_point": target_white_point,

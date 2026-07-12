@@ -64,6 +64,7 @@ def interpolate_white_lut(
         "bracket": {
             "cct": [low_cct, high_cct],
             "gm": [low_gm, high_gm],
+            "cct_interpolation": "kelvin",
             "cct_ratio": cct_ratio,
             "gm_ratio": gm_ratio,
         },

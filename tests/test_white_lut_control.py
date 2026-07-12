@@ -34,13 +34,14 @@ class WhiteLutControlTests(unittest.TestCase):
         )
         self.assertFalse(result["clamped"])
 
-    def test_bilinear_interpolation_uses_both_cct_and_gm_axes(self):
+    def test_bilinear_interpolation_uses_kelvin_cct_and_linear_gm_axes(self):
         result = white_lut.interpolate_white_lut(lut_data(), 3000, 100)
 
         self.assertEqual(
             result["command"],
             {"cw": 4095, "ww": 500, "r": 100, "g": 600, "b": 0},
         )
+        self.assertEqual(result["bracket"]["cct_interpolation"], "kelvin")
         self.assertEqual(result["bracket"]["cct_ratio"], 0.5)
         self.assertEqual(result["bracket"]["gm_ratio"], 0.5)
 
