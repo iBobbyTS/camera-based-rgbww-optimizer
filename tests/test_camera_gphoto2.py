@@ -49,6 +49,32 @@ Canon EOS R6 Mark III          usb:001,010
         )
         self.assertEqual(run_mock.call_args_list[3].args[0], ["gphoto2", "--summary"])
 
+    def test_run_gphoto2_retries_after_macos_kernel_driver_detach_failure(self):
+        first_failure = subprocess.CompletedProcess(
+            ["gphoto2", "--summary"],
+            returncode=1,
+            stdout="",
+            stderr="Could not detach kernel driver of camera device.",
+        )
+        pkill_result = subprocess.CompletedProcess(["pkill"], returncode=0, stdout="", stderr="")
+        success = subprocess.CompletedProcess(["gphoto2", "--summary"], returncode=0, stdout="ok\n", stderr="")
+
+        with mock.patch.object(camera_gphoto2.sys, "platform", "darwin"), mock.patch.object(
+            camera_gphoto2.subprocess,
+            "run",
+            side_effect=[first_failure, pkill_result, pkill_result, success],
+        ) as run_mock:
+            output = camera_gphoto2.run_gphoto2(["--summary"])
+
+        self.assertEqual(output.stdout, "ok\n")
+        self.assertEqual(run_mock.call_args_list[0].args[0], ["gphoto2", "--summary"])
+        self.assertEqual(run_mock.call_args_list[1].args[0], ["pkill", "-9", "-f", "/usr/libexec/ptpcamerad"])
+        self.assertEqual(
+            run_mock.call_args_list[2].args[0],
+            ["pkill", "-9", "-f", "/System/Library/Image Capture/Support/icdd"],
+        )
+        self.assertEqual(run_mock.call_args_list[3].args[0], ["gphoto2", "--summary"])
+
     def test_run_gphoto2_can_disable_macos_ptp_recovery(self):
         failure = subprocess.CompletedProcess(
             ["gphoto2", "--summary"],

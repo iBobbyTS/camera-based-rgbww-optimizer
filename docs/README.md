@@ -362,19 +362,55 @@ that command, estimates its white-patch CCT/Duv, then probes each of the four
 free channels to estimate a local Jacobian. When measured samples bracket the
 target CCT and the interpolated Duv remains within tolerance, the next command
 uses sample-pair secant interpolation. Otherwise it applies a damped, bounded
-Jacobian update and uses Broyden secant updates for up to ten feedback rounds.
+Jacobian update and uses Broyden secant updates for up to sixteen feedback rounds.
 The Jacobian step is solved as a box-constrained regularized least-squares
 problem: current channel headroom, the `0..4095` code range, and the per-round
 maximum step are constraints in the solve itself. Do not solve an unconstrained
 step and clip it afterward; clipping can remove compensating boundary terms and
 reverse the predicted CCT direction.
-The default measured stop target is `<10K` absolute CCT error and `<0.01`
-absolute Duv error.
+An initial, probe, or feedback sample inside the goal is not sufficient to
+complete a target. The runner reapplies the exact command and requires two
+additional independent captures to remain inside the goal. A failed
+confirmation is retained as a normal measurement and feedback continues from
+the newly observed state. This prevents an early probe captured under a
+different strip thermal state from becoming the final LUT command. Configure
+the count with `--feedback-confirmations`; the default is `2`. Each confirmation
+holds the selected command for `60` seconds before capture by default so the
+accepted LUT represents continuous-use output rather than a transient channel
+temperature. Configure that interval with
+`--feedback-confirmation-settle-seconds`.
+Each confirmation first sends an all-zero strip command for one second before
+reapplying the candidate, matching how a saved LUT starts from the off state;
+configure that interval with `--feedback-confirmation-off-seconds`.
+If a thermally settled confirmation fails, the runner treats it as the new
+local base, probes the four free channels again, and discards older transient
+samples from subsequent secant prediction while preserving them in the result
+JSON. At most two such thermal Jacobian rebuilds are allowed per start by
+default; configure this with `--feedback-thermal-rebases`.
+The same rebuild is triggered when two consecutive bracketed-CCT secant
+predictions materially understate the measured goal score. This prevents an
+early cold-state sample from repeatedly bracketing later warm-state samples
+after the strip response has moved.
+The default measured stop target is `<0.0005` absolute Duv error. CCT uses a
+dynamic tolerance: at least `25K`, raised at high CCT to the Kelvin equivalent
+of `1 mired` around the camera-observed Ray reference. This matches measured
+end-to-end repeatability without making the numerically unstable high-CCT
+Kelvin estimate control the solve.
 All samples, Jacobians, predicted steps, measured errors, and the selected best
 command are persisted in `white-lut-calibration.json`. Use each target's
 `selected_command` for the final LUT; `solver.command` is only the model's
 initial candidate. Pass
 `--feedback-rounds 0` only for a model-only one-shot diagnostic.
+For a stricter repeat pass over an already measured grid, pass
+`--initial-lut <previous-white-lut-calibration.json>` to seed each target from
+its previous selected command before camera feedback.
+The runner also solves a full-scale white-patch camera-RGB cone model after the
+Ray reference capture. A previous measured command whose strict normalized
+score is at most `4` remains the primary local start; otherwise the white-patch
+model starts first. The unused start is retained as a fallback. If a local
+attempt exhausts its budget, the runner may restart with the endpoint-biased or
+model-selected full-scale channel active so that the previously saturated
+channel becomes adjustable. Attempt numbers are included in capture filenames.
 
 Before every Ray reference capture, the strip is explicitly turned off. After
 the Ray capture finishes, Ray is set to intensity `0` before any RGBWW capture

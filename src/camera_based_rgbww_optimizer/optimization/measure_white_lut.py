@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any, Callable, Sequence
 
 from camera_based_rgbww_optimizer.control import camera_gphoto2, esphome, ray120c
+from camera_based_rgbww_optimizer.control import white_lut as white_lut_control
 from camera_based_rgbww_optimizer.optimization import measure_channel_response
 from camera_based_rgbww_optimizer.optimization import white_calibration_common as common
 from camera_based_rgbww_optimizer.optimization import white_lut_feedback as feedback
@@ -34,12 +35,18 @@ DEFAULT_REFINEMENT_STEPS = (0.125, 0.0625, 0.03125, 0.015625)
 DEFAULT_LOW_SIGNAL_RATIO = 0.1
 DEFAULT_HIGH_SIGNAL_RATIO = 1.0
 DEFAULT_RAY_INTENSITY_PERCENT = 100.0
-DEFAULT_FEEDBACK_ROUNDS = 10
+DEFAULT_FEEDBACK_ROUNDS = 16
 DEFAULT_FEEDBACK_PROBE_STEP = 256
 DEFAULT_FEEDBACK_MAX_STEP = 768
 DEFAULT_FEEDBACK_DAMPING = 0.05
-DEFAULT_FEEDBACK_CCT_TOLERANCE_K = 10.0
-DEFAULT_FEEDBACK_DUV_TOLERANCE = 0.01
+DEFAULT_FEEDBACK_CONFIRMATIONS = 2
+DEFAULT_FEEDBACK_CONFIRMATION_SETTLE_SECONDS = 60.0
+DEFAULT_FEEDBACK_CONFIRMATION_OFF_SECONDS = 1.0
+DEFAULT_FEEDBACK_THERMAL_REBASES = 2
+DEFAULT_FEEDBACK_CCT_TOLERANCE_K = 25.0
+DEFAULT_FEEDBACK_CCT_TOLERANCE_MIRED = 1.0
+DEFAULT_FEEDBACK_DUV_TOLERANCE = 0.0005
+DEFAULT_INITIAL_LUT_LOCAL_SCORE_LIMIT = 4.0
 
 LightFn = Callable[..., dict[str, int]]
 RaySetCctFn = Callable[..., dict[str, Any]]
@@ -47,6 +54,157 @@ AutoExposeFn = Callable[..., camera_gphoto2.AutoExposureResult]
 CaptureFn = Callable[..., camera_gphoto2.CaptureResult]
 DecoderFn = Callable[..., camera_gphoto2.DecodeResult]
 WhitePointEstimatorFn = Callable[[camera_gphoto2.CaptureResult, Sequence[dict[str, Any]]], dict[str, Any]]
+
+
+def seed_solution_from_lut(
+    solution: dict[str, Any],
+    lut_data: dict[str, Any],
+    *,
+    cct: int,
+    gm: int,
+    max_code: int,
+) -> dict[str, Any]:
+    interpolation = white_lut_control.interpolate_white_lut(lut_data, cct, gm)
+    command = {channel: int(interpolation["command"][channel]) for channel in common.DEFAULT_CHANNELS}
+    active_channels = [channel for channel in common.DEFAULT_CHANNELS if command[channel] == int(max_code)]
+    if not active_channels:
+        raise ValueError(f"initial LUT seed {cct}K/gm{gm} has no channel at max_code={max_code}")
+    model_active = str(solution["active_channel"])
+    active_channel = model_active if model_active in active_channels else active_channels[0]
+    prior_target = next(
+        (
+            target
+            for target in lut_data.get("targets", [])
+            if int(target.get("cct", -1)) == int(cct) and int(target.get("gm", -1)) == int(gm)
+        ),
+        None,
+    )
+    prior_comparison = None
+    if isinstance(prior_target, dict):
+        prior_comparison = prior_target.get("feedback_optimizer", {}).get("best", {}).get("white_point_comparison")
+    return {
+        **solution,
+        "model_command": dict(solution["command"]),
+        "model_active_channel": model_active,
+        "command": command,
+        "active_channel": active_channel,
+        "initial_lut_seed": {
+            "requested": interpolation["requested"],
+            "bracket": interpolation["bracket"],
+            "prior_white_point_comparison": prior_comparison,
+        },
+    }
+
+
+def feedback_restart_solutions(solution: dict[str, Any], *, max_code: int) -> list[dict[str, Any]]:
+    candidates = [{
+        "active_channel": str(solution["active_channel"]),
+        "command": dict(solution["command"]),
+        "source": "primary",
+    }]
+    candidates.extend(solution.get("alternative_initial_solutions", []))
+    for channel in (solution.get("endpoint_bias"), solution.get("model_active_channel")):
+        if channel in common.DEFAULT_CHANNELS:
+            command = dict(solution["command"])
+            command[str(channel)] = int(max_code)
+            candidates.append({
+                "active_channel": str(channel),
+                "command": command,
+                "source": "active_channel_restart",
+            })
+
+    attempts = []
+    seen = set()
+    for candidate in candidates:
+        active_channel = str(candidate["active_channel"])
+        command = {channel: int(candidate["command"][channel]) for channel in common.DEFAULT_CHANNELS}
+        command[active_channel] = int(max_code)
+        key = (active_channel, *(command[channel] for channel in common.DEFAULT_CHANNELS))
+        if key in seen:
+            continue
+        seen.add(key)
+        attempt_index = len(attempts)
+        attempts.append({
+            **solution,
+            "command": command,
+            "active_channel": active_channel,
+            "feedback_restart": {
+                "attempt": attempt_index,
+                "active_channel": active_channel,
+                "source": str(candidate.get("source", "unknown")),
+            },
+        })
+    return attempts
+
+
+def feedback_attempt_sort_key(attempt: dict[str, Any]) -> tuple[float, ...]:
+    return (
+        0.0 if attempt["goal_confirmed"] else 1.0,
+        *feedback.sample_sort_key(attempt["best"]),
+    )
+
+
+def solve_white_point_mix(
+    basis_vectors: dict[str, Any],
+    target_white_point: dict[str, Any],
+    *,
+    regions: Sequence[dict[str, Any]],
+    max_code: int,
+    channels: Sequence[str] = common.DEFAULT_CHANNELS,
+) -> dict[str, Any]:
+    np = common.import_numpy()
+    white_region = common.select_white_point_region(regions)
+    white_index = next(index for index, region in enumerate(regions) if region["name"] == white_region["name"])
+    white_slice = slice(white_index * 3, white_index * 3 + 3)
+    matrix = np.column_stack([np.asarray(basis_vectors[channel][white_slice], dtype="float64") for channel in channels])
+    matrix_scale = float(np.max(matrix))
+    if matrix_scale <= 0:
+        raise ValueError("white-point channel basis has no measurable signal")
+    normalized_matrix = matrix / matrix_scale
+    target = np.asarray(target_white_point["camera_neutral_g1"], dtype="float64")[:3]
+    target_norm = float(np.linalg.norm(target))
+    if target_norm <= 0:
+        raise ValueError("target white point has no measurable camera neutral")
+    target_direction = target / target_norm
+
+    candidates = []
+    for active_index, active_channel in enumerate(channels):
+        free_indices = [index for index in range(len(channels)) if index != active_index]
+        coefficients = np.column_stack((normalized_matrix[:, free_indices], -target_direction))
+        desired = -normalized_matrix[:, active_index]
+        solution = feedback._solve_box_constrained_least_squares(
+            coefficients,
+            desired,
+            np.asarray([0.0] * len(free_indices) + [0.0]),
+            np.asarray([1.0] * len(free_indices) + [10.0]),
+        )
+        weights = np.zeros(len(channels), dtype="float64")
+        weights[active_index] = 1.0
+        weights[free_indices] = solution[: len(free_indices)]
+        predicted_rgb = matrix @ weights
+        predicted_direction = predicted_rgb / np.linalg.norm(predicted_rgb)
+        direction_residual = float(np.linalg.norm(predicted_direction - target_direction))
+        if float(predicted_rgb[1]) <= 0:
+            continue
+        predicted_neutral = predicted_rgb / float(predicted_rgb[1])
+        predicted_white_point = common.estimate_white_point_from_camera_neutral(
+            predicted_neutral,
+            target_white_point["rawpy_rgb_xyz_matrix_first3"],
+            np_module=np,
+        )
+        candidates.append({
+            "active_channel": str(active_channel),
+            "weights": {channel: float(weights[index]) for index, channel in enumerate(channels)},
+            "command": {
+                channel: int(round(float(weights[index]) * float(max_code)))
+                for index, channel in enumerate(channels)
+            },
+            "camera_rgb_direction_residual": direction_residual,
+            "predicted_white_point": predicted_white_point,
+        })
+    best = min(candidates, key=lambda candidate: candidate["camera_rgb_direction_residual"])
+    best["command"][best["active_channel"]] = int(max_code)
+    return {"kind": "white_patch_linear_camera_rgb_cone", "best": best, "candidates": candidates}
 
 
 def load_endpoint_calibration(path: Path) -> dict[str, Any]:
@@ -186,6 +344,7 @@ def run_white_lut_calibration(
     block_indices: str | tuple[int, ...],
     auto_exposure_metering_mode: str,
     auto_exposure_metering_location_config: Path | None,
+    initial_lut: Path | None = None,
     output_json: Path | None = None,
     low_signal_ratio: float = DEFAULT_LOW_SIGNAL_RATIO,
     high_signal_ratio: float = DEFAULT_HIGH_SIGNAL_RATIO,
@@ -194,7 +353,12 @@ def run_white_lut_calibration(
     feedback_probe_step: int = DEFAULT_FEEDBACK_PROBE_STEP,
     feedback_max_step: int = DEFAULT_FEEDBACK_MAX_STEP,
     feedback_damping: float = DEFAULT_FEEDBACK_DAMPING,
+    feedback_confirmations: int = DEFAULT_FEEDBACK_CONFIRMATIONS,
+    feedback_confirmation_settle_seconds: float = DEFAULT_FEEDBACK_CONFIRMATION_SETTLE_SECONDS,
+    feedback_confirmation_off_seconds: float = DEFAULT_FEEDBACK_CONFIRMATION_OFF_SECONDS,
+    feedback_thermal_rebases: int = DEFAULT_FEEDBACK_THERMAL_REBASES,
     feedback_cct_tolerance_K: float = DEFAULT_FEEDBACK_CCT_TOLERANCE_K,
+    feedback_cct_tolerance_mired: float = DEFAULT_FEEDBACK_CCT_TOLERANCE_MIRED,
     feedback_duv_tolerance: float = DEFAULT_FEEDBACK_DUV_TOLERANCE,
     light_fn: LightFn = esphome.light,
     ray_set_cct_fn: RaySetCctFn = ray120c.set_cct,
@@ -218,8 +382,18 @@ def run_white_lut_calibration(
         raise ValueError("feedback_max_step must be positive")
     if feedback_damping <= 0:
         raise ValueError("feedback_damping must be positive")
+    if feedback_confirmations < 1:
+        raise ValueError("feedback_confirmations must be at least 1")
+    if feedback_confirmation_settle_seconds < 0:
+        raise ValueError("feedback_confirmation_settle_seconds must be non-negative")
+    if feedback_confirmation_off_seconds < 0:
+        raise ValueError("feedback_confirmation_off_seconds must be non-negative")
+    if feedback_thermal_rebases < 0:
+        raise ValueError("feedback_thermal_rebases must be non-negative")
     if feedback_cct_tolerance_K <= 0:
         raise ValueError("feedback_cct_tolerance_K must be positive")
+    if feedback_cct_tolerance_mired <= 0:
+        raise ValueError("feedback_cct_tolerance_mired must be positive")
     if feedback_duv_tolerance <= 0:
         raise ValueError("feedback_duv_tolerance must be positive")
     if not target_ccts:
@@ -233,6 +407,7 @@ def run_white_lut_calibration(
         if not ray120c.GM_MIN <= int(gm) <= ray120c.GM_MAX:
             raise ValueError(f"target G/M must be in [{ray120c.GM_MIN}, {ray120c.GM_MAX}]: {gm}")
     endpoint_data = load_endpoint_calibration(endpoint_calibration)
+    initial_lut_data = white_lut_control.load_white_lut(initial_lut) if initial_lut is not None else None
     endpoint_matches = endpoint_data["ray_endpoint_matches"]
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     run_dir = output_root / (run_name or timestamp)
@@ -311,11 +486,18 @@ def run_white_lut_calibration(
                 "probe_step_code": int(feedback_probe_step),
                 "max_step_code": int(feedback_max_step),
                 "damping": float(feedback_damping),
+                "confirmations": int(feedback_confirmations),
+                "confirmation_settle_seconds": float(feedback_confirmation_settle_seconds),
+                "confirmation_off_seconds": float(feedback_confirmation_off_seconds),
+                "thermal_rebases": int(feedback_thermal_rebases),
                 "cct_tolerance_K": float(feedback_cct_tolerance_K),
+                "cct_tolerance_K_semantics": "minimum; raised at high CCT to the requested mired equivalent",
+                "cct_tolerance_mired": float(feedback_cct_tolerance_mired),
                 "duv_tolerance": float(feedback_duv_tolerance),
             },
             "decoded_npy_retention": "delete_after_measurement",
             "channel_response": str(channel_response),
+            "initial_lut": str(initial_lut) if initial_lut is not None else None,
             "channel_response_kind": basis["kind"],
             "channel_response_sources": basis["source_measurements"],
             "notes": [
@@ -407,6 +589,11 @@ def run_white_lut_calibration(
                 target_white_point = white_point_estimator_fn(ray_capture.final_capture, regions)
             finally:
                 removed_ray_npy_files = common.remove_capture_npy_outputs(ray_capture.final_capture)
+            resolved_cct_tolerance_K = feedback.resolve_cct_tolerance_K(
+                float(target_white_point["cct_K"]),
+                minimum_tolerance_K=feedback_cct_tolerance_K,
+                tolerance_mired=feedback_cct_tolerance_mired,
+            )
             range_class = common.classify_target_range(
                 target["cct"],
                 cw_match=endpoint_matches["cw"],
@@ -428,6 +615,68 @@ def run_white_lut_calibration(
                 endpoint_bias=endpoint_bias,
                 max_code=max_code,
             )
+            if initial_lut_data is not None:
+                solution = seed_solution_from_lut(
+                    solution,
+                    initial_lut_data,
+                    cct=int(target["cct"]),
+                    gm=int(target["gm"]),
+                    max_code=max_code,
+                )
+            if "camera_neutral_g1" in target_white_point and "rawpy_rgb_xyz_matrix_first3" in target_white_point:
+                white_point_solution = solve_white_point_mix(
+                    basis["vectors"],
+                    target_white_point,
+                    regions=regions,
+                    max_code=max_code,
+                )
+                prior_command = dict(solution["command"])
+                prior_active_channel = str(solution["active_channel"])
+                prior_comparison = solution.get("initial_lut_seed", {}).get("prior_white_point_comparison")
+                prior_score = float("inf")
+                if isinstance(prior_comparison, dict):
+                    prior_score = max(
+                        abs(float(prior_comparison["cct_error_K"])) / float(resolved_cct_tolerance_K),
+                        abs(float(prior_comparison["duv_error"])) / float(feedback_duv_tolerance),
+                    )
+                predicted = white_point_solution["best"]["predicted_white_point"]
+                model_score = feedback.white_point_metrics(
+                    predicted,
+                    target_white_point,
+                    cct_tolerance_K=resolved_cct_tolerance_K,
+                    duv_tolerance=feedback_duv_tolerance,
+                )["goal_score"]
+                model_initial = {
+                    "active_channel": str(white_point_solution["best"]["active_channel"]),
+                    "command": dict(white_point_solution["best"]["command"]),
+                    "source": "white_point_model",
+                }
+                prior_initial = {
+                    "active_channel": prior_active_channel,
+                    "command": prior_command,
+                    "source": "initial_lut",
+                }
+                use_prior_local_start = prior_score <= DEFAULT_INITIAL_LUT_LOCAL_SCORE_LIMIT
+                primary, alternative = (
+                    (prior_initial, model_initial)
+                    if use_prior_local_start
+                    else (model_initial, prior_initial)
+                )
+                solution = {
+                    **solution,
+                    "pre_white_point_command": prior_command,
+                    "pre_white_point_active_channel": prior_active_channel,
+                    "command": dict(primary["command"]),
+                    "active_channel": str(primary["active_channel"]),
+                    "initial_solution_scores": {
+                        "initial_lut": prior_score,
+                        "white_point_model": float(model_score),
+                        "initial_lut_local_score_limit": DEFAULT_INITIAL_LUT_LOCAL_SCORE_LIMIT,
+                        "selected": str(primary["source"]),
+                    },
+                    "alternative_initial_solutions": [alternative],
+                    "white_point_solution": white_point_solution,
+                }
             command = solution["command"]
             print(
                 f"  {range_class['mode']} rgb_penalty="
@@ -454,6 +703,12 @@ def run_white_lut_calibration(
                     "max_channel_value": max(command.values()),
                 },
                 "feedback_optimizer": {"status": "pending", "samples": []},
+                "feedback_goal": {
+                    "minimum_cct_tolerance_K": float(feedback_cct_tolerance_K),
+                    "cct_tolerance_mired": float(feedback_cct_tolerance_mired),
+                    "resolved_cct_tolerance_K": float(resolved_cct_tolerance_K),
+                    "duv_tolerance": float(feedback_duv_tolerance),
+                },
             }
             result["targets"].append(target_result)
             common.write_json(output_json, result)
@@ -462,44 +717,59 @@ def run_white_lut_calibration(
                 target_result["feedback_optimizer"] = progress
                 common.write_json(output_json, result)
 
-            feedback_result = feedback.run_feedback_optimization(
-                target=target,
-                target_vector=target_vector,
-                target_white_point=target_white_point,
-                initial_solution=solution,
-                rgb_penalty=rgb_penalty,
-                channel_penalties=channel_penalties,
-                regions=regions,
-                camera_dir=camera_dir,
-                decode_dir=decode_dir,
-                scratch_dir=scratch_dir,
-                initial_shutter_speed=strip_shutter_speed,
-                iso=iso,
-                aperture=aperture,
-                image_format=image_format,
-                min_shutter_speed=min_shutter_speed,
-                max_shutter_speed=max_shutter_speed,
-                max_trials=max_trials,
-                max_captures=max_captures,
-                decode_formats=decode_formats,
-                metering_regions=metering_regions,
-                settle_seconds=settle_seconds,
-                target_max=target_max,
-                low_signal_ratio=low_signal_ratio,
-                high_signal_ratio=high_signal_ratio,
-                max_code=max_code,
-                feedback_rounds=feedback_rounds,
-                feedback_probe_step=feedback_probe_step,
-                feedback_max_step=feedback_max_step,
-                feedback_damping=feedback_damping,
-                feedback_cct_tolerance_K=feedback_cct_tolerance_K,
-                feedback_duv_tolerance=feedback_duv_tolerance,
-                light_fn=light_fn,
-                auto_expose_fn=auto_expose_fn,
-                capture_fn=capture_fn,
-                decoder_fn=decoder_fn,
-                white_point_estimator_fn=white_point_estimator_fn,
-                progress_fn=persist_feedback,
+            feedback_attempts = []
+            for attempt_solution in feedback_restart_solutions(solution, max_code=max_code):
+                feedback_result = feedback.run_feedback_optimization(
+                    target=target,
+                    target_vector=target_vector,
+                    target_white_point=target_white_point,
+                    initial_solution=attempt_solution,
+                    rgb_penalty=rgb_penalty,
+                    channel_penalties=channel_penalties,
+                    regions=regions,
+                    camera_dir=camera_dir,
+                    decode_dir=decode_dir,
+                    scratch_dir=scratch_dir,
+                    initial_shutter_speed=strip_shutter_speed,
+                    iso=iso,
+                    aperture=aperture,
+                    image_format=image_format,
+                    min_shutter_speed=min_shutter_speed,
+                    max_shutter_speed=max_shutter_speed,
+                    max_trials=max_trials,
+                    max_captures=max_captures,
+                    decode_formats=decode_formats,
+                    metering_regions=metering_regions,
+                    settle_seconds=settle_seconds,
+                    target_max=target_max,
+                    low_signal_ratio=low_signal_ratio,
+                    high_signal_ratio=high_signal_ratio,
+                    max_code=max_code,
+                    feedback_rounds=feedback_rounds,
+                    feedback_probe_step=feedback_probe_step,
+                    feedback_max_step=feedback_max_step,
+                    feedback_damping=feedback_damping,
+                    feedback_confirmations=feedback_confirmations,
+                    feedback_confirmation_settle_seconds=feedback_confirmation_settle_seconds,
+                    feedback_confirmation_off_seconds=feedback_confirmation_off_seconds,
+                    feedback_thermal_rebases=feedback_thermal_rebases,
+                    feedback_cct_tolerance_K=resolved_cct_tolerance_K,
+                    feedback_duv_tolerance=feedback_duv_tolerance,
+                    light_fn=light_fn,
+                    auto_expose_fn=auto_expose_fn,
+                    capture_fn=capture_fn,
+                    decoder_fn=decoder_fn,
+                    white_point_estimator_fn=white_point_estimator_fn,
+                    progress_fn=persist_feedback,
+                )
+                feedback_result["restart"] = attempt_solution["feedback_restart"]
+                feedback_attempts.append(feedback_result)
+                strip_shutter_speed = str(feedback_result["final_shutter_speed"])
+                if feedback_result["goal_confirmed"]:
+                    break
+            feedback_result = min(
+                feedback_attempts,
+                key=feedback_attempt_sort_key,
             )
             strip_shutter_speed = str(feedback_result["final_shutter_speed"])
             result["camera"]["exposure_cache"]["strip_final_shutter_speed"] = strip_shutter_speed
@@ -507,9 +777,11 @@ def run_white_lut_calibration(
                 f"  strip exposure: start={feedback_result['initial_shutter_speed']} "
                 f"final={strip_shutter_speed}"
             )
-            within_goal = bool(feedback_result["best"]["white_point_comparison"]["within_goal"])
+            within_goal = bool(feedback_result["goal_confirmed"])
             target_result["status"] = "complete" if within_goal else "unmet_goal"
             target_result["feedback_optimizer"] = feedback_result
+            if len(feedback_attempts) > 1:
+                target_result["feedback_attempts"] = feedback_attempts
             target_result["selected_command"] = feedback_result["best"]["command"]
             target_result["rgbww"] = feedback_result["best"]
             common.write_json(output_json, result)
@@ -555,6 +827,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--target-gm-values", "--gm-values", type=common.parse_int_values, default=DEFAULT_TARGET_GM_VALUES)
     parser.add_argument("--location-config", type=Path, default=DEFAULT_LOCATION_CONFIG)
     parser.add_argument("--channel-response", type=Path, default=DEFAULT_CHANNEL_RESPONSE)
+    parser.add_argument("--initial-lut", type=Path)
     parser.add_argument("--block-indices", type=measure_channel_response.parse_block_indices, default="all")
     parser.add_argument("--neutral-roles", type=common.parse_roles, default=common.DEFAULT_NEUTRAL_ROLES)
     parser.add_argument("--color-weight", type=float, default=common.DEFAULT_COLOR_WEIGHT)
@@ -608,12 +881,29 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--feedback-probe-step", type=int, default=DEFAULT_FEEDBACK_PROBE_STEP)
     parser.add_argument("--feedback-max-step", type=int, default=DEFAULT_FEEDBACK_MAX_STEP)
     parser.add_argument("--feedback-damping", type=float, default=DEFAULT_FEEDBACK_DAMPING)
+    parser.add_argument("--feedback-confirmations", type=int, default=DEFAULT_FEEDBACK_CONFIRMATIONS)
+    parser.add_argument(
+        "--feedback-confirmation-settle-seconds",
+        type=float,
+        default=DEFAULT_FEEDBACK_CONFIRMATION_SETTLE_SECONDS,
+    )
+    parser.add_argument(
+        "--feedback-confirmation-off-seconds",
+        type=float,
+        default=DEFAULT_FEEDBACK_CONFIRMATION_OFF_SECONDS,
+    )
+    parser.add_argument("--feedback-thermal-rebases", type=int, default=DEFAULT_FEEDBACK_THERMAL_REBASES)
     parser.add_argument(
         "--feedback-cct-tolerance-k",
         "--feedback-cct-tolerance-K",
         dest="feedback_cct_tolerance_K",
         type=float,
         default=DEFAULT_FEEDBACK_CCT_TOLERANCE_K,
+    )
+    parser.add_argument(
+        "--feedback-cct-tolerance-mired",
+        type=float,
+        default=DEFAULT_FEEDBACK_CCT_TOLERANCE_MIRED,
     )
     parser.add_argument("--feedback-duv-tolerance", type=float, default=DEFAULT_FEEDBACK_DUV_TOLERANCE)
     parser.add_argument("--leave-ray-on", action="store_true")
@@ -654,6 +944,7 @@ def main(argv: list[str] | None = None) -> int:
         block_indices=args.block_indices,
         auto_exposure_metering_mode=args.auto_exposure_metering_mode,
         auto_exposure_metering_location_config=args.auto_exposure_metering_location_config,
+        initial_lut=args.initial_lut,
         output_json=args.output_json,
         low_signal_ratio=args.low_signal_ratio,
         high_signal_ratio=args.high_signal_ratio,
@@ -661,7 +952,12 @@ def main(argv: list[str] | None = None) -> int:
         feedback_probe_step=args.feedback_probe_step,
         feedback_max_step=args.feedback_max_step,
         feedback_damping=args.feedback_damping,
+        feedback_confirmations=args.feedback_confirmations,
+        feedback_confirmation_settle_seconds=args.feedback_confirmation_settle_seconds,
+        feedback_confirmation_off_seconds=args.feedback_confirmation_off_seconds,
+        feedback_thermal_rebases=args.feedback_thermal_rebases,
         feedback_cct_tolerance_K=args.feedback_cct_tolerance_K,
+        feedback_cct_tolerance_mired=args.feedback_cct_tolerance_mired,
         feedback_duv_tolerance=args.feedback_duv_tolerance,
         leave_ray_on=args.leave_ray_on,
     )

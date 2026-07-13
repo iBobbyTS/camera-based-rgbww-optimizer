@@ -453,12 +453,128 @@ class WhiteEndpointDefaultTests(unittest.TestCase):
 
 
 class WhiteLutCalibrationTests(unittest.TestCase):
+    def test_initial_lut_seed_replaces_model_command_and_preserves_full_scale_channel(self):
+        solution = {
+            "command": {"cw": 4095, "ww": 1000, "r": 0, "g": 0, "b": 0},
+            "active_channel": "cw",
+            "score": 1.0,
+        }
+        seeded = measure_white_lut.seed_solution_from_lut(
+            solution,
+            {
+                "targets": [
+                    {
+                        "cct": 3200,
+                        "gm": 100,
+                        "selected_command": {"cw": 1000, "ww": 4095, "r": 10, "g": 20, "b": 30},
+                    }
+                ]
+            },
+            cct=3200,
+            gm=100,
+            max_code=4095,
+        )
+
+        self.assertEqual(seeded["command"], {"cw": 1000, "ww": 4095, "r": 10, "g": 20, "b": 30})
+        self.assertEqual(seeded["active_channel"], "ww")
+        self.assertEqual(seeded["model_command"], solution["command"])
+        self.assertIsNone(seeded["initial_lut_seed"]["prior_white_point_comparison"])
+
+    def test_feedback_restarts_try_endpoint_bias_with_original_active_channel_free(self):
+        solution = {
+            "command": {"cw": 256, "ww": 3711, "r": 4095, "g": 0, "b": 0},
+            "active_channel": "r",
+            "model_active_channel": "r",
+            "endpoint_bias": "ww",
+        }
+
+        attempts = measure_white_lut.feedback_restart_solutions(solution, max_code=4095)
+
+        self.assertEqual([attempt["active_channel"] for attempt in attempts], ["r", "ww"])
+        self.assertEqual(attempts[1]["command"]["ww"], 4095)
+        self.assertEqual(attempts[1]["command"]["r"], 4095)
+
+    def test_feedback_restarts_keep_alternative_command_with_same_active_channel(self):
+        solution = {
+            "command": {"cw": 0, "ww": 0, "r": 4095, "g": 1100, "b": 0},
+            "active_channel": "r",
+            "alternative_initial_solutions": [
+                {
+                    "command": {"cw": 256, "ww": 3711, "r": 4095, "g": 0, "b": 0},
+                    "active_channel": "r",
+                    "source": "initial_lut",
+                }
+            ],
+        }
+
+        attempts = measure_white_lut.feedback_restart_solutions(solution, max_code=4095)
+
+        self.assertEqual(len(attempts), 2)
+        self.assertEqual(attempts[0]["feedback_restart"]["source"], "primary")
+        self.assertEqual(attempts[1]["feedback_restart"]["source"], "initial_lut")
+        self.assertNotEqual(attempts[0]["command"], attempts[1]["command"])
+
+    def test_feedback_attempt_sort_prefers_confirmed_result(self):
+        def attempt(*, confirmed, score):
+            return {
+                "goal_confirmed": confirmed,
+                "best": {
+                    "white_point_comparison": {
+                        "goal_score": score,
+                        "absolute_cct_error_K": score,
+                    },
+                    "comparison_to_ray_weighted": {"relative_rmse": score},
+                },
+            }
+
+        unconfirmed = attempt(confirmed=False, score=0.01)
+        confirmed = attempt(confirmed=True, score=0.9)
+
+        self.assertIs(
+            min([unconfirmed, confirmed], key=measure_white_lut.feedback_attempt_sort_key),
+            confirmed,
+        )
+
+    def test_white_point_mix_finds_full_scale_linear_camera_rgb_solution(self):
+        regions = [
+            {"name": "block_01", "patch": {"name": "white", "roles": ["neutral", "white"]}},
+        ]
+        basis = {
+            "cw": np.asarray([0.3, 0.6, 1.0]),
+            "ww": np.asarray([1.0, 0.7, 0.2]),
+            "r": np.asarray([1.0, 0.0, 0.0]),
+            "g": np.asarray([0.0, 1.0, 0.0]),
+            "b": np.asarray([0.0, 0.0, 1.0]),
+        }
+        target = {
+            "camera_neutral_g1": [1.0, 1.0, 0.0],
+            "rawpy_rgb_xyz_matrix_first3": np.eye(3).tolist(),
+        }
+
+        result = measure_white_lut.solve_white_point_mix(
+            basis,
+            target,
+            regions=regions,
+            max_code=4095,
+        )
+
+        self.assertEqual(max(result["best"]["command"].values()), 4095)
+        self.assertLess(result["best"]["camera_rgb_direction_residual"], 1e-10)
+
     def test_lut_default_target_grid_uses_four_cct_points_and_three_gm_points(self):
         args = measure_white_lut.parse_args(["--dry-run"])
 
         self.assertEqual(args.target_ccts, (1800, 3200, 5600, 20000))
         self.assertEqual(args.target_gm_values, (0, 100, 200))
-        self.assertEqual(args.feedback_rounds, 10)
+        self.assertEqual(args.feedback_rounds, 16)
+        self.assertEqual(args.feedback_confirmations, 2)
+        self.assertEqual(args.feedback_confirmation_settle_seconds, 60.0)
+        self.assertEqual(args.feedback_confirmation_off_seconds, 1.0)
+        self.assertEqual(args.feedback_thermal_rebases, 2)
+        self.assertEqual(args.feedback_cct_tolerance_K, 25.0)
+        self.assertEqual(args.feedback_cct_tolerance_mired, 1.0)
+        self.assertEqual(args.feedback_duv_tolerance, 0.0005)
+        self.assertEqual(measure_white_lut.DEFAULT_INITIAL_LUT_LOCAL_SCORE_LIMIT, 4.0)
 
     def test_lut_dry_run_requires_and_records_endpoint_calibration(self):
         with project_temp_dir() as tmpdir:
@@ -640,6 +756,8 @@ class WhiteLutCalibrationTests(unittest.TestCase):
                 block_indices="all",
                 auto_exposure_metering_mode=camera_gphoto2.METERING_MODE_FULL,
                 auto_exposure_metering_location_config=None,
+                feedback_confirmation_settle_seconds=0.0,
+                feedback_confirmation_off_seconds=0.0,
                 light_fn=fake_light,
                 ray_set_cct_fn=fake_ray_set_cct,
                 auto_expose_fn=fake_auto_expose,
@@ -803,6 +921,8 @@ class WhiteLutCalibrationTests(unittest.TestCase):
                 feedback_probe_step=256,
                 feedback_max_step=768,
                 feedback_damping=0.05,
+                feedback_confirmation_settle_seconds=0.0,
+                feedback_confirmation_off_seconds=0.0,
                 feedback_cct_tolerance_K=10.0,
                 feedback_duv_tolerance=0.01,
                 light_fn=fake_light,
@@ -813,7 +933,10 @@ class WhiteLutCalibrationTests(unittest.TestCase):
             )
             self.assertEqual(list((root / "decoded").glob("*.npy")), [])
 
-        self.assertEqual(result["status"], "goal_reached")
+        self.assertEqual(result["status"], "goal_confirmed")
+        self.assertTrue(result["goal_confirmed"])
+        self.assertTrue(result["confirmation_attempts"])
+        self.assertEqual(result["confirmation_attempts"][-1]["status"], "confirmed")
         self.assertTrue(result["best"]["white_point_comparison"]["within_goal"])
         self.assertLess(result["best"]["white_point_comparison"]["goal_score"], 1.0)
         self.assertEqual(max(result["selected_command"].values()), 4095)
@@ -823,7 +946,12 @@ class WhiteLutCalibrationTests(unittest.TestCase):
         self.assertEqual(auto_exposure_calls, ["1/30"])
         self.assertTrue(any(sample["phase"].startswith("probe-") for sample in result["samples"]))
         self.assertTrue(any(sample["phase"].startswith("feedback-") for sample in result["samples"]))
-        self.assertTrue(all(max(call.values()) == 4095 for call in light_calls))
+        self.assertEqual(
+            len([sample for sample in result["samples"] if sample["phase"].startswith("confirm-")]),
+            2,
+        )
+        self.assertEqual(result["attempt"], 0)
+        self.assertTrue(all(max(call.values()) == 4095 or max(call.values()) == 0 for call in light_calls))
 
 
 if __name__ == "__main__":

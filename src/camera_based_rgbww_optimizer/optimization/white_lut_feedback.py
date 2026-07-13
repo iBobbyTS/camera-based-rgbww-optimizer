@@ -13,12 +13,31 @@ from camera_based_rgbww_optimizer.optimization import white_calibration_common a
 
 
 DEFAULT_CHANNELS = ("cw", "ww", "r", "g", "b")
+SECANT_MISSES_BEFORE_THERMAL_REBASE = 2
+SECANT_MISS_SCORE_RATIO = 2.0
+SECANT_MISS_SCORE_SLACK = 0.5
 
 LightFn = Callable[..., dict[str, int]]
 AutoExposeFn = Callable[..., camera_gphoto2.AutoExposureResult]
 CaptureFn = Callable[..., camera_gphoto2.CaptureResult]
 DecoderFn = Callable[..., camera_gphoto2.DecodeResult]
 WhitePointEstimatorFn = Callable[[camera_gphoto2.CaptureResult, Sequence[dict[str, Any]]], dict[str, Any]]
+
+
+def resolve_cct_tolerance_K(
+    target_cct_K: float,
+    *,
+    minimum_tolerance_K: float,
+    tolerance_mired: float,
+) -> float:
+    if target_cct_K <= 0:
+        raise ValueError("target_cct_K must be positive")
+    if minimum_tolerance_K <= 0:
+        raise ValueError("minimum_tolerance_K must be positive")
+    if tolerance_mired <= 0:
+        raise ValueError("tolerance_mired must be positive")
+    mired_equivalent_K = float(target_cct_K) ** 2 * float(tolerance_mired) / 1_000_000.0
+    return max(float(minimum_tolerance_K), mired_equivalent_K)
 
 
 def white_point_metrics(
@@ -439,6 +458,22 @@ def build_bracketed_cct_step(
     return min(candidates, key=lambda item: (item[0], item[1]))[2]
 
 
+def bracketed_cct_prediction_missed(
+    step: Mapping[str, Any],
+    sample: Mapping[str, Any],
+) -> bool:
+    """Return whether a secant prediction was materially invalidated by measurement."""
+    if step.get("kind") != "bracketed_cct_secant":
+        return False
+    predicted_score = float(step["predicted_goal_score"])
+    actual_score = float(sample["white_point_comparison"]["goal_score"])
+    return (
+        actual_score >= 1.0
+        and actual_score > predicted_score * SECANT_MISS_SCORE_RATIO
+        and actual_score - predicted_score > SECANT_MISS_SCORE_SLACK
+    )
+
+
 def run_feedback_optimization(
     *,
     target: dict[str, int],
@@ -477,20 +512,38 @@ def run_feedback_optimization(
     capture_fn: CaptureFn,
     decoder_fn: DecoderFn,
     white_point_estimator_fn: WhitePointEstimatorFn,
+    feedback_confirmations: int = 2,
+    feedback_confirmation_settle_seconds: float = 60.0,
+    feedback_confirmation_off_seconds: float = 1.0,
+    feedback_thermal_rebases: int = 2,
     progress_fn: Callable[[dict[str, Any]], None] | None = None,
 ) -> dict[str, Any]:
+    if feedback_confirmations < 1:
+        raise ValueError("feedback_confirmations must be at least 1")
+    if feedback_confirmation_settle_seconds < 0:
+        raise ValueError("feedback_confirmation_settle_seconds must be non-negative")
+    if feedback_confirmation_off_seconds < 0:
+        raise ValueError("feedback_confirmation_off_seconds must be non-negative")
+    if feedback_thermal_rebases < 0:
+        raise ValueError("feedback_thermal_rebases must be non-negative")
     samples: list[dict[str, Any]] = []
+    confirmation_attempts: list[dict[str, Any]] = []
+    thermal_rebases: list[dict[str, Any]] = []
+    confirmed_best: dict[str, Any] | None = None
     active_channel = str(initial_solution["active_channel"])
     initial_command = {channel: int(initial_solution["command"][channel]) for channel in common.DEFAULT_CHANNELS}
     resolved_channel_penalties = resolve_channel_penalties(
         rgb_penalty=rgb_penalty,
         channel_penalties=channel_penalties,
     )
+    restart = initial_solution.get("feedback_restart", {})
+    attempt_index = int(restart.get("attempt", 0))
     current_max_step = int(feedback_max_step)
     current_shutter_speed = str(initial_shutter_speed)
     jacobian = None
     initial_jacobian = None
     rounds_completed = 0
+    consecutive_secant_prediction_misses = 0
     stop_reason = "feedback_disabled" if feedback_rounds == 0 else "round_limit"
 
     def progress(status: str) -> None:
@@ -503,6 +556,9 @@ def run_feedback_optimization(
             "active_channel": active_channel,
             "initial_command": initial_command,
             "channel_penalties": resolved_channel_penalties,
+            "goal_confirmed": confirmed_best is not None,
+            "confirmation_attempts": confirmation_attempts,
+            "thermal_rebases": thermal_rebases,
             "best": best,
             "samples": samples,
         })
@@ -514,6 +570,8 @@ def run_feedback_optimization(
         round_index: int | None = None,
         probe_channel: str | None = None,
         probe_delta_code: int | None = None,
+        confirmation_of_sample_index: int | None = None,
+        settle_seconds_override: float | None = None,
         step: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         nonlocal current_shutter_speed
@@ -530,10 +588,11 @@ def run_feedback_optimization(
             bounded_command["g"],
             bounded_command["b"],
         )
-        time.sleep(max(0.0, settle_seconds))
+        active_settle_seconds = settle_seconds if settle_seconds_override is None else settle_seconds_override
+        time.sleep(max(0.0, active_settle_seconds))
         filename_template = (
             f"target-rgbww-{target['index']:02d}-{target['cct']}K-gm{target['gm']}-"
-            f"{sample_index:02d}-{phase}.%C"
+            f"attempt{attempt_index:02d}-{sample_index:02d}-{phase}.%C"
         )
         auto_exposure = None
         if sample_index == 0:
@@ -615,6 +674,8 @@ def run_feedback_optimization(
         if probe_channel is not None:
             sample["probe_channel"] = probe_channel
             sample["probe_delta_code"] = int(probe_delta_code or 0)
+        if confirmation_of_sample_index is not None:
+            sample["confirmation_of_sample_index"] = int(confirmation_of_sample_index)
         if step is not None:
             sample["step"] = step
         samples.append(sample)
@@ -629,12 +690,46 @@ def run_feedback_optimization(
         progress("sampling")
         return sample
 
-    initial = capture_sample(initial_command, phase="initial")
-    best = initial
-    if feedback_rounds > 0 and not initial["white_point_comparison"]["within_goal"]:
-        probe_samples: list[dict[str, Any]] = []
+    def confirm_candidate(candidate: dict[str, Any]) -> tuple[bool, dict[str, Any]]:
+        nonlocal confirmed_best
+        attempt_index = len(confirmation_attempts)
+        attempt = {
+            "index": attempt_index,
+            "candidate_sample_index": int(candidate["index"]),
+            "command": dict(candidate["command"]),
+            "required": int(feedback_confirmations),
+            "sample_indices": [],
+            "status": "running",
+        }
+        confirmation_attempts.append(attempt)
+        confirmations = []
+        for confirmation_index in range(feedback_confirmations):
+            light_fn(0, 0, 0, 0, 0)
+            time.sleep(feedback_confirmation_off_seconds)
+            confirmation = capture_sample(
+                candidate["command"],
+                phase=f"confirm-{attempt_index}-{confirmation_index}",
+                confirmation_of_sample_index=int(candidate["index"]),
+                settle_seconds_override=feedback_confirmation_settle_seconds,
+            )
+            confirmations.append(confirmation)
+            attempt["sample_indices"].append(int(confirmation["index"]))
+            if not confirmation["white_point_comparison"]["within_goal"]:
+                attempt["status"] = "failed"
+                attempt["failed_sample_index"] = int(confirmation["index"])
+                progress("confirmation_failed")
+                return False, confirmation
+
+        attempt["status"] = "confirmed"
+        confirmed_best = max(confirmations, key=sample_sort_key)
+        attempt["confirmed_sample_index"] = int(confirmed_best["index"])
+        progress("goal_confirmed")
+        return True, confirmed_best
+
+    def capture_probe_set(base: dict[str, Any], *, phase_prefix: str) -> list[dict[str, Any]]:
+        probe_samples = []
         for probe in build_probe_commands(
-            initial_command,
+            base["command"],
             active_channel=active_channel,
             probe_step_code=feedback_probe_step,
             max_code=max_code,
@@ -642,30 +737,74 @@ def run_feedback_optimization(
         ):
             sample = capture_sample(
                 probe["command"],
-                phase=f"probe-{probe['channel']}",
+                phase=f"{phase_prefix}-{probe['channel']}",
                 probe_channel=str(probe["channel"]),
                 probe_delta_code=int(probe["delta_code"]),
             )
             probe_samples.append(sample)
-        best = min(samples, key=sample_sort_key)
-        if best["white_point_comparison"]["within_goal"]:
-            stop_reason = "goal_reached_by_probe"
-        else:
-            jacobian = estimate_jacobian(
-                initial["white_point"],
-                probe_samples,
-                target_white_point=target_white_point,
-                active_channel=active_channel,
-                cct_tolerance_K=feedback_cct_tolerance_K,
-                duv_tolerance=feedback_duv_tolerance,
-                max_code=max_code,
-                channels=common.DEFAULT_CHANNELS,
-            )
-            initial_jacobian = jacobian.copy()
-            current = initial
+        return probe_samples
+
+    def estimate_probe_jacobian(base: dict[str, Any], probes: list[dict[str, Any]]) -> Any:
+        return estimate_jacobian(
+            base["white_point"],
+            probes,
+            target_white_point=target_white_point,
+            active_channel=active_channel,
+            cct_tolerance_K=feedback_cct_tolerance_K,
+            duv_tolerance=feedback_duv_tolerance,
+            max_code=max_code,
+            channels=common.DEFAULT_CHANNELS,
+        )
+
+    def thermal_rebase(
+        base: dict[str, Any],
+        *,
+        reason: str,
+    ) -> tuple[Any, list[dict[str, Any]]] | None:
+        nonlocal current_max_step
+        if len(thermal_rebases) >= feedback_thermal_rebases:
+            return None
+        rebase_index = len(thermal_rebases)
+        probes = capture_probe_set(base, phase_prefix=f"thermal-rebase-{rebase_index}-probe")
+        rebased_jacobian = estimate_probe_jacobian(base, probes)
+        record = {
+            "index": rebase_index,
+            "reason": reason,
+            "base_sample_index": int(base["index"]),
+            "probe_sample_indices": [int(sample["index"]) for sample in probes],
+        }
+        thermal_rebases.append(record)
+        current_max_step = int(feedback_max_step)
+        progress("thermal_rebased")
+        return rebased_jacobian, [base, *probes]
+
+    initial = capture_sample(initial_command, phase="initial")
+    current = initial
+    if initial["white_point_comparison"]["within_goal"]:
+        confirmed, current = confirm_candidate(initial)
+        if confirmed:
+            stop_reason = "goal_confirmed"
+
+    if feedback_rounds > 0 and confirmed_best is None:
+        probe_base = current if current["command"] == initial["command"] else initial
+        probe_samples = capture_probe_set(probe_base, phase_prefix="probe")
+        jacobian = estimate_probe_jacobian(probe_base, probe_samples)
+        initial_jacobian = jacobian.copy()
+        step_samples = [probe_base, *probe_samples]
+        observed_best = min(step_samples, key=sample_sort_key)
+        if observed_best["white_point_comparison"]["within_goal"]:
+            confirmed, current = confirm_candidate(observed_best)
+            if confirmed:
+                stop_reason = "goal_confirmed"
+            else:
+                rebased = thermal_rebase(current, reason="confirmation_failed")
+                if rebased is not None:
+                    jacobian, step_samples = rebased
+
+        if confirmed_best is None:
             for round_index in range(feedback_rounds):
                 step = build_bracketed_cct_step(
-                    samples,
+                    step_samples,
                     current["command"],
                     active_channel=active_channel,
                     max_code=max_code,
@@ -700,6 +839,7 @@ def run_feedback_optimization(
                     step=step,
                 )
                 rounds_completed += 1
+                step_samples.append(candidate)
                 jacobian = broyden_update(
                     jacobian,
                     current["command"],
@@ -716,18 +856,44 @@ def run_feedback_optimization(
                 if sample_sort_key(candidate) >= sample_sort_key(current):
                     current_max_step = max(int(feedback_probe_step), current_max_step // 2)
                 current = candidate
-                best = min(samples, key=sample_sort_key)
-                if best["white_point_comparison"]["within_goal"]:
-                    stop_reason = "goal_reached"
-                    break
+                if bracketed_cct_prediction_missed(step, candidate):
+                    consecutive_secant_prediction_misses += 1
+                else:
+                    consecutive_secant_prediction_misses = 0
+                if (
+                    consecutive_secant_prediction_misses
+                    >= SECANT_MISSES_BEFORE_THERMAL_REBASE
+                ):
+                    rebased = thermal_rebase(
+                        current,
+                        reason="repeated_secant_prediction_miss",
+                    )
+                    consecutive_secant_prediction_misses = 0
+                    if rebased is not None:
+                        jacobian, step_samples = rebased
+                        continue
+                if candidate["white_point_comparison"]["within_goal"]:
+                    confirmed, current = confirm_candidate(candidate)
+                    if confirmed:
+                        stop_reason = "goal_confirmed"
+                        break
+                    rebased = thermal_rebase(current, reason="confirmation_failed")
+                    if rebased is not None:
+                        jacobian, step_samples = rebased
+                        consecutive_secant_prediction_misses = 0
+                    else:
+                        step_samples.append(current)
 
-    best = min(samples, key=sample_sort_key)
-    if best["white_point_comparison"]["within_goal"] and stop_reason == "round_limit":
-        stop_reason = "goal_reached"
+    observed_best = min(samples, key=sample_sort_key)
+    best = confirmed_best or observed_best
+    if confirmed_best is None and observed_best["white_point_comparison"]["within_goal"]:
+        if stop_reason == "feedback_disabled":
+            stop_reason = "goal_confirmation_failed"
     result = {
         "kind": "constrained_white_point_jacobian_broyden",
         "status": stop_reason,
         "active_channel": active_channel,
+        "attempt": attempt_index,
         "initial_command": initial_command,
         "initial_shutter_speed": str(initial_shutter_speed),
         "final_shutter_speed": current_shutter_speed,
@@ -740,6 +906,13 @@ def run_feedback_optimization(
         "damping": float(feedback_damping),
         "cct_tolerance_K": float(feedback_cct_tolerance_K),
         "duv_tolerance": float(feedback_duv_tolerance),
+        "confirmations_requested": int(feedback_confirmations),
+        "confirmation_settle_seconds": float(feedback_confirmation_settle_seconds),
+        "confirmation_off_seconds": float(feedback_confirmation_off_seconds),
+        "thermal_rebases_requested": int(feedback_thermal_rebases),
+        "goal_confirmed": confirmed_best is not None,
+        "confirmation_attempts": confirmation_attempts,
+        "thermal_rebases": thermal_rebases,
         "initial_jacobian": initial_jacobian.tolist() if initial_jacobian is not None else None,
         "final_jacobian": jacobian.tolist() if jacobian is not None else None,
         "best": best,

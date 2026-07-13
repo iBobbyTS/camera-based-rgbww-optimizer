@@ -2,6 +2,7 @@
 
 | file | summary |
 | --- | --- |
+| active/20260712-white-lut-repeatability-and-strict-anchors.md | Measure repeatability, validate strict anchors, and explain the cross-day regression of near-boundary 14x5 nodes. |
 
 ## Unresolved
 

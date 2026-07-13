@@ -6,6 +6,32 @@ from camera_based_rgbww_optimizer.optimization import white_lut_feedback as feed
 
 
 class WhiteLutFeedbackTests(unittest.TestCase):
+    def test_cct_tolerance_uses_minimum_at_low_cct_and_mired_at_high_cct(self):
+        self.assertEqual(
+            feedback.resolve_cct_tolerance_K(
+                1900.0,
+                minimum_tolerance_K=25.0,
+                tolerance_mired=1.0,
+            ),
+            25.0,
+        )
+        self.assertAlmostEqual(
+            feedback.resolve_cct_tolerance_K(
+                12000.0,
+                minimum_tolerance_K=25.0,
+                tolerance_mired=1.0,
+            ),
+            144.0,
+        )
+
+    def test_cct_tolerance_rejects_non_positive_inputs(self):
+        with self.assertRaisesRegex(ValueError, "target_cct_K"):
+            feedback.resolve_cct_tolerance_K(0.0, minimum_tolerance_K=25.0, tolerance_mired=1.0)
+        with self.assertRaisesRegex(ValueError, "minimum_tolerance_K"):
+            feedback.resolve_cct_tolerance_K(5000.0, minimum_tolerance_K=0.0, tolerance_mired=1.0)
+        with self.assertRaisesRegex(ValueError, "tolerance_mired"):
+            feedback.resolve_cct_tolerance_K(5000.0, minimum_tolerance_K=25.0, tolerance_mired=0.0)
+
     def test_white_point_metrics_uses_requested_goal_tolerances(self):
         metrics = feedback.white_point_metrics(
             {"cct_K": 5006.0, "duv": 0.003},
@@ -244,6 +270,31 @@ class WhiteLutFeedbackTests(unittest.TestCase):
         )
 
         self.assertIsNone(step)
+
+    def test_bracketed_cct_prediction_miss_detects_material_error(self):
+        step = {
+            "kind": "bracketed_cct_secant",
+            "predicted_goal_score": 0.2,
+        }
+
+        self.assertTrue(
+            feedback.bracketed_cct_prediction_missed(
+                step,
+                {"white_point_comparison": {"goal_score": 2.2}},
+            )
+        )
+        self.assertFalse(
+            feedback.bracketed_cct_prediction_missed(
+                step,
+                {"white_point_comparison": {"goal_score": 0.8}},
+            )
+        )
+        self.assertFalse(
+            feedback.bracketed_cct_prediction_missed(
+                {"kind": "damped_broyden", "predicted_goal_score": 0.2},
+                {"white_point_comparison": {"goal_score": 2.2}},
+            )
+        )
 
 
 if __name__ == "__main__":

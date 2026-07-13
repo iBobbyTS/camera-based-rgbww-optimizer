@@ -46,6 +46,7 @@ MACOS_PTP_RECOVERY_DISABLE_ENV = "CAMERA_BASED_RGBWW_OPTIMIZER_DISABLE_MACOS_PTP
 MACOS_USB_CLAIM_ERROR_MARKERS = (
     "Could not claim the USB device",
     "Could not claim interface 0",
+    "Could not detach kernel driver of camera device",
 )
 MACOS_IMAGE_CAPTURE_PROCESS_PATTERNS = (
     "/usr/libexec/ptpcamerad",
