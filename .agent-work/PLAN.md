@@ -1170,8 +1170,8 @@ t(h,s,I) ~= alpha(I,h,s) * t(h,s,100)
 - [x] 可选 `meter_fn` 自动曝光路径，旧 decoder 默认路径保持不变。
 - [x] `measure_raw_observer_validation.py` immutable dry-run 计划和测试。
 - [x] `measure_raw_observer_validation.py` fake-device 执行和 Python cleanup 测试。
-- [ ] 文档和 skill 更新。
-- [ ] 完整离线验证。
+- [x] 文档和 skill 更新。
+- [x] 完整离线验证。
 - [ ] 向用户报告并等待实机批准。
 
 ### 后续硬门
@@ -1201,17 +1201,17 @@ t(h,s,I) ~= alpha(I,h,s) * t(h,s,100)
 
 ---
 
-### 2026-07-14 P0.5 更新
+### 2026-07-14 P0.6 更新
 
 ```text
-最新阶段：P0.5 P1 runner fake-device safety execution
-状态：running
-最新提交：38968d3 docs(measurement): document raw observer dry run boundary
-运行目录：无；测试仅在临时目录生成不可复用 run.json、plan.json、JSONL 记录和 all-off-python.json
+最新阶段：P0 native capture adapter complete
+状态：code_complete_waiting_for_measurement
+最新提交：ba2cc65 feat(camera): select supported bracket shutter speeds
+运行目录：无；测试仅在临时目录生成不可复用 run.json、plan.json、JSONL 记录、native RAW report 和 all-off-python.json
 分析文件：src/camera_based_rgbww_optimizer/optimization/measure_raw_observer_validation.py
-分支选择：P0 6.3 的可注入执行分支；实际 CLI 仍硬性要求 --dry-run，fake runner 验证 ambient、Ray/strip 排他点亮、异常 finally 和公共 all_off 的两路关灯
-未解决问题：真实相机 capture adapter、原生 meter 接线和实测 repeatability/linearity/G1G2 数据均尚未完成
-下一条唯一动作：离线实现 capture adapter，把原生 meter、独立 Ray/strip 曝光缓存和已测试的固定 bracket 快门选择接入同一计划，保持 CLI 不暴露实机执行
+分支选择：P0 6.3；真实 capture adapter 已离线验证 native meter、独立 Ray/strip 快门缓存、支持快门 bracket、ambient subtraction 和 JSON-only report，但 CLI 仍硬性要求 --dry-run
+未解决问题：实机 P1 的显式 execute CLI、shell EXIT trap、连接前检查，以及实测 repeatability/linearity/G1G2 数据均尚未完成
+下一条唯一动作：实现需要 --execute 与 --allow-high-output 的 P1 shell wrapper 和 CLI 入口，先以 fake 依赖完整测试，不自行启动实拍
 ```
 
 ---

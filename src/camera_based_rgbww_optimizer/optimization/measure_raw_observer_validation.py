@@ -5,10 +5,12 @@ import copy
 import hashlib
 import json
 from datetime import datetime, timezone
+from fractions import Fraction
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
-from camera_based_rgbww_optimizer.control import all_off, white_lut as white_lut_control
+from camera_based_rgbww_optimizer.control import all_off, camera_gphoto2, white_lut as white_lut_control
+from camera_based_rgbww_optimizer.measurement import raw_mosaic_patches
 from camera_based_rgbww_optimizer.paths import PROJECT_ROOT, PROJECT_TMP_DIR
 
 
@@ -28,6 +30,10 @@ StripLightFn = Callable[[int, int, int, int, int], Mapping[str, Any]]
 RaySetCctFn = Callable[..., Mapping[str, Any]]
 CaptureStepFn = Callable[[Mapping[str, Any]], Mapping[str, Any]]
 SleepFn = Callable[[float], None]
+RawMeterFn = Callable[..., raw_mosaic_patches.RawExposureMeterResult]
+RawAnalyzeFn = Callable[..., Mapping[str, Any]]
+RawReportWriter = Callable[[str | Path, Mapping[str, Any]], Path]
+ShutterChoicesFn = Callable[[str], Sequence[str]]
 
 
 def build_raw_observer_validation_plan(
@@ -275,6 +281,151 @@ def execute_raw_observer_validation_plan(
     return root
 
 
+def build_native_raw_capture_step_fn(
+    *,
+    camera_dir: str | Path,
+    measurements_dir: str | Path,
+    scratch_dir: str | Path,
+    location_config_path: str | Path,
+    observer_config_path: str | Path,
+    ambient_shutter_speed: str = "30",
+    iso: str = camera_gphoto2.DEFAULT_ISO,
+    aperture: str = camera_gphoto2.DEFAULT_APERTURE,
+    image_format: str = camera_gphoto2.DEFAULT_IMAGE_FORMAT,
+    target_max: int = camera_gphoto2.DEFAULT_AUTO_EXPOSURE_MAX,
+    min_shutter_speed: str = camera_gphoto2.DEFAULT_MIN_SHUTTER_SPEED,
+    max_shutter_speed: str = camera_gphoto2.DEFAULT_MAX_SHUTTER_SPEED,
+    max_trials: int = camera_gphoto2.DEFAULT_AUTO_EXPOSURE_MAX_TRIALS,
+    max_captures: int = camera_gphoto2.DEFAULT_AUTO_EXPOSURE_MAX_CAPTURES,
+    auto_expose_fn: Callable[..., camera_gphoto2.AutoExposureResult] = camera_gphoto2.auto_expose_capture,
+    capture_fn: Callable[..., camera_gphoto2.CaptureResult] = camera_gphoto2.capture_image,
+    raw_meter_fn: RawMeterFn = raw_mosaic_patches.meter_raw_exposure,
+    raw_analyze_fn: RawAnalyzeFn = raw_mosaic_patches.analyze_raw_file,
+    raw_report_writer: RawReportWriter = raw_mosaic_patches.write_report,
+    shutter_choices_fn: ShutterChoicesFn | None = None,
+) -> CaptureStepFn:
+    """Build the production camera side of P1 while leaving device control injected.
+
+    The returned callback is intentionally not bound to the CLI. It keeps
+    source-specific auto-exposure caches, records native Bayer reports without
+    `.npy` output, and resolves bracket shutters against camera-supported
+    choices. The outer executor remains responsible for Ray/strip isolation.
+    """
+
+    camera_output = Path(camera_dir)
+    measurements_output = Path(measurements_dir)
+    scratch_output = Path(scratch_dir)
+    source_captures: dict[str, camera_gphoto2.CaptureResult] = {}
+    ambient_capture: camera_gphoto2.CaptureResult | None = None
+    shutter_choices_by_port: dict[str, tuple[str, ...]] = {}
+
+    def meter(raw_file: Path) -> camera_gphoto2.ExposureMeasurement:
+        result = raw_meter_fn(
+            raw_file,
+            location_config_path=location_config_path,
+            observer_config_path=observer_config_path,
+        )
+        channel_max = tuple(
+            int(round(max(0.0, min(1.0, float(result.plane_max.get(label) or 0.0))) * 65535.0))
+            for label in raw_mosaic_patches.PLANE_ORDER
+        )
+        return camera_gphoto2.ExposureMeasurement(
+            maximum=int(result.exposure_metric),
+            raw_visible_max=result.raw_visible_max,
+            channel_max=channel_max,
+            exposure_metric=float(result.exposure_metric),
+            details=result.to_jsonable(),
+        )
+
+    def capture_step(step: Mapping[str, Any]) -> Mapping[str, Any]:
+        nonlocal ambient_capture
+        source = str(step["source"])
+        filename = _capture_filename(step)
+        if source == "ambient":
+            capture = capture_fn(
+                output_dir=camera_output,
+                filename_template=filename,
+                settings=camera_gphoto2.CaptureSettings(
+                    iso=iso,
+                    aperture=aperture,
+                    shutter_speed=ambient_shutter_speed,
+                    image_format=image_format,
+                ),
+                timeout=120.0,
+            )
+            ambient_capture = capture
+            mode = "ambient_fixed"
+        elif str(step["purpose"]) == "baseline_auto_exposure":
+            cache_key = _source_cache_key(step)
+            auto = auto_expose_fn(
+                output_dir=camera_output,
+                filename_template=filename,
+                target_max=target_max,
+                iso=iso,
+                aperture=aperture,
+                image_format=image_format,
+                min_shutter_speed=min_shutter_speed,
+                max_shutter_speed=max_shutter_speed,
+                max_trials=max_trials,
+                max_captures=max_captures,
+                decode_formats=(),
+                scratch_dir=scratch_output,
+                initial_shutter_speed=(source_captures.get(cache_key).settings.shutter_speed if cache_key in source_captures else None),
+                meter_fn=meter,
+            )
+            capture = auto.final_capture
+            source_captures[cache_key] = capture
+            mode = "native_auto_exposure"
+        else:
+            cache_key = _source_cache_key(step)
+            base_capture = source_captures.get(cache_key)
+            if base_capture is None:
+                raise ValueError(f"capture {step['capture_id']} has no {cache_key} exposure baseline")
+            shutter_speed = base_capture.settings.shutter_speed
+            if str(step["purpose"]) == "linearity_bracket":
+                shutter_speed = _resolve_bracket_shutter_speed(
+                    base_capture,
+                    factor=float(step["exposure_factor"]),
+                    min_shutter_speed=min_shutter_speed,
+                    max_shutter_speed=max_shutter_speed,
+                    shutter_choices_fn=shutter_choices_fn,
+                    choices_cache=shutter_choices_by_port,
+                )
+            capture = capture_fn(
+                output_dir=camera_output,
+                filename_template=filename,
+                settings=camera_gphoto2.CaptureSettings(
+                    iso=iso,
+                    aperture=aperture,
+                    shutter_speed=shutter_speed,
+                    image_format=image_format,
+                ),
+                port=base_capture.connection.port,
+                expected_model=base_capture.connection.model,
+                timeout=120.0,
+            )
+            mode = "fixed_bracket" if str(step["purpose"]) == "linearity_bracket" else "fixed_cached"
+
+        report = _write_native_capture_report(
+            capture,
+            step=step,
+            ambient_capture=ambient_capture,
+            location_config_path=location_config_path,
+            observer_config_path=observer_config_path,
+            measurements_dir=measurements_output,
+            raw_analyze_fn=raw_analyze_fn,
+            raw_report_writer=raw_report_writer,
+        )
+        return {
+            "mode": mode,
+            "capture": capture.to_jsonable(),
+            "patch_statistics": str(report[0]),
+            "quality": report[1],
+        }
+
+    return capture_step
+
+
 def parse_linearity_factors(value: str) -> tuple[float, ...]:
     return _validate_linearity_factors(tuple(float(item.strip()) for item in value.split(",") if item.strip()))
 
@@ -330,6 +481,79 @@ def _validate_linearity_factors(values: Sequence[float]) -> tuple[float, ...]:
     if 1.0 not in factors:
         raise ValueError("linearity_factors must include 1.0")
     return factors
+
+
+def _source_cache_key(step: Mapping[str, Any]) -> str:
+    cache_key = step.get("source_exposure_cache")
+    if cache_key not in {"ray", "strip"}:
+        raise ValueError(f"capture {step.get('capture_id')} has no valid source exposure cache")
+    return str(cache_key)
+
+
+def _capture_filename(step: Mapping[str, Any]) -> str:
+    repeat = "none" if step.get("repeat_index") is None else str(int(step["repeat_index"]))
+    factor = "auto" if step.get("exposure_factor") is None else f"{float(step['exposure_factor']):g}x"
+    return (
+        f"{step['capture_id']}-source-{step['source']}-purpose-{step['purpose']}"
+        f"-repeat-{repeat}-exposure-{factor}-attempt-0.%C"
+    )
+
+
+def _resolve_bracket_shutter_speed(
+    base_capture: camera_gphoto2.CaptureResult,
+    *,
+    factor: float,
+    min_shutter_speed: str,
+    max_shutter_speed: str,
+    shutter_choices_fn: ShutterChoicesFn | None,
+    choices_cache: dict[str, tuple[str, ...]],
+) -> str:
+    if factor <= 0:
+        raise ValueError("linearity bracket exposure factor must be positive")
+    port = base_capture.connection.port
+    choices = choices_cache.get(port)
+    if choices is None:
+        choices = tuple(
+            shutter_choices_fn(port)
+            if shutter_choices_fn is not None
+            else camera_gphoto2.read_config_choices(port, camera_gphoto2.CONFIG_SHUTTER_SPEED)
+        )
+        choices_cache[port] = choices
+    target_seconds = Fraction(base_capture.settings.shutter_speed) * Fraction(str(factor))
+    return camera_gphoto2.select_supported_shutter_speed(
+        choices,
+        target_seconds=target_seconds,
+        min_shutter_speed=min_shutter_speed,
+        max_shutter_speed=max_shutter_speed,
+    )
+
+
+def _write_native_capture_report(
+    capture: camera_gphoto2.CaptureResult,
+    *,
+    step: Mapping[str, Any],
+    ambient_capture: camera_gphoto2.CaptureResult | None,
+    location_config_path: str | Path,
+    observer_config_path: str | Path,
+    measurements_dir: Path,
+    raw_analyze_fn: RawAnalyzeFn,
+    raw_report_writer: RawReportWriter,
+) -> tuple[Path, Mapping[str, Any]]:
+    kwargs: dict[str, Any] = {
+        "exposure_seconds": float(Fraction(capture.settings.shutter_speed)),
+        "location_config_path": location_config_path,
+        "observer_config_path": observer_config_path,
+    }
+    if str(step["source"]) != "ambient":
+        if ambient_capture is None:
+            raise ValueError("non-ambient capture requires the preceding ambient capture")
+        kwargs["ambient_raw_file"] = ambient_capture.saved_file
+        kwargs["ambient_exposure_seconds"] = float(Fraction(ambient_capture.settings.shutter_speed))
+    report = raw_analyze_fn(capture.saved_file, **kwargs)
+    path = measurements_dir / f"{step['capture_id']}.patch-statistics.json"
+    raw_report_writer(path, report)
+    quality = report.get("quality") if isinstance(report, Mapping) else None
+    return path, quality if isinstance(quality, Mapping) else {"status": "missing"}
 
 
 def _validate_executable_plan(plan: Mapping[str, Any]) -> None:

@@ -190,6 +190,101 @@ class RawObserverValidationPlanTests(unittest.TestCase):
             self.assertEqual(run["status"], "failed")
             self.assertEqual(cleanup["cleanup_exception"]["type"], "RuntimeError")
 
+    def test_native_capture_adapter_keeps_source_caches_and_uses_raw_reports(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            plan = self._plan(root)
+            camera_dir = root / "camera"
+            measurements_dir = root / "measurements"
+            auto_calls = []
+            fixed_calls = []
+
+            class MeterResult:
+                exposure_metric = 42000
+                raw_visible_max = 15000
+                plane_max = {"R": 0.60, "G1": 0.62, "G2": 0.61, "B": 0.58}
+
+                def to_jsonable(self):
+                    return {"quality_status": "pending_thresholds"}
+
+            def capture(**kwargs):
+                fixed_calls.append(kwargs)
+                output = Path(kwargs["output_dir"])
+                output.mkdir(parents=True, exist_ok=True)
+                saved = output / kwargs["filename_template"].replace("%C", "cr3")
+                saved.write_bytes(b"fake cr3")
+                return measure_raw_observer_validation.camera_gphoto2.CaptureResult(
+                    connection=measure_raw_observer_validation.camera_gphoto2.CameraConnection("test camera", "usb:test"),
+                    settings=kwargs["settings"],
+                    saved_file=saved,
+                    stdout="",
+                )
+
+            def auto_expose(**kwargs):
+                auto_calls.append(kwargs)
+                kwargs["meter_fn"](root / "meter.cr3")
+                shutter = "1/125" if "source-ray" in kwargs["filename_template"] else "1/60"
+                return measure_raw_observer_validation.camera_gphoto2.AutoExposureResult(
+                    target_max=kwargs["target_max"],
+                    final_capture=capture(
+                        output_dir=kwargs["output_dir"],
+                        filename_template=kwargs["filename_template"],
+                        settings=measure_raw_observer_validation.camera_gphoto2.CaptureSettings(
+                            iso=kwargs["iso"],
+                            aperture=kwargs["aperture"],
+                            shutter_speed=shutter,
+                            image_format=kwargs["image_format"],
+                        ),
+                    ),
+                    trials=(),
+                )
+
+            def write_report(path, report):
+                output = Path(path)
+                output.parent.mkdir(parents=True, exist_ok=True)
+                output.write_text(json.dumps(report), encoding="utf-8")
+                return output
+
+            adapter = measure_raw_observer_validation.build_native_raw_capture_step_fn(
+                camera_dir=camera_dir,
+                measurements_dir=measurements_dir,
+                scratch_dir=root / "scratch",
+                location_config_path=root / "locations.json",
+                observer_config_path=root / "observer.json",
+                auto_expose_fn=auto_expose,
+                capture_fn=capture,
+                raw_meter_fn=lambda *_args, **_kwargs: MeterResult(),
+                raw_analyze_fn=lambda *_args, **_kwargs: {"quality": {"status": "pending_thresholds"}},
+                raw_report_writer=write_report,
+                shutter_choices_fn=lambda _port: ("1/250", "1/125", "1/60"),
+            )
+            ambient = plan["captures"][0]
+            ray_baseline = plan["captures"][1]
+            strip_baseline = plan["captures"][2]
+            ray_pair = next(step for step in plan["captures"] if step["purpose"] == "paired_repeat" and step["source"] == "ray")
+            strip_bracket = next(
+                step
+                for step in plan["captures"]
+                if step["purpose"] == "linearity_bracket" and step["source"] == "strip" and step["exposure_factor"] == 0.5
+            )
+
+            ambient_result = adapter(ambient)
+            ray_result = adapter(ray_baseline)
+            strip_result = adapter(strip_baseline)
+            pair_result = adapter(ray_pair)
+            bracket_result = adapter(strip_bracket)
+
+            self.assertEqual(ambient_result["mode"], "ambient_fixed")
+            self.assertEqual(ray_result["mode"], "native_auto_exposure")
+            self.assertEqual(strip_result["mode"], "native_auto_exposure")
+            self.assertEqual(pair_result["mode"], "fixed_cached")
+            self.assertEqual(bracket_result["mode"], "fixed_bracket")
+            self.assertEqual([call["initial_shutter_speed"] for call in auto_calls], [None, None])
+            self.assertTrue(all(call["decode_formats"] == () for call in auto_calls))
+            self.assertEqual(fixed_calls[-1]["settings"].shutter_speed, "1/125")
+            self.assertEqual(len(list(measurements_dir.glob("*.patch-statistics.json"))), 5)
+            self.assertEqual(list(root.rglob("*.npy")), [])
+
     def _plan(self, root: Path):
         lut = root / "lut.json"
         location = root / "locations.json"
