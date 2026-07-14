@@ -1201,17 +1201,17 @@ t(h,s,I) ~= alpha(I,h,s) * t(h,s,100)
 
 ---
 
-### 2026-07-14 P1.1 更新
+### 2026-07-14 P1.2 更新
 
 ```text
 最新阶段：P1 RAW observer measurement
-状态：running
-最新提交：3d1730d docs(measurement): document P1 validation analysis
-运行目录：/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/20260714-011100-p1
-分析文件：src/camera_based_rgbww_optimizer/optimization/measure_raw_observer_validation.py
-分支选择：P1 7.3 正常采集；2026-07-14 01:15 MDT 已观察超过 5 分钟，ambient、Ray baseline、strip baseline 完成，Ray/strip 交替关断记录完整，尚无 failure.json；后续使用 analyze_raw_observer_validation 从 captures.jsonl 回填 provenance，再分 source 汇总 repeatability/linearity 与 G1/G2
-未解决问题：完整 31 帧采集、两层 cleanup 结果、repeatability/linearity/G1G2 结果与质量门槛分支均尚未完成
-下一条唯一动作：任务结束后检查 run.json、failure/all-off、capture 数量和 RAW report 完整性，运行 P1 离线分析并按 7.5/7.6 分支决策；不得自动写入 raw-observer config
+状态：fail
+最新提交：b02bfc7 fix(measurement): redact P1 camera provenance
+运行目录：/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/20260714-030700-p1-provenance-envelope-v6
+分析文件：/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/20260714-030700-p1-provenance-envelope-v6/analysis.json
+分支选择：7.5-D。v6 完成 31/31，provenance、source isolation、两层 cleanup、G1/G2 均完整，但未裁剪的 0.5x/1x/1.5x 曝光仍呈系统性跨快门残差（Ray P95 1.458%，strip P95 1.133%），远高于重复性。v7 受限诊断进一步显示 strip 在 1/60 相对 1/80 稳定低约 4.64%，Ray 也存在较小但系统的 shutter response。
+未解决问题：区分相机实际快门响应与 strip 电源/驱动响应；离线重算已排除 ambient（对每个档位中位影响不超过 0.000063%）和普通跨 run 热漂移。未设置正式 quality thresholds，P2 不得开始。
+下一条唯一动作：只用 v6/v7 已保存 RAW 做离线分布与顺序诊断，形成能区分原因的下一次有界实拍设计；当地时间 05:00 后不得开始实拍。
 ```
 
 ---

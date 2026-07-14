@@ -28,3 +28,8 @@ The first black-level retry at `/Volumes/4T/temp/rgbww-optimizer/raw-observer-va
 `camera_gphoto2.auto_expose_capture` now has an opt-in `preserve_failed_trial_dir`, used only by P1 native RAW capture. It copies a failed raw trial plus its exception JSON before normal temporary cleanup. Full verification and a new P1 directory are required before considering this resolved. The original first P1 run remains a failed measurement-chain validation artifact because its reports used invalid black metadata and its flat-field record was only `not_requested`.
 
 The preserved retry-v2 trial was a valid but fully saturated `30s` CR3: `white_level=16383`, visible codes `16374..16383`, and optical-margin mode `16383`. The fallback now rejects optical candidates within the black-metadata tolerance of global white. The same saved CR3 then produces a native meter result of `65535` with about `99.99%` clipping rather than raising. This should let the existing auto-exposure saturation branch choose a shorter shutter. An end-to-end P1 retry remains required.
+
+## Resolution
+
+- P1 v6 at `/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/20260714-030700-p1-provenance-envelope-v6` completed all 31 planned captures with the corrected fallback, 31 native reports, no persistent `.npy`, no measurement failure, and successful Python plus shell cleanup.
+- Its reports consistently resolve CR3 black levels from the optical margins and no longer show the former fixed-intercept failure. The remaining P1 blocker is a separate exposure-response issue tracked in `active/20260714-p1-exposure-response.md`.

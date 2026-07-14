@@ -1,0 +1,29 @@
+# P1 Exposure Response And Strip Shutter Interaction
+
+## Evidence
+
+- Formal provenance-bearing P1 run: `/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/20260714-030700-p1-provenance-envelope-v6`.
+  - Completed `31/31` CR3 captures and reports; no `.npy`, no failure, Python and shell cleanup both succeeded.
+  - The `0.5x, 1x, 1.5x` brackets resolved to Ray `1/800, 1/400, 1/250` and strip `1/160, 1/80, 1/50`.
+  - No bracket plane clipped at `1.5x`, but the P95 absolute relative residual was Ray `1.458%` and strip `1.133%`, versus P95 paired-repeat CV of `0.0626%` and `0.1432%`.
+  - All three occurrences of each shutter were internally stable, so the discrepancy is systematic rather than an isolated capture or heat drift.
+- Exposure diagnostic: `/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/20260714-035100-p1-exposure-diagnostic-v7`.
+  - Completed `27/27` CR3 captures and reports; no `.npy`, no failure, Python and shell cleanup both succeeded.
+  - The `0.8x, 1x, 1.25x` brackets resolved to Ray `1/500, 1/400, 1/320` and strip `1/100, 1/80, 1/60`.
+  - Relative to the strip `1/80` median, all three strip `1/60` captures were about `-4.64%`; Ray at `1/500` was about `-1.00%`, and Ray at `1/320` about `+0.39%`.
+- The active firmware configuration specifies five ESP32 LEDC outputs at `19531Hz`. The anchor strip command owns `cw=4095`, so the large `1/60` strip effect is not adequately explained by ordinary low-frequency PWM phase sampling of the dominant channel.
+- Recomputing both runs from saved patch reports shows ambient subtraction changes the median signal by at most `0.000063%`; it cannot explain the observed `0.4%..4.6%` shutter effects. The shared `1/400` Ray and `1/80` strip medians agree between v6 and v7, so ordinary session/thermal drift is also not the primary explanation.
+
+## Decision
+
+P1 takes PLAN.md section 7.5 branch D:
+
+- Do not set observer thresholds.
+- Do not enter P2.
+- Do not treat v6 as a P1 pass even though its source isolation, metadata, cleanup, and G1/G2 evidence are complete.
+
+## Next Offline Work
+
+1. Compare the saved v6/v7 raw per-plane distributions before and after ambient subtraction to separate camera shutter response from source/power response.
+2. Verify whether the per-second deviation correlates with the actual shutter choice rather than the requested bracket factor, source, or capture order.
+3. Design a bounded future hardware diagnostic only after the offline result identifies a discriminating change. Candidate changes are a fixed-shutter temporal repeat, a camera mode/shutter-timing cross-check, or a controlled strip electrical/power test. Do not start this diagnostic after 05:00 local time.
