@@ -172,7 +172,7 @@ class RawObserverValidationPlanTests(unittest.TestCase):
             root = Path(tempdir)
             plan = self._plan(root)
             strip_calls: list[tuple[int, int, int, int, int]] = []
-            ray_calls: list[tuple[int, float, int]] = []
+            ray_calls: list[tuple[int, float | None, float | None, int]] = []
             sleeps: list[float] = []
             captured: list[str] = []
 
@@ -180,9 +180,9 @@ class RawObserverValidationPlanTests(unittest.TestCase):
                 strip_calls.append((cw, ww, r, g, b))
                 return {"cw": cw, "ww": ww, "r": r, "g": g, "b": b}
 
-            def ray(cct, *, intensity, gm, **_kwargs):
-                ray_calls.append((cct, intensity, gm))
-                return {"cct": cct, "intensity": intensity, "gm": gm}
+            def ray(cct, *, intensity=None, intensity_percent=None, gm, **_kwargs):
+                ray_calls.append((cct, intensity, intensity_percent, gm))
+                return {"cct": cct, "intensity": intensity, "intensity_percent": intensity_percent, "gm": gm}
 
             def capture(step):
                 captured.append(str(step["capture_id"]))
@@ -200,8 +200,8 @@ class RawObserverValidationPlanTests(unittest.TestCase):
             self.assertEqual(run_dir, root / "run")
             self.assertEqual(len(captured), len(plan["captures"]))
             self.assertIn((0, 0, 0, 0, 0), strip_calls)
-            self.assertIn((5600, 100.0, 100), ray_calls)
-            self.assertEqual(ray_calls[-1], (5600, 0, 100))
+            self.assertIn((5600, None, 100.0, 100), ray_calls)
+            self.assertEqual(ray_calls[-1], (5600, 0, None, 100))
             self.assertEqual(strip_calls[-1], (0, 0, 0, 0, 0))
             self.assertIn(1.0, sleeps)
             self.assertIn(60.0, sleeps)
@@ -217,15 +217,15 @@ class RawObserverValidationPlanTests(unittest.TestCase):
             root = Path(tempdir)
             plan = self._plan(root)
             strip_calls: list[tuple[int, int, int, int, int]] = []
-            ray_calls: list[tuple[int, float, int]] = []
+            ray_calls: list[tuple[int, float | None, float | None, int]] = []
 
             def strip(cw, ww, r, g, b):
                 strip_calls.append((cw, ww, r, g, b))
                 return {"cw": cw, "ww": ww, "r": r, "g": g, "b": b}
 
-            def ray(cct, *, intensity, gm, **_kwargs):
-                ray_calls.append((cct, intensity, gm))
-                return {"cct": cct, "intensity": intensity, "gm": gm}
+            def ray(cct, *, intensity=None, intensity_percent=None, gm, **_kwargs):
+                ray_calls.append((cct, intensity, intensity_percent, gm))
+                return {"cct": cct, "intensity": intensity, "intensity_percent": intensity_percent, "gm": gm}
 
             with self.assertRaisesRegex(RuntimeError, "camera failed"):
                 measure_raw_observer_validation.execute_raw_observer_validation_plan(
@@ -242,7 +242,7 @@ class RawObserverValidationPlanTests(unittest.TestCase):
             self.assertEqual(json.loads((failed_dir / "run.json").read_text(encoding="utf-8"))["status"], "failed")
             self.assertIn("Status: `failed`", (failed_dir / "EXPERIMENT_SUMMARY.md").read_text(encoding="utf-8"))
             self.assertEqual(strip_calls[-1], (0, 0, 0, 0, 0))
-            self.assertEqual(ray_calls[-1], (5600, 0, 100))
+            self.assertEqual(ray_calls[-1], (5600, 0, None, 100))
             cleanup = json.loads((failed_dir / "all-off-python.json").read_text(encoding="utf-8"))
             self.assertEqual([item["name"] for item in cleanup["steps"]], ["esphome", "ray120c"])
 

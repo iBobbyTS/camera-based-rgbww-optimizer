@@ -58,9 +58,9 @@ class RawShutterResponseTests(unittest.TestCase):
                 calls.append(("strip", values))
                 return {"values": values}
 
-            def ray(cct, *, intensity, gm, **_kwargs):
-                calls.append(("ray", cct, intensity, gm))
-                return {"cct": cct, "intensity": intensity, "gm": gm}
+            def ray(cct, *, intensity=None, intensity_percent=None, gm, **_kwargs):
+                calls.append(("ray", cct, intensity, intensity_percent, gm))
+                return {"cct": cct, "intensity": intensity, "intensity_percent": intensity_percent, "gm": gm}
 
             result = measure_raw_shutter_response.execute_raw_shutter_response_plan(
                 plan,
@@ -72,7 +72,7 @@ class RawShutterResponseTests(unittest.TestCase):
             )
 
             self.assertEqual(len(captured), len(plan["captures"]))
-            self.assertEqual(sum(1 for call in calls if call[0] == "ray" and call[2] == 10.0), 1)
+            self.assertEqual(sum(1 for call in calls if call[0] == "ray" and call[3] == 10.0), 1)
             self.assertEqual(sum(1 for call in calls if call[0] == "strip" and call[1] == (560, 160, 40, 20, 80)), 1)
             self.assertEqual(json.loads((result / "run.json").read_text(encoding="utf-8"))["status"], "complete")
             cleanup = json.loads((result / "all-off-python.json").read_text(encoding="utf-8"))
@@ -117,8 +117,8 @@ class RawShutterResponseTests(unittest.TestCase):
                 calls.append(("strip", values))
                 return {}
 
-            def ray(cct, *, intensity, gm, **_kwargs):
-                calls.append(("ray", cct, intensity, gm))
+            def ray(cct, *, intensity=None, intensity_percent=None, gm, **_kwargs):
+                calls.append(("ray", cct, intensity, intensity_percent, gm))
                 return {}
 
             with self.assertRaisesRegex(RuntimeError, "camera failed"):

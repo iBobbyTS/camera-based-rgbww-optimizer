@@ -808,7 +808,11 @@ def _prepare_capture_source(
         ray = step["ray"]
         if not isinstance(ray, Mapping):
             raise ValueError(f"{source} capture requires ray settings")
-        response = ray_set_cct_fn(int(ray["cct"]), intensity=float(ray["intensity_percent"]), gm=int(ray["gm"]))
+        response = ray_set_cct_fn(
+            int(ray["cct"]),
+            intensity_percent=float(ray["intensity_percent"]),
+            gm=int(ray["gm"]),
+        )
         _append_jsonl(
             command_log,
             {"event": "ray_on", "at": _utc_now(), "capture_id": step["capture_id"], "response": dict(response)},

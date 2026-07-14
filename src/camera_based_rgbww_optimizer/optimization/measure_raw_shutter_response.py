@@ -439,7 +439,11 @@ def _activate_source_group(source: str, *, plan: Mapping[str, Any], strip_light_
     _set_both_off(plan, strip_light_fn, ray_set_cct_fn, command_log, capture_id=capture_id)
     sleep_fn(float(measurement["off_seconds_before_source"]))
     if source == "ray":
-        ray_set_cct_fn(int(anchor["cct"]), intensity=float(anchor["ray_intensity_percent"]), gm=int(anchor["gm"]))
+        ray_set_cct_fn(
+            int(anchor["cct"]),
+            intensity_percent=float(anchor["ray_intensity_percent"]),
+            gm=int(anchor["gm"]),
+        )
     else:
         command = anchor["strip_command"]
         strip_light_fn(*(int(command[channel]) for channel in ("cw", "ww", "r", "g", "b")))

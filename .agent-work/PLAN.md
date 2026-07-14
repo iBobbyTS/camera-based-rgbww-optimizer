@@ -1214,12 +1214,12 @@ t(h,s,I) ~= alpha(I,h,s) * t(h,s,100)
 ```text
 最新阶段：P1 RAW observer measurement
 状态：fail
-最新提交：b02bfc7 fix(measurement): redact P1 camera provenance
+最新提交：eaa92a2 feat(measurement): add shutter response diagnostic
 运行目录：/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/20260714-030700-p1-provenance-envelope-v6
 分析文件：/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/20260714-030700-p1-provenance-envelope-v6/analysis.json
-分支选择：7.5-D。v6 完成 31/31，provenance、source isolation、两层 cleanup、G1/G2 均完整，但未裁剪的 0.5x/1x/1.5x 曝光仍呈系统性跨快门残差（Ray P95 1.458%，strip P95 1.133%），远高于重复性。v7 受限诊断进一步显示 strip 在 1/60 相对 1/80 稳定低约 4.64%，Ray 也存在较小但系统的 shutter response。
+分支选择：7.5-D。v6 完成 31/31，provenance、source isolation、两层 cleanup、G1/G2 均完整，但未裁剪的 0.5x/1x/1.5x 曝光仍呈系统性跨快门残差（Ray P95 1.458%，strip P95 1.133%），远高于重复性。v7 受限诊断进一步显示 strip 在 1/60 相对 1/80 稳定低约 4.64%，Ray 也存在较小但系统的 shutter response。随后发现 v6/v7 将语义上的 Ray 百分比误传为原始 OpenAPI intensity：标为 100%/10% 实际约为 10%/1%。因此两次 run 均不能作为计划要求的 Ray 亮度基准，但同一 run 内 Ray 命令不变，快门比值证据仍可用于诊断；白光 LUT 和端点脚本不受此错误影响。
 未解决问题：区分相机实际快门响应与 strip 电源/驱动响应；离线重算已排除 ambient（对每个档位中位影响不超过 0.000063%）和普通跨 run 热漂移。未设置正式 quality thresholds，P2 不得开始。
-下一条唯一动作：只用 v6/v7 已保存 RAW 做离线分布与顺序诊断，形成能区分原因的下一次有界实拍设计；当地时间 05:00 后不得开始实拍。
+下一条唯一动作：提交 Ray 百分比调用修复；只用 v6/v7 已保存 RAW 做离线分布与顺序诊断，形成能区分原因的下一次有界实拍设计。当地时间 05:00 后不得开始实拍。
 ```
 
 ---

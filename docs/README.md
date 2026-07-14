@@ -217,7 +217,7 @@ When P1 reaches its broad exposure-response branch, use the separate
 protocol. It photographs Ray and strip at the same explicit shutter sequence
 while each source remains on continuously after a warm-up. The dry run is safe
 and device-free; real runs require `--execute --allow-device-control` and the
-same shell cleanup wrapper:
+dedicated `tmp/run-raw-shutter-response.zsh` shell wrapper:
 
 ```bash
 .venv/bin/python -m camera_based_rgbww_optimizer.optimization.measure_raw_shutter_response \

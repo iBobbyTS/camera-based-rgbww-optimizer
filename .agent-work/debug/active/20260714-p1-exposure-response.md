@@ -11,6 +11,7 @@
   - Completed `27/27` CR3 captures and reports; no `.npy`, no failure, Python and shell cleanup both succeeded.
   - The `0.8x, 1x, 1.25x` brackets resolved to Ray `1/500, 1/400, 1/320` and strip `1/100, 1/80, 1/60`.
   - Relative to the strip `1/80` median, all three strip `1/60` captures were about `-4.64%`; Ray at `1/500` was about `-1.00%`, and Ray at `1/320` about `+0.39%`.
+- Historical intensity correction: the v6 P1 runner and v7 diagnostic runner labeled their Ray commands as percentages but passed those values through the raw OpenAPI `intensity` argument. Their planned `100%` and `10%` Ray values therefore commanded raw `100` and `10` (about `10%` and `1%`), respectively. This invalidates their intended absolute Ray-output baseline, but not the within-source shutter-ratio evidence; their Ray command remained constant within each run. White LUT and endpoint runners already used `intensity_percent` and are unaffected.
 - The active firmware configuration specifies five ESP32 LEDC outputs at `19531Hz`. The anchor strip command owns `cw=4095`, so the large `1/60` strip effect is not adequately explained by ordinary low-frequency PWM phase sampling of the dominant channel.
 - Recomputing both runs from saved patch reports shows ambient subtraction changes the median signal by at most `0.000063%`; it cannot explain the observed `0.4%..4.6%` shutter effects. The shared `1/400` Ray and `1/80` strip medians agree between v6 and v7, so ordinary session/thermal drift is also not the primary explanation.
 - The effect is nearly a uniform scalar over patches and CFA planes. In v7, strip `1/60` relative to `1/80` is about `-5.59%` for every plane, with only about `0.23` percentage points between the 10th and 90th feature percentiles. The `0.8x` condition is about `-1%` for both Ray and strip. This rules out a color-specific ROI issue but does not by itself separate camera shutter timing from strip output at `1/60`.
@@ -22,6 +23,7 @@ P1 takes PLAN.md section 7.5 branch D:
 - Do not set observer thresholds.
 - Do not enter P2.
 - Do not treat v6 as a P1 pass even though its source isolation, metadata, cleanup, and G1/G2 evidence are complete.
+- Do not use v6/v7 as a valid reference-intensity P1 baseline; rerun any future P1 or branch-D hardware acquisition only after the percentage-call fix.
 
 ## Next Offline Work
 
