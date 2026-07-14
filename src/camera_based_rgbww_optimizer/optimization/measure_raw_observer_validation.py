@@ -222,6 +222,7 @@ def execute_raw_observer_validation_plan(
         "safety": {"source_isolation": plan_data["measurement"]["source_isolation"]},
     }
     _write_json(root / "run.json", run)
+    _write_experiment_summary(root, run=run, plan=plan_data)
     failure: BaseException | None = None
     try:
         for step in plan_data["captures"]:
@@ -279,6 +280,7 @@ def execute_raw_observer_validation_plan(
             run["status"] = "complete" if _cleanup_succeeded(cleanup) else "failed"
         run["finished_at"] = _utc_now()
         _write_json(root / "run.json", run)
+        _write_experiment_summary(root, run=run, plan=plan_data, cleanup=cleanup)
     if failure is not None:
         raise failure
     return root
@@ -777,6 +779,30 @@ def _cleanup_succeeded(cleanup: Mapping[str, Any]) -> bool:
         and len(steps) == 2
         and all(isinstance(item, Mapping) and bool(item.get("ok")) for item in steps)
     )
+
+
+def _write_experiment_summary(
+    root: Path,
+    *,
+    run: Mapping[str, Any],
+    plan: Mapping[str, Any],
+    cleanup: Mapping[str, Any] | None = None,
+) -> None:
+    measurement = plan["measurement"]
+    anchor = measurement["anchor"]
+    lines = [
+        "# P1 Raw Observer Validation",
+        "",
+        f"- Status: `{run['status']}`",
+        f"- Run directory: `{root}`",
+        f"- Planned captures: `{len(plan['captures'])}`",
+        f"- Anchor: Ray `{anchor['cct']}K / GM{anchor['gm']} / {anchor['ray_intensity_percent']}%`",
+        f"- Source isolation: {measurement['source_isolation']}",
+        "- Analysis: run `camera_based_rgbww_optimizer.optimization.analyze_raw_observer_validation` after completion.",
+    ]
+    if cleanup is not None:
+        lines.append(f"- Python cleanup: `{'ok' if _cleanup_succeeded(cleanup) else 'failed'}`")
+    (root / "EXPERIMENT_SUMMARY.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def _file_reference(path: Path) -> dict[str, str]:

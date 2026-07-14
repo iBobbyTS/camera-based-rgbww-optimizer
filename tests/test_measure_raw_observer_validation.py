@@ -185,6 +185,7 @@ class RawObserverValidationPlanTests(unittest.TestCase):
             self.assertIn(60.0, sleeps)
             self.assertEqual(json.loads((run_dir / "run.json").read_text(encoding="utf-8"))["status"], "complete")
             self.assertEqual(len((run_dir / "captures.jsonl").read_text(encoding="utf-8").splitlines()), len(captured))
+            self.assertIn("Status: `complete`", (run_dir / "EXPERIMENT_SUMMARY.md").read_text(encoding="utf-8"))
             cleanup = json.loads((run_dir / "all-off-python.json").read_text(encoding="utf-8"))
             self.assertEqual([item["name"] for item in cleanup["steps"]], ["esphome", "ray120c"])
             self.assertTrue(all(item["ok"] for item in cleanup["steps"]))
@@ -217,6 +218,7 @@ class RawObserverValidationPlanTests(unittest.TestCase):
             failed_dir = root / "failed"
             self.assertTrue((failed_dir / "failure.json").is_file())
             self.assertEqual(json.loads((failed_dir / "run.json").read_text(encoding="utf-8"))["status"], "failed")
+            self.assertIn("Status: `failed`", (failed_dir / "EXPERIMENT_SUMMARY.md").read_text(encoding="utf-8"))
             self.assertEqual(strip_calls[-1], (0, 0, 0, 0, 0))
             self.assertEqual(ray_calls[-1], (5600, 0, 100))
             cleanup = json.loads((failed_dir / "all-off-python.json").read_text(encoding="utf-8"))
