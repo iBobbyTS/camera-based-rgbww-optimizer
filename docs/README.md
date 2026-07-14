@@ -192,6 +192,11 @@ shell wrapper with `EXIT`, `INT`, `TERM`, and `HUP` traps that run
 the same public cleanup entry point, including on capture errors. The runner
 accepts an existing run directory only when it is empty, so the shell trap can
 create the directory without allowing any old experiment to be reused.
+Before the first capture, a native run also freezes the baseline/default LUT,
+endpoints, location, code-duty curve, and observer-config hashes together with
+Git state, rawpy/LibRaw, gphoto2, camera summary, Ray node configuration, and
+ESPHome device identity in `run.json`. A failed pre-capture probe is recorded
+as a failed run and still executes Python cleanup.
 
 After a completed P1 run, analyze the immutable run directory offline:
 

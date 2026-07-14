@@ -62,6 +62,9 @@ class RawObserverValidationPlanTests(unittest.TestCase):
             self.assertEqual(len(paired), 4)
             self.assertEqual(len(linearity), 12)
             self.assertTrue(all(item["other_source_must_be_off"] for item in data["captures"]))
+            self.assertIn("default_white_lut", data["inputs"])
+            self.assertIn("white_endpoints", data["inputs"])
+            self.assertIn("code_duty_curve", data["inputs"])
 
     def test_plan_records_missing_flat_field_material_explicitly(self):
         with tempfile.TemporaryDirectory() as tempdir:
@@ -72,6 +75,14 @@ class RawObserverValidationPlanTests(unittest.TestCase):
                 plan["measurement"]["flat_field"],
                 {"status": "not_available", "reason": "no_repeatable_flat_field_material"},
             )
+
+            no_curve_plan = measure_raw_observer_validation.build_raw_observer_validation_plan(
+                baseline_lut_path=plan["inputs"]["baseline_lut"]["path"],
+                location_config_path=plan["inputs"]["location_config"]["path"],
+                observer_config_path=plan["inputs"]["raw_observer_config"]["path"],
+                curve_path=None,
+            )
+            self.assertEqual(no_curve_plan["inputs"]["code_duty_curve"], {"status": "disabled"})
 
     def test_plan_rejects_missing_baseline_factor_and_invalid_repeat_count(self):
         with tempfile.TemporaryDirectory() as tempdir:
@@ -234,6 +245,40 @@ class RawObserverValidationPlanTests(unittest.TestCase):
             self.assertEqual(ray_calls[-1], (5600, 0, 100))
             cleanup = json.loads((failed_dir / "all-off-python.json").read_text(encoding="utf-8"))
             self.assertEqual([item["name"] for item in cleanup["steps"]], ["esphome", "ray120c"])
+
+    def test_execute_plan_records_pre_capture_provenance_and_cleans_up_when_it_fails(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            plan = self._plan(root)
+            calls = []
+
+            result = measure_raw_observer_validation.execute_raw_observer_validation_plan(
+                plan,
+                run_dir=root / "provenance",
+                strip_light_fn=lambda *values: calls.append(("strip", values)) or {},
+                ray_set_cct_fn=lambda *args, **kwargs: calls.append(("ray", args, kwargs)) or {},
+                capture_step_fn=lambda _step: {"raw": "ok.cr3"},
+                sleep_fn=lambda _seconds: None,
+                provenance_fn=lambda: {"git": {"commit": "abc", "dirty": False}},
+            )
+            run = json.loads((result / "run.json").read_text(encoding="utf-8"))
+            self.assertEqual(run["run_id"], "provenance")
+            self.assertEqual(run["provenance"]["git"]["commit"], "abc")
+
+            with self.assertRaisesRegex(RuntimeError, "preflight failed"):
+                measure_raw_observer_validation.execute_raw_observer_validation_plan(
+                    plan,
+                    run_dir=root / "provenance-failed",
+                    strip_light_fn=lambda *values: calls.append(("strip", values)) or {},
+                    ray_set_cct_fn=lambda *args, **kwargs: calls.append(("ray", args, kwargs)) or {},
+                    capture_step_fn=lambda _step: {"raw": "unexpected.cr3"},
+                    sleep_fn=lambda _seconds: None,
+                    provenance_fn=lambda: (_ for _ in ()).throw(RuntimeError("preflight failed")),
+                )
+            failed = root / "provenance-failed"
+            self.assertEqual(json.loads((failed / "run.json").read_text(encoding="utf-8"))["status"], "failed")
+            self.assertFalse((failed / "captures.jsonl").exists())
+            self.assertTrue((failed / "all-off-python.json").is_file())
 
     def test_execute_plan_accepts_empty_shell_created_directory_but_never_reuses_a_nonempty_one(self):
         with tempfile.TemporaryDirectory() as tempdir:

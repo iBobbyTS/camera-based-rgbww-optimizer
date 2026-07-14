@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import argparse
+import asyncio
 import copy
 import hashlib
 import json
+import subprocess
 import time
 from datetime import datetime, timezone
 from fractions import Fraction
@@ -18,6 +20,8 @@ from camera_based_rgbww_optimizer.paths import PROJECT_ROOT, PROJECT_TMP_DIR
 DEFAULT_OUTPUT_ROOT = PROJECT_TMP_DIR / "raw-observer-validation"
 DEFAULT_LOCATION_CONFIG = PROJECT_ROOT / "config" / "location" / "locations-20260709-012045.json"
 DEFAULT_OBSERVER_CONFIG = PROJECT_ROOT / "config" / "camera" / "raw-observer.json"
+DEFAULT_WHITE_LUT = PROJECT_ROOT / "config" / "white" / "white-lut.json"
+DEFAULT_WHITE_ENDPOINTS = PROJECT_ROOT / "config" / "white" / "white-endpoints.json"
 DEFAULT_ANCHOR_CCT = 5600
 DEFAULT_ANCHOR_GM = 100
 DEFAULT_RAY_INTENSITY_PERCENT = 100.0
@@ -35,6 +39,7 @@ RawMeterFn = Callable[..., raw_mosaic_patches.RawExposureMeterResult]
 RawAnalyzeFn = Callable[..., Mapping[str, Any]]
 RawReportWriter = Callable[[str | Path, Mapping[str, Any]], Path]
 ShutterChoicesFn = Callable[[str], Sequence[str]]
+ProvenanceFn = Callable[[], Mapping[str, Any]]
 
 
 def build_raw_observer_validation_plan(
@@ -42,6 +47,7 @@ def build_raw_observer_validation_plan(
     baseline_lut_path: str | Path,
     location_config_path: str | Path,
     observer_config_path: str | Path,
+    curve_path: str | Path | None = esphome.DEFAULT_CURVE_PATH,
     anchor_cct: int = DEFAULT_ANCHOR_CCT,
     anchor_gm: int = DEFAULT_ANCHOR_GM,
     ray_intensity_percent: float = DEFAULT_RAY_INTENSITY_PERCENT,
@@ -157,7 +163,10 @@ def build_raw_observer_validation_plan(
         },
         "inputs": {
             "baseline_lut": _file_reference(lut_path),
+            "default_white_lut": _file_reference(DEFAULT_WHITE_LUT),
+            "white_endpoints": _file_reference(DEFAULT_WHITE_ENDPOINTS),
             "location_config": _file_reference(Path(location_config_path)),
+            "code_duty_curve": _file_reference_or_disabled(curve_path),
             "raw_observer_config": _file_reference(Path(observer_config_path)),
         },
         "captures": captures,
@@ -197,6 +206,7 @@ def execute_raw_observer_validation_plan(
     capture_step_fn: CaptureStepFn,
     sleep_fn: SleepFn,
     all_off_fn: Callable[..., Sequence[all_off.ShutdownStep]] = all_off.turn_everything_off,
+    provenance_fn: ProvenanceFn | None = None,
 ) -> Path:
     """Execute a prebuilt P1 plan with injected device operations and final shutdown.
 
@@ -215,6 +225,7 @@ def execute_raw_observer_validation_plan(
 
     run = {
         "schema_version": 1,
+        "run_id": root.name,
         "phase": "P1",
         "status": "running",
         "started_at": _utc_now(),
@@ -222,11 +233,18 @@ def execute_raw_observer_validation_plan(
         "inputs": copy.deepcopy(plan_data["inputs"]),
         "measurement": copy.deepcopy(plan_data["measurement"]),
         "safety": {"source_isolation": plan_data["measurement"]["source_isolation"]},
+        "provenance": {"status": "pending" if provenance_fn is not None else "not_collected"},
     }
     _write_json(root / "run.json", run)
     _write_experiment_summary(root, run=run, plan=plan_data)
     failure: BaseException | None = None
     try:
+        if provenance_fn is not None:
+            provenance = provenance_fn()
+            if not isinstance(provenance, Mapping):
+                raise TypeError("P1 provenance collector must return a mapping")
+            run["provenance"] = copy.deepcopy(dict(provenance))
+            _write_json(root / "run.json", run)
         for step in plan_data["captures"]:
             _prepare_capture_source(
                 step,
@@ -462,7 +480,97 @@ def run_native_raw_observer_validation(
         ray_set_cct_fn=ray120c.set_cct,
         capture_step_fn=capture_step_fn,
         sleep_fn=time.sleep,
+        provenance_fn=lambda: collect_native_raw_observer_provenance(curve_path=curve_path),
     )
+
+
+def collect_native_raw_observer_provenance(*, curve_path: str | Path | None) -> dict[str, Any]:
+    """Collect immutable, read-only P1 environment evidence before the first capture."""
+
+    camera = camera_gphoto2.auto_detect_camera()
+    return {
+        "git": _git_provenance(),
+        "software": {
+            "rawpy": _rawpy_provenance(),
+            "gphoto2": _command_version(("gphoto2", "--version")),
+        },
+        "camera": {
+            "model": camera.model,
+            "port": camera.port,
+            "summary": _camera_summary(camera.port),
+            "capture_settings": {
+                "iso": camera_gphoto2.DEFAULT_ISO,
+                "aperture": camera_gphoto2.DEFAULT_APERTURE,
+                "image_format": camera_gphoto2.DEFAULT_IMAGE_FORMAT,
+            },
+        },
+        "ray120c": dict(ray120c.get_node_config()),
+        "esphome": asyncio.run(_read_esphome_device_info()),
+        "code_duty_curve": _file_reference_or_disabled(curve_path),
+    }
+
+
+def _git_provenance() -> dict[str, Any]:
+    commit = _command_text(("git", "rev-parse", "HEAD"))
+    dirty = _command_text(("git", "status", "--porcelain"))
+    return {"commit": commit, "dirty": bool(dirty), "dirty_entries": dirty.splitlines()}
+
+
+def _rawpy_provenance() -> dict[str, Any]:
+    try:
+        import rawpy
+    except ImportError as exc:
+        return {"status": "unavailable", "error": f"{type(exc).__name__}: {exc}"}
+    return {
+        "version": getattr(rawpy, "__version__", None),
+        "libraw_version": getattr(rawpy, "libraw_version", None),
+    }
+
+
+def _command_version(command: Sequence[str]) -> dict[str, Any]:
+    try:
+        return {"status": "ok", "output": _command_text(command)}
+    except OSError as exc:
+        return {"status": "unavailable", "error": f"{type(exc).__name__}: {exc}"}
+    except subprocess.CalledProcessError as exc:
+        return {"status": "failed", "returncode": exc.returncode, "output": exc.stdout, "error": exc.stderr}
+
+
+def _command_text(command: Sequence[str]) -> str:
+    completed = subprocess.run(command, check=True, capture_output=True, text=True, timeout=30)
+    return completed.stdout.strip()
+
+
+def _camera_summary(port: str) -> dict[str, Any]:
+    return _command_version(("gphoto2", "--port", port, "--summary"))
+
+
+async def _read_esphome_device_info() -> dict[str, Any]:
+    import aioesphomeapi
+
+    api_key = esphome._load_api_encryption_key(esphome.DEFAULT_SECRETS_PATH)
+    client = aioesphomeapi.APIClient(
+        esphome.DEFAULT_HOST,
+        esphome.DEFAULT_PORT,
+        None,
+        noise_psk=api_key,
+        expected_name=esphome.DEFAULT_EXPECTED_NAME,
+    )
+    await client.connect(login=True)
+    try:
+        info, entities, services = await client.device_info_and_list_entities()
+        return {
+            "name": getattr(info, "name", None),
+            "model": getattr(info, "model", None),
+            "esphome_version": getattr(info, "esphome_version", None),
+            "compilation_time": getattr(info, "compilation_time", None),
+            "project_name": getattr(info, "project_name", None),
+            "project_version": getattr(info, "project_version", None),
+            "entity_count": len(entities),
+            "services": sorted(str(service.name) for service in services),
+        }
+    finally:
+        await client.disconnect()
 
 
 def parse_linearity_factors(value: str) -> tuple[float, ...]:
@@ -515,6 +623,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "off_seconds": args.off_seconds,
         "settle_seconds": args.settle_seconds,
         "include_flat_field": args.include_flat_field,
+        "curve_path": None if args.no_curve else args.curve,
     }
     if args.dry_run:
         output = write_raw_observer_validation_dry_run(
@@ -812,6 +921,12 @@ def _file_reference(path: Path) -> dict[str, str]:
     if not path.is_file():
         raise ValueError(f"required input file does not exist: {path}")
     return {"path": str(path), "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
+
+
+def _file_reference_or_disabled(path: str | Path | None) -> dict[str, str]:
+    if path is None:
+        return {"status": "disabled"}
+    return _file_reference(Path(path))
 
 
 def _write_json(path: Path, data: Mapping[str, Any]) -> None:
