@@ -1206,12 +1206,12 @@ t(h,s,I) ~= alpha(I,h,s) * t(h,s,100)
 ```text
 最新阶段：P0.5 P1 runner fake-device safety execution
 状态：running
-最新提交：0fd15f8 feat(optimization): add raw observer validation dry run
+最新提交：38968d3 docs(measurement): document raw observer dry run boundary
 运行目录：无；测试仅在临时目录生成不可复用 run.json、plan.json、JSONL 记录和 all-off-python.json
 分析文件：src/camera_based_rgbww_optimizer/optimization/measure_raw_observer_validation.py
 分支选择：P0 6.3 的可注入执行分支；实际 CLI 仍硬性要求 --dry-run，fake runner 验证 ambient、Ray/strip 排他点亮、异常 finally 和公共 all_off 的两路关灯
-未解决问题：真实相机 capture adapter、原生 meter 接线、固定曝光 bracket 选择和实测 repeatability/linearity/G1G2 数据均尚未完成
-下一条唯一动作：离线实现真实 capture adapter 所需的支持快门选择，保持 CLI 不暴露实机执行
+未解决问题：真实相机 capture adapter、原生 meter 接线和实测 repeatability/linearity/G1G2 数据均尚未完成
+下一条唯一动作：离线实现 capture adapter，把原生 meter、独立 Ray/strip 曝光缓存和已测试的固定 bracket 快门选择接入同一计划，保持 CLI 不暴露实机执行
 ```
 
 ---

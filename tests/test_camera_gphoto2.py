@@ -121,6 +121,37 @@ Canon EOS R6 Mark III          usb:001,010
             "%Y%m%d-%H%M%S-final002.%C",
         )
 
+    def test_select_supported_shutter_speed_uses_exposure_ratio_not_absolute_seconds(self):
+        choices = ("bulb", "1/8000", "1/250", "1/125", "1/60", "30")
+
+        selected = camera_gphoto2.select_supported_shutter_speed(
+            choices,
+            target_seconds=Fraction(1, 200),
+            min_shutter_speed="1/8000",
+            max_shutter_speed="30",
+        )
+
+        self.assertEqual(selected, "1/250")
+
+    def test_select_supported_shutter_speed_clamps_to_available_bounded_endpoints(self):
+        choices = ("1/8000", "1/250", "1/125", "1/60", "30")
+
+        shortest = camera_gphoto2.select_supported_shutter_speed(
+            choices,
+            target_seconds="1/4000",
+            min_shutter_speed="1/250",
+            max_shutter_speed="1/60",
+        )
+        longest = camera_gphoto2.select_supported_shutter_speed(
+            choices,
+            target_seconds="1/10",
+            min_shutter_speed="1/250",
+            max_shutter_speed="1/60",
+        )
+
+        self.assertEqual(shortest, "1/250")
+        self.assertEqual(longest, "1/60")
+
 
 class CameraGPhoto2CaptureTests(unittest.TestCase):
     def test_capture_sets_parameters_and_returns_saved_file(self):

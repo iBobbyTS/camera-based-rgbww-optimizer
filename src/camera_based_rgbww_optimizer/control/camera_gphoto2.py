@@ -966,6 +966,40 @@ def _bounded_shutter_candidates(
     return tuple(candidates)
 
 
+def select_supported_shutter_speed(
+    choices: Sequence[str],
+    *,
+    target_seconds: float | Fraction | str,
+    min_shutter_speed: str,
+    max_shutter_speed: str,
+) -> str:
+    """Select the available shutter closest in exposure ratio to a target.
+
+    Camera shutter choices are logarithmically spaced. Selecting by absolute
+    seconds would bias a short target toward an excessively long exposure, so
+    this compares the bracketing choices by multiplicative exposure error.
+    """
+
+    target = _coerce_shutter_seconds(target_seconds)
+    if target <= 0:
+        raise GPhoto2Error("target shutter speed must be positive")
+    candidates = _bounded_shutter_candidates(
+        choices,
+        min_shutter_speed=min_shutter_speed,
+        max_shutter_speed=max_shutter_speed,
+    )
+    candidate_seconds = tuple(_parse_shutter_seconds(candidate) for candidate in candidates)
+    floor_index = _floor_shutter_index(candidate_seconds, target)
+    ceil_index = min(floor_index + 1, len(candidates) - 1)
+    floor_seconds = candidate_seconds[floor_index]
+    ceil_seconds = candidate_seconds[ceil_index]
+    if floor_seconds == ceil_seconds:
+        return candidates[floor_index]
+    floor_error_ratio = target / floor_seconds
+    ceil_error_ratio = ceil_seconds / target
+    return candidates[floor_index] if floor_error_ratio <= ceil_error_ratio else candidates[ceil_index]
+
+
 def _nearest_shutter_index(candidates: Sequence[Fraction], seconds: Fraction) -> int:
     if not candidates:
         raise GPhoto2Error("no shutter speed candidates available")
@@ -1054,6 +1088,15 @@ def _parse_shutter_seconds(value: str) -> Fraction:
         return Fraction(normalized)
     except ValueError as exc:
         raise GPhoto2Error(f"unsupported shutter speed value: {value}") from exc
+
+
+def _coerce_shutter_seconds(value: float | Fraction | str) -> Fraction:
+    if isinstance(value, str):
+        return _parse_shutter_seconds(value)
+    try:
+        return Fraction(str(value))
+    except ValueError as exc:
+        raise GPhoto2Error(f"unsupported shutter seconds value: {value}") from exc
 
 
 def _capture_decode_trial(
