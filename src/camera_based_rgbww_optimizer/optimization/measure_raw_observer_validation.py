@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any, Callable, Mapping, Sequence
 
-from camera_based_rgbww_optimizer.control import white_lut as white_lut_control
+from camera_based_rgbww_optimizer.control import all_off, white_lut as white_lut_control
 from camera_based_rgbww_optimizer.paths import PROJECT_ROOT, PROJECT_TMP_DIR
 
 
@@ -22,6 +23,11 @@ DEFAULT_LINEARITY_FACTORS = (0.5, 1.0, 2.0)
 DEFAULT_LINEARITY_REPEATS = 3
 DEFAULT_OFF_SECONDS = 1.0
 DEFAULT_SETTLE_SECONDS = 60.0
+
+StripLightFn = Callable[[int, int, int, int, int], Mapping[str, Any]]
+RaySetCctFn = Callable[..., Mapping[str, Any]]
+CaptureStepFn = Callable[[Mapping[str, Any]], Mapping[str, Any]]
+SleepFn = Callable[[float], None]
 
 
 def build_raw_observer_validation_plan(
@@ -173,6 +179,102 @@ def write_raw_observer_validation_dry_run(
     return output
 
 
+def execute_raw_observer_validation_plan(
+    plan: Mapping[str, Any],
+    *,
+    run_dir: str | Path,
+    strip_light_fn: StripLightFn,
+    ray_set_cct_fn: RaySetCctFn,
+    capture_step_fn: CaptureStepFn,
+    sleep_fn: SleepFn,
+    all_off_fn: Callable[..., Sequence[all_off.ShutdownStep]] = all_off.turn_everything_off,
+) -> Path:
+    """Execute a prebuilt P1 plan with injected device operations and final shutdown.
+
+    The public CLI deliberately does not invoke this function yet. Keeping the
+    device operations injected makes the source-isolation and cleanup contract
+    independently testable before a hardware runner is exposed.
+    """
+
+    plan_data = copy.deepcopy(dict(plan))
+    _validate_executable_plan(plan_data)
+    root = Path(run_dir)
+    root.mkdir(parents=True, exist_ok=False)
+    _write_json(root / "plan.json", plan_data)
+
+    run = {
+        "schema_version": 1,
+        "phase": "P1",
+        "status": "running",
+        "started_at": _utc_now(),
+        "finished_at": None,
+        "inputs": copy.deepcopy(plan_data["inputs"]),
+        "measurement": copy.deepcopy(plan_data["measurement"]),
+        "safety": {"source_isolation": plan_data["measurement"]["source_isolation"]},
+    }
+    _write_json(root / "run.json", run)
+    failure: BaseException | None = None
+    try:
+        for step in plan_data["captures"]:
+            _prepare_capture_source(
+                step,
+                strip_light_fn=strip_light_fn,
+                ray_set_cct_fn=ray_set_cct_fn,
+                sleep_fn=sleep_fn,
+                command_log=root / "commands.jsonl",
+            )
+            _append_jsonl(
+                root / "commands.jsonl",
+                {
+                    "event": "capture_requested",
+                    "at": _utc_now(),
+                    "capture_id": step["capture_id"],
+                    "source": step["source"],
+                    "purpose": step["purpose"],
+                },
+            )
+            capture = dict(capture_step_fn(copy.deepcopy(step)))
+            _append_jsonl(
+                root / "captures.jsonl",
+                {
+                    "capture_id": step["capture_id"],
+                    "source": step["source"],
+                    "purpose": step["purpose"],
+                    "repeat_index": step["repeat_index"],
+                    "exposure_factor": step["exposure_factor"],
+                    "capture": capture,
+                },
+            )
+            _deactivate_capture_source(
+                step,
+                strip_light_fn=strip_light_fn,
+                ray_set_cct_fn=ray_set_cct_fn,
+                command_log=root / "commands.jsonl",
+            )
+    except BaseException as exc:
+        failure = exc
+        _write_json(
+            root / "failure.json",
+            {"at": _utc_now(), "type": type(exc).__name__, "message": str(exc)},
+        )
+        run["status"] = "interrupted" if isinstance(exc, KeyboardInterrupt) else "failed"
+    finally:
+        cleanup = _run_python_cleanup(
+            plan_data,
+            strip_light_fn=strip_light_fn,
+            ray_set_cct_fn=ray_set_cct_fn,
+            all_off_fn=all_off_fn,
+        )
+        _write_json(root / "all-off-python.json", cleanup)
+        if run["status"] == "running":
+            run["status"] = "complete" if _cleanup_succeeded(cleanup) else "failed"
+        run["finished_at"] = _utc_now()
+        _write_json(root / "run.json", run)
+    if failure is not None:
+        raise failure
+    return root
+
+
 def parse_linearity_factors(value: str) -> tuple[float, ...]:
     return _validate_linearity_factors(tuple(float(item.strip()) for item in value.split(",") if item.strip()))
 
@@ -230,6 +332,162 @@ def _validate_linearity_factors(values: Sequence[float]) -> tuple[float, ...]:
     return factors
 
 
+def _validate_executable_plan(plan: Mapping[str, Any]) -> None:
+    captures = plan.get("captures")
+    measurement = plan.get("measurement")
+    if not isinstance(captures, list) or not captures:
+        raise ValueError("plan captures must be a non-empty array")
+    if not isinstance(measurement, Mapping) or not isinstance(measurement.get("anchor"), Mapping):
+        raise ValueError("plan measurement.anchor must be an object")
+    for step in captures:
+        if not isinstance(step, Mapping):
+            raise ValueError("plan capture must be an object")
+        if step.get("source") not in {"ambient", "ray", "strip", "flat_field_ray"}:
+            raise ValueError(f"unsupported capture source: {step.get('source')}")
+        if not bool(step.get("other_source_must_be_off")):
+            raise ValueError("every executable capture must require source isolation")
+
+
+def _prepare_capture_source(
+    step: Mapping[str, Any],
+    *,
+    strip_light_fn: StripLightFn,
+    ray_set_cct_fn: RaySetCctFn,
+    sleep_fn: SleepFn,
+    command_log: Path,
+) -> None:
+    source = str(step["source"])
+    if source == "ambient":
+        _set_strip_off(strip_light_fn, command_log, step, reason="ambient")
+        _set_ray_off(ray_set_cct_fn, step, command_log, reason="ambient")
+    elif source in {"ray", "flat_field_ray"}:
+        _set_strip_off(strip_light_fn, command_log, step, reason="before_ray")
+        _sleep_before_light(step, sleep_fn, command_log)
+        ray = step["ray"]
+        if not isinstance(ray, Mapping):
+            raise ValueError(f"{source} capture requires ray settings")
+        response = ray_set_cct_fn(int(ray["cct"]), intensity=float(ray["intensity_percent"]), gm=int(ray["gm"]))
+        _append_jsonl(
+            command_log,
+            {"event": "ray_on", "at": _utc_now(), "capture_id": step["capture_id"], "response": dict(response)},
+        )
+    elif source == "strip":
+        _set_ray_off(ray_set_cct_fn, step, command_log, reason="before_strip")
+        _sleep_before_light(step, sleep_fn, command_log)
+        command = step["strip_command"]
+        if not isinstance(command, Mapping):
+            raise ValueError("strip capture requires strip_command")
+        response = strip_light_fn(*(int(command[channel]) for channel in ("cw", "ww", "r", "g", "b")))
+        _append_jsonl(
+            command_log,
+            {"event": "strip_on", "at": _utc_now(), "capture_id": step["capture_id"], "response": dict(response)},
+        )
+    else:
+        raise ValueError(f"unsupported capture source: {source}")
+    settle_seconds = float(step["settle_seconds"])
+    sleep_fn(settle_seconds)
+    _append_jsonl(
+        command_log,
+        {"event": "settled", "at": _utc_now(), "capture_id": step["capture_id"], "seconds": settle_seconds},
+    )
+
+
+def _deactivate_capture_source(
+    step: Mapping[str, Any],
+    *,
+    strip_light_fn: StripLightFn,
+    ray_set_cct_fn: RaySetCctFn,
+    command_log: Path,
+) -> None:
+    source = str(step["source"])
+    if source in {"ray", "flat_field_ray"}:
+        _set_ray_off(ray_set_cct_fn, step, command_log, reason="after_capture")
+    elif source == "strip":
+        _set_strip_off(strip_light_fn, command_log, step, reason="after_capture")
+
+
+def _sleep_before_light(step: Mapping[str, Any], sleep_fn: SleepFn, command_log: Path) -> None:
+    seconds = float(step["off_seconds_before"])
+    sleep_fn(seconds)
+    _append_jsonl(
+        command_log,
+        {"event": "off_wait", "at": _utc_now(), "capture_id": step["capture_id"], "seconds": seconds},
+    )
+
+
+def _set_strip_off(
+    strip_light_fn: StripLightFn,
+    command_log: Path,
+    step: Mapping[str, Any],
+    *,
+    reason: str,
+) -> Mapping[str, Any]:
+    response = strip_light_fn(0, 0, 0, 0, 0)
+    _append_jsonl(
+        command_log,
+        {"event": "strip_off", "at": _utc_now(), "capture_id": step["capture_id"], "reason": reason, "response": dict(response)},
+    )
+    return response
+
+
+def _set_ray_off(
+    ray_set_cct_fn: RaySetCctFn,
+    step: Mapping[str, Any],
+    command_log: Path,
+    *,
+    reason: str,
+) -> Mapping[str, Any]:
+    ray = step.get("ray")
+    cct = int(ray["cct"]) if isinstance(ray, Mapping) else DEFAULT_ANCHOR_CCT
+    gm = int(ray["gm"]) if isinstance(ray, Mapping) else DEFAULT_ANCHOR_GM
+    response = ray_set_cct_fn(cct, intensity=0, gm=gm)
+    _append_jsonl(
+        command_log,
+        {"event": "ray_off", "at": _utc_now(), "capture_id": step["capture_id"], "reason": reason, "response": dict(response)},
+    )
+    return response
+
+
+def _run_python_cleanup(
+    plan: Mapping[str, Any],
+    *,
+    strip_light_fn: StripLightFn,
+    ray_set_cct_fn: RaySetCctFn,
+    all_off_fn: Callable[..., Sequence[all_off.ShutdownStep]],
+) -> dict[str, Any]:
+    anchor = plan["measurement"]["anchor"]
+    try:
+        steps = all_off_fn(
+            strip_off_fn=lambda: dict(strip_light_fn(0, 0, 0, 0, 0)),
+            ray_set_cct_fn=ray_set_cct_fn,
+            ray_cct=int(anchor["cct"]),
+            ray_gm=int(anchor["gm"]),
+        )
+        return {"at": _utc_now(), "steps": [_shutdown_step_json(step) for step in steps]}
+    except BaseException as exc:
+        return {
+            "at": _utc_now(),
+            "steps": [],
+            "cleanup_exception": {"type": type(exc).__name__, "message": str(exc)},
+        }
+
+
+def _shutdown_step_json(step: all_off.ShutdownStep | Mapping[str, Any]) -> dict[str, Any]:
+    if isinstance(step, all_off.ShutdownStep):
+        return step.to_jsonable()
+    return dict(step)
+
+
+def _cleanup_succeeded(cleanup: Mapping[str, Any]) -> bool:
+    steps = cleanup.get("steps")
+    return (
+        "cleanup_exception" not in cleanup
+        and isinstance(steps, list)
+        and len(steps) == 2
+        and all(isinstance(item, Mapping) and bool(item.get("ok")) for item in steps)
+    )
+
+
 def _file_reference(path: Path) -> dict[str, str]:
     if not path.is_file():
         raise ValueError(f"required input file does not exist: {path}")
@@ -238,6 +496,15 @@ def _file_reference(path: Path) -> dict[str, str]:
 
 def _write_json(path: Path, data: Mapping[str, Any]) -> None:
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False) + "\n", encoding="utf-8")
+
+
+def _append_jsonl(path: Path, data: Mapping[str, Any]) -> None:
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(data, ensure_ascii=False, sort_keys=True, allow_nan=False) + "\n")
+
+
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat()
 
 
 if __name__ == "__main__":

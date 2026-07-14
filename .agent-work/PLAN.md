@@ -1169,7 +1169,7 @@ t(h,s,I) ~= alpha(I,h,s) * t(h,s,100)
 - [x] native RAW exposure meter。
 - [x] 可选 `meter_fn` 自动曝光路径，旧 decoder 默认路径保持不变。
 - [x] `measure_raw_observer_validation.py` immutable dry-run 计划和测试。
-- [ ] `measure_raw_observer_validation.py` fake-device 执行和 Python cleanup 测试。
+- [x] `measure_raw_observer_validation.py` fake-device 执行和 Python cleanup 测试。
 - [ ] 文档和 skill 更新。
 - [ ] 完整离线验证。
 - [ ] 向用户报告并等待实机批准。
@@ -1201,17 +1201,17 @@ t(h,s,I) ~= alpha(I,h,s) * t(h,s,100)
 
 ---
 
-### 2026-07-14 P0.4 更新
+### 2026-07-14 P0.5 更新
 
 ```text
-最新阶段：P0.4 P1 runner immutable dry-run plan
+最新阶段：P0.5 P1 runner fake-device safety execution
 状态：running
-最新提交：4f6df67 feat(camera): support pluggable auto-exposure meters
-运行目录：无；dry-run 只在临时目录生成 plan.json
+最新提交：0fd15f8 feat(optimization): add raw observer validation dry run
+运行目录：无；测试仅在临时目录生成不可复用 run.json、plan.json、JSONL 记录和 all-off-python.json
 分析文件：src/camera_based_rgbww_optimizer/optimization/measure_raw_observer_validation.py
-分支选择：P0 6.3 的 dry-run 分支；基线 LUT 必须显式传入，计划包含 ambient、Ray/strip 独立基线、交错配对、三档 bracket、可选 flat-field 以及双层关灯合同
-未解决问题：真实执行器、fake-device cleanup 保护、实测 repeatability/linearity/G1G2 数据均尚未完成
-下一条唯一动作：为同一不可变计划加入可注入的 fake-device 执行器和 finally cleanup 测试
+分支选择：P0 6.3 的可注入执行分支；实际 CLI 仍硬性要求 --dry-run，fake runner 验证 ambient、Ray/strip 排他点亮、异常 finally 和公共 all_off 的两路关灯
+未解决问题：真实相机 capture adapter、原生 meter 接线、固定曝光 bracket 选择和实测 repeatability/linearity/G1G2 数据均尚未完成
+下一条唯一动作：离线实现真实 capture adapter 所需的支持快门选择，保持 CLI 不暴露实机执行
 ```
 
 ---
