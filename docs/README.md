@@ -212,6 +212,25 @@ cross-context G1/G2 statistics. It deliberately does not mark P1 pass/fail or
 write empirical observer thresholds; those decisions follow the branches in
 `.agent-work/PLAN.md`.
 
+When P1 reaches its broad exposure-response branch, use the separate
+`measure_raw_shutter_response` runner rather than changing P1's off/on thermal
+protocol. It photographs Ray and strip at the same explicit shutter sequence
+while each source remains on continuously after a warm-up. The dry run is safe
+and device-free; real runs require `--execute --allow-device-control` and the
+same shell cleanup wrapper:
+
+```bash
+.venv/bin/python -m camera_based_rgbww_optimizer.optimization.measure_raw_shutter_response \
+  --baseline-lut /Volumes/4T/temp/rgbww-optimizer/white-lut-calibration/14x5-off-cycle-refined-v2-20260713/white-lut-calibration.json \
+  --dry-run
+```
+
+After a complete run, call
+`camera_based_rgbww_optimizer.optimization.measure_raw_shutter_response.analyze_raw_shutter_response_run`
+from Python. It reports per-source, per-shutter ratios against `1/80`; it does
+not update observer thresholds or decide which device caused a response
+difference.
+
 ## Location Picker
 
 Use the local Web UI to capture a preview and mark color-chart patches:
