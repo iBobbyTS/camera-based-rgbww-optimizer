@@ -101,23 +101,52 @@ class RawShutterResponseTests(unittest.TestCase):
                 "ray": {"1/100": 98.0, "1/80": 100.0, "1/60": 101.0, "1/50": 99.0},
                 "strip": {"1/100": 99.0, "1/80": 100.0, "1/60": 94.0, "1/50": 99.0},
             }
-            for step in plan["captures"]:
+            for index, step in enumerate(plan["captures"]):
                 if step["source"] == "ambient":
-                    captures.append({"capture_id": step["capture_id"], "source": "ambient", "capture": {"raw": "ambient.cr3"}})
+                    captures.append(
+                        {
+                            "capture_id": step["capture_id"],
+                            "source": "ambient",
+                            "capture_started_monotonic_seconds": float(index),
+                            "capture_finished_monotonic_seconds": float(index) + 0.5,
+                            "capture": {"raw": "ambient.cr3"},
+                        }
+                    )
                     continue
                 value = source_values[step["source"]][step["shutter_speed"]]
                 report_path = root / "measurements" / f"{step['capture_id']}.json"
                 report_path.write_text(json.dumps(_report(value)), encoding="utf-8")
-                captures.append({"capture_id": step["capture_id"], "source": step["source"], "capture": {"patch_statistics": str(report_path)}})
+                captures.append(
+                    {
+                        "capture_id": step["capture_id"],
+                        "source": step["source"],
+                        "capture_started_monotonic_seconds": float(index),
+                        "capture_finished_monotonic_seconds": float(index) + 0.5,
+                        "capture": {"patch_statistics": str(report_path)},
+                    }
+                )
             (root / "plan.json").write_text(json.dumps(plan), encoding="utf-8")
             (root / "run.json").write_text(json.dumps({"status": "complete"}), encoding="utf-8")
             (root / "captures.jsonl").write_text("\n".join(json.dumps(item) for item in captures) + "\n", encoding="utf-8")
+            (root / "commands.jsonl").write_text(
+                "\n".join(
+                    [
+                        json.dumps({"event": "ray_on", "capture_id": "0001-ray-shutter-response", "requested_command": {"cct": 5600, "gm": 100, "intensity_percent": 10.0}}),
+                        json.dumps({"event": "strip_on", "capture_id": "0025-strip-shutter-response", "requested_command": {"cw": 560, "ww": 160, "r": 40, "g": 20, "b": 80}}),
+                    ]
+                )
+                + "\n",
+                encoding="utf-8",
+            )
 
             output = measure_raw_shutter_response.analyze_raw_shutter_response_run(root)
             analysis = json.loads(output.read_text(encoding="utf-8"))
             strip = analysis["sources"]["strip"]["1/60"]["relative_to_reference"]
             self.assertEqual(analysis["status"], "ready_for_manual_branch_review")
             self.assertAlmostEqual(strip["p50"], -0.06)
+            self.assertEqual(analysis["capture_timing"]["sources"]["strip"]["valid_capture_count"], 24)
+            self.assertAlmostEqual(analysis["capture_timing"]["sources"]["ray"]["capture_duration_seconds"]["p50"], 0.5)
+            self.assertEqual(analysis["source_commands"]["sources"]["ray"][0]["requested_command"]["intensity_percent"], 10.0)
             self.assertNotIn("decision", analysis)
 
     def test_executor_failure_still_attempts_both_final_shutdowns(self):

@@ -317,13 +317,24 @@ def analyze_raw_shutter_response_run(run_dir: str | Path, *, reference_shutter: 
         raise ValueError(f"shutter-response run is not complete: {run.get('status')}")
     plan = json.loads((root / "plan.json").read_text(encoding="utf-8"))
     captures = [json.loads(line) for line in (root / "captures.jsonl").read_text(encoding="utf-8").splitlines()]
+    steps_by_id = {str(step["capture_id"]): step for step in plan["captures"]}
     source_values: dict[str, dict[str, dict[str, list[float]]]] = collections.defaultdict(
         lambda: collections.defaultdict(lambda: collections.defaultdict(list))
     )
+    capture_durations: dict[str, dict[str, list[float]]] = collections.defaultdict(lambda: collections.defaultdict(list))
+    missing_timing: dict[str, int] = collections.defaultdict(int)
     for entry in captures:
-        step = next(item for item in plan["captures"] if item["capture_id"] == entry["capture_id"])
+        step = steps_by_id.get(str(entry["capture_id"]))
+        if step is None:
+            raise ValueError(f"capture {entry['capture_id']} is not present in plan.json")
         if step["source"] == "ambient":
             continue
+        started = entry.get("capture_started_monotonic_seconds")
+        finished = entry.get("capture_finished_monotonic_seconds")
+        if isinstance(started, (int, float)) and isinstance(finished, (int, float)) and float(finished) >= float(started):
+            capture_durations[str(step["source"])][str(step["shutter_speed"])].append(float(finished) - float(started))
+        else:
+            missing_timing[str(step["source"])] += 1
         report_path = entry["capture"].get("patch_statistics")
         if not isinstance(report_path, str):
             raise ValueError(f"capture {entry['capture_id']} has no patch-statistics report")
@@ -356,6 +367,27 @@ def analyze_raw_shutter_response_run(run_dir: str | Path, *, reference_shutter: 
                 "relative_to_reference_by_plane": {plane: _distribution(values) for plane, values in sorted(by_plane.items())},
             }
         summary[source] = source_summary
+    timing_summary = {
+        source: {
+            "valid_capture_count": sum(len(values) for values in shutters.values()),
+            "missing_capture_count": missing_timing[source],
+            "capture_duration_seconds": _distribution([value for values in shutters.values() for value in values]),
+            "capture_duration_seconds_by_shutter": {
+                shutter: _distribution(values) for shutter, values in sorted(shutters.items())
+            },
+        }
+        for source, shutters in sorted(capture_durations.items())
+    }
+    for source, count in missing_timing.items():
+        timing_summary.setdefault(
+            source,
+            {
+                "valid_capture_count": 0,
+                "missing_capture_count": count,
+                "capture_duration_seconds": None,
+                "capture_duration_seconds_by_shutter": {},
+            },
+        )
     output = {
         "schema_version": 1,
         "analysis": "raw_shutter_response",
@@ -363,11 +395,35 @@ def analyze_raw_shutter_response_run(run_dir: str | Path, *, reference_shutter: 
         "reference_shutter": reference_shutter,
         "status": "ready_for_manual_branch_review",
         "sources": summary,
+        "capture_timing": {
+            "clock": "monotonic_seconds",
+            "sources": timing_summary,
+        },
+        "source_commands": _collect_source_commands(root / "commands.jsonl"),
         "notes": ["No shutter-response pass/fail conclusion or observer-threshold update is inferred automatically."],
     }
     output_path = root / "analysis.json"
     _write_json(output_path, output)
     return output_path
+
+
+def _collect_source_commands(path: Path) -> dict[str, Any]:
+    if not path.is_file():
+        return {"status": "not_recorded", "sources": {}}
+    sources: dict[str, list[dict[str, Any]]] = collections.defaultdict(list)
+    for line in path.read_text(encoding="utf-8").splitlines():
+        event = json.loads(line)
+        name = event.get("event")
+        if name not in {"ray_on", "strip_on"} or not isinstance(event.get("requested_command"), Mapping):
+            continue
+        source = str(name).removesuffix("_on")
+        sources[source].append(
+            {
+                "capture_id": event.get("capture_id"),
+                "requested_command": dict(event["requested_command"]),
+            }
+        )
+    return {"status": "recorded", "sources": dict(sorted(sources.items()))}
 
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
