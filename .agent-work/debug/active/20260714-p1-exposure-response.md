@@ -35,7 +35,7 @@ P1 takes PLAN.md section 7.5 branch D:
 
 Run only during a new pre-05:00 window and only after the current raw reports are retained unchanged.
 
-1. Use a lower Ray intensity and a lower strip command so both sources can be captured at the same four shutters `1/100`, `1/80`, `1/60`, and `1/50` without clipping at ISO 100 / f4. Capture five frames per shutter with the source continuously on after a documented warm-up; do not use the P1 off/on cadence for this shutter-timing diagnosis.
+1. Use a lower Ray intensity and a lower strip command so both sources can be captured at the same four shutters `1/100`, `1/80`, `1/60`, and `1/50` without clipping at ISO 100 / f4. Capture six frames per shutter with the source continuously on after a documented warm-up; the symmetric eight-step order contains each shutter twice and the default three cycles therefore produces six observations. Do not use the P1 off/on cadence for this shutter-timing diagnosis.
 2. Execute the exact shutter order `1/80, 1/60, 1/100, 1/50, 1/50, 1/100, 1/60, 1/80` for each source. Record actual configured shutter, source command, capture monotonic time, optical black levels, and per-plane raw plus ambient-subtracted statistics.
 3. Branch on the result:
    - Both sources reproduce the same shutter signature: investigate camera timing, anti-flicker/shutter mode, and camera-side exposure metadata before changing strip firmware.

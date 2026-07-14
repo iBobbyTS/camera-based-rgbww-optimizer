@@ -32,6 +32,7 @@ RaySetCctFn = Callable[..., Mapping[str, Any]]
 CaptureStepFn = Callable[[Mapping[str, Any]], Mapping[str, Any]]
 SleepFn = Callable[[float], None]
 ProvenanceFn = Callable[[], Mapping[str, Any]]
+MonotonicFn = Callable[[], float]
 
 
 def build_raw_shutter_response_plan(
@@ -153,6 +154,7 @@ def execute_raw_shutter_response_plan(
     sleep_fn: SleepFn,
     all_off_fn: Callable[..., Sequence[all_off.ShutdownStep]] = all_off.turn_everything_off,
     provenance_fn: ProvenanceFn | None = None,
+    monotonic_fn: MonotonicFn = time.monotonic,
 ) -> Path:
     """Execute continuous source groups while preserving source isolation and final cleanup."""
 
@@ -187,8 +189,15 @@ def execute_raw_shutter_response_plan(
 
         ambient = plan_data["captures"][0]
         _set_both_off(plan_data, strip_light_fn, ray_set_cct_fn, root / "commands.jsonl", capture_id=ambient["capture_id"])
+        capture_started_monotonic_seconds = monotonic_fn()
         capture = dict(capture_step_fn(copy.deepcopy(ambient)))
-        _append_capture(root, ambient, capture)
+        _append_capture(
+            root,
+            ambient,
+            capture,
+            capture_started_monotonic_seconds=capture_started_monotonic_seconds,
+            capture_finished_monotonic_seconds=monotonic_fn(),
+        )
 
         for source in ("ray", "strip"):
             group = [step for step in plan_data["captures"] if step["source"] == source]
@@ -206,7 +215,15 @@ def execute_raw_shutter_response_plan(
                     root / "commands.jsonl",
                     {"event": "capture_requested", "at": _utc_now(), "capture_id": step["capture_id"], "source": source},
                 )
-                _append_capture(root, step, dict(capture_step_fn(copy.deepcopy(step))))
+                capture_started_monotonic_seconds = monotonic_fn()
+                capture = dict(capture_step_fn(copy.deepcopy(step)))
+                _append_capture(
+                    root,
+                    step,
+                    capture,
+                    capture_started_monotonic_seconds=capture_started_monotonic_seconds,
+                    capture_finished_monotonic_seconds=monotonic_fn(),
+                )
             _deactivate_source(source, plan_data, strip_light_fn, ray_set_cct_fn, root / "commands.jsonl", str(group[-1]["capture_id"]))
     except BaseException as exc:
         failure = exc
@@ -439,15 +456,29 @@ def _activate_source_group(source: str, *, plan: Mapping[str, Any], strip_light_
     _set_both_off(plan, strip_light_fn, ray_set_cct_fn, command_log, capture_id=capture_id)
     sleep_fn(float(measurement["off_seconds_before_source"]))
     if source == "ray":
-        ray_set_cct_fn(
-            int(anchor["cct"]),
-            intensity_percent=float(anchor["ray_intensity_percent"]),
-            gm=int(anchor["gm"]),
+        command = {
+            "cct": int(anchor["cct"]),
+            "gm": int(anchor["gm"]),
+            "intensity_percent": float(anchor["ray_intensity_percent"]),
+        }
+        response = ray_set_cct_fn(
+            command["cct"],
+            intensity_percent=command["intensity_percent"],
+            gm=command["gm"],
         )
     else:
         command = anchor["strip_command"]
-        strip_light_fn(*(int(command[channel]) for channel in ("cw", "ww", "r", "g", "b")))
-    _append_jsonl(command_log, {"event": f"{source}_on", "at": _utc_now(), "capture_id": capture_id})
+        response = strip_light_fn(*(int(command[channel]) for channel in ("cw", "ww", "r", "g", "b")))
+    _append_jsonl(
+        command_log,
+        {
+            "event": f"{source}_on",
+            "at": _utc_now(),
+            "capture_id": capture_id,
+            "requested_command": dict(command),
+            "response": dict(response),
+        },
+    )
     sleep_fn(float(measurement["warmup_seconds"]))
     _append_jsonl(command_log, {"event": "source_warmed", "at": _utc_now(), "capture_id": capture_id, "seconds": measurement["warmup_seconds"]})
 
@@ -461,8 +492,28 @@ def _deactivate_source(source: str, plan: Mapping[str, Any], strip_light_fn: Str
     _append_jsonl(command_log, {"event": f"{source}_off", "at": _utc_now(), "capture_id": capture_id})
 
 
-def _append_capture(root: Path, step: Mapping[str, Any], capture: Mapping[str, Any]) -> None:
-    _append_jsonl(root / "captures.jsonl", {"capture_id": step["capture_id"], "source": step["source"], "purpose": step["purpose"], "shutter_speed": step["shutter_speed"], "cycle": step.get("cycle"), "order_index": step.get("order_index"), "capture": dict(capture)})
+def _append_capture(
+    root: Path,
+    step: Mapping[str, Any],
+    capture: Mapping[str, Any],
+    *,
+    capture_started_monotonic_seconds: float,
+    capture_finished_monotonic_seconds: float,
+) -> None:
+    _append_jsonl(
+        root / "captures.jsonl",
+        {
+            "capture_id": step["capture_id"],
+            "source": step["source"],
+            "purpose": step["purpose"],
+            "shutter_speed": step["shutter_speed"],
+            "cycle": step.get("cycle"),
+            "order_index": step.get("order_index"),
+            "capture_started_monotonic_seconds": float(capture_started_monotonic_seconds),
+            "capture_finished_monotonic_seconds": float(capture_finished_monotonic_seconds),
+            "capture": dict(capture),
+        },
+    )
 
 
 def _cleanup(plan: Mapping[str, Any], strip_light_fn: StripLightFn, ray_set_cct_fn: RaySetCctFn, all_off_fn: Callable[..., Sequence[all_off.ShutdownStep]]) -> dict[str, Any]:

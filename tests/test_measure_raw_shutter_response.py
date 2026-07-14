@@ -69,11 +69,24 @@ class RawShutterResponseTests(unittest.TestCase):
                 ray_set_cct_fn=ray,
                 capture_step_fn=lambda step: captured.append(step["capture_id"]) or {"raw": step["capture_id"]},
                 sleep_fn=lambda _seconds: None,
+                monotonic_fn=iter(float(index) for index in range(100)).__next__,
             )
 
             self.assertEqual(len(captured), len(plan["captures"]))
             self.assertEqual(sum(1 for call in calls if call[0] == "ray" and call[3] == 10.0), 1)
             self.assertEqual(sum(1 for call in calls if call[0] == "strip" and call[1] == (560, 160, 40, 20, 80)), 1)
+            command_events = [json.loads(line) for line in (result / "commands.jsonl").read_text(encoding="utf-8").splitlines()]
+            ray_on = next(event for event in command_events if event["event"] == "ray_on")
+            strip_on = next(event for event in command_events if event["event"] == "strip_on")
+            self.assertEqual(ray_on["requested_command"], {"cct": 5600, "gm": 100, "intensity_percent": 10.0})
+            self.assertEqual(strip_on["requested_command"], {"cw": 560, "ww": 160, "r": 40, "g": 20, "b": 80})
+            recorded_captures = [json.loads(line) for line in (result / "captures.jsonl").read_text(encoding="utf-8").splitlines()]
+            self.assertEqual(recorded_captures[0]["capture_started_monotonic_seconds"], 0.0)
+            self.assertEqual(recorded_captures[0]["capture_finished_monotonic_seconds"], 1.0)
+            self.assertLess(
+                recorded_captures[-1]["capture_started_monotonic_seconds"],
+                recorded_captures[-1]["capture_finished_monotonic_seconds"],
+            )
             self.assertEqual(json.loads((result / "run.json").read_text(encoding="utf-8"))["status"], "complete")
             cleanup = json.loads((result / "all-off-python.json").read_text(encoding="utf-8"))
             self.assertTrue(all(step["ok"] for step in cleanup["steps"]))
