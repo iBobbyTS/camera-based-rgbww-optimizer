@@ -21,6 +21,9 @@ PLANE_ORDER = ("R", "G1", "G2", "B")
 DEFAULT_OBSERVER_CONFIG = PROJECT_ROOT / "config/camera/raw-observer.json"
 DEFAULT_LOCATION_CONFIG = PROJECT_ROOT / "config/location/locations-20260709-012045.json"
 DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "tmp/raw-observer-validation"
+BLACK_LEVEL_FALLBACK_MIN_SAMPLES = 128
+BLACK_LEVEL_FALLBACK_MIN_MODAL_FRACTION = 0.01
+BLACK_LEVEL_FALLBACK_TOLERANCE_FRACTION = 0.01
 
 
 @dataclass(frozen=True)
@@ -76,16 +79,25 @@ def load_raw_mosaic(path: str | Path) -> RawMosaicFrame:
         mosaic = np.asarray(raw.raw_image_visible).copy()
         raw_pattern = np.asarray(raw.raw_pattern, dtype="int16").copy()
         color_desc = bytes(raw.color_desc).decode("ascii", errors="replace").rstrip("\x00 ")
+        reported_black_levels = tuple(float(value) for value in raw.black_level_per_channel)
         camera_white = getattr(raw, "camera_white_level_per_channel", None)
         camera_white_levels = None if camera_white is None else tuple(float(value) for value in camera_white)
         sizes = raw.sizes
+        black_levels, black_metadata = _resolve_black_levels(
+            reported_black_levels=reported_black_levels,
+            raw_image=np.asarray(raw.raw_image),
+            raw_pattern=raw_pattern,
+            top_margin=int(sizes.top_margin),
+            left_margin=int(sizes.left_margin),
+            white_level=float(raw.white_level),
+        )
         metadata = {
             "rawpy_version": str(getattr(rawpy, "__version__", "unknown")),
             "libraw_version": [int(value) for value in getattr(rawpy, "libraw_version", ())],
             "visible_shape": [int(value) for value in mosaic.shape],
             "raw_pattern_indices": raw_pattern.tolist(),
             "color_desc": color_desc,
-            "black_level_per_channel": [float(value) for value in raw.black_level_per_channel],
+            **black_metadata,
             "white_level": float(raw.white_level),
             "camera_white_level_per_channel": (
                 None if camera_white_levels is None else list(camera_white_levels)
@@ -104,11 +116,94 @@ def load_raw_mosaic(path: str | Path) -> RawMosaicFrame:
             mosaic=mosaic,
             raw_pattern=raw_pattern,
             color_desc=color_desc,
-            black_levels=tuple(float(value) for value in raw.black_level_per_channel),
+            black_levels=black_levels,
             white_level=float(raw.white_level),
             camera_white_levels=camera_white_levels,
             metadata=metadata,
         )
+
+
+def _resolve_black_levels(
+    *,
+    reported_black_levels: Sequence[float],
+    raw_image: np.ndarray,
+    raw_pattern: np.ndarray,
+    top_margin: int,
+    left_margin: int,
+    white_level: float,
+) -> tuple[tuple[float, ...], dict[str, Any]]:
+    """Use optical black margins only when RAW metadata is materially implausible."""
+
+    reported = tuple(float(value) for value in reported_black_levels)
+    optical = _optical_black_levels(
+        raw_image=raw_image,
+        raw_pattern=raw_pattern,
+        color_count=len(reported),
+        top_margin=top_margin,
+        left_margin=left_margin,
+    )
+    tolerance = max(16.0, float(white_level) * BLACK_LEVEL_FALLBACK_TOLERANCE_FRACTION)
+    resolved: list[float] = []
+    sources: list[str] = []
+    for index, value in enumerate(reported):
+        candidate = optical[index] if optical is not None else None
+        if candidate is not None and abs(value - candidate) > tolerance:
+            resolved.append(candidate)
+            sources.append("optical_black_margin_fallback")
+        else:
+            resolved.append(value)
+            sources.append("metadata")
+    return tuple(resolved), {
+        "black_level_per_channel_reported": list(reported),
+        "black_level_per_channel": resolved,
+        "black_level_source_per_channel": sources,
+        "optical_black_level_per_channel": None if optical is None else list(optical),
+        "black_level_metadata_tolerance_dn": tolerance,
+    }
+
+
+def _optical_black_levels(
+    *,
+    raw_image: np.ndarray,
+    raw_pattern: np.ndarray,
+    color_count: int,
+    top_margin: int,
+    left_margin: int,
+) -> tuple[float | None, ...] | None:
+    image = np.asarray(raw_image)
+    pattern = np.asarray(raw_pattern)
+    if image.ndim != 2 or pattern.shape != (2, 2):
+        return None
+    top_limit = min(max(0, int(top_margin)), image.shape[0])
+    left_limit = min(max(0, int(left_margin)), image.shape[1])
+    if top_limit == 0 and left_limit == 0:
+        return None
+
+    samples_by_index: list[list[np.ndarray]] = [[] for _ in range(color_count)]
+    for row_offset in range(2):
+        for column_offset in range(2):
+            color_index = int(pattern[row_offset, column_offset])
+            if color_index < 0 or color_index >= color_count:
+                return None
+            if top_limit:
+                samples_by_index[color_index].append(image[row_offset:top_limit:2, column_offset::2])
+            if left_limit:
+                samples_by_index[color_index].append(image[row_offset::2, column_offset:left_limit:2])
+
+    levels: list[float | None] = []
+    for samples in samples_by_index:
+        values = np.concatenate([np.asarray(sample).reshape(-1) for sample in samples]) if samples else np.empty(0)
+        finite = values[np.isfinite(values)]
+        if finite.size < BLACK_LEVEL_FALLBACK_MIN_SAMPLES:
+            levels.append(None)
+            continue
+        codes, counts = np.unique(finite.astype("int64", copy=False), return_counts=True)
+        modal_index = int(np.argmax(counts))
+        if counts[modal_index] / finite.size < BLACK_LEVEL_FALLBACK_MIN_MODAL_FRACTION:
+            levels.append(None)
+            continue
+        levels.append(float(codes[modal_index]))
+    return tuple(levels)
 
 
 def describe_cfa_planes(
@@ -151,6 +246,12 @@ def describe_cfa_planes(
             finite_samples = samples[np.isfinite(samples)]
             observed_max = float(finite_samples.max()) if finite_samples.size else None
             black_level = float(frame.black_levels[color_index])
+            black_level_sources = frame.metadata.get("black_level_source_per_channel")
+            black_level_source = (
+                str(black_level_sources[color_index])
+                if isinstance(black_level_sources, Sequence) and color_index < len(black_level_sources)
+                else "frame_black_levels"
+            )
             camera_white = _channel_value(frame.camera_white_levels, color_index)
             effective_white, white_source = _resolve_white_level(
                 camera_white=camera_white,
@@ -166,6 +267,7 @@ def describe_cfa_planes(
                 "row_offset": row_offset,
                 "column_offset": column_offset,
                 "black_level": black_level,
+                "black_level_source": black_level_source,
                 "camera_white_level": camera_white,
                 "global_white_level": float(frame.white_level),
                 "effective_white_level": effective_white,
@@ -465,6 +567,7 @@ def summarize_plane(
                 "row_offset",
                 "column_offset",
                 "black_level",
+                "black_level_source",
                 "camera_white_level",
                 "global_white_level",
                 "effective_white_level",

@@ -72,6 +72,39 @@ def analyze(frame, *, exposure=1.0, regions=None, config=None):
 
 
 class RawMosaicCfaTests(unittest.TestCase):
+    def test_recovers_implausible_black_metadata_from_optical_margins(self):
+        raw_image = np.full((48, 48), 512, dtype="uint16")
+        raw_image[8:, 8:] = 3000
+
+        levels, metadata = raw_mosaic_patches._resolve_black_levels(
+            reported_black_levels=(0, 44, 124, 90),
+            raw_image=raw_image,
+            raw_pattern=np.asarray(((0, 1), (3, 2))),
+            top_margin=8,
+            left_margin=8,
+            white_level=16383,
+        )
+
+        self.assertEqual(levels, (512.0, 512.0, 512.0, 512.0))
+        self.assertEqual(metadata["black_level_per_channel_reported"], [0.0, 44.0, 124.0, 90.0])
+        self.assertEqual(metadata["black_level_source_per_channel"], ["optical_black_margin_fallback"] * 4)
+
+    def test_keeps_black_metadata_when_optical_margins_agree(self):
+        raw_image = np.full((48, 48), 512, dtype="uint16")
+        raw_image[8:, 8:] = 3000
+
+        levels, metadata = raw_mosaic_patches._resolve_black_levels(
+            reported_black_levels=(512, 512, 512, 512),
+            raw_image=raw_image,
+            raw_pattern=np.asarray(((0, 1), (3, 2))),
+            top_margin=8,
+            left_margin=8,
+            white_level=16383,
+        )
+
+        self.assertEqual(levels, (512.0, 512.0, 512.0, 512.0))
+        self.assertEqual(metadata["black_level_source_per_channel"], ["metadata"] * 4)
+
     def test_resolves_all_standard_bayer_patterns(self):
         patterns = {
             "RGGB": ((0, 1), (3, 2)),

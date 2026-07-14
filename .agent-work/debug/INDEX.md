@@ -2,6 +2,7 @@
 
 | file | summary |
 | --- | --- |
+| active/20260714-p1-raw-black-level-linearity.md | P1 CR3 brackets show a shared fixed raw intercept because CR3 black-level metadata is implausible; validate a black-level fallback offline before another capture. |
 | active/20260712-white-lut-repeatability-and-strict-anchors.md | Measure repeatability, validate strict anchors, and explain the cross-day regression of near-boundary 14x5 nodes. |
 
 ## Unresolved
