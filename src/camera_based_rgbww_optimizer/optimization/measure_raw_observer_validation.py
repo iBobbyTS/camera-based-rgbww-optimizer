@@ -607,6 +607,16 @@ def _write_native_capture_report(
         kwargs["ambient_raw_file"] = ambient_capture.saved_file
         kwargs["ambient_exposure_seconds"] = float(Fraction(ambient_capture.settings.shutter_speed))
     report = raw_analyze_fn(capture.saved_file, **kwargs)
+    report = dict(report)
+    report["analysis_context"] = {
+        "capture_id": str(step["capture_id"]),
+        "source": str(step["source"]),
+        "purpose": str(step["purpose"]),
+        "repeat_index": step.get("repeat_index"),
+        "exposure_factor": step.get("exposure_factor"),
+        "shutter_speed": capture.settings.shutter_speed,
+        "capture_path": str(capture.saved_file),
+    }
     path = measurements_dir / f"{step['capture_id']}.patch-statistics.json"
     raw_report_writer(path, report)
     quality = report.get("quality") if isinstance(report, Mapping) else None

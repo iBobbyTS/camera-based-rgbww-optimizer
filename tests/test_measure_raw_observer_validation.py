@@ -364,6 +364,11 @@ class RawObserverValidationPlanTests(unittest.TestCase):
             self.assertTrue(all(call["decode_formats"] == () for call in auto_calls))
             self.assertEqual(fixed_calls[-1]["settings"].shutter_speed, "1/125")
             self.assertEqual(len(list(measurements_dir.glob("*.patch-statistics.json"))), 5)
+            stored_report = json.loads(
+                (measurements_dir / f"{strip_bracket['capture_id']}.patch-statistics.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(stored_report["analysis_context"]["source"], "strip")
+            self.assertEqual(stored_report["analysis_context"]["exposure_factor"], 0.5)
             self.assertEqual(list(root.rglob("*.npy")), [])
 
     def _plan(self, root: Path):
