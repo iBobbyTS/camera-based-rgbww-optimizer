@@ -35,6 +35,28 @@ class RawMosaicFrame:
     metadata: dict[str, Any]
 
 
+@dataclass(frozen=True)
+class RawExposureMeterResult:
+    """Native-Bayer exposure result expressed on the existing 16-bit meter scale."""
+
+    exposure_metric: int
+    raw_visible_max: int | None
+    plane_max: dict[str, float | None]
+    clipped_fraction: float | None
+    low_signal_fraction: float | None
+    quality_status: str
+
+    def to_jsonable(self) -> dict[str, Any]:
+        return {
+            "exposure_metric": self.exposure_metric,
+            "raw_visible_max": self.raw_visible_max,
+            "plane_max": self.plane_max,
+            "clipped_fraction": self.clipped_fraction,
+            "low_signal_fraction": self.low_signal_fraction,
+            "quality_status": self.quality_status,
+        }
+
+
 def load_observer_config(path: str | Path = DEFAULT_OBSERVER_CONFIG) -> dict[str, Any]:
     config_path = Path(path)
     data = json.loads(config_path.read_text(encoding="utf-8"))
@@ -313,6 +335,77 @@ def analyze_mosaic_patches(
     }
     report["quality"] = summarize_report_quality(patches)
     return report
+
+
+def meter_mosaic_exposure(
+    frame: RawMosaicFrame,
+    *,
+    regions: Sequence[Mapping[str, Any]],
+    observer_config: Mapping[str, Any],
+    target_scale: int = 65535,
+) -> RawExposureMeterResult:
+    """Meter mapped native-Bayer regions without demosaic or persistent decodes."""
+
+    if target_scale <= 0:
+        raise ValueError("target_scale must be positive")
+    report = analyze_mosaic_patches(
+        frame,
+        regions=regions,
+        exposure_seconds=1.0,
+        observer_config=observer_config,
+        combine_green=False,
+    )
+    plane_max: dict[str, float | None] = {label: None for label in PLANE_ORDER}
+    clipped_values: list[tuple[float, int]] = []
+    low_signal_values: list[tuple[float, int]] = []
+    for patch in report["patches"]:
+        if not patch["optimization_eligible"]:
+            continue
+        for label, plane in patch["planes"].items():
+            maximum = plane["statistics"]["black_corrected_normalized"]["maximum"]
+            if maximum is not None:
+                current = plane_max[label]
+                plane_max[label] = float(maximum) if current is None else max(float(current), float(maximum))
+            valid_count = int(plane["metrics"]["valid_pixel_count"])
+            for values, metric_name in (
+                (clipped_values, "clipped_fraction"),
+                (low_signal_values, "near_noise_floor_fraction"),
+            ):
+                metric = plane["metrics"][metric_name]
+                if metric is not None and valid_count > 0:
+                    values.append((float(metric), valid_count))
+    finite_maxima = [value for value in plane_max.values() if value is not None]
+    normalized_max = min(1.0, max(0.0, max(finite_maxima, default=0.0)))
+    return RawExposureMeterResult(
+        exposure_metric=int(round(normalized_max * target_scale)),
+        raw_visible_max=_raw_visible_max(frame.mosaic),
+        plane_max=plane_max,
+        clipped_fraction=_weighted_fraction(clipped_values),
+        low_signal_fraction=_weighted_fraction(low_signal_values),
+        quality_status=str(report["quality"]["status"]),
+    )
+
+
+def meter_raw_exposure(
+    raw_file: str | Path,
+    *,
+    location_config_path: str | Path = DEFAULT_LOCATION_CONFIG,
+    observer_config_path: str | Path = DEFAULT_OBSERVER_CONFIG,
+    target_scale: int = 65535,
+) -> RawExposureMeterResult:
+    """Load a CR3 and meter its saved chart regions directly in the Bayer mosaic."""
+
+    frame = load_raw_mosaic(raw_file)
+    regions, _ = load_mapped_location_regions(
+        location_config_path,
+        target_shape=(int(frame.mosaic.shape[0]), int(frame.mosaic.shape[1])),
+    )
+    return meter_mosaic_exposure(
+        frame,
+        regions=regions,
+        observer_config=load_observer_config(observer_config_path),
+        target_scale=target_scale,
+    )
 
 
 def summarize_plane(
@@ -809,6 +902,8 @@ def _distribution_statistics(values: np.ndarray, trim_fraction: float) -> dict[s
     trimmed = ordered[trim_count : ordered.size - trim_count] if trim_count else ordered
     median = float(np.median(ordered))
     return {
+        "minimum": float(np.min(ordered)),
+        "maximum": float(np.max(ordered)),
         "mean": float(np.mean(ordered)),
         "median": median,
         "trimmed_mean": float(np.mean(trimmed)),
@@ -818,7 +913,7 @@ def _distribution_statistics(values: np.ndarray, trim_fraction: float) -> dict[s
 
 
 def _empty_statistics() -> dict[str, None]:
-    return {key: None for key in ("mean", "median", "trimmed_mean", "mad", "variance")}
+    return {key: None for key in ("minimum", "maximum", "mean", "median", "trimmed_mean", "mad", "variance")}
 
 
 def _scale_statistics(statistics: Mapping[str, float | None], exposure_seconds: float) -> dict[str, float | None]:
@@ -843,6 +938,16 @@ def _refresh_patch_quality(patch: dict[str, Any]) -> None:
         patch["quality_status"] = "pending_thresholds"
     else:
         patch["quality_status"] = "accepted"
+
+
+def _weighted_fraction(values: Sequence[tuple[float, int]]) -> float | None:
+    total = sum(weight for _, weight in values)
+    return None if total == 0 else sum(value * weight for value, weight in values) / total
+
+
+def _raw_visible_max(mosaic: np.ndarray) -> int | None:
+    finite = np.asarray(mosaic, dtype="float64")[np.isfinite(mosaic)]
+    return None if finite.size == 0 else int(np.max(finite))
 
 
 def _channel_value(values: tuple[float, ...] | None, index: int) -> float | None:

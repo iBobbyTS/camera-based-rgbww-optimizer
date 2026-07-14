@@ -1166,7 +1166,7 @@ t(h,s,I) ~= alpha(I,h,s) * t(h,s,100)
 
 - [x] `raw_observer_analysis.py`。
 - [x] repeatability/linearity/G1G2 合成测试。
-- [ ] native RAW exposure meter。
+- [x] native RAW exposure meter。
 - [ ] `measure_raw_observer_validation.py` dry-run 和 fake-device 测试。
 - [ ] 文档和 skill 更新。
 - [ ] 完整离线验证。
@@ -1202,14 +1202,14 @@ t(h,s,I) ~= alpha(I,h,s) * t(h,s,100)
 ### 2026-07-14 P0.2 更新
 
 ```text
-最新阶段：P0.2 raw observer pure analysis
+最新阶段：P0.3 native RAW exposure meter
 状态：running
-最新提交：待生成（本次小功能提交）
+最新提交：59581ef feat(measurement): analyze native Bayer observer reports
 运行目录：无；仅合成 JSON 报告
-分析文件：src/camera_based_rgbww_optimizer/measurement/raw_observer_analysis.py
+分析文件：src/camera_based_rgbww_optimizer/measurement/raw_mosaic_patches.py
 分支选择：P0 离线工程；未进入任何实机分支
-未解决问题：native RAW exposure meter、P1 dry-run runner、实测 repeatability/linearity/G1G2 数据均尚未完成
-下一条唯一动作：实现 native RAW exposure meter，并保持旧 auto_expose_capture 默认路径不变
+未解决问题：将 native meter 作为可选 meter_fn 接入 auto_expose_capture、P1 dry-run runner、实测 repeatability/linearity/G1G2 数据均尚未完成
+下一条唯一动作：将 native meter 作为可选 meter_fn 接入 auto_expose_capture，并保持旧 decode 默认路径不变
 ```
 
 ---

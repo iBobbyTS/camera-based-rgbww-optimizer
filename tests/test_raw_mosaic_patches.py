@@ -204,6 +204,34 @@ class RawMosaicRegionTests(unittest.TestCase):
 
 
 class RawMosaicStatisticsTests(unittest.TestCase):
+    def test_native_exposure_meter_normalizes_patch_plane_max_to_16bit_scale(self):
+        meter = raw_mosaic_patches.meter_mosaic_exposure(
+            make_frame(np.full((4, 4), 500)),
+            regions=[full_region()],
+            observer_config=make_config(),
+        )
+
+        self.assertEqual(meter.exposure_metric, 32768)
+        self.assertEqual(meter.raw_visible_max, 500)
+        self.assertEqual(meter.plane_max, {"R": 0.5, "G1": 0.5, "G2": 0.5, "B": 0.5})
+        self.assertEqual(meter.clipped_fraction, 0.0)
+        self.assertEqual(meter.low_signal_fraction, 0.0)
+        self.assertEqual(meter.quality_status, "accepted")
+        json.dumps(meter.to_jsonable(), allow_nan=False)
+
+    def test_native_exposure_meter_aggregates_clipping_and_low_signal_by_valid_pixels(self):
+        mosaic = np.array([[1000, 500], [0, 500]])
+        meter = raw_mosaic_patches.meter_mosaic_exposure(
+            make_frame(mosaic),
+            regions=[full_region()],
+            observer_config=make_config(maximum_clipped_fraction=0.0),
+        )
+
+        self.assertEqual(meter.exposure_metric, 65535)
+        self.assertAlmostEqual(meter.clipped_fraction, 0.25)
+        self.assertAlmostEqual(meter.low_signal_fraction, 0.25)
+        self.assertEqual(meter.quality_status, "rejected")
+
     def test_exposure_normalization_matches_synthetic_linear_signal(self):
         half_second = analyze(make_frame(np.full((4, 4), 100)), exposure=0.5)
         one_second = analyze(make_frame(np.full((4, 4), 200)), exposure=1.0)
