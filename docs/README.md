@@ -227,9 +227,10 @@ dedicated `tmp/run-raw-shutter-response.zsh` shell wrapper:
 
 After a complete run, call
 `camera_based_rgbww_optimizer.optimization.measure_raw_shutter_response.analyze_raw_shutter_response_run`
-from Python. It reports per-source, per-shutter ratios against `1/80`; it does
-not update observer thresholds or decide which device caused a response
-difference.
+from Python. It reports per-source, per-shutter ratios against `1/80`, capture
+duration distributions from the monotonic timestamps, and the recorded source-on
+commands. It does not update observer thresholds or decide which device caused a
+response difference.
 
 ## Location Picker
 
