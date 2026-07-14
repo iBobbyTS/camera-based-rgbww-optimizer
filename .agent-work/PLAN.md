@@ -1201,17 +1201,17 @@ t(h,s,I) ~= alpha(I,h,s) * t(h,s,100)
 
 ---
 
-### 2026-07-14 P0.6 更新
+### 2026-07-14 P1.1 更新
 
 ```text
-最新阶段：P0 native capture adapter complete
-状态：code_complete_waiting_for_measurement
-最新提交：ba2cc65 feat(camera): select supported bracket shutter speeds
-运行目录：无；测试仅在临时目录生成不可复用 run.json、plan.json、JSONL 记录、native RAW report 和 all-off-python.json
+最新阶段：P1 RAW observer measurement
+状态：running
+最新提交：1ee684f feat(optimization): gate raw observer hardware execution
+运行目录：/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/20260714-011100-p1
 分析文件：src/camera_based_rgbww_optimizer/optimization/measure_raw_observer_validation.py
-分支选择：P0 6.3；真实 capture adapter 已离线验证 native meter、独立 Ray/strip 快门缓存、支持快门 bracket、ambient subtraction 和 JSON-only report，但 CLI 仍硬性要求 --dry-run
-未解决问题：实机 P1 的显式 execute CLI、shell EXIT trap、连接前检查，以及实测 repeatability/linearity/G1G2 数据均尚未完成
-下一条唯一动作：实现需要 --execute 与 --allow-high-output 的 P1 shell wrapper 和 CLI 入口，先以 fake 依赖完整测试，不自行启动实拍
+分支选择：P1 7.3 正常采集；2026-07-14 01:15 MDT 已观察超过 5 分钟，ambient、Ray baseline、strip baseline 完成，3/31 captures 已写入，Ray/strip 交替关断记录完整，尚无 failure.json
+未解决问题：完整 31 帧采集、两层 cleanup 结果、repeatability/linearity/G1G2 分析和质量门槛分支均尚未完成
+下一条唯一动作：任务结束后检查 run.json、failure/all-off、capture 数量和 RAW report 完整性，再运行 P1 离线分析并按 7.5/7.6 分支决策
 ```
 
 ---

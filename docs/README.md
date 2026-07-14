@@ -172,11 +172,11 @@ create `.npy` files. The companion offline analysis module derives repeatability
 exposure-linearity, and G1/G2 evidence from those reports; it does not set
 empirical quality thresholds automatically.
 
-The P1 capture runner currently exposes only an immutable dry-run plan. It
-requires the external best 70-point LUT explicitly, rather than reading the
-default 4x3 LUT, and plans ambient, independent Ray/strip exposure caches,
-alternating paired repeats, exposure brackets, optional flat field, and two
-cleanup layers:
+The P1 capture runner requires the external best 70-point LUT explicitly,
+rather than reading the default 4x3 LUT, and plans ambient, independent
+Ray/strip exposure caches, alternating paired repeats, exposure brackets,
+optional flat field, and two cleanup layers. `--dry-run` performs no device
+I/O and writes only `plan.json`:
 
 ```bash
 .venv/bin/python -m camera_based_rgbww_optimizer.optimization.measure_raw_observer_validation \
@@ -184,14 +184,14 @@ cleanup layers:
   --dry-run
 ```
 
-This command performs no device I/O and writes only `plan.json`. The internal
-executor is covered with fake Ray, strip, and camera calls, including exception
-paths that still invoke public Python `all_off` cleanup. Do not treat the
-current CLI as a hardware acquisition command: the real capture adapter, native
-meter wiring, and supported-shutter bracket selection remain intentionally
-unexposed until their offline tests are complete. A later hardware wrapper must
-add a shell `EXIT` trap that runs `control.all_off` in addition to the Python
-cleanup.
+Real acquisition requires both `--execute` and `--allow-high-output`; it uses
+the native Bayer exposure meter, emits JSON-only patch reports, and keeps Ray
+and strip shutter caches independent. It must be launched through a temporary
+shell wrapper with `EXIT`, `INT`, `TERM`, and `HUP` traps that run
+`control.all_off --json` into the same run directory. Python `finally` uses
+the same public cleanup entry point, including on capture errors. The runner
+accepts an existing run directory only when it is empty, so the shell trap can
+create the directory without allowing any old experiment to be reused.
 
 ## Location Picker
 
