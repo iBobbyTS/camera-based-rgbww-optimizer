@@ -56,11 +56,22 @@ class RawObserverValidationPlanTests(unittest.TestCase):
             self.assertEqual(data["captures"][0]["source"], "ambient")
             self.assertEqual(data["captures"][1]["source"], "ray")
             self.assertEqual(data["captures"][2]["source"], "strip")
+            self.assertEqual(data["measurement"]["flat_field"], {"status": "planned", "capture_id": data["captures"][-1]["capture_id"]})
             paired = [item for item in data["captures"] if item["purpose"] == "paired_repeat"]
             linearity = [item for item in data["captures"] if item["purpose"] == "linearity_bracket"]
             self.assertEqual(len(paired), 4)
             self.assertEqual(len(linearity), 12)
             self.assertTrue(all(item["other_source_must_be_off"] for item in data["captures"]))
+
+    def test_plan_records_missing_flat_field_material_explicitly(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            plan = self._plan(root)
+
+            self.assertEqual(
+                plan["measurement"]["flat_field"],
+                {"status": "not_available", "reason": "no_repeatable_flat_field_material"},
+            )
 
     def test_plan_rejects_missing_baseline_factor_and_invalid_repeat_count(self):
         with tempfile.TemporaryDirectory() as tempdir:

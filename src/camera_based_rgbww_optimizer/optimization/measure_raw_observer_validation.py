@@ -131,7 +131,9 @@ def build_raw_observer_validation_plan(
                     source_cache=source,
                 )
 
-    flat_field = {"status": "not_requested"}
+    # A color-chart white patch cannot stand in for a spatial flat field.
+    # Preserve that limitation explicitly when no repeatable diffuser is supplied.
+    flat_field = {"status": "not_available", "reason": "no_repeatable_flat_field_material"}
     if include_flat_field:
         add_capture(source="flat_field_ray", purpose="flat_field", source_cache="ray")
         flat_field = {"status": "planned", "capture_id": captures[-1]["capture_id"]}
