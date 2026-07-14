@@ -395,6 +395,72 @@ class CameraGPhoto2DecodeTests(unittest.TestCase):
 
 
 class CameraGPhoto2AutoExposureTests(unittest.TestCase):
+    def test_auto_expose_accepts_optional_meter_without_decoding_trials_or_final(self):
+        current_shutter = {"value": "1/100"}
+        trial_paths = []
+        decoder_calls = []
+
+        def runner(args):
+            if args == ["--auto-detect"]:
+                return camera_gphoto2.CommandOutput(
+                    "Model                          Port\n"
+                    "----------------------------------------------------------\n"
+                    "Canon EOS R6 Mark III          usb:001,010\n"
+                )
+            if "--set-config" in args:
+                for value in args:
+                    if value.startswith(f"{camera_gphoto2.CONFIG_SHUTTER_SPEED}="):
+                        current_shutter["value"] = value.split("=", 1)[1]
+                return camera_gphoto2.CommandOutput("")
+            if args == ["--port", "usb:001,010", "--get-config", camera_gphoto2.CONFIG_SHUTTER_SPEED]:
+                return camera_gphoto2.CommandOutput(f"Label: Shutter Speed\nCurrent: {current_shutter['value']}\nEND\n")
+            if "--capture-image-and-download" in args:
+                filename = Path(args[args.index("--filename") + 1])
+                filename.parent.mkdir(parents=True, exist_ok=True)
+                filename.write_text(current_shutter["value"], encoding="utf-8")
+                if filename.name.startswith("trial-"):
+                    trial_paths.append(filename)
+                return camera_gphoto2.CommandOutput(f"Saving file as {filename}\n")
+            raise AssertionError(args)
+
+        max_by_shutter = {"1/100": 10000, "1/50": 48000}
+
+        def meter(raw_file):
+            shutter = Path(raw_file).read_text(encoding="utf-8")
+            maximum = max_by_shutter[shutter]
+            return camera_gphoto2.ExposureMeasurement(
+                maximum=maximum,
+                raw_visible_max=maximum // 4,
+                channel_max=(maximum, maximum - 1, maximum - 2, maximum - 3),
+                exposure_metric=float(maximum),
+                details={"meter": "fake", "shutter": shutter},
+            )
+
+        def decoder(*args, **kwargs):
+            decoder_calls.append((args, kwargs))
+            raise AssertionError("decoder must not run when meter_fn is provided")
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            result = camera_gphoto2.auto_expose_capture(
+                output_dir=Path(tmpdir) / "final",
+                filename_template="final.cr3",
+                target_max=49152,
+                shutter_speeds=("1/100", "1/50"),
+                runner=runner,
+                decoder=decoder,
+                meter_fn=meter,
+            )
+
+            self.assertEqual(result.final_capture.settings.shutter_speed, "1/50")
+            self.assertIsNone(result.final_capture.decoded)
+            self.assertEqual(result.final_capture.metering.details["meter"], "fake")
+            self.assertEqual(result.trials[0].metering["details"]["shutter"], "1/100")
+            self.assertTrue((Path(tmpdir) / "final" / "final.cr3").exists())
+
+        self.assertEqual(decoder_calls, [])
+        self.assertTrue(trial_paths)
+        self.assertFalse(any(path.exists() for path in trial_paths))
+
     def test_select_shutter_candidates_sorts_and_filters_bounded_values(self):
         candidates = camera_gphoto2._select_shutter_candidates(
             "usb:001,010",

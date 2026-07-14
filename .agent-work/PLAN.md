@@ -1167,6 +1167,7 @@ t(h,s,I) ~= alpha(I,h,s) * t(h,s,100)
 - [x] `raw_observer_analysis.py`。
 - [x] repeatability/linearity/G1G2 合成测试。
 - [x] native RAW exposure meter。
+- [x] 可选 `meter_fn` 自动曝光路径，旧 decoder 默认路径保持不变。
 - [ ] `measure_raw_observer_validation.py` dry-run 和 fake-device 测试。
 - [ ] 文档和 skill 更新。
 - [ ] 完整离线验证。
@@ -1202,14 +1203,14 @@ t(h,s,I) ~= alpha(I,h,s) * t(h,s,100)
 ### 2026-07-14 P0.2 更新
 
 ```text
-最新阶段：P0.3 native RAW exposure meter
+最新阶段：P0.3 optional native RAW auto-exposure meter
 状态：running
-最新提交：59581ef feat(measurement): analyze native Bayer observer reports
+最新提交：37c0712 feat(measurement): add native Bayer exposure meter
 运行目录：无；仅合成 JSON 报告
-分析文件：src/camera_based_rgbww_optimizer/measurement/raw_mosaic_patches.py
-分支选择：P0 离线工程；未进入任何实机分支
-未解决问题：将 native meter 作为可选 meter_fn 接入 auto_expose_capture、P1 dry-run runner、实测 repeatability/linearity/G1G2 数据均尚未完成
-下一条唯一动作：将 native meter 作为可选 meter_fn 接入 auto_expose_capture，并保持旧 decode 默认路径不变
+分析文件：src/camera_based_rgbww_optimizer/control/camera_gphoto2.py、src/camera_based_rgbww_optimizer/measurement/raw_mosaic_patches.py
+分支选择：P0 6.2 分支 A；可选 meter_fn 保持旧 decode 默认行为，未进入任何实机分支
+未解决问题：P1 dry-run runner、实测 repeatability/linearity/G1G2 数据均尚未完成
+下一条唯一动作：实现 measure_raw_observer_validation.py 的 dry-run 和 fake-device 测试
 ```
 
 ---

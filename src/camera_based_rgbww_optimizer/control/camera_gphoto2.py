@@ -85,6 +85,7 @@ class CaptureResult:
     saved_file: Path
     stdout: str
     decoded: "DecodeResult | None" = None
+    metering: "ExposureMeasurement | None" = None
 
     def to_jsonable(self) -> dict[str, object]:
         data: dict[str, object] = {
@@ -98,6 +99,8 @@ class CaptureResult:
         }
         if self.decoded is not None:
             data["decoded"] = self.decoded.to_jsonable()
+        if self.metering is not None:
+            data["metering"] = self.metering.to_jsonable()
         return data
 
 
@@ -139,6 +142,26 @@ class DecodeResult:
 
 
 @dataclass(frozen=True)
+class ExposureMeasurement:
+    """A source-agnostic exposure measurement on the camera's 16-bit meter scale."""
+
+    maximum: int
+    raw_visible_max: int | None = None
+    channel_max: tuple[int, ...] | None = None
+    exposure_metric: float | None = None
+    details: dict[str, Any] | None = None
+
+    def to_jsonable(self) -> dict[str, object]:
+        return {
+            "maximum": self.maximum,
+            "raw_visible_max": self.raw_visible_max,
+            "channel_max": list(self.channel_max) if self.channel_max is not None else None,
+            "exposure_metric": self.exposure_metric,
+            "details": self.details,
+        }
+
+
+@dataclass(frozen=True)
 class AutoExposureTrial:
     index: int
     shutter_speed: str
@@ -148,6 +171,7 @@ class AutoExposureTrial:
     image_channel_max: tuple[int, ...] | None = None
     exposure_metric: float | None = None
     decision: str | None = None
+    metering: dict[str, Any] | None = None
 
     def to_jsonable(self) -> dict[str, object]:
         return {
@@ -159,6 +183,7 @@ class AutoExposureTrial:
             "image_channel_max": list(self.image_channel_max) if self.image_channel_max is not None else None,
             "exposure_metric": self.exposure_metric,
             "decision": self.decision,
+            "metering": self.metering,
         }
 
 
@@ -181,6 +206,7 @@ class AutoExposureResult:
 
 Runner = Callable[[Sequence[str]], CommandOutput]
 Decoder = Callable[..., DecodeResult]
+ExposureMeter = Callable[[Path], ExposureMeasurement]
 
 
 def run_gphoto2(
@@ -577,6 +603,7 @@ def auto_expose_capture(
     executable: str = "gphoto2",
     timeout: float = 60.0,
     decoder: Decoder = decode_raw_image,
+    meter_fn: ExposureMeter | None = None,
 ) -> AutoExposureResult:
     if target_max <= 0:
         raise GPhoto2Error("target_max must be positive")
@@ -671,6 +698,7 @@ def auto_expose_capture(
                 executable=executable,
                 timeout=timeout,
                 decoder=decoder,
+                meter_fn=meter_fn,
                 delete_after=True,
             )
             trials.append(trial)
@@ -730,22 +758,34 @@ def auto_expose_capture(
             executable=executable,
             timeout=timeout,
         )
-        decoded = _decode_with_metering(
-            decoder,
-            final_result.saved_file,
-            output_dir=decode_output_dir,
-            formats=decode_formats,
-            metering_regions=metering_regions,
-        )
+        decoded: DecodeResult | None = None
+        measurement: ExposureMeasurement | None = None
+        if meter_fn is None:
+            decoded = _decode_with_metering(
+                decoder,
+                final_result.saved_file,
+                output_dir=decode_output_dir,
+                formats=decode_formats,
+                metering_regions=metering_regions,
+            )
+            decoded_max = _decoded_image_max(decoded)
+            exposure_metric = _decoded_exposure_metric(decoded)
+            raw_visible_max = _decoded_raw_visible_max(decoded)
+            image_channel_max = _decoded_image_channel_max(decoded)
+        else:
+            measurement = meter_fn(final_result.saved_file)
+            decoded_max = _metered_maximum(measurement)
+            exposure_metric = measurement.exposure_metric
+            raw_visible_max = measurement.raw_visible_max
+            image_channel_max = measurement.channel_max
         final_result = CaptureResult(
             connection=final_result.connection,
             settings=final_result.settings,
             saved_file=final_result.saved_file,
             stdout=final_result.stdout,
             decoded=decoded,
+            metering=measurement,
         )
-        decoded_max = _decoded_image_max(decoded)
-        exposure_metric = _decoded_exposure_metric(decoded)
         if decoded_max <= target_max:
             if decoded_max > safe_final_max:
                 if safe_final is not None:
@@ -796,11 +836,12 @@ def auto_expose_capture(
                 index=len(rejected_finals),
                 shutter_speed=shutter_speed,
                 decoded_max=decoded_max,
-                raw_visible_max=_decoded_raw_visible_max(decoded),
-                image_channel_max=_decoded_image_channel_max(decoded),
+                raw_visible_max=raw_visible_max,
+                image_channel_max=image_channel_max,
                 exposure_metric=exposure_metric,
                 decision="final_rejected",
                 accepted=False,
+                metering=None if measurement is None else measurement.to_jsonable(),
             )
         )
         _delete_capture_outputs(final_result)
@@ -1032,6 +1073,7 @@ def _capture_decode_trial(
     executable: str,
     timeout: float,
     decoder: Decoder,
+    meter_fn: ExposureMeter | None,
     delete_after: bool,
 ) -> AutoExposureTrial:
     capture: CaptureResult | None = None
@@ -1049,21 +1091,31 @@ def _capture_decode_trial(
             executable=executable,
             timeout=timeout,
         )
-        decoded = _decode_with_metering(
-            decoder,
-            capture.saved_file,
-            output_dir=decode_output_dir,
-            formats=decode_formats,
-            metering_regions=metering_regions,
-        )
-        decoded_max = _decoded_image_max(decoded)
-        exposure_metric = _decoded_exposure_metric(decoded)
+        measurement: ExposureMeasurement | None = None
+        if meter_fn is None:
+            decoded = _decode_with_metering(
+                decoder,
+                capture.saved_file,
+                output_dir=decode_output_dir,
+                formats=decode_formats,
+                metering_regions=metering_regions,
+            )
+            decoded_max = _decoded_image_max(decoded)
+            exposure_metric = _decoded_exposure_metric(decoded)
+            raw_visible_max = _decoded_raw_visible_max(decoded)
+            image_channel_max = _decoded_image_channel_max(decoded)
+        else:
+            measurement = meter_fn(capture.saved_file)
+            decoded_max = _metered_maximum(measurement)
+            exposure_metric = measurement.exposure_metric
+            raw_visible_max = measurement.raw_visible_max
+            image_channel_max = measurement.channel_max
         return AutoExposureTrial(
             index=index,
             shutter_speed=settings.shutter_speed,
             decoded_max=decoded_max,
-            raw_visible_max=_decoded_raw_visible_max(decoded),
-            image_channel_max=_decoded_image_channel_max(decoded),
+            raw_visible_max=raw_visible_max,
+            image_channel_max=image_channel_max,
             exposure_metric=exposure_metric,
             decision=_auto_exposure_decision(
                 decoded_max=decoded_max,
@@ -1071,6 +1123,7 @@ def _capture_decode_trial(
                 exposure_metric=exposure_metric,
             ),
             accepted=decoded_max <= target_max,
+            metering=None if measurement is None else measurement.to_jsonable(),
         )
     finally:
         if delete_after:
@@ -1085,6 +1138,16 @@ def _decoded_image_max(decoded: DecodeResult) -> int:
         return int(_metering_stats_section(decoded, "image")["max"])
     except (KeyError, TypeError) as exc:
         raise GPhoto2Error("decoded result did not include image max statistics") from exc
+
+
+def _metered_maximum(measurement: ExposureMeasurement) -> int:
+    try:
+        value = int(measurement.maximum)
+    except (AttributeError, TypeError, ValueError) as exc:
+        raise GPhoto2Error("exposure meter did not provide a valid maximum") from exc
+    if value < 0:
+        raise GPhoto2Error("exposure meter maximum must be non-negative")
+    return value
 
 
 def _decoded_raw_visible_max(decoded: DecodeResult) -> int | None:
