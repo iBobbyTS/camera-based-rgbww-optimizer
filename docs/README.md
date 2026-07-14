@@ -193,6 +193,20 @@ the same public cleanup entry point, including on capture errors. The runner
 accepts an existing run directory only when it is empty, so the shell trap can
 create the directory without allowing any old experiment to be reused.
 
+After a completed P1 run, analyze the immutable run directory offline:
+
+```bash
+.venv/bin/python -m camera_based_rgbww_optimizer.optimization.analyze_raw_observer_validation \
+  /Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/<run-id>
+```
+
+The analyzer rejects a non-complete run by default, restores each capture's
+source/purpose/repeat/factor/shutter provenance from `captures.jsonl`, and
+produces separate Ray/strip repeatability and exposure-linearity evidence plus
+cross-context G1/G2 statistics. It deliberately does not mark P1 pass/fail or
+write empirical observer thresholds; those decisions follow the branches in
+`.agent-work/PLAN.md`.
+
 ## Location Picker
 
 Use the local Web UI to capture a preview and mark color-chart patches:
