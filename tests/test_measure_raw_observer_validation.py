@@ -4,6 +4,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from camera_based_rgbww_optimizer.optimization import measure_raw_observer_validation
 
@@ -93,6 +94,57 @@ class RawObserverValidationPlanTests(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 measure_raw_observer_validation.parse_args(["--baseline-lut", "lut.json"])
 
+    def test_execute_requires_explicit_high_output_consent_before_hardware_runner(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            plan = self._plan(root)
+            args = [
+                "--baseline-lut",
+                plan["inputs"]["baseline_lut"]["path"],
+                "--location-config",
+                plan["inputs"]["location_config"]["path"],
+                "--raw-observer-config",
+                plan["inputs"]["raw_observer_config"]["path"],
+                "--execute",
+            ]
+
+            with self.assertRaisesRegex(ValueError, "allow-high-output"), mock.patch.object(
+                measure_raw_observer_validation,
+                "run_native_raw_observer_validation",
+            ) as runner:
+                measure_raw_observer_validation.main(args)
+
+            runner.assert_not_called()
+
+    def test_execute_calls_hardware_runner_only_after_explicit_consent(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            plan = self._plan(root)
+            args = [
+                "--baseline-lut",
+                plan["inputs"]["baseline_lut"]["path"],
+                "--location-config",
+                plan["inputs"]["location_config"]["path"],
+                "--raw-observer-config",
+                plan["inputs"]["raw_observer_config"]["path"],
+                "--execute",
+                "--allow-high-output",
+                "--output-dir",
+                str(root / "output"),
+                "--run-name",
+                "run",
+            ]
+
+            with mock.patch.object(
+                measure_raw_observer_validation,
+                "run_native_raw_observer_validation",
+                return_value=root / "output" / "run",
+            ) as runner:
+                self.assertEqual(measure_raw_observer_validation.main(args), 0)
+
+            runner.assert_called_once()
+            self.assertEqual(runner.call_args.kwargs["run_name"], "run")
+
     def test_execute_plan_keeps_sources_isolated_and_writes_a_complete_run(self):
         with tempfile.TemporaryDirectory() as tempdir:
             root = Path(tempdir)
@@ -169,6 +221,35 @@ class RawObserverValidationPlanTests(unittest.TestCase):
             self.assertEqual(ray_calls[-1], (5600, 0, 100))
             cleanup = json.loads((failed_dir / "all-off-python.json").read_text(encoding="utf-8"))
             self.assertEqual([item["name"] for item in cleanup["steps"]], ["esphome", "ray120c"])
+
+    def test_execute_plan_accepts_empty_shell_created_directory_but_never_reuses_a_nonempty_one(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            plan = self._plan(root)
+            empty_run = root / "empty-run"
+            empty_run.mkdir()
+            result = measure_raw_observer_validation.execute_raw_observer_validation_plan(
+                plan,
+                run_dir=empty_run,
+                strip_light_fn=lambda *_values: {},
+                ray_set_cct_fn=lambda *_args, **_kwargs: {},
+                capture_step_fn=lambda _step: {"raw": "ok.cr3"},
+                sleep_fn=lambda _seconds: None,
+            )
+            self.assertEqual(result, empty_run)
+
+            reused_run = root / "reused-run"
+            reused_run.mkdir()
+            (reused_run / "previous.json").write_text("{}", encoding="utf-8")
+            with self.assertRaisesRegex(FileExistsError, "must be empty"):
+                measure_raw_observer_validation.execute_raw_observer_validation_plan(
+                    plan,
+                    run_dir=reused_run,
+                    strip_light_fn=lambda *_values: {},
+                    ray_set_cct_fn=lambda *_args, **_kwargs: {},
+                    capture_step_fn=lambda _step: {"raw": "ok.cr3"},
+                    sleep_fn=lambda _seconds: None,
+                )
 
     def test_execute_plan_marks_run_failed_when_cleanup_runner_raises(self):
         with tempfile.TemporaryDirectory() as tempdir:

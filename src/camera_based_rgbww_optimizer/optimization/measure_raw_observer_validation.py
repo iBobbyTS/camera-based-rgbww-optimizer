@@ -4,12 +4,13 @@ import argparse
 import copy
 import hashlib
 import json
+import time
 from datetime import datetime, timezone
 from fractions import Fraction
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
-from camera_based_rgbww_optimizer.control import all_off, camera_gphoto2, white_lut as white_lut_control
+from camera_based_rgbww_optimizer.control import all_off, camera_gphoto2, esphome, ray120c, white_lut as white_lut_control
 from camera_based_rgbww_optimizer.measurement import raw_mosaic_patches
 from camera_based_rgbww_optimizer.paths import PROJECT_ROOT, PROJECT_TMP_DIR
 
@@ -205,7 +206,9 @@ def execute_raw_observer_validation_plan(
     plan_data = copy.deepcopy(dict(plan))
     _validate_executable_plan(plan_data)
     root = Path(run_dir)
-    root.mkdir(parents=True, exist_ok=False)
+    root.mkdir(parents=True, exist_ok=True)
+    if any(root.iterdir()):
+        raise FileExistsError(f"run directory must be empty: {root}")
     _write_json(root / "plan.json", plan_data)
 
     run = {
@@ -426,6 +429,37 @@ def build_native_raw_capture_step_fn(
     return capture_step
 
 
+def run_native_raw_observer_validation(
+    plan: Mapping[str, Any],
+    *,
+    output_root: str | Path,
+    run_name: str | None,
+    curve_path: str | Path | None = esphome.DEFAULT_CURVE_PATH,
+) -> Path:
+    """Run P1 acquisition after the CLI has required explicit high-output consent."""
+
+    run_dir = Path(output_root) / (run_name or datetime.now().strftime("%Y%m%d-%H%M%S"))
+    capture_step_fn = build_native_raw_capture_step_fn(
+        camera_dir=run_dir / "camera",
+        measurements_dir=run_dir / "measurements",
+        scratch_dir=run_dir / "scratch",
+        location_config_path=plan["inputs"]["location_config"]["path"],
+        observer_config_path=plan["inputs"]["raw_observer_config"]["path"],
+    )
+
+    def strip_light(cw: int, ww: int, r: int, g: int, b: int) -> Mapping[str, Any]:
+        return esphome.light(cw, ww, r, g, b, curve_path=curve_path)
+
+    return execute_raw_observer_validation_plan(
+        plan,
+        run_dir=run_dir,
+        strip_light_fn=strip_light,
+        ray_set_cct_fn=ray120c.set_cct,
+        capture_step_fn=capture_step_fn,
+        sleep_fn=time.sleep,
+    )
+
+
 def parse_linearity_factors(value: str) -> tuple[float, ...]:
     return _validate_linearity_factors(tuple(float(item.strip()) for item in value.split(",") if item.strip()))
 
@@ -448,27 +482,50 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--include-flat-field", action="store_true")
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_ROOT)
     parser.add_argument("--run-name")
-    parser.add_argument("--dry-run", action="store_true", required=True)
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--dry-run", action="store_true", help="Write only the immutable capture plan.")
+    mode.add_argument("--execute", action="store_true", help="Run the P1 capture plan; requires --allow-high-output.")
+    parser.add_argument(
+        "--allow-high-output",
+        action="store_true",
+        help="Required with --execute because the explicit external LUT may use full-scale channels.",
+    )
+    parser.add_argument("--curve", type=Path, default=esphome.DEFAULT_CURVE_PATH)
+    parser.add_argument("--no-curve", action="store_true", help="Disable code-duty curve correction for the strip.")
     return parser.parse_args(argv)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(argv)
-    output = write_raw_observer_validation_dry_run(
+    plan_kwargs = {
+        "baseline_lut_path": args.baseline_lut,
+        "location_config_path": args.location_config,
+        "observer_config_path": args.raw_observer_config,
+        "anchor_cct": args.anchor_cct,
+        "anchor_gm": args.anchor_gm,
+        "ray_intensity_percent": args.ray_intensity_percent,
+        "paired_repeats": args.paired_repeats,
+        "linearity_factors": args.linearity_factors,
+        "linearity_repeats": args.linearity_repeats,
+        "off_seconds": args.off_seconds,
+        "settle_seconds": args.settle_seconds,
+        "include_flat_field": args.include_flat_field,
+    }
+    if args.dry_run:
+        output = write_raw_observer_validation_dry_run(
+            output_root=args.output_dir,
+            run_name=args.run_name,
+            **plan_kwargs,
+        )
+        print(output)
+        return 0
+    if not args.allow_high_output:
+        raise ValueError("--execute requires --allow-high-output")
+    output = run_native_raw_observer_validation(
+        build_raw_observer_validation_plan(**plan_kwargs),
         output_root=args.output_dir,
         run_name=args.run_name,
-        baseline_lut_path=args.baseline_lut,
-        location_config_path=args.location_config,
-        observer_config_path=args.raw_observer_config,
-        anchor_cct=args.anchor_cct,
-        anchor_gm=args.anchor_gm,
-        ray_intensity_percent=args.ray_intensity_percent,
-        paired_repeats=args.paired_repeats,
-        linearity_factors=args.linearity_factors,
-        linearity_repeats=args.linearity_repeats,
-        off_seconds=args.off_seconds,
-        settle_seconds=args.settle_seconds,
-        include_flat_field=args.include_flat_field,
+        curve_path=None if args.no_curve else args.curve,
     )
     print(output)
     return 0
