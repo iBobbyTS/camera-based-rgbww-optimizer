@@ -27,3 +27,15 @@ P1 takes PLAN.md section 7.5 branch D:
 1. Compare the saved v6/v7 raw per-plane distributions before and after ambient subtraction to separate camera shutter response from source/power response.
 2. Verify whether the per-second deviation correlates with the actual shutter choice rather than the requested bracket factor, source, or capture order.
 3. Design a bounded future hardware diagnostic only after the offline result identifies a discriminating change. Candidate changes are a fixed-shutter temporal repeat, a camera mode/shutter-timing cross-check, or a controlled strip electrical/power test. Do not start this diagnostic after 05:00 local time.
+
+## Future Hardware Diagnostic Contract
+
+Run only during a new pre-05:00 window and only after the current raw reports are retained unchanged.
+
+1. Use a lower Ray intensity and a lower strip command so all four shutters `1/100`, `1/80`, `1/60`, and `1/50` stay below clipping at ISO 100 / f4. Capture five frames per shutter with the source continuously on after a documented warm-up; do not use the P1 off/on cadence for this shutter-timing diagnosis.
+2. Execute the exact shutter order `1/80, 1/60, 1/100, 1/50, 1/50, 1/100, 1/60, 1/80` for each source. Record actual configured shutter, source command, capture monotonic time, optical black levels, and per-plane raw plus ambient-subtracted statistics.
+3. Branch on the result:
+   - Both sources reproduce the same shutter signature: investigate camera timing, anti-flicker/shutter mode, and camera-side exposure metadata before changing strip firmware.
+   - Only strip reproduces it: capture the same strip command at a second reduced power level and inspect DC supply/driver ripple or load dependence; do not attribute it to the configured 19531Hz LEDC clock without evidence.
+   - Neither reproduces it with continuous-on capture: the P1 off/on/settle protocol is interacting with source thermal state; redesign the P1 timing and repeat the complete formal run.
+   - Only individual CFA planes or patches reproduce it: retain the diagnostics, classify clipping/noise/ROI causes, and follow PLAN.md 7.5-C rather than broadening a global threshold.
