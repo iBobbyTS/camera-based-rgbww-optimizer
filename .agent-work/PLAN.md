@@ -519,7 +519,7 @@ relative_residual = (z - robust_center_across_exposures) / robust_center
 
 1. 使用低 Ray 强度和低 strip 命令，使 `1/100, 1/80, 1/60, 1/50` 都不裁剪；ISO 100 / f4 保持不变。
 2. 每个来源先稳定预热，再连续点亮拍每个快门 5 次；这里不得复用 P1 的 off/on 节奏，否则无法区分热态与快门响应。
-3. 固定顺序为 `1/80, 1/60, 1/100, 1/50, 1/50, 1/100, 1/60, 1/80`，记录实际快门、命令、单调时间、光学黑位、各 CFA plane 的原始和 ambient-subtracted 数值。
+3. 两个来源都必须使用同一组实际快门，固定顺序为 `1/80, 1/60, 1/100, 1/50, 1/50, 1/100, 1/60, 1/80`，记录实际快门、命令、单调时间、光学黑位、各 CFA plane 的原始和 ambient-subtracted 数值。v7 的跨 patch/CFA 偏差是近似统一标量，不能仅靠色彩统计区分来源。
 4. 两源同样复现：查相机 timing、anti-flicker/shutter mode 和 EXIF/RAW 计时；只 strip 复现：换一个低功率 strip 命令检查电源/驱动与负载；连续点亮不复现：重设 P1 热态协议；只剩个别 plane/patch：转 7.5-C。
 5. 此诊断前不得改 `raw-observer.json` 阈值或开始 P2；旧失败 run 保留，诊断通过后仍需一个全新的完整正式 P1 run。
 

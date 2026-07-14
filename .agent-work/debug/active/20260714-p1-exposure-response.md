@@ -13,6 +13,7 @@
   - Relative to the strip `1/80` median, all three strip `1/60` captures were about `-4.64%`; Ray at `1/500` was about `-1.00%`, and Ray at `1/320` about `+0.39%`.
 - The active firmware configuration specifies five ESP32 LEDC outputs at `19531Hz`. The anchor strip command owns `cw=4095`, so the large `1/60` strip effect is not adequately explained by ordinary low-frequency PWM phase sampling of the dominant channel.
 - Recomputing both runs from saved patch reports shows ambient subtraction changes the median signal by at most `0.000063%`; it cannot explain the observed `0.4%..4.6%` shutter effects. The shared `1/400` Ray and `1/80` strip medians agree between v6 and v7, so ordinary session/thermal drift is also not the primary explanation.
+- The effect is nearly a uniform scalar over patches and CFA planes. In v7, strip `1/60` relative to `1/80` is about `-5.59%` for every plane, with only about `0.23` percentage points between the 10th and 90th feature percentiles. The `0.8x` condition is about `-1%` for both Ray and strip. This rules out a color-specific ROI issue but does not by itself separate camera shutter timing from strip output at `1/60`.
 
 ## Decision
 
@@ -32,7 +33,7 @@ P1 takes PLAN.md section 7.5 branch D:
 
 Run only during a new pre-05:00 window and only after the current raw reports are retained unchanged.
 
-1. Use a lower Ray intensity and a lower strip command so all four shutters `1/100`, `1/80`, `1/60`, and `1/50` stay below clipping at ISO 100 / f4. Capture five frames per shutter with the source continuously on after a documented warm-up; do not use the P1 off/on cadence for this shutter-timing diagnosis.
+1. Use a lower Ray intensity and a lower strip command so both sources can be captured at the same four shutters `1/100`, `1/80`, `1/60`, and `1/50` without clipping at ISO 100 / f4. Capture five frames per shutter with the source continuously on after a documented warm-up; do not use the P1 off/on cadence for this shutter-timing diagnosis.
 2. Execute the exact shutter order `1/80, 1/60, 1/100, 1/50, 1/50, 1/100, 1/60, 1/80` for each source. Record actual configured shutter, source command, capture monotonic time, optical black levels, and per-plane raw plus ambient-subtracted statistics.
 3. Branch on the result:
    - Both sources reproduce the same shutter signature: investigate camera timing, anti-flicker/shutter mode, and camera-side exposure metadata before changing strip firmware.
