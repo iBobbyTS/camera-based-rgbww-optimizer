@@ -105,6 +105,22 @@ class RawMosaicCfaTests(unittest.TestCase):
         self.assertEqual(levels, (512.0, 512.0, 512.0, 512.0))
         self.assertEqual(metadata["black_level_source_per_channel"], ["metadata"] * 4)
 
+    def test_does_not_treat_saturated_optical_margins_as_black(self):
+        raw_image = np.full((48, 48), 16383, dtype="uint16")
+
+        levels, metadata = raw_mosaic_patches._resolve_black_levels(
+            reported_black_levels=(0, 32, 96, 64),
+            raw_image=raw_image,
+            raw_pattern=np.asarray(((0, 1), (3, 2))),
+            top_margin=8,
+            left_margin=8,
+            white_level=16383,
+        )
+
+        self.assertEqual(levels, (0.0, 32.0, 96.0, 64.0))
+        self.assertEqual(metadata["optical_black_level_per_channel"], [16383.0] * 4)
+        self.assertEqual(metadata["black_level_source_per_channel"], ["metadata"] * 4)
+
     def test_resolves_all_standard_bayer_patterns(self):
         patterns = {
             "RGGB": ((0, 1), (3, 2)),

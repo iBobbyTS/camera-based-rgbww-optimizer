@@ -147,6 +147,8 @@ def _resolve_black_levels(
     sources: list[str] = []
     for index, value in enumerate(reported):
         candidate = optical[index] if optical is not None else None
+        if candidate is not None and candidate >= float(white_level) - tolerance:
+            candidate = None
         if candidate is not None and abs(value - candidate) > tolerance:
             resolved.append(candidate)
             sources.append("optical_black_margin_fallback")
