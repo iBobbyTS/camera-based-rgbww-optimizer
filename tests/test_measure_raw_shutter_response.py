@@ -149,6 +149,68 @@ class RawShutterResponseTests(unittest.TestCase):
             self.assertEqual(calls[-2][0], "strip")
             self.assertEqual(calls[-1][0], "ray")
 
+    def test_native_capture_adapter_writes_fixed_shutter_report_with_ambient_and_black_metadata(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            plan = self._plan(root)
+            camera_dir = root / "camera"
+            measurements_dir = root / "measurements"
+            capture_calls = []
+            analyze_calls = []
+
+            def capture(**kwargs):
+                capture_calls.append(kwargs)
+                output = Path(kwargs["output_dir"])
+                output.mkdir(parents=True, exist_ok=True)
+                saved = output / kwargs["filename_template"].replace("%C", "cr3")
+                saved.write_bytes(b"fake cr3")
+                return measure_raw_shutter_response.camera_gphoto2.CaptureResult(
+                    connection=measure_raw_shutter_response.camera_gphoto2.CameraConnection("test camera", "usb:test"),
+                    settings=kwargs["settings"],
+                    saved_file=saved,
+                    stdout="",
+                )
+
+            def analyze(raw_file, **kwargs):
+                analyze_calls.append((raw_file, kwargs))
+                return {
+                    "quality": {"status": "pending_thresholds"},
+                    "raw_metadata": {"optical_black_level_per_channel": [512.0, 512.0, 512.0, 512.0]},
+                }
+
+            def write_report(path, report):
+                output = Path(path)
+                output.parent.mkdir(parents=True, exist_ok=True)
+                output.write_text(json.dumps(report), encoding="utf-8")
+                return output
+
+            adapter = measure_raw_shutter_response.build_native_shutter_response_capture_step_fn(
+                camera_dir=camera_dir,
+                measurements_dir=measurements_dir,
+                location_config_path=root / "locations.json",
+                observer_config_path=root / "observer.json",
+                capture_fn=capture,
+                raw_analyze_fn=analyze,
+                raw_report_writer=write_report,
+            )
+            ambient = plan["captures"][0]
+            ray = next(step for step in plan["captures"] if step["source"] == "ray")
+
+            ambient_result = adapter(ambient)
+            ray_result = adapter(ray)
+
+            self.assertEqual(ambient_result["mode"], "ambient_fixed")
+            self.assertEqual(ray_result["mode"], "fixed_shutter_response")
+            self.assertEqual(capture_calls[0]["settings"].shutter_speed, "30")
+            self.assertEqual(capture_calls[1]["settings"].shutter_speed, "1/80")
+            self.assertEqual(analyze_calls[0][1]["ambient_raw_file"], Path(ambient_result["capture"]["saved_file"]))
+            self.assertEqual(analyze_calls[0][1]["ambient_exposure_seconds"], 30.0)
+            stored = json.loads(Path(ray_result["patch_statistics"]).read_text(encoding="utf-8"))
+            self.assertEqual(stored["analysis_context"]["shutter_speed"], "1/80")
+            self.assertEqual(stored["analysis_context"]["source"], "ray")
+            self.assertEqual(stored["raw_metadata"]["optical_black_level_per_channel"], [512.0] * 4)
+            self.assertEqual(list(root.rglob("*.npy")), [])
+
     def _plan(self, root: Path):
         return measure_raw_shutter_response.build_raw_shutter_response_plan(
             baseline_lut_path=self._lut(root),
