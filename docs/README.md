@@ -162,6 +162,37 @@ Capture processes so gphoto2 can claim the interface first. Set
 `CAMERA_BASED_RGBWW_OPTIMIZER_DISABLE_MACOS_PTP_RECOVERY=1` to disable this
 automatic recovery when diagnosing host-side camera issues.
 
+## Native RAW Observer Validation
+
+`camera_based_rgbww_optimizer.measurement.raw_mosaic_patches` measures a saved
+CR3 directly in the visible Bayer mosaic. It keeps `R/G1/G2/B` planes separate,
+uses the saved color-chart regions, supports exposure normalization and an
+explicit ambient RAW, and writes JSON only. It does not demosaic and does not
+create `.npy` files. The companion offline analysis module derives repeatability,
+exposure-linearity, and G1/G2 evidence from those reports; it does not set
+empirical quality thresholds automatically.
+
+The P1 capture runner currently exposes only an immutable dry-run plan. It
+requires the external best 70-point LUT explicitly, rather than reading the
+default 4x3 LUT, and plans ambient, independent Ray/strip exposure caches,
+alternating paired repeats, exposure brackets, optional flat field, and two
+cleanup layers:
+
+```bash
+.venv/bin/python -m camera_based_rgbww_optimizer.optimization.measure_raw_observer_validation \
+  --baseline-lut /Volumes/4T/temp/rgbww-optimizer/white-lut-calibration/14x5-off-cycle-refined-v2-20260713/white-lut-calibration.json \
+  --dry-run
+```
+
+This command performs no device I/O and writes only `plan.json`. The internal
+executor is covered with fake Ray, strip, and camera calls, including exception
+paths that still invoke public Python `all_off` cleanup. Do not treat the
+current CLI as a hardware acquisition command: the real capture adapter, native
+meter wiring, and supported-shutter bracket selection remain intentionally
+unexposed until their offline tests are complete. A later hardware wrapper must
+add a shell `EXIT` trap that runs `control.all_off` in addition to the Python
+cleanup.
+
 ## Location Picker
 
 Use the local Web UI to capture a preview and mark color-chart patches:
