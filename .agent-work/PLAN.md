@@ -1212,14 +1212,14 @@ t(h,s,I) ~= alpha(I,h,s) * t(h,s,100)
 ### 2026-07-14 P1.2 更新
 
 ```text
-最新阶段：P1 RAW observer measurement
-状态：fail
-最新提交：eaa92a2 feat(measurement): add shutter response diagnostic
-运行目录：/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/20260714-030700-p1-provenance-envelope-v6
-分析文件：/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/20260714-030700-p1-provenance-envelope-v6/analysis.json
-分支选择：7.5-D。v6 完成 31/31，provenance、source isolation、两层 cleanup、G1/G2 均完整，但未裁剪的 0.5x/1x/1.5x 曝光仍呈系统性跨快门残差（Ray P95 1.458%，strip P95 1.133%），远高于重复性。v7 受限诊断进一步显示 strip 在 1/60 相对 1/80 稳定低约 4.64%，Ray 也存在较小但系统的 shutter response。随后发现 v6/v7 将语义上的 Ray 百分比误传为原始 OpenAPI intensity：标为 100%/10% 实际约为 10%/1%。因此两次 run 均不能作为计划要求的 Ray 亮度基准，但同一 run 内 Ray 命令不变，快门比值证据仍可用于诊断；白光 LUT 和端点脚本不受此错误影响。
-未解决问题：区分相机实际快门响应与 strip 电源/驱动响应；离线重算已排除 ambient（对每个档位中位影响不超过 0.000063%）和普通跨 run 热漂移。未设置正式 quality thresholds，P2 不得开始。
-下一条唯一动作：提交 Ray 百分比调用修复；只用 v6/v7 已保存 RAW 做离线分布与顺序诊断，形成能区分原因的下一次有界实拍设计。当地时间 05:00 后不得开始实拍。
+最新阶段：P1-D same-shutter continuous-on diagnostic
+状态：code_complete_waiting_for_measurement（原 P1 保持 fail）
+最新提交：3f9d50c feat(measurement): record P1-D capture timing
+运行目录：tmp/raw-observer-validation/offline/raw-shutter-response-percent-api-dryrun-20260714-044407（仅 dry-run；不得当作实拍结果）
+分析文件：/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/20260714-030700-p1-provenance-envelope-v6/analysis.json；/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/20260714-035100-p1-exposure-diagnostic-v7/analysis.json
+分支选择：7.5-D。v6 完成 31/31，provenance、source isolation、两层 cleanup、G1/G2 均完整，但未裁剪的 0.5x/1x/1.5x 曝光仍呈系统性跨快门残差（Ray P95 1.458%，strip P95 1.133%），远高于重复性。v7 受限诊断进一步显示 strip 在 1/60 相对 1/80 稳定低约 4.64%，Ray 也存在较小但系统的 shutter response。随后发现 v6/v7 将语义上的 Ray 百分比误传为原始 OpenAPI intensity：标为 100%/10% 实际约为 10%/1%。因此两次 run 均不能作为计划要求的 Ray 亮度基准，但同一 run 内 Ray 命令不变，快门比值证据仍可用于诊断；白光 LUT 和端点脚本不受此错误影响。逐帧中位数显示 v7 strip 1/60 三次为 -5.598%/-5.452%/-5.586%，Ray 1/500 三次为 -1.038%/-0.979%/-1.010%；同一基准快门跨 v6/v7 近乎不漂移。旧设计中因子和实际快门一一绑定，不能继续从保存数据中区分相机与光源原因。
+未解决问题：区分相机实际快门响应与 strip 电源/驱动响应；离线重算已排除 ambient（对每个档位中位影响不超过 0.000063%）、普通跨 run 热漂移和单次帧异常。未设置正式 quality thresholds，P2 不得开始。
+下一条唯一动作：仅在下一次当地 05:00 前的完整窗口，运行已修正百分比调用的 P1-D same-shutter continuous-on 实拍。必须使用 `tmp/run-raw-shutter-response.zsh`，保留 Python + shell 两层关灯，并在完成后按 P1-D 分支判定；当地时间 05:00 后不得开始实拍。
 ```
 
 ---

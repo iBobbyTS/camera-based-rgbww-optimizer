@@ -15,6 +15,7 @@
 - The active firmware configuration specifies five ESP32 LEDC outputs at `19531Hz`. The anchor strip command owns `cw=4095`, so the large `1/60` strip effect is not adequately explained by ordinary low-frequency PWM phase sampling of the dominant channel.
 - Recomputing both runs from saved patch reports shows ambient subtraction changes the median signal by at most `0.000063%`; it cannot explain the observed `0.4%..4.6%` shutter effects. The shared `1/400` Ray and `1/80` strip medians agree between v6 and v7, so ordinary session/thermal drift is also not the primary explanation.
 - The effect is nearly a uniform scalar over patches and CFA planes. In v7, strip `1/60` relative to `1/80` is about `-5.59%` for every plane, with only about `0.23` percentage points between the 10th and 90th feature percentiles. The `0.8x` condition is about `-1%` for both Ray and strip. This rules out a color-specific ROI issue but does not by itself separate camera shutter timing from strip output at `1/60`.
+- Per-capture median recomputation confirms this is not a single-frame or ordinary order drift: in v7, Ray `1/500` was `-1.0384%`, `-0.9791%`, and `-1.0103%` versus its `1/400` median; strip `1/60` was `-5.5977%`, `-5.4521%`, and `-5.5862%` versus its `1/80` median. The v6 shared `1/400` Ray and `1/80` strip medians were respectively within `0.0010%` and `0.0053%` of v7. Because every old factor maps to one actual shutter, however, the historical runs cannot identify whether the residual belongs to factor choice, shutter timing, or source behavior.
 
 ## Decision
 
@@ -30,6 +31,8 @@ P1 takes PLAN.md section 7.5 branch D:
 1. Compare the saved v6/v7 raw per-plane distributions before and after ambient subtraction to separate camera shutter response from source/power response.
 2. Verify whether the per-second deviation correlates with the actual shutter choice rather than the requested bracket factor, source, or capture order.
 3. Design a bounded future hardware diagnostic only after the offline result identifies a discriminating change. Candidate changes are a fixed-shutter temporal repeat, a camera mode/shutter-timing cross-check, or a controlled strip electrical/power test. Do not start this diagnostic after 05:00 local time.
+
+The offline result selects the already implemented same-shutter continuous-on P1-D protocol below. Its runner now records the requested source command and capture start/finish monotonic timestamps. Do not substitute the old P1 brackets for this run.
 
 ## Future Hardware Diagnostic Contract
 
