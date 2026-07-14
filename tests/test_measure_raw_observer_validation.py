@@ -280,6 +280,25 @@ class RawObserverValidationPlanTests(unittest.TestCase):
             self.assertFalse((failed / "captures.jsonl").exists())
             self.assertTrue((failed / "all-off-python.json").is_file())
 
+    def test_camera_summary_redacts_serial_number_and_derives_anonymous_id(self):
+        identity = measure_raw_observer_validation._redact_camera_summary(
+            """Camera summary:
+Manufacturer: Canon.Inc
+Model: Canon EOS R6 Mark III
+  Version: 3-1.0.2
+  Serial Number: private-camera-serial
+Current Lens: RF24-70mm F2.8 L IS USM
+Focal Length: 50mm
+"""
+        )
+
+        rendered = json.dumps(identity, sort_keys=True)
+        self.assertNotIn("private-camera-serial", rendered)
+        self.assertEqual(identity["manufacturer"], "Canon.Inc")
+        self.assertEqual(identity["lens"], "RF24-70mm F2.8 L IS USM")
+        self.assertEqual(identity["focal_length"], "50mm")
+        self.assertEqual(len(identity["anonymous_device_id_sha256"]), 64)
+
     def test_execute_plan_accepts_empty_shell_created_directory_but_never_reuses_a_nonempty_one(self):
         with tempfile.TemporaryDirectory() as tempdir:
             root = Path(tempdir)

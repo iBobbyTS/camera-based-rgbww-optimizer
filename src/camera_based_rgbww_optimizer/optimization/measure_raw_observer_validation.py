@@ -497,7 +497,7 @@ def collect_native_raw_observer_provenance(*, curve_path: str | Path | None) -> 
         "camera": {
             "model": camera.model,
             "port": camera.port,
-            "summary": _camera_summary(camera.port),
+            "identity": _camera_identity(camera.port),
             "capture_settings": {
                 "iso": camera_gphoto2.DEFAULT_ISO,
                 "aperture": camera_gphoto2.DEFAULT_APERTURE,
@@ -541,8 +541,45 @@ def _command_text(command: Sequence[str]) -> str:
     return completed.stdout.strip()
 
 
-def _camera_summary(port: str) -> dict[str, Any]:
-    return _command_version(("gphoto2", "--port", port, "--summary"))
+def _camera_identity(port: str) -> dict[str, Any]:
+    try:
+        summary = _command_text(("gphoto2", "--port", port, "--summary"))
+    except OSError as exc:
+        return {"status": "unavailable", "error": f"{type(exc).__name__}: {exc}"}
+    except subprocess.CalledProcessError as exc:
+        return {"status": "failed", "returncode": exc.returncode, "output": exc.stdout, "error": exc.stderr}
+    return _redact_camera_summary(summary)
+
+
+def _redact_camera_summary(summary: str) -> dict[str, Any]:
+    """Keep only P1 camera identity fields; never persist the raw summary or serial number."""
+
+    def value_for(label: str) -> str | None:
+        for line in summary.splitlines():
+            stripped = line.strip()
+            if stripped.startswith(label):
+                return stripped.split(":", 1)[1].strip()
+        return None
+
+    def value_for_any(labels: Sequence[str]) -> str | None:
+        for label in labels:
+            value = value_for(label)
+            if value is not None:
+                return value
+        return None
+
+    serial = value_for("Serial Number:")
+    model = value_for("Model:")
+    anonymous_seed = serial or model or "unknown-camera"
+    return {
+        "status": "ok",
+        "manufacturer": value_for("Manufacturer:"),
+        "model": model,
+        "firmware_version": value_for("Version:"),
+        "anonymous_device_id_sha256": hashlib.sha256(anonymous_seed.encode("utf-8")).hexdigest(),
+        "lens": value_for_any(("Current Lens:", "Lens Name:")),
+        "focal_length": value_for_any(("Focal Length:",)),
+    }
 
 
 async def _read_esphome_device_info() -> dict[str, Any]:
