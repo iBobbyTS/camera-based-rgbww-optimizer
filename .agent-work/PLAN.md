@@ -1214,7 +1214,7 @@ t(h,s,I) ~= alpha(I,h,s) * t(h,s,100)
 ```text
 最新阶段：P1-D same-shutter continuous-on diagnostic
 状态：code_complete_waiting_for_measurement（原 P1 保持 fail）
-最新提交：3f9d50c feat(measurement): record P1-D capture timing
+最新提交：6f04818 test(measurement): guard P1-D execution consent
 运行目录：tmp/raw-observer-validation/offline/raw-shutter-response-percent-api-dryrun-20260714-044407（仅 dry-run；不得当作实拍结果）
 分析文件：/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/20260714-030700-p1-provenance-envelope-v6/analysis.json；/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/20260714-035100-p1-exposure-diagnostic-v7/analysis.json
 分支选择：7.5-D。v6 完成 31/31，provenance、source isolation、两层 cleanup、G1/G2 均完整，但未裁剪的 0.5x/1x/1.5x 曝光仍呈系统性跨快门残差（Ray P95 1.458%，strip P95 1.133%），远高于重复性。v7 受限诊断进一步显示 strip 在 1/60 相对 1/80 稳定低约 4.64%，Ray 也存在较小但系统的 shutter response。随后发现 v6/v7 将语义上的 Ray 百分比误传为原始 OpenAPI intensity：标为 100%/10% 实际约为 10%/1%。因此两次 run 均不能作为计划要求的 Ray 亮度基准，但同一 run 内 Ray 命令不变，快门比值证据仍可用于诊断；白光 LUT 和端点脚本不受此错误影响。逐帧中位数显示 v7 strip 1/60 三次为 -5.598%/-5.452%/-5.586%，Ray 1/500 三次为 -1.038%/-0.979%/-1.010%；同一基准快门跨 v6/v7 近乎不漂移。旧设计中因子和实际快门一一绑定，不能继续从保存数据中区分相机与光源原因。
