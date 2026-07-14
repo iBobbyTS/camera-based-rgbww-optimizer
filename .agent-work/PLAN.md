@@ -2,7 +2,7 @@
 
 **计划状态：** 活动计划，等待用户批准后执行
 **编写日期：** 2026-07-13
-**当前提交：** `c68ac87 feat(measurement): add native Bayer patch statistics`
+**当前提交：** `4f6df67 feat(camera): support pluggable auto-exposure meters`
 **上游设计：** `advisor/1/1.RESEARCH.md`、`advisor/1/1.PLAN.md`
 **当前阶段：** P0，先补齐测量验证分析和安全运行器，不立即扫描设备
 **计划使用对象：** 能完成明确编码和实验步骤，但不应自行发明阈值、跨越实验门或扩大范围的执行模型
@@ -1168,7 +1168,8 @@ t(h,s,I) ~= alpha(I,h,s) * t(h,s,100)
 - [x] repeatability/linearity/G1G2 合成测试。
 - [x] native RAW exposure meter。
 - [x] 可选 `meter_fn` 自动曝光路径，旧 decoder 默认路径保持不变。
-- [ ] `measure_raw_observer_validation.py` dry-run 和 fake-device 测试。
+- [x] `measure_raw_observer_validation.py` immutable dry-run 计划和测试。
+- [ ] `measure_raw_observer_validation.py` fake-device 执行和 Python cleanup 测试。
 - [ ] 文档和 skill 更新。
 - [ ] 完整离线验证。
 - [ ] 向用户报告并等待实机批准。
@@ -1200,17 +1201,17 @@ t(h,s,I) ~= alpha(I,h,s) * t(h,s,100)
 
 ---
 
-### 2026-07-14 P0.2 更新
+### 2026-07-14 P0.4 更新
 
 ```text
-最新阶段：P0.3 optional native RAW auto-exposure meter
+最新阶段：P0.4 P1 runner immutable dry-run plan
 状态：running
-最新提交：37c0712 feat(measurement): add native Bayer exposure meter
-运行目录：无；仅合成 JSON 报告
-分析文件：src/camera_based_rgbww_optimizer/control/camera_gphoto2.py、src/camera_based_rgbww_optimizer/measurement/raw_mosaic_patches.py
-分支选择：P0 6.2 分支 A；可选 meter_fn 保持旧 decode 默认行为，未进入任何实机分支
-未解决问题：P1 dry-run runner、实测 repeatability/linearity/G1G2 数据均尚未完成
-下一条唯一动作：实现 measure_raw_observer_validation.py 的 dry-run 和 fake-device 测试
+最新提交：4f6df67 feat(camera): support pluggable auto-exposure meters
+运行目录：无；dry-run 只在临时目录生成 plan.json
+分析文件：src/camera_based_rgbww_optimizer/optimization/measure_raw_observer_validation.py
+分支选择：P0 6.3 的 dry-run 分支；基线 LUT 必须显式传入，计划包含 ambient、Ray/strip 独立基线、交错配对、三档 bracket、可选 flat-field 以及双层关灯合同
+未解决问题：真实执行器、fake-device cleanup 保护、实测 repeatability/linearity/G1G2 数据均尚未完成
+下一条唯一动作：为同一不可变计划加入可注入的 fake-device 执行器和 finally cleanup 测试
 ```
 
 ---
