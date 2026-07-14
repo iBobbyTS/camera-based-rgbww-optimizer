@@ -492,6 +492,49 @@ class CameraGPhoto2AutoExposureTests(unittest.TestCase):
         self.assertTrue(trial_paths)
         self.assertFalse(any(path.exists() for path in trial_paths))
 
+    def test_auto_expose_preserves_failed_native_meter_trial_when_requested(self):
+        current_shutter = {"value": "1/100"}
+
+        def runner(args):
+            if args == ["--auto-detect"]:
+                return camera_gphoto2.CommandOutput(
+                    "Model                          Port\n"
+                    "----------------------------------------------------------\n"
+                    "Canon EOS R6 Mark III          usb:001,010\n"
+                )
+            if "--set-config" in args:
+                for value in args:
+                    if value.startswith(f"{camera_gphoto2.CONFIG_SHUTTER_SPEED}="):
+                        current_shutter["value"] = value.split("=", 1)[1]
+                return camera_gphoto2.CommandOutput("")
+            if args == ["--port", "usb:001,010", "--get-config", camera_gphoto2.CONFIG_SHUTTER_SPEED]:
+                return camera_gphoto2.CommandOutput(f"Label: Shutter Speed\nCurrent: {current_shutter['value']}\nEND\n")
+            if "--capture-image-and-download" in args:
+                filename = Path(args[args.index("--filename") + 1])
+                filename.parent.mkdir(parents=True, exist_ok=True)
+                filename.write_text("failed native meter input", encoding="utf-8")
+                return camera_gphoto2.CommandOutput(f"Saving file as {filename}\n")
+            raise AssertionError(args)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            preserved = root / "preserved"
+            with self.assertRaisesRegex(ValueError, "invalid native meter"):
+                camera_gphoto2.auto_expose_capture(
+                    output_dir=root / "final",
+                    filename_template="final.cr3",
+                    shutter_speeds=("1/100", "1/50"),
+                    runner=runner,
+                    meter_fn=lambda _raw: (_ for _ in ()).throw(ValueError("invalid native meter")),
+                    preserve_failed_trial_dir=preserved,
+                )
+
+            captures = list(preserved.glob("*.cr3"))
+            self.assertEqual(len(captures), 1)
+            self.assertEqual(captures[0].read_text(encoding="utf-8"), "failed native meter input")
+            metadata = json.loads(captures[0].with_suffix(".cr3.failure.json").read_text(encoding="utf-8"))
+            self.assertEqual(metadata, {"type": "ValueError", "message": "invalid native meter"})
+
     def test_select_shutter_candidates_sorts_and_filters_bounded_values(self):
         candidates = camera_gphoto2._select_shutter_candidates(
             "usb:001,010",

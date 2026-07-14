@@ -5,6 +5,7 @@ import importlib
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -604,6 +605,7 @@ def auto_expose_capture(
     timeout: float = 60.0,
     decoder: Decoder = decode_raw_image,
     meter_fn: ExposureMeter | None = None,
+    preserve_failed_trial_dir: str | Path | None = None,
 ) -> AutoExposureResult:
     if target_max <= 0:
         raise GPhoto2Error("target_max must be positive")
@@ -700,6 +702,9 @@ def auto_expose_capture(
                 decoder=decoder,
                 meter_fn=meter_fn,
                 delete_after=True,
+                preserve_failed_trial_dir=(
+                    None if preserve_failed_trial_dir is None else Path(preserve_failed_trial_dir)
+                ),
             )
             trials.append(trial)
             tested_indices.add(current_index)
@@ -1118,6 +1123,7 @@ def _capture_decode_trial(
     decoder: Decoder,
     meter_fn: ExposureMeter | None,
     delete_after: bool,
+    preserve_failed_trial_dir: Path | None,
 ) -> AutoExposureTrial:
     capture: CaptureResult | None = None
     decoded: DecodeResult | None = None
@@ -1168,12 +1174,28 @@ def _capture_decode_trial(
             accepted=decoded_max <= target_max,
             metering=None if measurement is None else measurement.to_jsonable(),
         )
+    except BaseException as exc:
+        if capture is not None and preserve_failed_trial_dir is not None:
+            _preserve_failed_trial(capture.saved_file, preserve_failed_trial_dir, index=index, error=exc)
+        raise
     finally:
         if delete_after:
             if decoded is not None:
                 _delete_decode_outputs(decoded)
             if capture is not None:
                 _delete_path(capture.saved_file)
+
+
+def _preserve_failed_trial(raw_file: Path, target_dir: Path, *, index: int, error: BaseException) -> Path:
+    target_dir.mkdir(parents=True, exist_ok=True)
+    output = target_dir / f"{raw_file.stem}-failed-{index:03d}{raw_file.suffix}"
+    shutil.copy2(raw_file, output)
+    metadata_path = output.with_suffix(f"{output.suffix}.failure.json")
+    metadata_path.write_text(
+        json.dumps({"type": type(error).__name__, "message": str(error)}, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return output
 
 
 def _decoded_image_max(decoded: DecodeResult) -> int:

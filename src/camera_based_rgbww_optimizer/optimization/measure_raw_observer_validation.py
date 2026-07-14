@@ -379,6 +379,7 @@ def build_native_raw_capture_step_fn(
                 scratch_dir=scratch_output,
                 initial_shutter_speed=(source_captures.get(cache_key).settings.shutter_speed if cache_key in source_captures else None),
                 meter_fn=meter,
+                preserve_failed_trial_dir=camera_output / "failed-auto-exposure-trials",
             )
             capture = auto.final_capture
             source_captures[cache_key] = capture

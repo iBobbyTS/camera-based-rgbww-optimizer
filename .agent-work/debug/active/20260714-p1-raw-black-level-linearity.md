@@ -23,4 +23,6 @@
 
 ## Next action
 
-Run the full automated suite, commit the guarded fallback, then start a new P1 directory before 05:00. The original P1 run remains a failed measurement-chain validation artifact because its reports used invalid black metadata and its flat-field record was only `not_requested`.
+The first black-level retry at `/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/20260714-020000-p1-black-level-retry` failed during Ray auto-exposure after the ambient frame. The failure was `ValueError: global RAW white level must be finite and exceed black level`; both Python and shell cleanup records confirm the two lights were off. The failed auto-exposure CR3 was deleted by the generic temporary-trial cleanup, so its metadata cannot be inspected.
+
+`camera_gphoto2.auto_expose_capture` now has an opt-in `preserve_failed_trial_dir`, used only by P1 native RAW capture. It copies a failed raw trial plus its exception JSON before normal temporary cleanup. Full verification and a new P1 directory are required before considering this resolved. The original first P1 run remains a failed measurement-chain validation artifact because its reports used invalid black metadata and its flat-field record was only `not_requested`.
