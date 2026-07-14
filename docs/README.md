@@ -189,6 +189,34 @@ any point outside the decoded preview are rejected instead of displayed.
 The Python packages used by this path are installed by `pip install -e .`;
 `exiftool` and `dcraw_emu` are separate system dependencies.
 
+## Native Bayer Patch Statistics
+
+Analyze an existing CR3 directly in the native Bayer mosaic without demosaic,
+white balance, gamma, or device access:
+
+```bash
+.venv/bin/python -m camera_based_rgbww_optimizer.measurement.raw_mosaic_patches \
+  tmp/location-ui/20260709-012027/camera/20260709-012032-location.cr3 \
+  --exposure 1/20 \
+  --location-config config/location/locations-20260709-012045.json \
+  --output tmp/raw-observer-validation/offline/patch-statistics.json
+```
+
+Pass `--ambient-raw` and `--ambient-exposure` to normalize both captures by
+exposure time before subtracting the ambient/dark observation. The report keeps
+`R/G1/G2/B` separate, optionally derives `G=(G1+G2)/2`, records per-plane black
+and effective white levels, and includes median, trimmed mean, MAD, variance,
+pixel counts, clipping, and noise-floor diagnostics. Color-chart coordinates
+are scaled from the saved location image dimensions to `raw_image_visible`,
+which accounts for the one-pixel size difference in the current Canon files.
+
+Acceptance thresholds live in `config/camera/raw-observer.json`. The clipping
+and near-noise thresholds intentionally remain `null` until the paired
+repeatability and three-exposure linearity experiment establishes defensible
+values. Reports therefore remain `pending_thresholds` and are not optimization
+acceptance evidence yet. This native-mosaic path runs alongside the existing
+demosaiced white-patch CCT/Duv path; it does not replace that diagnostic path.
+
 Check a saved location file against a fresh single camera capture:
 
 ```bash

@@ -1,0 +1,2 @@
+"""Camera-observer measurement primitives."""
+

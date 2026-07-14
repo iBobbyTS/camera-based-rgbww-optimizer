@@ -7,6 +7,9 @@ firmware/esphome/build/
 firmware/esphome/.esphome/
 firmware/esphome/secrets.yaml
 tmp/
-config/
+config/*
+!config/camera/
+config/camera/*
+!config/camera/raw-observer.json
 # 人工编写的测试代码。
 test.py

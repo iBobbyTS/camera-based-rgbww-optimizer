@@ -1,0 +1,32 @@
+{
+  "patch_policy": {
+    "diagnostic_only_roles": [
+      "ambient_check",
+      "black"
+    ]
+  },
+  "quality_thresholds": {
+    "maximum_clipped_fraction": null,
+    "maximum_near_noise_floor_fraction": null,
+    "maximum_nonfinite_fraction": 0.0,
+    "minimum_valid_pixels_per_plane": 256
+  },
+  "raw_metadata": {
+    "minimum_camera_white_to_global_ratio": 0.5
+  },
+  "statistics": {
+    "clipping_margin_normalized": 0.0,
+    "combine_green": true,
+    "noise_floor_margin_normalized": 0.005,
+    "trim_fraction": 0.1
+  },
+  "validation": {
+    "notes": [
+      "Clipping and noise-floor acceptance thresholds remain null until paired repeatability and exposure-linearity measurements are completed.",
+      "The noise-floor margin is a diagnostic band, not a calibrated acceptance threshold.",
+      "Reports remain pending_thresholds and must not be used as optimization acceptance evidence while empirical thresholds are null."
+    ],
+    "status": "pending_live_repeatability_and_exposure_linearity"
+  },
+  "version": 1
+}
