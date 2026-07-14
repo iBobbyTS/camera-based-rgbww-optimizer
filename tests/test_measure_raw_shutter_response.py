@@ -2,6 +2,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from camera_based_rgbww_optimizer.optimization import measure_raw_shutter_response
 
@@ -46,6 +47,45 @@ class RawShutterResponseTests(unittest.TestCase):
                     observer_config_path=self._observer(root),
                     shutter_order=("1/80", "1/60", "1/100", "1/50", "1/80"),
                 )
+
+    def test_cli_requires_exactly_one_execution_mode(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            base = ["--baseline-lut", str(self._lut(root))]
+            with self.assertRaises(SystemExit):
+                measure_raw_shutter_response.main(base)
+            with self.assertRaises(SystemExit):
+                measure_raw_shutter_response.main([*base, "--dry-run", "--execute"])
+
+    def test_cli_execute_requires_explicit_device_control_consent(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            with mock.patch.object(measure_raw_shutter_response, "run_native_raw_shutter_response") as runner:
+                with self.assertRaisesRegex(ValueError, "requires --allow-device-control"):
+                    measure_raw_shutter_response.main(["--baseline-lut", str(self._lut(root)), "--execute"])
+            runner.assert_not_called()
+
+    def test_cli_execute_calls_native_runner_only_after_explicit_consent(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            expected = root / "output" / "run"
+            with mock.patch.object(measure_raw_shutter_response, "run_native_raw_shutter_response", return_value=expected) as runner:
+                self.assertEqual(
+                    measure_raw_shutter_response.main(
+                        [
+                            "--baseline-lut",
+                            str(self._lut(root)),
+                            "--execute",
+                            "--allow-device-control",
+                            "--output-dir",
+                            str(root / "output"),
+                            "--run-name",
+                            "run",
+                        ]
+                    ),
+                    0,
+                )
+            runner.assert_called_once()
 
     def test_executor_leaves_each_source_on_across_its_capture_group_and_cleans_up(self):
         with tempfile.TemporaryDirectory() as tempdir:
