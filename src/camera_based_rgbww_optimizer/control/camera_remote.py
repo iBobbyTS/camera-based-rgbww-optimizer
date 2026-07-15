@@ -19,6 +19,7 @@ from camera_based_rgbww_optimizer.paths import PROJECT_ROOT
 DEFAULT_BASE_URL = "http://ibobby-rpi-4.local:8088"
 DEFAULT_CAPTURE_PATH = "/v1/capture"
 DEFAULT_CONFIG_PATH = "/v1/config"
+DEFAULT_HEALTH_PATH = "/health"
 DEFAULT_ENV_FILE = PROJECT_ROOT / ".env"
 DEFAULT_FILENAME_TEMPLATE = "%Y%m%d-%H%M%S.%C"
 DEFAULT_TIMEOUT = 120.0
@@ -34,6 +35,14 @@ class RemoteCameraError(RuntimeError):
     pass
 
 
+class RemoteCameraHTTPError(RemoteCameraError):
+    def __init__(self, status: int, error_code: str | None = None):
+        self.status = int(status)
+        self.error_code = error_code
+        suffix = f" ({error_code})" if error_code else ""
+        super().__init__(f"remote camera HTTP request failed with status {status}{suffix}")
+
+
 @dataclass(frozen=True)
 class RemoteCameraConfig:
     base_url: str
@@ -46,6 +55,10 @@ class RemoteCameraConfig:
     @property
     def camera_config_url(self) -> str:
         return f"{self.base_url.rstrip('/')}{DEFAULT_CONFIG_PATH}"
+
+    @property
+    def health_url(self) -> str:
+        return f"{self.base_url.rstrip('/')}{DEFAULT_HEALTH_PATH}"
 
 
 @dataclass(frozen=True)
@@ -67,6 +80,7 @@ class RemoteCaptureResult:
     saved_file: Path
     byte_count: int
     endpoint: str
+    http_attempts: int
 
     def to_jsonable(self) -> dict[str, object]:
         return {
@@ -75,11 +89,60 @@ class RemoteCaptureResult:
             "endpoint": self.endpoint,
             "saved_file": str(self.saved_file),
             "byte_count": self.byte_count,
+            "http_attempts": self.http_attempts,
         }
 
 
 UrlOpen = Callable[..., BinaryIO]
 SleepFn = Callable[[float], None]
+
+
+def create_camera_backend(
+    name: str,
+    *,
+    env_file: str | Path = DEFAULT_ENV_FILE,
+    base_url: str | None = None,
+    timeout: float = DEFAULT_TIMEOUT,
+) -> camera_gphoto2.CameraBackend:
+    if name == "local":
+        return camera_gphoto2.LocalCameraBackend(timeout=timeout)
+    if name == "remote":
+        return RemoteCameraBackend.from_environment(env_file=env_file, base_url=base_url, timeout=timeout)
+    raise ValueError(f"unsupported camera backend: {name}")
+
+
+def capture_with_backend(
+    backend: camera_gphoto2.CameraBackend,
+    *,
+    output_dir: str | Path,
+    filename_template: str,
+    settings: camera_gphoto2.CaptureSettings,
+) -> camera_gphoto2.CaptureResult:
+    connection = backend.connect()
+    resolved = backend.resolve_capture_settings(
+        iso=settings.iso or None,
+        aperture=settings.aperture or None,
+        image_format=settings.image_format,
+    )
+    return backend.capture(
+        output_dir=output_dir,
+        filename_template=filename_template,
+        settings=camera_gphoto2.CaptureSettings(
+            iso=resolved.iso,
+            aperture=resolved.aperture,
+            shutter_speed=settings.shutter_speed,
+            image_format=resolved.image_format,
+        ),
+        connection=connection,
+        allow_bulb=False,
+    )
+
+
+def add_camera_backend_arguments(parser: argparse.ArgumentParser, *, default: str = "remote") -> None:
+    parser.add_argument("--camera-backend", choices=("local", "remote"), default=default)
+    parser.add_argument("--remote-env-file", type=Path, default=DEFAULT_ENV_FILE)
+    parser.add_argument("--remote-base-url")
+    parser.add_argument("--remote-timeout", type=float, default=DEFAULT_TIMEOUT)
 
 
 def load_remote_camera_config(
@@ -100,6 +163,47 @@ def load_remote_camera_config(
         )
     normalized_base_url = _validate_base_url(resolved_base_url)
     return RemoteCameraConfig(base_url=normalized_base_url, token=resolved_token.strip())
+
+
+def load_remote_camera_base_url(
+    *,
+    env_file: str | Path = DEFAULT_ENV_FILE,
+    environ: Mapping[str, str] | None = None,
+    base_url: str | None = None,
+) -> str:
+    """Resolve only the bridge URL for the unauthenticated health request."""
+
+    file_values = _read_env_file(Path(env_file))
+    process_values = os.environ if environ is None else environ
+    return _validate_base_url(base_url or process_values.get(BASE_URL_ENV) or file_values.get(BASE_URL_ENV) or DEFAULT_BASE_URL)
+
+
+def read_remote_health(
+    *,
+    base_url: str,
+    timeout: float = DEFAULT_TIMEOUT,
+    opener: UrlOpen = request.urlopen,
+) -> Mapping[str, object]:
+    if timeout <= 0:
+        raise RemoteCameraError("timeout must be positive")
+    health_url = f"{base_url.rstrip('/')}{DEFAULT_HEALTH_PATH}"
+    health_request = request.Request(health_url, method="GET", headers={"Accept": "application/json"})
+    try:
+        with opener(health_request, timeout=timeout) as response:
+            raw_payload = response.read()
+    except error.HTTPError as exc:
+        raise RemoteCameraHTTPError(exc.code, _read_error_code(exc)) from exc
+    except error.URLError as exc:
+        raise RemoteCameraError("remote camera request failed") from exc
+    except TimeoutError as exc:
+        raise RemoteCameraError("remote camera request timed out") from exc
+    try:
+        payload = json.loads(raw_payload.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise RemoteCameraError("remote camera health returned invalid JSON") from exc
+    if not isinstance(payload, dict):
+        raise RemoteCameraError("remote camera health must be a JSON object")
+    return payload
 
 
 def capture_remote_image(
@@ -141,10 +245,17 @@ def capture_remote_image(
 
     temporary_path: Path | None = None
     byte_count = 0
+    http_attempts = 0
+
+    def counted_opener(*args: object, **kwargs: object) -> BinaryIO:
+        nonlocal http_attempts
+        http_attempts += 1
+        return opener(*args, **kwargs)
+
     try:
         with _open_authenticated_request(
             capture_request,
-            opener=opener,
+            opener=counted_opener,
             timeout=timeout,
             busy_retries=busy_retries,
             busy_retry_delay=busy_retry_delay,
@@ -178,6 +289,7 @@ def capture_remote_image(
         saved_file=destination,
         byte_count=byte_count,
         endpoint=resolved_config.capture_url,
+        http_attempts=http_attempts,
     )
 
 
@@ -313,6 +425,9 @@ class RemoteCameraBackend:
             settings=settings,
             saved_file=remote_result.saved_file,
             stdout=json.dumps(remote_result.to_jsonable(), sort_keys=True),
+            backend="remote",
+            endpoint=DEFAULT_CAPTURE_PATH,
+            http_attempts=remote_result.http_attempts,
         )
 
     def _load_settings(self, *, refresh: bool = False) -> RemoteCameraSettings:
@@ -363,11 +478,9 @@ def _open_authenticated_request(
             if exc.code == 409 and error_code == "camera_busy" and attempt < busy_retries:
                 sleep_fn(busy_retry_delay)
                 continue
-            suffix = f" ({error_code})" if error_code else ""
-            raise RemoteCameraError(f"remote camera HTTP request failed with status {exc.code}{suffix}") from exc
+            raise RemoteCameraHTTPError(exc.code, error_code) from exc
         except error.URLError as exc:
-            reason = getattr(exc, "reason", exc)
-            raise RemoteCameraError(f"remote camera request failed: {reason}") from exc
+            raise RemoteCameraError("remote camera request failed") from exc
         except TimeoutError as exc:
             raise RemoteCameraError("remote camera request timed out") from exc
     raise AssertionError("remote request retry loop exited unexpectedly")
@@ -455,29 +568,54 @@ def _resolve_destination(output_dir: str | Path, filename_template: str, *, now:
 
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Capture a Canon RAW file through r6-camera-bridge.")
+    parser = argparse.ArgumentParser(description="Inspect or capture through r6-camera-bridge.")
+    parser.add_argument("command", nargs="?", choices=("capture", "health", "config"), default="capture")
     parser.add_argument("--output-dir", default="captures/camera")
     parser.add_argument("--filename-template", default=DEFAULT_FILENAME_TEMPLATE)
     parser.add_argument("--env-file", type=Path, default=DEFAULT_ENV_FILE)
     parser.add_argument("--base-url", help=f"Override {BASE_URL_ENV}.")
-    parser.add_argument("--token", help=f"Override {TOKEN_ENV}; prefer .env to avoid shell history exposure.")
     parser.add_argument("--iso", help="Exact ISO value from GET /v1/config; defaults to the current remote value.")
     parser.add_argument("--aperture", help="Exact aperture value from GET /v1/config; defaults to the current remote value.")
     parser.add_argument("--shutter-speed", help="Exact shutter value from GET /v1/config; defaults to the current remote value.")
     parser.add_argument("--timeout", type=float, default=DEFAULT_TIMEOUT)
+    parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON.")
     return parser.parse_args(argv)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(argv)
+    backend: RemoteCameraBackend | None = None
     try:
+        if args.command == "health":
+            base_url = load_remote_camera_base_url(env_file=args.env_file, base_url=args.base_url)
+            payload = read_remote_health(base_url=base_url, timeout=args.timeout)
+            result = {"backend": "remote", "base_url": base_url, "service": dict(payload)}
+            print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) if args.json else result)
+            return 0
         backend = RemoteCameraBackend.from_environment(
             env_file=args.env_file,
             base_url=args.base_url,
-            token=args.token,
             timeout=args.timeout,
         )
         connection = backend.connect()
+        if args.command == "config":
+            settings = backend._load_settings()
+            result = {
+                "backend": "remote",
+                "base_url": backend.config.base_url,
+                "model": connection.model,
+                "iso": settings.iso.current,
+                "aperture": settings.aperture.current,
+                "shutter_speed": settings.shutter_speed.current,
+                "image_format": settings.image_format,
+                "choice_counts": {
+                    "iso": len(settings.iso.choices),
+                    "aperture": len(settings.aperture.choices),
+                    "shutter_speed": len(settings.shutter_speed.choices),
+                },
+            }
+            print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) if args.json else result)
+            return 0
         base_settings = backend.resolve_capture_settings(
             iso=args.iso,
             aperture=args.aperture,
@@ -503,9 +641,18 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
         print(json.dumps(result.to_jsonable(), ensure_ascii=False, indent=2, sort_keys=True))
     except Exception as exc:
-        print(f"camera_remote: {exc}", file=sys.stderr)
-        return 1
+        message = str(exc)
+        if backend is not None and backend.config.token:
+            message = message.replace(backend.config.token, "[REDACTED]")
+        print(f"camera_remote: {message}", file=sys.stderr)
+        return _error_exit_code(exc)
     return 0
+
+
+def _error_exit_code(exc: BaseException) -> int:
+    if isinstance(exc, RemoteCameraHTTPError):
+        return {401: 2, 409: 3, 502: 4, 504: 5}.get(exc.status, 1)
+    return 1
 
 
 if __name__ == "__main__":

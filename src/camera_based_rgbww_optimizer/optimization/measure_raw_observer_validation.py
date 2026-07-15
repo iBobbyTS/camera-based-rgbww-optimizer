@@ -12,13 +12,13 @@ from fractions import Fraction
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
-from camera_based_rgbww_optimizer.control import all_off, camera_gphoto2, esphome, ray120c, white_lut as white_lut_control
+from camera_based_rgbww_optimizer.control import all_off, camera_gphoto2, camera_remote, esphome, ray120c, white_lut as white_lut_control
 from camera_based_rgbww_optimizer.measurement import raw_mosaic_patches, recorded_exposure
 from camera_based_rgbww_optimizer.paths import PROJECT_ROOT, PROJECT_TMP_DIR
 
 
 DEFAULT_OUTPUT_ROOT = PROJECT_TMP_DIR / "raw-observer-validation"
-DEFAULT_LOCATION_CONFIG = PROJECT_ROOT / "config" / "location" / "locations-20260709-012045.json"
+DEFAULT_LOCATION_CONFIG = PROJECT_ROOT / "config" / "location" / "locations-20260714-211759.json"
 DEFAULT_OBSERVER_CONFIG = PROJECT_ROOT / "config" / "camera" / "raw-observer.json"
 DEFAULT_WHITE_LUT = PROJECT_ROOT / "config" / "white" / "white-lut.json"
 DEFAULT_WHITE_ENDPOINTS = PROJECT_ROOT / "config" / "white" / "white-endpoints.json"
@@ -60,6 +60,7 @@ def build_raw_observer_validation_plan(
     settle_seconds: float = DEFAULT_SETTLE_SECONDS,
     include_flat_field: bool = False,
     preflight_only: bool = False,
+    camera_backend: str = "remote",
 ) -> dict[str, Any]:
     """Build the P1 capture order without connecting to camera or lights."""
 
@@ -74,6 +75,8 @@ def build_raw_observer_validation_plan(
         raise ValueError("ray_intensity_percent must be between 0 and 100")
     if not 1 <= int(target_max) <= 65535:
         raise ValueError("target_max must be between 1 and 65535")
+    if camera_backend not in {"local", "remote"}:
+        raise ValueError("camera_backend must be local or remote")
 
     lut_path = Path(baseline_lut_path)
     interpolation = white_lut_control.interpolate_white_lut(
@@ -189,6 +192,12 @@ def build_raw_observer_validation_plan(
             "code_duty_curve": _file_reference_or_disabled(curve_path),
             "raw_observer_config": _file_reference(Path(observer_config_path)),
         },
+        "devices": {
+            "camera": {
+                "backend": camera_backend,
+                "credentials": "loaded_by_script_not_recorded" if camera_backend == "remote" else "not_applicable",
+            }
+        },
         "captures": captures,
         "cleanup": {
             "python": "required_on_normal_exit_exception_and_keyboard_interrupt",
@@ -252,6 +261,7 @@ def execute_raw_observer_validation_plan(
         "finished_at": None,
         "inputs": copy.deepcopy(plan_data["inputs"]),
         "measurement": copy.deepcopy(plan_data["measurement"]),
+        "devices": copy.deepcopy(plan_data.get("devices", {})),
         "safety": {"source_isolation": plan_data["measurement"]["source_isolation"]},
         "provenance": {"status": "pending" if provenance_fn is not None else "not_collected"},
     }
@@ -349,6 +359,7 @@ def build_native_raw_capture_step_fn(
     raw_report_writer: RawReportWriter = raw_mosaic_patches.write_report,
     shutter_choices_fn: ShutterChoicesFn | None = None,
     recorded_exposure_fn: RecordedExposureFn = recorded_exposure.resolve_recorded_exposure,
+    camera_backend: camera_gphoto2.CameraBackend | None = None,
 ) -> CaptureStepFn:
     """Build the production camera side of P1 while leaving device control injected.
 
@@ -365,6 +376,16 @@ def build_native_raw_capture_step_fn(
     ambient_capture: camera_gphoto2.CaptureResult | None = None
     shutter_choices_by_port: dict[str, tuple[str, ...]] = {}
     exposures_by_path: dict[Path, recorded_exposure.RecordedExposure] = {}
+
+    def fixed_capture(**kwargs: Any) -> camera_gphoto2.CaptureResult:
+        if camera_backend is None:
+            return capture_fn(**kwargs)
+        return camera_remote.capture_with_backend(
+            camera_backend,
+            output_dir=kwargs["output_dir"],
+            filename_template=kwargs["filename_template"],
+            settings=kwargs["settings"],
+        )
 
     def capture_exposure(capture: camera_gphoto2.CaptureResult) -> recorded_exposure.RecordedExposure:
         path = Path(capture.saved_file)
@@ -395,7 +416,7 @@ def build_native_raw_capture_step_fn(
         source = str(step["source"])
         filename = _capture_filename(step)
         if source == "ambient":
-            capture = capture_fn(
+            capture = fixed_capture(
                 output_dir=camera_output,
                 filename_template=filename,
                 settings=camera_gphoto2.CaptureSettings(
@@ -410,6 +431,9 @@ def build_native_raw_capture_step_fn(
             mode = "ambient_fixed"
         elif str(step["purpose"]) == "baseline_auto_exposure":
             cache_key = _source_cache_key(step)
+            auto_kwargs: dict[str, Any] = {}
+            if camera_backend is not None:
+                auto_kwargs["camera_backend"] = camera_backend
             auto = auto_expose_fn(
                 output_dir=camera_output,
                 filename_template=filename,
@@ -426,6 +450,7 @@ def build_native_raw_capture_step_fn(
                 initial_shutter_speed=(source_captures.get(cache_key).settings.shutter_speed if cache_key in source_captures else None),
                 meter_fn=meter,
                 preserve_failed_trial_dir=camera_output / "failed-auto-exposure-trials",
+                **auto_kwargs,
             )
             capture = auto.final_capture
             source_captures[cache_key] = capture
@@ -444,8 +469,9 @@ def build_native_raw_capture_step_fn(
                     max_shutter_speed=max_shutter_speed,
                     shutter_choices_fn=shutter_choices_fn,
                     choices_cache=shutter_choices_by_port,
+                    camera_backend=camera_backend,
                 )
-            capture = capture_fn(
+            capture = fixed_capture(
                 output_dir=camera_output,
                 filename_template=filename,
                 settings=camera_gphoto2.CaptureSettings(
@@ -492,6 +518,7 @@ def run_native_raw_observer_validation(
     output_root: str | Path,
     run_name: str | None,
     curve_path: str | Path | None = esphome.DEFAULT_CURVE_PATH,
+    camera_backend: camera_gphoto2.CameraBackend | None = None,
 ) -> Path:
     """Run P1 acquisition after the CLI has required explicit high-output consent."""
 
@@ -503,6 +530,9 @@ def run_native_raw_observer_validation(
         location_config_path=plan["inputs"]["location_config"]["path"],
         observer_config_path=plan["inputs"]["raw_observer_config"]["path"],
         target_max=int(plan["measurement"]["camera_auto_exposure"]["target_max"]),
+        iso=None,
+        aperture=None,
+        camera_backend=camera_backend,
     )
 
     def strip_light(cw: int, ww: int, r: int, g: int, b: int) -> Mapping[str, Any]:
@@ -515,21 +545,47 @@ def run_native_raw_observer_validation(
         ray_set_cct_fn=ray120c.set_cct,
         capture_step_fn=capture_step_fn,
         sleep_fn=time.sleep,
-        provenance_fn=lambda: collect_native_raw_observer_provenance(curve_path=curve_path),
+        provenance_fn=lambda: collect_native_raw_observer_provenance(
+            curve_path=curve_path,
+            camera_backend=camera_backend,
+            backend_name=str(plan["devices"]["camera"]["backend"]),
+        ),
     )
 
 
-def collect_native_raw_observer_provenance(*, curve_path: str | Path | None) -> dict[str, Any]:
+def collect_native_raw_observer_provenance(
+    *,
+    curve_path: str | Path | None,
+    camera_backend: camera_gphoto2.CameraBackend | None = None,
+    backend_name: str = "local",
+) -> dict[str, Any]:
     """Collect immutable, read-only P1 environment evidence before the first capture."""
 
-    camera = camera_gphoto2.auto_detect_camera()
-    return {
-        "git": _git_provenance(),
-        "software": {
-            "rawpy": _rawpy_provenance(),
-            "gphoto2": _command_version(("gphoto2", "--version")),
-        },
-        "camera": {
+    backend = camera_backend or camera_gphoto2.LocalCameraBackend()
+    camera = backend.connect()
+    if isinstance(backend, camera_remote.RemoteCameraBackend):
+        remote_settings = backend._load_settings()
+        camera_details = {
+            "backend": "remote",
+            "model": camera.model,
+            "base_url": backend.config.base_url,
+            "api_document": f"{backend.config.base_url}/v1/API.md",
+            "credentials": "loaded_by_script_not_recorded",
+            "capture_settings": {
+                "iso": remote_settings.iso.current,
+                "aperture": remote_settings.aperture.current,
+                "shutter_speed": remote_settings.shutter_speed.current,
+                "image_format": remote_settings.image_format,
+            },
+            "capture_setting_choices": {
+                "iso": list(remote_settings.iso.choices),
+                "aperture": list(remote_settings.aperture.choices),
+                "shutter_speed": list(remote_settings.shutter_speed.choices),
+            },
+        }
+    else:
+        camera_details = {
+            "backend": backend_name,
             "model": camera.model,
             "port": camera.port,
             "identity": _camera_identity(camera.port),
@@ -538,7 +594,14 @@ def collect_native_raw_observer_provenance(*, curve_path: str | Path | None) -> 
                 "aperture": camera_gphoto2.DEFAULT_APERTURE,
                 "image_format": camera_gphoto2.DEFAULT_IMAGE_FORMAT,
             },
+        }
+    return {
+        "git": _git_provenance(),
+        "software": {
+            "rawpy": _rawpy_provenance(),
+            "gphoto2": _command_version(("gphoto2", "--version")),
         },
+        "camera": camera_details,
         "ray120c": dict(ray120c.get_node_config()),
         "esphome": asyncio.run(_read_esphome_device_info()),
         "code_duty_curve": _file_reference_or_disabled(curve_path),
@@ -679,6 +742,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--curve", type=Path, default=esphome.DEFAULT_CURVE_PATH)
     parser.add_argument("--no-curve", action="store_true", help="Disable code-duty curve correction for the strip.")
+    camera_remote.add_camera_backend_arguments(parser, default="remote")
     return parser.parse_args(argv)
 
 
@@ -699,6 +763,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "settle_seconds": args.settle_seconds,
         "include_flat_field": args.include_flat_field,
         "preflight_only": args.preflight_only,
+        "camera_backend": args.camera_backend,
         "curve_path": None if args.no_curve else args.curve,
     }
     if args.dry_run:
@@ -711,11 +776,18 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
     if not args.allow_high_output:
         raise ValueError("--execute requires --allow-high-output")
+    backend = camera_remote.create_camera_backend(
+        args.camera_backend,
+        env_file=args.remote_env_file,
+        base_url=args.remote_base_url,
+        timeout=args.remote_timeout,
+    )
     output = run_native_raw_observer_validation(
         build_raw_observer_validation_plan(**plan_kwargs),
         output_root=args.output_dir,
         run_name=args.run_name,
         curve_path=None if args.no_curve else args.curve,
+        camera_backend=backend,
     )
     print(output)
     return 0
@@ -754,17 +826,20 @@ def _resolve_bracket_shutter_speed(
     max_shutter_speed: str,
     shutter_choices_fn: ShutterChoicesFn | None,
     choices_cache: dict[str, tuple[str, ...]],
+    camera_backend: camera_gphoto2.CameraBackend | None = None,
 ) -> str:
     if factor <= 0:
         raise ValueError("linearity bracket exposure factor must be positive")
     port = base_capture.connection.port
     choices = choices_cache.get(port)
     if choices is None:
-        choices = tuple(
-            shutter_choices_fn(port)
-            if shutter_choices_fn is not None
-            else camera_gphoto2.read_config_choices(port, camera_gphoto2.CONFIG_SHUTTER_SPEED)
-        )
+        if shutter_choices_fn is not None:
+            choices = tuple(shutter_choices_fn(port))
+        elif camera_backend is not None:
+            _current, backend_choices = camera_backend.read_shutter_current_and_choices(base_capture.connection)
+            choices = tuple(backend_choices)
+        else:
+            choices = tuple(camera_gphoto2.read_config_choices(port, camera_gphoto2.CONFIG_SHUTTER_SPEED))
         choices_cache[port] = choices
     target_seconds = Fraction(base_capture.settings.shutter_speed) * Fraction(str(factor))
     return camera_gphoto2.select_supported_shutter_speed(
@@ -839,6 +914,7 @@ def _validate_executable_plan(plan: Mapping[str, Any]) -> None:
         raise ValueError("plan captures must be a non-empty array")
     if not isinstance(measurement, Mapping) or not isinstance(measurement.get("anchor"), Mapping):
         raise ValueError("plan measurement.anchor must be an object")
+    _verify_frozen_inputs(plan)
     for step in captures:
         if not isinstance(step, Mapping):
             raise ValueError("plan capture must be an object")
@@ -846,6 +922,23 @@ def _validate_executable_plan(plan: Mapping[str, Any]) -> None:
             raise ValueError(f"unsupported capture source: {step.get('source')}")
         if not bool(step.get("other_source_must_be_off")):
             raise ValueError("every executable capture must require source isolation")
+
+
+def _verify_frozen_inputs(plan: Mapping[str, Any]) -> None:
+    inputs = plan.get("inputs")
+    if not isinstance(inputs, Mapping):
+        raise ValueError("plan inputs must be an object")
+    for name, reference in inputs.items():
+        if not isinstance(reference, Mapping) or reference.get("status") == "disabled":
+            continue
+        path_value = reference.get("path")
+        expected = reference.get("sha256")
+        if not isinstance(path_value, str) or not isinstance(expected, str):
+            raise ValueError(f"plan input {name} must freeze path and sha256")
+        path = Path(path_value)
+        actual = hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else None
+        if actual != expected:
+            raise ValueError(f"plan input hash mismatch for {name}: {path}")
 
 
 def _prepare_capture_source(

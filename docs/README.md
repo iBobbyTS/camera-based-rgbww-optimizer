@@ -119,11 +119,20 @@ Detect and capture:
   --image-format RAW
 ```
 
-Remote capture is an additional backend and does not change the local gphoto2
-commands above. Copy `.env.example` to `.env`, set the bridge token, then run:
+Remote capture is the required backend for new formal experiments; local
+gphoto2 remains available for compatibility and offline tests. Copy
+`.env.example` to `.env`, set the bridge token, then use the script-owned
+read-only checks (neither command captures an image or changes settings):
 
 ```bash
-.venv/bin/python -m camera_based_rgbww_optimizer.control.camera_remote \
+.venv/bin/python -m camera_based_rgbww_optimizer.control.camera_remote health --json
+.venv/bin/python -m camera_based_rgbww_optimizer.control.camera_remote config --json
+```
+
+Direct remote capture remains available with:
+
+```bash
+.venv/bin/python -m camera_based_rgbww_optimizer.control.camera_remote capture \
   --output-dir tmp/captures/remote-camera \
   --filename-template '%Y%m%d-%H%M%S.%C'
 ```
@@ -131,7 +140,9 @@ commands above. Copy `.env.example` to `.env`, set the bridge token, then run:
 `camera_remote` reads
 `CAMERA_BASED_RGBWW_OPTIMIZER_REMOTE_CAMERA_BASE_URL` and
 `CAMERA_BASED_RGBWW_OPTIMIZER_REMOTE_CAMERA_TOKEN` from the process environment
-first and the project `.env` second. It reads the exact values exposed by
+first and the project `.env` second. Do not source, print, or pass the token on
+the command line; only the Python process reads it at actual runtime. It reads
+the exact values exposed by
 `GET /v1/config`, sends ISO/aperture/shutter settings in an authenticated
 `POST /v1/capture`, streams the response to a temporary file, and atomically
 installs the completed CR3. Omit `--iso`, `--aperture`, or `--shutter-speed` to
@@ -209,10 +220,17 @@ I/O and writes only `plan.json`:
 ```bash
 .venv/bin/python -m camera_based_rgbww_optimizer.optimization.measure_raw_observer_validation \
   --baseline-lut /Volumes/4T/temp/rgbww-optimizer/white-lut-calibration/14x5-off-cycle-refined-v2-20260713/white-lut-calibration.json \
+  --camera-backend remote \
+  --location-config config/location/locations-20260714-211759.json \
+  --target-max 19661 \
+  --linearity-factors 0.5,1,1.5 \
+  --preflight-only \
   --dry-run
 ```
 
-Real acquisition requires both `--execute` and `--allow-high-output`; it uses
+The plan freezes the camera backend plus the location path and SHA-256. Dry-run
+does not load `.env`, access the network, or call either light. Real acquisition
+requires both `--execute` and `--allow-high-output`; it uses
 the native Bayer exposure meter, emits JSON-only patch reports, and keeps Ray
 and strip shutter caches independent. P1 fails immediately and enters cleanup
 if a CR3 cannot provide recorded exposure metadata; it never continues a formal
@@ -334,9 +352,9 @@ white balance, gamma, or device access:
 
 ```bash
 .venv/bin/python -m camera_based_rgbww_optimizer.measurement.raw_mosaic_patches \
-  tmp/location-ui/20260709-012027/camera/20260709-012032-location.cr3 \
+  path/to/existing-history.cr3 \
   --exposure 1/20 \
-  --location-config config/location/locations-20260709-012045.json \
+  --location-config config/location/locations-20260714-211759.json \
   --output tmp/raw-observer-validation/offline/patch-statistics.json
 ```
 
@@ -359,7 +377,8 @@ Check a saved location file against a fresh single camera capture:
 
 ```bash
 .venv/bin/python -m camera_based_rgbww_optimizer.interaction.location_checker \
-  config/location/locations-20260605-225800.json
+  config/location/locations-20260714-211759.json \
+  --camera-backend remote
 ```
 
 The checker requires a location JSON argument, uses full-frame auto-exposure,
@@ -387,7 +406,8 @@ Run a real high-output sweep only after confirming the strip and camera setup:
 ```bash
 .venv/bin/python -m camera_based_rgbww_optimizer.optimization.measure_channel_response \
   --channels cw,ww,r,g,b \
-  --location-config config/location/locations-20260605-225800.json \
+  --camera-backend remote \
+  --location-config config/location/locations-20260714-211759.json \
   --block-indices all \
   --allow-high-output
 ```
@@ -469,7 +489,8 @@ budget of up to 64 CCT samples and 16 G/M samples per endpoint:
 ```bash
 .venv/bin/python -m camera_based_rgbww_optimizer.optimization.measure_white_endpoints \
   --output-dir /Volumes/4T/temp/rgbww-optimizer/white-endpoints \
-  --location-config config/location/locations-20260605-225800.json \
+  --camera-backend remote \
+  --location-config config/location/locations-20260714-211759.json \
   --allow-high-output
 ```
 
@@ -479,7 +500,8 @@ the adaptive run per endpoint:
 ```bash
 .venv/bin/python -m camera_based_rgbww_optimizer.optimization.measure_white_endpoints \
   --output-dir tmp/white-endpoints \
-  --location-config config/location/locations-20260605-225800.json \
+  --camera-backend remote \
+  --location-config config/location/locations-20260714-211759.json \
   --allow-high-output \
   --ray-start ww=2961,160 \
   --ray-start cw=7895,100
@@ -500,7 +522,8 @@ The selected best-environment endpoint result is stored as
 .venv/bin/python -m camera_based_rgbww_optimizer.optimization.measure_white_lut \
   --output-dir tmp/white-lut-calibration \
   --endpoint-calibration config/white/white-endpoints.json \
-  --location-config config/location/locations-20260709-012045.json \
+  --camera-backend remote \
+  --location-config config/location/locations-20260714-211759.json \
   --allow-high-output
 ```
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib
 import json
 import os
@@ -87,6 +88,9 @@ class CaptureResult:
     stdout: str
     decoded: "DecodeResult | None" = None
     metering: "ExposureMeasurement | None" = None
+    backend: str | None = None
+    endpoint: str | None = None
+    http_attempts: int | None = None
 
     def to_jsonable(self) -> dict[str, object]:
         data: dict[str, object] = {
@@ -98,10 +102,21 @@ class CaptureResult:
             "image_format": self.settings.image_format,
             "saved_file": str(self.saved_file),
         }
+        if self.saved_file.is_file():
+            byte_count = self.saved_file.stat().st_size
+            data["byte_count"] = byte_count
+            if byte_count > 0:
+                data["sha256"] = hashlib.sha256(self.saved_file.read_bytes()).hexdigest()
         if self.decoded is not None:
             data["decoded"] = self.decoded.to_jsonable()
         if self.metering is not None:
             data["metering"] = self.metering.to_jsonable()
+        if self.backend is not None:
+            data["camera_backend"] = self.backend
+        if self.endpoint is not None:
+            data["remote_endpoint"] = self.endpoint
+        if self.http_attempts is not None:
+            data["http_attempts"] = self.http_attempts
         return data
 
 
@@ -864,6 +879,9 @@ def auto_expose_capture(
             stdout=final_result.stdout,
             decoded=decoded,
             metering=measurement,
+            backend=final_result.backend,
+            endpoint=final_result.endpoint,
+            http_attempts=final_result.http_attempts,
         )
         if decoded_max <= target_max:
             if decoded_max > safe_final_max:

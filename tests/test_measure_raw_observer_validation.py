@@ -106,6 +106,51 @@ class RawObserverValidationPlanTests(unittest.TestCase):
             self.assertEqual([step["source"] for step in checks], ["ray", "strip"])
             self.assertTrue(all(step["exposure_factor"] == 1.5 for step in checks))
             self.assertFalse(any(step["purpose"] == "paired_repeat" for step in plan["captures"]))
+            self.assertEqual(plan["devices"]["camera"]["backend"], "remote")
+            self.assertEqual(plan["inputs"]["location_config"]["sha256"], measure_raw_observer_validation.hashlib.sha256(Path(plan["inputs"]["location_config"]["path"]).read_bytes()).hexdigest())
+            self.assertEqual(plan["cleanup"]["python"], "required_on_normal_exit_exception_and_keyboard_interrupt")
+            self.assertEqual(plan["cleanup"]["shell"], "required_via_wrapper_trap")
+
+    def test_remote_dry_run_never_constructs_backend_or_calls_lights(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            base = self._plan(root)
+            args = [
+                "--baseline-lut", base["inputs"]["baseline_lut"]["path"],
+                "--location-config", base["inputs"]["location_config"]["path"],
+                "--raw-observer-config", base["inputs"]["raw_observer_config"]["path"],
+                "--camera-backend", "remote",
+                "--preflight-only",
+                "--dry-run",
+                "--output-dir", str(root / "output"),
+                "--run-name", "remote-dry",
+            ]
+            with mock.patch.object(measure_raw_observer_validation.camera_remote, "create_camera_backend") as factory, \
+                 mock.patch.object(measure_raw_observer_validation.esphome, "light") as strip, \
+                 mock.patch.object(measure_raw_observer_validation.ray120c, "set_cct") as ray:
+                self.assertEqual(measure_raw_observer_validation.main(args), 0)
+            factory.assert_not_called()
+            strip.assert_not_called()
+            ray.assert_not_called()
+            plan = json.loads((root / "output" / "remote-dry" / "plan.json").read_text(encoding="utf-8"))
+            self.assertEqual(plan["devices"]["camera"]["backend"], "remote")
+
+    def test_frozen_location_hash_mismatch_stops_before_capture_or_lights(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            plan = self._plan(root)
+            Path(plan["inputs"]["location_config"]["path"]).write_text('{"changed":true}', encoding="utf-8")
+            calls = []
+            with self.assertRaisesRegex(ValueError, "hash mismatch"):
+                measure_raw_observer_validation.execute_raw_observer_validation_plan(
+                    plan,
+                    run_dir=root / "run",
+                    strip_light_fn=lambda *_values: calls.append("strip") or {},
+                    ray_set_cct_fn=lambda *_args, **_kwargs: calls.append("ray") or {},
+                    capture_step_fn=lambda _step: calls.append("capture") or {},
+                    sleep_fn=lambda _seconds: None,
+                )
+            self.assertEqual(calls, [])
 
     def test_plan_rejects_missing_baseline_factor_and_invalid_repeat_count(self):
         with tempfile.TemporaryDirectory() as tempdir:
@@ -485,6 +530,145 @@ Focal Length: 50mm
             self.assertEqual(stored_report["exposure_metadata"]["source"], "Canon:ExposureTime")
             self.assertAlmostEqual(stored_report["analysis_context"]["exposure_seconds"], 0.0075)
             self.assertEqual(list(root.rglob("*.npy")), [])
+
+    def test_native_capture_adapter_reuses_one_injected_backend_for_auto_and_fixed_captures(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            plan = self._plan(root)
+            class FakeRemoteBackend:
+                def __init__(self):
+                    self.choice_reads = []
+
+                def read_shutter_current_and_choices(self, connection):
+                    self.choice_reads.append(connection.port)
+                    return "1/100", ["1/200", "1/160", "1/125", "1/100", "1/80", "1/60"]
+
+            backend = FakeRemoteBackend()
+            fixed_backends = []
+            auto_backends = []
+
+            def result_for(settings, filename):
+                path = root / filename.replace("%C", "cr3")
+                path.write_bytes(b"raw")
+                return measure_raw_observer_validation.camera_gphoto2.CaptureResult(
+                    connection=measure_raw_observer_validation.camera_gphoto2.CameraConnection("remote", "http://bridge"),
+                    settings=settings,
+                    saved_file=path,
+                    stdout="{}",
+                )
+
+            def backend_capture(injected, **kwargs):
+                fixed_backends.append(injected)
+                return result_for(kwargs["settings"], kwargs["filename_template"])
+
+            def auto_expose(**kwargs):
+                auto_backends.append(kwargs["camera_backend"])
+                settings = measure_raw_observer_validation.camera_gphoto2.CaptureSettings(
+                    iso="125", aperture="implicit auto", shutter_speed="1/100", image_format="RAW"
+                )
+                return measure_raw_observer_validation.camera_gphoto2.AutoExposureResult(
+                    target_max=kwargs["target_max"],
+                    final_capture=result_for(settings, kwargs["filename_template"]),
+                    trials=(),
+                )
+
+            def exposure(path, shutter):
+                seconds = recorded_exposure.parse_nominal_exposure(shutter)
+                return recorded_exposure.RecordedExposure(
+                    seconds=seconds,
+                    source="Canon:ExposureTime",
+                    nominal_seconds=seconds,
+                    nominal_shutter_speed=shutter,
+                    raw_file=Path(path),
+                    status="recorded",
+                    metadata_values={"Canon:ExposureTime": seconds},
+                )
+
+            adapter = measure_raw_observer_validation.build_native_raw_capture_step_fn(
+                camera_dir=root / "camera",
+                measurements_dir=root / "measurements",
+                scratch_dir=root / "scratch",
+                location_config_path=root / "locations.json",
+                observer_config_path=root / "observer.json",
+                camera_backend=backend,
+                auto_expose_fn=auto_expose,
+                raw_meter_fn=lambda *_args, **_kwargs: mock.Mock(
+                    exposure_metric=10000, raw_visible_max=10000,
+                    plane_max={"R": 0.1, "G1": 0.1, "G2": 0.1, "B": 0.1},
+                ),
+                raw_analyze_fn=lambda *_args, **_kwargs: {"quality": {"status": "pending_thresholds"}},
+                raw_report_writer=lambda path, report: Path(path),
+                recorded_exposure_fn=exposure,
+            )
+            with mock.patch.object(
+                measure_raw_observer_validation.camera_remote,
+                "capture_with_backend",
+                side_effect=backend_capture,
+            ), mock.patch.object(
+                measure_raw_observer_validation.camera_gphoto2,
+                "read_config_choices",
+                side_effect=AssertionError("remote bracket must not use local gphoto2"),
+            ):
+                adapter(plan["captures"][0])
+                adapter(plan["captures"][1])
+                paired = next(step for step in plan["captures"] if step["purpose"] == "paired_repeat" and step["source"] == "ray")
+                adapter(paired)
+                bracket = next(
+                    step
+                    for step in plan["captures"]
+                    if step["purpose"] == "linearity_bracket" and step["source"] == "ray"
+                )
+                adapter(bracket)
+
+            self.assertEqual(auto_backends, [backend])
+            self.assertEqual(fixed_backends, [backend, backend, backend])
+            self.assertEqual(backend.choice_reads, ["http://bridge"])
+
+    def test_remote_provenance_records_setting_choices_without_credentials(self):
+        settings = measure_raw_observer_validation.camera_remote.RemoteCameraSettings(
+            iso=measure_raw_observer_validation.camera_remote.RemoteCameraSetting("100", ("100", "125")),
+            aperture=measure_raw_observer_validation.camera_remote.RemoteCameraSetting(
+                "implicit auto", ("implicit auto",)
+            ),
+            shutter_speed=measure_raw_observer_validation.camera_remote.RemoteCameraSetting(
+                "1/100", ("1/200", "1/100", "1/50")
+            ),
+            image_format="RAW",
+        )
+        backend = measure_raw_observer_validation.camera_remote.RemoteCameraBackend(
+            config=measure_raw_observer_validation.camera_remote.RemoteCameraConfig(
+                "http://bridge.local:8088", "do-not-record-this-token"
+            )
+        )
+        connection = measure_raw_observer_validation.camera_gphoto2.CameraConnection(
+            "Canon EOS R6 Mark III via r6-camera-bridge", "http://bridge.local:8088"
+        )
+        with mock.patch.object(backend, "connect", return_value=connection), mock.patch.object(
+            backend, "_load_settings", return_value=settings
+        ), mock.patch.object(
+            measure_raw_observer_validation, "_git_provenance", return_value={"commit": "abc", "dirty": False}
+        ), mock.patch.object(
+            measure_raw_observer_validation, "_rawpy_provenance", return_value={"status": "ok"}
+        ), mock.patch.object(
+            measure_raw_observer_validation, "_command_version", return_value={"status": "ok"}
+        ), mock.patch.object(
+            measure_raw_observer_validation.ray120c, "get_node_config", return_value={}
+        ), mock.patch.object(
+            measure_raw_observer_validation,
+            "_read_esphome_device_info",
+            new=mock.AsyncMock(return_value={"name": "strip"}),
+        ):
+            provenance = measure_raw_observer_validation.collect_native_raw_observer_provenance(
+                curve_path=None,
+                camera_backend=backend,
+                backend_name="remote",
+            )
+
+        self.assertEqual(
+            provenance["camera"]["capture_setting_choices"]["shutter_speed"],
+            ["1/200", "1/100", "1/50"],
+        )
+        self.assertNotIn("do-not-record-this-token", json.dumps(provenance, sort_keys=True))
 
     def _plan(self, root: Path):
         lut = root / "lut.json"

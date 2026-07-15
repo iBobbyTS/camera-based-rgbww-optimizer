@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Sequence
 
-from camera_based_rgbww_optimizer.control import camera_gphoto2, esphome, ray120c
+from camera_based_rgbww_optimizer.control import camera_gphoto2, camera_remote, esphome, ray120c
 from camera_based_rgbww_optimizer.optimization import measure_channel_response
 from camera_based_rgbww_optimizer.optimization import white_calibration_common as common
 from camera_based_rgbww_optimizer.paths import PROJECT_ROOT, PROJECT_TMP_DIR
@@ -14,7 +14,7 @@ from camera_based_rgbww_optimizer.utils import location_regions
 
 
 DEFAULT_OUTPUT_ROOT = PROJECT_TMP_DIR / "white-endpoints"
-DEFAULT_LOCATION_CONFIG = PROJECT_ROOT / "config" / "location" / "locations-20260605-225800.json"
+DEFAULT_LOCATION_CONFIG = PROJECT_ROOT / "config" / "location" / "locations-20260714-211759.json"
 DEFAULT_ENDPOINT_RAY_CCTS = (1800, 2000, 2300, 2700, 3200, 3800, 4500, 5000, 5600, 6500, 8000, 10000, 14000, 20000)
 DEFAULT_ENDPOINT_RAY_GM_VALUES = (0, 70, 100, 130, 200)
 DEFAULT_MAX_CODE = 4095
@@ -89,8 +89,8 @@ def run_white_endpoint_measurement(
     settle_seconds: float,
     ray_intensity_percent: float,
     target_max: int,
-    iso: str,
-    aperture: str,
+    iso: str | None,
+    aperture: str | None,
     image_format: str,
     min_shutter_speed: str,
     max_shutter_speed: str,
@@ -115,6 +115,8 @@ def run_white_endpoint_measurement(
     ray_set_cct_fn: RaySetCctFn = ray120c.set_cct,
     auto_expose_fn: AutoExposeFn = camera_gphoto2.auto_expose_capture,
     white_point_estimator_fn: WhitePointEstimatorFn = common.estimate_capture_white_point,
+    camera_backend: camera_gphoto2.CameraBackend | None = None,
+    camera_backend_name: str = "local",
 ) -> Path:
     common.validate_high_output_plan(
         max_code=max_code,
@@ -123,6 +125,9 @@ def run_white_endpoint_measurement(
         dry_run=dry_run,
         operation="white endpoint measurement",
     )
+    if camera_backend is not None:
+        unbound_auto_expose = auto_expose_fn
+        auto_expose_fn = lambda **kwargs: unbound_auto_expose(camera_backend=camera_backend, **kwargs)
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     run_dir = output_root / (run_name or timestamp)
     if output_json is None:
@@ -189,6 +194,7 @@ def run_white_endpoint_measurement(
             ],
         },
         "camera": {
+            "backend": camera_backend_name,
             "target_max": int(target_max),
             "iso": str(iso),
             "aperture": str(aperture),
@@ -410,8 +416,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--settle-seconds", type=float, default=DEFAULT_SETTLE_SECONDS)
     parser.add_argument("--ray-intensity-percent", type=float, default=DEFAULT_RAY_INTENSITY_PERCENT)
     parser.add_argument("--target-max", type=int, default=camera_gphoto2.DEFAULT_AUTO_EXPOSURE_MAX)
-    parser.add_argument("--iso", default=camera_gphoto2.DEFAULT_ISO)
-    parser.add_argument("--aperture", default=camera_gphoto2.DEFAULT_APERTURE)
+    parser.add_argument("--iso")
+    parser.add_argument("--aperture")
     parser.add_argument("--image-format", default=camera_gphoto2.DEFAULT_IMAGE_FORMAT)
     parser.add_argument("--min-shutter-speed", default=camera_gphoto2.DEFAULT_MIN_SHUTTER_SPEED)
     parser.add_argument("--max-shutter-speed", default=camera_gphoto2.DEFAULT_MAX_SHUTTER_SPEED)
@@ -426,11 +432,20 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--auto-exposure-metering-location-config", type=Path)
     parser.add_argument("--leave-ray-on", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
+    camera_remote.add_camera_backend_arguments(parser, default="remote")
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
+    backend = None
+    if not args.dry_run:
+        backend = camera_remote.create_camera_backend(
+            args.camera_backend,
+            env_file=args.remote_env_file,
+            base_url=args.remote_base_url,
+            timeout=args.remote_timeout,
+        )
     output_json = run_white_endpoint_measurement(
         output_root=args.output_dir,
         run_name=args.run_name,
@@ -468,6 +483,8 @@ def main(argv: list[str] | None = None) -> int:
         ray_start=dict(args.ray_start),
         output_json=args.output_json,
         leave_ray_on=args.leave_ray_on,
+        camera_backend=backend,
+        camera_backend_name=args.camera_backend,
     )
     print(output_json)
     return 0

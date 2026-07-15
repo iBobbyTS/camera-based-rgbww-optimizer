@@ -487,6 +487,9 @@ def capture_fixed(
         saved_file=capture.saved_file,
         stdout=capture.stdout,
         decoded=decoded,
+        backend=capture.backend,
+        endpoint=capture.endpoint,
+        http_attempts=capture.http_attempts,
     )
 
 

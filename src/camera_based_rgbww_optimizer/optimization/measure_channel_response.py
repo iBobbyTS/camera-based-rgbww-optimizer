@@ -8,14 +8,14 @@ from fractions import Fraction
 from pathlib import Path
 from typing import Any, Callable, Sequence
 
-from camera_based_rgbww_optimizer.control import camera_gphoto2, esphome
+from camera_based_rgbww_optimizer.control import camera_gphoto2, camera_remote, esphome
 from camera_based_rgbww_optimizer.measurement import recorded_exposure
 from camera_based_rgbww_optimizer.paths import PROJECT_ROOT, PROJECT_TMP_DIR
 from camera_based_rgbww_optimizer.utils import location_regions
 
 
 DEFAULT_OUTPUT_ROOT = PROJECT_TMP_DIR / "channel-response"
-DEFAULT_AUTO_EXPOSURE_METERING_LOCATION_CONFIG = PROJECT_ROOT / "config" / "location" / "locations-20260605-225800.json"
+DEFAULT_AUTO_EXPOSURE_METERING_LOCATION_CONFIG = PROJECT_ROOT / "config" / "location" / "locations-20260714-211759.json"
 DEFAULT_CODE_VALUES = (
     4095,
     3072,
@@ -328,8 +328,8 @@ def run_channel_response(
     settle_seconds: float,
     regions: Sequence[dict[str, Any]],
     target_max: int,
-    iso: str,
-    aperture: str,
+    iso: str | None,
+    aperture: str | None,
     image_format: str,
     min_shutter_speed: str,
     max_shutter_speed: str,
@@ -337,7 +337,7 @@ def run_channel_response(
     max_captures: int,
     decode_formats: Sequence[str],
     auto_exposure_metering_regions: Sequence[dict[str, Any]] | None = None,
-    ambient_iso: str = DEFAULT_AMBIENT_ISO,
+    ambient_iso: str | None = DEFAULT_AMBIENT_ISO,
     ambient_shutter_speed: str = DEFAULT_AMBIENT_SHUTTER_SPEED,
     ambient_stop_threshold_per_second: float = DEFAULT_AMBIENT_STOP_THRESHOLD_PER_SECOND,
     output_json: Path | None = None,
@@ -345,6 +345,8 @@ def run_channel_response(
     auto_expose_fn: AutoExposeFn = camera_gphoto2.auto_expose_capture,
     capture_fn: CaptureFn = camera_gphoto2.capture_image,
     decoder_fn: DecoderFn = camera_gphoto2.decode_raw_image,
+    camera_backend: camera_gphoto2.CameraBackend | None = None,
+    camera_backend_name: str = "local",
 ) -> Path:
     plan = build_measurement_plan(channels=channels, codes=codes, max_code=max_code)
     validate_output_range(
@@ -389,6 +391,7 @@ def run_channel_response(
             ],
         },
         "camera": {
+            "backend": camera_backend_name,
             "target_max": int(target_max),
             "iso": str(iso),
             "aperture": str(aperture),
@@ -438,6 +441,7 @@ def run_channel_response(
                 shutter_speed=ambient_shutter_speed,
                 decode_formats=decode_formats,
                 metering_regions=auto_exposure_metering_regions,
+                camera_backend=camera_backend,
             )
             ambient_exposure = recorded_exposure.resolve_recorded_exposure(
                 ambient_capture.saved_file,
@@ -490,6 +494,7 @@ def run_channel_response(
                 decode_formats=decode_formats,
                 metering_regions=auto_exposure_metering_regions,
                 initial_shutter_speed=min_shutter_speed if first_channel_measurement else None,
+                camera_backend=camera_backend,
             )
             exposure = recorded_exposure.resolve_recorded_exposure(
                 capture.final_capture.saved_file,
@@ -581,10 +586,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--no-ambient", action="store_true", help="Skip the initial all-off ambient capture.")
     parser.add_argument("--target-max", type=int, default=camera_gphoto2.DEFAULT_AUTO_EXPOSURE_MAX)
-    parser.add_argument("--iso", default=camera_gphoto2.DEFAULT_ISO)
-    parser.add_argument("--aperture", default=camera_gphoto2.DEFAULT_APERTURE)
+    parser.add_argument("--iso")
+    parser.add_argument("--aperture")
     parser.add_argument("--image-format", default=camera_gphoto2.DEFAULT_IMAGE_FORMAT)
-    parser.add_argument("--ambient-iso", default=DEFAULT_AMBIENT_ISO)
+    parser.add_argument("--ambient-iso")
     parser.add_argument("--ambient-shutter-speed", default=DEFAULT_AMBIENT_SHUTTER_SPEED)
     parser.add_argument(
         "--ambient-stop-threshold-per-second",
@@ -598,6 +603,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--max-captures", type=int, default=camera_gphoto2.DEFAULT_AUTO_EXPOSURE_MAX_CAPTURES)
     parser.add_argument("--decode-format", dest="decode_formats", action="append")
     parser.add_argument("--dry-run", action="store_true")
+    camera_remote.add_camera_backend_arguments(parser, default="remote")
     return parser.parse_args(argv)
 
 
@@ -622,6 +628,14 @@ def main(argv: list[str] | None = None) -> int:
     auto_exposure_metering_location_config = resolve_auto_exposure_metering_location_config(args)
     if auto_exposure_metering_location_config is not None:
         auto_exposure_metering_regions = camera_gphoto2.load_metering_regions(auto_exposure_metering_location_config)
+    backend = None
+    if not args.dry_run:
+        backend = camera_remote.create_camera_backend(
+            args.camera_backend,
+            env_file=args.remote_env_file,
+            base_url=args.remote_base_url,
+            timeout=args.remote_timeout,
+        )
     output_json = run_channel_response(
         output_root=args.output_dir,
         run_name=args.run_name,
@@ -648,6 +662,8 @@ def main(argv: list[str] | None = None) -> int:
         ambient_shutter_speed=args.ambient_shutter_speed,
         ambient_stop_threshold_per_second=args.ambient_stop_threshold_per_second,
         output_json=args.output_json,
+        camera_backend=backend,
+        camera_backend_name=args.camera_backend,
     )
     print(output_json)
     return 0
@@ -660,8 +676,8 @@ def _capture_auto_exposed(
     decode_dir: Path,
     filename_template: str,
     target_max: int,
-    iso: str,
-    aperture: str,
+    iso: str | None,
+    aperture: str | None,
     image_format: str,
     min_shutter_speed: str,
     max_shutter_speed: str,
@@ -670,7 +686,11 @@ def _capture_auto_exposed(
     decode_formats: Sequence[str],
     metering_regions: Sequence[dict[str, Any]] | None = None,
     initial_shutter_speed: str | None = None,
+    camera_backend: camera_gphoto2.CameraBackend | None = None,
 ) -> camera_gphoto2.AutoExposureResult:
+    backend_kwargs: dict[str, Any] = {}
+    if camera_backend is not None:
+        backend_kwargs["camera_backend"] = camera_backend
     return auto_expose_fn(
         output_dir=camera_dir,
         filename_template=filename_template,
@@ -686,6 +706,7 @@ def _capture_auto_exposed(
         decode_output_dir=decode_dir,
         decode_formats=decode_formats,
         metering_regions=metering_regions,
+        **backend_kwargs,
     )
 
 
@@ -696,23 +717,34 @@ def _capture_fixed(
     camera_dir: Path,
     decode_dir: Path,
     filename_template: str,
-    iso: str,
-    aperture: str,
+    iso: str | None,
+    aperture: str | None,
     image_format: str,
     shutter_speed: str,
     decode_formats: Sequence[str],
     metering_regions: Sequence[dict[str, Any]] | None = None,
+    camera_backend: camera_gphoto2.CameraBackend | None = None,
 ) -> camera_gphoto2.CaptureResult:
-    capture = capture_fn(
-        output_dir=camera_dir,
-        filename_template=filename_template,
-        settings=camera_gphoto2.CaptureSettings(
-            iso=iso,
-            aperture=aperture,
-            shutter_speed=shutter_speed,
-            image_format=image_format,
-        ),
-        timeout=DEFAULT_AMBIENT_TIMEOUT,
+    settings = camera_gphoto2.CaptureSettings(
+        iso=iso,
+        aperture=aperture,
+        shutter_speed=shutter_speed,
+        image_format=image_format,
+    )
+    capture = (
+        capture_fn(
+            output_dir=camera_dir,
+            filename_template=filename_template,
+            settings=settings,
+            timeout=DEFAULT_AMBIENT_TIMEOUT,
+        )
+        if camera_backend is None
+        else camera_remote.capture_with_backend(
+            camera_backend,
+            output_dir=camera_dir,
+            filename_template=filename_template,
+            settings=settings,
+        )
     )
     if metering_regions is None:
         decoded = decoder_fn(capture.saved_file, output_dir=decode_dir, formats=decode_formats)
@@ -724,6 +756,9 @@ def _capture_fixed(
         saved_file=capture.saved_file,
         stdout=capture.stdout,
         decoded=decoded,
+        backend=capture.backend,
+        endpoint=capture.endpoint,
+        http_attempts=capture.http_attempts,
     )
 
 

@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Sequence
 
-from camera_based_rgbww_optimizer.control import camera_gphoto2, esphome, ray120c
+from camera_based_rgbww_optimizer.control import camera_gphoto2, camera_remote, esphome, ray120c
 from camera_based_rgbww_optimizer.control import white_lut as white_lut_control
 from camera_based_rgbww_optimizer.optimization import measure_channel_response
 from camera_based_rgbww_optimizer.optimization import white_calibration_common as common
@@ -19,7 +19,7 @@ from camera_based_rgbww_optimizer.utils import location_regions
 
 
 DEFAULT_OUTPUT_ROOT = PROJECT_TMP_DIR / "white-lut-calibration"
-DEFAULT_LOCATION_CONFIG = PROJECT_ROOT / "config" / "location" / "locations-20260709-012045.json"
+DEFAULT_LOCATION_CONFIG = PROJECT_ROOT / "config" / "location" / "locations-20260714-211759.json"
 DEFAULT_CHANNEL_RESPONSE = PROJECT_TMP_DIR / "channel-response" / "merged" / "channel-code-duty-response-merged.json"
 DEFAULT_ENDPOINT_CALIBRATION = PROJECT_ROOT / "config" / "white" / "white-endpoints.json"
 DEFAULT_TARGET_CCTS = (1800, 3200, 5600, 20000)
@@ -333,8 +333,8 @@ def run_white_lut_calibration(
     settle_seconds: float,
     ray_intensity_percent: float,
     target_max: int,
-    iso: str,
-    aperture: str,
+    iso: str | None,
+    aperture: str | None,
     image_format: str,
     min_shutter_speed: str,
     max_shutter_speed: str,
@@ -366,6 +366,8 @@ def run_white_lut_calibration(
     capture_fn: CaptureFn = camera_gphoto2.capture_image,
     decoder_fn: DecoderFn = camera_gphoto2.decode_raw_image,
     white_point_estimator_fn: WhitePointEstimatorFn = common.estimate_capture_white_point,
+    camera_backend: camera_gphoto2.CameraBackend | None = None,
+    camera_backend_name: str = "local",
 ) -> Path:
     common.validate_high_output_plan(
         max_code=max_code,
@@ -374,6 +376,15 @@ def run_white_lut_calibration(
         dry_run=dry_run,
         operation="white LUT calibration",
     )
+    if camera_backend is not None:
+        unbound_auto_expose = auto_expose_fn
+        auto_expose_fn = lambda **kwargs: unbound_auto_expose(camera_backend=camera_backend, **kwargs)
+        capture_fn = lambda **kwargs: camera_remote.capture_with_backend(
+            camera_backend,
+            output_dir=kwargs["output_dir"],
+            filename_template=kwargs["filename_template"],
+            settings=kwargs["settings"],
+        )
     if feedback_rounds < 0:
         raise ValueError("feedback_rounds must be non-negative")
     if feedback_probe_step <= 0:
@@ -510,6 +521,7 @@ def run_white_lut_calibration(
             ],
         },
         "camera": {
+            "backend": camera_backend_name,
             "target_max": int(target_max),
             "iso": str(iso),
             "aperture": str(aperture),
@@ -861,8 +873,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--settle-seconds", type=float, default=DEFAULT_SETTLE_SECONDS)
     parser.add_argument("--ray-intensity-percent", type=float, default=DEFAULT_RAY_INTENSITY_PERCENT)
     parser.add_argument("--target-max", type=int, default=camera_gphoto2.DEFAULT_AUTO_EXPOSURE_MAX)
-    parser.add_argument("--iso", default=camera_gphoto2.DEFAULT_ISO)
-    parser.add_argument("--aperture", default=camera_gphoto2.DEFAULT_APERTURE)
+    parser.add_argument("--iso")
+    parser.add_argument("--aperture")
     parser.add_argument("--image-format", default=camera_gphoto2.DEFAULT_IMAGE_FORMAT)
     parser.add_argument("--min-shutter-speed", default=camera_gphoto2.DEFAULT_MIN_SHUTTER_SPEED)
     parser.add_argument("--max-shutter-speed", default=camera_gphoto2.DEFAULT_MAX_SHUTTER_SPEED)
@@ -908,11 +920,20 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--feedback-duv-tolerance", type=float, default=DEFAULT_FEEDBACK_DUV_TOLERANCE)
     parser.add_argument("--leave-ray-on", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
+    camera_remote.add_camera_backend_arguments(parser, default="remote")
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
+    backend = None
+    if not args.dry_run:
+        backend = camera_remote.create_camera_backend(
+            args.camera_backend,
+            env_file=args.remote_env_file,
+            base_url=args.remote_base_url,
+            timeout=args.remote_timeout,
+        )
     output_json = run_white_lut_calibration(
         output_root=args.output_dir,
         run_name=args.run_name,
@@ -960,6 +981,8 @@ def main(argv: list[str] | None = None) -> int:
         feedback_cct_tolerance_mired=args.feedback_cct_tolerance_mired,
         feedback_duv_tolerance=args.feedback_duv_tolerance,
         leave_ray_on=args.leave_ray_on,
+        camera_backend=backend,
+        camera_backend_name=args.camera_backend,
     )
     print(output_json)
     data = json.loads(output_json.read_text(encoding="utf-8"))

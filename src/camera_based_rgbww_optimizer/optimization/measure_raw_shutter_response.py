@@ -9,14 +9,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
-from camera_based_rgbww_optimizer.control import all_off, camera_gphoto2, esphome, ray120c, white_lut as white_lut_control
+from camera_based_rgbww_optimizer.control import all_off, camera_gphoto2, camera_remote, esphome, ray120c, white_lut as white_lut_control
 from camera_based_rgbww_optimizer.measurement import raw_mosaic_patches, recorded_exposure
 from camera_based_rgbww_optimizer.optimization import measure_raw_observer_validation as raw_validation
 from camera_based_rgbww_optimizer.paths import PROJECT_ROOT, PROJECT_TMP_DIR
 
 
 DEFAULT_OUTPUT_ROOT = PROJECT_TMP_DIR / "raw-shutter-response"
-DEFAULT_LOCATION_CONFIG = PROJECT_ROOT / "config" / "location" / "locations-20260709-012045.json"
+DEFAULT_LOCATION_CONFIG = PROJECT_ROOT / "config" / "location" / "locations-20260714-211759.json"
 DEFAULT_OBSERVER_CONFIG = PROJECT_ROOT / "config" / "camera" / "raw-observer.json"
 DEFAULT_ANCHOR_CCT = 5600
 DEFAULT_ANCHOR_GM = 100
@@ -49,6 +49,7 @@ def build_raw_shutter_response_plan(
     cycles: int = DEFAULT_CYCLES,
     off_seconds: float = DEFAULT_OFF_SECONDS,
     warmup_seconds: float = DEFAULT_WARMUP_SECONDS,
+    camera_backend: str = "remote",
 ) -> dict[str, Any]:
     """Build a same-shutter, continuous-on diagnostic plan without device I/O."""
 
@@ -61,6 +62,8 @@ def build_raw_shutter_response_plan(
         raise ValueError("ray_intensity_percent must be in (0, 100]")
     if not 0.0 < strip_intensity_percent <= 100.0:
         raise ValueError("strip_intensity_percent must be in (0, 100]")
+    if camera_backend not in {"local", "remote"}:
+        raise ValueError("camera_backend must be local or remote")
 
     lut_path = Path(baseline_lut_path)
     interpolation = white_lut_control.interpolate_white_lut(
@@ -124,6 +127,12 @@ def build_raw_shutter_response_plan(
             "raw_observer_config": raw_validation._file_reference(Path(observer_config_path)),
             "code_duty_curve": raw_validation._file_reference_or_disabled(curve_path),
         },
+        "devices": {
+            "camera": {
+                "backend": camera_backend,
+                "credentials": "loaded_by_script_not_recorded" if camera_backend == "remote" else "not_applicable",
+            }
+        },
         "captures": captures,
         "cleanup": {
             "python": "required_on_normal_exit_exception_and_keyboard_interrupt",
@@ -174,6 +183,7 @@ def execute_raw_shutter_response_plan(
         "finished_at": None,
         "inputs": copy.deepcopy(plan_data["inputs"]),
         "measurement": copy.deepcopy(plan_data["measurement"]),
+        "devices": copy.deepcopy(plan_data.get("devices", {})),
         "safety": {"source_isolation": plan_data["measurement"]["source_isolation"]},
         "provenance": {"status": "pending" if provenance_fn is not None else "not_collected"},
     }
@@ -254,6 +264,7 @@ def build_native_shutter_response_capture_step_fn(
     raw_analyze_fn: Callable[..., Mapping[str, Any]] = raw_mosaic_patches.analyze_raw_file,
     raw_report_writer: Callable[[str | Path, Mapping[str, Any]], Path] = raw_mosaic_patches.write_report,
     recorded_exposure_fn: raw_validation.RecordedExposureFn = recorded_exposure.resolve_recorded_exposure,
+    camera_backend: camera_gphoto2.CameraBackend | None = None,
 ) -> CaptureStepFn:
     camera_output = Path(camera_dir)
     measurements_output = Path(measurements_dir)
@@ -269,13 +280,23 @@ def build_native_shutter_response_capture_step_fn(
     def capture_step(step: Mapping[str, Any]) -> Mapping[str, Any]:
         nonlocal ambient_capture
         shutter_speed = str(step["shutter_speed"])
-        capture = capture_fn(
-            output_dir=camera_output,
-            filename_template=_capture_filename(step),
-            settings=camera_gphoto2.CaptureSettings(
-                iso=iso, aperture=aperture, shutter_speed=shutter_speed, image_format=image_format
-            ),
-            timeout=120.0,
+        settings = camera_gphoto2.CaptureSettings(
+            iso=iso, aperture=aperture, shutter_speed=shutter_speed, image_format=image_format
+        )
+        capture = (
+            capture_fn(
+                output_dir=camera_output,
+                filename_template=_capture_filename(step),
+                settings=settings,
+                timeout=120.0,
+            )
+            if camera_backend is None
+            else camera_remote.capture_with_backend(
+                camera_backend,
+                output_dir=camera_output,
+                filename_template=_capture_filename(step),
+                settings=settings,
+            )
         )
         exposure = capture_exposure(capture)
         if step["source"] == "ambient":
@@ -311,7 +332,8 @@ def build_native_shutter_response_capture_step_fn(
 
 
 def run_native_raw_shutter_response(
-    plan: Mapping[str, Any], *, output_root: str | Path, run_name: str | None, curve_path: str | Path | None
+    plan: Mapping[str, Any], *, output_root: str | Path, run_name: str | None, curve_path: str | Path | None,
+    camera_backend: camera_gphoto2.CameraBackend | None = None,
 ) -> Path:
     run_dir = Path(output_root) / (run_name or datetime.now().strftime("%Y%m%d-%H%M%S"))
     capture_step_fn = build_native_shutter_response_capture_step_fn(
@@ -319,6 +341,9 @@ def run_native_raw_shutter_response(
         measurements_dir=run_dir / "measurements",
         location_config_path=plan["inputs"]["location_config"]["path"],
         observer_config_path=plan["inputs"]["raw_observer_config"]["path"],
+        iso=None,
+        aperture=None,
+        camera_backend=camera_backend,
     )
     return execute_raw_shutter_response_plan(
         plan,
@@ -327,7 +352,11 @@ def run_native_raw_shutter_response(
         ray_set_cct_fn=ray120c.set_cct,
         capture_step_fn=capture_step_fn,
         sleep_fn=time.sleep,
-        provenance_fn=lambda: raw_validation.collect_native_raw_observer_provenance(curve_path=curve_path),
+        provenance_fn=lambda: raw_validation.collect_native_raw_observer_provenance(
+            curve_path=curve_path,
+            camera_backend=camera_backend,
+            backend_name=str(plan["devices"]["camera"]["backend"]),
+        ),
     )
 
 
@@ -517,6 +546,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     mode.add_argument("--dry-run", action="store_true")
     mode.add_argument("--execute", action="store_true")
     parser.add_argument("--allow-device-control", action="store_true")
+    camera_remote.add_camera_backend_arguments(parser, default="remote")
     return parser.parse_args(argv)
 
 
@@ -535,13 +565,26 @@ def main(argv: Sequence[str] | None = None) -> int:
         "cycles": args.cycles,
         "off_seconds": args.off_seconds,
         "warmup_seconds": args.warmup_seconds,
+        "camera_backend": args.camera_backend,
     }
     if args.dry_run:
         print(write_raw_shutter_response_dry_run(output_root=args.output_dir, run_name=args.run_name, **plan_kwargs))
         return 0
     if not args.allow_device_control:
         raise ValueError("--execute requires --allow-device-control")
-    print(run_native_raw_shutter_response(build_raw_shutter_response_plan(**plan_kwargs), output_root=args.output_dir, run_name=args.run_name, curve_path=plan_kwargs["curve_path"]))
+    backend = camera_remote.create_camera_backend(
+        args.camera_backend,
+        env_file=args.remote_env_file,
+        base_url=args.remote_base_url,
+        timeout=args.remote_timeout,
+    )
+    print(run_native_raw_shutter_response(
+        build_raw_shutter_response_plan(**plan_kwargs),
+        output_root=args.output_dir,
+        run_name=args.run_name,
+        curve_path=plan_kwargs["curve_path"],
+        camera_backend=backend,
+    ))
     return 0
 
 
@@ -562,6 +605,7 @@ def _scale_command(command: Mapping[str, int], intensity_percent: float) -> dict
 
 
 def _validate_plan(plan: Mapping[str, Any]) -> None:
+    raw_validation._verify_frozen_inputs(plan)
     captures = plan.get("captures")
     if not isinstance(captures, list) or not captures or captures[0].get("source") != "ambient":
         raise ValueError("plan must begin with an ambient capture")

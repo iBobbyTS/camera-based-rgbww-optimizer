@@ -1,3 +1,4 @@
+import contextlib
 import io
 import json
 import tempfile
@@ -5,6 +6,7 @@ import unittest
 from datetime import datetime
 from pathlib import Path
 from urllib import error
+from unittest import mock
 
 from camera_based_rgbww_optimizer.control import camera_gphoto2, camera_remote
 
@@ -191,8 +193,45 @@ class RemoteCameraCaptureTests(unittest.TestCase):
             )
 
         self.assertEqual(result.byte_count, 3)
+        self.assertEqual(result.http_attempts, 2)
         self.assertEqual(len(attempts), 2)
         self.assertEqual(sleeps, [0.25])
+
+    def test_interrupted_download_removes_partial_and_never_installs_capture(self):
+        class InterruptedResponse(FakeResponse):
+            def read(self, size=None):
+                if size is None:
+                    return super().read(size)
+                chunk = super().read(size)
+                if chunk == b"second":
+                    raise OSError("download interrupted")
+                return chunk
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with self.assertRaisesRegex(OSError, "interrupted"):
+                camera_remote.capture_remote_image(
+                    output_dir=tmpdir,
+                    filename_template="capture.cr3",
+                    config=camera_remote.RemoteCameraConfig("http://camera.local:8088", "secret"),
+                    opener=lambda *_args, **_kwargs: InterruptedResponse([b"first", b"second"]),
+                )
+            files = list(Path(tmpdir).iterdir())
+
+        self.assertEqual(files, [])
+
+    def test_atomic_replace_failure_removes_partial_and_never_reports_success(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with mock.patch.object(camera_remote.os, "replace", side_effect=OSError("replace failed")):
+                with self.assertRaisesRegex(OSError, "replace failed"):
+                    camera_remote.capture_remote_image(
+                        output_dir=tmpdir,
+                        filename_template="capture.cr3",
+                        config=camera_remote.RemoteCameraConfig("http://camera.local:8088", "secret"),
+                        opener=lambda *_args, **_kwargs: FakeResponse([b"raw"]),
+                    )
+            files = list(Path(tmpdir).iterdir())
+
+        self.assertEqual(files, [])
 
 
 class RemoteCameraExposureTests(unittest.TestCase):
@@ -258,6 +297,88 @@ class RemoteCameraExposureTests(unittest.TestCase):
         self.assertTrue(all(payload["iso"] == "125" for payload in capture_payloads))
         self.assertTrue(all(payload["aperture"] == "implicit auto" for payload in capture_payloads))
         self.assertEqual(capture_payloads[-1]["shutter_speed"], "1/50")
+
+    def test_config_busy_retries_then_succeeds_and_persistent_busy_is_bounded(self):
+        attempts = []
+
+        def succeeds_after_busy(remote_request, *, timeout):
+            attempts.append(remote_request.full_url)
+            if len(attempts) == 1:
+                raise error.HTTPError(
+                    remote_request.full_url, 409, "Conflict", {}, io.BytesIO(b'{"error":"camera_busy"}')
+                )
+            return FakeResponse([json.dumps(self.CONFIG_PAYLOAD).encode("utf-8")])
+
+        config = camera_remote.RemoteCameraConfig("http://camera.local:8088", "secret")
+        settings = camera_remote.read_remote_camera_settings(
+            config=config,
+            opener=succeeds_after_busy,
+            busy_retries=1,
+            sleep_fn=lambda _seconds: None,
+        )
+        self.assertEqual(settings.aperture.current, "implicit auto")
+        self.assertEqual(len(attempts), 2)
+
+        def always_busy(remote_request, *, timeout):
+            raise error.HTTPError(
+                remote_request.full_url, 409, "Conflict", {}, io.BytesIO(b'{"error":"camera_busy"}')
+            )
+
+        with self.assertRaises(camera_remote.RemoteCameraHTTPError) as caught:
+            camera_remote.read_remote_camera_settings(
+                config=config,
+                opener=always_busy,
+                busy_retries=1,
+                sleep_fn=lambda _seconds: None,
+            )
+        self.assertEqual(caught.exception.status, 409)
+
+
+class RemoteCameraCliTests(unittest.TestCase):
+    def test_health_is_unauthenticated_and_json_output_has_no_token(self):
+        observed = {}
+
+        def opener(remote_request, *, timeout):
+            observed["url"] = remote_request.full_url
+            observed["authorization"] = remote_request.get_header("Authorization")
+            return FakeResponse([b'{"status":"ok"}'])
+
+        payload = camera_remote.read_remote_health(
+            base_url="http://camera.local:8088",
+            opener=opener,
+        )
+        self.assertEqual(payload, {"status": "ok"})
+        self.assertEqual(observed, {"url": "http://camera.local:8088/health", "authorization": None})
+
+    def test_config_cli_outputs_summary_without_token_and_stable_http_exit_codes(self):
+        backend = camera_remote.RemoteCameraBackend(
+            config=camera_remote.RemoteCameraConfig("http://camera.local:8088", "super-secret"),
+            opener=lambda *_args, **_kwargs: FakeResponse(
+                [json.dumps(RemoteCameraExposureTests.CONFIG_PAYLOAD).encode("utf-8")]
+            ),
+        )
+        stdout = io.StringIO()
+        with mock.patch.object(camera_remote.RemoteCameraBackend, "from_environment", return_value=backend):
+            with contextlib.redirect_stdout(stdout):
+                self.assertEqual(camera_remote.main(["config", "--json"]), 0)
+        rendered = stdout.getvalue()
+        self.assertIn('"aperture": "implicit auto"', rendered)
+        self.assertNotIn("super-secret", rendered)
+
+        with mock.patch.object(
+            camera_remote,
+            "read_remote_health",
+            side_effect=camera_remote.RemoteCameraHTTPError(502),
+        ), mock.patch.object(camera_remote, "load_remote_camera_base_url", return_value="http://camera.local:8088"):
+            with contextlib.redirect_stderr(io.StringIO()):
+                self.assertEqual(camera_remote.main(["health", "--json"]), 4)
+
+    def test_config_cli_missing_token_is_nonzero_and_does_not_expose_secret_arguments(self):
+        with tempfile.TemporaryDirectory() as tmpdir, contextlib.redirect_stderr(io.StringIO()) as stderr:
+            code = camera_remote.main(["config", "--json", "--env-file", str(Path(tmpdir) / ".env")])
+        self.assertEqual(code, 1)
+        self.assertIn(camera_remote.TOKEN_ENV, stderr.getvalue())
+        self.assertNotIn("Authorization", stderr.getvalue())
 
 
 if __name__ == "__main__":

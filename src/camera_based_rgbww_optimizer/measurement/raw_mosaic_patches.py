@@ -19,7 +19,7 @@ from camera_based_rgbww_optimizer.utils import location_regions
 
 PLANE_ORDER = ("R", "G1", "G2", "B")
 DEFAULT_OBSERVER_CONFIG = PROJECT_ROOT / "config/camera/raw-observer.json"
-DEFAULT_LOCATION_CONFIG = PROJECT_ROOT / "config/location/locations-20260709-012045.json"
+DEFAULT_LOCATION_CONFIG = PROJECT_ROOT / "config/location/locations-20260714-211759.json"
 DEFAULT_OUTPUT_ROOT = PROJECT_ROOT / "tmp/raw-observer-validation"
 BLACK_LEVEL_FALLBACK_MIN_SAMPLES = 128
 BLACK_LEVEL_FALLBACK_MIN_MODAL_FRACTION = 0.01
