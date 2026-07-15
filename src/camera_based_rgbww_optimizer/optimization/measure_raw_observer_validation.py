@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
 from camera_based_rgbww_optimizer.control import all_off, camera_gphoto2, esphome, ray120c, white_lut as white_lut_control
-from camera_based_rgbww_optimizer.measurement import raw_mosaic_patches
+from camera_based_rgbww_optimizer.measurement import raw_mosaic_patches, recorded_exposure
 from camera_based_rgbww_optimizer.paths import PROJECT_ROOT, PROJECT_TMP_DIR
 
 
@@ -40,6 +40,7 @@ RawAnalyzeFn = Callable[..., Mapping[str, Any]]
 RawReportWriter = Callable[[str | Path, Mapping[str, Any]], Path]
 ShutterChoicesFn = Callable[[str], Sequence[str]]
 ProvenanceFn = Callable[[], Mapping[str, Any]]
+RecordedExposureFn = Callable[[str | Path, str], recorded_exposure.RecordedExposure]
 
 
 def build_raw_observer_validation_plan(
@@ -51,12 +52,14 @@ def build_raw_observer_validation_plan(
     anchor_cct: int = DEFAULT_ANCHOR_CCT,
     anchor_gm: int = DEFAULT_ANCHOR_GM,
     ray_intensity_percent: float = DEFAULT_RAY_INTENSITY_PERCENT,
+    target_max: int = camera_gphoto2.DEFAULT_AUTO_EXPOSURE_MAX,
     paired_repeats: int = DEFAULT_PAIRED_REPEATS,
     linearity_factors: Sequence[float] = DEFAULT_LINEARITY_FACTORS,
     linearity_repeats: int = DEFAULT_LINEARITY_REPEATS,
     off_seconds: float = DEFAULT_OFF_SECONDS,
     settle_seconds: float = DEFAULT_SETTLE_SECONDS,
     include_flat_field: bool = False,
+    preflight_only: bool = False,
 ) -> dict[str, Any]:
     """Build the P1 capture order without connecting to camera or lights."""
 
@@ -69,6 +72,8 @@ def build_raw_observer_validation_plan(
         raise ValueError("off_seconds and settle_seconds must be non-negative")
     if not 0.0 <= float(ray_intensity_percent) <= 100.0:
         raise ValueError("ray_intensity_percent must be between 0 and 100")
+    if not 1 <= int(target_max) <= 65535:
+        raise ValueError("target_max must be between 1 and 65535")
 
     lut_path = Path(baseline_lut_path)
     interpolation = white_lut_control.interpolate_white_lut(
@@ -114,33 +119,43 @@ def build_raw_observer_validation_plan(
     add_capture(source="ray", purpose="baseline_auto_exposure", source_cache="ray")
     add_capture(source="strip", purpose="baseline_auto_exposure", source_cache="strip")
 
-    for repeat_index in range(paired_repeats):
-        source_order = ("ray", "strip") if repeat_index % 2 == 0 else ("strip", "ray")
-        for source in source_order:
+    if preflight_only:
+        longest_factor = max(factors)
+        for source in ("ray", "strip"):
             add_capture(
                 source=source,
-                purpose="paired_repeat",
-                repeat_index=repeat_index,
+                purpose="linearity_preflight",
+                exposure_factor=longest_factor,
                 source_cache=source,
             )
-
-    for repeat_index in range(linearity_repeats):
-        ordered_factors = factors if repeat_index % 2 == 0 else tuple(reversed(factors))
-        for factor_index, factor in enumerate(ordered_factors):
-            source_order = ("ray", "strip") if (repeat_index + factor_index) % 2 == 0 else ("strip", "ray")
+    else:
+        for repeat_index in range(paired_repeats):
+            source_order = ("ray", "strip") if repeat_index % 2 == 0 else ("strip", "ray")
             for source in source_order:
                 add_capture(
                     source=source,
-                    purpose="linearity_bracket",
+                    purpose="paired_repeat",
                     repeat_index=repeat_index,
-                    exposure_factor=factor,
                     source_cache=source,
                 )
+
+        for repeat_index in range(linearity_repeats):
+            ordered_factors = factors if repeat_index % 2 == 0 else tuple(reversed(factors))
+            for factor_index, factor in enumerate(ordered_factors):
+                source_order = ("ray", "strip") if (repeat_index + factor_index) % 2 == 0 else ("strip", "ray")
+                for source in source_order:
+                    add_capture(
+                        source=source,
+                        purpose="linearity_bracket",
+                        repeat_index=repeat_index,
+                        exposure_factor=factor,
+                        source_cache=source,
+                    )
 
     # A color-chart white patch cannot stand in for a spatial flat field.
     # Preserve that limitation explicitly when no repeatable diffuser is supplied.
     flat_field = {"status": "not_available", "reason": "no_repeatable_flat_field_material"}
-    if include_flat_field:
+    if include_flat_field and not preflight_only:
         add_capture(source="flat_field_ray", purpose="flat_field", source_cache="ray")
         flat_field = {"status": "planned", "capture_id": captures[-1]["capture_id"]}
 
@@ -160,6 +175,11 @@ def build_raw_observer_validation_plan(
             "linearity_repeats": int(linearity_repeats),
             "flat_field": flat_field,
             "source_isolation": "every capture requires the other source to be off",
+            "preflight_only": bool(preflight_only),
+            "camera_auto_exposure": {
+                "target_max": int(target_max),
+                "meter_scale_max": 65535,
+            },
         },
         "inputs": {
             "baseline_lut": _file_reference(lut_path),
@@ -328,6 +348,7 @@ def build_native_raw_capture_step_fn(
     raw_analyze_fn: RawAnalyzeFn = raw_mosaic_patches.analyze_raw_file,
     raw_report_writer: RawReportWriter = raw_mosaic_patches.write_report,
     shutter_choices_fn: ShutterChoicesFn | None = None,
+    recorded_exposure_fn: RecordedExposureFn = recorded_exposure.resolve_recorded_exposure,
 ) -> CaptureStepFn:
     """Build the production camera side of P1 while leaving device control injected.
 
@@ -343,6 +364,13 @@ def build_native_raw_capture_step_fn(
     source_captures: dict[str, camera_gphoto2.CaptureResult] = {}
     ambient_capture: camera_gphoto2.CaptureResult | None = None
     shutter_choices_by_port: dict[str, tuple[str, ...]] = {}
+    exposures_by_path: dict[Path, recorded_exposure.RecordedExposure] = {}
+
+    def capture_exposure(capture: camera_gphoto2.CaptureResult) -> recorded_exposure.RecordedExposure:
+        path = Path(capture.saved_file)
+        if path not in exposures_by_path:
+            exposures_by_path[path] = recorded_exposure_fn(path, capture.settings.shutter_speed)
+        return recorded_exposure.require_recorded(exposures_by_path[path], purpose="P1")
 
     def meter(raw_file: Path) -> camera_gphoto2.ExposureMeasurement:
         result = raw_meter_fn(
@@ -408,7 +436,7 @@ def build_native_raw_capture_step_fn(
             if base_capture is None:
                 raise ValueError(f"capture {step['capture_id']} has no {cache_key} exposure baseline")
             shutter_speed = base_capture.settings.shutter_speed
-            if str(step["purpose"]) == "linearity_bracket":
+            if str(step["purpose"]) in {"linearity_bracket", "linearity_preflight"}:
                 shutter_speed = _resolve_bracket_shutter_speed(
                     base_capture,
                     factor=float(step["exposure_factor"]),
@@ -430,12 +458,18 @@ def build_native_raw_capture_step_fn(
                 expected_model=base_capture.connection.model,
                 timeout=120.0,
             )
-            mode = "fixed_bracket" if str(step["purpose"]) == "linearity_bracket" else "fixed_cached"
+            mode = (
+                "fixed_bracket"
+                if str(step["purpose"]) in {"linearity_bracket", "linearity_preflight"}
+                else "fixed_cached"
+            )
 
         report = _write_native_capture_report(
             capture,
             step=step,
             ambient_capture=ambient_capture,
+            capture_exposure=capture_exposure(capture),
+            ambient_exposure=None if ambient_capture is None else capture_exposure(ambient_capture),
             location_config_path=location_config_path,
             observer_config_path=observer_config_path,
             measurements_dir=measurements_output,
@@ -468,6 +502,7 @@ def run_native_raw_observer_validation(
         scratch_dir=run_dir / "scratch",
         location_config_path=plan["inputs"]["location_config"]["path"],
         observer_config_path=plan["inputs"]["raw_observer_config"]["path"],
+        target_max=int(plan["measurement"]["camera_auto_exposure"]["target_max"]),
     )
 
     def strip_light(cw: int, ww: int, r: int, g: int, b: int) -> Mapping[str, Any]:
@@ -624,12 +659,14 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--anchor-cct", type=int, default=DEFAULT_ANCHOR_CCT)
     parser.add_argument("--anchor-gm", type=int, default=DEFAULT_ANCHOR_GM)
     parser.add_argument("--ray-intensity-percent", type=float, default=DEFAULT_RAY_INTENSITY_PERCENT)
+    parser.add_argument("--target-max", type=int, default=camera_gphoto2.DEFAULT_AUTO_EXPOSURE_MAX)
     parser.add_argument("--paired-repeats", type=int, default=DEFAULT_PAIRED_REPEATS)
     parser.add_argument("--linearity-factors", type=parse_linearity_factors, default=DEFAULT_LINEARITY_FACTORS)
     parser.add_argument("--linearity-repeats", type=int, default=DEFAULT_LINEARITY_REPEATS)
     parser.add_argument("--off-seconds", type=float, default=DEFAULT_OFF_SECONDS)
     parser.add_argument("--settle-seconds", type=float, default=DEFAULT_SETTLE_SECONDS)
     parser.add_argument("--include-flat-field", action="store_true")
+    parser.add_argument("--preflight-only", action="store_true")
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_ROOT)
     parser.add_argument("--run-name")
     mode = parser.add_mutually_exclusive_group(required=True)
@@ -654,12 +691,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         "anchor_cct": args.anchor_cct,
         "anchor_gm": args.anchor_gm,
         "ray_intensity_percent": args.ray_intensity_percent,
+        "target_max": args.target_max,
         "paired_repeats": args.paired_repeats,
         "linearity_factors": args.linearity_factors,
         "linearity_repeats": args.linearity_repeats,
         "off_seconds": args.off_seconds,
         "settle_seconds": args.settle_seconds,
         "include_flat_field": args.include_flat_field,
+        "preflight_only": args.preflight_only,
         "curve_path": None if args.no_curve else args.curve,
     }
     if args.dry_run:
@@ -741,24 +780,40 @@ def _write_native_capture_report(
     *,
     step: Mapping[str, Any],
     ambient_capture: camera_gphoto2.CaptureResult | None,
+    capture_exposure: recorded_exposure.RecordedExposure | None = None,
+    ambient_exposure: recorded_exposure.RecordedExposure | None = None,
     location_config_path: str | Path,
     observer_config_path: str | Path,
     measurements_dir: Path,
     raw_analyze_fn: RawAnalyzeFn,
     raw_report_writer: RawReportWriter,
 ) -> tuple[Path, Mapping[str, Any]]:
+    resolved_capture_exposure = capture_exposure or recorded_exposure.resolve_recorded_exposure(
+        capture.saved_file,
+        capture.settings.shutter_speed,
+    )
     kwargs: dict[str, Any] = {
-        "exposure_seconds": float(Fraction(capture.settings.shutter_speed)),
+        "exposure_seconds": resolved_capture_exposure.seconds,
         "location_config_path": location_config_path,
         "observer_config_path": observer_config_path,
     }
     if str(step["source"]) != "ambient":
         if ambient_capture is None:
             raise ValueError("non-ambient capture requires the preceding ambient capture")
+        resolved_ambient_exposure = ambient_exposure or recorded_exposure.resolve_recorded_exposure(
+            ambient_capture.saved_file,
+            ambient_capture.settings.shutter_speed,
+        )
         kwargs["ambient_raw_file"] = ambient_capture.saved_file
-        kwargs["ambient_exposure_seconds"] = float(Fraction(ambient_capture.settings.shutter_speed))
+        kwargs["ambient_exposure_seconds"] = resolved_ambient_exposure.seconds
+    else:
+        resolved_ambient_exposure = None
     report = raw_analyze_fn(capture.saved_file, **kwargs)
     report = dict(report)
+    report["exposure_metadata"] = resolved_capture_exposure.to_jsonable()
+    report["ambient_exposure_metadata"] = (
+        None if resolved_ambient_exposure is None else resolved_ambient_exposure.to_jsonable()
+    )
     report["analysis_context"] = {
         "capture_id": str(step["capture_id"]),
         "source": str(step["source"]),
@@ -766,6 +821,9 @@ def _write_native_capture_report(
         "repeat_index": step.get("repeat_index"),
         "exposure_factor": step.get("exposure_factor"),
         "shutter_speed": capture.settings.shutter_speed,
+        "exposure_seconds": resolved_capture_exposure.seconds,
+        "exposure_source": resolved_capture_exposure.source,
+        "exposure_status": resolved_capture_exposure.status,
         "capture_path": str(capture.saved_file),
     }
     path = measurements_dir / f"{step['capture_id']}.patch-statistics.json"

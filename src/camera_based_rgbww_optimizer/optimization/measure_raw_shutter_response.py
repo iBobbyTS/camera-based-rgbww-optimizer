@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
 from camera_based_rgbww_optimizer.control import all_off, camera_gphoto2, esphome, ray120c, white_lut as white_lut_control
-from camera_based_rgbww_optimizer.measurement import raw_mosaic_patches
+from camera_based_rgbww_optimizer.measurement import raw_mosaic_patches, recorded_exposure
 from camera_based_rgbww_optimizer.optimization import measure_raw_observer_validation as raw_validation
 from camera_based_rgbww_optimizer.paths import PROJECT_ROOT, PROJECT_TMP_DIR
 
@@ -20,7 +20,7 @@ DEFAULT_LOCATION_CONFIG = PROJECT_ROOT / "config" / "location" / "locations-2026
 DEFAULT_OBSERVER_CONFIG = PROJECT_ROOT / "config" / "camera" / "raw-observer.json"
 DEFAULT_ANCHOR_CCT = 5600
 DEFAULT_ANCHOR_GM = 100
-DEFAULT_RAY_INTENSITY_PERCENT = 10.0
+DEFAULT_RAY_INTENSITY_PERCENT = 1.0
 DEFAULT_STRIP_INTENSITY_PERCENT = 20.0
 DEFAULT_SHUTTER_ORDER = ("1/80", "1/60", "1/100", "1/50", "1/50", "1/100", "1/60", "1/80")
 DEFAULT_CYCLES = 3
@@ -253,10 +253,18 @@ def build_native_shutter_response_capture_step_fn(
     capture_fn: Callable[..., camera_gphoto2.CaptureResult] = camera_gphoto2.capture_image,
     raw_analyze_fn: Callable[..., Mapping[str, Any]] = raw_mosaic_patches.analyze_raw_file,
     raw_report_writer: Callable[[str | Path, Mapping[str, Any]], Path] = raw_mosaic_patches.write_report,
+    recorded_exposure_fn: raw_validation.RecordedExposureFn = recorded_exposure.resolve_recorded_exposure,
 ) -> CaptureStepFn:
     camera_output = Path(camera_dir)
     measurements_output = Path(measurements_dir)
     ambient_capture: camera_gphoto2.CaptureResult | None = None
+    exposures_by_path: dict[Path, recorded_exposure.RecordedExposure] = {}
+
+    def capture_exposure(capture: camera_gphoto2.CaptureResult) -> recorded_exposure.RecordedExposure:
+        path = Path(capture.saved_file)
+        if path not in exposures_by_path:
+            exposures_by_path[path] = recorded_exposure_fn(path, capture.settings.shutter_speed)
+        return recorded_exposure.require_recorded(exposures_by_path[path], purpose="P1-D")
 
     def capture_step(step: Mapping[str, Any]) -> Mapping[str, Any]:
         nonlocal ambient_capture
@@ -269,22 +277,35 @@ def build_native_shutter_response_capture_step_fn(
             ),
             timeout=120.0,
         )
+        exposure = capture_exposure(capture)
         if step["source"] == "ambient":
             ambient_capture = capture
-            return {"mode": "ambient_fixed", "capture": capture.to_jsonable()}
+            return {
+                "mode": "ambient_fixed",
+                "capture": capture.to_jsonable(),
+                "exposure_metadata": exposure.to_jsonable(),
+            }
         if ambient_capture is None:
             raise ValueError("signal shutter-response capture requires the preceding ambient capture")
         report = raw_validation._write_native_capture_report(
             capture,
             step=step,
             ambient_capture=ambient_capture,
+            capture_exposure=exposure,
+            ambient_exposure=capture_exposure(ambient_capture),
             location_config_path=location_config_path,
             observer_config_path=observer_config_path,
             measurements_dir=measurements_output,
             raw_analyze_fn=raw_analyze_fn,
             raw_report_writer=raw_report_writer,
         )
-        return {"mode": "fixed_shutter_response", "capture": capture.to_jsonable(), "patch_statistics": str(report[0]), "quality": report[1]}
+        return {
+            "mode": "fixed_shutter_response",
+            "capture": capture.to_jsonable(),
+            "exposure_metadata": exposure.to_jsonable(),
+            "patch_statistics": str(report[0]),
+            "quality": report[1],
+        }
 
     return capture_step
 
@@ -323,6 +344,10 @@ def analyze_raw_shutter_response_run(run_dir: str | Path, *, reference_shutter: 
     )
     capture_durations: dict[str, dict[str, list[float]]] = collections.defaultdict(lambda: collections.defaultdict(list))
     missing_timing: dict[str, int] = collections.defaultdict(int)
+    exposure_sources: dict[str, int] = collections.defaultdict(int)
+    exposure_statuses: dict[str, int] = collections.defaultdict(int)
+    missing_exposure_metadata = 0
+    quality_counts: dict[str, int] = collections.defaultdict(int)
     for entry in captures:
         step = steps_by_id.get(str(entry["capture_id"]))
         if step is None:
@@ -339,10 +364,25 @@ def analyze_raw_shutter_response_run(run_dir: str | Path, *, reference_shutter: 
         if not isinstance(report_path, str):
             raise ValueError(f"capture {entry['capture_id']} has no patch-statistics report")
         report = json.loads(Path(report_path).read_text(encoding="utf-8"))
+        exposure_metadata = report.get("exposure_metadata")
+        if isinstance(exposure_metadata, Mapping):
+            exposure_sources[str(exposure_metadata.get("source", "unknown"))] += 1
+            exposure_statuses[str(exposure_metadata.get("status", "unknown"))] += 1
+        else:
+            missing_exposure_metadata += 1
         for patch in report["patches"]:
             if not patch["optimization_eligible"]:
                 continue
             for plane_name, plane in patch["planes"].items():
+                metrics = plane.get("metrics")
+                if isinstance(metrics, Mapping):
+                    clipped = metrics.get("clipped_fraction")
+                    if isinstance(clipped, (int, float)) and float(clipped) > 0:
+                        quality_counts["excluded_clipped"] += 1
+                        continue
+                    quality_counts["included_with_metrics"] += 1
+                else:
+                    quality_counts["included_missing_metrics"] += 1
                 value = plane["ambient_subtracted"]["trimmed_mean_per_second"]
                 source_values[step["source"]][step["shutter_speed"]][f"{patch['name']}::{plane_name}"].append(float(value))
 
@@ -354,17 +394,36 @@ def analyze_raw_shutter_response_run(run_dir: str | Path, *, reference_shutter: 
         source_summary: dict[str, Any] = {}
         for shutter, features in shutter_values.items():
             ratios: list[float] = []
-            by_plane: dict[str, list[float]] = collections.defaultdict(list)
+            ratios_by_plane: dict[str, list[float]] = collections.defaultdict(list)
             for feature, values in features.items():
                 if feature not in reference or reference[feature] == 0:
                     continue
                 ratio = _median(values) / reference[feature] - 1.0
                 ratios.append(ratio)
-                by_plane[feature.rsplit("::", 1)[1]].append(ratio)
+                ratios_by_plane[feature.rsplit("::", 1)[1]].append(ratio)
+            global_scale = None if not ratios else 1.0 + _median(ratios)
+            shape_residuals = (
+                [] if global_scale is None else [((1.0 + ratio) / global_scale) - 1.0 for ratio in ratios]
+            )
+            shape_by_plane = {
+                plane: (
+                    []
+                    if global_scale is None
+                    else [((1.0 + ratio) / global_scale) - 1.0 for ratio in values]
+                )
+                for plane, values in ratios_by_plane.items()
+            }
             source_summary[shutter] = {
                 "feature_count": len(ratios),
                 "relative_to_reference": _distribution(ratios),
-                "relative_to_reference_by_plane": {plane: _distribution(values) for plane, values in sorted(by_plane.items())},
+                "relative_to_reference_by_plane": {
+                    plane: _distribution(values) for plane, values in sorted(ratios_by_plane.items())
+                },
+                "global_scale_to_reference": global_scale,
+                "shape_relative_to_global_scale": _distribution(shape_residuals),
+                "shape_relative_to_global_scale_by_plane": {
+                    plane: _distribution(values) for plane, values in sorted(shape_by_plane.items())
+                },
             }
         summary[source] = source_summary
     timing_summary = {
@@ -400,7 +459,18 @@ def analyze_raw_shutter_response_run(run_dir: str | Path, *, reference_shutter: 
             "sources": timing_summary,
         },
         "source_commands": _collect_source_commands(root / "commands.jsonl"),
-        "notes": ["No shutter-response pass/fail conclusion or observer-threshold update is inferred automatically."],
+        "exposure_provenance": {
+            "source_counts": dict(sorted(exposure_sources.items())),
+            "status_counts": dict(sorted(exposure_statuses.items())),
+            "missing_metadata_report_count": missing_exposure_metadata,
+            "recorded_metadata_required_for_acceptance": True,
+        },
+        "quality_observations": dict(sorted(quality_counts.items())),
+        "notes": [
+            "No shutter-response pass/fail conclusion or observer-threshold update is inferred automatically.",
+            "Global per-shutter scale and residual patch/CFA shape are reported separately.",
+            "Nominal or missing exposure metadata blocks acceptance even when diagnostic ratios are present.",
+        ],
     }
     output_path = root / "analysis.json"
     _write_json(output_path, output)
@@ -596,7 +666,9 @@ def _capture_filename(step: Mapping[str, Any]) -> str:
     return f"{step['capture_id']}-source-{step['source']}-shutter-{step['shutter_speed'].replace('/', '_')}-cycle-{cycle}.%C"
 
 
-def _distribution(values: Sequence[float]) -> dict[str, float | int]:
+def _distribution(values: Sequence[float]) -> dict[str, float | int] | None:
+    if not values:
+        return None
     ordered = sorted(values)
     return {"count": len(ordered), "p10": ordered[round(0.10 * (len(ordered) - 1))], "p50": _median(ordered), "p90": ordered[round(0.90 * (len(ordered) - 1))], "min": ordered[0], "max": ordered[-1]}
 

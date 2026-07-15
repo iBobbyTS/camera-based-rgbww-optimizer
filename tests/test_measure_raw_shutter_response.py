@@ -4,6 +4,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
+from camera_based_rgbww_optimizer.measurement import recorded_exposure
 from camera_based_rgbww_optimizer.optimization import measure_raw_shutter_response
 
 
@@ -113,12 +114,12 @@ class RawShutterResponseTests(unittest.TestCase):
             )
 
             self.assertEqual(len(captured), len(plan["captures"]))
-            self.assertEqual(sum(1 for call in calls if call[0] == "ray" and call[3] == 10.0), 1)
+            self.assertEqual(sum(1 for call in calls if call[0] == "ray" and call[3] == 1.0), 1)
             self.assertEqual(sum(1 for call in calls if call[0] == "strip" and call[1] == (560, 160, 40, 20, 80)), 1)
             command_events = [json.loads(line) for line in (result / "commands.jsonl").read_text(encoding="utf-8").splitlines()]
             ray_on = next(event for event in command_events if event["event"] == "ray_on")
             strip_on = next(event for event in command_events if event["event"] == "strip_on")
-            self.assertEqual(ray_on["requested_command"], {"cct": 5600, "gm": 100, "intensity_percent": 10.0})
+            self.assertEqual(ray_on["requested_command"], {"cct": 5600, "gm": 100, "intensity_percent": 1.0})
             self.assertEqual(strip_on["requested_command"], {"cw": 560, "ww": 160, "r": 40, "g": 20, "b": 80})
             recorded_captures = [json.loads(line) for line in (result / "captures.jsonl").read_text(encoding="utf-8").splitlines()]
             self.assertEqual(recorded_captures[0]["capture_started_monotonic_seconds"], 0.0)
@@ -171,7 +172,7 @@ class RawShutterResponseTests(unittest.TestCase):
             (root / "commands.jsonl").write_text(
                 "\n".join(
                     [
-                        json.dumps({"event": "ray_on", "capture_id": "0001-ray-shutter-response", "requested_command": {"cct": 5600, "gm": 100, "intensity_percent": 10.0}}),
+                        json.dumps({"event": "ray_on", "capture_id": "0001-ray-shutter-response", "requested_command": {"cct": 5600, "gm": 100, "intensity_percent": 1.0}}),
                         json.dumps({"event": "strip_on", "capture_id": "0025-strip-shutter-response", "requested_command": {"cw": 560, "ww": 160, "r": 40, "g": 20, "b": 80}}),
                     ]
                 )
@@ -186,7 +187,13 @@ class RawShutterResponseTests(unittest.TestCase):
             self.assertAlmostEqual(strip["p50"], -0.06)
             self.assertEqual(analysis["capture_timing"]["sources"]["strip"]["valid_capture_count"], 24)
             self.assertAlmostEqual(analysis["capture_timing"]["sources"]["ray"]["capture_duration_seconds"]["p50"], 0.5)
-            self.assertEqual(analysis["source_commands"]["sources"]["ray"][0]["requested_command"]["intensity_percent"], 10.0)
+            self.assertEqual(analysis["source_commands"]["sources"]["ray"][0]["requested_command"]["intensity_percent"], 1.0)
+            self.assertAlmostEqual(analysis["sources"]["strip"]["1/60"]["global_scale_to_reference"], 0.94)
+            self.assertAlmostEqual(
+                analysis["sources"]["strip"]["1/60"]["shape_relative_to_global_scale"]["p50"],
+                0.0,
+            )
+            self.assertEqual(analysis["exposure_provenance"]["missing_metadata_report_count"], 48)
             self.assertNotIn("decision", analysis)
 
     def test_executor_failure_still_attempts_both_final_shutdowns(self):
@@ -253,6 +260,18 @@ class RawShutterResponseTests(unittest.TestCase):
                 output.write_text(json.dumps(report), encoding="utf-8")
                 return output
 
+            def exposure(path, shutter):
+                nominal = recorded_exposure.parse_nominal_exposure(shutter)
+                return recorded_exposure.RecordedExposure(
+                    seconds=nominal,
+                    source="Canon:ExposureTime",
+                    nominal_seconds=nominal,
+                    nominal_shutter_speed=shutter,
+                    raw_file=Path(path),
+                    status="recorded",
+                    metadata_values={"Canon:ExposureTime": nominal},
+                )
+
             adapter = measure_raw_shutter_response.build_native_shutter_response_capture_step_fn(
                 camera_dir=camera_dir,
                 measurements_dir=measurements_dir,
@@ -261,6 +280,7 @@ class RawShutterResponseTests(unittest.TestCase):
                 capture_fn=capture,
                 raw_analyze_fn=analyze,
                 raw_report_writer=write_report,
+                recorded_exposure_fn=exposure,
             )
             ambient = plan["captures"][0]
             ray = next(step for step in plan["captures"] if step["source"] == "ray")
@@ -279,6 +299,48 @@ class RawShutterResponseTests(unittest.TestCase):
             self.assertEqual(stored["analysis_context"]["source"], "ray")
             self.assertEqual(stored["raw_metadata"]["optical_black_level_per_channel"], [512.0] * 4)
             self.assertEqual(list(root.rglob("*.npy")), [])
+
+    def test_native_capture_adapter_fails_fast_without_recorded_exposure(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            plan = self._plan(root)
+
+            def capture(**kwargs):
+                output = Path(kwargs["output_dir"])
+                output.mkdir(parents=True, exist_ok=True)
+                saved = output / kwargs["filename_template"].replace("%C", "cr3")
+                saved.write_bytes(b"fake")
+                return measure_raw_shutter_response.camera_gphoto2.CaptureResult(
+                    connection=measure_raw_shutter_response.camera_gphoto2.CameraConnection("test", "usb:test"),
+                    settings=kwargs["settings"],
+                    saved_file=saved,
+                    stdout="",
+                )
+
+            def fallback(path, shutter):
+                nominal = recorded_exposure.parse_nominal_exposure(shutter)
+                return recorded_exposure.RecordedExposure(
+                    seconds=nominal,
+                    source="nominal_shutter_speed",
+                    nominal_seconds=nominal,
+                    nominal_shutter_speed=shutter,
+                    raw_file=Path(path),
+                    status="fallback_nominal",
+                    metadata_values={},
+                    diagnostic="exiftool unavailable",
+                )
+
+            adapter = measure_raw_shutter_response.build_native_shutter_response_capture_step_fn(
+                camera_dir=root / "camera",
+                measurements_dir=root / "measurements",
+                location_config_path=root / "locations.json",
+                observer_config_path=root / "observer.json",
+                capture_fn=capture,
+                recorded_exposure_fn=fallback,
+            )
+
+            with self.assertRaisesRegex(RuntimeError, "recorded CR3 exposure metadata"):
+                adapter(plan["captures"][0])
 
     def _plan(self, root: Path):
         return measure_raw_shutter_response.build_raw_shutter_response_plan(

@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any, Callable, Sequence
 
 from camera_based_rgbww_optimizer.control import camera_gphoto2, esphome
+from camera_based_rgbww_optimizer.measurement import recorded_exposure
 from camera_based_rgbww_optimizer.paths import PROJECT_ROOT, PROJECT_TMP_DIR
 from camera_based_rgbww_optimizer.utils import location_regions
 
@@ -438,7 +439,11 @@ def run_channel_response(
                 decode_formats=decode_formats,
                 metering_regions=auto_exposure_metering_regions,
             )
-            ambient_shutter_seconds = shutter_seconds(ambient_capture.settings.shutter_speed)
+            ambient_exposure = recorded_exposure.resolve_recorded_exposure(
+                ambient_capture.saved_file,
+                ambient_capture.settings.shutter_speed,
+            )
+            ambient_shutter_seconds = ambient_exposure.seconds
             ambient_image = _load_npy(find_npy_output(ambient_capture))
             ambient_regions = measure_image_regions(
                 ambient_image,
@@ -452,6 +457,7 @@ def run_channel_response(
             result["ambient"] = {
                 "capture": ambient_capture.to_jsonable(),
                 "shutter_seconds": ambient_shutter_seconds,
+                "exposure_metadata": ambient_exposure.to_jsonable(),
                 "regions": ambient_regions,
             }
             _write_json(output_json, result)
@@ -485,7 +491,11 @@ def run_channel_response(
                 metering_regions=auto_exposure_metering_regions,
                 initial_shutter_speed=min_shutter_speed if first_channel_measurement else None,
             )
-            seconds = shutter_seconds(capture.final_capture.settings.shutter_speed)
+            exposure = recorded_exposure.resolve_recorded_exposure(
+                capture.final_capture.saved_file,
+                capture.final_capture.settings.shutter_speed,
+            )
+            seconds = exposure.seconds
             image = _load_npy(find_npy_output(capture.final_capture))
             region_measurements = measure_image_regions(
                 image,
@@ -516,6 +526,7 @@ def run_channel_response(
                     **step,
                     "auto_exposure": capture.to_jsonable(),
                     "shutter_seconds": seconds,
+                    "exposure_metadata": exposure.to_jsonable(),
                     "max_ambient_subtracted_mean_per_second": ambient_subtracted_signal,
                     "stop_reason": stop_reason,
                     "regions": region_measurements,

@@ -143,6 +143,48 @@ class RawObserverLinearityTests(unittest.TestCase):
         self.assertAlmostEqual(red["slope_per_log_exposure_factor"], 0.0)
         self.assertEqual(red["monotonic_drift"], "none")
         self.assertTrue(all(item["relative_residual"] == 0.0 for item in red["centers"]))
+        self.assertTrue(all(item["shape_relative_residual"] == 0.0 for item in red["centers"]))
+
+    def test_linearity_separates_global_exposure_scale_from_feature_shape(self):
+        groups = {
+            0.5: [
+                make_report(
+                    "half",
+                    values={"R": 8.0, "G1": 16.0, "G2": 24.0, "B": 32.0},
+                    context={"exposure_seconds": 1.0},
+                )
+            ],
+            1.0: [
+                make_report(
+                    "one",
+                    values={"R": 10.0, "G1": 20.0, "G2": 30.0, "B": 40.0},
+                    context={"exposure_seconds": 1.0},
+                )
+            ],
+        }
+
+        analysis = raw_observer_analysis.analyze_exposure_linearity(groups)
+
+        half_scale = analysis["global_exposure_scale_by_factor"][0]
+        self.assertEqual(half_scale["factor"], 0.5)
+        self.assertAlmostEqual(half_scale["scale_to_reference"], 0.8)
+        self.assertAlmostEqual(half_scale["relative_residual"], -0.2)
+        self.assertAlmostEqual(
+            analysis["summary"]["absolute_relative_residual"]["p95"],
+            0.2,
+        )
+        self.assertAlmostEqual(
+            analysis["summary"]["absolute_shape_relative_residual"]["max"],
+            0.0,
+        )
+        self.assertAlmostEqual(
+            analysis["summary"]["absolute_relative_residual_non_reference"]["p95"],
+            0.2,
+        )
+        self.assertAlmostEqual(
+            analysis["features"]["neutral_01::R"]["centers"][0]["normalized_signal_fraction"],
+            8.0,
+        )
 
     def test_linearity_keeps_a_short_exposure_only_deviation_visible(self):
         groups = {

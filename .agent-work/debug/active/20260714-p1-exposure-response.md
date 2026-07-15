@@ -1,47 +1,73 @@
-# P1 Exposure Response And Strip Shutter Interaction
+# P1 Recorded Exposure And Residual RAW Response
 
-## Evidence
+## Confirmed Root Cause
 
-- Formal provenance-bearing P1 run: `/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/20260714-030700-p1-provenance-envelope-v6`.
-  - Completed `31/31` CR3 captures and reports; no `.npy`, no failure, Python and shell cleanup both succeeded.
-  - The `0.5x, 1x, 1.5x` brackets resolved to Ray `1/800, 1/400, 1/250` and strip `1/160, 1/80, 1/50`.
-  - No bracket plane clipped at `1.5x`, but the P95 absolute relative residual was Ray `1.458%` and strip `1.133%`, versus P95 paired-repeat CV of `0.0626%` and `0.1432%`.
-  - All three occurrences of each shutter were internally stable, so the discrepancy is systematic rather than an isolated capture or heat drift.
-- Exposure diagnostic: `/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/20260714-035100-p1-exposure-diagnostic-v7`.
-  - Completed `27/27` CR3 captures and reports; no `.npy`, no failure, Python and shell cleanup both succeeded.
-  - The `0.8x, 1x, 1.25x` brackets resolved to Ray `1/500, 1/400, 1/320` and strip `1/100, 1/80, 1/60`.
-  - Relative to the strip `1/80` median, all three strip `1/60` captures were about `-4.64%`; Ray at `1/500` was about `-1.00%`, and Ray at `1/320` about `+0.39%`.
-- Historical intensity correction: the v6 P1 runner and v7 diagnostic runner labeled their Ray commands as percentages but passed those values through the raw OpenAPI `intensity` argument. Their planned `100%` and `10%` Ray values therefore commanded raw `100` and `10` (about `10%` and `1%`), respectively. This invalidates their intended absolute Ray-output baseline, but not the within-source shutter-ratio evidence; their Ray command remained constant within each run. White LUT and endpoint runners already used `intensity_percent` and are unaffected.
-- The active firmware configuration specifies five ESP32 LEDC outputs at `19531Hz`. The anchor strip command owns `cw=4095`, so the large `1/60` strip effect is not adequately explained by ordinary low-frequency PWM phase sampling of the dominant channel.
-- Recomputing both runs from saved patch reports shows ambient subtraction changes the median signal by at most `0.000063%`; it cannot explain the observed `0.4%..4.6%` shutter effects. The shared `1/400` Ray and `1/80` strip medians agree between v6 and v7, so ordinary session/thermal drift is also not the primary explanation.
-- The effect is nearly a uniform scalar over patches and CFA planes. In v7, strip `1/60` relative to `1/80` is about `-5.59%` for every plane, with only about `0.23` percentage points between the 10th and 90th feature percentiles. The `0.8x` condition is about `-1%` for both Ray and strip. This rules out a color-specific ROI issue but does not by itself separate camera shutter timing from strip output at `1/60`.
-- Per-capture median recomputation confirms this is not a single-frame or ordinary order drift: in v7, Ray `1/500` was `-1.0384%`, `-0.9791%`, and `-1.0103%` versus its `1/400` median; strip `1/60` was `-5.5977%`, `-5.4521%`, and `-5.5862%` versus its `1/80` median. The v6 shared `1/400` Ray and `1/80` strip medians were respectively within `0.0010%` and `0.0053%` of v7. Because every old factor maps to one actual shutter, however, the historical runs cannot identify whether the residual belongs to factor choice, shutter timing, or source behavior.
+- P1 v6: `/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/20260714-030700-p1-provenance-envelope-v6`.
+- P1 v7: `/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/20260714-035100-p1-exposure-diagnostic-v7`.
+- Both legacy runs normalized native RAW values with the requested/display shutter string. Canon R6 Mark III CR3 MakerNote `Canon:ExposureTime` differs materially at several settings. Examples:
+  - display `1/60` -> recorded `0.015625s` (`1/64`);
+  - display `30` -> recorded `32s`.
+- The earlier cross-source response ratios followed the same camera exposure-time signature. This invalidates the previous conclusion that a strip-specific PWM/power effect was the primary cause.
+- v6 and v7 both planned `ray_intensity_percent=100` but sent raw OpenAPI `intensity=100`, approximately true `10%`. The old note incorrectly described v7 as raw `10`; retained `plan.json` and `commands.jsonl` show raw `100` in both runs. This does not invalidate within-run exposure ratios, but neither run is a valid Ray 100% brightness baseline.
 
-## Decision
+## Implemented Offline Fix
 
-P1 takes PLAN.md section 7.5 branch D:
+- Shared resolver: `src/camera_based_rgbww_optimizer/measurement/recorded_exposure.py`.
+- Priority: `Canon:ExposureTime`, standard EXIF, then explicit `fallback_nominal` with a diagnostic.
+- P1/P1-D acquisition reports now store signal and ambient exposure provenance and normalize from recorded duration.
+- Legacy P1 can be recomputed from retained CR3 with:
 
-- Do not set observer thresholds.
-- Do not enter P2.
-- Do not treat v6 as a P1 pass even though its source isolation, metadata, cleanup, and G1/G2 evidence are complete.
-- Do not use v6/v7 as a valid reference-intensity P1 baseline; rerun any future P1 or branch-D hardware acquisition only after the percentage-call fix.
+```bash
+.venv/bin/python -m camera_based_rgbww_optimizer.optimization.analyze_raw_observer_validation RUN_DIR \
+  --recompute-recorded-exposure
+```
 
-## Next Offline Work
+- The command verifies frozen location/observer-config hashes and writes `analysis-recorded-exposure-v1.json`; it never overwrites `analysis.json`.
+- Linearity analysis now separates total per-exposure response, global scale, and residual patch/CFA shape. Reference-factor zero residuals also have an explicit non-reference-only summary.
 
-1. Compare the saved v6/v7 raw per-plane distributions before and after ambient subtraction to separate camera shutter response from source/power response.
-2. Verify whether the per-second deviation correlates with the actual shutter choice rather than the requested bracket factor, source, or capture order.
-3. Design a bounded future hardware diagnostic only after the offline result identifies a discriminating change. Candidate changes are a fixed-shutter temporal repeat, a camera mode/shutter-timing cross-check, or a controlled strip electrical/power test. Do not start this diagnostic after 05:00 local time.
+## Recomputed Evidence
 
-The offline result selects the already implemented same-shutter continuous-on P1-D protocol below. Its runner now records the requested source command and capture start/finish monotonic timestamps. Do not substitute the old P1 brackets for this run.
+Both runs were recomputed from every retained CR3. All `31/31` v6 and `27/27` v7 reports used `Canon:ExposureTime`; no fallback occurred.
 
-## Future Hardware Diagnostic Contract
+### v6
 
-Run only during a new pre-05:00 window and only after the current raw reports are retained unchanged.
+- Output: `/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/20260714-030700-p1-provenance-envelope-v6/analysis-recorded-exposure-v1.json`.
+- Non-reference P95 total residual: Ray `0.7734%`, strip `0.3776%`.
+- Non-reference P95 shape residual after removing global exposure scale: Ray `0.3999%`, strip `0.3755%`.
+- Non-reference P95 shape residual in repeatability sigma: Ray `16.62`, strip `7.19`.
 
-1. Use a lower Ray intensity and a lower strip command so both sources can be captured at the same four shutters `1/100`, `1/80`, `1/60`, and `1/50` without clipping at ISO 100 / f4. Capture six frames per shutter with the source continuously on after a documented warm-up; the symmetric eight-step order contains each shutter twice and the default three cycles therefore produces six observations. Do not use the P1 off/on cadence for this shutter-timing diagnosis.
-2. Execute the exact shutter order `1/80, 1/60, 1/100, 1/50, 1/50, 1/100, 1/60, 1/80` for each source. Record actual configured shutter, source command, capture monotonic time, optical black levels, and per-plane raw plus ambient-subtracted statistics.
-3. Branch on the result:
-   - Both sources reproduce the same shutter signature: investigate camera timing, anti-flicker/shutter mode, and camera-side exposure metadata before changing strip firmware.
-   - Only strip reproduces it: capture the same strip command at a second reduced power level and inspect DC supply/driver ripple or load dependence; do not attribute it to the configured 19531Hz LEDC clock without evidence.
-   - Neither reproduces it with continuous-on capture: the P1 off/on/settle protocol is interacting with source thermal state; redesign the P1 timing and repeat the complete formal run.
-   - Only individual CFA planes or patches reproduce it: retain the diagnostics, classify clipping/noise/ROI causes, and follow PLAN.md 7.5-C rather than broadening a global threshold.
+### v7
+
+- Output: `/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/20260714-035100-p1-exposure-diagnostic-v7/analysis-recorded-exposure-v1.json`.
+- Non-reference P95 total residual: Ray `0.5635%`, strip `0.2735%`.
+- Non-reference P95 shape residual after removing global exposure scale: Ray `0.1787%`, strip `0.1961%`.
+- Non-reference P95 shape residual in repeatability sigma: Ray `11.19`, strip `3.75`.
+
+The large old scalar error is fixed, but P1 still does not pass the existing `3 sigma_repeat` policy.
+
+## Residual Shape Diagnosis
+
+- The largest residuals occur in high-signal green samples, especially blocks `06`, `09`, `14`, and `19` on `G1/G2`.
+- Short exposures are positive and long exposures negative after removing global scale. Ray and strip show the same direction.
+- Maximum ambient-subtracted normalized patch signal was approximately:
+  - v6 Ray: `0.237 / 0.472 / 0.742` at `0.5x / 1x / 1.5x`;
+  - v6 strip: `0.277 / 0.552 / 0.870`;
+  - v7 Ray: `0.374 / 0.472 / 0.591` at `0.8x / 1x / 1.25x`;
+  - v7 strip: `0.438 / 0.552 / 0.693`.
+- This is consistent with mild high-signal RAW compression. It is not evidence for a strip-only fault.
+- A temporary monotonic correction candidate `g(y)=y*(1+a*y+b*y^2)` was fit offline with global per-exposure scale removed. Training on v6 reduced v7 P95 shape from `0.1894%` to `0.1068%`; training on v7 reduced v6 from `0.3941%` to `0.1858%`. The correction direction cross-validates, but evidence is same-day and still above strict repeatability. Do not install a response correction yet.
+
+## Code-Duty Impact
+
+- `tmp/channel-response/merged/channel-code-duty-response-merged.json` contains 95 normalized measurements across 26 requested shutter settings.
+- Its two referenced source run directories and CR3 files are absent locally and under `/Volumes/4T/temp/rgbww-optimizer`.
+- Therefore the current `config/channel/code-duty-curve.json` cannot be repaired exactly from CR3 metadata.
+- Keep it only for compatibility with the already closed-loop-calibrated white LUT. Do not use it as absolute P2 basis/intensity evidence. Future channel-response acquisition now records actual exposure metadata.
+
+## Current Decision
+
+- P1 remains `fail`; do not set observer quality thresholds and do not enter P2.
+- Do not run the old P1-D same-shutter protocol next. The principal shutter discrepancy has already been identified from retained metadata.
+- The next device run is a new full P1 at lower RAW signal, using recorded exposure normalization and an explicit `--target-max 19661` candidate (30% of the 16-bit meter scale). Keep `0.5x,1x,1.5x` brackets so the longest bracket is expected below the prior compression region.
+- `19661` is a data-derived starting candidate, not an accepted threshold. Before the full run, one Ray and one strip longest-bracket preflight must confirm no clipping and maximum reliable patch/CFA signal below `0.45`; otherwise lower `target_max` and create a new dry-run plan.
+- Only if the lower-signal full P1 still shows cross-source shape above the decision policy should P1-D or a formally versioned camera-response correction be reconsidered.

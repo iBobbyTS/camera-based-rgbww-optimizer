@@ -2,7 +2,7 @@
 
 | file | summary |
 | --- | --- |
-| active/20260714-p1-exposure-response.md | P1 black-level handling is fixed, but repeatable source-specific shutter response now blocks observer-threshold acceptance and P2. |
+| active/20260714-p1-exposure-response.md | CR3 recorded exposure fixes the large P1 shutter error; residual high-signal RAW shape still blocks thresholds and P2 pending a lower-exposure full P1. |
 | active/20260712-white-lut-repeatability-and-strict-anchors.md | Measure repeatability, validate strict anchors, and explain the cross-day regression of near-boundary 14x5 nodes. |
 
 ## Unresolved

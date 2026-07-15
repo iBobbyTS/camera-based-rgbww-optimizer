@@ -172,6 +172,14 @@ create `.npy` files. The companion offline analysis module derives repeatability
 exposure-linearity, and G1/G2 evidence from those reports; it does not set
 empirical quality thresholds automatically.
 
+Measurement normalization must use the exposure duration recorded in the CR3,
+not only the shutter label requested through gphoto2. Canon MakerNote
+`Canon:ExposureTime` is authoritative, standard EXIF is the fallback, and the
+requested shutter is a degraded fallback with explicit provenance. In retained
+R6 Mark III samples, displayed `1/60` and `30` settings recorded approximately
+`1/64` and `32` seconds. The shared resolver is
+`camera_based_rgbww_optimizer.measurement.recorded_exposure`.
+
 The P1 capture runner requires the external best 70-point LUT explicitly,
 rather than reading the default 4x3 LUT, and plans ambient, independent
 Ray/strip exposure caches, alternating paired repeats, exposure brackets,
@@ -186,7 +194,9 @@ I/O and writes only `plan.json`:
 
 Real acquisition requires both `--execute` and `--allow-high-output`; it uses
 the native Bayer exposure meter, emits JSON-only patch reports, and keeps Ray
-and strip shutter caches independent. It must be launched through a temporary
+and strip shutter caches independent. P1 fails immediately and enters cleanup
+if a CR3 cannot provide recorded exposure metadata; it never continues a formal
+batch on requested-shutter fallback. It must be launched through a temporary
 shell wrapper with `EXIT`, `INT`, `TERM`, and `HUP` traps that run
 `control.all_off --json` into the same run directory. Python `finally` uses
 the same public cleanup entry point, including on capture errors. The runner
@@ -204,6 +214,22 @@ After a completed P1 run, analyze the immutable run directory offline:
 .venv/bin/python -m camera_based_rgbww_optimizer.optimization.analyze_raw_observer_validation \
   /Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/<run-id>
 ```
+
+Legacy P1 runs whose patch reports were normalized by requested shutter labels
+can be recomputed from their retained CR3 files without overwriting the old
+`analysis.json`:
+
+```bash
+.venv/bin/python -m camera_based_rgbww_optimizer.optimization.analyze_raw_observer_validation \
+  /path/to/p1-run \
+  --recompute-recorded-exposure
+```
+
+This writes `analysis-recorded-exposure-v1.json`, verifies the frozen location
+and observer-config hashes, and records the exposure source for every CR3. The
+linearity result separates per-shutter global exposure scale from residual
+patch/CFA shape because later matching permits a global brightness scale but
+cannot ignore color-dependent response.
 
 The analyzer rejects a non-complete run by default, restores each capture's
 source/purpose/repeat/factor/shutter provenance from `captures.jsonl`, and
@@ -231,6 +257,12 @@ from Python. It reports per-source, per-shutter ratios against `1/80`, capture
 duration distributions from the monotonic timestamps, and the recorded source-on
 commands. It does not update observer thresholds or decide which device caused a
 response difference.
+
+Do not run P1-D merely because legacy shutter-normalized analysis failed. First
+recompute retained CR3 files with recorded exposure metadata. P1-D remains a
+diagnostic branch only when corrected evidence cannot distinguish camera response
+from source response. Its conservative default Ray intensity is `1%`; every real
+run still requires a clipping-safe preflight and the shell cleanup wrapper.
 
 ## Location Picker
 
@@ -346,7 +378,13 @@ Generate the compact code-duty correction curve:
 ```
 
 The full merged response JSON is the measurement archive for later color
-modeling. The code-duty correction path only needs the small curve file.
+modeling. The code-duty correction path only needs the small curve file. The
+current June 6 archive was normalized from requested shutter labels and its
+referenced CR3/run directories are no longer retained, so it cannot be repaired
+from recorded exposure metadata. Keep the current curve for compatibility with
+the already calibrated white LUT, but do not use it as absolute P2 basis or
+intensity evidence. A future channel-response acquisition will record
+`exposure_metadata` per capture and must replace that evidence before P2.
 
 ## Ray120c Control
 

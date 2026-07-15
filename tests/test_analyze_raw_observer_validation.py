@@ -1,8 +1,11 @@
+import hashlib
 import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
+from camera_based_rgbww_optimizer.measurement import recorded_exposure
 from camera_based_rgbww_optimizer.optimization import analyze_raw_observer_validation
 
 
@@ -17,7 +20,13 @@ def report(value: float, *, ambient: bool) -> dict:
                 "near_noise_floor_fraction": 0.0,
             },
             "quality": {"status": "pending_thresholds"},
-            "statistics": {"normalized_per_second": {"trimmed_mean": value * multiplier}},
+            "statistics": {
+                "normalized_per_second": {"trimmed_mean": value * multiplier},
+                "black_corrected_normalized": {
+                    "trimmed_mean": 0.30 * multiplier,
+                    "maximum": 0.40 * multiplier,
+                },
+            },
         }
         if ambient:
             plane["ambient_subtracted"] = {"trimmed_mean_per_second": value * multiplier}
@@ -33,6 +42,21 @@ def report(value: float, *, ambient: bool) -> dict:
 
 
 class AnalyzeRawObserverValidationTests(unittest.TestCase):
+    def test_preflight_summary_reports_signal_clipping_and_noise_without_deciding(self):
+        sample = report(1.0, ambient=True)
+        sample["analysis_context"] = {"source": "ray", "purpose": "linearity_preflight"}
+        sample["patches"][0]["planes"]["G1"]["metrics"]["clipped_fraction"] = 0.001
+        sample["patches"][0]["planes"]["B"]["metrics"]["near_noise_floor_fraction"] = 0.02
+
+        analysis = analyze_raw_observer_validation.analyze_preflight_reports([sample])
+
+        ray = analysis["sources"]["ray"]
+        self.assertEqual(ray["plane_count"], 4)
+        self.assertEqual(ray["maximum_clipped_fraction"], 0.001)
+        self.assertEqual(ray["maximum_near_noise_floor_fraction"], 0.02)
+        self.assertAlmostEqual(ray["maximum_black_corrected_normalized_trimmed_mean"], 0.33)
+        self.assertNotIn("decision", analysis)
+
     def test_analyze_completed_run_groups_repeatability_linearity_and_context(self):
         with tempfile.TemporaryDirectory() as tempdir:
             root = Path(tempdir)
@@ -65,6 +89,76 @@ class AnalyzeRawObserverValidationTests(unittest.TestCase):
 
             analysis = analyze_raw_observer_validation.analyze_validation_run(root, require_complete=False)
             self.assertEqual(analysis["report_count"], 9)
+
+    def test_recompute_uses_recorded_exposure_and_preserves_stored_analysis(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            self._write_run(root, status="complete")
+            location = root / "locations.json"
+            observer = root / "observer.json"
+            location.write_text("{}", encoding="utf-8")
+            observer.write_text("{}", encoding="utf-8")
+            plan = json.loads((root / "plan.json").read_text(encoding="utf-8"))
+            plan["inputs"] = {
+                "location_config": {"path": str(location), "sha256": hashlib.sha256(location.read_bytes()).hexdigest()},
+                "raw_observer_config": {"path": str(observer), "sha256": hashlib.sha256(observer.read_bytes()).hexdigest()},
+            }
+            (root / "plan.json").write_text(json.dumps(plan), encoding="utf-8")
+            records = []
+            for line in (root / "captures.jsonl").read_text(encoding="utf-8").splitlines():
+                record = json.loads(line)
+                raw_file = root / f"{record['capture_id']}.cr3"
+                raw_file.write_bytes(b"fake")
+                record["capture"]["capture"]["saved_file"] = str(raw_file)
+                records.append(record)
+            (root / "captures.jsonl").write_text(
+                "\n".join(json.dumps(record) for record in records) + "\n",
+                encoding="utf-8",
+            )
+            (root / "analysis.json").write_text('{"legacy": true}\n', encoding="utf-8")
+
+            def exposure(path, shutter, **_kwargs):
+                nominal = recorded_exposure.parse_nominal_exposure(shutter)
+                return recorded_exposure.RecordedExposure(
+                    seconds=nominal * 0.9375,
+                    source="Canon:ExposureTime",
+                    nominal_seconds=nominal,
+                    nominal_shutter_speed=shutter,
+                    raw_file=Path(path),
+                    status="recorded",
+                    metadata_values={"Canon:ExposureTime": nominal * 0.9375},
+                )
+
+            def analyze(_path, **kwargs):
+                return report(10.0, ambient="ambient_raw_file" in kwargs)
+
+            with mock.patch.object(
+                analyze_raw_observer_validation.recorded_exposure,
+                "resolve_recorded_exposure",
+                side_effect=exposure,
+            ), mock.patch.object(
+                analyze_raw_observer_validation.raw_mosaic_patches,
+                "analyze_raw_file",
+                side_effect=analyze,
+            ):
+                analysis = analyze_raw_observer_validation.analyze_validation_run(
+                    root,
+                    recompute_recorded_exposure=True,
+                )
+                output = analyze_raw_observer_validation.write_validation_analysis(
+                    root / analyze_raw_observer_validation.DEFAULT_RECORDED_OUTPUT_NAME,
+                    analysis,
+                )
+
+            self.assertEqual(analysis["normalization"]["mode"], "recomputed_from_cr3_recorded_exposure")
+            provenance = analysis["normalization"]["exposure_provenance"]
+            self.assertEqual(provenance["status_counts"], {"recorded": 9})
+            self.assertAlmostEqual(
+                provenance["recorded_to_nominal_ratio"]["max_absolute_difference_from_one"],
+                0.0625,
+            )
+            self.assertEqual(json.loads((root / "analysis.json").read_text(encoding="utf-8")), {"legacy": True})
+            self.assertTrue(output.is_file())
 
     def _write_run(self, root: Path, *, status: str) -> None:
         measurements = root / "measurements"

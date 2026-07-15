@@ -1,10 +1,10 @@
 # Ray120c 相机观察者匹配后续实施计划
 
-**计划状态：** 活动计划，等待用户批准后执行
-**编写日期：** 2026-07-13
-**当前提交：** `4f6df67 feat(camera): support pluggable auto-exposure meters`
+**计划状态：** 活动计划；无需设备的修复和重算已完成，等待下一次明确批准的实机窗口
+**编写日期：** 2026-07-13；最近更新：2026-07-14
+**当前提交：** `80a1d48 docs(plan): refresh P1-D implementation state`，另有本轮未提交的 recorded-exposure 修复
 **上游设计：** `advisor/1/1.RESEARCH.md`、`advisor/1/1.PLAN.md`
-**当前阶段：** P0，先补齐测量验证分析和安全运行器，不立即扫描设备
+**当前阶段：** P1 fail；先做 5 张低信号预检，再决定是否重跑完整 P1，不立即扫描设备
 **计划使用对象：** 能完成明确编码和实验步骤，但不应自行发明阈值、跨越实验门或扩大范围的执行模型
 
 ---
@@ -33,7 +33,7 @@
 
 执行模型开始任何工作前，必须确认以下事实仍成立；若路径或提交发生变化，先更新本节，不得静默替换：
 
-- 当前代码提交为 `c68ac87`。
+- 当前基线提交为 `80a1d48`；开始执行前必须以 `git rev-parse HEAD` 更新，不得把本行当作提交授权。
 - 原生 Bayer 测量器已经存在：
   - `src/camera_based_rgbww_optimizer/measurement/raw_mosaic_patches.py`
   - CLI：`python -m camera_based_rgbww_optimizer.measurement.raw_mosaic_patches`
@@ -58,7 +58,13 @@
 - 当前白点验收继续沿用：
   - `abs(Duv error) < 0.0005`
   - CCT 容差为至少 `25K`，高 CCT 使用 `1 mired` 对应的 Kelvin 容差。
-- 当前完整测试基线为 `159/159` 通过。
+- 本轮完整离线测试基线为 `219/219` 通过；此前 `159/159` 仅为 P0 历史基线。
+- CR3 实际曝光必须由共享入口 `measurement.recorded_exposure` 解析：`Canon:ExposureTime` 优先，标准 EXIF 次之，显示快门只能作为带 `fallback_nominal` 状态的降级值。
+- v6/v7 已从所有保留 CR3 完整重算，输出分别为：
+  - `/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/20260714-030700-p1-provenance-envelope-v6/analysis-recorded-exposure-v1.json`
+  - `/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/20260714-035100-p1-exposure-diagnostic-v7/analysis-recorded-exposure-v1.json`
+- 两份重算分别有 `31/31`、`27/27` 使用 `Canon:ExposureTime`，无 nominal fallback。P1 仍未通过，原因已从“疑似 strip shutter/PWM”收窄为“高信号 RAW shape residual”。
+- 当前 June 6 code-duty archive 的原始 run/CR3 已丢失，不能按 recorded exposure 修复。现有 `config/channel/code-duty-curve.json` 只允许兼容既有闭环白 LUT，不得作为 P2 绝对基底或亮度证据。
 
 ---
 
@@ -458,12 +464,29 @@ z = ambient_subtracted_trimmed_mean / exposure_seconds
 relative_residual = (z - robust_center_across_exposures) / robust_center
 ```
 
+从 2026-07-14 起，`exposure_seconds` 必须来自 CR3 recorded exposure；任何
+`fallback_nominal` 或缺失 exposure provenance 的报告都不能用于 P1 验收。
+
+同时必须拆开两种误差，不能把它们混成一个 P95：
+
+```text
+response_ratio[f,e] = z[f,e] / z[f,reference]
+global_scale[e] = median_f(response_ratio[f,e])
+shape_residual[f,e] = response_ratio[f,e] / global_scale[e] - 1
+```
+
+- `global_scale` 是某个曝光档整体共同的亮度比例。P4 允许每个目标有全局 `k`，因此它不等同于颜色 shape 失败；但 P2 绝对强度/基底仍必须单独处理它。
+- `shape_residual` 是去掉全局 scale 后的 patch/CFA 差异，属于颜色观察者链的硬证据。
+- 汇总必须同时给全部 center 和 `non_reference` center。参考档残差按定义为零，不能用这些零值稀释 P95。
+- 必须按 CFA plane、patch、信号水平查看 shape，不能只报告总体 P95。
+
 门槛来源：
 
 - 同曝光重复产生 `sigma_repeat`。
 - 曝光间残差用 `3 * sigma_repeat` 判断。
 - 只使用未裁剪、有效像素足够且不在噪声底的样本。
 - 不允许用删除最差曝光的方式直接宣告通过；删除必须进入下面的受限分支。
+- `3 * sigma_repeat` 表示统计上可检测的系统误差，不自动等于工程不可用。若未来要引入独立工程容差，必须先做下游 multipatch 灵敏度和独立跨日留出验证；当前阶段仍不得自行放宽。
 
 ### 7.5 P1 分支决策
 
@@ -515,13 +538,82 @@ relative_residual = (z - robust_center_across_exposures) / robust_center
 5. 若 Ray 和 strip 都出现，优先查相机/RAW/曝光链。
 6. 修复后创建新 run，旧 run 保持 `fail`。
 
-当前已确认的 P1-D 后续诊断协议（仅在新的 05:00 前实拍窗口运行）：
+#### 分支 D0：旧报告尚未按 CR3 recorded exposure 重算
 
-1. 使用低 Ray 强度和低 strip 命令，使 `1/100, 1/80, 1/60, 1/50` 都不裁剪；ISO 100 / f4 保持不变。
-2. 每个来源先稳定预热，再连续点亮拍每个快门 6 次；对称八步序列中每档每 cycle 出现两次，默认三个 cycle 合计六帧。这里不得复用 P1 的 off/on 节奏，否则无法区分热态与快门响应。
-3. 两个来源都必须使用同一组实际快门，固定顺序为 `1/80, 1/60, 1/100, 1/50, 1/50, 1/100, 1/60, 1/80`，记录实际快门、命令、单调时间、光学黑位、各 CFA plane 的原始和 ambient-subtracted 数值。v7 的跨 patch/CFA 偏差是近似统一标量，不能仅靠色彩统计区分来源。
-4. 两源同样复现：查相机 timing、anti-flicker/shutter mode 和 EXIF/RAW 计时；只 strip 复现：换一个低功率 strip 命令检查电源/驱动与负载；连续点亮不复现：重设 P1 热态协议；只剩个别 plane/patch：转 7.5-C。
-5. 此诊断前不得改 `raw-observer.json` 阈值或开始 P2；旧失败 run 保留，诊断通过后仍需一个全新的完整正式 P1 run。
+动作：
+
+1. 运行 `analyze_raw_observer_validation RUN_DIR --recompute-recorded-exposure`。
+2. 必须确认冻结的 location/observer-config hash 仍匹配。
+3. 必须确认 `normalization.exposure_provenance.status_counts` 只有 `recorded`，且每张报告都有来源。
+4. 保留原 `analysis.json`，只读取新的 `analysis-recorded-exposure-v1.json`。
+5. 重算前禁止 P1-D；requested shutter 误差不能用新的设备扫描掩盖。
+
+v6/v7 已完成 D0，不得重复重算来制造新版本文件，除非分析 schema 再变化。
+
+#### 分支 D1：recorded exposure 修复了大误差，但仍有高信号 shape residual
+
+这是当前分支。先做一个独立 5 张预检 run，不直接跑 31 张完整 P1：
+
+```bash
+RUN_DIR=/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/<new-preflight-run>
+tmp/run-raw-observer-validation.zsh "$RUN_DIR" \
+  --baseline-lut /Volumes/4T/temp/rgbww-optimizer/white-lut-calibration/14x5-off-cycle-refined-v2-20260713/white-lut-calibration.json \
+  --target-max 19661 \
+  --linearity-factors 0.5,1,1.5 \
+  --paired-repeats 5 \
+  --linearity-repeats 3 \
+  --preflight-only
+```
+
+预检计划必须与以下离线计划同构：
+
+- `tmp/raw-observer-validation/offline/p1-recorded-exposure-low-signal-preflight-dryrun-20260714/plan.json`
+- 共 5 张：ambient 1、Ray/strip baseline auto exposure 各 1、Ray/strip `1.5x` 最长 bracket 各 1。
+- `measurement.camera_auto_exposure.target_max=19661`。
+- `measurement.preflight_only=true`。
+
+预检完成后运行默认分析器。新报告已经按 recorded exposure 归一化，不需要 `--recompute-recorded-exposure`。读取 `analysis.json.preflight.sources` 并按以下分支执行：
+
+- 任一 source `maximum_clipped_fraction > 0`：预检失败。计算新的 target candidate `floor(old_target * 0.40 / observed_trimmed_max)`，再乘 `0.9` 安全系数，限制为至少 `8192`；新建 run，不复用目录。
+- 任一 source `maximum_black_corrected_normalized_trimmed_mean > 0.45`：同上降低 target，哪怕 clipped fraction 为零也不能继续。
+- 任一 source `maximum_near_noise_floor_fraction > 0`：检查具体 patch/plane。若只出现在弱通道，优先保持 target 并按 7.5-C 分类；若广泛出现，target 过低，不得直接跑完整 P1。
+- 任一 source `missing_metrics_plane_count > 0`：代码/报告失败，停止并修复，不得人工估计。
+- 两源均无裁剪、无广泛 noise-floor，且最大 trimmed signal `<=0.45`：预检通过，才允许创建完整 P1 run。
+
+`19661` 是由现有 `0.47..0.55` baseline 和 `0.59..0.87` 长 bracket 反推的起点，不是写入配置的质量阈值。
+
+完整 P1 必须使用与通过预检完全相同的 `--target-max`、LUT、location、observer config、ISO/f4 和 factors，计划模板为：
+
+- `tmp/raw-observer-validation/offline/p1-recorded-exposure-low-signal-full-dryrun-20260714/plan.json`
+- 共 31 张：ambient 1、baseline 2、paired repeats 10、linearity brackets 18。
+
+完整 P1 分析后：
+
+- recorded exposure 缺失或 fallback：run 无效，修元数据链后新建 run。
+- total residual 失败但 shape 在 `3 sigma_repeat` 内，且只剩稳定 global scale：记录为“颜色观察者链候选通过、绝对强度链未通过”，仍不得进入 P2，先重测 code-duty/basis。
+- shape 在 Ray 和 strip 均不超过 `3 sigma_repeat`：继续 7.6 G1/G2 分支。
+- shape 仍在高信号区同向失败：不要再降 target 反复试到通过；转 D2，要求跨日留出后才允许响应修正。
+- 只有 strip shape 失败：才恢复下面的 P1-D source diagnostic。
+
+#### 分支 D2：低信号完整 P1 仍显示跨光源相机响应曲线
+
+1. 不修改原生 RAW 值，不立即安装 response correction。
+2. 用一天的数据拟合单调响应候选，另一天完整 P1 只做 holdout；训练和验证不能来自同一个 run。
+3. 候选至少保证 `g(0)=0`、全域一阶导数为正，并输出系数、训练范围、越界策略和 hash。
+4. 同时比较“降低曝光 envelope”与“response correction”两个分支对 non-reference shape P95、最大值和 sigma 的改善。
+5. 只有跨日 holdout 改善且不恶化低信号/任一 CFA plane，才提出正式配置 schema；执行模型不得自行写入 `raw-observer.json`。
+
+当前仅有同日探索：`g(y)=y*(1+a*y+b*y^2)` 在 v6->v7 和 v7->v6 留出上把 P95 shape 分别降至约 `0.1068%`、`0.1858%`。这只证明方向可研究，不是安装证据。
+
+#### 分支 D3：只有 strip 仍异常时的 P1-D
+
+仅在 D1 完整低信号 P1 显示 Ray shape 通过、strip shape 失败时，才运行 `measure_raw_shutter_response`：
+
+1. Ray 默认 `1%`，strip 默认 `20%`；任何提高都要先做最长快门裁剪预检。
+2. 连续点亮后使用相同 `1/100,1/80,1/60,1/50` 序列，每档六帧。
+3. 分析必须检查 recorded exposure provenance、裁剪排除、global shutter scale 和 shape residual。
+4. 两源同样复现则返回 D2；只 strip 复现才检查电源/驱动/负载；个别 patch/plane 转 7.5-C。
+5. P1-D 无论结果如何都不能替代一个新的完整 P1 pass。
 
 #### 分支 E：锚点随时间漂移超过重复性门槛
 
@@ -1170,7 +1262,7 @@ t(h,s,I) ~= alpha(I,h,s) * t(h,s,100)
 - [x] ambient subtraction、位置缩放、JSON-only 输出。
 - [x] 合成测试和已有 CR3 离线 smoke test。
 
-### 当前下一步 P0
+### P0 与本轮离线修复
 
 - [x] `raw_observer_analysis.py`。
 - [x] repeatability/linearity/G1G2 合成测试。
@@ -1180,7 +1272,13 @@ t(h,s,I) ~= alpha(I,h,s) * t(h,s,100)
 - [x] `measure_raw_observer_validation.py` fake-device 执行和 Python cleanup 测试。
 - [x] 文档和 skill 更新。
 - [x] 完整离线验证。
-- [ ] 向用户报告并等待实机批准。
+- [x] 向用户报告并等待实机批准。
+- [x] 发现并实现 CR3 recorded exposure 单一入口。
+- [x] P1/P1-D 新采集路径记录 signal + ambient exposure provenance。
+- [x] v6/v7 从所有保留 CR3 重算，原 analysis 未覆盖。
+- [x] linearity 拆分 total/global scale/shape，并增加 non-reference 汇总。
+- [x] code-duty 历史归档可修复性审计；确认原 CR3 缺失。
+- [x] 5 张低信号 preflight-only runner/analysis 和 31 张完整 dry-run 计划。
 
 ### 后续硬门
 
@@ -1209,17 +1307,17 @@ t(h,s,I) ~= alpha(I,h,s) * t(h,s,100)
 
 ---
 
-### 2026-07-14 P1.2 更新
+### 2026-07-14 P1.3 recorded-exposure 离线修复
 
 ```text
-最新阶段：P1-D same-shutter continuous-on diagnostic
-状态：code_complete_waiting_for_measurement（原 P1 保持 fail）
-最新提交：6f04818 test(measurement): guard P1-D execution consent
-运行目录：tmp/raw-observer-validation/offline/raw-shutter-response-percent-api-dryrun-20260714-044407（仅 dry-run；不得当作实拍结果）
-分析文件：/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/20260714-030700-p1-provenance-envelope-v6/analysis.json；/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/20260714-035100-p1-exposure-diagnostic-v7/analysis.json
-分支选择：7.5-D。v6 完成 31/31，provenance、source isolation、两层 cleanup、G1/G2 均完整，但未裁剪的 0.5x/1x/1.5x 曝光仍呈系统性跨快门残差（Ray P95 1.458%，strip P95 1.133%），远高于重复性。v7 受限诊断进一步显示 strip 在 1/60 相对 1/80 稳定低约 4.64%，Ray 也存在较小但系统的 shutter response。随后发现 v6/v7 将语义上的 Ray 百分比误传为原始 OpenAPI intensity：标为 100%/10% 实际约为 10%/1%。因此两次 run 均不能作为计划要求的 Ray 亮度基准，但同一 run 内 Ray 命令不变，快门比值证据仍可用于诊断；白光 LUT 和端点脚本不受此错误影响。逐帧中位数显示 v7 strip 1/60 三次为 -5.598%/-5.452%/-5.586%，Ray 1/500 三次为 -1.038%/-0.979%/-1.010%；同一基准快门跨 v6/v7 近乎不漂移。旧设计中因子和实际快门一一绑定，不能继续从保存数据中区分相机与光源原因。
-未解决问题：区分相机实际快门响应与 strip 电源/驱动响应；离线重算已排除 ambient（对每个档位中位影响不超过 0.000063%）、普通跨 run 热漂移和单次帧异常。未设置正式 quality thresholds，P2 不得开始。
-下一条唯一动作：仅在下一次当地 05:00 前的完整窗口，运行已修正百分比调用的 P1-D same-shutter continuous-on 实拍。必须使用 `tmp/run-raw-shutter-response.zsh`，保留 Python + shell 两层关灯，并在完成后按 P1-D 分支判定；当地时间 05:00 后不得开始实拍。
+最新阶段：P1 D1 lower-signal recorded-exposure preflight
+状态：code_complete_waiting_for_measurement（P1 保持 fail，P2 禁止开始）
+最新提交：80a1d48 docs(plan): refresh P1-D implementation state；本轮代码尚未提交
+运行目录：下一次实机必须创建新的 `/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/<timestamp>-p1-low-signal-preflight`；不得复用 v6/v7
+分析文件：/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/20260714-030700-p1-provenance-envelope-v6/analysis-recorded-exposure-v1.json；/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/20260714-035100-p1-exposure-diagnostic-v7/analysis-recorded-exposure-v1.json
+分支选择：7.5-D1。旧大偏差的主因是 Canon CR3 recorded exposure 与显示快门不同。v6 31/31、v7 27/27 均已从 CR3 重算且全部使用 Canon:ExposureTime。non-reference P95 total/shape/sigma：v6 Ray 0.7734%/0.3999%/16.62，strip 0.3776%/0.3755%/7.19；v7 Ray 0.5635%/0.1787%/11.19，strip 0.2735%/0.1961%/3.75。剩余 shape 集中在高信号 G1/G2，Ray 与 strip 同向，因此不再把 strip PWM 作为第一假设，也不直接运行旧 P1-D。
+未解决问题：低信号区的新完整 P1 是否能把 shape 压到 3 sigma 内；若不能，是否需要跨日相机 response correction。现有 code-duty curve 因原 CR3 缺失不能修复，P2 仍被阻塞。未设置 quality thresholds。
+下一条唯一动作：用户明确批准设备操作、当地 05:00 前且遮光环境稳定后，先严格按 7.5-D1 运行 5 张 `--preflight-only --target-max 19661`。预检没有裁剪、没有广泛 noise floor、两源最大 trimmed signal <=0.45 后，才运行同 target 的完整 31 张 P1。不得直接运行 P1-D，不得开始 P2。
 ```
 
 ---

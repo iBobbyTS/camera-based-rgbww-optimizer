@@ -191,11 +191,23 @@ def analyze_exposure_linearity(
         for factor in factors:
             observations = by_factor[factor].get(feature_id, [])
             values = [float(item["value"]) for item in observations if item["status"] == "included"]
+            exposure_seconds_values = [
+                float(item["analysis_context"]["exposure_seconds"])
+                for item in observations
+                if item["status"] == "included"
+                and _finite_float(item["analysis_context"].get("exposure_seconds")) is not None
+            ]
+            exposure_seconds = _median_or_none(exposure_seconds_values)
+            center = _median_or_none(values)
             centers.append(
                 {
                     "factor": factor,
                     "count": len(values),
-                    "center": _median_or_none(values),
+                    "center": center,
+                    "exposure_seconds": exposure_seconds,
+                    "normalized_signal_fraction": (
+                        None if center is None or exposure_seconds is None else center * exposure_seconds
+                    ),
                     "report_ids": [item["report_id"] for item in observations if item["status"] == "included"],
                 }
             )
@@ -208,10 +220,14 @@ def analyze_exposure_linearity(
             if center is None or reference_value is None:
                 item["relative_residual"] = None
                 item["residual_repeatability_sigma"] = None
+                item["response_ratio_to_reference"] = None
             else:
                 difference = float(center) - reference_value
                 item["relative_residual"] = None if reference_value == 0 else difference / abs(reference_value)
                 item["residual_repeatability_sigma"] = _sigma_multiple(difference, noise_sigma)
+                item["response_ratio_to_reference"] = (
+                    None if reference_value == 0 else float(center) / reference_value
+                )
         normalized_centers = [float(item["center"]) / reference_value for item in available] if reference_value else []
         slope = (
             float(np.polyfit(np.log([item["factor"] for item in available]), normalized_centers, 1)[0])
@@ -230,17 +246,78 @@ def analyze_exposure_linearity(
             "monotonic_drift": _monotonic_drift(available, noise_sigma),
         }
 
+    global_scales: dict[float, float | None] = {}
+    for factor in factors:
+        ratios = [
+            float(center["response_ratio_to_reference"])
+            for feature in features.values()
+            for center in feature["centers"]
+            if float(center["factor"]) == factor and center["response_ratio_to_reference"] is not None
+        ]
+        global_scales[factor] = _median_or_none(ratios)
+
+    for feature in features.values():
+        reference_value = feature["reference_center"]
+        noise_sigma = feature["repeatability_sigma"]
+        for center in feature["centers"]:
+            ratio = center["response_ratio_to_reference"]
+            scale = global_scales[float(center["factor"])]
+            center["global_exposure_scale"] = scale
+            if ratio is None or scale in (None, 0.0) or reference_value is None:
+                center["shape_relative_residual"] = None
+                center["shape_residual_repeatability_sigma"] = None
+                continue
+            shape_residual = float(ratio) / float(scale) - 1.0
+            center["shape_relative_residual"] = shape_residual
+            center["shape_residual_repeatability_sigma"] = _sigma_multiple(
+                shape_residual * float(reference_value),
+                noise_sigma,
+            )
+
     residuals = [
         abs(float(center["relative_residual"]))
         for feature in features.values()
         for center in feature["centers"]
         if center["relative_residual"] is not None
     ]
+    non_reference_residuals = [
+        abs(float(center["relative_residual"]))
+        for feature in features.values()
+        for center in feature["centers"]
+        if center["relative_residual"] is not None
+        and center["factor"] != feature["reference_factor"]
+    ]
     sigma_multiples = [
         float(center["residual_repeatability_sigma"])
         for feature in features.values()
         for center in feature["centers"]
         if center["residual_repeatability_sigma"] is not None
+    ]
+    shape_residuals = [
+        abs(float(center["shape_relative_residual"]))
+        for feature in features.values()
+        for center in feature["centers"]
+        if center["shape_relative_residual"] is not None
+    ]
+    non_reference_shape_residuals = [
+        abs(float(center["shape_relative_residual"]))
+        for feature in features.values()
+        for center in feature["centers"]
+        if center["shape_relative_residual"] is not None
+        and center["factor"] != feature["reference_factor"]
+    ]
+    shape_sigma_multiples = [
+        float(center["shape_residual_repeatability_sigma"])
+        for feature in features.values()
+        for center in feature["centers"]
+        if center["shape_residual_repeatability_sigma"] is not None
+    ]
+    non_reference_shape_sigma_multiples = [
+        float(center["shape_residual_repeatability_sigma"])
+        for feature in features.values()
+        for center in feature["centers"]
+        if center["shape_residual_repeatability_sigma"] is not None
+        and center["factor"] != feature["reference_factor"]
     ]
     return {
         "schema_version": SCHEMA_VERSION,
@@ -249,11 +326,41 @@ def analyze_exposure_linearity(
         "factors": factors,
         "collections": {str(factor): collection for factor, collection in collections.items()},
         "features": features,
+        "global_exposure_scale_by_factor": [
+            {
+                "factor": factor,
+                "scale_to_reference": global_scales[factor],
+                "relative_residual": (
+                    None if global_scales[factor] is None else global_scales[factor] - 1.0
+                ),
+            }
+            for factor in factors
+        ],
         "summary": {
             "feature_count": len(features),
             "complete_feature_count": sum(item["status"] == "complete" for item in features.values()),
             "absolute_relative_residual": _percentile_summary(residuals),
+            "absolute_relative_residual_non_reference": _percentile_summary(non_reference_residuals),
             "residual_repeatability_sigma": _percentile_summary(sigma_multiples),
+            "absolute_shape_relative_residual": _percentile_summary(shape_residuals),
+            "absolute_shape_relative_residual_non_reference": _percentile_summary(
+                non_reference_shape_residuals
+            ),
+            "shape_residual_repeatability_sigma": _percentile_summary(shape_sigma_multiples),
+            "shape_residual_repeatability_sigma_non_reference": _percentile_summary(
+                non_reference_shape_sigma_multiples
+            ),
+            "shape_by_plane_non_reference": {
+                plane: _percentile_summary(
+                    abs(float(center["shape_relative_residual"]))
+                    for feature in features.values()
+                    if feature["plane"] == plane
+                    for center in feature["centers"]
+                    if center["shape_relative_residual"] is not None
+                    and center["factor"] != feature["reference_factor"]
+                )
+                for plane in sorted({str(feature["plane"]) for feature in features.values()})
+            },
         },
     }
 

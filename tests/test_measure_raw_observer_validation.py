@@ -6,6 +6,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
+from camera_based_rgbww_optimizer.measurement import recorded_exposure
 from camera_based_rgbww_optimizer.optimization import measure_raw_observer_validation
 
 
@@ -40,6 +41,7 @@ class RawObserverValidationPlanTests(unittest.TestCase):
                 baseline_lut_path=lut,
                 location_config_path=location,
                 observer_config_path=observer,
+                target_max=19661,
                 paired_repeats=2,
                 linearity_factors=(0.5, 1.0, 2.0),
                 linearity_repeats=2,
@@ -53,6 +55,7 @@ class RawObserverValidationPlanTests(unittest.TestCase):
             self.assertEqual(sorted(path.name for path in (root / "dry").iterdir()), ["plan.json"])
             self.assertEqual(data["status"], "dry_run")
             self.assertEqual(data["measurement"]["anchor"]["strip_command"]["cw"], 2800)
+            self.assertEqual(data["measurement"]["camera_auto_exposure"]["target_max"], 19661)
             self.assertEqual(data["captures"][0]["source"], "ambient")
             self.assertEqual(data["captures"][1]["source"], "ray")
             self.assertEqual(data["captures"][2]["source"], "strip")
@@ -83,6 +86,26 @@ class RawObserverValidationPlanTests(unittest.TestCase):
                 curve_path=None,
             )
             self.assertEqual(no_curve_plan["inputs"]["code_duty_curve"], {"status": "disabled"})
+
+    def test_preflight_plan_stops_after_two_longest_bracket_checks(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            base = self._plan(root)
+            plan = measure_raw_observer_validation.build_raw_observer_validation_plan(
+                baseline_lut_path=base["inputs"]["baseline_lut"]["path"],
+                location_config_path=base["inputs"]["location_config"]["path"],
+                observer_config_path=base["inputs"]["raw_observer_config"]["path"],
+                target_max=19661,
+                linearity_factors=(0.5, 1.0, 1.5),
+                preflight_only=True,
+            )
+
+            self.assertTrue(plan["measurement"]["preflight_only"])
+            self.assertEqual(len(plan["captures"]), 5)
+            checks = [step for step in plan["captures"] if step["purpose"] == "linearity_preflight"]
+            self.assertEqual([step["source"] for step in checks], ["ray", "strip"])
+            self.assertTrue(all(step["exposure_factor"] == 1.5 for step in checks))
+            self.assertFalse(any(step["purpose"] == "paired_repeat" for step in plan["captures"]))
 
     def test_plan_rejects_missing_baseline_factor_and_invalid_repeat_count(self):
         with tempfile.TemporaryDirectory() as tempdir:
@@ -403,6 +426,18 @@ Focal Length: 50mm
                 output.write_text(json.dumps(report), encoding="utf-8")
                 return output
 
+            def exposure(path, shutter):
+                nominal = recorded_exposure.parse_nominal_exposure(shutter)
+                return recorded_exposure.RecordedExposure(
+                    seconds=nominal * 0.9375,
+                    source="Canon:ExposureTime",
+                    nominal_seconds=nominal,
+                    nominal_shutter_speed=shutter,
+                    raw_file=Path(path),
+                    status="recorded",
+                    metadata_values={"Canon:ExposureTime": nominal * 0.9375},
+                )
+
             adapter = measure_raw_observer_validation.build_native_raw_capture_step_fn(
                 camera_dir=camera_dir,
                 measurements_dir=measurements_dir,
@@ -415,6 +450,7 @@ Focal Length: 50mm
                 raw_analyze_fn=lambda *_args, **_kwargs: {"quality": {"status": "pending_thresholds"}},
                 raw_report_writer=write_report,
                 shutter_choices_fn=lambda _port: ("1/250", "1/125", "1/60"),
+                recorded_exposure_fn=exposure,
             )
             ambient = plan["captures"][0]
             ray_baseline = plan["captures"][1]
@@ -446,6 +482,8 @@ Focal Length: 50mm
             )
             self.assertEqual(stored_report["analysis_context"]["source"], "strip")
             self.assertEqual(stored_report["analysis_context"]["exposure_factor"], 0.5)
+            self.assertEqual(stored_report["exposure_metadata"]["source"], "Canon:ExposureTime")
+            self.assertAlmostEqual(stored_report["analysis_context"]["exposure_seconds"], 0.0075)
             self.assertEqual(list(root.rglob("*.npy")), [])
 
     def _plan(self, root: Path):

@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Callable, Sequence
 
 from camera_based_rgbww_optimizer.control import camera_gphoto2
+from camera_based_rgbww_optimizer.measurement import recorded_exposure
 from camera_based_rgbww_optimizer.optimization import measure_channel_response
 from camera_based_rgbww_optimizer.utils import location_regions
 
@@ -493,7 +494,10 @@ def measure_capture_regions(
     capture: camera_gphoto2.CaptureResult,
     regions: Sequence[dict[str, Any]],
 ) -> tuple[float, Any, list[dict[str, Any]]]:
-    seconds = measure_channel_response.shutter_seconds(capture.settings.shutter_speed)
+    seconds = recorded_exposure.resolve_recorded_exposure(
+        capture.saved_file,
+        capture.settings.shutter_speed,
+    ).seconds
     image = load_npy(find_npy_output(capture))
     measurements = measure_channel_response.measure_image_regions(
         image,
