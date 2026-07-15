@@ -7,7 +7,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Sequence
 
-from camera_based_rgbww_optimizer.control import camera_gphoto2
+from camera_based_rgbww_optimizer.control import camera_gphoto2, camera_remote
 from camera_based_rgbww_optimizer.interaction import location_picker_ui
 from camera_based_rgbww_optimizer.interaction import raw_visual_preview
 from camera_based_rgbww_optimizer.paths import PROJECT_TMP_DIR
@@ -81,8 +81,8 @@ def capture_location_check(
     *,
     output_dir: Path = DEFAULT_OUTPUT_DIR,
     target_max: int = DEFAULT_TARGET_MAX,
-    iso: str = camera_gphoto2.DEFAULT_ISO,
-    aperture: str = camera_gphoto2.DEFAULT_APERTURE,
+    iso: str | None = None,
+    aperture: str | None = None,
     image_format: str = camera_gphoto2.DEFAULT_IMAGE_FORMAT,
     min_shutter_speed: str = camera_gphoto2.DEFAULT_MIN_SHUTTER_SPEED,
     max_shutter_speed: str = camera_gphoto2.DEFAULT_MAX_SHUTTER_SPEED,
@@ -96,6 +96,7 @@ def capture_location_check(
     dcraw_executable: str = "dcraw_emu",
     dcraw_white_balance: str = "camera",
     timeout: float = 90.0,
+    camera_backend: camera_gphoto2.CameraBackend | None = None,
 ) -> LocationCheckResult:
     regions = load_required_location_regions(location_config)
     run_dir = output_dir / datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -120,6 +121,7 @@ def capture_location_check(
         expected_model=expected_model,
         executable=executable,
         timeout=timeout,
+        camera_backend=camera_backend,
     )
     capture = exposure.final_capture
     if capture.decoded is None:
@@ -180,8 +182,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("location_config", type=Path, help="Required location picker JSON to check against the capture.")
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR, help="Directory for checker outputs.")
     parser.add_argument("--target-max", type=int, default=DEFAULT_TARGET_MAX, help="White point used for preview scaling.")
-    parser.add_argument("--iso", default=camera_gphoto2.DEFAULT_ISO)
-    parser.add_argument("--aperture", default=camera_gphoto2.DEFAULT_APERTURE)
+    parser.add_argument("--iso", help="Fixed ISO. Defaults to 100 locally or the current remote value.")
+    parser.add_argument("--aperture", help="Fixed aperture. Defaults to 4 locally or the current remote value.")
     parser.add_argument("--image-format", default=camera_gphoto2.DEFAULT_IMAGE_FORMAT)
     parser.add_argument("--min-shutter-speed", default=camera_gphoto2.DEFAULT_MIN_SHUTTER_SPEED)
     parser.add_argument("--max-shutter-speed", default=camera_gphoto2.DEFAULT_MAX_SHUTTER_SPEED)
@@ -191,6 +193,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--port", dest="camera_port", help="Camera USB port passed to gphoto2.")
     parser.add_argument("--camera-port", dest="camera_port", help="Camera USB port passed to gphoto2.")
     parser.add_argument("--gphoto2", default="gphoto2")
+    parser.add_argument("--camera-backend", choices=("local", "remote"), default="local")
+    parser.add_argument("--remote-env-file", type=Path, default=camera_remote.DEFAULT_ENV_FILE)
+    parser.add_argument("--remote-base-url", help=f"Override {camera_remote.BASE_URL_ENV} for the remote backend.")
     parser.add_argument(
         "--preview-source",
         choices=VISUAL_PREVIEW_SOURCE_CHOICES,
@@ -211,6 +216,15 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
+    camera_backend = (
+        None
+        if args.camera_backend == "local"
+        else camera_remote.RemoteCameraBackend.from_environment(
+            env_file=args.remote_env_file,
+            base_url=args.remote_base_url,
+            timeout=args.timeout,
+        )
+    )
     result = capture_location_check(
         args.location_config,
         output_dir=args.output_dir,
@@ -230,6 +244,7 @@ def main(argv: list[str] | None = None) -> int:
         dcraw_executable=args.dcraw,
         dcraw_white_balance=args.dcraw_white_balance,
         timeout=args.timeout,
+        camera_backend=camera_backend,
     )
     print(f"Location check overlay: {result.overlay_file}")
     print(f"Metadata: {result.metadata_file}")

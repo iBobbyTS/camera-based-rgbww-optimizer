@@ -43,6 +43,9 @@ class LocationCheckerArgsTests(unittest.TestCase):
         self.assertEqual(args.preview_source, "camera-jpeg")
         self.assertEqual(args.exiftool, "exiftool")
         self.assertEqual(args.dcraw_white_balance, "camera")
+        self.assertEqual(args.camera_backend, "local")
+        self.assertIsNone(args.iso)
+        self.assertIsNone(args.aperture)
 
 
 class LocationCheckerRenderTests(unittest.TestCase):

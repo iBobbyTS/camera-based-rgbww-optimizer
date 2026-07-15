@@ -119,6 +119,26 @@ Detect and capture:
   --image-format RAW
 ```
 
+Remote capture is an additional backend and does not change the local gphoto2
+commands above. Copy `.env.example` to `.env`, set the bridge token, then run:
+
+```bash
+.venv/bin/python -m camera_based_rgbww_optimizer.control.camera_remote \
+  --output-dir tmp/captures/remote-camera \
+  --filename-template '%Y%m%d-%H%M%S.%C'
+```
+
+`camera_remote` reads
+`CAMERA_BASED_RGBWW_OPTIMIZER_REMOTE_CAMERA_BASE_URL` and
+`CAMERA_BASED_RGBWW_OPTIMIZER_REMOTE_CAMERA_TOKEN` from the process environment
+first and the project `.env` second. It reads the exact values exposed by
+`GET /v1/config`, sends ISO/aperture/shutter settings in an authenticated
+`POST /v1/capture`, streams the response to a temporary file, and atomically
+installs the completed CR3. Omit `--iso`, `--aperture`, or `--shutter-speed` to
+keep the corresponding current remote value. A `camera_busy` response is retried
+as a bounded complete request. Neither local nor remote capture keeps a second
+copy on the camera.
+
 Decode a CR3 into linear 16-bit camera RGB:
 
 ```bash
@@ -274,6 +294,22 @@ Use the local Web UI to capture a preview and mark color-chart patches:
   --rows 4 \
   --cols 6
 ```
+
+Use the same complete auto-exposure and location workflow through the remote
+camera bridge with:
+
+```bash
+.venv/bin/python -m camera_based_rgbww_optimizer.interaction.location_picker_ui \
+  --camera-backend remote \
+  --blocks 24 \
+  --rows 4 \
+  --cols 6
+```
+
+The default backend remains `local`. In remote mode, omitted ISO and aperture
+values resolve to the current values reported by `/v1/config`; explicit values
+must exactly match the remote choices. The RAW is still decoded and analyzed on
+this machine after download.
 
 The UI serves on `127.0.0.1:8765` by default. It auto-exposes, decodes a preview,
 runs automatic block detection, then lets the user edit quadrilaterals. Confirmed

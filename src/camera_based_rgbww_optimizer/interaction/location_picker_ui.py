@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
-from camera_based_rgbww_optimizer.control import camera_gphoto2
+from camera_based_rgbww_optimizer.control import camera_gphoto2, camera_remote
 from camera_based_rgbww_optimizer.interaction import raw_visual_preview
 from camera_based_rgbww_optimizer.paths import PROJECT_ROOT, PROJECT_TMP_DIR
 
@@ -31,6 +31,7 @@ DEFAULT_MIN_SHUTTER_SPEED = "1/8000"
 DEFAULT_MAX_SHUTTER_SPEED = "30"
 DEFAULT_UI_HOST = "127.0.0.1"
 DEFAULT_UI_PORT = 8765
+CAMERA_BACKEND_CHOICES = ("local", "remote")
 DEFAULT_AUTO_DETECT_INSET_RATIO = 0.08
 COLORCHECKER_CLASSIC_ROWS = 4
 COLORCHECKER_CLASSIC_COLS = 6
@@ -1135,6 +1136,7 @@ class LocationPickerState:
                 expected_model=self.args.model,
                 executable=self.args.gphoto2,
                 timeout=self.args.timeout,
+                camera_backend=_camera_backend_from_args(self.args),
             )
             preview_decoded, preview = self._decode_visual_preview(result.final_capture.saved_file, run_dir=run_dir)
         except Exception as exc:
@@ -2163,8 +2165,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--ui-port", type=int, default=DEFAULT_UI_PORT, help="Local Web UI bind port; uses the next free port if occupied.")
     parser.add_argument("--no-browser", action="store_true", help="Do not open the local Web UI in the default browser.")
     parser.add_argument("--target-max", type=int, default=DEFAULT_TARGET_MAX)
-    parser.add_argument("--iso", default=DEFAULT_ISO)
-    parser.add_argument("--aperture", default=DEFAULT_APERTURE)
+    parser.add_argument("--iso", help="Fixed ISO. Defaults to 100 locally or the current remote value.")
+    parser.add_argument("--aperture", help="Fixed aperture. Defaults to 4 locally or the current remote value.")
     parser.add_argument("--min-shutter-speed", default=DEFAULT_MIN_SHUTTER_SPEED)
     parser.add_argument("--max-shutter-speed", default=DEFAULT_MAX_SHUTTER_SPEED)
     parser.add_argument("--max-exposure-trials", type=int, default=DEFAULT_MAX_EXPOSURE_TRIALS)
@@ -2179,6 +2181,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--port", dest="camera_port", help="Camera USB port passed to gphoto2.")
     parser.add_argument("--camera-port", dest="camera_port", help="Camera USB port passed to gphoto2.")
     parser.add_argument("--gphoto2", default="gphoto2")
+    parser.add_argument("--camera-backend", choices=CAMERA_BACKEND_CHOICES, default="local")
+    parser.add_argument("--remote-env-file", type=Path, default=camera_remote.DEFAULT_ENV_FILE)
+    parser.add_argument("--remote-base-url", help=f"Override {camera_remote.BASE_URL_ENV} for the remote backend.")
     parser.add_argument(
         "--preview-source",
         choices=VISUAL_PREVIEW_SOURCE_CHOICES,
@@ -2195,6 +2200,16 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--timeout", type=float, default=90.0)
     return parser.parse_args(argv)
+
+
+def _camera_backend_from_args(args: argparse.Namespace) -> camera_gphoto2.CameraBackend | None:
+    if getattr(args, "camera_backend", "local") == "local":
+        return None
+    return camera_remote.RemoteCameraBackend.from_environment(
+        env_file=getattr(args, "remote_env_file", camera_remote.DEFAULT_ENV_FILE),
+        base_url=getattr(args, "remote_base_url", None),
+        timeout=args.timeout,
+    )
 
 
 def main(argv: list[str] | None = None) -> int:

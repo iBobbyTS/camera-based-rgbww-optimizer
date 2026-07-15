@@ -48,6 +48,9 @@ class LocationArgsTests(unittest.TestCase):
         self.assertEqual(default_args.dcraw, "dcraw_emu")
         self.assertEqual(default_args.dcraw_white_balance, "camera")
         self.assertEqual(default_args.metering_mode, camera_gphoto2.METERING_MODE_FULL)
+        self.assertEqual(default_args.camera_backend, "local")
+        self.assertIsNone(default_args.iso)
+        self.assertIsNone(default_args.aperture)
         self.assertEqual(custom_args.max_exposure_trials, 3)
         self.assertEqual(custom_args.ui_port, 0)
         self.assertEqual(custom_args.camera_port, "usb:001,010")
@@ -56,6 +59,25 @@ class LocationArgsTests(unittest.TestCase):
         self.assertEqual(custom_args.preview_source, "dcraw")
         self.assertEqual(custom_args.dcraw, "/opt/bin/dcraw_emu")
         self.assertEqual(custom_args.dcraw_white_balance, "auto")
+
+    def test_remote_backend_arguments_build_remote_camera_backend(self):
+        args = location_picker_ui.parse_args(
+            ["--camera-backend", "remote", "--remote-base-url", "http://camera.local:8088"]
+        )
+        sentinel = object()
+        with mock.patch.object(
+            location_picker_ui.camera_remote.RemoteCameraBackend,
+            "from_environment",
+            return_value=sentinel,
+        ) as factory:
+            backend = location_picker_ui._camera_backend_from_args(args)
+
+        self.assertIs(backend, sentinel)
+        factory.assert_called_once_with(
+            env_file=location_picker_ui.camera_remote.DEFAULT_ENV_FILE,
+            base_url="http://camera.local:8088",
+            timeout=args.timeout,
+        )
 
 
 class LocationPreviewTests(unittest.TestCase):

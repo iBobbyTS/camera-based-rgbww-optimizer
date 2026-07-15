@@ -12,7 +12,7 @@ import tempfile
 from dataclasses import dataclass
 from fractions import Fraction
 from pathlib import Path
-from typing import Any, Callable, Sequence
+from typing import Any, Callable, Protocol, Sequence
 
 from camera_based_rgbww_optimizer.paths import PROJECT_TMP_DIR
 from camera_based_rgbww_optimizer.utils import location_regions
@@ -210,6 +210,32 @@ Decoder = Callable[..., DecodeResult]
 ExposureMeter = Callable[[Path], ExposureMeasurement]
 
 
+class CameraBackend(Protocol):
+    def connect(self) -> CameraConnection: ...
+
+    def resolve_capture_settings(
+        self,
+        *,
+        iso: str | None,
+        aperture: str | None,
+        image_format: str,
+    ) -> CaptureSettings: ...
+
+    def read_shutter_current_and_choices(self, connection: CameraConnection) -> tuple[str, list[str]]: ...
+
+    def read_current_shutter(self, connection: CameraConnection) -> str: ...
+
+    def capture(
+        self,
+        *,
+        output_dir: str | Path,
+        filename_template: str,
+        settings: CaptureSettings,
+        connection: CameraConnection,
+        allow_bulb: bool,
+    ) -> CaptureResult: ...
+
+
 def run_gphoto2(
     args: Sequence[str],
     *,
@@ -387,7 +413,6 @@ def capture_image(
     settings: CaptureSettings = CaptureSettings(),
     port: str | None = None,
     expected_model: str = DEFAULT_CAMERA_MODEL,
-    keep_on_camera: bool = False,
     allow_bulb: bool = False,
     verify_saved: bool = True,
     runner: Runner | None = None,
@@ -434,8 +459,6 @@ def capture_image(
         "--filename",
         filename,
     ]
-    if keep_on_camera:
-        args.append("--keep")
     output = _run(args, runner=runner, executable=executable, timeout=timeout)
     saved_file = _parse_saved_file(output.stdout)
     if verify_saved and not saved_file.exists():
@@ -447,6 +470,78 @@ def capture_image(
         saved_file=saved_file,
         stdout=output.stdout,
     )
+
+
+@dataclass(frozen=True)
+class LocalCameraBackend:
+    expected_model: str = DEFAULT_CAMERA_MODEL
+    port: str | None = None
+    runner: Runner | None = None
+    executable: str = "gphoto2"
+    timeout: float = 60.0
+
+    def connect(self) -> CameraConnection:
+        if self.port is not None:
+            return CameraConnection(model=self.expected_model, port=self.port)
+        return auto_detect_camera(
+            expected_model=self.expected_model,
+            runner=self.runner,
+            executable=self.executable,
+            timeout=self.timeout,
+        )
+
+    def resolve_capture_settings(
+        self,
+        *,
+        iso: str | None,
+        aperture: str | None,
+        image_format: str,
+    ) -> CaptureSettings:
+        return CaptureSettings(
+            iso=iso or DEFAULT_ISO,
+            aperture=aperture or DEFAULT_APERTURE,
+            shutter_speed=DEFAULT_SHUTTER_SPEED,
+            image_format=image_format,
+        )
+
+    def read_shutter_current_and_choices(self, connection: CameraConnection) -> tuple[str, list[str]]:
+        return read_config_current_and_choices(
+            connection.port,
+            CONFIG_SHUTTER_SPEED,
+            runner=self.runner,
+            executable=self.executable,
+            timeout=self.timeout,
+        )
+
+    def read_current_shutter(self, connection: CameraConnection) -> str:
+        return read_current_value(
+            connection.port,
+            CONFIG_SHUTTER_SPEED,
+            runner=self.runner,
+            executable=self.executable,
+            timeout=self.timeout,
+        )
+
+    def capture(
+        self,
+        *,
+        output_dir: str | Path,
+        filename_template: str,
+        settings: CaptureSettings,
+        connection: CameraConnection,
+        allow_bulb: bool,
+    ) -> CaptureResult:
+        return capture_image(
+            output_dir=output_dir,
+            filename_template=filename_template,
+            settings=settings,
+            port=connection.port,
+            expected_model=connection.model,
+            allow_bulb=allow_bulb,
+            runner=self.runner,
+            executable=self.executable,
+            timeout=self.timeout,
+        )
 
 
 def decode_raw_image(
@@ -583,8 +678,8 @@ def auto_expose_capture(
     output_dir: str | Path,
     filename_template: str = DEFAULT_FILENAME_TEMPLATE,
     target_max: int = DEFAULT_AUTO_EXPOSURE_MAX,
-    iso: str = DEFAULT_ISO,
-    aperture: str = DEFAULT_APERTURE,
+    iso: str | None = None,
+    aperture: str | None = None,
     image_format: str = DEFAULT_IMAGE_FORMAT,
     min_shutter_speed: str = DEFAULT_MIN_SHUTTER_SPEED,
     max_shutter_speed: str = DEFAULT_MAX_SHUTTER_SPEED,
@@ -599,10 +694,10 @@ def auto_expose_capture(
     port: str | None = None,
     expected_model: str = DEFAULT_CAMERA_MODEL,
     allow_bulb: bool = False,
-    keep_on_camera: bool = False,
     runner: Runner | None = None,
     executable: str = "gphoto2",
     timeout: float = 60.0,
+    camera_backend: CameraBackend | None = None,
     decoder: Decoder = decode_raw_image,
     meter_fn: ExposureMeter | None = None,
     preserve_failed_trial_dir: str | Path | None = None,
@@ -617,46 +712,33 @@ def auto_expose_capture(
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
 
-    connection = (
-        CameraConnection(model=expected_model, port=port)
-        if port is not None
-        else auto_detect_camera(
-            expected_model=expected_model,
-            runner=runner,
-            executable=executable,
-            timeout=timeout,
-        )
+    backend = camera_backend or LocalCameraBackend(
+        expected_model=expected_model,
+        port=port,
+        runner=runner,
+        executable=executable,
+        timeout=timeout,
+    )
+    connection = backend.connect()
+    base_settings = backend.resolve_capture_settings(
+        iso=iso,
+        aperture=aperture,
+        image_format=image_format,
     )
     if shutter_speeds is None:
-        current_shutter, shutter_choices = read_config_current_and_choices(
-            connection.port,
-            CONFIG_SHUTTER_SPEED,
-            runner=runner,
-            executable=executable,
-            timeout=timeout,
-        )
+        current_shutter, shutter_choices = backend.read_shutter_current_and_choices(connection)
         candidates = _bounded_shutter_candidates(
             shutter_choices,
             min_shutter_speed=min_shutter_speed,
             max_shutter_speed=max_shutter_speed,
         )
     else:
-        candidates = _select_shutter_candidates(
-            connection.port,
+        candidates = _bounded_shutter_candidates(
+            shutter_speeds,
             min_shutter_speed=min_shutter_speed,
             max_shutter_speed=max_shutter_speed,
-            shutter_speeds=shutter_speeds,
-            runner=runner,
-            executable=executable,
-            timeout=timeout,
         )
-        current_shutter = read_current_value(
-            connection.port,
-            CONFIG_SHUTTER_SPEED,
-            runner=runner,
-            executable=executable,
-            timeout=timeout,
-        )
+        current_shutter = backend.read_current_shutter(connection)
 
     candidate_seconds = tuple(_parse_shutter_seconds(candidate) for candidate in candidates)
     try:
@@ -684,21 +766,18 @@ def auto_expose_capture(
                 output_dir=trial_dir,
                 filename_template=f"trial-{len(trials):03d}.cr3",
                 settings=CaptureSettings(
-                    iso=iso,
-                    aperture=aperture,
+                    iso=base_settings.iso,
+                    aperture=base_settings.aperture,
                     shutter_speed=shutter_speed,
-                    image_format=image_format,
+                    image_format=base_settings.image_format,
                 ),
                 connection=connection,
+                camera_backend=backend,
                 target_max=target_max,
                 decode_output_dir=trial_decode_dir,
                 decode_formats=("npy",),
                 metering_regions=metering_regions,
                 allow_bulb=allow_bulb,
-                keep_on_camera=keep_on_camera,
-                runner=runner,
-                executable=executable,
-                timeout=timeout,
                 decoder=decoder,
                 meter_fn=meter_fn,
                 delete_after=True,
@@ -746,22 +825,17 @@ def auto_expose_capture(
     while final_index not in tried_final_indices and len(trials) + len(rejected_finals) + 1 <= max_captures:
         tried_final_indices.add(final_index)
         shutter_speed = candidates[final_index]
-        final_result = capture_image(
+        final_result = backend.capture(
             output_dir=output_path,
             filename_template=_numbered_filename_template(filename_template, len(tried_final_indices) - 1),
             settings=CaptureSettings(
-                iso=iso,
-                aperture=aperture,
+                iso=base_settings.iso,
+                aperture=base_settings.aperture,
                 shutter_speed=shutter_speed,
-                image_format=image_format,
+                image_format=base_settings.image_format,
             ),
-            port=connection.port,
-            expected_model=connection.model,
-            keep_on_camera=keep_on_camera,
+            connection=connection,
             allow_bulb=allow_bulb,
-            runner=runner,
-            executable=executable,
-            timeout=timeout,
         )
         decoded: DecodeResult | None = None
         measurement: ExposureMeasurement | None = None
@@ -1111,15 +1185,12 @@ def _capture_decode_trial(
     filename_template: str,
     settings: CaptureSettings,
     connection: CameraConnection,
+    camera_backend: CameraBackend,
     target_max: int,
     decode_output_dir: Path,
     decode_formats: Sequence[str],
     metering_regions: Sequence[dict[str, Any]] | None,
     allow_bulb: bool,
-    keep_on_camera: bool,
-    runner: Runner | None,
-    executable: str,
-    timeout: float,
     decoder: Decoder,
     meter_fn: ExposureMeter | None,
     delete_after: bool,
@@ -1128,17 +1199,12 @@ def _capture_decode_trial(
     capture: CaptureResult | None = None
     decoded: DecodeResult | None = None
     try:
-        capture = capture_image(
+        capture = camera_backend.capture(
             output_dir=output_dir,
             filename_template=filename_template,
             settings=settings,
-            port=connection.port,
-            expected_model=connection.model,
-            keep_on_camera=keep_on_camera,
+            connection=connection,
             allow_bulb=allow_bulb,
-            runner=runner,
-            executable=executable,
-            timeout=timeout,
         )
         measurement: ExposureMeasurement | None = None
         if meter_fn is None:
@@ -1439,7 +1505,6 @@ def main(argv: list[str] | None = None) -> int:
     capture_parser.add_argument("--aperture", default=DEFAULT_APERTURE)
     capture_parser.add_argument("--shutter-speed", default=DEFAULT_SHUTTER_SPEED)
     capture_parser.add_argument("--image-format", default=DEFAULT_IMAGE_FORMAT)
-    capture_parser.add_argument("--keep", action="store_true", help="Keep the captured file on the camera.")
     capture_parser.add_argument("--allow-bulb", action="store_true", help="Allow capture when readback is bulb.")
     capture_parser.add_argument(
         "--decode-linear",
@@ -1526,7 +1591,6 @@ def main(argv: list[str] | None = None) -> int:
         type=Path,
         help="Location picker JSON used when --metering-mode=location.",
     )
-    auto_parser.add_argument("--keep", action="store_true", help="Keep the final captured file on the camera.")
 
     args = parser.parse_args(argv)
 
@@ -1550,7 +1614,6 @@ def main(argv: list[str] | None = None) -> int:
                 ),
                 port=args.port,
                 expected_model=args.model,
-                keep_on_camera=args.keep,
                 allow_bulb=args.allow_bulb,
                 executable=args.gphoto2,
                 timeout=args.timeout,
@@ -1603,7 +1666,6 @@ def main(argv: list[str] | None = None) -> int:
                 port=args.port,
                 expected_model=args.model,
                 allow_bulb=False,
-                keep_on_camera=args.keep,
                 executable=args.gphoto2,
                 timeout=args.timeout,
             )
