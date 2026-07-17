@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "phase": "P4",
+  "branch": "C-F",
+  "target_grid": {
+    "cct_K": [1800, 3200, 5600, 20000],
+    "gm_raw": [0, 100, 200]
+  },
+  "features": {
+    "planes": ["R", "G1", "G2", "B"],
+    "neutral_blocks": [2, 3, 4, 5, 6],
+    "training_blocks": [7, 9, 10, 12, 13, 15, 16, 18, 19, 21, 23],
+    "holdout_blocks": [8, 11, 14, 17, 20, 22, 24],
+    "diagnostic_only_blocks": [1]
+  },
+  "objective": {
+    "ordering": ["neutral_chroma_hard_gate", "white_point_hard_gate", "training_color", "holdout_color", "regularization"],
+    "neutral_chroma_tolerance_source": "paired_repeatability_3sigma",
+    "neutral_chroma_absolute_floor": 0.002,
+    "white_point_tolerance": {
+      "minimum_cct_K": 25.0,
+      "cct_mired": 1.0,
+      "duv": 0.0005
+    },
+    "global_brightness_scale": "nonnegative_least_squares"
+  },
+  "solver": {
+    "max_code": 4095,
+    "max_rounds": 16,
+    "probe_step_code": 256,
+    "max_step_code": 768,
+    "damping": 0.05,
+    "active_channel_policy": "enumerate_and_keep_one_channel_at_max",
+    "fallback": "white_point_feedback_with_multipatch_candidate_ranking"
+  },
+  "confirmation": {
+    "independent_repeats": 2,
+    "off_seconds": 1.0,
+    "settle_seconds": 60.0
+  }
+}

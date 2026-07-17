@@ -539,13 +539,17 @@ def load_npy(path: Path) -> Any:
     return np.load(path)
 
 
-def _load_rawpy_rgb_xyz_matrix(raw_file: Path, np: Any) -> Any:
+def load_rawpy_rgb_xyz_matrix(raw_file: Path, np_module: Any | None = None) -> Any:
+    np = np_module or import_numpy()
     try:
         import rawpy
     except ImportError as exc:
         raise RuntimeError("rawpy is required to estimate CCT/Duv from RAW captures") from exc
     with rawpy.imread(str(raw_file)) as raw:
         return np.asarray(raw.rgb_xyz_matrix[:3], dtype="float64")
+
+
+_load_rawpy_rgb_xyz_matrix = load_rawpy_rgb_xyz_matrix
 
 
 def _planck_xy(temperature: float, np: Any) -> tuple[float, float]:
