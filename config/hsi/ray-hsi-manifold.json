@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "status": "measured_gate5_frozen",
+  "observer_scope": "fixed Canon R6 Mark III native Bayer and fixed ColorChecker geometry",
+  "inputs": {
+    "run": {
+      "path": "/Volumes/4T/temp/rgbww-optimizer/ray-hsi-manifold/p6-ray-hsi-remote-20260717-0403-retry1",
+      "run_json_sha256": "1c208227e453992a443a782f57693d56adaa3752271f88254dd2a370d7d3a357",
+      "plan_json_sha256": "63f4b6127d94969a168d0c2894deff7b0e2c235d333dac8b2f2421fb220a20ce"
+    },
+    "analysis": {
+      "path": "/Volumes/4T/temp/rgbww-optimizer/ray-hsi-manifold/p6-ray-hsi-remote-20260717-0403-retry1/ray-hsi-analysis.json",
+      "sha256": "39dc23229be42615669ae843773c1f04972802b54635ccf36b7ee2287d53e034"
+    },
+    "location_config_sha256": "21f02328bff8b5ffcfc10c767e15cdefbf8bb883bc352eff6f0fb7ade38a8f80",
+    "raw_response_model": "identity",
+    "feature_planes": ["R", "G1", "G2", "B"]
+  },
+  "grid": {
+    "hue_degrees": [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330],
+    "saturation_percent": [0, 5, 20, 50, 80, 95, 100],
+    "intensity_percent": 100
+  },
+  "gate5": {
+    "decision": "full_periodic_2d_HB",
+    "sat0": {
+      "shape_policy": "pooled_zero_anchor",
+      "brightness_policy": "preserve_periodic_hue_dependent_scale",
+      "maximum_scale_removed_hue_effect": 0.0011702077407646117,
+      "three_sigma_repeatability_proxy": 0.001481667587401286,
+      "shape_hue_effect_exceeds_3sigma": false
+    },
+    "mode_relationship": {
+      "hsi_and_rgb_share_direction": false,
+      "policy": "independent_models",
+      "endpoint_scale_removed_residual_minimum": 0.007922609207419098,
+      "endpoint_scale_removed_residual_maximum": 0.18538398280402324
+    },
+    "separability": {
+      "accepted": false,
+      "repeatability_p90": 0.0017936942739102187,
+      "two_x_repeatability_threshold": 0.0035873885478204374,
+      "pooled_sat0_within_threshold_fraction": 0.45,
+      "periodic_sat0_within_threshold_fraction": 0.4666666666666667,
+      "periodic_sat0_residual_p90": 0.02474725719459633,
+      "periodic_sat0_residual_maximum": 0.052402329350743584
+    },
+    "radial_progress": {
+      "all_hues_monotonic": true,
+      "interpolation": "piecewise_linear_no_overshoot"
+    },
+    "hue_interpolation": {
+      "type": "periodic_piecewise_linear",
+      "wrap": "360_equals_0"
+    },
+    "adaptive_refinement_regions": [
+      {"hue_start": 330, "hue_end": 90, "saturation_values": [20, 50, 80, 95], "wraps_zero": true},
+      {"hue_start": 240, "hue_end": 330, "saturation_values": [20, 50, 80], "wraps_zero": false}
+    ],
+    "targeted_resample_before_branch": false,
+    "reason": "nonseparability is broad across 10 of 12 hues and all intermediate saturation bands, not a local outlier"
+  },
+  "runtime_contract": {
+    "target_vectors": "load accepted native-Bayer observations from the frozen P6 run",
+    "rejected_features": "excluded per frozen RAW observer quality gate",
+    "absolute_brightness_matched": false,
+    "strip_hsi_candidate": "not_yet_generated"
+  }
+}
