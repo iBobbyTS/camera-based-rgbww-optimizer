@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "phase": "P7-pilot",
+  "branch": "full_periodic_2d_HB",
+  "targets": {
+    "sat0": [{"hue": 0, "sat": 0}],
+    "hue_degrees": [0, 60, 120, 180, 240, 300],
+    "saturation_percent": [50, 100],
+    "intensity_percent": 100
+  },
+  "solver": {
+    "max_code": 4095,
+    "max_rounds": 12,
+    "probe_step_code": 256,
+    "max_step_code": 768,
+    "damping": 0.05,
+    "active_channel_policy": "enumerate_seed_and_keep_one_channel_at_max"
+  },
+  "confirmation": {
+    "independent_repeats": 2,
+    "off_seconds": 1.0,
+    "feedback_settle_seconds": 1.0,
+    "settled_seconds": 60.0
+  },
+  "measurement": {
+    "required_features": "global intersection of accepted features across frozen P6 HSI nodes",
+    "weak_signal_reacquire_factor": 1.25,
+    "absolute_brightness_matched": false
+  },
+  "gamut": {
+    "faithful": "two settled confirmations pass Hue, Ray-equivalent SAT, and orthogonal gates",
+    "pilot_boundary": "SAT50 and SAT100 classify each primary Hue before the full boundary search",
+    "unconfirmed": "preserve best candidate and do not call it faithful"
+  }
+}
