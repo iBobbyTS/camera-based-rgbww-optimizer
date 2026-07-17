@@ -8,6 +8,8 @@
 
 **不得跨越：** 不得根据最终验证回调 pilot 权重；不得在 70/70 独立验证前安装；不得自行开始 HSI。
 
+**最终状态（2026-07-17）：** `skipped`。Gate-3 未给出 `expand_to_70`；P4 在冻结测量合同下有 5/12 不可观测点并存在多个 neutral hard-gate 失败。Gate-4 直接冻结为 `retain_previous_candidate; approve_stage_5`：保留既有外置 white-only 70 点候选，不生成 P5 multipatch 候选，不覆盖默认 LUT，进入 Ray-only HSI 表征。
+
 ## 执行顺序
 
 1. 实现全局求解、约束和合成测试；新增 SciPy 必须先获用户批准。

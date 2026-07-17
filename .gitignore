@@ -8,10 +8,16 @@ __pycache__/
 firmware/esphome/build/
 firmware/esphome/.esphome/
 firmware/esphome/secrets.yaml
-tmp/
+tmp/*
+!tmp/*.zsh
 config/*
 !config/camera/
 config/camera/*
 !config/camera/raw-observer.json
+!config/camera/cct-multipatch-pilot.json
+!config/hsi/
+config/hsi/*
+!config/hsi/ray-hsi-manifold.json
+!config/hsi/strip-hsi-pilot.json
 # 人工编写的测试代码。
 test.py

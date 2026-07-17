@@ -201,7 +201,10 @@ uses the saved color-chart regions, supports exposure normalization and an
 explicit ambient RAW, and writes JSON only. It does not demosaic and does not
 create `.npy` files. The companion offline analysis module derives repeatability,
 exposure-linearity, and G1/G2 evidence from those reports; it does not set
-empirical quality thresholds automatically.
+empirical quality thresholds automatically. The completed P1 decision uses the
+identity RAW response only inside `1.0x..1.25x` of each source's auto-exposure
+baseline. It keeps `R/G1/G2/B` separate because the two green planes have small
+but repeatable patch/source dependence.
 
 Measurement normalization must use the exposure duration recorded in the CR3,
 not only the shutter label requested through gphoto2. Canon MakerNote
@@ -223,12 +226,16 @@ I/O and writes only `plan.json`:
   --camera-backend remote \
   --location-config config/location/locations-20260714-211759.json \
   --target-max 19661 \
+  --min-shutter-speed 1/16000 \
   --linearity-factors 0.5,1,1.5 \
   --preflight-only \
   --dry-run
 ```
 
-The plan freezes the camera backend plus the location path and SHA-256. Dry-run
+The plan freezes the camera backend, auto-exposure shutter bounds, plus the
+location path and SHA-256. Use `--min-shutter-speed 1/16000` when the 100% Ray
+baseline remains above the requested target at `1/8000`; the selected value
+must be supported by the remote camera config. Dry-run
 does not load `.env`, access the network, or call either light. Real acquisition
 requires both `--execute` and `--allow-high-output`; it uses
 the native Bayer exposure meter, emits JSON-only patch reports, and keeps Ray
@@ -302,6 +309,262 @@ diagnostic branch only when corrected evidence cannot distinguish camera respons
 from source response. Its conservative default Ray intensity is `1%`; every real
 run still requires a clipping-safe preflight and the shell cleanup wrapper.
 
+If P1-D shows the same shutter-dependent shape residual for Ray and strip, fit a
+candidate-only monotonic response model from the completed full P1 run:
+
+```bash
+.venv/bin/python -m camera_based_rgbww_optimizer.optimization.analyze_raw_response_candidate \
+  /Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/<training-run>
+```
+
+The output `raw-response-candidate.json` compares the identity model, the fitted
+`g(y)=y*(1+a*y+b*y^2)` candidate, and an uncorrected lower exposure envelope.
+It requires recorded exposure provenance, guarantees `g(0)=0` and a positive
+derivative on `0..1`, records the observed training range, and rejects use outside
+that range. This artifact never changes retained RAW reports or
+`config/camera/raw-observer.json`. A complete P1 run from another natural day,
+with the same remote backend and frozen inputs, is mandatory holdout evidence
+before any correction schema may be proposed.
+
+Evaluate the frozen coefficients on that independent run; do not omit
+`--candidate`, because the default mode fits a new training candidate:
+
+```bash
+.venv/bin/python -m camera_based_rgbww_optimizer.optimization.analyze_raw_response_candidate \
+  /Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/<holdout-run> \
+  --candidate /Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/<training-run>/raw-response-candidate.json \
+  --candidate-sha256 <frozen-sha256>
+```
+
+This verifies the frozen candidate file hash, rejects the original training input
+by evidence hash, and refuses to apply
+the model when holdout linearity signals exceed its frozen application range.
+For a PLAN 7.5-B boundary-only confirmation run, add
+`--repeatability-run /path/to/completed-full-p1`; only paired-repeat noise is
+borrowed from that full run, while all boundary linearity centers remain from the
+new run. The location hashes must match.
+
+Generate a bounded 15-capture confirmation plan with two factors and three
+repeats per source using `measure_raw_observer_validation
+--boundary-confirmation-only --linearity-factors 1,1.25
+--linearity-repeats 3`. This mode still captures ambient and independent Ray/strip
+auto-exposure baselines, retains the normal off/on isolation protocol, records
+`paired_repeats=0`, and requires the same real-run wrapper and cleanup safeguards.
+The 2026-07-16 boundary run passed with identity RAW: the strip maximum was
+`2.903` repeatability sigma. The frozen polynomial candidate was rejected for
+installation because it raised that maximum to `3.182` sigma despite improving
+the aggregate P95. `config/camera/raw-observer.json` therefore records identity,
+the bounded envelope, a `0.05` near-noise cutoff, and `combine_green=false`.
+
+## Five-Channel Chart Response Basis
+
+After Gate-1, build the P2 plan without device access:
+
+```bash
+.venv/bin/python -m camera_based_rgbww_optimizer.optimization.measure_chart_response_basis \
+  --baseline-lut /Volumes/4T/temp/rgbww-optimizer/white-lut-calibration/14x5-off-cycle-refined-v2-20260713/white-lut-calibration.json \
+  --camera-backend remote \
+  --location-config config/location/locations-20260714-211759.json \
+  --dry-run
+```
+
+The immutable plan contains 58 captures: one ambient, ten channel-specific
+protection/weak auto-exposure baselines, one 5600K/GM100 anchor baseline, 45
+formal off/on captures for five channels at target codes 1024/2048/4095, and
+one anchor check after state 8. It rejects non-remote execution, a non-identity
+RAW observer, combined green, or an observer config without the validated
+`1.0x..1.25x` envelope. Real acquisition must use
+`tmp/run-chart-response-basis.zsh`, which adds an independent shell trap to the
+shared Python cleanup.
+
+After a completed run, fit the three empirical bases offline:
+
+```bash
+.venv/bin/python -m camera_based_rgbww_optimizer.optimization.analyze_chart_response_basis \
+  /Volumes/4T/temp/rgbww-optimizer/chart-response-basis/<run-id>
+```
+
+The analysis uses only accepted `R/G1/G2/B` observations, robustly centers the
+three repeats, divides each column by its target code fraction, and reports SVD,
+rank, condition number, channel-column angles, bootstrap intervals, feature
+weights, rejected observations, cross-level shape differences, repeatability,
+and anchor shape drift. A rejected low-signal cell may borrow the nearest
+accepted level from the same channel at weight `0.25` for matrix diagnostics;
+features with no accepted level are censored zero at weight `0`. Neither enters
+the direct cross-level comparison.
+
+The completed P2 run at
+`/Volumes/4T/temp/rgbww-optimizer/chart-response-basis/p2-five-channel-basis-20260716-005935`
+has 58/58 recorded-exposure captures and three rank-5 bases with condition
+numbers `121.68..125.30`. All five channels have repeatable level-dependent
+shape, so Stage 2 selected B-B with piecewise-linear normalized columns at
+codes 1024/2048/4095.
+
+Build the P3 held-out mixture plan without device access:
+
+```bash
+.venv/bin/python -m camera_based_rgbww_optimizer.optimization.measure_chart_basis_mixtures \
+  --basis-analysis /Volumes/4T/temp/rgbww-optimizer/chart-response-basis/p2-five-channel-basis-20260716-005935/basis-analysis.json \
+  --baseline-lut /Volumes/4T/temp/rgbww-optimizer/white-lut-calibration/14x5-off-cycle-refined-v2-20260713/white-lut-calibration.json \
+  --camera-backend remote \
+  --location-config config/location/locations-20260714-211759.json \
+  --dry-run
+```
+
+The P3 plan freezes 24 unique commands across dominant-channel, white+RGB,
+high-load, LUT-nearby, and low/mid Latin-hypercube categories. Each command has
+two independent off/on captures; protection/weak exposure baselines and anchor
+checks bring the complete plan to 55 captures. Real acquisition must use
+`tmp/run-chart-basis-mixtures.zsh` for the independent shell cleanup trap.
+
+Analyze a completed P3 run only against the frozen P2 artifact and hash:
+
+```bash
+.venv/bin/python -m camera_based_rgbww_optimizer.optimization.analyze_chart_basis_validation \
+  /Volumes/4T/temp/rgbww-optimizer/chart-basis-mixtures/<run-id> \
+  --basis-analysis /Volumes/4T/temp/rgbww-optimizer/chart-response-basis/p2-five-channel-basis-20260716-005935/basis-analysis.json \
+  --basis-sha256 <frozen-sha256>
+```
+
+The report separates absolute response from global-scale-removed shape error,
+combines P2 basis-center and P3 repeat-center uncertainty, and summarizes
+residuals by category, active-set size, load, order, neutral/chromatic patches,
+and CFA plane. It leaves the M-A..M-E decision to Gate-2.
+
+The completed P3 run selected M-E. No held-out mixture had at least 80% of
+features within two combined sigmas; sample shape P95 had a 6.43% median and
+62.77% maximum, while the final anchor shape drift was only 0.281% P95. The
+error was broad and not load-correlated, so no global load or interaction model
+is installed. The empirical basis is seed-only for the P4 C-F local camera
+feedback path; the existing white LUT and white-point feedback remain valid.
+
+P4 freezes its 4x3 pilot contract in
+`config/camera/cct-multipatch-pilot.json`. Build the offline plan with:
+
+```bash
+.venv/bin/python -m camera_based_rgbww_optimizer.optimization.measure_cct_multipatch_pilot \
+  --dry-run \
+  --run-name p4-offline-preflight
+```
+
+The dry-run verifies the frozen P2 basis hash, latest location hash, identity
+RAW observer, best external 70-point LUT, 12 targets, and the fixed 92-feature
+neutral/training/holdout split. It records the seven formal A/B captures per
+target and both cleanup requirements without loading remote credentials or
+creating a camera backend. Real P4 acquisition requires
+`--execute --allow-high-output --camera-backend remote` and must run through
+`tmp/run-cct-multipatch-pilot.zsh`; the runner rechecks frozen input hashes,
+records remote provenance and failures, and has Python cleanup in addition to
+the wrapper's shell trap. The multipatch objective is lexicographic: neutral chroma and the
+existing CCT/Duv limits are hard gates before training color, holdout color,
+and regularization can affect candidate ranking. A candidate must also rank
+strictly better than the same-run baseline center before it is confirmed. If
+feedback cannot improve a point, the runner still captures two 60-second
+settled final-verification samples for the Gate-3 failure branch.
+
+After the wrapper has exited and both cleanup files exist, analyze the complete
+pilot with:
+
+```bash
+.venv/bin/python -m camera_based_rgbww_optimizer.optimization.analyze_cct_multipatch_pilot \
+  /Volumes/4T/temp/rgbww-optimizer/cct-multipatch-pilot/<run-id>
+```
+
+The analyzer refuses incomplete runs, `failure.json`, missing/empty RAW files,
+non-recorded exposure, retained `.npy`, or either failed cleanup layer. It uses
+the confirmed settled pair, or the explicit final-verification pair for a
+non-converged point, and reports baseline-to-candidate training/holdout
+mean/P90/worst improvement against same-run three-sigma repeatability. It also
+reports white-point non-degradation, hard-gate failures, command continuity and
+RGB use. It produces Gate-3 evidence but never selects C-A..C-F or expands the
+grid automatically.
+
+The completed P4 retry9 produced 12 target rows: seven evaluable and five
+`measurement_unreachable`. On the evaluable subset, all training and holdout
+mean/P90/maximum improvements exceeded same-run three-sigma repeatability and
+white points were non-worse. However, an interior `5600K/GM100` target was not
+observable under the frozen RAW envelope, and three GM0 targets failed the
+settled neutral hard gate. Gate 3 therefore stopped before P5: keep the current
+external white-only 70-point candidate, use multipatch as diagnostics only,
+do not overwrite the default LUT, and proceed to Ray-only HSI
+characterization.
+
+If a P4 RAW has only near-noise quality failures while valid-pixel,
+nonfinite, and clipping gates all pass, the runner reacquires that exact
+source/command once at `1.25x` exposure, inside the P1-validated envelope.
+The native values remain exposure-normalized. It does not widen observer
+thresholds, censor the feature, or retry pixel-count/clipping/nonfinite and
+mixed-quality failures; those still fail the run and enter both cleanup
+layers. If a Ray reference remains a pure weak-signal rejection after the
+single `1.25x` reacquisition, or the strip cannot establish the three-sample
+baseline under the same bound, the runner records that target as
+`measurement_unreachable` with both capture IDs and the rejected features,
+then continues the frozen 12-target acquisition. Such a point is excluded from
+numerical aggregates, makes C-A impossible, and is reported as C-D evidence;
+it is not treated as a successful optimization or used to widen the validated
+exposure envelope.
+During local feedback, a pure weak-signal rejection after the bounded
+reacquisition invalidates that candidate only. The feedback loop records the
+rejection and tries `0.5` and `0.25` trust-region backtracks from the current
+valid command; rejected observations never enter samples or update the
+Jacobian. If all backtracks fail, the point keeps its best valid command and
+uses the existing settled final-verification path. A rejected confirmation is
+handled as a failed confirmation and may trigger thermal rebase. Setup/probe
+or final-verification observations that remain unmeasurable make the target
+`measurement_unreachable`, while mixed quality failures still fail the run.
+
+## Ray HSI Manifold
+
+Stage 5 first characterizes Ray120c itself; it does not control or fit the
+RGBWW strip. Build the immutable P6 plan offline with:
+
+```bash
+.venv/bin/python -m camera_based_rgbww_optimizer.optimization.measure_ray_hsi_manifold \
+  --dry-run \
+  --camera-backend remote \
+  --location-config config/location/locations-20260714-211759.json
+```
+
+The plan contains 73 unique base states and 106 recorded captures: the 12x6
+HSI Hue/SAT grid at INT100, SAT=0 repeats at six primary hues with five total
+Hue-0 anchors, repeated primary HSI SAT100 endpoints, RGB R/Y/G/C/B/M pairs,
+and one ambient frame. Every unique Ray state auto-exposes independently;
+repeat captures reuse only that exact state's shutter cache. Every HSI or RGB
+command is followed by exact mode readback before the 60-second settled
+capture. The strip is explicitly turned off before every frame, and both
+devices are still shut down by Python cleanup plus the shell trap.
+
+Real acquisition must use a fresh run directory and the wrapper:
+
+```bash
+tmp/run-ray-hsi-manifold.zsh \
+  /Volumes/4T/temp/rgbww-optimizer/ray-hsi-manifold/<run-id>
+```
+
+After a completed run with both cleanup files, analyze it offline with:
+
+```bash
+.venv/bin/python -m camera_based_rgbww_optimizer.measurement.ray_hsi_analysis \
+  /Volumes/4T/temp/rgbww-optimizer/ray-hsi-manifold/<run-id>
+```
+
+Only features accepted by the frozen native-Bayer observer quality gate enter
+the numerical comparison. The analyzer reports SAT=0 Hue dependence,
+scale-removed HSI/RGB endpoint differences, both pooled-zero and periodic
+Hue-dependent-zero affine manifold candidates, radial monotonicity, and the
+330-to-0 periodic edge. It does not select Gate 5 or implement strip HSI.
+
+P6 retry1 completed all 106 captures with recorded exposure, zero retained
+`.npy`, exact readback for all 105 Ray states, and successful Python/shell
+cleanup. Gate 5 selected `full_periodic_2d_HB`. SAT=0 has no repeatable
+scale-removed Hue-dependent shape, so it uses one pooled color direction while
+preserving the measured Hue-dependent brightness scale. HSI and RGB endpoints
+are not direction-equivalent and remain separate. The affine SAT model failed
+broadly rather than at isolated points, while radial progress stayed monotonic
+for all 12 hues; the frozen Stage-6 target is therefore the measured periodic
+2D Hue/SAT surface in `config/hsi/ray-hsi-manifold.json`, initially using
+piecewise-linear interpolation without overshoot.
+
 ## Location Picker
 
 Use the local Web UI to capture a preview and mark color-chart patches:
@@ -366,12 +629,13 @@ pixel counts, clipping, and noise-floor diagnostics. Color-chart coordinates
 are scaled from the saved location image dimensions to `raw_image_visible`,
 which accounts for the one-pixel size difference in the current Canon files.
 
-Acceptance thresholds live in `config/camera/raw-observer.json`. The clipping
-and near-noise thresholds intentionally remain `null` until the paired
-repeatability and three-exposure linearity experiment establishes defensible
-values. Reports therefore remain `pending_thresholds` and are not optimization
-acceptance evidence yet. This native-mosaic path runs alongside the existing
-demosaiced white-patch CCT/Duv path; it does not replace that diagnostic path.
+Acceptance thresholds live in `config/camera/raw-observer.json`. P1 validated
+zero clipping/nonfinite tolerance, at least 29000 valid pixels per plane, and a
+`0.05` near-noise fraction inside the `1.0x..1.25x` exposure envelope. Features
+outside those limits must be omitted at that exposure and reacquired with the
+weak-signal exposure strategy; thresholds must not be widened to retain them.
+This native-mosaic path runs alongside the existing demosaiced white-patch
+CCT/Duv path; it does not replace that diagnostic path.
 
 Check a saved location file against a fresh single camera capture:
 

@@ -34,7 +34,7 @@
 
 执行模型开始任何工作前，必须确认以下事实仍成立；若路径或提交发生变化，先更新本节，不得静默替换：
 
-- 当前基线提交为 `17911bc`；开始执行前必须以 `git rev-parse HEAD` 更新，不得把本行当作提交授权。
+- 当前基线提交为 `ecf47d7`；开始执行前必须以 `git rev-parse HEAD` 更新，不得把本行当作提交授权。
 - 当前唯一允许用于新采集的点位为 `config/location/locations-20260714-211759.json`：
   - SHA-256：`21f02328bff8b5ffcfc10c767e15cdefbf8bb883bc352eff6f0fb7ade38a8f80`。
   - 图像尺寸 `4320x2880`，24 个色块，`orientation_degrees=180`。
@@ -48,11 +48,11 @@
   - 直接读取 `raw_image_visible`，不做 demosaic、白平衡或 gamma。
   - 输出 `R/G1/G2/B`，可选 `G=(G1+G2)/2`。
   - 支持曝光归一化、ambient/dark 扣除、裁剪/噪声诊断和 JSON-only 输出。
-- 当前 RAW 观察者配置为 `config/camera/raw-observer.json`。
-  - `maximum_clipped_fraction` 仍为 `null`。
-  - `maximum_near_noise_floor_fraction` 仍为 `null`。
-  - 因此报告必须保持 `pending_thresholds`，不能当作优化验收证据。
-  - `combine_green=true` 只是暂定值，不是已经实测确认的 G1/G2 结论。
+- 当前 RAW 观察者配置为 `config/camera/raw-observer.json` v2。
+  - Gate-1 采用 identity RAW，仅允许每源自动曝光相对因子 `1.0x..1.25x`。
+  - `maximum_clipped_fraction=0.0`、`maximum_near_noise_floor_fraction=0.05`、`maximum_nonfinite_fraction=0.0`、`minimum_valid_pixels_per_plane=29000`。
+  - G1/G2 归入 G-C，`combine_green=false`；后续固定使用 `R/G1/G2/B` 四平面。
+  - 冻结多项式 response candidate 未安装，因为它把 boundary 最差 feature 从 `2.903` 提高到 `3.182 sigma_repeat`。
 - 当前 Canon 样本为 RGGB：`raw_pattern=[[0,1],[3,2]]`、`color_desc=RGBG`。
 - Canon CR3 的 `camera_white_level_per_channel` 可能明显不可信；现有代码会在不可信时回退到全局 `white_level=16383`。不得删除该回退，除非新样本和测试证明应修改。
 - 当前正式 WW/CW 端点仍来自 `config/white/white-endpoints.json`：
@@ -108,7 +108,7 @@
 
 ### 2.3 禁止提前实现的内容
 
-- P1 没有确认 RAW 线性、重复性和 G1/G2 策略前，不实现正式五通道基底求解。
+- P1 没有确认 RAW 线性、重复性和 G1/G2 策略前，不实现正式五通道基底求解。Gate-1 已于 2026-07-16 以 conditional pass 解锁 P2。
 - P2 没有得到实拍基底前，不实现依赖其具体维度或权重的 multipatch 求解器。
 - P3 加法性没有结论前，不把 `y=Bu` 当成最终真值。
 - P4 12 点 A/B 没通过前，不重算完整 70 点。

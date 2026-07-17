@@ -8,6 +8,12 @@
 
 **不得跨越：** 在 Ray 流形分支冻结前，不控制灯带拟合 HSI，也不先写二维/三维 LUT。
 
+**进入决定（2026-07-17）：** Gate-3=`keep_white_lut_diagnostic_only; stop_before_p5`，Gate-4=`retain_previous_candidate; approve_stage_5`。P5 skipped；现有外置 white-only 70 点候选保留且不安装。当前先完成 P6 离线 runner/analyzer/tests，再使用既有 P1-7 named-experiment 授权执行 Ray-only 实拍。
+
+**离线实现状态（2026-07-17）：** P6 runner、分析器、shell wrapper 和 fake-hardware/synthetic-manifold 测试已实现。计划固定为 73 个唯一基础状态、106 条正式 capture record（84 个唯一状态自动曝光、21 个重复状态复用缓存、1 张 ambient）；每次 Ray HSI/RGB 命令后必须精确 readback。分析同时保留 pooled SAT=0 与周期 Hue-dependent SAT=0 两个候选，避免在 Gate-5 前预设 zero-anchor 结构。完成完整测试与 dry-run 审计后进入 remote 实拍。
+
+**Gate-5 最终决定（2026-07-17）：** `full_periodic_2d_HB`。P6 retry1=`/Volumes/4T/temp/rgbww-optimizer/ray-hsi-manifold/p6-ray-hsi-remote-20260717-0403-retry1` 完成 106/106 captures/非空 CR3/recorded reports，无 failure/.npy，Python/shell 双 cleanup 成功，105 条 Ray command readback 零 mismatch。SAT=0 scale-removed Hue effect max=`0.1170%`，低于 3σ proxy=`0.1482%`，因此色方向合并为 pooled zero anchor，但保留 Hue-dependent 亮度 scale。六个 HSI/RGB 端点 residual=`0.792%..18.538%`，必须独立建模。可分离模型只有 `45.0%..46.7%` 中间节点低于 `2x` repeatability，P90=`2.475%`、max=`5.240%`，而 12/12 Hue 的径向进度均单调；失败覆盖 10/12 Hue 和全部中间 SAT 档，不属于 H-C 单点异常。冻结 Hue/SAT 为周期二维实测流形，初版插值使用无过冲 periodic/piecewise-linear；高曲率加密区为 wrap `330..90` 的 SAT20/50/80/95 与 `240..330` 的 SAT20/50/80。冻结配置=`config/hsi/ray-hsi-manifold.json`，允许进入 Stage 6。
+
 ## 执行顺序
 
 1. 实现 Ray-only runner 和分析模块，完成 fake 硬件、周期 Hue 和安全测试。
@@ -34,6 +40,8 @@ src/camera_based_rgbww_optimizer/measurement/ray_hsi_analysis.py
 tests/test_ray_hsi_analysis.py
 tests/test_measure_ray_hsi_manifold.py
 ```
+
+正式 wrapper：`tmp/run-ray-hsi-manifold.zsh`。runner 只允许新实验使用 remote backend 和最新 location；Python finally 与 shell trap 都调用公共双关灯入口。任何 HSI/RGB readback 字段不一致均按 H-D 立即使 run 失败，不进行数值拟合。
 
 本阶段只控制 Ray，不控制 strip。仍需 shell/Python 双关灯。
 

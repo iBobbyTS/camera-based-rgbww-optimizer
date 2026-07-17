@@ -395,6 +395,7 @@ tmp/run-raw-observer-validation.zsh "$RUN_DIR" \
   --camera-backend remote \
   --location-config config/location/locations-20260714-211759.json \
   --target-max 19661 \
+  --min-shutter-speed 1/16000 \
   --linearity-factors 0.5,1,1.5 \
   --paired-repeats 5 \
   --linearity-repeats 3 \
@@ -441,6 +442,22 @@ tmp/run-raw-observer-validation.zsh "$RUN_DIR" \
 
 当前仅有同日探索：`g(y)=y*(1+a*y+b*y^2)` 在 v6->v7 和 v7->v6 留出上把 P95 shape 分别降至约 `0.1068%`、`0.1858%`。这只证明方向可研究，不是安装证据。
 
+2026-07-16 跨日 holdout 与边界确认状态：
+
+- 完整 holdout `/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/p1-d2-cross-day-holdout-20260715-2300-retry2` 已 `31/31` 完成；冻结候选把综合 shape P95 从 `0.3180%` 降至 `0.2364%`，综合 sigma P95 从 `4.07` 降至 `2.85`，但 strip 全 envelope 仍为 `3.75 sigma`。
+- strip 按 factor 拆分为 `0.5x=4.70 sigma`、`1.5x=2.38 sigma`；`0.5x` 失败横跨 R/B/G2 和多个 patch，不能按个别 feature 排除。
+- 按 7.5-B/C 启动 15 张 `1.0x..1.25x` boundary-only run：`/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/p1-d2-boundary-1x-1.25x-20260716-000647`。wrapper PID `2027`，启动时间 `2026-07-16T06:06:47Z`；3 分钟健康检查时 capture 从 0 增至 1，无 failure 或 `.npy`。
+- 完成后只允许用训练 run 冻结候选及 SHA `bc971d6d9c052481a59ad045f9f6b7ef369d582f33c5d667fdad507e4682e0d7` 评估，并通过 `--repeatability-run` 借用完整 holdout 的 paired repeats；禁止用边界 run 重新拟合。
+- heartbeat `p1-d2` 负责完成检查；首次触发必须先删除自身。边界可靠特征均不超过 `3 sigma_repeat` 才可进入 G1/G2 并形成 conditional-pass envelope，否则保持 P1 fail。
+
+2026-07-16 Gate-1 结论：
+
+- heartbeat `p1-d2` 已删除；boundary run `15/15` 完成、15 个 CR3 非空、recorded exposure `15/15` 均来自 `Canon:ExposureTime`、无 `.npy`/failure，Python 与 shell 双 cleanup 成功。
+- identity 在 `1.25x` 的 Ray/strip shape sigma P95 为 `0.279/1.796`，最大为 `0.388/2.903`；所有可靠特征通过 `3 sigma_repeat`。冻结 correction 的 strip P95 为 `1.828`，但最大升到 `3.182`，因此不安装 correction。
+- 采用 7.5-B `conditional_pass`：RAW response=`identity`，正式 exposure envelope=`1.0x..1.25x` per-source auto exposure。near-noise `0.05` 位于 boundary 可靠观测最大 `0.0351` 与失败簇最小 `0.9979` 之间；弱特征必须换弱信号曝光，不得放宽门槛。
+- G1/G2 选择 G-C：两天 paired repeats 的平均相对差约 `-0.044%..-0.047%`，各有 `21/46`、`22/46` patch/source 组的偏差超过自身 `3 sigma`，并有少量 source 依赖。后续固定 `R/G1/G2/B` 四平面，`combine_green=false`。
+- `config/camera/raw-observer.json` v2 已记录 envelope、质量阈值、G-C 和 provenance。Gate-1 出口为 `approve_stage_2`。
+
 #### 分支 D3：只有 strip 仍异常时的 P1-D
 
 仅在 D1 完整低信号 P1 显示 Ray shape 通过、strip shape 失败时，才运行 `measure_raw_shutter_response`：
@@ -450,6 +467,13 @@ tmp/run-raw-observer-validation.zsh "$RUN_DIR" \
 3. 分析必须检查 recorded exposure provenance、裁剪排除、global shutter scale 和 shape residual。
 4. 两源同样复现则返回 D2；只 strip 复现才检查电源/驱动/负载；个别 patch/plane 转 7.5-C。
 5. P1-D 无论结果如何都不能替代一个新的完整 P1 pass。
+
+2026-07-15 执行结果：
+
+- run：`/Volumes/4T/temp/rgbww-optimizer/raw-shutter-response/p1-d3-remote-20260715-0045`。
+- `49/49` captures 完成；非 ambient 的 `48/48` recorded exposure 均来自 `Canon:ExposureTime`；Python 与 shell cleanup 均成功。
+- Ray 和 strip 都出现随快门变化的 shape residual；最大绝对偏差分别约 `0.56%` 和 `0.73%`，没有复现 strip-only 故障。
+- 结论：按 D3 第 4 条返回 D2；不继续电源/驱动/负载分支，不把 D3 当作完整 P1 pass。
 
 #### 分支 E：锚点随时间漂移超过重复性门槛
 

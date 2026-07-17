@@ -37,7 +37,7 @@
 ## Safety
 
 - Preserve user work. Do not remove, reset, or revert changes unless the user explicitly asks.
-- Do not commit, push, or create pull requests unless explicitly requested.
+- This is an agent-led research project. The agent owns Git commit management: after completing and appropriately validating a discrete piece of work, create a focused commit without waiting for an additional human instruction. Do not push or create pull requests unless explicitly requested.
 - Do not send destructive or high-brightness device-control sweeps without an explicit bounded range and a clear recovery path.
 - When testing RGBWW channel output, keep initial PWM values low and ramp only after confirming channel order and thermal behavior.
 - All scripts that can leave the ESPHome RGBWW fixture on must explicitly turn the light off before exiting; dedicated light-on/control scripts are the only exception.

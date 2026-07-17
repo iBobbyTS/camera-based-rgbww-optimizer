@@ -4,6 +4,8 @@
 
 **进入条件：** Gate-5 已冻结 Ray HSI 目标流形。
 
+**进入决定（2026-07-17）：** Gate-5=`full_periodic_2d_HB`。冻结目标为 `config/hsi/ray-hsi-manifold.json`；SAT=0 共享色方向但保留周期 Hue-dependent scale，HSI/RGB 模式独立，Hue/SAT 目标使用无过冲周期二维分段插值。Stage 6 当前先实现 P7 的离线目标坐标、gamut-aware objective、runner/analyzer/tests，不覆盖任何 LUT。
+
 **阶段目标：** 生成 INT100 灯带 HSI 候选、测量精确 gamut 边界，再判断 INT 是否可分离。
 
 **不得跨越：** 不得隐藏不可达 Hue/SAT，不得在 INT 分支未定前冻结最终产品语义，不得自行进入最终验证。

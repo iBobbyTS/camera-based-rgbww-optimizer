@@ -48,6 +48,28 @@ tests/test_chart_response_basis.py
 
 测量 runner 负责设备和记录；measurement 模块只负责纯数据拟合。不得把设备调用塞进矩阵分析模块。
 
+2026-07-16 离线实现状态：
+
+- 已实现 `measure_chart_response_basis.py`、`chart_response_basis.py`、独立离线 analyzer 和 `tmp/run-chart-response-basis.zsh`。
+- dry-run 固定为 58 张：ambient 1、五通道保护/弱曝光基线 10、anchor 基线 1、正式状态 45、anchor check 1。
+- runner 强制 remote、最新 location、code-duty curve、identity RAW、四平面和 `1.0x..1.25x` exposure envelope；复用 P1 的 backend/native RAW/recorded-exposure/源隔离/Python cleanup，并另有 shell trap。
+- 分析输出 level-specific basis、SVD/rank/condition、列夹角、bootstrap CI、feature weight、质量拒绝和跨档位 shape；不自动选择 B 分支。
+- dry-run：`tmp/chart-response-basis/offline/p2-basis-offline-20260716-005428/plan.json`。
+- 完整测试 `264/264` 通过；等待实机 P2。
+
+2026-07-16 实机结果：
+
+- run：`/Volumes/4T/temp/rgbww-optimizer/chart-response-basis/p2-five-channel-basis-20260716-005935`。
+- 启动时间 `2026-07-16T06:59:35Z`，完成时间 `2026-07-16T08:25:24Z`；runner/wrapper log 为 run 同名 `.runner.log`/`.wrapper.log`。
+- 实机前 all-off、remote health/config、Ray node-config/get-cct 全部通过；两灯读回关闭。
+- 58/58 capture、CR3 和 measurement JSON 完整；全部 CR3 非空，58/58 使用 recorded exposure，无 `.npy` 或 `failure.json`。
+- command 记录没有 `ray_on`，所有 strip capture 前均有 `ray_off`；Python 与 shell cleanup 均确认 ESPHome 五通道为 0、Ray intensity 为 0。
+- 分析文件：run 下 `basis-analysis.json`。缺失的单通道低信号 cell 不再删除整条 feature：同通道其他档位可用时仅以 weight=0.25 填补矩阵诊断，三档均不可测时记为 censored zero/weight=0；两类 cell 都不进入跨档 shape 比较。
+- 92 个 feature 的三档 basis 均 rank=5，condition number 为 `121.676/125.304/124.881`；最接近列始终为 CW/WW，夹角 `18.28..18.34` 度。
+- 锚点 global scale 为 `1.000145`，shape drift P95=`0.001585`；重复 CV 多数低于 `0.2%`，R 在 4095 档 P95=`1.158%`。
+- 所有通道均有稳定跨档 shape 差异超过重复性；例如 R 1024->4095 shape P95=`4.10%`、P95=`5.85 sigma`，CW/WW/G/B 也各有大于 3 sigma 的 feature。
+- **高级模型分支：B-B。** `level_dependent_channels=[cw,ww,r,g,b]`，P3 使用 1024/2048/4095 三档线性或形状保持插值。condition 约 125 不构成 rank deficient，但基底在 P3 通过前只作带正则的物理预测，不解释为高精度唯一通道解。
+
 ### 8.2 采样计划
 
 - 通道：`cw, ww, r, g, b`。
@@ -123,6 +145,20 @@ tests/test_chart_basis_validation.py
 tests/test_measure_chart_basis_mixtures.py
 ```
 
+2026-07-16 离线实现状态：
+
+- 已实现 P3 runner、纯 measurement analyzer、冻结 basis/hash 的分析 CLI、shell 双关灯 wrapper 和针对性测试。
+- 固定 24 个唯一命令覆盖 `dominant_with_weak=5`、`white_rgb=5`、`high_load=5`、`lut_nearby=5`、`latin_hypercube=4`；seed 只改变采集顺序，不改变命令集合。
+- 每点两次独立 off/on；ambient 1、强/弱曝光基线 2、anchor baseline 1、正式 48、anchor check 3，共 55 张。
+- P3 输入冻结 P2 `basis-analysis.json`，强制 location hash、remote、identity RAW、四 CFA plane、1.0x..1.25x envelope 和 rank-5 三档 basis。
+- 分析按每通道码值在 1024/2048/4095 的 normalized column 间线性插值；P2 imputed/censored cell 的低/零权重传递到 P3 residual。
+- 输出绝对响应、去 global scale 的 shape residual、P2/P3 联合 sigma、neutral/chromatic、plane、category、active-set、load 和 order 诊断；不自动选择 M 分支。
+- 完整离线测试 `275/275`、compileall、diff-check 和 CodeGraph sync 通过；dry-run 为 `tmp/chart-basis-mixtures/offline/p3-mixtures-offline-20260716-0833/plan.json`。
+- 首次实机目录 `p3-additivity-20260716-0245` 错把 preflight/PID 放在正式目录内，被共享 executor 的非空目录保护在 capture/点灯前拒绝；失败证据保留，shell 与 recovery all-off 均成功。
+- retry1：`/Volumes/4T/temp/rgbww-optimizer/chart-basis-mixtures/p3-additivity-20260716-0245-retry1`，wrapper PID `27427`，P2 basis SHA-256=`5024dcf3c14146b5750db6de21040c7745c62b955a63f97c4b86128b83a1b6c1`。
+- retry1 三分钟健康检查：PPID=1，capture/CR3/measurement 各 1，无 failure/.npy；第一张 strip 曝光基线记录 `ray_off -> off_wait -> strip_on -> settled -> capture_requested`。当前-thread 完成检查 heartbeat=`p3`。
+- retry1 已于 `2026-07-16T10:13:39Z` 正常完成，`run.json status=complete`、capture `55/55`、无 `failure.json`，Python/shell cleanup 均存在。用户随后取消 heartbeat `p3` 并暂停项目；额外 `all-off-pause-confirmation.json` 再次确认 ESPHome 五通道为 0、Ray intensity 为 0。尚未执行 P3 离线分析或 Gate-2 裁决。
+
 ### 9.2 24 个命令的固定覆盖
 
 用固定 seed 生成并把最终明确命令写入 `plan.json`，不能运行时临时随机：
@@ -187,5 +223,16 @@ tests/test_measure_chart_basis_mixtures.py
 - 不进行全局开环求解。
 - P4 只能把 multipatch 目标加入现有局部 Jacobian 实拍闭环。
 - 保留当前白点算法，不因模型失败废弃现有 LUT。
+
+### 9.5 2026-07-16 P3 结果与 Gate-2
+
+- run：`/Volumes/4T/temp/rgbww-optimizer/chart-basis-mixtures/p3-additivity-20260716-0245-retry1`；55/55 capture、55/55 recorded exposure、48 个正式 mixture、无空 CR3/`.npy`/failure，Ray 从未开启，双 cleanup 与暂停后的额外 all-off 均成功。
+- 分析：run 下 `basis-validation.json`，SHA-256=`e1f70ffdc4831cc38ee1e2976c12a0ce386142871daa6ee7a77af7756ebd5cfe`；冻结 P2 basis SHA-256=`5024dcf3c14146b5750db6de21040c7745c62b955a63f97c4b86128b83a1b6c1`。
+- 真实重复的 `previous_state` 不同，离线 analyzer 已修正为只校验稳定 context，并单独保留每次重复前态；已补回归测试。
+- 24 点没有任何一点达到“至少 80% feature <=2 sigma”；sample shape P95 中位=`6.4318%`、总体 P95=`28.5676%`、最差=`62.7689%`，sigma P95 中位=`141.31`。
+- 类别 shape P95：white+RGB 约 `5.16%`、high-load `13.56%`、Latin-hypercube `15.02%`、LUT-nearby `15.65%`、dominant+weak `56.32%`。
+- shape P95 与总负载相关性仅 `-0.0736`、与顺序相关性 `0.1842`，不支持简单 load correction；误差跨类别和 active set 广泛存在。
+- 四次锚点相对首帧最终 global scale=`0.99385`，去 scale shape P95=`0.2807%`，远小于 mixture 误差，排除整场热漂移/位置漂移作为主因。
+- **Gate-2：M-E / `forward_model_seed_only`。** 不批准全局开环模型、load correction 或大量 interaction 项；P2 basis 仅可生成 P4 初值。P4 必须走 C-F，保留现有 bounded Jacobian、Broyden、secant 和 thermal rebase 的实拍闭环。
 
 ---
