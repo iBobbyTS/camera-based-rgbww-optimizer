@@ -11,6 +11,9 @@ from typing import Any, Callable, Sequence
 from camera_based_rgbww_optimizer.control import camera_gphoto2, camera_remote, esphome, ray120c
 from camera_based_rgbww_optimizer.control import white_lut as white_lut_control
 from camera_based_rgbww_optimizer.optimization import measure_channel_response
+from camera_based_rgbww_optimizer.optimization.bounded_least_squares import (
+    solve_box_constrained_least_squares,
+)
 from camera_based_rgbww_optimizer.optimization import white_calibration_common as common
 from camera_based_rgbww_optimizer.optimization import white_lut_feedback as feedback
 from camera_based_rgbww_optimizer.optimization import white_lut_policy as policy
@@ -172,7 +175,7 @@ def solve_white_point_mix(
         free_indices = [index for index in range(len(channels)) if index != active_index]
         coefficients = np.column_stack((normalized_matrix[:, free_indices], -target_direction))
         desired = -normalized_matrix[:, active_index]
-        solution = feedback._solve_box_constrained_least_squares(
+        solution = solve_box_constrained_least_squares(
             coefficients,
             desired,
             np.asarray([0.0] * len(free_indices) + [0.0]),
