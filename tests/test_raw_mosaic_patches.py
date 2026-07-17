@@ -330,13 +330,14 @@ class RawMosaicStatisticsTests(unittest.TestCase):
         self.assertEqual(planes["G2"]["quality"]["status"], "accepted")
         self.assertEqual(planes["B"]["quality"]["status"], "accepted")
 
-    def test_default_config_keeps_empirical_gates_pending(self):
+    def test_default_config_applies_validated_quality_gates(self):
         config = raw_mosaic_patches.load_observer_config()
 
-        report = analyze(make_frame(np.full((40, 40), 500)), config=config)
+        report = analyze(make_frame(np.full((400, 400), 500)), config=config)
 
-        self.assertEqual(report["quality"]["status"], "pending_thresholds")
-        self.assertIsNone(report["quality"]["accepted_for_optimization"])
+        self.assertEqual(report["quality"]["status"], "accepted")
+        self.assertTrue(report["quality"]["accepted_for_optimization"])
+        self.assertNotIn("combined_green", report["patches"][0])
 
     def test_black_role_is_diagnostic_only(self):
         region = {

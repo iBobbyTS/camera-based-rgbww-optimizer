@@ -53,6 +53,8 @@ def build_raw_observer_validation_plan(
     anchor_gm: int = DEFAULT_ANCHOR_GM,
     ray_intensity_percent: float = DEFAULT_RAY_INTENSITY_PERCENT,
     target_max: int = camera_gphoto2.DEFAULT_AUTO_EXPOSURE_MAX,
+    min_shutter_speed: str = camera_gphoto2.DEFAULT_MIN_SHUTTER_SPEED,
+    max_shutter_speed: str = camera_gphoto2.DEFAULT_MAX_SHUTTER_SPEED,
     paired_repeats: int = DEFAULT_PAIRED_REPEATS,
     linearity_factors: Sequence[float] = DEFAULT_LINEARITY_FACTORS,
     linearity_repeats: int = DEFAULT_LINEARITY_REPEATS,
@@ -60,6 +62,7 @@ def build_raw_observer_validation_plan(
     settle_seconds: float = DEFAULT_SETTLE_SECONDS,
     include_flat_field: bool = False,
     preflight_only: bool = False,
+    boundary_confirmation_only: bool = False,
     camera_backend: str = "remote",
 ) -> dict[str, Any]:
     """Build the P1 capture order without connecting to camera or lights."""
@@ -77,6 +80,8 @@ def build_raw_observer_validation_plan(
         raise ValueError("target_max must be between 1 and 65535")
     if camera_backend not in {"local", "remote"}:
         raise ValueError("camera_backend must be local or remote")
+    if preflight_only and boundary_confirmation_only:
+        raise ValueError("preflight_only and boundary_confirmation_only are mutually exclusive")
 
     lut_path = Path(baseline_lut_path)
     interpolation = white_lut_control.interpolate_white_lut(
@@ -131,6 +136,19 @@ def build_raw_observer_validation_plan(
                 exposure_factor=longest_factor,
                 source_cache=source,
             )
+    elif boundary_confirmation_only:
+        for repeat_index in range(linearity_repeats):
+            ordered_factors = factors if repeat_index % 2 == 0 else tuple(reversed(factors))
+            for factor_index, factor in enumerate(ordered_factors):
+                source_order = ("ray", "strip") if (repeat_index + factor_index) % 2 == 0 else ("strip", "ray")
+                for source in source_order:
+                    add_capture(
+                        source=source,
+                        purpose="linearity_bracket",
+                        repeat_index=repeat_index,
+                        exposure_factor=factor,
+                        source_cache=source,
+                    )
     else:
         for repeat_index in range(paired_repeats):
             source_order = ("ray", "strip") if repeat_index % 2 == 0 else ("strip", "ray")
@@ -173,15 +191,18 @@ def build_raw_observer_validation_plan(
                 "ray_intensity_percent": float(ray_intensity_percent),
                 "strip_command": strip_command,
             },
-            "paired_repeats": int(paired_repeats),
+            "paired_repeats": 0 if (preflight_only or boundary_confirmation_only) else int(paired_repeats),
             "linearity_factors": list(factors),
             "linearity_repeats": int(linearity_repeats),
             "flat_field": flat_field,
             "source_isolation": "every capture requires the other source to be off",
             "preflight_only": bool(preflight_only),
+            "boundary_confirmation_only": bool(boundary_confirmation_only),
             "camera_auto_exposure": {
                 "target_max": int(target_max),
                 "meter_scale_max": 65535,
+                "min_shutter_speed": str(min_shutter_speed),
+                "max_shutter_speed": str(max_shutter_speed),
             },
         },
         "inputs": {
@@ -236,6 +257,7 @@ def execute_raw_observer_validation_plan(
     sleep_fn: SleepFn,
     all_off_fn: Callable[..., Sequence[all_off.ShutdownStep]] = all_off.turn_everything_off,
     provenance_fn: ProvenanceFn | None = None,
+    phase: str = "P1",
 ) -> Path:
     """Execute a prebuilt P1 plan with injected device operations and final shutdown.
 
@@ -255,7 +277,7 @@ def execute_raw_observer_validation_plan(
     run = {
         "schema_version": 1,
         "run_id": root.name,
-        "phase": "P1",
+        "phase": str(phase),
         "status": "running",
         "started_at": _utc_now(),
         "finished_at": None,
@@ -360,6 +382,7 @@ def build_native_raw_capture_step_fn(
     shutter_choices_fn: ShutterChoicesFn | None = None,
     recorded_exposure_fn: RecordedExposureFn = recorded_exposure.resolve_recorded_exposure,
     camera_backend: camera_gphoto2.CameraBackend | None = None,
+    recorded_exposure_purpose: str = "P1",
 ) -> CaptureStepFn:
     """Build the production camera side of P1 while leaving device control injected.
 
@@ -391,7 +414,10 @@ def build_native_raw_capture_step_fn(
         path = Path(capture.saved_file)
         if path not in exposures_by_path:
             exposures_by_path[path] = recorded_exposure_fn(path, capture.settings.shutter_speed)
-        return recorded_exposure.require_recorded(exposures_by_path[path], purpose="P1")
+        return recorded_exposure.require_recorded(
+            exposures_by_path[path],
+            purpose=recorded_exposure_purpose,
+        )
 
     def meter(raw_file: Path) -> camera_gphoto2.ExposureMeasurement:
         result = raw_meter_fn(
@@ -429,7 +455,7 @@ def build_native_raw_capture_step_fn(
             )
             ambient_capture = capture
             mode = "ambient_fixed"
-        elif str(step["purpose"]) == "baseline_auto_exposure":
+        elif bool(step.get("auto_exposure")) or str(step["purpose"]) == "baseline_auto_exposure":
             cache_key = _source_cache_key(step)
             auto_kwargs: dict[str, Any] = {}
             if camera_backend is not None:
@@ -461,7 +487,7 @@ def build_native_raw_capture_step_fn(
             if base_capture is None:
                 raise ValueError(f"capture {step['capture_id']} has no {cache_key} exposure baseline")
             shutter_speed = base_capture.settings.shutter_speed
-            if str(step["purpose"]) in {"linearity_bracket", "linearity_preflight"}:
+            if step.get("exposure_factor") is not None:
                 shutter_speed = _resolve_bracket_shutter_speed(
                     base_capture,
                     factor=float(step["exposure_factor"]),
@@ -486,7 +512,7 @@ def build_native_raw_capture_step_fn(
             )
             mode = (
                 "fixed_bracket"
-                if str(step["purpose"]) in {"linearity_bracket", "linearity_preflight"}
+                if step.get("exposure_factor") is not None
                 else "fixed_cached"
             )
 
@@ -530,6 +556,8 @@ def run_native_raw_observer_validation(
         location_config_path=plan["inputs"]["location_config"]["path"],
         observer_config_path=plan["inputs"]["raw_observer_config"]["path"],
         target_max=int(plan["measurement"]["camera_auto_exposure"]["target_max"]),
+        min_shutter_speed=str(plan["measurement"]["camera_auto_exposure"]["min_shutter_speed"]),
+        max_shutter_speed=str(plan["measurement"]["camera_auto_exposure"]["max_shutter_speed"]),
         iso=None,
         aperture=None,
         camera_backend=camera_backend,
@@ -723,6 +751,16 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--anchor-gm", type=int, default=DEFAULT_ANCHOR_GM)
     parser.add_argument("--ray-intensity-percent", type=float, default=DEFAULT_RAY_INTENSITY_PERCENT)
     parser.add_argument("--target-max", type=int, default=camera_gphoto2.DEFAULT_AUTO_EXPOSURE_MAX)
+    parser.add_argument(
+        "--min-shutter-speed",
+        default=camera_gphoto2.DEFAULT_MIN_SHUTTER_SPEED,
+        help="Fastest shutter allowed during auto exposure and brackets.",
+    )
+    parser.add_argument(
+        "--max-shutter-speed",
+        default=camera_gphoto2.DEFAULT_MAX_SHUTTER_SPEED,
+        help="Slowest shutter allowed during auto exposure and brackets.",
+    )
     parser.add_argument("--paired-repeats", type=int, default=DEFAULT_PAIRED_REPEATS)
     parser.add_argument("--linearity-factors", type=parse_linearity_factors, default=DEFAULT_LINEARITY_FACTORS)
     parser.add_argument("--linearity-repeats", type=int, default=DEFAULT_LINEARITY_REPEATS)
@@ -730,6 +768,11 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--settle-seconds", type=float, default=DEFAULT_SETTLE_SECONDS)
     parser.add_argument("--include-flat-field", action="store_true")
     parser.add_argument("--preflight-only", action="store_true")
+    parser.add_argument(
+        "--boundary-confirmation-only",
+        action="store_true",
+        help="Capture only ambient, source baselines, and repeated boundary factors; omit paired repeats.",
+    )
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_ROOT)
     parser.add_argument("--run-name")
     mode = parser.add_mutually_exclusive_group(required=True)
@@ -756,6 +799,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         "anchor_gm": args.anchor_gm,
         "ray_intensity_percent": args.ray_intensity_percent,
         "target_max": args.target_max,
+        "min_shutter_speed": args.min_shutter_speed,
+        "max_shutter_speed": args.max_shutter_speed,
         "paired_repeats": args.paired_repeats,
         "linearity_factors": args.linearity_factors,
         "linearity_repeats": args.linearity_repeats,
@@ -763,6 +808,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "settle_seconds": args.settle_seconds,
         "include_flat_field": args.include_flat_field,
         "preflight_only": args.preflight_only,
+        "boundary_confirmation_only": args.boundary_confirmation_only,
         "camera_backend": args.camera_backend,
         "curve_path": None if args.no_curve else args.curve,
     }
@@ -804,9 +850,9 @@ def _validate_linearity_factors(values: Sequence[float]) -> tuple[float, ...]:
 
 def _source_cache_key(step: Mapping[str, Any]) -> str:
     cache_key = step.get("source_exposure_cache")
-    if cache_key not in {"ray", "strip"}:
+    if not isinstance(cache_key, str) or not cache_key.strip():
         raise ValueError(f"capture {step.get('capture_id')} has no valid source exposure cache")
-    return str(cache_key)
+    return cache_key
 
 
 def _capture_filename(step: Mapping[str, Any]) -> str:
@@ -901,6 +947,11 @@ def _write_native_capture_report(
         "exposure_status": resolved_capture_exposure.status,
         "capture_path": str(capture.saved_file),
     }
+    extra_context = step.get("analysis_context")
+    if extra_context is not None:
+        if not isinstance(extra_context, Mapping):
+            raise ValueError(f"capture {step['capture_id']} analysis_context must be an object")
+        report["analysis_context"].update(copy.deepcopy(dict(extra_context)))
     path = measurements_dir / f"{step['capture_id']}.patch-statistics.json"
     raw_report_writer(path, report)
     quality = report.get("quality") if isinstance(report, Mapping) else None
@@ -1094,15 +1145,27 @@ def _write_experiment_summary(
 ) -> None:
     measurement = plan["measurement"]
     anchor = measurement["anchor"]
+    phase = str(run.get("phase", "P1"))
+    if "ray_intensity_percent" in anchor:
+        anchor_description = (
+            f"Ray `{anchor['cct']}K / GM{anchor['gm']} / {anchor['ray_intensity_percent']}%`"
+        )
+    else:
+        anchor_description = f"strip LUT `{anchor['cct']}K / GM{anchor['gm']}`"
+    analysis_command = (
+        "camera_based_rgbww_optimizer.optimization.analyze_chart_response_basis"
+        if phase == "P2"
+        else "camera_based_rgbww_optimizer.optimization.analyze_raw_observer_validation"
+    )
     lines = [
-        "# P1 Raw Observer Validation",
+        "# P2 Chart Response Basis" if phase == "P2" else "# P1 Raw Observer Validation",
         "",
         f"- Status: `{run['status']}`",
         f"- Run directory: `{root}`",
         f"- Planned captures: `{len(plan['captures'])}`",
-        f"- Anchor: Ray `{anchor['cct']}K / GM{anchor['gm']} / {anchor['ray_intensity_percent']}%`",
+        f"- Anchor: {anchor_description}",
         f"- Source isolation: {measurement['source_isolation']}",
-        "- Analysis: run `camera_based_rgbww_optimizer.optimization.analyze_raw_observer_validation` after completion.",
+        f"- Analysis: run `{analysis_command}` after completion.",
     ]
     if cleanup is not None:
         lines.append(f"- Python cleanup: `{'ok' if _cleanup_succeeded(cleanup) else 'failed'}`")

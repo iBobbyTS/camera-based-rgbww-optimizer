@@ -6,27 +6,39 @@
     ]
   },
   "quality_thresholds": {
-    "maximum_clipped_fraction": null,
-    "maximum_near_noise_floor_fraction": null,
+    "maximum_clipped_fraction": 0.0,
+    "maximum_near_noise_floor_fraction": 0.05,
     "maximum_nonfinite_fraction": 0.0,
-    "minimum_valid_pixels_per_plane": 256
+    "minimum_valid_pixels_per_plane": 29000
   },
   "raw_metadata": {
     "minimum_camera_white_to_global_ratio": 0.5
   },
   "statistics": {
     "clipping_margin_normalized": 0.0,
-    "combine_green": true,
+    "combine_green": false,
     "noise_floor_margin_normalized": 0.005,
     "trim_fraction": 0.1
   },
   "validation": {
+    "exposure_envelope": {
+      "maximum_factor": 1.25,
+      "minimum_factor": 1.0,
+      "reference": "per_source_auto_exposure"
+    },
     "notes": [
-      "Clipping and noise-floor acceptance thresholds remain null until paired repeatability and exposure-linearity measurements are completed.",
-      "The noise-floor margin is a diagnostic band, not a calibrated acceptance threshold.",
-      "Reports remain pending_thresholds and must not be used as optimization acceptance evidence while empirical thresholds are null."
+      "P1 passed conditionally only inside the 1.0x..1.25x per-source auto-exposure envelope using identity RAW response.",
+      "The 0.05 near-noise threshold lies above the 0.0351 reliable maximum and below the 0.9979 failed-feature cluster in the boundary run.",
+      "G1/G2 vary by patch and source beyond repeatability for a minority of features, so downstream models keep R/G1/G2/B separate.",
+      "The frozen polynomial response candidate is not installed because it increased the boundary maximum from 2.903 to 3.182 repeatability sigma."
     ],
-    "status": "pending_live_repeatability_and_exposure_linearity"
+    "provenance": {
+      "boundary_run": "/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/p1-d2-boundary-1x-1.25x-20260716-000647",
+      "cross_day_holdout_run": "/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/p1-d2-cross-day-holdout-20260715-2300-retry2",
+      "location_sha256": "21f02328bff8b5ffcfc10c767e15cdefbf8bb883bc352eff6f0fb7ade38a8f80"
+    },
+    "raw_response_model": "identity",
+    "status": "validated_conditional_exposure_envelope"
   },
-  "version": 1
+  "version": 2
 }

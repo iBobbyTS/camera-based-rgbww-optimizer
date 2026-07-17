@@ -42,6 +42,8 @@ class RawObserverValidationPlanTests(unittest.TestCase):
                 location_config_path=location,
                 observer_config_path=observer,
                 target_max=19661,
+                min_shutter_speed="1/16000",
+                max_shutter_speed="25",
                 paired_repeats=2,
                 linearity_factors=(0.5, 1.0, 2.0),
                 linearity_repeats=2,
@@ -56,6 +58,8 @@ class RawObserverValidationPlanTests(unittest.TestCase):
             self.assertEqual(data["status"], "dry_run")
             self.assertEqual(data["measurement"]["anchor"]["strip_command"]["cw"], 2800)
             self.assertEqual(data["measurement"]["camera_auto_exposure"]["target_max"], 19661)
+            self.assertEqual(data["measurement"]["camera_auto_exposure"]["min_shutter_speed"], "1/16000")
+            self.assertEqual(data["measurement"]["camera_auto_exposure"]["max_shutter_speed"], "25")
             self.assertEqual(data["captures"][0]["source"], "ambient")
             self.assertEqual(data["captures"][1]["source"], "ray")
             self.assertEqual(data["captures"][2]["source"], "strip")
@@ -111,6 +115,41 @@ class RawObserverValidationPlanTests(unittest.TestCase):
             self.assertEqual(plan["cleanup"]["python"], "required_on_normal_exit_exception_and_keyboard_interrupt")
             self.assertEqual(plan["cleanup"]["shell"], "required_via_wrapper_trap")
 
+    def test_boundary_confirmation_plan_omits_paired_repeats(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            base = self._plan(root)
+            plan = measure_raw_observer_validation.build_raw_observer_validation_plan(
+                baseline_lut_path=base["inputs"]["baseline_lut"]["path"],
+                location_config_path=base["inputs"]["location_config"]["path"],
+                observer_config_path=base["inputs"]["raw_observer_config"]["path"],
+                linearity_factors=(1.0, 1.25),
+                linearity_repeats=3,
+                boundary_confirmation_only=True,
+            )
+
+            self.assertTrue(plan["measurement"]["boundary_confirmation_only"])
+            self.assertFalse(plan["measurement"]["preflight_only"])
+            self.assertEqual(plan["measurement"]["paired_repeats"], 0)
+            self.assertEqual(len(plan["captures"]), 15)
+            self.assertFalse(any(step["purpose"] == "paired_repeat" for step in plan["captures"]))
+            brackets = [step for step in plan["captures"] if step["purpose"] == "linearity_bracket"]
+            self.assertEqual(len(brackets), 12)
+            self.assertEqual({step["exposure_factor"] for step in brackets}, {1.0, 1.25})
+
+    def test_plan_rejects_preflight_and_boundary_confirmation_together(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            base = self._plan(root)
+            with self.assertRaisesRegex(ValueError, "mutually exclusive"):
+                measure_raw_observer_validation.build_raw_observer_validation_plan(
+                    baseline_lut_path=base["inputs"]["baseline_lut"]["path"],
+                    location_config_path=base["inputs"]["location_config"]["path"],
+                    observer_config_path=base["inputs"]["raw_observer_config"]["path"],
+                    preflight_only=True,
+                    boundary_confirmation_only=True,
+                )
+
     def test_remote_dry_run_never_constructs_backend_or_calls_lights(self):
         with tempfile.TemporaryDirectory() as tempdir:
             root = Path(tempdir)
@@ -120,6 +159,7 @@ class RawObserverValidationPlanTests(unittest.TestCase):
                 "--location-config", base["inputs"]["location_config"]["path"],
                 "--raw-observer-config", base["inputs"]["raw_observer_config"]["path"],
                 "--camera-backend", "remote",
+                "--min-shutter-speed", "1/16000",
                 "--preflight-only",
                 "--dry-run",
                 "--output-dir", str(root / "output"),
@@ -134,6 +174,7 @@ class RawObserverValidationPlanTests(unittest.TestCase):
             ray.assert_not_called()
             plan = json.loads((root / "output" / "remote-dry" / "plan.json").read_text(encoding="utf-8"))
             self.assertEqual(plan["devices"]["camera"]["backend"], "remote")
+            self.assertEqual(plan["measurement"]["camera_auto_exposure"]["min_shutter_speed"], "1/16000")
 
     def test_frozen_location_hash_mismatch_stops_before_capture_or_lights(self):
         with tempfile.TemporaryDirectory() as tempdir:
@@ -234,6 +275,34 @@ class RawObserverValidationPlanTests(unittest.TestCase):
 
             runner.assert_called_once()
             self.assertEqual(runner.call_args.kwargs["run_name"], "run")
+
+    def test_native_runner_passes_frozen_shutter_bounds_to_capture_adapter(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            plan = self._plan(root)
+            plan["measurement"]["camera_auto_exposure"].update(
+                {"min_shutter_speed": "1/16000", "max_shutter_speed": "25"}
+            )
+            capture_step = mock.Mock()
+
+            with mock.patch.object(
+                measure_raw_observer_validation,
+                "build_native_raw_capture_step_fn",
+                return_value=capture_step,
+            ) as build_capture, mock.patch.object(
+                measure_raw_observer_validation,
+                "execute_raw_observer_validation_plan",
+                return_value=root / "run",
+            ):
+                output = measure_raw_observer_validation.run_native_raw_observer_validation(
+                    plan,
+                    output_root=root,
+                    run_name="run",
+                )
+
+            self.assertEqual(output, root / "run")
+            self.assertEqual(build_capture.call_args.kwargs["min_shutter_speed"], "1/16000")
+            self.assertEqual(build_capture.call_args.kwargs["max_shutter_speed"], "25")
 
     def test_execute_plan_keeps_sources_isolated_and_writes_a_complete_run(self):
         with tempfile.TemporaryDirectory() as tempdir:
@@ -506,22 +575,36 @@ Focal Length: 50mm
                 for step in plan["captures"]
                 if step["purpose"] == "linearity_bracket" and step["source"] == "strip" and step["exposure_factor"] == 0.5
             )
+            weak_reacquire = {
+                **strip_bracket,
+                "capture_id": "weak-signal-reacquire",
+                "purpose": "weak_signal_reacquire",
+                "exposure_factor": 1.25,
+            }
 
             ambient_result = adapter(ambient)
             ray_result = adapter(ray_baseline)
             strip_result = adapter(strip_baseline)
             pair_result = adapter(ray_pair)
             bracket_result = adapter(strip_bracket)
+            weak_result = adapter(weak_reacquire)
 
             self.assertEqual(ambient_result["mode"], "ambient_fixed")
             self.assertEqual(ray_result["mode"], "native_auto_exposure")
             self.assertEqual(strip_result["mode"], "native_auto_exposure")
             self.assertEqual(pair_result["mode"], "fixed_cached")
             self.assertEqual(bracket_result["mode"], "fixed_bracket")
+            self.assertEqual(weak_result["mode"], "fixed_bracket")
             self.assertEqual([call["initial_shutter_speed"] for call in auto_calls], [None, None])
             self.assertTrue(all(call["decode_formats"] == () for call in auto_calls))
-            self.assertEqual(fixed_calls[-1]["settings"].shutter_speed, "1/125")
-            self.assertEqual(len(list(measurements_dir.glob("*.patch-statistics.json"))), 5)
+            self.assertTrue(all(call["min_shutter_speed"] == "1/8000" for call in auto_calls))
+            self.assertEqual(fixed_calls[-2]["settings"].shutter_speed, "1/125")
+            self.assertEqual(fixed_calls[-1]["settings"].shutter_speed, "1/60")
+            self.assertEqual(len(list(measurements_dir.glob("*.patch-statistics.json"))), 6)
+            weak_report = json.loads(
+                (measurements_dir / "weak-signal-reacquire.patch-statistics.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(weak_report["analysis_context"]["exposure_factor"], 1.25)
             stored_report = json.loads(
                 (measurements_dir / f"{strip_bracket['capture_id']}.patch-statistics.json").read_text(encoding="utf-8")
             )
