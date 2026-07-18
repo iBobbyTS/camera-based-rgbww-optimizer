@@ -1814,7 +1814,7 @@ R0F 的空/缺失/重复 measurement rejection 反例均已拒绝；但 pre-capt
 ```text
 current_phase = P7_R0G
 stage_status = offline_complete_waiting_for_planner_acceptance
-current_head = 5dfb734 (待本轮 focused commit)
+current_head = 27d9f90fcd0e9fd6b2bbfe824424fc3c6e8b36bc
 worktree_state = dirty(Planner R0G decision plus offline analyzer/tests/PLAN)
 authorization = offline_only; p7_strip_state_readback_preflight and p7_targeted_reference_repeatability_v2 locked
 run_dir = tmp/strip-hsi-pilot-offline/p7-r0g-v5-20260718-final
