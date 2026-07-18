@@ -4,13 +4,13 @@
 
 **Planner 最新决策日期：** 2026-07-18
 
-**当前 `HEAD`：** `5dfb73423d5366377bd020ff23ba163e1ea7de3c`
+**当前 `HEAD`：** `69698c18a1021214fd95751612396dc49ede402f`
 
-**当前活动阶段：** Stage 6 / P7-R0G pre-capture exhaustion provenance 等待 Executor 离线修复
+**当前活动阶段：** Stage 6 / P7-R0H frozen budget category exhaustion 等待 Executor 离线修复
 
-**当前阶段状态：** `p7_r0f_rejected_waiting_for_executor_offline_implementation`
+**当前阶段状态：** `p7_r0g_rejected_waiting_for_executor_offline_implementation`
 
-**下一条唯一动作：** Executor 只执行第 8.7.30 节 P7-R0G 的离线 pre-capture exhaustion provenance 修复和反例测试；不得据此执行 `p7_strip_state_readback_preflight` 或 `p7_targeted_reference_repeatability_v2`。在 Planner 另行明确授权前，不得连接设备、生成真实 CR3、读取 `.env`、执行真实 all-off、刷写 firmware、重跑 sentinel、执行 remaining 9、boundary、holdout、P8 或安装任何 LUT。
+**下一条唯一动作：** Executor 只执行第 8.7.33 节 P7-R0H 的离线 frozen budget category exhaustion 修复和反例测试；不得据此执行 `p7_strip_state_readback_preflight` 或 `p7_targeted_reference_repeatability_v2`。在 Planner 另行明确授权前，不得连接设备、生成真实 CR3、读取 `.env`、执行真实 all-off、刷写 firmware、重跑 sentinel、执行 remaining 9、boundary、holdout、P8 或安装任何 LUT。
 
 **上游依据：**
 
@@ -1835,6 +1835,57 @@ Evidence:
 
 Gate remains `Blocked`: R0G completion does not authorize `p7_strip_state_readback_preflight` or `p7_targeted_reference_repeatability_v2`.
 
+#### 8.7.32 P7-R0G Planner 复验结论与 P7-R0H（2026-07-18）
+
+```text
+planner_verdict = reject
+reviewed_checkpoint = 69698c18a1021214fd95751612396dc49ede402f
+implementation_checkpoint = 27d9f9000b825459a6754b0699284bc84a61c47b
+reviewed_readiness_sha256 = 2f35388a58743ac927d6dfff19af5975a79e4689e70616e4991c6105a5d7ef2c
+device_or_network_calls = 0
+named_experiment_authorized = false
+```
+
+R0G 已修复此前的任意 counter、capture-id 和 duplicated exhaustion ledger 篡改，但仍允许以下伪造：将 `sub_budget` 改成 `feedback_attempts`、`initial_probes` 或 `rebase_probes`，使用相应 phase 前缀，而对应 category 实际尚未达到冻结上限。`_phase_matches_sub_budget()` 对这些显式 category 只检查字符串前缀，没有检查 consumed 是否达到 category limit；同一 start 的 `budget.limits` 也未逐项与 frozen target solver budget 对照。fake analyzer 因此仍返回 `blocked_for_planner_review`，而非拒绝。
+
+这仍是证据/账本完整性问题，不改变 solver、coverage、P6 manifold 或预算数学，不需要 Advisor。设备状态 preflight、firmware compile 和 P7-R1 继续锁定。
+
+#### 8.7.33 P7-R0H 唯一离线修复阶段
+
+1. 对 `initial`、`initial_probes`、`feedback_attempts`、`rebase_probes`、`confirmation_captures` 五类 exhaustion，均从 frozen `declared.solver_budget` 和实际 `budget.consumed` 独立推导 category limit；只有 `consumed >= limit` 才能接受对应 `sub_budget`。
+2. 每个 start 的 `budget.limits` 必须与 target 的 frozen `solver_budget` 完全一致；不得使用 retained row 自报 limits 作为信任根。
+3. `budget.exhaustion` 与 top-level `budget_exhaustion` 必须双向一致：一方存在而另一方缺失也拒绝；两者字段、start index、phase、sub-budget、counters 必须完全一致。
+4. 对 `logical_observations` exhaustion，继续验证 category consumed、下一 phase 和所有 counters；对显式 category 不得只做 prefix 检查。
+5. 新增 deterministic 反例：category 未耗尽但 phase 前缀匹配、limits 抬高、limits 降低、consumed one-under/one-over、top-level-only、nested-only、错误 category 与错误 phase 组合；合法五类 exhaustion 各至少一个 fake success path。
+6. 保留 R0D、R0F、R0G 全部反例；生成全新 fake formal-v6、R1 dry-run/readiness，不能覆盖既有证据。
+7. 复跑 focused/full suite、compileall、wrapper `zsh -n`、`git diff --check`、CodeGraph；ESPHome CLI 缺失继续记录，不联网补装。
+8. 只有五类 category 的伪造 exhaustion 全部 fail closed 且合法路径通过，才可交还 Planner；仍不得连接设备、读取 `.env`、刷写 firmware、执行 preflight 或 P7-R1。
+
+#### 8.7.34 Executor P7-R0H 离线执行结果（2026-07-18）
+
+```text
+current_phase = P7_R0H
+stage_status = offline_complete_waiting_for_planner_acceptance
+current_head = 69698c1 (待本轮 focused commit)
+worktree_state = dirty(Planner R0H decision plus offline analyzer/tests/PLAN)
+authorization = offline_only; p7_strip_state_readback_preflight and p7_targeted_reference_repeatability_v2 locked
+analysis = explicit category exhaustion now requires consumed >= frozen category limit; each start budget.limits equals frozen target solver_budget; dual exhaustion ledger remains mandatory
+completed_steps = category limit derivation for all five categories; logical exhaustion retained; limits tamper and one-under/one-over regressions; fake formal-v6 and R1 dry-run/readiness generated
+failure_evidence = firmware CLI remains unavailable; YAML structure check only, no firmware compile or flash
+cleanup_evidence = focused 39/39; full 410/410; compileall, four wrapper zsh -n, git diff --check and codegraph sync pass; zero device/network/.env/real all_off calls
+physical_budget = absolute 250 Planner-frozen; baseline 82..170; permitted 82..250
+branch = P7_R0H_OFFLINE_COMPLETE_WAITING_PLANNER
+next_action = Planner review only; no real preflight or named experiment inferred
+```
+
+Evidence:
+
+- `offline-readiness-r0h.json` SHA-256 `c03d11cd0c631d1454d548b5ad39493d681c0c02a2a2d02b34ae0a02d089c57c`。
+- `v2-replay.json` SHA-256 `bdf83510473eb5afb1591ceb09d6169be4107e8e0bb9efd5ff5fc41b84b63aaa`；R1 dry-run plan SHA-256 `b74f26d0a6f311eecfbe22b43c7edd6f459f231bf35a00d9bd300bffcd31298d`。
+- ESPHome compile remains `blocked_tool_missing_esphome_cli`; fake device-state tests are not firmware/readback evidence.
+
+Gate remains `Blocked`: R0H completion does not authorize `p7_strip_state_readback_preflight` or `p7_targeted_reference_repeatability_v2`.
+
 ## 9. Phase D：剩余九点与合并分析
 
 **当前锁定：** 本节尚未授权。只有第 8.7.11 节的新 sentinel-v2 经 Planner 明确写入放行决定后，本节才恢复有效；旧 `S-PASS` 不再是入口。
@@ -2162,22 +2213,22 @@ next_action =
 ### 当前初始值
 
 ```text
-current_phase = P7_R0G
-stage_status = planner_rejected_p7_r0f_waiting_for_executor_offline_implementation
-current_head = 5dfb73423d5366377bd020ff23ba163e1ea7de3c
-worktree_state = dirty(.agent-work/PLAN.md Planner review only); preserve commit 5dfb734 and all prior P1-P7, Phase A and advisor evidence
+current_phase = P7_R0H
+stage_status = planner_rejected_p7_r0g_waiting_for_executor_offline_implementation
+current_head = 69698c18a1021214fd95751612396dc49ede402f
+worktree_state = dirty(.agent-work/PLAN.md Planner review only); preserve commits 69698c1/27d9f90 and all prior P1-P7, Phase A and advisor evidence
 authorization = offline_only; named_experiment:p7_sentinel_4 consumed; p7_targeted_reference_repeatability_v2 not authorized; no authorization for P7_R1/sentinel_v2/remaining/boundary/holdout/P8
 uncertainty_artifact_v1 = config/hsi/strip-hsi-uncertainty.json @ cedaa1e9d342beb7e464c4e38d77884ad8a7790771432ebdbb5a101ca604aa94; immutable diagnostic evidence
 uncertainty_artifact_v2 = config/hsi/strip-hsi-policy-v2-waiting.json @ db9ebef1503c5e54c989649c719c4a5f75445bbd5487edb14c274e1b2894f3b4; status waiting_for_targeted_measurement; formal_capture_eligible=false
-code_checkpoint = 5dfb73423d5366377bd020ff23ba163e1ea7de3c reviewed and rejected for R0F-REV-001; offline-readiness-r0f hash verified as a760710064eb901c1cda64d16c0b6ab9e474973c8a8e5b5daf96147088095d14 but does not satisfy Planner acceptance
-run_dir = tmp/strip-hsi-pilot-offline/p7-r0f-v4-20260718-final
-analysis = P7-R0F closes empty measurement rejection ownership, but pre-capture exhaustion phase/counters/attempted state remain self-reported rather than reconstructed from start budget and retained captures
-completed_steps = Phase A-v1 + Phase B + authorized sentinel_4 capture/audit + P7-R0/R0B/R0C + P7-R0D + P7-R0E + P7-R0F implementation + independent Planner R0F review/rejection; no real calls in review
-failure_evidence = R0F-REV-001 in section 8.7.30; firmware compile remains tool-blocked; formal empirical P7-R1 reference/repeatability statistics and new sentinel-v2 remain unmeasured; no device-state preflight or named experiment authorization exists
-cleanup_evidence = no device/network/.env/real all-off/firmware upload calls in R0F review; fake device-state and rejection tests remain offline evidence only; old sentinel dual cleanup evidence remains unchanged
+code_checkpoint = 69698c18a1021214fd95751612396dc49ede402f reviewed and rejected for R0G-REV-001; offline-readiness-r0g hash verified as 2f35388a58743ac927d6dfff19af5975a79e4689e70616e4991c6105a5d7ef2c but does not satisfy Planner acceptance
+run_dir = tmp/strip-hsi-pilot-offline/p7-r0g-v5-20260718-final
+analysis = P7-R0G binds exhaustion counters and duplicated ledgers, but explicit category exhaustion still trusts phase prefix and mutable start limits instead of frozen category depletion
+completed_steps = Phase A-v1 + Phase B + authorized sentinel_4 capture/audit + P7-R0/R0B/R0C + P7-R0D + P7-R0E + P7-R0F + P7-R0G implementation + independent Planner R0G review/rejection; no real calls in review
+failure_evidence = R0G-REV-001 in section 8.7.32; firmware compile remains tool-blocked; formal empirical P7-R1 reference/repeatability statistics and new sentinel-v2 remain unmeasured; no device-state preflight or named experiment authorization exists
+cleanup_evidence = no device/network/.env/real all-off/firmware upload calls in R0G review; fake device-state and exhaustion tests remain offline evidence only; old sentinel dual cleanup evidence remains unchanged
 physical_budget = absolute 250 Planner-frozen; baseline without weak reacquire 82..170; permitted with weak reacquire 82..250; maximum 60-second settling 9600 s
-branch = P7_R0F_REJECTED_PRECAPTURE_EXHAUSTION_PROVENANCE
-next_action = Executor implements only section 8.7.30 P7-R0G offline; no device/network/.env/firmware upload/real all_off/P7-R1 authorization
+branch = P7_R0G_REJECTED_CATEGORY_EXHAUSTION_PROVENANCE
+next_action = Executor implements only section 8.7.33 P7-R0H offline; no device/network/.env/firmware upload/real all_off/P7-R1 authorization
 ```
 
 ---

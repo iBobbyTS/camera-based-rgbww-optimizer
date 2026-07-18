@@ -272,6 +272,22 @@ class MeasureStripHsiPilotTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "frozen plan"):
                 analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
 
+    def test_v2_analyzer_rejects_start_limits_drift(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            policy = _frozen_policy_v2_file(root)
+            plan = subject.build_strip_hsi_pilot_plan(policy_version="v2", policy_v2_config_path=policy)
+            run_root = root / "limits"
+            _execute_fake_v2_plan(plan, run_root)
+            _write_shell_cleanup(run_root)
+            rows = [json.loads(line) for line in (run_root / "target-results.jsonl").read_text(encoding="utf-8").splitlines()]
+            budget = rows[0]["feedback"]["selected_result"]["budget"]
+            budget["limits"]["max_feedback_capture_attempts_per_start"] += 1
+            rows[0]["feedback"]["attempts"][0]["result"] = rows[0]["feedback"]["selected_result"]
+            (run_root / "target-results.jsonl").write_text("\n".join(json.dumps(item) for item in rows) + "\n", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "budget limits differ from frozen solver budget"):
+                analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
+
     def test_v2_analyzer_rejects_duplicate_capture_and_auto_audit_drift(self):
         with tempfile.TemporaryDirectory() as tempdir:
             root = Path(tempdir)
@@ -433,6 +449,28 @@ class MeasureStripHsiPilotTests(unittest.TestCase):
                     expected_counters={"physical_cr3_used": 12, "autoexposure_physical_cr3_used": 0, "weak_reacquire_physical_cr3_used": 0},
                     expected_budget={"exhaustion": valid_exhaustion, "consumed": {}, "limits": {}},
                 )
+
+            limits = {
+                "rebase_probe_count": 4,
+                "max_rebases_per_start": 2,
+                "max_feedback_capture_attempts_per_start": 8,
+                "max_confirmation_groups_per_start": 2,
+                "confirmation_captures_per_group": 3,
+            }
+            categories = {
+                "initial": ("initial", 1),
+                "initial_probes": ("probe-4", 4),
+                "feedback_attempts": ("feedback-8", 8),
+                "rebase_probes": ("rebase-2-probe-4", 8),
+                "confirmation_captures": ("confirm-1-2", 6),
+            }
+            for category, (phase, limit) in categories.items():
+                consumed = {name: 0 for name in ("initial", "initial_probes", "feedback_attempts", "rebase_probes", "confirmation_captures")}
+                consumed[category] = limit
+                budget = {"consumed": consumed, "limits": limits}
+                self.assertTrue(analyze_strip_hsi_pilot._phase_matches_sub_budget(phase, category, budget))
+                consumed[category] = limit - 1
+                self.assertFalse(analyze_strip_hsi_pilot._phase_matches_sub_budget(phase, category, budget))
 
     def test_v2_analyzer_rejects_unselected_cross_target_orphan_and_nonzero_off(self):
         with tempfile.TemporaryDirectory() as tempdir:

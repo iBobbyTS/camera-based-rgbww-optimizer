@@ -458,6 +458,9 @@ def _validate_v2_target_evidence(
             budget = result.get("budget", {})
             if not isinstance(samples, list) or not isinstance(rejections, list):
                 raise ValueError(f"v2 P7 target {key} has malformed logical evidence")
+            frozen_budget = declared["solver_budget"]
+            if not isinstance(budget, Mapping) or budget.get("limits") != frozen_budget:
+                raise ValueError(f"v2 P7 target {key} start budget limits differ from frozen solver budget")
             logical = len(samples) + len(rejections)
             consumed = budget.get("consumed")
             reconstructed_consumed = {
@@ -887,10 +890,6 @@ def _phase_matches_sub_budget(phase: str, sub_budget: str, budget: Mapping[str, 
         "feedback_attempts": "feedback-",
         "confirmation_captures": "confirm-",
     }
-    if sub_budget in prefixes:
-        return phase.startswith(prefixes[sub_budget])
-    if sub_budget != "logical_observations":
-        return False
     consumed = budget.get("consumed")
     limits = budget.get("limits")
     if not isinstance(consumed, Mapping) or not isinstance(limits, Mapping):
@@ -902,6 +901,14 @@ def _phase_matches_sub_budget(phase: str, sub_budget: str, budget: Mapping[str, 
         "feedback_attempts": ("feedback-", int(limits.get("max_feedback_capture_attempts_per_start", 0))),
         "confirmation_captures": ("confirm-", int(limits.get("max_confirmation_groups_per_start", 0)) * int(limits.get("confirmation_captures_per_group", 0))),
     }
+    if sub_budget in prefixes:
+        category_limit = category_limits[sub_budget]
+        return (
+            phase.startswith(category_limit[0])
+            and int(consumed.get(sub_budget, -1)) >= category_limit[1]
+        )
+    if sub_budget != "logical_observations":
+        return False
     return any(
         int(consumed.get(category, -1)) >= maximum and phase.startswith(prefix)
         for category, (prefix, maximum) in category_limits.items()
