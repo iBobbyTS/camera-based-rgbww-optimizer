@@ -647,7 +647,7 @@ anchors, confirmation spread, and the separate coordinate/observer/rendering
 layers. Combined sentinel/remaining analysis rejects mixed policy versions or
 hashes.
 
-Offline P7-R0C commands are:
+Offline P7-R0D commands are:
 
 ```bash
 .venv/bin/python -m camera_based_rgbww_optimizer.measurement.hsi_policy_v2
@@ -663,7 +663,7 @@ The last command only emits the draft named-experiment schema
 `p7_targeted_reference_repeatability_v2`: 30 formal Ray measurements, 50
 formal strip measurements, and two ambient frames in the fixed order ambient,
 Ray A, strip A, strip B, Ray B, ambient. Dry-run does not load `.env`, create a
-camera backend, or call a light. P7-R0C implements—but does not run—the remote
+camera backend, or call a light. P7-R0D implements—but does not run—the remote
 execution surface, analyzer, formal-ineligible `calibrated_waiting_for_planner`
 finalizer, and `tmp/run-hsi-reference-repeatability.zsh` dual-cleanup wrapper.
 Every P7-R1 logical row retains append-only base and optional weak-reacquire
@@ -671,9 +671,14 @@ attempt evidence, including command/readback, settling contract, CR3/report,
 adapter physical count, rejected-quality provenance, and selected-attempt ID.
 The analyzer reads `commands.jsonl` and `capture-attempts.jsonl`, independently
 recomputes physical/auto-exposure/reacquire counters, and compares them with
-`run.json`. The absolute 250-CR3 bound remains `proposed_not_frozen`; the dry
-plan reports an expected range and a maximum 9600 seconds of 60-second settling
-events for Planner review.
+`run.json`. The absolute 250-CR3 bound is Planner-frozen; the dry plan reports
+`baseline_physical_range_without_weak_reacquire=82..170` and
+`permitted_physical_range_with_weak_reacquire=82..250`, plus a maximum 9600
+seconds of 60-second settling events for Planner review. Formal v2 and P7-R1
+share one narrow validator for both off responses and the single exact source-on
+readback. Formal target logical/physical counts and result status are rebuilt
+from captures, samples, attempts and auto-exposure structure instead of trusting
+target-row self-reports.
 The execution CLI is fail-closed unless both `--allow-high-output` and the exact
 `--named-experiment p7_targeted_reference_repeatability_v2` are supplied.
 P7-R1 still requires Planner acceptance plus a new explicit named-experiment

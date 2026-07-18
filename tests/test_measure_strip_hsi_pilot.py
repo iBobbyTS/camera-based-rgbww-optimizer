@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import hashlib
+import copy
 import tempfile
 import unittest
 from pathlib import Path
@@ -233,6 +234,141 @@ class MeasureStripHsiPilotTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "confirmed group size"):
                 analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
 
+    def test_v2_analyzer_reconstructs_counts_status_and_frozen_anchor_truth(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            policy = _frozen_policy_v2_file(root)
+            plan = subject.build_strip_hsi_pilot_plan(policy_version="v2", policy_v2_config_path=policy)
+            run_root = root / "run"
+            _execute_fake_v2_plan(plan, run_root)
+            _write_shell_cleanup(run_root)
+            original = [json.loads(line) for line in (run_root / "target-results.jsonl").read_text(encoding="utf-8").splitlines()]
+
+            def write_rows(rows):
+                (run_root / "target-results.jsonl").write_text("\n".join(json.dumps(item) for item in rows) + "\n", encoding="utf-8")
+
+            rows = copy.deepcopy(original)
+            selected = rows[0]["feedback"]["selected_result"]
+            rows[0]["feedback"]["logical_observations_used"] = 0
+            selected["budget"]["logical_observations_used"] = 0
+            selected["budget"]["consumed"] = {key: 0 for key in selected["budget"]["consumed"]}
+            rows[0]["feedback"]["attempts"][rows[0]["feedback"]["selected_start_index"]]["result"] = selected
+            rows[0]["physical_budget"]["physical_cr3_used"] = 0
+            write_rows(rows)
+            with self.assertRaisesRegex(ValueError, "logical ledger|raw evidence|physical ledger"):
+                analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
+
+            rows = copy.deepcopy(original)
+            rows[0]["result_status"] = rows[0]["gamut_status"] = "unconfirmed"
+            write_rows(rows)
+            with self.assertRaisesRegex(ValueError, "result status"):
+                analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
+            write_rows(original)
+
+            commands = [json.loads(line) for line in (run_root / "commands.jsonl").read_text(encoding="utf-8").splitlines()]
+            anchor = next(item for item in commands if item["event"] == "ray_on_readback_verified")
+            anchor["expected"]["hue"] = anchor["readback"]["data"]["hue"] = 1
+            (run_root / "commands.jsonl").write_text("\n".join(json.dumps(item) for item in commands) + "\n", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "frozen plan"):
+                analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
+
+    def test_v2_analyzer_rejects_duplicate_capture_and_auto_audit_drift(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            policy = _frozen_policy_v2_file(root)
+            plan = subject.build_strip_hsi_pilot_plan(policy_version="v2", policy_v2_config_path=policy)
+            run_root = root / "duplicate"
+            _execute_fake_v2_plan(plan, run_root)
+            _write_shell_cleanup(run_root)
+            rows = [json.loads(line) for line in (run_root / "target-results.jsonl").read_text(encoding="utf-8").splitlines()]
+            selected = rows[0]["feedback"]["selected_result"]
+            selected["samples"][1]["observation"]["capture_id"] = selected["samples"][0]["observation"]["capture_id"]
+            rows[0]["feedback"]["attempts"][rows[0]["feedback"]["selected_start_index"]]["result"] = selected
+            (run_root / "target-results.jsonl").write_text("\n".join(json.dumps(item) for item in rows) + "\n", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "duplicate"):
+                analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
+
+            run_root = root / "auto"
+            _execute_fake_v2_plan(plan, run_root)
+            _write_shell_cleanup(run_root)
+            captures = [json.loads(line) for line in (run_root / "captures.jsonl").read_text(encoding="utf-8").splitlines()]
+            auto = next(item for item in captures if item.get("target_index") is not None and item.get("capture", {}).get("auto_exposure_audit"))
+            auto["capture"]["auto_exposure_audit"]["capture_count"] = 2
+            (run_root / "captures.jsonl").write_text("\n".join(json.dumps(item) for item in captures) + "\n", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "audit structure"):
+                analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
+
+    def test_v2_analyzer_rejects_unselected_cross_target_orphan_and_nonzero_off(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            policy = _frozen_policy_v2_file(root)
+            plan = subject.build_strip_hsi_pilot_plan(policy_version="v2", policy_v2_config_path=policy)
+            run_root = root / "run"
+            _execute_fake_v2_plan(plan, run_root)
+            _write_shell_cleanup(run_root)
+            rows_path = run_root / "target-results.jsonl"
+            captures_path = run_root / "captures.jsonl"
+            commands_path = run_root / "commands.jsonl"
+            original_rows = [json.loads(line) for line in rows_path.read_text(encoding="utf-8").splitlines()]
+            original_captures = [json.loads(line) for line in captures_path.read_text(encoding="utf-8").splitlines()]
+            original_commands = [json.loads(line) for line in commands_path.read_text(encoding="utf-8").splitlines()]
+
+            def write(path, values):
+                path.write_text("\n".join(json.dumps(item) for item in values) + "\n", encoding="utf-8")
+
+            rows = copy.deepcopy(original_rows)
+            malformed = copy.deepcopy(rows[0]["feedback"]["attempts"][0])
+            malformed["start_index"] = 1
+            malformed["result"]["goal_confirmed"] = False
+            malformed["result"]["confirmation_attempts"][0]["candidate_command"]["r"] += 1
+            rows[0]["feedback"]["attempts"].append(malformed)
+            rows[0]["feedback"]["attempt_count"] = 2
+            rows[0]["feedback"]["logical_observations_used"] += malformed["result"]["budget"]["logical_observations_used"]
+            write(rows_path, rows)
+            with self.assertRaisesRegex(ValueError, "confirmation command|duplicate"):
+                analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
+
+            rows = copy.deepcopy(original_rows)
+            other_capture = next(
+                sample["observation"]["capture_id"]
+                for sample in rows[1]["feedback"]["selected_result"]["samples"]
+            )
+            rows[0]["feedback"]["selected_result"]["samples"][0]["observation"]["capture_id"] = other_capture
+            rows[0]["feedback"]["attempts"][0]["result"] = rows[0]["feedback"]["selected_result"]
+            write(rows_path, rows)
+            with self.assertRaisesRegex(ValueError, "provenance"):
+                analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
+            write(rows_path, original_rows)
+
+            commands = copy.deepcopy(original_commands)
+            next(item for item in commands if item["event"] == "both_off")["strip_response"]["r"] = 1
+            write(commands_path, commands)
+            with self.assertRaisesRegex(ValueError, "frozen command"):
+                analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
+            write(commands_path, original_commands)
+
+            rows = copy.deepcopy(original_rows)
+            captures = copy.deepcopy(original_captures)
+            commands = copy.deepcopy(original_commands)
+            source_capture = next(item for item in captures if item.get("target_index") == 0 and not item["capture"].get("auto_exposure_audit"))
+            orphan = copy.deepcopy(source_capture)
+            orphan["capture_id"] += "-orphan"
+            captures.append(orphan)
+            for event in [item for item in commands if item["capture_id"] == source_capture["capture_id"]]:
+                copied = copy.deepcopy(event)
+                copied["capture_id"] = orphan["capture_id"]
+                commands.append(copied)
+            rows[0]["physical_budget"]["events"].append({
+                "phase": orphan["purpose"], "physical_cr3": 1,
+                "auto_exposure": False, "weak_reacquire": False,
+            })
+            rows[0]["physical_budget"]["physical_cr3_used"] += 1
+            write(captures_path, captures)
+            write(commands_path, commands)
+            write(rows_path, rows)
+            with self.assertRaisesRegex(ValueError, "orphan captures"):
+                analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
+
 
 def _execute_fake_plan(plan, root: Path, *, mismatch_readback: bool = False, sleep_calls=None):
     manifold = RayHsiManifold.load()
@@ -317,6 +453,10 @@ def _execute_fake_v2_plan(plan, root: Path):
         return {
             "capture": {"saved_file": str(raw), "byte_count": 3, "camera_backend": "remote"},
             "patch_statistics": str(report), "physical_capture_count": 1,
+            "auto_exposure_audit": ({
+                "capture_count": 1, "trials": [], "final": {"status": "accepted"},
+                "rejected_finals": [],
+            } if step.get("auto_exposure") else None),
         }
 
     def strip_light(cw, ww, r, g, b):

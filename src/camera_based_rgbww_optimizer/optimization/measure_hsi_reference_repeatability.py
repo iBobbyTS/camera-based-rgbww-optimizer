@@ -17,6 +17,7 @@ from camera_based_rgbww_optimizer.optimization.hsi_objective import (
     required_hsi_features_from_report,
 )
 from camera_based_rgbww_optimizer.optimization.measure_ray_hsi_manifold import _verify_readback
+from camera_based_rgbww_optimizer.optimization.hsi_source_evidence import validate_both_off
 
 from camera_based_rgbww_optimizer.measurement.hsi_policy_v2 import (
     HsiPolicyV2,
@@ -161,8 +162,9 @@ def build_targeted_reference_repeatability_plan(
                 "maximum_extra_physical_cr3": 8 * (int(auto_exposure_max_trials) - 1),
                 "maximum_weak_signal_reacquire_cr3": 80,
                 "maximum_total_physical_cr3": len(captures) + 8 * (int(auto_exposure_max_trials) - 1) + 80,
-                "expected_physical_cr3_range": [len(captures), len(captures) + 8 * (int(auto_exposure_max_trials) - 1)],
-                "absolute_cap_status": "proposed_not_frozen",
+                "baseline_physical_range_without_weak_reacquire": [len(captures), len(captures) + 8 * (int(auto_exposure_max_trials) - 1)],
+                "permitted_physical_range_with_weak_reacquire": [len(captures), len(captures) + 8 * (int(auto_exposure_max_trials) - 1) + 80],
+                "absolute_cap_status": "planner_frozen",
                 "maximum_60_second_settling_events": formal_ray + formal_strip + 80,
                 "maximum_60_second_settling_seconds": 60 * (formal_ray + formal_strip + 80),
             },
@@ -260,6 +262,7 @@ def execute_targeted_reference_repeatability_plan(
             "at": _utc_now(), "event": "both_off", "capture_id": capture_id,
             "strip_response": dict(strip), "ray_response": dict(ray),
         })
+        validate_both_off(strip, ray, curve)
 
     def acquire(step: Mapping[str, Any]) -> dict[str, Any]:
         capture_id = str(step["capture_id"])

@@ -43,6 +43,7 @@ from camera_based_rgbww_optimizer.optimization.hsi_objective import (
     evaluate_hsi_observation_v2,
     required_hsi_features_from_report,
 )
+from camera_based_rgbww_optimizer.optimization.hsi_source_evidence import validate_both_off
 from camera_based_rgbww_optimizer.optimization.measure_cct_multipatch_pilot import WeakSignalEnvelopeExhausted
 from camera_based_rgbww_optimizer.optimization.measure_ray_hsi_manifold import _verify_readback
 from camera_based_rgbww_optimizer.optimization.multipatch_solver import solve_piecewise_basis_seed
@@ -331,9 +332,12 @@ def execute_strip_hsi_pilot_plan(
 
     def both_off(capture_id: str) -> None:
         strip_response = strip_light_fn(0, 0, 0, 0, 0)
-        _append_jsonl(root / "commands.jsonl", {"at": _utc_now(), "event": "strip_off", "capture_id": capture_id, "response": dict(strip_response)})
         ray_response = ray_off_fn()
-        _append_jsonl(root / "commands.jsonl", {"at": _utc_now(), "event": "ray_off", "capture_id": capture_id, "response": dict(ray_response)})
+        _append_jsonl(root / "commands.jsonl", {
+            "at": _utc_now(), "event": "both_off", "capture_id": capture_id,
+            "strip_response": dict(strip_response), "ray_response": dict(ray_response),
+        })
+        validate_both_off(strip_response, ray_response, curve_config)
 
     def capture_source(
         *,
@@ -381,7 +385,7 @@ def execute_strip_hsi_pilot_plan(
             if dict(response) not in (normalized, expected_response):
                 raise RuntimeError(f"strip command response mismatch for {capture_id}")
             _append_jsonl(root / "commands.jsonl", {
-                "at": _utc_now(), "event": "strip_on", "capture_id": capture_id,
+                "at": _utc_now(), "event": "strip_on_readback_verified", "capture_id": capture_id,
                 "requested_command": normalized, "expected_response": expected_response,
                 "response": dict(response), "response_verified": True,
             })
@@ -400,9 +404,7 @@ def execute_strip_hsi_pilot_plan(
             if source == "strip":
                 exposure_ready.add(target_index)
         finally:
-            if source == "strip":
-                strip_light_fn(0, 0, 0, 0, 0)
-            _append_jsonl(root / "commands.jsonl", {"at": _utc_now(), "event": f"{source}_off", "capture_id": capture_id})
+            both_off(capture_id)
         if source == "ambient":
             return {"capture_id": capture_id, "capture": capture}
         report = _load_json(Path(capture["patch_statistics"]))
@@ -467,8 +469,7 @@ def execute_strip_hsi_pilot_plan(
                 "capture": capture,
             })
         finally:
-            response = ray_off_fn()
-            _append_jsonl(root / "commands.jsonl", {"at": _utc_now(), "event": "ray_off", "capture_id": capture_id, "response": dict(response)})
+            both_off(capture_id)
         report = _load_json(Path(capture["patch_statistics"]))
         features = required_hsi_features_from_report(report, required_features)
         record = {

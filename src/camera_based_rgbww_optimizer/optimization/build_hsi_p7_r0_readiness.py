@@ -19,6 +19,7 @@ SOURCE_FILES = (
     PROJECT_ROOT / "src/camera_based_rgbww_optimizer/optimization/hsi_budget.py",
     PROJECT_ROOT / "src/camera_based_rgbww_optimizer/optimization/analyze_hsi_policy_v2_replay.py",
     PROJECT_ROOT / "src/camera_based_rgbww_optimizer/optimization/analyze_strip_hsi_pilot.py",
+    PROJECT_ROOT / "src/camera_based_rgbww_optimizer/optimization/hsi_source_evidence.py",
     PROJECT_ROOT / "src/camera_based_rgbww_optimizer/optimization/build_hsi_p7_r0_readiness.py",
     PROJECT_ROOT / "src/camera_based_rgbww_optimizer/optimization/measure_hsi_reference_repeatability.py",
     PROJECT_ROOT / "src/camera_based_rgbww_optimizer/optimization/analyze_hsi_reference_repeatability.py",
@@ -56,16 +57,16 @@ def build_readiness(
         or fake_analysis.get("anchor_validation", {}).get("anchor_count") != 12
         or fake_analysis.get("target_evidence_validation", {}).get("three_layer_result_audit") != "pass"
     ):
-        raise ValueError("P7-R0C fake sentinel did not close the formal v2 analyzer")
+        raise ValueError("P7-R0D fake sentinel did not close the formal v2 evidence analyzer")
     physical = dry_run["measurement"]["physical_capture_audit"]
-    if physical.get("absolute_cap_status") != "proposed_not_frozen":
-        raise ValueError("P7-R0C must not freeze the P7-R1 physical cap")
+    if physical.get("absolute_cap_status") != "planner_frozen" or int(physical.get("maximum_total_physical_cr3", -1)) != 250:
+        raise ValueError("P7-R0D requires the Planner-frozen 250-CR3 absolute cap")
     return {
         "schema_version": 2,
-        "readiness": "P7-R0C-offline-v2",
+        "readiness": "P7-R0D-offline-v2",
         "status": "ready_for_planner_review",
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "authorization_consumed": "P7-R0C_offline_only",
+        "authorization_consumed": "P7-R0D_offline_only",
         "inputs": {
             "frozen_sentinel_run": {
                 "path": str(DEFAULT_SENTINEL_RUN),
@@ -97,7 +98,7 @@ def build_readiness(
         "v1_replay": replay["v1_replay"],
         "v2_synthetic_coverage": replay["v2_synthetic_coverage"],
         "old_sentinel_holdout_replay": replay["old_sentinel_holdout_replay"],
-        "proposed_real_capture_budget": replay["solver_architecture"],
+        "solver_architecture": replay["solver_architecture"],
         "p7_r1_draft": {
             "experiment": dry_run["experiment"],
             "formal_ray_count": dry_run["measurement"]["formal_ray_count"],
@@ -106,11 +107,13 @@ def build_readiness(
             "execution_surface_implemented_not_run": True,
             "maximum_total_physical_cr3": dry_run["measurement"]["physical_capture_audit"]["maximum_total_physical_cr3"],
             "physical_cap_status": physical["absolute_cap_status"],
-            "expected_physical_cr3_range": physical["expected_physical_cr3_range"],
+            "baseline_physical_range_without_weak_reacquire": physical["baseline_physical_range_without_weak_reacquire"],
+            "permitted_physical_range_with_weak_reacquire": physical["permitted_physical_range_with_weak_reacquire"],
             "maximum_60_second_settling_seconds": physical["maximum_60_second_settling_seconds"],
             "retained_attempt_evidence": True,
             "commands_jsonl_audited": True,
             "physical_count_independently_recomputed": True,
+            "frozen_plan_source_and_off_responses_audited": True,
             "candidate_status": dry_run["execution_contract"]["candidate_status"],
             "candidate_formal_capture_eligible": dry_run["execution_contract"]["candidate_formal_capture_eligible"],
         },
@@ -124,7 +127,8 @@ def build_readiness(
             "confirmed_face_selection_priority": True,
             "complete_confirmation_groups": True,
             "best_valid_final_verification_uses_existing_group_budget": True,
-            "formal_v2_analyzer": "fake_integration_pass",
+            "formal_v2_analyzer": "raw_evidence_reconstruction_fake_integration_pass",
+            "self_reported_and_recomputed_values_reported": True,
         },
         "repeatability_audit": {
             "within_state_command_block_centered": True,
@@ -139,6 +143,7 @@ def build_readiness(
             "remaining/boundary/holdout behavior",
         ],
         "planner_review_required": True,
+        "named_experiment_authorized": False,
         "locked": replay["locked"],
     }
 

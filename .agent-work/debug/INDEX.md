@@ -2,6 +2,7 @@
 
 | file | summary |
 | --- | --- |
+| resolved/20260718-p7-r0d-evidence-reconstruction.md | P7-R0D now reconstructs formal target facts and P7-R1 source/physical evidence from retained artifacts against the frozen plan. |
 | active/20260714-p1-exposure-response.md | CR3 recorded exposure fixes the large P1 shutter error; residual high-signal RAW shape still blocks thresholds and P2 pending a lower-exposure full P1. |
 | active/20260712-white-lut-repeatability-and-strict-anchors.md | Measure repeatability, validate strict anchors, and explain the cross-day regression of near-boundary 14x5 nodes. |
 

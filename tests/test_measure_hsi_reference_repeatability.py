@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import copy
 import tempfile
 import unittest
 from pathlib import Path
@@ -36,6 +37,12 @@ class MeasureHsiReferenceRepeatabilityTests(unittest.TestCase):
         self.assertFalse(plan["formal_capture_eligible"])
         self.assertEqual(plan["authorization"]["status"], "not_authorized_for_execution")
         self.assertEqual(plan["offline_contract"]["network_calls"], 0)
+        physical = plan["measurement"]["physical_capture_audit"]
+        self.assertEqual(physical["baseline_physical_range_without_weak_reacquire"], [82, 170])
+        self.assertEqual(physical["permitted_physical_range_with_weak_reacquire"], [82, 250])
+        self.assertEqual(physical["maximum_total_physical_cr3"], 250)
+        self.assertEqual(physical["absolute_cap_status"], "planner_frozen")
+        self.assertEqual(physical["maximum_60_second_settling_seconds"], 9600)
         camera.assert_not_called()
         strip.assert_not_called()
         ray.assert_not_called()
@@ -216,6 +223,169 @@ class MeasureHsiReferenceRepeatabilityTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "command evidence|readback mismatch"):
                 analyzer.analyze_reference_repeatability_run(root2, monte_carlo_samples=1000, bootstrap_replicates=100)
 
+    def test_analyzer_compares_retained_evidence_to_frozen_plan_and_all_counters(self):
+        plan = subject.build_targeted_reference_repeatability_plan(
+            named_experiment_authorization=subject.EXPERIMENT_NAME,
+        )
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir) / "run"
+            _execute_fake(plan, root)
+            captures = [json.loads(line) for line in (root / "captures.jsonl").read_text(encoding="utf-8").splitlines()]
+            attempts = [json.loads(line) for line in (root / "capture-attempts.jsonl").read_text(encoding="utf-8").splitlines()]
+            commands = [json.loads(line) for line in (root / "commands.jsonl").read_text(encoding="utf-8").splitlines()]
+            run = json.loads((root / "run.json").read_text(encoding="utf-8"))
+            feature_ids = analyzer.HsiPolicyV2.load(plan["inputs"]["policy_v2_waiting"]["path"]).artifact["feature_set"]["ids"]
+
+            tampered_captures = copy.deepcopy(captures)
+            tampered_attempts = copy.deepcopy(attempts)
+            tampered_commands = copy.deepcopy(commands)
+            ray_record = next(item for item in tampered_captures if item["source"] == "ray" and item["plan_step"]["state"]["hue"] == 0)
+            attempt_id = ray_record["selected_attempt_capture_id"]
+            ray_record["readback"]["data"]["hue"] = 1
+            ray_record["plan_step"]["state"]["hue"] = 1
+            next(item for item in tampered_attempts if item["attempt_capture_id"] == attempt_id)["readback"]["data"]["hue"] = 1
+            ray_on = next(item for item in tampered_commands if item["capture_id"] == attempt_id and "ray_on" in item["event"])
+            ray_on["expected"]["hue"] = ray_on["readback"]["data"]["hue"] = 1
+            with self.assertRaisesRegex(ValueError, "frozen plan"):
+                analyzer._audit_capture_contract(
+                    tampered_captures, tampered_attempts, tampered_commands, feature_ids,
+                    run=run, physical_contract=plan["measurement"]["physical_capture_audit"], plan=plan,
+                )
+
+            nonzero = copy.deepcopy(commands)
+            next(item for item in nonzero if item["event"] == "both_off")["strip_response"]["r"] = 1
+            with self.assertRaisesRegex(ValueError, "frozen command"):
+                analyzer._audit_capture_contract(
+                    captures, attempts, nonzero, feature_ids, run=run,
+                    physical_contract=plan["measurement"]["physical_capture_audit"], plan=plan,
+                )
+            foreign = copy.deepcopy(commands)
+            event = copy.deepcopy(next(item for item in foreign if item["event"] == "strip_on_readback_verified"))
+            event["capture_id"] = next(item for item in attempts if item["source"] == "ray")["attempt_capture_id"]
+            foreign.append(event)
+            with self.assertRaisesRegex(ValueError, "grammar"):
+                analyzer._audit_capture_contract(
+                    captures, attempts, foreign, feature_ids, run=run,
+                    physical_contract=plan["measurement"]["physical_capture_audit"], plan=plan,
+                )
+            drift_run = dict(run)
+            drift_run["base_physical_cr3_count"] += 1
+            with self.assertRaisesRegex(ValueError, "counter mismatch"):
+                analyzer._audit_capture_contract(
+                    captures, attempts, commands, feature_ids, run=drift_run,
+                    physical_contract=plan["measurement"]["physical_capture_audit"], plan=plan,
+                )
+
+    def test_runner_nonzero_both_off_fails_and_python_cleanup_runs(self):
+        plan = subject.build_targeted_reference_repeatability_plan(
+            named_experiment_authorization=subject.EXPERIMENT_NAME,
+        )
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir) / "run"
+            with self.assertRaisesRegex(ValueError, "intensity zero"):
+                _execute_fake(plan, root, nonzero_off=True)
+            cleanup = json.loads((root / "all-off-python.json").read_text(encoding="utf-8"))
+        self.assertTrue(all(item["ok"] for item in cleanup["steps"]))
+
+    def test_analyzer_rejects_strip_cotamper_orphan_events_all_counter_drift_and_auto_one_over(self):
+        plan = subject.build_targeted_reference_repeatability_plan(
+            named_experiment_authorization=subject.EXPERIMENT_NAME,
+        )
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir) / "run"
+            _execute_fake(plan, root)
+            captures = [json.loads(line) for line in (root / "captures.jsonl").read_text(encoding="utf-8").splitlines()]
+            attempts = [json.loads(line) for line in (root / "capture-attempts.jsonl").read_text(encoding="utf-8").splitlines()]
+            commands = [json.loads(line) for line in (root / "commands.jsonl").read_text(encoding="utf-8").splitlines()]
+            run = json.loads((root / "run.json").read_text(encoding="utf-8"))
+            physical = plan["measurement"]["physical_capture_audit"]
+            feature_ids = analyzer.HsiPolicyV2.load(plan["inputs"]["policy_v2_waiting"]["path"]).artifact["feature_set"]["ids"]
+
+            strip_captures = copy.deepcopy(captures)
+            strip_attempts = copy.deepcopy(attempts)
+            strip_commands = copy.deepcopy(commands)
+            record = next(item for item in strip_captures if item["source"] == "strip")
+            attempt_id = record["selected_attempt_capture_id"]
+            response = next(item for item in strip_commands if item["capture_id"] == attempt_id and item["event"] == "strip_on_readback_verified")["response"]
+            response["r"] = int(response.get("r", 0)) + 1
+            next(item for item in strip_attempts if item["attempt_capture_id"] == attempt_id)["readback"] = copy.deepcopy(response)
+            record["readback"] = copy.deepcopy(response)
+            with self.assertRaisesRegex(ValueError, "frozen command"):
+                analyzer._audit_capture_contract(
+                    strip_captures, strip_attempts, strip_commands, feature_ids,
+                    run=run, physical_contract=physical, plan=plan,
+                )
+
+            orphan_commands = copy.deepcopy(commands)
+            orphan = copy.deepcopy(orphan_commands[0])
+            orphan["capture_id"] = "unknown-attempt"
+            orphan_commands.append(orphan)
+            with self.assertRaisesRegex(ValueError, "orphan"):
+                analyzer._audit_capture_contract(
+                    captures, attempts, orphan_commands, feature_ids,
+                    run=run, physical_contract=physical, plan=plan,
+                )
+
+            for counter in (
+                "logical_captures_completed", "formal_captures_completed",
+                "physical_cr3_count", "base_physical_cr3_count",
+                "auto_exposure_physical_cr3_count", "auto_exposure_cache_miss_count",
+                "weak_signal_reacquire_count", "weak_signal_reacquire_physical_cr3_count",
+            ):
+                with self.subTest(counter=counter):
+                    drift = dict(run)
+                    drift[counter] += 1
+                    with self.assertRaisesRegex(ValueError, "counter mismatch"):
+                        analyzer._audit_capture_contract(
+                            captures, attempts, commands, feature_ids,
+                            run=drift, physical_contract=physical, plan=plan,
+                        )
+
+            over_attempts = copy.deepcopy(attempts)
+            auto = next(item for item in over_attempts if item["auto_exposure"])
+            auto["auto_exposure_audit"]["trials"] = [{"index": index} for index in range(12)]
+            auto["auto_exposure_audit"]["capture_count"] = 13
+            auto["physical_capture_count"] = 13
+            auto["capture"]["auto_exposure_audit"] = copy.deepcopy(auto["auto_exposure_audit"])
+            auto["capture"]["physical_capture_count"] = 13
+            over_captures = copy.deepcopy(captures)
+            logical = next(item for item in over_captures if item["capture_id"] == auto["logical_capture_id"])
+            logical["capture"] = copy.deepcopy(auto["capture"])
+            over_run = dict(run)
+            for counter in ("physical_cr3_count", "base_physical_cr3_count", "auto_exposure_physical_cr3_count"):
+                over_run[counter] += 12
+            with self.assertRaisesRegex(ValueError, "per-cache-miss cap"):
+                analyzer._audit_capture_contract(
+                    over_captures, over_attempts, commands, feature_ids,
+                    run=over_run, physical_contract=physical, plan=plan,
+                )
+
+    def test_analyzer_rejects_selecting_weak_rejected_base(self):
+        plan = subject.build_targeted_reference_repeatability_plan(
+            named_experiment_authorization=subject.EXPERIMENT_NAME,
+        )
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir) / "run"
+            _execute_fake(plan, root, weak_at=1)
+            captures = [json.loads(line) for line in (root / "captures.jsonl").read_text(encoding="utf-8").splitlines()]
+            attempts = [json.loads(line) for line in (root / "capture-attempts.jsonl").read_text(encoding="utf-8").splitlines()]
+            commands = [json.loads(line) for line in (root / "commands.jsonl").read_text(encoding="utf-8").splitlines()]
+            run = json.loads((root / "run.json").read_text(encoding="utf-8"))
+            feature_ids = analyzer.HsiPolicyV2.load(plan["inputs"]["policy_v2_waiting"]["path"]).artifact["feature_set"]["ids"]
+            record = captures[1]
+            logical_attempts = [item for item in attempts if item["logical_capture_id"] == record["capture_id"]]
+            base, reacquire = logical_attempts
+            base["selected_for_formal"] = True
+            reacquire["selected_for_formal"] = False
+            record["selected_attempt_capture_id"] = base["attempt_capture_id"]
+            record["capture"] = copy.deepcopy(base["capture"])
+            record["readback"] = copy.deepcopy(base["readback"])
+            with self.assertRaisesRegex(ValueError, "feature provenance|weak reacquire|selected"):
+                analyzer._audit_capture_contract(
+                    captures, attempts, commands, feature_ids, run=run,
+                    physical_contract=plan["measurement"]["physical_capture_audit"], plan=plan,
+                )
+
     def test_finalizer_branch_matrix_is_deterministic_and_never_implies_formal_eligibility(self):
         cases = {
             "R-PASS": ({"failure_branch": None, "reference_epoch_shift": False}, {"failure_branch": None, "classes_above_p1_floor": []}, {"failure_branch": None}),
@@ -259,7 +429,7 @@ class MeasureHsiReferenceRepeatabilityTests(unittest.TestCase):
 def _execute_fake(
     plan, root: Path, *, fail_at: int | None = None,
     weak_at: int | None = None, mismatch_reacquire: bool = False,
-    cleanup_ok: bool = True,
+    cleanup_ok: bool = True, nonzero_off: bool = False,
 ):
     manifold = RayHsiManifold.load()
     ray_state = {}
@@ -297,7 +467,10 @@ def _execute_fake(
         return {
             "capture": {"saved_file": str(raw), "byte_count": 3, "camera_backend": "remote"},
             "patch_statistics": str(report), "physical_capture_count": 1,
-            "auto_exposure_audit": ({"capture_count": 1} if step.get("auto_exposure") else None),
+            "auto_exposure_audit": ({
+                "capture_count": 1, "trials": [], "final": {"status": "accepted"},
+                "rejected_finals": [],
+            } if step.get("auto_exposure") else None),
         }
 
     def strip_light(cw, ww, r, g, b):
@@ -319,7 +492,7 @@ def _execute_fake(
     return subject.execute_targeted_reference_repeatability_plan(
         plan, run_dir=root, capture_step_fn=capture_step,
         strip_light_fn=strip_light,
-        ray_off_fn=lambda: {"code": 0, "data": {"intensity": 0}},
+        ray_off_fn=lambda: {"code": 0, "data": {"intensity": 1 if nonzero_off else 0}},
         ray_set_hsi_fn=ray_set_hsi,
         ray_get_hsi_fn=ray_get_hsi,
         sleep_fn=lambda _seconds: None,

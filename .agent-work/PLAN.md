@@ -4,13 +4,13 @@
 
 **Planner 最新决策日期：** 2026-07-18
 
-**当前 `HEAD`：** `99ec0623ed7ba1ee1d1ecb9c6539471921aeb770`
+**当前 `HEAD`：** `b4779036d9bc9610e967fa5d9514a39463034551`
 
-**当前活动阶段：** Stage 6 / P7-R0C analyzer/confirmation/group-audit/provenance 离线收口
+**当前活动阶段：** Stage 6 / P7-R0D formal evidence audit 等待 Planner 复验
 
-**当前阶段状态：** `planner_rejected_p7_r0b_waiting_for_executor_p7_r0c`
+**当前阶段状态：** `p7_r0d_offline_complete_waiting_for_planner_review`
 
-**下一条唯一动作：** Executor 严格按第 8.7.18 节执行 `P7-R0C` 纯离线收口：接通并测试正式 v2 analyzer、修复 confirmed-start 选择和完整 confirmation/final-verification、按 state/command/block 中心化 repeatability audit，并补齐 P7-R1 weak-reacquire/source/physical provenance。完成规定的回归、全套测试、replay、dry-run/readiness 后交还 Planner 复验。不得连接设备、生成真实 CR3、读取 `.env`、执行真实 all-off、运行 `p7_targeted_reference_repeatability_v2`、重跑 sentinel、执行 remaining 9、boundary、holdout、P8 或安装任何 LUT。
+**下一条唯一动作：** Planner 复验第 8.7.22 节 P7-R0D retained evidence 与 deterministic tamper tests，并决定接受或退回；不得据此执行 `p7_targeted_reference_repeatability_v2`。在 Planner 另行明确授权前，不得连接设备、生成真实 CR3、读取 `.env`、执行真实 all-off、重跑 sentinel、执行 remaining 9、boundary、holdout、P8 或安装任何 LUT。
 
 **上游依据：**
 
@@ -1432,6 +1432,166 @@ P7-R1 dry-run 仍为 82 logical / 80 formal。按现有 adapter contract 的 exp
 
 本节完成后交还 Planner。Planner 接受或拒绝 P7-R0C，并另行决定是否授权 exact named experiment `p7_targeted_reference_repeatability_v2`。在此之前所有设备路径、新 sentinel、remaining 9、boundary、holdout 与 P8 继续锁定；Advisor 不需要介入，除非必须改变 58-feature、联合 coverage 或 solver/target 架构。
 
+#### 8.7.20 Planner 对 P7-R0C 的复验决定（2026-07-18）
+
+```text
+decision = reject_for_named_experiment_authorization
+preserve_completed_work = true
+next_phase = P7-R0D
+solver_caps_54_67_and_62_75 = accepted_unchanged
+p7_r1_absolute_physical_cap = frozen_at_250
+p7_r1_baseline_range_without_weak_reacquire = 82..170
+p7_targeted_reference_repeatability_v2 = not_authorized
+advisor_escalation = not_required
+goal = Blocked
+```
+
+Planner 以当前 `HEAD=b4779036d9bc9610e967fa5d9514a39463034551` 为验收对象，核对五个交接 artifact hash 均与 8.7.19 一致，并独立复跑 full suite：`395/395`，`129.051 s`，exit 0。该测试结果确认当前基线稳定，但以下两个 formal evidence contract 仍可被确定性反例绕过，因此不能放行实机：
+
+1. **`R0C-REV-001`：formal v2 analyzer 的 budget/status audit 仍依赖 target row 自报值。**
+   - 相关实现：`optimization/analyze_strip_hsi_pilot.py::_validate_v2_target_evidence`。
+   - 当前只检查 logical/physical 数字不超过上限，没有从 `captures.jsonl`、sample observation capture ID、measurement rejection、confirmation group 和 physical event ledger 重算，也没有验证 `result_status` 与 confirmed/spread/feedback status 的语义关系。
+   - Planner 离线反例 A：fake v2 sentinel 实际保留 29 条 capture rows，把首目标的 target-level logical/physical 及 selected start logical 自报值统一改为 `0` 后，analyzer 仍返回 `budget_audit=pass`、`ready_for_sentinel_branch`。
+   - Planner 离线反例 B：把一个 `goal_confirmed=true` 的首目标行改写为 `result_status=gamut_status=unconfirmed` 后，analyzer 仍返回 `ready_for_sentinel_branch`、`blocking_count=0`。
+   - 影响：落盘 target result、budget 或状态映射发生 runner bug/证据漂移时，formal analyzer 不能 fail closed；8.7.18 A 所称“完整审计”尚未成立。
+
+2. **`R0C-REV-002`：P7-R1 exact readback/source/physical audit 仍验证内部自洽，而非冻结 plan 真值。**
+   - 相关实现：`optimization/measure_hsi_reference_repeatability.py::both_off/acquire` 与 `optimization/analyze_hsi_reference_repeatability.py::_audit_capture_contract`。
+   - Analyzer 只比较 command event readback 与 attempt readback 是否相等，没有把 Ray readback 与 `plan_step.state`、strip response 与冻结 command/curve payload 比较；`both_off` 只检查事件名首尾，不验证返回 payload 为五通道零/Ray intensity 零，也不拒绝同一 attempt 内的异源或多余 on event。
+   - `base_physical_cr3_count`、logical/formal completed counters、auto-exposure 总量/单 cache-miss 上限没有全部从 retained evidence 重算并与 `run.json` 比较。存在 weak reacquire 时，analyzer 也必须证明被选中的一定是通过质量门的 reacquire，而不是已经记录 weak-only rejection 的 base。
+   - Planner 离线反例：把一个冻结计划 H0/S0 Ray attempt 的 command event、attempt 和 logical row readback 一致改成 H1，同时把 `base_physical_cr3_count` 从 82 改成 181，`_audit_capture_contract` 仍返回 `source_isolation_and_readback=pass`。
+   - 影响：错误设备状态、错误选择 attempt 或计数漂移可能进入 reference/repeatability calibration；8.7.18 D 所称“独立重算全部 physical counters/exact readback”尚未成立。
+
+以下 P7-R0C 成果通过本轮 Planner 复验并冻结保留，不得在 P7-R0D 重写：
+
+- v1/v2 显式 analyzer dispatch 与 waiting/candidate hard rejection；
+- confirmed-first multiseed；完整 n=3/n=5 confirmation group；best-valid final verification；
+- `54/67`、`62/75`、2 starts、8 feedback attempts/start、2 rebases/start、2 confirmation groups/start；
+- state/command/block 去中心的 repeatability、真实 chronology trend 与独立 A/B shift；
+- append-only base/reacquire attempt 骨架、remote-only runner、Python/shell 双 cleanup；
+- `R-PASS`、`R-REFERENCE-EPOCH`、`R-REFERENCE-UNSTABLE`、`R-STRIP-CLASS-HIGH`、`uncertainty_unresolved` 分支矩阵；
+- P6、v1、waiting policy、旧 sentinel evidence 与 replay hash。
+
+Planner 对 P7-R1 physical budget 的决定：
+
+```text
+logical captures                     = 82
+auto-exposure cache misses           = 8
+maximum physical per cache miss      = 12
+extra auto-exposure physical CR3     = 8 * (12 - 1) = 88
+maximum one-shot weak reacquires     = 80
+absolute hard cap                    = 82 + 88 + 80 = 250
+```
+
+因此 `250` 从 `proposed_not_frozen` 改为 **Planner-frozen absolute hard cap**，不是预计拍摄量，也不得增加。`82..170` 只能命名为 `baseline_physical_range_without_weak_reacquire`；包含 weak reacquire 的允许范围是 `82..250`。最长 60 秒 settling 仍为 `9600 s`。冻结上限不等于授权执行；只有 P7-R0D evidence audit 验收后，Planner 才能另行授权 exact named experiment。
+
+上述问题是既定 58-feature、coverage、solver/target 架构内的实现合同缺口，不需要 Advisor 决策。Goal 继续保持 `Blocked`。
+
+#### 8.7.21 P7-R0D 唯一离线收口阶段
+
+P7-R0D 只允许修复 `R0C-REV-001/002` 及其行为测试、readiness、docs/skill/本计划状态。不得修改联合 coverage 数学、repeatability 阈值、58-feature、solver 预算、target 语义、P6 manifold 或任何 frozen artifact。
+
+##### A. Formal v2 analyzer 必须从原始证据重建 target 事实
+
+1. 对每个 target 建立 capture/command/sample/attempt 索引；sample observation 中的 `capture_id` 必须唯一指向同 target、同 source、同 phase 的 `captures.jsonl` 行，且 requested strip command 必须与 sample command 完全一致。对 12 个 reference anchors 同样从 plan target 重建 expected Ray HSI readback，并把 `reference-anchors.jsonl`、capture 与 command event 一一关联。不得只相信 row 内 `logical_observations_used`、`physical_budget` 或 anchor analysis 的 pass 字段。
+2. 从 retained capture 与 auto-exposure audit 重算 target physical CR3：
+   - fixed capture 为 1；auto-exposure 必须由 `trials + final + rejected_finals` 结构重算，不能只相信 `capture_count`；
+   - weak reacquire 单独计数，base 与 reacquire 都保留；
+   - 重算值必须等于 `HsiPhysicalBudget.events` 逐项求和及 `physical_cr3_used`，并分别满足 auto/weak/total cap；
+   - target 下所有 capture 必须被某个 solver observation 或明确的 bounded reacquire/exhaustion evidence 消费，禁止孤儿 capture。
+3. 重建每个 start 的 logical ledger：sample、measurement rejection、started confirmation group、probe/rebase/feedback phase 和 pre-capture exhaustion 必须能解释 `consumed` 各项；sum 必须等于 per-start/target logical count。任何缺失、重复、越界或无法解释的 observation 均拒绝。
+4. 对**所有 starts**而不只是 selected start 审计 confirmation：
+   - `confirmed|failed` group 必须恰好 n=3/n=5，sample index 有效且所有 command 等于 candidate command；
+   - partial group 只能由明确 measurement rejection、physical exhaustion 或安全失败中止，capture 数与证据一致；
+   - 每 start 最多两组，confirmed attempt 必须优先选择；`selected_result`、`best_valid_sample`、`selected_command` 和 multiseed overall status 必须从 attempts 重新推导。
+5. 从 selected result、confirmation spread 和 feedback status 重新推导唯一 `result_status`：
+   - `faithful` 必须是 confirmed 且 spread pass；
+   - confirmed 与 `unconfirmed|solver_budget_exhausted|measurement_unreachable` 不能并存；
+   - spread fail 或 coordinate `unresolved|uncertainty_unresolved` 必须进入 `uncertainty_unresolved`；
+   - analyzer 不得把语义不一致 target 标为 ready。
+6. Formal P7 的 source/off/readback event 也必须复用 B.1 的共享 validator；reference anchor readback、strip requested command、首次与末次 off response 任一不一致均拒绝。
+7. `target_evidence_validation.budget_audit/status_exclusivity/confirmation_group_audit` 只有在上述重建全部通过后才能写 `pass`；报告需同时输出自报值与重算值，便于 Planner 对照。
+
+##### B. P7-R1 runner/analyzer 必须验证冻结 plan，而非日志内部自洽
+
+1. 为 source command/off response 建立一个共享、窄职责 validator，供 formal P7 与 P7-R1 的 runner/analyzer 使用；不要在四处复制略有差异的条件。它必须：
+   - Ray HSI readback 精确匹配 plan `hue/sat/intensity`；
+   - strip response 精确匹配 plan 五通道 command 或同一 frozen curve 生成的 payload；
+   - `both_off` 的 strip response 必须为全零 payload，Ray response 必须明确显示 intensity 0；
+   - event grammar 必须恰为 `both_off -> one expected source_on/readback -> both_off`，ambient 只能有两个 `both_off`；拒绝异源 on、重复 on、未知/孤儿 command event。
+2. Runner 在任何 on/settling/capture 前验证第一次 `both_off` response；capture 后的 `both_off` 也必须验证并落盘。任一 mismatch 进入 failure evidence 和 Python cleanup，shell trap 保持不变。
+3. Analyzer 必须从 `plan_step` 重新构造 expected Ray/strip state，不接受 event 与 attempt 一起被一致改错。Base 与 weak reacquire 都独立验证 exact command/readback/off/on/off。
+4. 存在 weak reacquire 时：base 必须保留 weak-only quality rejection且 `selected_for_formal=false`；reacquire 必须 `selected_for_formal=true`、无 quality rejection、recorded exposure/58 features 合法，logical row capture/readback/feature provenance 必须指向 reacquire。无 reacquire 时只能选择通过质量门的 base。
+5. 从 retained attempts 与详细 auto-exposure audit 重算并逐一比对 `run.json`：
+   - `logical_captures_completed`、`formal_captures_completed`；
+   - `physical_cr3_count`、`base_physical_cr3_count`；
+   - `auto_exposure_cache_miss_count`、`auto_exposure_physical_cr3_count`；
+   - `weak_signal_reacquire_count`、`weak_signal_reacquire_physical_cr3_count`。
+6. 同时验证每次 auto-exposure `<=12`、总 auto physical `<=96`、cache miss `<=8`、weak count/physical `<=80`、total `<=250`。Runner 的 pre-call remaining budget 和 analyzer 的 post-run recomputation 必须独立成立。
+7. 更新 schema/readiness 名称：
+   - `baseline_physical_range_without_weak_reacquire = [82,170]`；
+   - `permitted_physical_range_with_weak_reacquire = [82,250]`；
+   - `maximum_total_physical_cr3 = 250`；
+   - `absolute_cap_status = planner_frozen`；
+   - `maximum_60_second_settling_seconds = 9600`。
+
+##### C. 必须新增的 deterministic 反例测试
+
+以下每项都必须先证明当前 `b477903` 会错误接受或缺少保护，再断言修复后 fail closed：
+
+1. fake v2 sentinel 实际有 capture evidence，但 target/self-reported logical 与 physical 同时改成 0；analyzer 必须拒绝。
+2. `goal_confirmed=true` 与 row `result_status=unconfirmed`；analyzer 必须拒绝。
+3. 未 selected start 的 malformed/超额/错误 command confirmation group；analyzer 必须拒绝。
+4. sample `capture_id` 指向另一 target、重复 capture、孤儿 capture、auto-exposure audit count 与结构不一致；逐项拒绝。
+5. Formal v2 reference anchor 的 command/anchor/logical readback 一致改成错误 Hue/SAT，或首次/末次 off response 非零；analyzer 必须按冻结 plan 拒绝。
+6. P7-R1 计划 H0/S0，但 command/attempt/logical readback 一致改成 H1/S0；analyzer 必须按冻结 plan 拒绝。
+7. P7-R1 strip response 与 attempt 自洽但不等于 frozen command/payload；拒绝。
+8. 非零 `both_off` response、Ray attempt 混入 strip-on、重复 source-on、孤儿 command event；逐项拒绝，runner mismatch 路径仍执行 Python cleanup。
+9. `base_physical_cr3_count`、logical/formal counter、auto total、单 cache miss、weak 或 total 任一 one-over/mismatch；逐项拒绝，adapter one-over 仍在调用前拒绝。
+10. weak reacquire 后错误选择已 rejected base，或 reacquire 自身质量/recorded exposure/readback 不合法；拒绝并保留两次 attempt 证据。
+11. 保留成功路径：82 logical/80 formal、无 weak 与一次 weak 两种 fake run 均通过 analyzer/finalizer，candidate 仍 `formal_capture_eligible=false`。
+
+##### D. 验证、交接与停止条件
+
+1. 复跑 focused P7、full suite、`compileall`、四个 P7 wrapper `zsh -n`、`git diff --check`、`codegraph sync`。
+2. 重新生成 P7-R0D fake formal-v2 analysis、P7-R1 dry-run 与 offline-readiness；不得复用或覆盖 R0C 证据目录。
+3. Readiness 必须明确：solver/repeatability 已接受；formal evidence audit 是本轮新增；250 为 Planner-frozen hard cap；真实 reference/repeatability 统计仍未测；named experiment 仍未授权。
+4. Executor 完成后更新本节证据、当前状态和唯一下一动作，然后停止并交还 Planner。不得自动 health/config/all_off、不得创建 real run 目录、不得调用设备或网络。
+5. 若严格 source/off response 无法由现有 API 返回值证明，停止并把具体字段/缺口交还 Planner；不得把“命令调用未抛异常”写成 exact readback。只有该情况可能需要 Planner 决定是否增加显式 device-state query；仍不需要 Advisor，除非必须改变测量/solver/coverage 语义。
+
+P7-R0D 验收前 Goal 继续保持 `Blocked`；`p7_targeted_reference_repeatability_v2`、新 sentinel、remaining 9、boundary、holdout 与 P8 全部锁定。
+
+#### 8.7.22 P7-R0D Executor 离线收口结果（2026-07-18）
+
+```text
+status = offline_complete_waiting_for_planner_review
+named_experiment_authorized = false
+device_or_network_calls = 0
+focused_tests = 31/31
+full_suite = 402/402 in 99.519 s
+```
+
+已完成 `R0C-REV-001/002` 的既定架构内收口：
+
+- 新增共享窄职责 source evidence validator。Formal v2 与 P7-R1 runner/analyzer 均验证首次/末次 strip 五通道零与 Ray intensity zero，并严格要求 ambient 为 `both_off -> both_off`、单源 attempt 为 `both_off -> exact source_on/readback -> both_off`；异源、重复、未知和孤儿 event fail closed。
+- Formal v2 analyzer 从 `captures.jsonl`、sample observation、confirmation group、measurement rejection、command event、auto-exposure 结构与 physical event ledger 重建每个 target 的 logical/physical/status/selection。报告同时输出 self-reported 与 recomputed 值；修改计数为零、confirmed/status 冲突、重复 capture ID、auto audit 漂移和 anchor 共同篡改均被 deterministic tests 拒绝。
+- P7-R1 analyzer 逐 logical capture 对照冻结 `plan.captures`，从 retained report 重算 58 features，从 `trials + final + rejected_finals` 重算 auto physical，验证 base/reacquire selection，并重算 logical/formal/base/auto/weak/total 全部 run counters。Runner 在 on/capture 前与 capture 后即时验证并落盘 off response；mismatch 仍进入 Python cleanup。
+- P7-R1 schema 冻结为 `baseline_physical_range_without_weak_reacquire=[82,170]`、`permitted_physical_range_with_weak_reacquire=[82,250]`、`maximum_total_physical_cr3=250`、`absolute_cap_status=planner_frozen`、`maximum_60_second_settling_seconds=9600`。冻结上限不构成执行授权。
+
+Retained evidence（全新目录，未复用 R0C）：
+
+```text
+run_dir = tmp/strip-hsi-pilot-offline/p7-r0d-v2-20260718-final-verified
+p7-r0d-v2-replay.json = 69914a5f99eac880ab290804cb79592b8e879ee3ab2cb9ba4ccb0210ab4bd988
+p7-r1-dry-run/plan.json = 42e748299e70ea2ee90d59bdecaf00f3c77b1cf08c0980450b2b6762a62927fd
+v2-fake-sentinel-analysis.json = 72acbfb7a6ef63af2d3ec1ac888eccc6d932a46db61267bc40a26fa613e2057f
+offline-readiness.json = f7f53dbbb21d7262ee7ef7e6b7c83d25f2310522b0c534e42ac024d45604aff0
+```
+
+验证通过：focused P7 `31/31`；full suite `402/402`（`99.519 s`）；`compileall`；四个 P7 wrapper `zsh -n`；`git diff --check`；`codegraph sync`。Fake formal analysis 为 `ready_for_sentinel_branch` 只表示离线 runner/analyzer integration 通过，不是实测 sentinel 或 named experiment 放行。当前 epoch reference compatibility、pre/post stability、四类 strip variance、新 sentinel-v2 convergence 与后续阶段仍未实测。
+
+本节完成后停止并交还 Planner。Goal 继续保持 `Blocked`；Advisor 不需要介入，除非 Planner 判断必须改变 58-feature、联合 coverage 或 solver/target 架构。
+
 ---
 
 ## 9. Phase D：剩余九点与合并分析
@@ -1761,21 +1921,22 @@ next_action =
 ### 当前初始值
 
 ```text
-current_phase = P7_R0C_COMPLETE_WAITING_FOR_PLANNER_REVIEW
-stage_status = offline_complete_waiting_for_planner_acceptance
-current_head = 99ec0623ed7ba1ee1d1ecb9c6539471921aeb770
-worktree_state = dirty; preserve all existing P1-P7, Phase A and advisor changes
+current_phase = P7_R0D_PLANNER_REVIEW
+stage_status = p7_r0d_offline_complete_waiting_for_planner_review
+current_head = b4779036d9bc9610e967fa5d9514a39463034551
+worktree_state = P7-R0D implementation validated and pending focused commit; preserve all committed P1-P7, Phase A and advisor changes
 authorization = offline_only; named_experiment:p7_sentinel_4 consumed; p7_targeted_reference_repeatability_v2 not authorized; no authorization for P7_R1/sentinel_v2/remaining/boundary/holdout/P8
 uncertainty_artifact_v1 = config/hsi/strip-hsi-uncertainty.json @ cedaa1e9d342beb7e464c4e38d77884ad8a7790771432ebdbb5a101ca604aa94; immutable diagnostic evidence
 uncertainty_artifact_v2 = config/hsi/strip-hsi-policy-v2-waiting.json @ db9ebef1503c5e54c989649c719c4a5f75445bbd5487edb14c274e1b2894f3b4; status waiting_for_targeted_measurement; formal_capture_eligible=false
-code_checkpoint = HEAD 99ec0623ed7ba1ee1d1ecb9c6539471921aeb770 + P7-R0C offline-readiness.json @ 806cd77ddb067faa32eb1f33f203ca274bb0e14ad66fe0965570a0e2a2f217bf
-run_dir = tmp/strip-hsi-pilot-offline/p7-r0c-v2-20260718-final
-analysis = v2-fake-sentinel-analysis.json @ 91058d2c28d075769f8078a7fed2718aec1dbc5149f919a0ef3b229651fe50a1; offline-readiness.json @ 806cd77ddb067faa32eb1f33f203ca274bb0e14ad66fe0965570a0e2a2f217bf
-completed_steps = Phase A-v1 + Phase B + authorized sentinel_4 capture/audit + P7-R0/R0B + Planner R0B review + P7-R0C A-E offline implementation/fake integration/replay/full validation
-failure_evidence = none in P7-R0C offline implementation; formal empirical P7-R1 reference/repeatability/coverage statistics remain unmeasured; 250 physical cap remains proposed_not_frozen
-cleanup_evidence = no device calls in P7-R0C; fake success/failure tests verify Python cleanup and shell failure rejection; wrapper syntax verifies independent trap; old sentinel dual cleanup evidence remains unchanged
-branch = P7_R0C_READY_FOR_PLANNER_REVIEW
-next_action = Planner accepts or rejects P7-R0C and separately decides whether to freeze/revise the 250 proposal and authorize exact named experiment p7_targeted_reference_repeatability_v2; no execution authorization exists now
+code_checkpoint = HEAD b4779036d9bc9610e967fa5d9514a39463034551 + validated P7-R0D worktree + offline-readiness.json @ f7f53dbbb21d7262ee7ef7e6b7c83d25f2310522b0c534e42ac024d45604aff0
+run_dir = tmp/strip-hsi-pilot-offline/p7-r0d-v2-20260718-final-verified
+analysis = P7-R0D closes R0C-REV-001/002 with raw evidence reconstruction and frozen-plan exact source audit; focused 31/31 and full suite 402/402 in 99.519 s
+completed_steps = Phase A-v1 + Phase B + authorized sentinel_4 capture/audit + P7-R0/R0B/R0C + Planner reviews + P7-R0D offline evidence reconstruction; returned to Planner
+failure_evidence = formal empirical P7-R1 reference/repeatability statistics and new sentinel-v2 remain unmeasured; no named experiment authorization exists
+cleanup_evidence = no device/network/.env/real all-off calls in P7-R0D; fake mismatch tests prove Python cleanup and wrapper syntax proves independent shell trap; old sentinel dual cleanup evidence remains unchanged
+physical_budget = absolute 250 Planner-frozen; baseline without weak reacquire 82..170; permitted with weak reacquire 82..250; maximum 60-second settling 9600 s
+branch = P7_R0D_OFFLINE_COMPLETE_PLANNER_REVIEW_REQUIRED
+next_action = Planner reviews section 8.7.22 and either accepts or returns P7-R0D; no execution authorization exists now
 ```
 
 ---

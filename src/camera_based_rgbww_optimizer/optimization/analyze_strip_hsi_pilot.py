@@ -10,8 +10,18 @@ from typing import Any
 from camera_based_rgbww_optimizer.measurement.hsi_policy_v2 import (
     FROZEN_STATUS,
     HsiPolicyV2,
+    evaluate_reference_difference,
+    summarize_within_block,
 )
-from camera_based_rgbww_optimizer.optimization.hsi_objective import P7_RESULT_STATUSES
+from camera_based_rgbww_optimizer.optimization.hsi_objective import (
+    P7_RESULT_STATUSES,
+    hsi_objective_sort_key,
+    required_hsi_features_from_report,
+)
+from camera_based_rgbww_optimizer.optimization.hsi_source_evidence import (
+    recompute_physical_count,
+    validate_attempt_event_grammar,
+)
 
 
 TARGET_SET_COUNTS = {"sentinel": 4, "remaining": 9}
@@ -205,8 +215,12 @@ def _analyze_strip_hsi_pilot_v2(run_dir: str | Path) -> dict[str, Any]:
     captures = _load_jsonl(root / "captures.jsonl")
     capture_validation = _validate_captures(captures)
     commands = _load_jsonl(root / "commands.jsonl")
-    command_validation = _validate_commands(captures, commands)
-    anchor_validation = _validate_v2_reference_blocks(root, plan)
+    curve = _load_json(Path(plan["inputs"]["code_duty_curve"]["path"]))
+    command_validation = _validate_v2_commands(captures, commands, plan=plan, curve=curve)
+    anchor_validation = _validate_v2_reference_blocks(
+        root, plan, captures=captures, commands=commands, curve=curve,
+        policy=policy,
+    )
     rows = _load_jsonl(root / "target-results.jsonl")
     expected_count = int(plan.get("measurement", {}).get("target_count", -1))
     if len(rows) != expected_count or int(run.get("completed_target_count", -1)) != expected_count:
@@ -226,7 +240,8 @@ def _analyze_strip_hsi_pilot_v2(run_dir: str | Path) -> dict[str, Any]:
     if target_set == "remaining" and expected_targets != REMAINING_TARGETS:
         raise ValueError("v2 P7 remaining target set drift")
     target_audit, points = _validate_v2_target_evidence(
-        rows, plan, policy_artifact_sha256=policy.artifact_sha256,
+        rows, plan, captures=captures, commands=commands,
+        curve=curve, policy_artifact_sha256=policy.artifact_sha256,
     )
     blocking = [
         point for point in points
@@ -261,7 +276,11 @@ def _analyze_strip_hsi_pilot_v2(run_dir: str | Path) -> dict[str, Any]:
     }
 
 
-def _validate_v2_reference_blocks(root: Path, plan: Mapping[str, Any]) -> dict[str, Any]:
+def _validate_v2_reference_blocks(
+    root: Path, plan: Mapping[str, Any], *, captures: Sequence[Mapping[str, Any]],
+    commands: Sequence[Mapping[str, Any]], curve: Mapping[str, Any],
+    policy: HsiPolicyV2,
+) -> dict[str, Any]:
     anchors = _load_jsonl(root / "reference-anchors.jsonl")
     if len(anchors) != 12:
         raise ValueError("v2 P7 requires exactly 12 reference anchor captures")
@@ -276,10 +295,84 @@ def _validate_v2_reference_blocks(root: Path, plan: Mapping[str, Any]) -> dict[s
     ]
     if actual != expected:
         raise ValueError("v2 P7 reference anchors are incomplete, reordered, or unexpected")
+    captures_by_id = {str(item["capture_id"]): item for item in captures}
+    commands_by_id = _group_commands(commands)
+    expected_by_position = {
+        position: {(int(item["hue"]), int(item["sat"]), int(item["repeat_index"])) for item in plan["reference_anchors"][position]}
+        for position in ("pre", "post")
+    }
+    for anchor in anchors:
+        capture_id = str(anchor["capture_id"])
+        capture = captures_by_id.get(capture_id)
+        key = (int(anchor["target"]["hue"]), int(anchor["target"]["sat"]), int(anchor["repeat_index"]))
+        if capture is None or capture.get("source") != "ray" or capture.get("target_index") is not None or key not in expected_by_position[str(anchor["position"])]:
+            raise ValueError("v2 P7 reference anchor capture provenance mismatch")
+        step = {"state": {**anchor["target"], "intensity_percent": plan["reference_anchors"]["intensity_percent"]}}
+        on = validate_attempt_event_grammar(
+            commands_by_id.get(capture_id, []), source="ray", plan_step=step,
+            curve=curve,
+        )
+        if anchor.get("readback") != on.get("readback"):
+            raise ValueError("v2 P7 reference anchor readback differs from command evidence")
+        report = _load_json(Path(capture["capture"]["patch_statistics"]))
+        recomputed_features = required_hsi_features_from_report(
+            report, policy.artifact["feature_set"]["ids"],
+        )
+        if anchor.get("feature_values") != recomputed_features:
+            raise ValueError("v2 P7 reference anchor feature provenance mismatch")
     pre = _load_json(root / "reference-pre-analysis.json")
     post = _load_json(root / "reference-post-analysis.json")
-    if pre.get("status") != "pass" or post.get("status") != "pass":
-        raise ValueError("v2 P7 reference block analysis did not pass")
+    recomputed: dict[str, dict[str, Any]] = {}
+    states = policy.artifact["reference_policy"].get("states") or {}
+    feature_ids = policy.artifact["feature_set"]["ids"]
+    for position in ("pre", "post"):
+        by_state: dict[tuple[int, int], list[Mapping[str, float]]] = {}
+        for anchor in anchors:
+            if anchor["position"] == position:
+                state = (int(anchor["target"]["hue"]), int(anchor["target"]["sat"]))
+                by_state.setdefault(state, []).append(anchor["feature_values"])
+        results = []
+        for (hue, sat), samples in sorted(by_state.items()):
+            state_key = f"h{hue}-s{sat}"
+            frozen = states.get(state_key)
+            if not isinstance(frozen, Mapping) or len(samples) != 3:
+                raise ValueError("v2 P7 reference state lacks frozen or three-frame evidence")
+            block = summarize_within_block(samples, feature_ids)
+            region = frozen["center_compatibility_region"]
+            evaluation = evaluate_reference_difference(
+                frozen["frozen_center"], block["center"],
+                left_variance=frozen["frozen_diagonal_variance"], left_count=int(frozen["frozen_count"]),
+                right_variance=block["diagonal_variance"], right_count=int(block["count"]),
+                feature_ids=feature_ids, guarded_limit=float(region["guarded_limit"]),
+                unguarded_limit=float(region["unguarded_limit"]), statistic="reference_center_compatibility",
+            )
+            if evaluation["decision"] != "pass":
+                raise ValueError("v2 P7 reference center compatibility did not pass from raw anchors")
+            results.append({"state": state_key, "block": block, "evaluation": evaluation})
+        output: dict[str, Any] = {"position": position, "states": results, "status": "pass"}
+        if position == "post":
+            pre_by_state = {item["state"]: item["block"] for item in recomputed["pre"]["states"]}
+            stability = []
+            for item in results:
+                frozen = states[item["state"]]
+                region = frozen["repeatability_region"]
+                previous = pre_by_state.get(item["state"])
+                if previous is None:
+                    raise ValueError("v2 P7 post reference lacks matching pre block")
+                evaluation = evaluate_reference_difference(
+                    previous["center"], item["block"]["center"],
+                    left_variance=previous["diagonal_variance"], left_count=int(previous["count"]),
+                    right_variance=item["block"]["diagonal_variance"], right_count=int(item["block"]["count"]),
+                    feature_ids=feature_ids, guarded_limit=float(region["guarded_limit"]),
+                    unguarded_limit=float(region["unguarded_limit"]), statistic="reference_repeatability",
+                )
+                if evaluation["decision"] != "pass":
+                    raise ValueError("v2 P7 pre/post stability did not pass from raw anchors")
+                stability.append({"state": item["state"], "evaluation": evaluation})
+            output["pre_post_stability"] = stability
+        recomputed[position] = output
+    if pre != recomputed["pre"] or post != recomputed["post"]:
+        raise ValueError("v2 P7 reference analysis differs from raw-anchor recomputation")
     if len(pre.get("states", [])) != 3 or len(post.get("states", [])) != 1:
         raise ValueError("v2 P7 reference block state count drift")
     if len(post.get("pre_post_stability", [])) != 1:
@@ -304,16 +397,23 @@ def _validate_v2_reference_blocks(root: Path, plan: Mapping[str, Any]) -> dict[s
 
 def _validate_v2_target_evidence(
     rows: Sequence[Mapping[str, Any]], plan: Mapping[str, Any],
-    *, policy_artifact_sha256: str,
+    *, captures: Sequence[Mapping[str, Any]], commands: Sequence[Mapping[str, Any]],
+    curve: Mapping[str, Any], policy_artifact_sha256: str,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     target_plan = {(int(item["hue"]), int(item["sat"])): item for item in plan["targets"]}
+    capture_by_id = {str(item.get("capture_id")): item for item in captures}
+    if len(capture_by_id) != len(captures):
+        raise ValueError("v2 P7 contains duplicate capture ids")
+    commands_by_id = _group_commands(commands)
     points: list[dict[str, Any]] = []
     objective_count = 0
+    consumed_capture_ids: set[str] = set()
+    reconstructed_targets: list[dict[str, Any]] = []
     for row in rows:
         key = (int(row["target"]["hue"]), int(row["target"]["sat"]))
         declared = target_plan[key]
-        status = str(row.get("result_status"))
-        if status not in P7_RESULT_STATUSES or row.get("gamut_status") != status:
+        reported_status = str(row.get("result_status"))
+        if reported_status not in P7_RESULT_STATUSES or row.get("gamut_status") != reported_status:
             raise ValueError(f"v2 P7 target {key} has overlapping or unsupported result status")
         feedback = row.get("feedback")
         if not isinstance(feedback, Mapping) or feedback.get("kind") != "hsi_bounded_multiseed_feedback_v2":
@@ -323,33 +423,172 @@ def _validate_v2_target_evidence(
         attempts = feedback.get("attempts")
         if not isinstance(attempts, list) or not 1 <= len(attempts) <= 2:
             raise ValueError(f"v2 P7 target {key} has invalid multiseed attempt count")
-        selected_index = int(feedback.get("selected_start_index", -1))
-        selected_rows = [item for item in attempts if int(item.get("start_index", -1)) == selected_index]
-        if len(selected_rows) != 1 or selected_rows[0].get("result") != feedback.get("selected_result"):
-            raise ValueError(f"v2 P7 target {key} selected_result provenance mismatch")
-        selected = selected_rows[0]["result"]
+        start_indices = [int(item.get("start_index", -1)) for item in attempts]
+        if start_indices != list(range(len(attempts))):
+            raise ValueError(f"v2 P7 target {key} start indices are incomplete or reordered")
         expected_confirmation_count = int(declared["confirmation_count"])
-        confirmed_groups = [item for item in selected.get("confirmation_attempts", []) if item.get("status") == "confirmed"]
-        if selected.get("goal_confirmed"):
-            if len(confirmed_groups) != 1 or len(confirmed_groups[0].get("sample_indices", [])) != expected_confirmation_count:
-                raise ValueError(f"v2 P7 target {key} has invalid confirmed group size")
-        elif not selected.get("confirmation_attempts"):
-            raise ValueError(f"v2 P7 target {key} lacks final-verification group evidence")
+        recomputed_logical = 0
         for attempt in attempts:
-            budget = attempt.get("result", {}).get("budget", {})
-            if int(budget.get("logical_observations_used", -1)) > int(declared["solver_budget"]["max_logical_observations_per_start"]):
+            result = attempt.get("result")
+            if not isinstance(result, Mapping):
+                raise ValueError(f"v2 P7 target {key} has malformed start result")
+            samples = result.get("samples")
+            rejections = result.get("measurement_rejections", [])
+            budget = result.get("budget", {})
+            if not isinstance(samples, list) or not isinstance(rejections, list):
+                raise ValueError(f"v2 P7 target {key} has malformed logical evidence")
+            logical = len(samples) + len(rejections)
+            consumed = budget.get("consumed")
+            reconstructed_consumed = {
+                "initial": 0, "initial_probes": 0, "feedback_attempts": 0,
+                "rebase_probes": 0, "confirmation_captures": 0,
+            }
+            phases = [str(item.get("phase")) for item in samples] + [str(item.get("phase")) for item in rejections]
+            for phase in phases:
+                if phase == "initial":
+                    category = "initial"
+                elif phase.startswith("probe-"):
+                    category = "initial_probes"
+                elif "rebase-" in phase:
+                    category = "rebase_probes"
+                elif phase.startswith("confirm-"):
+                    category = "confirmation_captures"
+                elif phase.startswith("feedback-"):
+                    category = "feedback_attempts"
+                else:
+                    raise ValueError(f"v2 P7 target {key} has unclassified logical phase {phase}")
+                reconstructed_consumed[category] += 1
+            if consumed != reconstructed_consumed or sum(reconstructed_consumed.values()) != logical:
+                raise ValueError(f"v2 P7 target {key} start logical ledger mismatch")
+            if int(budget.get("logical_observations_used", -1)) != logical:
+                raise ValueError(f"v2 P7 target {key} start logical count differs from raw evidence")
+            if logical > int(declared["solver_budget"]["max_logical_observations_per_start"]):
                 raise ValueError(f"v2 P7 target {key} exceeds per-start logical budget")
-            if int(budget.get("confirmation_groups_started", -1)) > int(declared["solver_budget"]["max_confirmation_groups_per_start"]):
+            groups = result.get("confirmation_attempts")
+            if not isinstance(groups, list) or not groups:
+                raise ValueError(f"v2 P7 target {key} lacks final-verification group evidence")
+            if int(budget.get("confirmation_groups_started", -1)) != len(groups) or len(groups) > int(declared["solver_budget"]["max_confirmation_groups_per_start"]):
                 raise ValueError(f"v2 P7 target {key} exceeds confirmation-group budget")
-        if int(feedback.get("logical_observations_used", -1)) > int(declared["solver_budget"]["max_logical_observations_per_target"]):
+            rebase_ids = {phase.split("-probe-", 1)[0] for phase in phases if "rebase-" in phase}
+            if int(budget.get("rebases_started", -1)) != len(rebase_ids):
+                raise ValueError(f"v2 P7 target {key} rebase ledger mismatch")
+            for group in groups:
+                indices = group.get("sample_indices")
+                if not isinstance(indices, list) or len(indices) != len(set(map(int, indices))):
+                    raise ValueError(f"v2 P7 target {key} has malformed confirmation indices")
+                if group.get("status") in {"confirmed", "failed"} and len(indices) != expected_confirmation_count:
+                    raise ValueError(f"v2 P7 target {key} has invalid confirmed group size")
+                if group.get("status") not in {"confirmed", "failed", "partial"}:
+                    raise ValueError(f"v2 P7 target {key} has unsupported confirmation group status")
+                if group.get("status") == "partial" and len(indices) >= expected_confirmation_count:
+                    raise ValueError(f"v2 P7 target {key} partial confirmation group is not partial")
+                if int(group.get("captured_count", -1)) != len(indices) or int(group.get("expected_capture_count", -1)) != expected_confirmation_count:
+                    raise ValueError(f"v2 P7 target {key} confirmation capture ledger mismatch")
+                if bool(group.get("partial_group")) != (group.get("status") == "partial"):
+                    raise ValueError(f"v2 P7 target {key} confirmation partial flag mismatch")
+                if group.get("status") == "partial" and not (rejections or result.get("budget_exhaustion") or budget.get("exhaustion")):
+                    raise ValueError(f"v2 P7 target {key} partial confirmation lacks stop evidence")
+                candidate = group.get("candidate_command")
+                for index in indices:
+                    if int(index) < 0 or int(index) >= len(samples) or samples[int(index)].get("command") != candidate:
+                        raise ValueError(f"v2 P7 target {key} confirmation command/index mismatch")
+                feasible = [bool(samples[int(index)].get("objective", {}).get("feasible")) for index in indices]
+                if int(group.get("feasible_capture_count", -1)) != sum(feasible):
+                    raise ValueError(f"v2 P7 target {key} confirmation feasible count mismatch")
+                if group.get("status") == "confirmed" and (len(indices) != expected_confirmation_count or not all(feasible)):
+                    raise ValueError(f"v2 P7 target {key} confirmed group is not fully feasible")
+                if group.get("status") == "failed" and all(feasible):
+                    raise ValueError(f"v2 P7 target {key} failed group lacks a failed sample")
+            for sample in samples:
+                observation = sample.get("observation")
+                capture_id = str(observation.get("capture_id")) if isinstance(observation, Mapping) else ""
+                capture = capture_by_id.get(capture_id)
+                phase = str(sample.get("phase"))
+                if not capture_id or capture_id in consumed_capture_ids or capture is None:
+                    raise ValueError(f"v2 P7 target {key} sample capture id is missing, duplicate, or unknown")
+                if int(capture.get("target_index", -1)) != int(declared["index"]) or capture.get("source") != "strip" or not str(capture.get("purpose", "")).endswith(phase):
+                    raise ValueError(f"v2 P7 target {key} sample capture provenance mismatch")
+                event_rows = [item for item in commands_by_id.get(capture_id, []) if item.get("event") != "weak_signal_reacquire"]
+                on = validate_attempt_event_grammar(
+                    event_rows, source="strip", plan_step={"command": sample.get("command")},
+                    curve=curve,
+                )
+                if on.get("requested_command") != sample.get("command"):
+                    raise ValueError(f"v2 P7 target {key} sample requested command mismatch")
+                consumed_capture_ids.add(capture_id)
+            for rejection in rejections:
+                evidence = rejection.get("evidence") or {}
+                for capture_id in evidence.get("capture_ids", []):
+                    capture_id = str(capture_id)
+                    capture = capture_by_id.get(capture_id)
+                    if capture is None or int(capture.get("target_index", -1)) != int(declared["index"]):
+                        raise ValueError(f"v2 P7 target {key} rejection capture provenance mismatch")
+                    consumed_capture_ids.add(capture_id)
+            recomputed_logical += logical
+        if int(feedback.get("logical_observations_used", -1)) != recomputed_logical:
+            raise ValueError(f"v2 P7 target {key} target logical count differs from raw evidence")
+        if recomputed_logical > int(declared["solver_budget"]["max_logical_observations_per_target"]):
             raise ValueError(f"v2 P7 target {key} exceeds target logical budget")
+
+        confirmed_attempts = [item for item in attempts if item["result"].get("goal_confirmed")]
+        valid_attempts = [item for item in attempts if item["result"].get("best") is not None]
+        pool = confirmed_attempts or valid_attempts
+        derived_attempt = min(pool, key=lambda item: hsi_objective_sort_key(item["result"]["best"]["objective"])) if pool else attempts[0]
+        selected_index = int(derived_attempt["start_index"])
+        selected = derived_attempt["result"]
+        if int(feedback.get("selected_start_index", -1)) != selected_index or feedback.get("selected_result") != selected or feedback.get("best_valid_sample") != selected.get("best"):
+            raise ValueError(f"v2 P7 target {key} selected_result provenance mismatch")
+        overall_status = "goal_confirmed" if confirmed_attempts else "solver_budget_exhausted" if any(item["result"].get("status") == "solver_budget_exhausted" for item in attempts) else "measurement_unreachable" if all(item["result"].get("status") == "measurement_unreachable" for item in attempts) else "unconfirmed"
+        if feedback.get("status") != overall_status or row.get("selected_command") != selected.get("selected_command"):
+            raise ValueError(f"v2 P7 target {key} multiseed status/command derivation mismatch")
         physical = row.get("physical_budget")
         if not isinstance(physical, Mapping):
             raise ValueError(f"v2 P7 target {key} lacks physical budget evidence")
         if int(physical.get("hard_cap", -1)) != int(declared["solver_budget"]["max_physical_cr3_per_target"]):
             raise ValueError(f"v2 P7 target {key} physical hard cap drift")
-        if int(physical.get("physical_cr3_used", -1)) > int(physical["hard_cap"]):
+        target_captures = [
+            item for item in captures
+            if item.get("target_index") is not None and int(item["target_index"]) == int(declared["index"])
+        ]
+        recomputed_physical = 0
+        recomputed_auto = 0
+        recomputed_weak = 0
+        physical_events = []
+        for capture in target_captures:
+            payload = capture.get("capture") or {}
+            is_auto = bool(payload.get("auto_exposure_audit"))
+            is_weak = str(capture.get("purpose", "")).endswith("weak-signal-reacquire")
+            synthetic_attempt = {
+                "auto_exposure": is_auto,
+                "auto_exposure_audit": payload.get("auto_exposure_audit"),
+                "physical_capture_count": payload.get("physical_capture_count", 1),
+            }
+            count = recompute_physical_count(synthetic_attempt)
+            recomputed_physical += count
+            recomputed_auto += count if is_auto else 0
+            recomputed_weak += count if is_weak else 0
+            physical_events.append({"phase": capture["purpose"], "physical_cr3": count, "auto_exposure": is_auto, "weak_reacquire": is_weak})
+        if physical.get("events") != physical_events or int(physical.get("physical_cr3_used", -1)) != recomputed_physical:
+            raise ValueError(f"v2 P7 target {key} physical ledger differs from retained captures")
+        if recomputed_auto != int(physical.get("autoexposure_physical_cr3_used", -1)) or recomputed_weak != int(physical.get("weak_reacquire_physical_cr3_used", -1)):
+            raise ValueError(f"v2 P7 target {key} physical sub-budget differs from retained captures")
+        if recomputed_physical > int(physical["hard_cap"]) or recomputed_auto > int(physical["autoexposure_cap"]) or recomputed_weak > int(physical["weak_reacquire_cap"]):
             raise ValueError(f"v2 P7 target {key} exceeded physical hard cap")
+        unconsumed = {str(item["capture_id"]) for item in target_captures} - consumed_capture_ids
+        weak_bases = set()
+        target_capture_by_id = {str(item["capture_id"]): item for item in target_captures}
+        for event in commands:
+            if event.get("event") != "weak_signal_reacquire":
+                continue
+            capture_id = str(event.get("capture_id"))
+            base = target_capture_by_id.get(capture_id)
+            if base is not None and any(
+                str(item.get("purpose")) == f"{base.get('purpose')}-weak-signal-reacquire"
+                for item in target_captures
+            ):
+                weak_bases.add(capture_id)
+        if unconsumed - weak_bases:
+            raise ValueError(f"v2 P7 target {key} contains orphan captures")
         objectives = [sample.get("objective", {}) for attempt in attempts for sample in attempt.get("result", {}).get("samples", [])]
         if not objectives:
             raise ValueError(f"v2 P7 target {key} has no objective evidence")
@@ -360,13 +599,29 @@ def _validate_v2_target_evidence(
                 if layer not in objective:
                     raise ValueError(f"v2 P7 target {key} lacks {layer}")
         objective_count += len(objectives)
-        best = selected.get("best") or feedback.get("best_valid_sample")
+        best = selected.get("best")
         if not isinstance(best, Mapping):
             raise ValueError(f"v2 P7 target {key} lacks best-valid sample")
         best_objective = best["objective"]
+        confirmed_groups = [item for item in selected.get("confirmation_attempts", []) if item.get("status") == "confirmed"]
+        evidence_samples = [selected["samples"][int(index)] for index in confirmed_groups[-1]["sample_indices"]] if confirmed_groups else []
+        spread = row.get("confirmation_spread")
+        unresolved = any(item.get("objective", {}).get("hsi_coordinate_equivalent") in {"unresolved", "uncertainty_unresolved"} for item in evidence_samples) or (spread is not None and spread.get("decision") != "pass")
+        derived_status = "uncertainty_unresolved" if unresolved else "faithful" if selected.get("goal_confirmed") else "solver_budget_exhausted" if overall_status == "solver_budget_exhausted" else "measurement_unreachable" if overall_status == "measurement_unreachable" else "unconfirmed"
+        if reported_status != derived_status:
+            raise ValueError(f"v2 P7 target {key} result status differs from reconstructed evidence")
+        reconstructed_targets.append({
+            "target": {"hue": key[0], "sat": key[1]},
+            "reported_logical_observations": int(feedback.get("logical_observations_used", -1)),
+            "recomputed_logical_observations": recomputed_logical,
+            "reported_physical_cr3": int(physical.get("physical_cr3_used", -1)),
+            "recomputed_physical_cr3": recomputed_physical,
+            "reported_result_status": reported_status,
+            "recomputed_result_status": derived_status,
+        })
         points.append({
             "hue": key[0], "sat": key[1], "status": "complete",
-            "result_status": status, "goal_confirmed": bool(selected.get("goal_confirmed")),
+            "result_status": derived_status, "goal_confirmed": bool(selected.get("goal_confirmed")),
             "selected_start_index": selected_index,
             "selected_command": row.get("selected_command"),
             "logical_observations_used": int(feedback["logical_observations_used"]),
@@ -386,6 +641,7 @@ def _validate_v2_target_evidence(
         "confirmation_group_audit": "pass",
         "three_layer_result_audit": "pass",
         "status_exclusivity": "pass",
+        "reconstructed_targets": reconstructed_targets,
     }, sorted(points, key=lambda item: (item["hue"], item["sat"])))
 
 
@@ -445,6 +701,58 @@ def _validate_captures(captures: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
             raise ValueError(f"capture {record.get('capture_id')} lacks recorded exposure")
         recorded_count += 1
     return {"capture_count": len(captures), "raw_count": raw_count, "measurement_count": measurement_count, "recorded_exposure_count": recorded_count, "npy_count": 0}
+
+
+def _group_commands(
+    commands: Sequence[Mapping[str, Any]],
+) -> dict[str, list[Mapping[str, Any]]]:
+    grouped: dict[str, list[Mapping[str, Any]]] = {}
+    for command in commands:
+        capture_id = str(command.get("capture_id", ""))
+        if not capture_id:
+            raise ValueError("P7 command event lacks capture id")
+        grouped.setdefault(capture_id, []).append(command)
+    return grouped
+
+
+def _validate_v2_commands(
+    captures: Sequence[Mapping[str, Any]], commands: Sequence[Mapping[str, Any]],
+    *, plan: Mapping[str, Any], curve: Mapping[str, Any],
+) -> dict[str, Any]:
+    by_capture = _group_commands(commands)
+    capture_ids = {str(item["capture_id"]) for item in captures}
+    if set(by_capture) != capture_ids:
+        raise ValueError("v2 P7 command evidence contains orphan or missing capture ids")
+    counts = {"strip": 0, "ray": 0, "ambient": 0}
+    for capture in captures:
+        capture_id = str(capture["capture_id"])
+        source = str(capture.get("source"))
+        events = [item for item in by_capture[capture_id] if item.get("event") != "weak_signal_reacquire"]
+        if source == "strip":
+            on = [item for item in events if item.get("event") == "strip_on_readback_verified"]
+            if len(on) != 1:
+                raise ValueError(f"v2 P7 strip capture {capture_id} lacks one exact source-on event")
+            step = {"command": on[0].get("requested_command")}
+        elif source == "ray":
+            state = capture.get("ray_state")
+            if not isinstance(state, Mapping):
+                raise ValueError(f"v2 P7 Ray capture {capture_id} lacks frozen state provenance")
+            step = {"state": state}
+        elif source == "ambient":
+            step = {}
+        else:
+            raise ValueError(f"v2 P7 capture {capture_id} has unsupported source")
+        validate_attempt_event_grammar(events, source=source, plan_step=step, curve=curve)
+        counts[source] += 1
+    return {
+        "capture_count": len(captures),
+        "strip_capture_count": counts["strip"],
+        "ray_capture_count": counts["ray"],
+        "ambient_capture_count": counts["ambient"],
+        "source_isolation": "pass",
+        "requested_response_consistency": "pass",
+        "frozen_plan_validation": "pass",
+    }
 
 
 def _validate_commands(
