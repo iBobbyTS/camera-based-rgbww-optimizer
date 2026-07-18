@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
@@ -419,6 +420,7 @@ def _validate_v2_target_evidence(
     reconstructed_targets: list[dict[str, Any]] = []
     previous_command: Mapping[str, int] | None = None
     feature_ids = tuple(policy.artifact["feature_set"]["ids"])
+    start_capture_ids: dict[tuple[int, int], set[str]] = {}
     for target_position, row in enumerate(rows):
         key = (int(row["target"]["hue"]), int(row["target"]["sat"]))
         declared = target_plan[key]
@@ -444,6 +446,10 @@ def _validate_v2_target_evidence(
         recomputed_logical = 0
         derived_confirmed_attempts: list[Mapping[str, Any]] = []
         for attempt in attempts:
+            start_index = int(attempt.get("start_index", -1))
+            if start_index < 0:
+                raise ValueError(f"v2 P7 target {key} has invalid start index")
+            start_capture_ids.setdefault((target_position, start_index), set())
             result = attempt.get("result")
             if not isinstance(result, Mapping):
                 raise ValueError(f"v2 P7 target {key} has malformed start result")
@@ -530,7 +536,8 @@ def _validate_v2_target_evidence(
                     raise ValueError(f"v2 P7 target {key} sample capture id is missing, duplicate, or unknown")
                 if int(capture.get("target_index", -1)) != int(declared["index"]) or capture.get("source") != "strip" or not str(capture.get("purpose", "")).endswith(phase):
                     raise ValueError(f"v2 P7 target {key} sample capture provenance mismatch")
-                _claim_capture(capture_owners, capture_id, f"target-{target_position}:sample")
+                _claim_capture(capture_owners, capture_id, f"target-{target_position}:start-{start_index}:sample")
+                start_capture_ids[(target_position, start_index)].add(capture_id)
                 event_rows = [item for item in commands_by_id.get(capture_id, []) if item.get("event") != "weak_signal_reacquire"]
                 on = validate_attempt_event_grammar(
                     event_rows, source="strip", plan_step={"command": sample.get("command")},
@@ -570,13 +577,9 @@ def _validate_v2_target_evidence(
                         raise ValueError(f"v2 P7 target {key} rejection capture provenance mismatch")
                     if not str(capture.get("purpose", "")).endswith(phase):
                         raise ValueError(f"v2 P7 target {key} rejection phase/capture mismatch")
-                    _claim_capture(capture_owners, capture_id, f"target-{target_position}:rejection")
+                    _claim_capture(capture_owners, capture_id, f"target-{target_position}:start-{start_index}:rejection")
+                    start_capture_ids[(target_position, start_index)].add(capture_id)
             budget_exhaustion = result.get("budget_exhaustion")
-            if budget_exhaustion is not None:
-                _validate_pre_capture_exhaustion(
-                    budget_exhaustion, target_key=key,
-                    expected_start_index=int(attempt.get("start_index", -1)),
-                )
             if result.get("status") == "solver_budget_exhausted" and not isinstance(budget_exhaustion, Mapping):
                 raise ValueError(f"v2 P7 target {key} solver exhaustion lacks pre-capture evidence")
             derived_goal_confirmed = confirmed_group_count > 0
@@ -655,10 +658,40 @@ def _validate_v2_target_evidence(
                 if str(item.get("purpose")) == f"{base.get('purpose')}-weak-signal-reacquire"
             ] if base is not None else []
             if len(reacquires) == 1 and str(reacquires[0]["capture_id"]) in capture_owners and capture_id not in capture_owners:
-                _claim_capture(capture_owners, capture_id, f"target-{target_position}:weak-base")
+                reacquire_owner = capture_owners[str(reacquires[0]["capture_id"])]
+                match = re.search(r":start-(\d+):", reacquire_owner)
+                if match is None:
+                    raise ValueError(f"v2 P7 target {key} weak reacquire owner lacks start provenance")
+                start_index = int(match.group(1))
+                _claim_capture(capture_owners, capture_id, f"target-{target_position}:start-{start_index}:weak-base")
+                start_capture_ids.setdefault((target_position, start_index), set()).add(capture_id)
         unconsumed = {str(item["capture_id"]) for item in target_captures} - set(capture_owners)
         if unconsumed:
             raise ValueError(f"v2 P7 target {key} contains orphan captures")
+        target_capture_by_id = {str(item["capture_id"]): item for item in target_captures}
+        target_start_capture_ids = {
+            start_index: capture_ids
+            for (owner_target, start_index), capture_ids in start_capture_ids.items()
+            if owner_target == target_position
+        }
+        start_counters = _recompute_start_capture_counters(target_capture_by_id, target_start_capture_ids)
+        for attempt in attempts:
+            result = attempt["result"]
+            budget_exhaustion = result.get("budget_exhaustion")
+            if budget_exhaustion is None:
+                continue
+            start_index = int(attempt["start_index"])
+            budget = result.get("budget")
+            if not isinstance(budget, Mapping) or not isinstance(budget.get("exhaustion"), Mapping):
+                raise ValueError(f"v2 P7 target {key} exhaustion is not duplicated in start budget")
+            if dict(budget["exhaustion"]) != dict(budget_exhaustion):
+                raise ValueError(f"v2 P7 target {key} exhaustion differs from start budget ledger")
+            _validate_pre_capture_exhaustion(
+                budget_exhaustion, target_key=key,
+                expected_start_index=start_index,
+                expected_counters=start_counters.get(start_index, {}),
+                expected_budget=budget,
+            )
         objectives = [sample.get("objective", {}) for attempt in attempts for sample in attempt.get("result", {}).get("samples", [])]
         if not objectives:
             raise ValueError(f"v2 P7 target {key} has no objective evidence")
@@ -810,6 +843,7 @@ def _validate_measurement_rejection_evidence(
 
 def _validate_pre_capture_exhaustion(
     evidence: Any, *, target_key: tuple[int, int], expected_start_index: int,
+    expected_counters: Mapping[str, int], expected_budget: Mapping[str, Any],
 ) -> None:
     if not isinstance(evidence, Mapping):
         raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion evidence is missing")
@@ -823,13 +857,86 @@ def _validate_pre_capture_exhaustion(
         raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion schema is incomplete")
     if evidence.get("status") != "solver_budget_exhausted" or evidence.get("capture_attempted") is not False:
         raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion status is invalid")
+    if "capture_ids" in evidence:
+        raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion cannot contain capture ids")
     if int(evidence.get("start_index", -1)) != int(expected_start_index):
         raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion start mismatch")
     if not str(evidence.get("sub_budget")) or not str(evidence.get("phase")):
         raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion lacks budget phase")
-    for field in ("requested_physical_cr3", "physical_cr3_used", "autoexposure_physical_cr3_used", "weak_reacquire_physical_cr3_used"):
+    if int(evidence.get("requested_physical_cr3", -1)) != 0:
+        raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion requested a capture")
+    for field in ("physical_cr3_used", "autoexposure_physical_cr3_used", "weak_reacquire_physical_cr3_used"):
         if not isinstance(evidence.get(field), (int, float)) or int(evidence[field]) < 0:
             raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion counter is invalid")
+        if int(evidence[field]) != int(expected_counters.get(field, -1)):
+            raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion counter differs from capture ledger")
+    budget_exhaustion = expected_budget.get("exhaustion")
+    if not isinstance(budget_exhaustion, Mapping) or dict(budget_exhaustion) != dict(evidence):
+        raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion differs from budget ledger")
+    if not _phase_matches_sub_budget(
+        str(evidence.get("phase")), str(evidence.get("sub_budget")), expected_budget,
+    ):
+        raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion phase/sub-budget mismatch")
+
+
+def _phase_matches_sub_budget(phase: str, sub_budget: str, budget: Mapping[str, Any]) -> bool:
+    prefixes = {
+        "initial": "initial",
+        "initial_probes": "probe-",
+        "rebase_probes": "rebase-",
+        "feedback_attempts": "feedback-",
+        "confirmation_captures": "confirm-",
+    }
+    if sub_budget in prefixes:
+        return phase.startswith(prefixes[sub_budget])
+    if sub_budget != "logical_observations":
+        return False
+    consumed = budget.get("consumed")
+    limits = budget.get("limits")
+    if not isinstance(consumed, Mapping) or not isinstance(limits, Mapping):
+        return False
+    category_limits = {
+        "initial": ("initial", 1),
+        "initial_probes": ("probe-", int(limits.get("rebase_probe_count", 0))),
+        "rebase_probes": ("rebase-", int(limits.get("max_rebases_per_start", 0)) * int(limits.get("rebase_probe_count", 0))),
+        "feedback_attempts": ("feedback-", int(limits.get("max_feedback_capture_attempts_per_start", 0))),
+        "confirmation_captures": ("confirm-", int(limits.get("max_confirmation_groups_per_start", 0)) * int(limits.get("confirmation_captures_per_group", 0))),
+    }
+    return any(
+        int(consumed.get(category, -1)) >= maximum and phase.startswith(prefix)
+        for category, (prefix, maximum) in category_limits.items()
+    )
+
+
+def _recompute_start_capture_counters(
+    captures_by_id: Mapping[str, Mapping[str, Any]],
+    start_capture_ids: Mapping[int, set[str]],
+) -> dict[int, dict[str, int]]:
+    counters: dict[int, dict[str, int]] = {}
+    for start_index, capture_ids in start_capture_ids.items():
+        values = {
+            "physical_cr3_used": 0,
+            "autoexposure_physical_cr3_used": 0,
+            "weak_reacquire_physical_cr3_used": 0,
+        }
+        for capture_id in capture_ids:
+            capture = captures_by_id.get(capture_id)
+            if capture is None:
+                raise ValueError(f"capture ledger references unknown id {capture_id}")
+            payload = capture.get("capture") or {}
+            attempt = {
+                "auto_exposure": bool(payload.get("auto_exposure_audit")),
+                "auto_exposure_audit": payload.get("auto_exposure_audit"),
+                "physical_capture_count": payload.get("physical_capture_count", 1),
+            }
+            count = recompute_physical_count(attempt)
+            values["physical_cr3_used"] += count
+            if attempt["auto_exposure"]:
+                values["autoexposure_physical_cr3_used"] += count
+            if str(capture.get("purpose", "")).endswith("weak-signal-reacquire"):
+                values["weak_reacquire_physical_cr3_used"] += count
+        counters[int(start_index)] = values
+    return counters
 
 
 def _json_numerically_equal(left: Any, right: Any, *, tolerance: float = 1e-12) -> bool:

@@ -386,7 +386,53 @@ class MeasureStripHsiPilotTests(unittest.TestCase):
             }
             analyze_strip_hsi_pilot._validate_pre_capture_exhaustion(
                 valid_exhaustion, target_key=(0, 0), expected_start_index=0,
+                expected_counters={
+                    "physical_cr3_used": 12,
+                    "autoexposure_physical_cr3_used": 0,
+                    "weak_reacquire_physical_cr3_used": 0,
+                },
+                expected_budget={
+                    "exhaustion": valid_exhaustion,
+                    "consumed": {"initial": 1, "initial_probes": 4, "feedback_attempts": 8, "rebase_probes": 8, "confirmation_captures": 6},
+                    "limits": {
+                        "rebase_probe_count": 4,
+                        "max_rebases_per_start": 2,
+                        "max_feedback_capture_attempts_per_start": 8,
+                        "max_confirmation_groups_per_start": 2,
+                        "confirmation_captures_per_group": 3,
+                    },
+                },
             )
+            for field in ("phase", "physical_cr3_used", "autoexposure_physical_cr3_used", "weak_reacquire_physical_cr3_used"):
+                tampered = copy.deepcopy(valid_exhaustion)
+                tampered[field] = "tampered" if field == "phase" else int(tampered[field]) + 1
+                with self.subTest(exhaustion_field=field), self.assertRaises(ValueError):
+                    analyze_strip_hsi_pilot._validate_pre_capture_exhaustion(
+                        tampered, target_key=(0, 0), expected_start_index=0,
+                        expected_counters={
+                            "physical_cr3_used": 12,
+                            "autoexposure_physical_cr3_used": 0,
+                            "weak_reacquire_physical_cr3_used": 0,
+                        },
+                        expected_budget={
+                            "exhaustion": valid_exhaustion,
+                            "consumed": {"initial": 1, "initial_probes": 4, "feedback_attempts": 8, "rebase_probes": 8, "confirmation_captures": 6},
+                            "limits": {
+                                "rebase_probe_count": 4,
+                                "max_rebases_per_start": 2,
+                                "max_feedback_capture_attempts_per_start": 8,
+                                "max_confirmation_groups_per_start": 2,
+                                "confirmation_captures_per_group": 3,
+                            },
+                        },
+                    )
+            with self.assertRaises(ValueError):
+                analyze_strip_hsi_pilot._validate_pre_capture_exhaustion(
+                    {**valid_exhaustion, "capture_ids": ["already-captured"]},
+                    target_key=(0, 0), expected_start_index=0,
+                    expected_counters={"physical_cr3_used": 12, "autoexposure_physical_cr3_used": 0, "weak_reacquire_physical_cr3_used": 0},
+                    expected_budget={"exhaustion": valid_exhaustion, "consumed": {}, "limits": {}},
+                )
 
     def test_v2_analyzer_rejects_unselected_cross_target_orphan_and_nonzero_off(self):
         with tempfile.TemporaryDirectory() as tempdir:
