@@ -565,6 +565,121 @@ for all 12 hues; the frozen Stage-6 target is therefore the measured periodic
 2D Hue/SAT surface in `config/hsi/ray-hsi-manifold.json`, initially using
 piecewise-linear interpolation without overshoot.
 
+Stage 6 P7 is deliberately staged. Before any new device call, generate
+`config/hsi/strip-hsi-uncertainty.json` from the frozen P6 Ray repeats, the two
+natural-day P1 strip repeat groups, and P6 interpolation cross-validation. The
+model keeps the exact ordered 58-feature native-Bayer vector, normalizes each
+observation to unit shape, and uses a positive CFA-plane block-isotropic
+diagonal covariance. Match covariance is Ray repeatability plus the strip
+repeatability floor plus the target's interpolation component; no additional
+camera-noise term is added. Fixed-seed Monte Carlo propagates this covariance
+through the actual Ray manifold inverse, calibrates one joint 99.73% score, and
+freezes a bootstrap-derived guarded acceptance limit before measurement.
+SAT=0 uses only SAT and orthogonal outputs and never invents a Hue gate.
+
+The formal uncertainty calculation is a long, offline-only task:
+
+```bash
+tmp/run-hsi-uncertainty.zsh tmp/hsi-uncertainty-formal/<run-id> --workers 12
+```
+
+Phase A does not load `.env`, construct a camera backend, or call Ray/ESPHome.
+Its Python and shell safety records therefore prove that no source was touched;
+real P7 acquisition continues to use `tmp/run-strip-hsi-pilot.zsh` and its two
+actual all-off layers. After the frozen artifact exists, build only the four
+sentinel targets first:
+
+```bash
+.venv/bin/python -m camera_based_rgbww_optimizer.optimization.measure_strip_hsi_pilot \
+  --dry-run \
+  --policy-version v1 \
+  --target-set sentinel \
+  --camera-backend remote \
+  --location-config config/location/locations-20260714-211759.json
+```
+
+The sentinel set is `H0/S0`, `H120/S100`, `H120/S50`, and `H300/S100`.
+Only the frozen automatic release conditions may unlock the remaining nine
+points. Each real session photographs three pre Ray anchors and one post anchor
+with exact readback. Ordinary points require three independent 60-second
+off/on confirmations; boundary, scale-relaxed, and holdout points require five.
+Full-scale candidates keep one active channel at `4095`. A non-faithful point
+receives `3072`, then if needed `2048`, diagnostics without changing Ray
+INT100; this can establish only a full-scale policy effect, never physical
+gamut. The scoped boundary name is `s_exact_max_int100_fullscale`.
+
+The first four-point sentinel completed mechanically but is now diagnostic-only:
+its v1 nonlinear coordinate gate amplified repeatability and its SAT100 reference
+region collapsed to a zero scale that had been hidden by a `1e-12` floor. P7-R0
+therefore keeps `config/hsi/strip-hsi-uncertainty.json` immutable for legacy
+replay and introduces `config/hsi/strip-hsi-policy-v2-waiting.json`. The v2
+artifact is deliberately `waiting_for_targeted_measurement` and
+`formal_capture_eligible=false`; it cannot authorize a capture.
+
+Policy v2 separates three outputs. `hsi_coordinate_equivalent` uses a signed,
+unclipped target-local tangent (SAT100 is one-sided from the measured SAT95
+node; SAT0 has no Hue dimension). `observer_equivalent` independently evaluates
+the direct ordered 58-feature residual. `color_rendering_residual` retains the
+directional tangent-orthogonal vector plus per-plane/per-patch summaries; it is
+reported and used as a solver tie-break without being folded back into the HSI
+coordinate hard gate. Reference center compatibility, reference pre/post
+repeatability, and confirmation spread all operate directly in unit-shape
+58-feature space with CFA-plane block-isotropic diagonal covariance.
+
+P7-R0C keeps the legacy config/hash intact and uses
+`config/hsi/strip-hsi-pilot-v2.json` for the new runner contract. The v2
+formal path requires explicit policy dispatch, rejects waiting/candidate
+artifacts, calls the signed v2 evaluator and two-distinct-face solver, and
+audits logical observations separately from physical CR3 files. Planner caps
+are `54/67` for ordinary targets and `62/75` for n=5 targets. Primary and both
+backtracks each consume a feedback attempt, rebases reserve all four probes,
+and budget exhaustion returns structured evidence with the best valid sample.
+Once a confirmation group starts, every measurable n=3/n=5 capture is retained
+before the group decision. If no candidate was confirmed, the solver uses an
+unspent one of the two declared confirmation groups to verify the best-valid
+command; it may never add a third or hidden group. Across distinct-face starts,
+any confirmed result is selected before an unconfirmed lower-error sample.
+
+The formal analyzer requires explicit policy dispatch. V1 remains
+legacy-replay-only; v2 validates the frozen/formal-eligible policy hash,
+multiseed selection, per-start and target budgets, 12 three-frame reference
+anchors, confirmation spread, and the separate coordinate/observer/rendering
+layers. Combined sentinel/remaining analysis rejects mixed policy versions or
+hashes.
+
+Offline P7-R0C commands are:
+
+```bash
+.venv/bin/python -m camera_based_rgbww_optimizer.measurement.hsi_policy_v2
+.venv/bin/python -m camera_based_rgbww_optimizer.optimization.analyze_strip_hsi_pilot \
+  <legacy-sentinel-run> --policy-version v1
+.venv/bin/python -m camera_based_rgbww_optimizer.optimization.analyze_hsi_policy_v2_replay \
+  <legacy-sentinel-run> --policy-v2 config/hsi/strip-hsi-policy-v2-waiting.json
+.venv/bin/python -m camera_based_rgbww_optimizer.optimization.measure_hsi_reference_repeatability \
+  --dry-run --policy-v2 config/hsi/strip-hsi-policy-v2-waiting.json
+```
+
+The last command only emits the draft named-experiment schema
+`p7_targeted_reference_repeatability_v2`: 30 formal Ray measurements, 50
+formal strip measurements, and two ambient frames in the fixed order ambient,
+Ray A, strip A, strip B, Ray B, ambient. Dry-run does not load `.env`, create a
+camera backend, or call a light. P7-R0C implements—but does not run—the remote
+execution surface, analyzer, formal-ineligible `calibrated_waiting_for_planner`
+finalizer, and `tmp/run-hsi-reference-repeatability.zsh` dual-cleanup wrapper.
+Every P7-R1 logical row retains append-only base and optional weak-reacquire
+attempt evidence, including command/readback, settling contract, CR3/report,
+adapter physical count, rejected-quality provenance, and selected-attempt ID.
+The analyzer reads `commands.jsonl` and `capture-attempts.jsonl`, independently
+recomputes physical/auto-exposure/reacquire counters, and compares them with
+`run.json`. The absolute 250-CR3 bound remains `proposed_not_frozen`; the dry
+plan reports an expected range and a maximum 9600 seconds of 60-second settling
+events for Planner review.
+The execution CLI is fail-closed unless both `--allow-high-output` and the exact
+`--named-experiment p7_targeted_reference_repeatability_v2` are supplied.
+P7-R1 still requires Planner acceptance plus a new explicit named-experiment
+authorization. New sentinel, remaining nine, boundary, holdout, and P8 remain
+locked.
+
 ## Location Picker
 
 Use the local Web UI to capture a preview and mark color-chart patches:

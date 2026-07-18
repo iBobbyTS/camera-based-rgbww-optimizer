@@ -1,16 +1,33 @@
 from __future__ import annotations
 
-import math
 from typing import Any, Mapping, Sequence
 
 import numpy as np
 
 from camera_based_rgbww_optimizer.measurement.ray_hsi_manifold import RayHsiManifold
+from camera_based_rgbww_optimizer.measurement.hsi_uncertainty import FrozenHsiUncertaintyEvaluator
+from camera_based_rgbww_optimizer.measurement.hsi_policy_v2 import (
+    HsiPolicyV2,
+    WAITING_STATUS,
+    conservative_class_variance,
+    local_tangent_evaluate,
+    plane_block_regularize,
+)
 from camera_based_rgbww_optimizer.measurement.raw_observer_analysis import collect_patch_plane_features
 
 
 GROUP_ORDER = ("hue", "sat", "shape")
+V2_GROUP_ORDER = ("coordinate", "rendering")
 CHANNELS = ("cw", "ww", "r", "g", "b")
+P7_RESULT_STATUSES = frozenset({
+    "faithful",
+    "unconfirmed",
+    "measurement_unreachable",
+    "uncertainty_unresolved",
+    "solver_budget_exhausted",
+    "reference_drift",
+    "boundary_bracketed_at_full_scale",
+})
 
 
 class HsiRejectedFeaturesError(ValueError):
@@ -54,44 +71,60 @@ def evaluate_hsi_observation(
     target_sat: float,
     command: Mapping[str, int] | None = None,
     previous_command: Mapping[str, int] | None = None,
-    strip_hue_three_sigma_degrees: float = 0.0,
-    strip_sat_three_sigma_percent: float = 0.0,
-    strip_shape_three_sigma: float = 0.0,
+    uncertainty_evaluator: FrozenHsiUncertaintyEvaluator,
     max_code: int = 4095,
 ) -> dict[str, Any]:
     coordinate = manifold.coordinate(candidate_features, target_hue=target_hue, target_sat=target_sat)
-    hue_tolerance = math.hypot(coordinate.hue_three_sigma_degrees, float(strip_hue_three_sigma_degrees))
-    sat_tolerance = math.hypot(coordinate.sat_three_sigma_percent, float(strip_sat_three_sigma_percent))
-    shape_tolerance = math.hypot(manifold.repeatability_three_sigma, float(strip_shape_three_sigma))
-    if min(hue_tolerance, sat_tolerance, shape_tolerance) <= 0:
-        raise ValueError("HSI observer tolerances must be positive")
+    joint = uncertainty_evaluator.evaluate(
+        manifold,
+        candidate_features,
+        target_hue=target_hue,
+        target_sat=target_sat,
+    )
 
     feature_ids = coordinate.feature_ids
     target = manifold.target_at(target_hue, target_sat)
     candidate = _unit([candidate_features[feature] for feature in feature_ids])
     target_values = _unit([target.features[feature] for feature in feature_ids])
-    shape_vector = (candidate - target_values) / shape_tolerance
-    hue_normalized = 0.0 if float(target_sat) == 0.0 else coordinate.hue_error_degrees / hue_tolerance
-    sat_normalized = coordinate.sat_error_percent / sat_tolerance
-    orthogonal_normalized = coordinate.orthogonal_residual / shape_tolerance
+    diagonal = np.maximum(np.asarray(joint["diagonal_variance"], dtype=float), 1e-12)
+    shape_vector = (candidate - target_values) / np.sqrt(diagonal)
+    scales = np.maximum(np.asarray(joint["component_scales"], dtype=float), 1e-12)
+    guarded_limit = max(float(joint["guarded_acceptance_limit"]), 1e-12)
+    if float(target_sat) == 0.0:
+        hue_normalized = 0.0
+        sat_normalized = coordinate.sat_error_percent / scales[0] / guarded_limit
+        orthogonal_normalized = coordinate.orthogonal_residual / scales[1] / guarded_limit
+        hue_scale = None
+        sat_scale = float(scales[0])
+        orthogonal_scale = float(scales[1])
+    else:
+        hue_normalized = coordinate.hue_error_degrees / scales[0] / guarded_limit
+        sat_normalized = coordinate.sat_error_percent / scales[1] / guarded_limit
+        orthogonal_normalized = coordinate.orthogonal_residual / scales[2] / guarded_limit
+        hue_scale = float(scales[0])
+        sat_scale = float(scales[1])
+        orthogonal_scale = float(scales[2])
     continuity = _command_distance(command, previous_command, max_code=max_code)
-    feasible = bool(
-        abs(hue_normalized) <= 1.0
-        and abs(sat_normalized) <= 1.0
-        and orthogonal_normalized <= 1.0
-    )
+    feasible = bool(joint["feasible"])
     objective = {
-        "kind": "ray_hsi_lexicographic",
+        "kind": "ray_hsi_joint_uncertainty_lexicographic",
         "feasible": feasible,
+        "uncertainty_decision": joint["decision"],
+        "uncertainty_artifact_sha256": joint["artifact_sha256"],
+        "target_kind": joint["target_kind"],
+        "joint_score": joint["joint_score"],
+        "joint_output": list(joint["output"]),
+        "coverage_limit": joint["coverage_limit"],
+        "guarded_acceptance_limit": joint["guarded_acceptance_limit"],
         "hue_error_degrees": None if float(target_sat) == 0.0 else coordinate.hue_error_degrees,
         "hue_defined": float(target_sat) > 0.0,
-        "hue_tolerance_degrees": hue_tolerance,
+        "hue_scale_degrees": hue_scale,
         "hue_normalized": hue_normalized,
         "sat_error_percent": coordinate.sat_error_percent,
-        "sat_tolerance_percent": sat_tolerance,
+        "sat_scale_percent": sat_scale,
         "sat_normalized": sat_normalized,
         "orthogonal_residual": coordinate.orthogonal_residual,
-        "orthogonal_tolerance": shape_tolerance,
+        "orthogonal_scale": orthogonal_scale,
         "orthogonal_normalized": orthogonal_normalized,
         "shape_residual": coordinate.shape_residual,
         "shape_normalized_rms": float(np.sqrt(np.mean(shape_vector * shape_vector))),
@@ -104,24 +137,170 @@ def evaluate_hsi_observation(
         "residuals": {
             "hue": [hue_normalized],
             "sat": [sat_normalized],
-            "shape": shape_vector.tolist(),
+            "shape": [orthogonal_normalized],
         },
         "objective": objective,
     }
 
 
 def hsi_objective_sort_key(objective: Mapping[str, Any]) -> tuple[float, ...]:
-    hue_excess = max(abs(float(objective["hue_normalized"])) - 1.0, 0.0)
+    if objective.get("kind") == "ray_hsi_policy_v2_lexicographic":
+        return _hsi_v2_objective_sort_key(objective)
+    hue_excess = 0.0 if not bool(objective.get("hue_defined", True)) else max(
+        abs(float(objective["hue_normalized"])) - 1.0, 0.0
+    )
     sat_excess = max(abs(float(objective["sat_normalized"])) - 1.0, 0.0)
     return (
         0.0 if bool(objective["feasible"]) else 1.0,
         hue_excess,
         sat_excess,
+        float(objective.get("joint_score", float("inf"))),
         float(objective["orthogonal_normalized"]),
         float(objective["shape_normalized_p90"]),
         float(objective["shape_normalized_maximum"]),
         float(objective.get("command_continuity_l1", 0.0)),
     )
+
+
+def evaluate_hsi_observation_v2(
+    manifold: RayHsiManifold,
+    candidate_features: Mapping[str, float],
+    *,
+    target_hue: float,
+    target_sat: float,
+    repeatability_class: str,
+    policy: HsiPolicyV2,
+    command: Mapping[str, int] | None = None,
+    previous_command: Mapping[str, int] | None = None,
+    max_code: int = 4095,
+) -> dict[str, Any]:
+    artifact = policy.artifact
+    feature_ids = tuple(artifact["feature_set"]["ids"])
+    repeat_class = artifact["repeatability_policy"]["classes"][repeatability_class]
+    strip_variance = conservative_class_variance(
+        repeat_class["p1_floor_diagonal_variance"],
+        repeat_class.get("targeted_variance"),
+        feature_ids,
+    )
+    ray_variance = np.asarray(
+        artifact["match_components"]["ray_repeatability_diagonal_variance"], dtype=float,
+    )
+    target = manifold.target_at(target_hue, target_sat)
+    interpolation_name = "exact_node" if all(
+        float(target.interpolation[key]) == 0.0
+        for key in ("hue_fraction", "sat_fraction")
+    ) else "high_curvature" if (
+        float(target_sat) >= 80.0 and (float(target_hue) % 360.0 >= 330.0 or float(target_hue) % 360.0 <= 90.0)
+    ) else "regular"
+    interpolation = np.asarray(
+        artifact["match_components"]["interpolation"][interpolation_name]["diagonal_variance"],
+        dtype=float,
+    )
+    match_variance = plane_block_regularize(ray_variance + strip_variance + interpolation, feature_ids)
+    local = local_tangent_evaluate(
+        manifold, candidate_features,
+        target_hue=target_hue, target_sat=target_sat,
+        diagonal_variance=match_variance,
+        condition_limit=float(artifact["coordinate_policy"]["condition_limit"]),
+    )
+    continuity = _command_distance(command, previous_command, max_code=max_code)
+    if local["status"] != "evaluated":
+        objective = {
+            "kind": "ray_hsi_policy_v2_lexicographic",
+            "feasible": False,
+            "hsi_coordinate_equivalent": "uncertainty_unresolved",
+            "observer_equivalent": "not_evaluated",
+            "color_rendering_residual": None,
+            "uncertainty_decision": "uncertainty_unresolved",
+            "command_continuity_l1": continuity,
+            "coordinate": local,
+        }
+        return {"residuals": {"coordinate": [float("inf")], "rendering": [float("inf")]}, "objective": objective}
+
+    kind = _v2_target_kind(target_sat, interpolation_name)
+    region_key = f"{kind}:{repeatability_class}"
+    coordinate_limits = artifact["coordinate_policy"].get("formal_limits") or {}
+    observer_limits = artifact["observer_policy"].get("formal_limits") or {}
+    coordinate_region = coordinate_limits.get(region_key, coordinate_limits.get(kind))
+    observer_region = observer_limits.get(region_key, observer_limits.get(kind))
+    signed_coordinate = (
+        [float(local["sat_error_percent"])] if float(target_sat) == 0.0 else
+        [float(local["hue_error_degrees"]), float(local["sat_error_percent"])]
+    )
+    if coordinate_region is None:
+        coordinate_score = None
+        coordinate_decision = WAITING_STATUS
+        coordinate_residual = signed_coordinate
+    else:
+        scales = np.asarray(coordinate_region["component_scales"], dtype=float)
+        if scales.shape != (len(signed_coordinate),) or np.any(scales <= 0.0):
+            raise ValueError("invalid frozen v2 coordinate scales")
+        coordinate_residual = (np.asarray(signed_coordinate) / scales).tolist()
+        coordinate_score = float(np.linalg.norm(coordinate_residual))
+        coordinate_decision = (
+            "pass" if coordinate_score <= float(coordinate_region["guarded_limit"])
+            else "unresolved" if coordinate_score <= float(coordinate_region["unguarded_limit"])
+            else "fail"
+        )
+    observer_score = float(local["observer_whitened_score"])
+    if observer_region is None:
+        observer_decision = WAITING_STATUS
+    else:
+        observer_decision = (
+            "pass" if observer_score <= float(observer_region["guarded_limit"])
+            else "unresolved" if observer_score <= float(observer_region["unguarded_limit"])
+            else "fail"
+        )
+    rendering = local["color_rendering_residual"]
+    rendering_vector = np.asarray(local["directional_orthogonal_residual"], dtype=float) / np.sqrt(match_variance)
+    feasible = coordinate_decision == "pass"
+    objective = {
+        "kind": "ray_hsi_policy_v2_lexicographic",
+        "feasible": feasible,
+        "policy_artifact_sha256": policy.artifact_sha256,
+        "policy_status": artifact["status"],
+        "target_kind": kind,
+        "target_region_key": region_key,
+        "repeatability_class": repeatability_class,
+        "coordinate_guarded_limit": None if coordinate_region is None else float(coordinate_region["guarded_limit"]),
+        "coordinate_unguarded_limit": None if coordinate_region is None else float(coordinate_region["unguarded_limit"]),
+        "hsi_coordinate_equivalent": coordinate_decision,
+        "observer_equivalent": observer_decision,
+        "color_rendering_residual": rendering,
+        "coordinate_guarded_excess": None if coordinate_score is None else max(
+            coordinate_score / float(coordinate_region["guarded_limit"]) - 1.0, 0.0,
+        ),
+        "coordinate_score": coordinate_score,
+        "hue_defined": float(target_sat) > 0.0,
+        "hue_error_degrees": local.get("hue_error_degrees"),
+        "sat_error_percent": float(local["sat_error_percent"]),
+        "observer_whitened_score": observer_score,
+        "tangent_condition_number": float(local["condition_number"]),
+        "command_continuity_l1": continuity,
+        "coordinate": local,
+    }
+    return {
+        "residuals": {"coordinate": coordinate_residual, "rendering": rendering_vector.tolist()},
+        "objective": objective,
+    }
+
+
+def _hsi_v2_objective_sort_key(objective: Mapping[str, Any]) -> tuple[float, ...]:
+    hue = 0.0 if not bool(objective.get("hue_defined")) else abs(float(objective.get("hue_error_degrees", float("inf"))))
+    return (
+        0.0 if bool(objective.get("feasible")) else 1.0,
+        float(objective.get("coordinate_guarded_excess") if objective.get("coordinate_guarded_excess") is not None else float("inf")),
+        hue,
+        abs(float(objective.get("sat_error_percent", float("inf")))),
+        float((objective.get("color_rendering_residual") or {}).get("whitened_score", float("inf"))),
+        float(objective.get("command_continuity_l1", 0.0)),
+    )
+
+
+def _v2_target_kind(target_sat: float, interpolation_name: str) -> str:
+    if float(target_sat) == 0.0:
+        return "sat0_exact_node"
+    return f"nonzero_{interpolation_name}"
 
 
 def _command_distance(

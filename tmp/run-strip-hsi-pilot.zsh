@@ -43,6 +43,8 @@ trap 'on_signal HUP' HUP
 "$PYTHON" -m camera_based_rgbww_optimizer.optimization.measure_strip_hsi_pilot \
   --execute \
   --allow-high-output \
+  --policy-version v2 \
+  --policy-v2-config "$PROJECT_ROOT/config/hsi/strip-hsi-policy-v2.json" \
   --camera-backend remote \
   --location-config "$PROJECT_ROOT/config/location/locations-20260714-211759.json" \
   --output-dir "$RUN_PARENT" \

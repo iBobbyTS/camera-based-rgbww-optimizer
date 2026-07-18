@@ -1,15 +1,47 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "phase": "P7-pilot",
   "branch": "full_periodic_2d_HB",
-  "targets": {
-    "sat0": [{"hue": 0, "sat": 0}],
-    "hue_degrees": [0, 60, 120, 180, 240, 300],
-    "saturation_percent": [50, 100],
+  "policy": {
+    "observer": "fixed Canon R6 Mark III native Bayer",
+    "geometry": "locations-20260714-211759",
+    "raw_response": "identity",
+    "exposure_envelope": "per-source 1.0x..1.25x",
+    "ray_intensity": 100,
+    "strip_policy": "INT100 + full-scale active-channel",
+    "absolute_brightness_matched": false
+  },
+  "target_sets": {
+    "sentinel": [
+      {"hue": 0, "sat": 0},
+      {"hue": 120, "sat": 100},
+      {"hue": 120, "sat": 50},
+      {"hue": 300, "sat": 100}
+    ],
+    "remaining": [
+      {"hue": 0, "sat": 50},
+      {"hue": 0, "sat": 100},
+      {"hue": 60, "sat": 50},
+      {"hue": 60, "sat": 100},
+      {"hue": 180, "sat": 50},
+      {"hue": 180, "sat": 100},
+      {"hue": 240, "sat": 50},
+      {"hue": 240, "sat": 100},
+      {"hue": 300, "sat": 50}
+    ]
+  },
+  "reference_anchors": {
+    "pre": [
+      {"hue": 0, "sat": 0},
+      {"hue": 120, "sat": 100},
+      {"hue": 300, "sat": 100}
+    ],
+    "post": [{"hue": 120, "sat": 100}],
     "intensity_percent": 100
   },
   "solver": {
     "max_code": 4095,
+    "scale_relaxed_max_codes": [3072, 2048],
     "max_rounds": 12,
     "probe_step_code": 256,
     "max_step_code": 768,
@@ -17,19 +49,30 @@
     "active_channel_policy": "enumerate_seed_and_keep_one_channel_at_max"
   },
   "confirmation": {
-    "independent_repeats": 2,
+    "ordinary_repeats": 3,
+    "boundary_scale_relaxed_holdout_repeats": 5,
     "off_seconds": 1.0,
     "feedback_settle_seconds": 1.0,
     "settled_seconds": 60.0
   },
   "measurement": {
-    "required_features": "global intersection of accepted features across frozen P6 HSI nodes",
+    "required_features": "frozen 58-feature ordered intersection",
     "weak_signal_reacquire_factor": 1.25,
     "absolute_brightness_matched": false
   },
-  "gamut": {
-    "faithful": "two settled confirmations pass Hue, Ray-equivalent SAT, and orthogonal gates",
-    "pilot_boundary": "SAT50 and SAT100 classify each primary Hue before the full boundary search",
-    "unconfirmed": "preserve best candidate and do not call it faithful"
-  }
+  "uncertainty": {
+    "artifact": "config/hsi/strip-hsi-uncertainty.json",
+    "coverage_probability": 0.9973,
+    "guard_band": "bootstrap one-sided 95% lower coverage limit",
+    "post_measurement_updates": false
+  },
+  "statuses": [
+    "faithful",
+    "unconfirmed",
+    "measurement_unreachable",
+    "uncertainty_unresolved",
+    "solver_budget_exhausted",
+    "reference_drift",
+    "boundary_bracketed_at_full_scale"
+  ]
 }

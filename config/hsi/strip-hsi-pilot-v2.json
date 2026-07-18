@@ -1,0 +1,81 @@
+{
+  "schema_version": 2,
+  "phase": "P7-pilot",
+  "branch": "full_periodic_2d_HB",
+  "policy": {
+    "observer": "fixed Canon R6 Mark III native Bayer",
+    "geometry": "locations-20260714-211759",
+    "raw_response": "identity",
+    "exposure_envelope": "per-source 1.0x..1.25x",
+    "ray_intensity": 100,
+    "strip_policy": "INT100 + full-scale active-channel",
+    "absolute_brightness_matched": false,
+    "policy_version": "v2"
+  },
+  "target_sets": {
+    "sentinel": [
+      {"hue": 0, "sat": 0},
+      {"hue": 120, "sat": 100},
+      {"hue": 120, "sat": 50},
+      {"hue": 300, "sat": 100}
+    ],
+    "remaining": [
+      {"hue": 0, "sat": 50},
+      {"hue": 0, "sat": 100},
+      {"hue": 60, "sat": 50},
+      {"hue": 60, "sat": 100},
+      {"hue": 180, "sat": 50},
+      {"hue": 180, "sat": 100},
+      {"hue": 240, "sat": 50},
+      {"hue": 240, "sat": 100},
+      {"hue": 300, "sat": 50}
+    ]
+  },
+  "reference_anchors": {
+    "pre": [
+      {"hue": 0, "sat": 0},
+      {"hue": 120, "sat": 100},
+      {"hue": 300, "sat": 100}
+    ],
+    "post": [{"hue": 120, "sat": 100}],
+    "intensity_percent": 100
+  },
+  "solver": {
+    "max_code": 4095,
+    "scale_relaxed_max_codes": [3072, 2048],
+    "max_rounds": 8,
+    "max_distinct_face_starts": 2,
+    "max_feedback_capture_attempts_per_start": 8,
+    "max_rebases_per_start": 2,
+    "max_confirmation_groups_per_start": 2,
+    "ordinary_max_logical_observations": 54,
+    "ordinary_max_physical_cr3": 67,
+    "n5_max_logical_observations": 62,
+    "n5_max_physical_cr3": 75,
+    "probe_step_code": 256,
+    "max_step_code": 768,
+    "damping": 0.05,
+    "active_channel_policy": "two_distinct_faces_keep_one_channel_at_max"
+  },
+  "confirmation": {
+    "ordinary_repeats": 3,
+    "boundary_scale_relaxed_holdout_repeats": 5,
+    "off_seconds": 1.0,
+    "feedback_settle_seconds": 1.0,
+    "settled_seconds": 60.0
+  },
+  "measurement": {
+    "required_features": "frozen 58-feature ordered intersection",
+    "weak_signal_reacquire_factor": 1.25,
+    "absolute_brightness_matched": false
+  },
+  "statuses": [
+    "faithful",
+    "unconfirmed",
+    "measurement_unreachable",
+    "uncertainty_unresolved",
+    "solver_budget_exhausted",
+    "reference_drift",
+    "boundary_bracketed_at_full_scale"
+  ]
+}

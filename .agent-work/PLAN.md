@@ -2,15 +2,15 @@
 
 **计划状态：** active
 
-**Planner 完成日期：** 2026-07-17
+**Planner 最新决策日期：** 2026-07-18
 
-**当前 `HEAD`：** `ecf47d722e6f9e7c2c09b0d7fd3e3429e7d38ad5`
+**当前 `HEAD`：** `99ec0623ed7ba1ee1d1ecb9c6539471921aeb770`
 
-**当前活动阶段：** Stage 6 / P7 INT100 strip HSI
+**当前活动阶段：** Stage 6 / P7-R0C analyzer/confirmation/group-audit/provenance 离线收口
 
-**当前阶段状态：** `planner_complete_waiting_for_executor_offline_correction`
+**当前阶段状态：** `planner_rejected_p7_r0b_waiting_for_executor_p7_r0c`
 
-**下一条唯一动作：** Executor 只执行第 6 节 Phase A 的离线纠偏；在 Phase A 全部验收前不得访问相机、Ray120c 或 ESPHome。
+**下一条唯一动作：** Executor 严格按第 8.7.18 节执行 `P7-R0C` 纯离线收口：接通并测试正式 v2 analyzer、修复 confirmed-start 选择和完整 confirmation/final-verification、按 state/command/block 中心化 repeatability audit，并补齐 P7-R1 weak-reacquire/source/physical provenance。完成规定的回归、全套测试、replay、dry-run/readiness 后交还 Planner 复验。不得连接设备、生成真实 CR3、读取 `.env`、执行真实 all-off、运行 `p7_targeted_reference_repeatability_v2`、重跑 sentinel、执行 remaining 9、boundary、holdout、P8 或安装任何 LUT。
 
 **上游依据：**
 
@@ -30,7 +30,7 @@
 
 1. 本文件全文；
 2. `.agent-work/PLAN/00-CONTRACT.md` 全文；
-3. `advisor/1/1.GUIDE.md` 与本文件顶部记录的最新 Advisor 结论；
+3. `advisor/1/1.GUIDE.md`、本文件顶部记录的最新 Advisor 结论和第 8.7 节的本轮覆盖决定；
 4. `.agent-work/PLAN/06-STRIP-HSI.md`，仅作历史设计背景；与本文件冲突时以本文件为准；
 5. `.agents/skills/camera-based-rgbww-optimizer/SKILL.md`；
 6. `docs/README.md` 的 P6/P7、remote camera、RAW observer 和双关灯章节；
@@ -49,7 +49,7 @@
 Executor 不得自行决定：
 
 - 放宽 RAW observer、曝光包络、联合 coverage 或 guard band；
-- 改变 `faithful`、full-scale gamut 或 INT 产品语义；
+- 改变第 8.7 节冻结的 coordinate/observer/full-scale gamut 或 INT 产品语义；
 - 把任何失败写成物理色域不可达；
 - 回退 P6、重拍 106 点 Ray 网络或改用理论 HSL/HSV；
 - 进入 P8；
@@ -60,7 +60,7 @@ Executor 不得自行决定：
 
 只有以下情况交还 Planner/Advisor：
 
-1. Phase A 无法从冻结数据得到可校准、正定且稳定的联合 uncertainty artifact；
+1. P7-R0/P7-R1 无法得到可校准、正定且稳定的 v2 uncertainty/reference/repeatability artifact；
 2. 需要改变 58-feature、identity RAW、`1.0x..1.25x` 或 `R/G1/G2/B`；
 3. Sentinel 不满足第 8.5 节的自动放行条件；
 4. 边界诊断需要新的产品语义或无法区分测量、求解和 full-scale policy；
@@ -82,7 +82,7 @@ Executor 不得自行决定：
 | P4 | `keep_white_lut_diagnostic_only; stop_before_p5` | 不重算 CCT multipatch 70 点 |
 | White LUT | 保留外置 white-only 70 点候选 | 不覆盖 `config/white/white-lut.json` |
 | P6 | 106/106 完成；Gate-5=`full_periodic_2d_HB` | 不重拍，不回退 affine/HSL/HSV |
-| P7 代码 | 模块边界可保留 | 做局部纠偏，不架构重写 |
+| P7 代码 | Ray 流形、uncertainty、objective、feedback、runner、analyzer 的所有权边界可保留 | 允许按 8.7 修改 target/solver 内部数学结构；禁止平行框架或重拟合 P6 |
 
 ### 2.1 冻结输入
 
@@ -152,11 +152,13 @@ universal_HSL
 absolute_Ray_brightness_match
 ```
 
-阶段内状态必须互斥且保留原始原因：
+第 8.6 节以前的 `faithful` 是 v1 历史字段。新 run 禁止继续使用这个无限定词状态；目标复制、完整 observer 等价和失败原因必须分开记录。
+
+新 run 的主状态必须互斥且保留原始原因：
 
 ```text
-faithful
-unconfirmed
+hsi_coordinate_equivalent
+hsi_coordinate_unconfirmed
 measurement_unreachable
 uncertainty_unresolved
 solver_budget_exhausted
@@ -164,15 +166,26 @@ reference_drift
 boundary_bracketed_at_full_scale
 ```
 
+另有独立证据字段，不得与主状态合并：
+
+```text
+observer_equivalent = true | false | unresolved
+color_rendering_residual
+reference_repeatability = pass | unresolved | fail
+reference_center_compatibility = pass | unresolved | fail
+```
+
 状态解释：
 
-- `faithful`：在冻结 joint coverage + guard band 下通过，并完成规定的 settled confirmations；
-- `unconfirmed`：本轮未证明 faithful，但没有足够证据归入其他状态；
+- `hsi_coordinate_equivalent`：Hue/SAT 局部坐标在冻结的联合 99.73% region + guard band 内通过，并完成规定的 settled confirmations；SAT0 不检查 Hue；
+- `hsi_coordinate_unconfirmed`：本轮未证明 HSI coordinate equivalent，但没有足够证据归入其他状态；
 - `measurement_unreachable`：冻结 RAW/exposure 包络内无法得到合法 58-feature；
 - `uncertainty_unresolved`：重复帧显示冻结噪声模型可能低估，或结果落入决策 guard band；
 - `solver_budget_exhausted`：合法测量存在，但冻结轮数内没有得到可确认候选；
-- `reference_drift`：当前 Ray 锚点超出冻结 P6 coverage；
-- `boundary_bracketed_at_full_scale`：只表示 INT100、full-scale active-channel policy 下已建立 faithful 下界和非-faithful 上界，并完成 scale-relaxed 诊断。
+- `reference_drift`：当前 Ray block mean 与冻结 P6 exact-node center 不兼容，或当前会话 pre/post block 不兼容；
+- `boundary_bracketed_at_full_scale`：只表示 INT100、full-scale active-channel policy 下已建立 coordinate-equivalent 下界和未确认上界，并完成 scale-relaxed 诊断。
+
+`observer_equivalent=true` 只在完整 58-feature 的严格统计等价 region 通过时成立。`hsi_coordinate_equivalent` 可以在 `observer_equivalent=false` 时成立，但必须同时公开 `color_rendering_residual`；这表示复制 Ray 的 HSI Hue/SAT 路径，不表示跨材质光谱或完整显色等价。
 
 Stage 6 不生成 `hue_unreachable` 或“物理不可达”结论。
 
@@ -235,12 +248,15 @@ source off
 - `optimization/analyze_strip_hsi_pilot.py`：run/command/coverage/gamut 分支分析；
 - `tmp/run-strip-hsi-pilot.zsh`：shell 双关灯；
 - `config/hsi/strip-hsi-pilot.json`：实验政策；
-- 新增 `config/hsi/strip-hsi-uncertainty.json`：冻结 uncertainty artifact；
+- `config/hsi/strip-hsi-uncertainty.json`：v1 历史 artifact，必须保留原文件和 hash，只能复现第 8.6 节；
+- 后续新增 `config/hsi/strip-hsi-uncertainty-v2.json`：只有第 8.7 节离线验收和定向实拍校准均通过后才能冻结；不得原位覆盖 v1；
 - 后续新增 `config/hsi/rgbww-hsi-int100-fullscale-candidate.json`：只有 P7 holdout 完成后生成候选，Gate-6 前不安装。
 
 不要创建平行采集框架，也不要复制 remote capture、RAW observer、bounded least-squares 或 all-off。
 
 ### 5.2 Uncertainty artifact 最低字段
+
+以下字段描述 v1 历史 artifact；新 v2 除保留 provenance 外，必须按第 8.7.4--8.7.6 节拆分 reference、coordinate、observer 和 repeatability regions，不得复制 v1 的单一 `[Hue,SAT,orth]` joint region。
 
 `config/hsi/strip-hsi-uncertainty.json` 至少包含：
 
@@ -289,22 +305,24 @@ EXPERIMENT_SUMMARY.md
 
 ---
 
-## 6. Phase A：离线纠偏
+## 6. Phase A-v1：首次离线纠偏（历史）
 
 **授权范围：** `offline_only`
 
-**完成状态：** `code_complete_waiting_for_sentinel`
+**完成状态：** `pass_then_superseded_by_section_8_7`
+
+本节记录 sentinel 前冻结的 v1 实现和证据。第 8.6 节暴露 reference endpoint 数值退化和 target 语义不成立后，本节不得再作为新实拍的放行依据；后续实现以第 8.7 节为准。
 
 **禁止：** `/health`、`/v1/config`、`/v1/capture`、Ray、ESPHome、真实 all-off 调用。
 
 ### A0. 定向预检
 
-- [ ] 读取本计划、00-CONTRACT、GUIDE、skill、README；
-- [ ] `git status --short`，记录并保留已有改动；
-- [ ] 确认没有活动 calibration process，但不探测设备；
-- [ ] CodeGraph 定位 P7 五个模块、P1 repeatability、P6 analyzer 和 shared capture adapter；
-- [ ] 计算所有冻结输入 hash，发现 drift 时停止，不静默更新本计划中的 hash；
-- [ ] 检查当前 `config/hsi/strip-hsi-pilot.json` 仍只是旧 13 点离线草案。
+- [x] 读取本计划、00-CONTRACT、GUIDE、skill、README；
+- [x] `git status --short`，记录并保留已有改动；
+- [x] 确认没有活动 calibration process，但不探测设备；
+- [x] CodeGraph 定位 P7 五个模块、P1 repeatability、P6 analyzer 和 shared capture adapter；
+- [x] 计算所有冻结输入 hash，未发现 drift；
+- [x] 确认旧 13 点离线草案并将其纠偏为冻结的 `sentinel_4_then_9` schema v2。
 
 ### A1. 构造 58-feature 输入不确定度
 
@@ -433,14 +451,14 @@ SAT0 禁止生成或检查 Hue gate；报告中的 Hue 必须为 `undefined/null
 
 ### A3. Objective 与 solver 接入
 
-- [ ] `evaluate_hsi_observation()` 改为读取冻结 uncertainty evaluator，不再接收默认为零的三个 strip 3-sigma；
-- [ ] 保留 Hue/SAT/orthogonal 数值作为报告与词典序方向；
-- [ ] `feasible` 只由 joint guarded decision 决定；
-- [ ] solver 排序优先：状态有效、Hue excess、SAT excess、joint score、orthogonal/shape、连续性；
-- [ ] SAT0 的排序删除 Hue；
-- [ ] feedback samples 保存 artifact hash、target kind、joint score、coverage/guarded limits；
-- [ ] confirmation 失败仍触发 thermal rebase，但不得更新 uncertainty；
-- [ ] 达到冻结轮数仍未确认时返回 `solver_budget_exhausted`，不自动增加轮数。
+- [x] `evaluate_hsi_observation()` 改为读取冻结 uncertainty evaluator，不再接收默认为零的三个 strip 3-sigma；
+- [x] 保留 Hue/SAT/orthogonal 数值作为报告与词典序方向；
+- [x] `feasible` 只由 joint guarded decision 决定；
+- [x] solver 排序优先：状态有效、Hue excess、SAT excess、joint score、orthogonal/shape、连续性；
+- [x] SAT0 的排序删除 Hue；
+- [x] feedback samples 保存 artifact hash、target kind、joint score、coverage/guarded limits；
+- [x] confirmation 失败仍触发 thermal rebase，但不得更新 uncertainty；
+- [x] 达到冻结轮数仍未确认时返回 `solver_budget_exhausted`，不自动增加轮数。
 
 ### A4. Target set、reference anchor 和确认策略
 
@@ -623,11 +641,57 @@ stage_status = code_complete_waiting_for_sentinel_authorization
 next_action = preflight_and_run_sentinel_4
 ```
 
+### A9. Phase A 执行结果（2026-07-18）
+
+```text
+status = pass
+uncertainty_artifact = config/hsi/strip-hsi-uncertainty.json
+uncertainty_artifact_sha256 = cedaa1e9d342beb7e464c4e38d77884ad8a7790771432ebdbb5a101ca604aa94
+formal_run_dir = tmp/hsi-uncertainty-formal/p7-phase-a-20260717-2048-retry3
+offline_checkpoint = tmp/strip-hsi-pilot-offline/p7-phase-a-final-20260718-040551
+offline_readiness = pass
+full_test_suite = 345 tests, exit 0
+compileall = pass
+wrapper_syntax = pass
+git_diff_check = pass
+codegraph_sync = pass
+device_calls = 0
+capture_count = 0
+next_action = wait_for_named_experiment_authorization_then_run_sentinel_4
+```
+
+后台托管审计：正式 artifact 确定性成功写入两次；`launchctl submit` 的 keepalive 又启动了第 3 次冗余计算。Executor 停止冗余进程、保留 `redundant-run-interruption.json` 与 `post-stop-safety-audit.json`，并补充 Python `SIGTERM/SIGHUP` finally 路径及 shell 先记安全证据的回归覆盖。artifact 在停止前后 hash 未变化。
+
 ---
 
-## 7. Phase B：实机前检查
+## 7. Phase B-v1：首次 Sentinel 实机前检查（历史）
 
-只有 Phase A 通过且当前存在明确 named-experiment 实机授权时才能执行。
+本节已执行完毕，对应授权已经消费。不得据此再次连接设备；P7-R1 和 sentinel-v2 必须使用第 8.7 节的新 named experiment、全新 preflight 和全新 run 目录。
+
+### 7.1 已消费的 Planner 验收与授权（2026-07-17）
+
+```text
+planner_acceptance = pass
+authorization = named_experiment
+experiment_id = p7_sentinel_4
+authorized_scope = Phase B preflight + Phase C sentinel_4 + 计划内有界高输出
+authorized_target_set = sentinel
+authorized_targets = H0/S0, H120/S100, H120/S50, H300/S100
+authorized_reference_anchors = pre H0/S0, H120/S100, H300/S100; post H120/S100
+authorized_max_code = 4095; 仅按既定失败分支允许 3072/2048 scale-relaxed 诊断
+excluded_scope = remaining 9, boundary, holdout, Gate-6 自动选择, P8, LUT 安装或默认配置覆盖
+```
+
+验收证据：
+
+- `config/hsi/strip-hsi-uncertainty.json` SHA-256 为 `cedaa1e9d342beb7e464c4e38d77884ad8a7790771432ebdbb5a101ca604aa94`，状态为 `offline_frozen_before_measurement`；
+- manifold、location、observer、P2 basis 与 Phase A 记录的冻结 hash 一致；
+- Planner 复跑完整测试 `345/345` 通过，`compileall`、两个 wrapper 的 `zsh -n`、`git diff --check` 和 `codegraph sync` 通过；
+- Planner 独立 dry-run：`tmp/strip-hsi-pilot-offline/p7-planner-acceptance-20260717/plan.json`，严格为四点、普通点各 3 次确认、remote backend、三前一后 Ray anchors 与 Python/shell 双 cleanup；
+- 验收阶段未读取 `.env`、未访问 remote camera、Ray120c 或 ESPHome，未执行真实 all-off，也未产生 CR3 或 `.npy`；
+- 验收时未发现遗留 calibration/uncertainty runner 进程。
+
+该授权只有在冻结 artifact、代码检查点和输入 hash 未漂移时有效。任一 Phase B 检查失败时授权自动停止在 preflight，不得开始拍摄；必须保存证据并确认双灯关闭。
 
 顺序固定：
 
@@ -648,7 +712,7 @@ next_action = preflight_and_run_sentinel_4
 
 ---
 
-## 8. Phase C：四点 Sentinel
+## 8. Phase C-v1：首次四点 Sentinel（历史）
 
 ### 8.1 Run 目录
 
@@ -691,9 +755,9 @@ next_action = preflight_and_run_sentinel_4
 - 七种状态之一；
 - scale-relaxed diagnostics。
 
-### 8.4 Sentinel 自动放行条件
+### 8.4 Sentinel v1 自动放行条件（历史，不得复用）
 
-只有同时满足以下条件，Executor 才可不等待 Advisor 而进入剩余 9 点：
+以下条件只解释第 8.6 节为什么没有自动放行。第 8.7 节已覆盖本条；任何新 sentinel 均必须重新经过 Planner 验收和明确 named-experiment 授权。
 
 1. pre/post Ray anchors 全部通过，无 `reference_drift`；
 2. run、CR3、recorded exposure、command audit、双 cleanup 全部有效；
@@ -706,7 +770,7 @@ next_action = preflight_and_run_sentinel_4
 9. Jacobian/feedback 没有连续失准且未被 rebase 解释；
 10. captures/round、运行时间和失败率足以支持剩余 9 点。
 
-### 8.5 Sentinel 分支
+### 8.5 Sentinel v1 分支（历史）
 
 #### S-PASS
 
@@ -765,13 +829,619 @@ next_action = preflight_and_run_sentinel_4
 - 若是普通代码错误走 S-CODE-REPEAT；
 - 若需改变 solver/目标架构则交还 Planner/Advisor。
 
+### 8.6 Sentinel 实机结果（2026-07-18）
+
+```text
+run_dir = /Volumes/4T/temp/rgbww-optimizer/strip-hsi-pilot/p7-sentinel-4-20260717-223108-retry2
+run_status = complete
+capture_count = 100 CR3 / 100 recorded-exposure measurements
+command_count = 399
+reference_anchors = 3 pre + 1 post
+failure_json = absent
+npy_count = 0
+python_cleanup = pass; ESPHome five-channel zero + Ray intensity 0
+shell_cleanup = pass; ESPHome five-channel zero + Ray intensity 0
+input_validation = 7/7
+source_isolation = pass
+requested_response_consistency = pass
+analysis = analysis.json @ 5416dfcae4ea1f4114d1757a0d253b059677a984f728a7f10a8dd81cd265e043
+faithful_points = 0/4
+H0/S0 = solver_budget_exhausted; full-scale joint 150.901 > guarded 5.645
+H0/S0@3072 = uncertainty_unresolved; repeat spread 22.964 > 4.372
+H120/S100 = uncertainty_unresolved; repeat spread 6.657 > 4.397
+H120/S50 = uncertainty_unresolved; repeat spread 4.721 > 4.397
+H300/S100 = uncertainty_unresolved; repeat spread 8.822 > 4.397
+automatic_release = false
+branch = S-UNCERTAINTY + S-SOLVER
+```
+
+Analyzer 的机械审计报告 `reference_drift=false`，但非零 SAT reference calibration 的 SAT component scale 被下限夹到 `1e-12`，使 coverage limit 膨胀到约 `1.9388843165e11`。因此三个非零 anchor 的 `within_reference_coverage=true` 不能作为有信息量的无漂移证明；SAT0 anchor 的有限门槛仍有信息量。修改该 reference region、统计 floor 或输出维度会改变实拍前冻结的 uncertainty/reference policy，Executor 不得用本 run 后验调整，必须交还 Planner/Advisor。
+
+证据摘要：
+
+- `EXPERIMENT_SUMMARY.md`：同一 run 目录；
+- `run.json` SHA-256：`2a6cf9147c322b1a0913d059007150d0b05ca2491e6aa620e11522616fed422b`；
+- `plan.json` SHA-256：`02d2dfa913ce5983cabc777b975a8b0323151ea56ce307eaf763b42ae93e92bf`；
+- Python cleanup SHA-256：`9382ac8158b6c721971733d71c64b51043f9fa474a4c8444041a6020ebd91f14`；
+- shell cleanup SHA-256：`3ba1586be9a203596a40a0800b7487ab114451ae9b0f788b5b5d2afa10c51090`。
+
+在 Planner/Advisor 新决定前，禁止 remaining 9。不得把任何点写成物理 gamut、不得据 confirmation 更新 sigma、不得在同一 run 增加 solver 轮数，也不得进入 P8。
+
+### 8.7 Planner/Advisor 覆盖决定：P7-R0 / P7-R1（2026-07-18）
+
+本节是第 3、5、6、7、8.4、8.5 节中所有 v1 uncertainty、reference、`faithful` 和 solver acceptance 文本的最新覆盖决定。Executor 不得把新旧规则混用。
+
+#### 8.7.1 结论与当前 run 处置
+
+```text
+planner_decision = redesign_before_more_measurement
+allow_target_architecture_change = yes, within existing module boundaries
+allow_solver_architecture_change = yes, offline-first and bounded
+allow_more_rounds_in_existing_run = no
+allow_fit_from_sentinel_confirmations = no
+allow_remaining_9 = no
+allow_p8 = no
+current_sentinel_gate6_eligibility = invalid
+current_sentinel_use = diagnostic_holdout_only
+next_stage = P7-R0_offline_v2
+authorization = offline_only
+```
+
+第 8.6 节 run 的机械完整性、100 张 CR3、命令审计和双关灯证据仍有效，不删除、不改写。它不能进入 Gate-6，原因不是事后正式宣判四个点均 `reference_drift`，而是 v1 reference gate 对非零 SAT 没有信息量，因而该 session 没有可信的“与冻结 P6 兼容”证明。新 v2 规则冻结后，本 run 只能作为完全独立的诊断 holdout，不能用于拟合 covariance、scale、coverage、guard band、产品阈值或 solver budget。
+
+#### 8.7.2 本轮证据和方向判断
+
+对第 8.6 节 confirmation 直接在冻结顺序的 58-feature unit-shape 空间计算最大 pairwise L2：
+
+| 点 | max pairwise L2 | 到 Ray target 的稳定距离 |
+| --- | ---: | ---: |
+| H0/S0 @4095 | 0.0002897 | 约 0.17338 |
+| H0/S0 @3072 | 0.0013620 | 0.17228..0.17349 |
+| H120/S100 @4095 | 0.0004392 | 0.16979..0.17014 |
+| H120/S50 @4095 | 0.0003922 | 0.17092..0.17117 |
+| H300/S100 @4095 | 0.0022908 | 0.18014..0.18056 |
+
+P1 两日 strip repeatability 的 direct pairwise L2 max 分别约 `0.0007726`、`0.0007764`，P95 分别约 `0.0007375`、`0.0007716`。因此：
+
+- H120/S100 与 H120/S50 比 P1 floor 更稳定，v1 的 `uncertainty_unresolved` 是 nonlinear output-coordinate 放大造成的 false positive；
+- H300/S100 与 H0/S0@3072 的局部变化确实高于 P1 white-state floor，必须由预声明的定向 repeatability 实验表征；
+- 五点到 Ray target 的 58-feature 距离稳定在约 `0.17..0.18`，而 v1 orthogonal noise scale 约 `0.0011`；v1 joint score 约 150 几乎完全由跨光源 color-rendering residual 主导，单纯增加 solver 轮数不能跨越两个数量级。
+
+当前 Ray anchor 到冻结 P6 exact-state 样本中心的 direct L2 约 `0.00749..0.00880`；P6 内部同状态 pairwise 证据约为：H0/S0 最大 `0.00196`、H120/S100 `0.000473`、H300/S100 `0.003755`。使用既有 `2*Sigma_ray` 做的简单 direct-feature 诊断得到当前 anchor score `16.7..21.7`，而相应 99.73% limit 约 `4.0`。这不是可用于追溯判定的 v2 正式门，但足以证明不能接受 v1 的 `reference_drift=false`。
+
+SAT100 null Monte Carlo 中，冻结 inverse 的 SAT 输出因为 `[0,100]` clipping 有约 `71.24%` 恰好为零，导致 `q0.6827(abs(SAT error))=0`；v1 把 scale 夹为 `1e-12` 后产生约 `1.94e11` 的 coverage limit。该退化是 endpoint 坐标结构问题，不是增加 Monte Carlo 样本或换 seed 可以解决的问题。
+
+#### 8.7.3 冻结新的目标语义
+
+P7 的首要产品目标按 GUIDE 恢复为复制 Ray 的观测 Hue/SAT 路径，完整 58-feature 等价作为更严格且独立的证据：
+
+1. `hsi_coordinate_equivalent`：只对 target-local Hue/SAT coordinate 做联合 99.73% + guard-band acceptance；SAT0 仅 SAT/neutral coordinate，不执行 Hue gate；
+2. `observer_equivalent`：对完整 58-feature direct residual 做严格联合 region；它不得被删除或用 Hue/SAT pass 替代；
+3. `color_rendering_residual`：保存 target tangent 正交补上的 raw L2、whitened score、per-plane/per-patch 摘要；作为 solver 第三优先级和公开诊断，但当前阶段不作为 `hsi_coordinate_equivalent` 的 hard gate；
+4. 禁止再输出无前缀的 `faithful`。下游 `s_exact_max_int100_fullscale(h)` 与 boundary 只基于 `hsi_coordinate_equivalent` 建立，并同时携带 `observer_equivalent` 和 color-rendering evidence；
+5. 不新增主观 Hue/SAT 产品容差。coordinate acceptance 仍由 capture 前冻结、独立校准的 measurement region 决定；若以后需要视觉容差，必须再次交还 Advisor，不能由 Executor自行设定。
+
+这是基于新实拍证据对旧 joint Hue/SAT/orth hard gate 的明确覆盖，不是隐藏或删除 0.17..0.18 的显色差异。
+
+#### 8.7.4 Reference calibration v2
+
+Reference gate 不再通过 `RayHsiManifold.coordinate()` 的 `[Hue,SAT,orth]` 输出判定。对每个 exact anchor state `s`：
+
+```text
+u = unit_shape(ordered_58_features)
+mu_p6_s = frozen P6 exact-state empirical center
+delta_center = mean(u_current_block) - mu_p6_s
+delta_session = mean(u_post_block) - mean(u_pre_block)
+```
+
+必须分别校准和报告两个 direct-feature statistic：
+
+- `reference_center_compatibility`：P6 center 与当前 pre/post block mean 是否兼容；
+- `reference_repeatability`：当前 pre/post block 是否相互兼容且 block 内 repeatability 是否稳定。
+
+实现合同：
+
+1. 使用 frozen 58-feature 顺序、unit-shape 和 CFA-plane block-isotropic diagonal regularization；不得求病态完整样本 covariance；
+2. exact anchor 使用 P6 原始 exact-state repeated measurements 的经验中心，不通过 manifold interpolation 产生中心；exact-node interpolation component 为零；
+3. P6 和当前 block 必须各自在 state/block 内中心化后估计 within-state covariance；跨 session center shift 是被检测量，禁止吸收到 variance；
+4. mean-difference covariance 按独立均值的 `Sigma_p6/n_p6 + Sigma_current/n_current` 组合；pre/post 使用 `Sigma_pre/n_pre + Sigma_post/n_post`；不加入 strip covariance，也不额外重复加入 camera noise；
+5. statistic 固定为 direct 58-feature regularized whitened norm，并通过 unit-normalization 后的实际 Monte Carlo 路径校准，不使用逆 HSI 坐标近似；
+6. 每个 anchor state 分别给出 guarded 与 unguarded 99.73% limit：小于 guarded 为 `pass`，guarded 与 unguarded 之间为 `unresolved`，超过 unguarded 为 `fail/reference_drift`；
+7. artifact 必须区分 within-session repeatability 与 frozen-center compatibility，不能用稳定但已漂移的 current center 让自己通过；
+8. 未来正式 P7 session 的 pre anchors 每 state 至少 3 次独立 off/on settled captures，post 至少再次拍 H120/S100 3 次；单帧 anchor 禁止放行；
+9. 同一 acquisition run 内任何失败都不得重拟合 P6、移动 center 或创建新 epoch。
+
+#### 8.7.5 Strip repeatability v2
+
+Confirmation spread gate 改在 direct 58-feature unit-shape 空间工作，不再对 nonlinear `[Hue,SAT,orth]` 输出做 pairwise spread：
+
+```text
+d_ij = unit_shape(x_i) - unit_shape(x_j)
+Sigma_pair_class = 2 * max_per_plane(Sigma_P1_floor, Sigma_targeted_class)
+T_repeat = regularized_whitened_norm(d_ij)
+group_score_n = max_all_pairs(T_repeat)
+```
+
+Monte Carlo 必须分别模拟 `n=3`、`n=5` 并冻结 group maximum 的 99.73%/guarded limits。P1 仍是不能降低的 strip noise floor；定向数据只能逐 plane 提高相应 class 的 component，不能让 floor 变小。
+
+v2 至少分四类：
+
+```text
+neutral_fullscale
+mid_sat_fullscale
+sat100_fullscale
+neutral_scale_relaxed
+```
+
+SAT100 的 H120/H300 command 分别中心化，class variance 逐 CFA plane 取两者和 P1 floor 的保守最大值；禁止把两者 center 差当 noise。当前 sentinel confirmations 不参与拟合，只用于 v2 完成后的 holdout replay。
+
+#### 8.7.6 非零 SAT endpoint-safe evaluator
+
+冻结 P6 artifact 和 observed manifold 不重拟合。新增 target-local evaluator，和全局 inverse 分工：
+
+- 全局 `RayHsiManifold.coordinate()` 继续用于导航、可视化和粗报告；
+- acceptance 使用冻结 target 附近的局部 tangent basis；Hue 为周期 central tangent；内部 SAT 为双侧 tangent；SAT100 使用指向最近较低实测 SAT 节点的 one-sided tangent，但输出保持 signed/unclipped；
+- SAT0 使用 neutral/radial coordinate，Hue 始终 undefined；
+- 正交补 residual 形成独立 `color_rendering_residual`，不得重新塞回 coordinate joint gate；
+- component scale 使用 endpoint-safe signed output 的 `q0.6827(abs(error))` 或等价 RMS；具体二选一必须由 deterministic synthetic/null tests 固定，不能按实拍结果选择；
+- artifact generation 遇到任一 required scale 非有限或小于数值可辨识阈值时必须 hard fail。删除 `max(scale, 1e-12)` 这种让病态 region 继续生成的逃生路径。
+
+局部 evaluator 的实现公式固定为：
+
+```text
+r = unit_shape(observation) - unit_shape(target)
+J = [du/dh, du/ds]                       # SAT0 只保留 du/ds
+W = inverse(regularized diagonal Sigma_match)
+delta = solve(J^T W J, J^T W r)          # signed, never clipped to HSI bounds
+r_orth = r - J delta
+```
+
+- `du/dh` 使用冻结 P6 相邻实测 Hue 节点的周期 central secant，单位为 feature/degree；
+- 内部 SAT 的 `du/ds` 使用相邻实测 SAT 节点双侧 secant；SAT100 使用最近较低实测 SAT 到 100 的 one-sided secant，单位为 feature/percent；
+- Hue error 报告为最短周期 signed degree；SAT error 允许越过 0/100 的 signed local value，禁止 clamp；
+- `Sigma_match = Sigma_ray + Sigma_strip_class + Sigma_interpolation`；相机噪声已包含在前两项中，不新增独立 camera component；
+- coordinate region 通过同一 evaluator 的 Monte Carlo `delta` 校准；observer region 对 direct `r` 校准；`r_orth` 只进入 color-rendering evidence/solver tie-break；
+- 每个 target 保存 `cond(J^T W J)`。非有限或超过离线 synthetic test 冻结的 condition limit 时标 `uncertainty_unresolved`，不得退回 clipped global inverse 获得 pass；
+- Hue/SAT tangent step、condition limit、regularization、MC seed/样本数和 scale estimator 全部写入 v2 artifact，并在任何新 capture 前固定。
+
+Executor 首选 signed local tangent + `q0.6827(abs(error))`。只有离线 null test 仍证明分布退化时，才可在同一离线阶段改用预先记录的 RMS 方案，并在交还 Planner 时明确报告；不得自行进入实拍。
+
+#### 8.7.7 允许的 solver/target 改造边界
+
+允许修改 `hsi_objective.py`、`hsi_feedback.py` 和现有 runner/analyzer 的内部求解合同，也允许在既有 manifold 模块暴露只读 tangent/evaluation helper；不允许创建平行 manifold、采集框架或重拟合 P6。
+
+允许：
+
+1. objective 词典序固定为：合法 measurement、coordinate guarded excess、Hue/SAT signed local error、directional color-rendering residual、连续性/headroom/sensitivity；
+2. solver 使用 whitened directional 58-feature residual 或 tangent/orthogonal projection，禁止只给 Jacobian 一个无方向的 orthogonal scalar norm；
+3. 离线评估 P2 保存的全部五个 active-channel seed；正式 runner 最多使用多少 distinct-face starts 和总 capture budget，必须由 replay 报告提出并在新 named experiment 前由 Planner 冻结；
+4. 在尚未 feasible 时，也允许依据 prediction error、Jacobian condition 或连续两次 bracket/secant 失准触发 deterministic rebase；
+5. 保留 bounded step、backtrack、command limits、active-channel/full-scale policy 和每次实拍前冻结的总轮数；
+6. 使用第 8.6 节完整 trace 做离线 replay/反事实分析，但不得把它用于 acceptance calibration。
+
+禁止：
+
+- 只把 `max_rounds` 调大后重拍；
+- 为让旧点通过而调 threshold、guard band、feature set、observer 或 exposure envelope；
+- 引入无法解释的 learned black-box forward model；
+- 删除或隐藏 color-rendering residual；
+- 将 top-K multi-start 变成无界搜索；
+- 在新实拍中观察结果后增加 start、probe、round 或改变 objective。
+
+#### 8.7.8 P7-R0：Executor 纯离线实施清单
+
+授权仅为 `offline_only`。按顺序完成：
+
+1. 保留 v1 artifact/hash 和第 8.6 节 run 原样；实现 schema v2 reader/writer，不覆盖 v1；
+2. 实现 direct-feature reference center/repeatability evaluator及 block-mean covariance；
+3. 实现 direct-feature confirmation spread 和四类 covariance 路由；在没有 P7-R1 数据时 artifact 状态只能是 `waiting_for_targeted_measurement`，不得伪造正式 limit；
+4. 实现 endpoint-safe local coordinate、SAT0 无 Hue、observer/coordinate/color-rendering 三层输出；
+5. 更新 objective、feedback、runner、analyzer 的状态和 provenance；旧 run analyzer 必须保持可复现，或显式使用 `--policy-version v1`；
+6. 实现有界 multi-seed/rebase 架构，但只做 synthetic 与第 8.6 节 trace replay，不调用设备；输出每点 predicted/actual step、Jacobian condition、rebase 原因、各 seed/face、预计 capture budget；
+7. 生成新的 named-experiment dry-run schema：`p7_targeted_reference_repeatability_v2`，但不得启动；
+8. 更新 README、project skill 和本计划执行状态，不改默认 LUT；
+9. 运行 full unit suite、compileall、所有相关 wrapper `zsh -n`、`git diff --check`、`codegraph sync`；
+10. 生成 `tmp/strip-hsi-pilot-offline/p7-r0-v2-<timestamp>/offline-readiness.json`，记录全部输入/hash、测试数、无设备调用断言、v1 replay、v2 synthetic coverage、旧 sentinel holdout replay 和 proposed real capture budget。
+
+必须新增的回归覆盖至少包括：
+
+- SAT100 null 不再出现 zero-scale artifact，required scale 退化时 hard fail；
+- SAT0 永远没有 Hue gate；Hue 0/360 tangent 周期一致；
+- reference evaluator 不含 strip covariance，cross-session center shift 不被吸入 within-state covariance；
+- repeated block mean 的 `1/n` covariance 缩放正确；
+- current center compatible、guard-band unresolved、reference drift 三个 synthetic 分支；
+- direct pairwise spread 的 n=3/n=5 maximum 和四类路由；
+- P1 floor 只能保持或提高；
+- `hsi_coordinate_equivalent` 与 `observer_equivalent` 可得到不同结果，且 residual 不丢失；
+- v1 run 可复现且不会被 v2 重新判为正式通过；
+- multi-seed/rebase 有严格 start/round/capture 上限；
+- dry-run 不加载 `.env`、不联网、不调用 camera/Ray/ESPHome/all_off。
+
+P7-R0 完成后必须停止并交还 Planner。即使测试全部通过，也没有 P7-R1 实机授权。
+
+#### 8.7.9 P7-R1：定向 reference/repeatability named experiment 草案
+
+只有 P7-R0 经 Planner 验收且用户另行明确授权 `p7_targeted_reference_repeatability_v2` 后才能执行。该授权不得从已消费的 `p7_sentinel_4` 继承。
+
+正式 measurement 固定为两个 block；每张均为独立 `off -> 1 s -> exact command -> 60 s -> capture -> off`：
+
+运行顺序固定为：start ambient -> Ray block A -> strip block A -> strip block B -> Ray block B -> end ambient -> Python cleanup -> shell cleanup。只允许在各 block 内使用下述预冻结循环顺序，禁止把 Ray A/B 相邻拍完而失去 session drift 诊断。
+
+**Ray reference，30 张正式 measurement：**
+
+- states：H0/S0、H120/S100、H300/S100；
+- block A 与 block B 各 state 5 次，共 `3 * 5 * 2 = 30`；
+- 每个 block 内使用预先冻结的循环平衡顺序；
+- 每 state 独立曝光 cache，block B 从同 state 的 block A cache 恢复；strip 始终为零。
+
+**Strip repeatability，50 张正式 measurement：**
+
+- commands：第 8.6 节 selected H0/S0@4095、H120/S100@4095、H120/S50@4095、H300/S100@4095、H0/S0@3072；
+- 只从 frozen `target-results.jsonl` 按 hash 提取 exact five-channel command，不运行 solver、不改 command；
+- block A 与 block B 各 command 5 次，共 `5 * 5 * 2 = 50`；
+- 每个 block 内使用预先冻结的五阶循环平衡顺序；
+- 每 command 独立曝光 cache，block B 从同 command 的 block A cache 恢复；Ray 始终 intensity 0。
+
+runner 另拍 block 起止所需 ambient frame，数量和 auto-exposure probe 上限必须在 dry-run `plan.json` 中明确；上述 `30+50` 是进入统计的正式 measurement 数，不能用 probe/ambient 补足。整个 run 保留 remote camera、recorded exposure、source isolation、readback、无 `.npy` 和 Python/shell 双 cleanup 合同。
+
+#### 8.7.10 P7-R1 分支
+
+`R-PASS`：三个 Ray state 的 block 内 repeatability、pre/post stability 和 P6 center compatibility 全部在 guarded limit 内；五个 strip command 均有合法 10 repeats；v2 regularization/coverage 收敛；冻结新 v2 artifact/hash，运行旧 sentinel 作为 holdout，但不得把旧 run 升级为 Gate-6 pass。交还 Planner 决定并授权新的四点 sentinel-v2。
+
+`R-REFERENCE-EPOCH`：current Ray pre/post 稳定，但任一 state 与 P6 center 超出 unguarded limit。标记 `reference_epoch_shift`，不得在本 run 重拟合 P6。停止 P7；Planner/Advisor决定另一个自然日重复 P7-R1，或建立新的 Ray epoch。仅三个 anchor 不能自动更新完整 P6 manifold。
+
+`R-REFERENCE-UNSTABLE`：block 内或 pre/post 不稳定。停止 HSI 求解，检查热状态、几何、曝光 provenance、remote capture 和供电；保留所有样本。修复前不得新 sentinel。
+
+`R-STRIP-CLASS-HIGH`：Ray reference 通过，但某 strip class 明显高于 P1 floor。允许 v2 对该 class 逐 plane 采用更保守方差；若 Monte Carlo/guard 仍稳定且 10 repeats 无趋势，可继续。若存在 block trend、双峰、非有限 feature 或方差由单个异常帧支配，标 `uncertainty_unresolved` 并交还 Planner，不能用无限增大 covariance 自动通过。
+
+`R-MEASUREMENT/CODE/SAFETY`：任何 measurement、source/readback、remote、provenance、cleanup 失败使整个 run 无效；按失败合同保留证据、确认双关灯、修复后使用全新目录完整重跑，禁止拼接两个 run 的 block。
+
+#### 8.7.11 新 sentinel-v2 的放行边界
+
+只有 `R-PASS`、v2 artifact 已冻结、P7-R0/R1 全套检查通过且 Planner 再次验收后，才能请求新的 `p7_sentinel_4_v2` 授权。新 sentinel 必须完整重跑四点，不复用第 8.6 节结果；pre 三个 Ray anchor 各 3 repeats，post H120/S100 3 repeats；solver start/round/capture budget 在 capture 前冻结。
+
+新自动放行条件以后续 Planner 写入的 sentinel-v2 条款为准。在该条款出现前，Executor 即使得到四个 `hsi_coordinate_equivalent` 也必须停止，不能直接执行 remaining 9。
+
+#### 8.7.12 P7-R0 Executor 离线实施结果（2026-07-18）
+
+```text
+status = ready_for_planner_review
+device_calls = 0
+policy_v2 = config/hsi/strip-hsi-policy-v2-waiting.json
+policy_v2_sha256 = db9ebef1503c5e54c989649c719c4a5f75445bbd5487edb14c274e1b2894f3b4
+policy_v2_status = waiting_for_targeted_measurement
+formal_capture_eligible = false
+v1_replay = byte-identical; analysis SHA-256 5416dfcae4ea1f4114d1757a0d253b059677a984f728a7f10a8dd81cd265e043
+v2_synthetic_coverage = pass_synthetic_only_not_formal_limits
+old_sentinel_holdout_groups = 5; Gate-6 eligibility false
+p7_r1_draft = 30 Ray + 50 strip + 2 ambient; execution unauthorized
+full_unit_suite = 367 passed
+```
+
+实现保持 v1 reader/analyzer，并要求旧 run 显式使用 `--policy-version v1`；v2 使用独立 schema/read/write，不覆盖 v1 artifact。新增 direct-feature reference center/repeatability、block-mean `1/n` covariance、四类 direct confirmation spread、P1 floor 保守路由、signed endpoint-safe tangent、三层 equivalence/residual 输出和 required-scale hard fail。Solver 接收 directional residual，支持有限 distinct-face multi-seed、prediction/Jacobian rebase 和严格总 capture 上限。
+
+旧 sentinel replay 只作完全独立 holdout，未拟合 covariance、scale、limit、guard 或 budget。Direct spread 使用 P1 floor 仅输出诊断 score，因 P7-R1 尚未完成，所有 group decision 仍为 `waiting_for_targeted_measurement`。四点 local tangent condition 约为 SAT0 `1.0`、H120/S100 `2.908`、H120/S50 `2.292`、H300/S100 `3.387`，离线未见局部坐标病态；但这不能代替 P7-R1 reference epoch 与定向 repeatability 证据。
+
+Executor 给 Planner 的 solver budget 提案是：最多 `2` 个 distinct active-face starts，每 start `8` feedback rounds、最多 `2` 次 rebase、`3` confirmations，严格上限 `48 captures/target`。这是 replay 提案，不是新实拍冻结值；Planner 必须接受或修改后再授权。
+
+主要证据：
+
+- `tmp/strip-hsi-pilot-offline/p7-r0-v2-20260718-090507/p7-r0-v2-replay-final.json` @ `e7a1c98dd7292acba9be7ef876795d802c07ada2852080f5fcddeca6301cb559`；
+- `tmp/strip-hsi-pilot-offline/p7-r0-v2-20260718-090507/p7-r1-draft/plan.json` @ `8bd3daf61fab16f453a2e307c55d028480491cb5f073657a2c6a895d61045259`；
+- `tmp/strip-hsi-pilot-offline/p7-r0-v2-20260718-090507/offline-readiness.json` @ `a81bc4ba64d962e672f49319536bff2d93bb728d930944fdee28da4109d710c3`。
+
+本节完成后必须停止并交还 Planner。P7-R1、新 sentinel、remaining 9、boundary、holdout 与 P8 继续锁定。
+
+#### 8.7.13 Planner 对 P7-R0 的验收决定（2026-07-18）
+
+```text
+decision = reject_for_formal_capture
+mathematical_direction = accepted_with_offline_corrections
+next_phase = P7-R0B
+device_authorization = none
+p7_r1_authorization = none
+sentinel_v2_authorization = none
+```
+
+P7-R0 当前不能被验收为 P7-R1 的实拍前检查点，但不要求推翻已完成的 v2 工作。以下部分接受并保留：
+
+- v1 reader/analyzer 和 byte-identical legacy replay；
+- v2 waiting artifact 与 v1 artifact 分离，且 `formal_capture_eligible=false`；
+- endpoint SAT100 signed one-sided tangent、SAT0 禁止 Hue gate、required scale 为零时 hard fail；
+- direct reference/repeatability、58-feature 分离和 30 Ray + 50 strip + 2 ambient 的 P7-R1 采集形状；
+- 旧 sentinel 只作独立 holdout，不参与拟合或 Gate-6；
+- 当前证据 hash、`367/367` 测试结果和零设备调用声明。
+
+Planner 独立复核通过 `367/367` 测试、`compileall`、wrapper `zsh -n` 与 `git diff --check`。这些结果只证明现有单元合同和语法完整，不覆盖下列 formal-path 缺口：
+
+1. 正式 `measure_strip_hsi_pilot` 仍调用 v1 `evaluate_hsi_observation` 与单 seed `run_hsi_feedback`；v2 evaluator/multiseed 目前只有测试调用，正式 result status 也仍是 v1 集合。
+2. `measure_hsi_reference_repeatability` 只允许 `--dry-run`，尚无真实采集路径、双 cleanup wrapper、分析器或 finalizer；在冻结统计规则前不得授权采集 82 张计划样本。
+3. `48 captures/target` 不是状态机的可证明最坏上限。primary/backtrack rejection 和重复 confirmation 都会额外消费 capture；达到总上限时当前 multiseed 直接抛 `RuntimeError`，没有返回带 best-valid sample 的 `solver_budget_exhausted`。
+4. v2 实测 evaluator 用 target-specific `guarded_limit` 判断 coordinate feasibility，但 solver 的 predicted objective 把 raw normalized coordinate norm 与硬编码 `1.0` 比较，预测排序与正式验收尺度不一致。
+5. 当前 replay 只对旧 trace 拟合 affine predictor，再静态输出 2/8/2/48；它没有重放新的 multiseed 状态机，不能证明两 starts 的收益或预算完整性，其误差指标还混合 Hue、SAT 和 feature residual 的不同单位。
+6. `plane_block_regularize` 取 CFA plane 内最大 feature variance，未复用计划中的 within-group center + MAD/RMS block regularization，也没有冻结 trend、双峰、异常帧主导的 `R-STRIP-CLASS-HIGH` 审计分支。
+7. synthetic coverage 尚未校准 coordinate joint 99.73% region/guard band，也未检验 empirical coordinate coverage；因此只能保留 `pass_synthetic_only_not_formal_limits`，不能升级为 formal policy。
+
+以上是实现和验收合同缺口，不需要本轮再次请求 Advisor 改变数学方向。只有 P7-R0B 无法用冻结 GUIDE 解决、需要改变 58-feature 语义、联合 coverage 定义或 target/solver 架构时，才重新交还 Advisor。
+
+#### 8.7.14 Planner 冻结的 solver 预算设计
+
+原提案中的三个结构上限接受：
+
+```text
+max_distinct_face_starts = 2
+max_logical_rounds_per_start = 8
+max_rebases_per_start = 2
+```
+
+原 `48 captures/target` 驳回，改为以下可逐项审计的预算。这里的 `logical observation` 是 solver 请求的一次有效测量机会；`physical CR3` 是相机实际落盘次数，包括自动曝光和有界 weak-signal reacquire。
+
+```text
+max_feedback_capture_attempts_per_start = 8
+max_confirmation_groups_per_start = 2
+ordinary_confirmation_captures_per_group = 3
+boundary_confirmation_captures_per_group = 5
+rebase_probe_count = 4  # all-or-none
+max_autoexposure_physical_captures_per_target = 10
+max_weak_signal_reacquire_physical_captures_per_target = 4
+```
+
+预算规则：
+
+- 一个 feedback round 内的 primary、0.5 backtrack、0.25 backtrack 均分别消费 `max_feedback_capture_attempts_per_start`，不能把三个 physical captures 记成一个 round；预算耗尽后不得继续 backtrack。
+- 每次 rebase 必须在剩余预算足够完成全部四个 probe 时才开始；不允许留下 partial Jacobian。
+- 每个 start 独立保留自己的初始、probe、feedback、rebase 和 confirmation 预算；第一个 start 不能消费第二个 start 的保留预算。
+- final verification 必须消费 confirmation-group 预算；solver 返回后不得追加未声明的隐藏 captures。
+- 同一 target 只允许一个 target-specific auto-exposure cache。自动曝光最多 10 张，其中第一张同时计入 solver 的 initial logical observation，因此 physical overhead 最多为 `10 - 1 = 9`。
+- weak-signal reacquire 在两个 starts 之间共享全局最多四张；不得通过切换 start 重置。
+- reference/ambient captures 不计入 per-target cap，但必须在 experiment plan 中独立列出并计数。
+
+普通 sentinel/pilot 点的上限：
+
+```text
+per_start_logical = 1 initial + 4 probes + 8 feedback attempts
+                    + 2 * 4 rebase probes + 2 * 3 confirmations
+                  = 27
+per_target_logical = 2 * 27 = 54
+per_target_physical_cr3 = 54 + 9 autoexposure overhead + 4 reacquire = 67
+```
+
+边界、Gate-6 candidate、接近极限点及 holdout 使用 5 张 confirmation 时：
+
+```text
+per_start_logical_n5 = 1 + 4 + 8 + 2 * 4 + 2 * 5 = 31
+per_target_logical_n5 = 2 * 31 = 62
+per_target_physical_cr3_n5 = 62 + 9 + 4 = 75
+```
+
+`54/67` 和 `62/75` 是 hard caps，不是目标拍摄量。达到任一逻辑或物理上限必须返回结构化 `solver_budget_exhausted`，至少保存 target、start、phase、各子预算消费、best valid sample、best command、最后有效 objective 和 rejection evidence；禁止抛出未转换的 `RuntimeError`。Runner 必须同时执行 logical-observation 与 physical-CR3 两层计数。
+
+上述预算作为 P7-R0B 的实现合同已获 Planner 接受，但尚未成为实拍冻结值。只有状态机、replay、exhaustion 测试和 formal runner 接线再次通过 Planner 复验后，才可随 named-experiment authorization 一起冻结。
+
+#### 8.7.15 P7-R0B 唯一离线纠偏阶段
+
+Executor 必须按 A-D 顺序执行；任何一项失败都停在离线阶段，不得跳到 P7-R1。
+
+##### A. 接通 formal v2 路径
+
+1. 正式 runner/analyzer 必须按显式 policy version 分派 evaluator、solver、result statuses 与 provenance；v1 只允许显式 legacy replay，禁止静默默认回退。
+2. waiting/candidate v2 policy 必须 hard-reject formal sentinel；只有 Planner 后续明确接受的 frozen formal artifact 才能被 runner 使用。
+3. 正式 v2 路径调用 `evaluate_hsi_observation_v2` 和 bounded multiseed solver，并输出 `faithful`、`unconfirmed`、`measurement_unreachable`、`uncertainty_unresolved`、`solver_budget_exhausted`、`reference_drift`、`boundary_bracketed_at_full_scale` 等互斥状态。
+4. pre/post reference 必须按计划保存 repeat blocks，不能退化为单张 anchor；SAT0 不输出 Hue decision。
+5. analyzer 必须核对 policy/hash、manifold/hash、feature order、budget declaration/consumption、source isolation、recorded exposure 和 cleanup provenance。
+
+##### B. 修正 solver 状态机、尺度和 replay
+
+1. 实现第 8.7.14 节的 per-start sub-budget、global physical budget、all-or-none rebase、second-start reservation 和结构化 exhaustion。
+2. predicted coordinate residual 必须使用与实际 evaluator 相同的 target-specific guarded region；可把 residual 除以 frozen guarded limit，或向 predicted objective 显式传入同一 region，禁止继续硬编码无语义的 `1.0`。
+3. 增加 rejected primary/backtracks、反复进入 confirmation、partial-rebase prevention、first-start exhaustion、second-start reservation、autoexposure/reacquire physical cap 和 best-valid exhaustion 的测试。
+4. replay 必须实际驱动 proposed multiseed state machine 重放旧 trace；缺少未拍 command 时明确记 `trace_support_missing`，不得插值伪造 observation。Replay 只验证状态迁移、单位一致性和预算 accounting，不宣称证明实机收敛。
+5. 所有 replay prediction error 必须在 v2 normalized coordinate/rendering 空间报告，禁止把 degree、percent 和 raw feature residual 合并为一个无量纲阈值。
+
+##### C. 完成 v2 calibration/finalization 算法
+
+1. 在 synthetic fixtures 上实现并验证 coordinate joint 99.73% coverage region、bootstrap guard band、observer/reference direct region 和 n=3/n=5 repeatability decision；同一噪声源不得重复计数。
+2. block/state variance 必须复用或扩展 `regularize_groups` 的 within-group centering 与 per-CFA-plane MAD/RMS regularization；禁止用单个 feature maximum 代替整个稳健估计流程。
+3. 在采集前冻结 trend、双峰、非有限 feature、单异常帧主导、effective sample shortage 和 bootstrap instability 的审计阈值。任一触发都返回 `uncertainty_unresolved`，不得靠无限增大 covariance 自动通过。
+4. P7-R1 analyzer/finalizer 只能生成 `calibrated_waiting_for_planner` candidate，且 `formal_capture_eligible=false`。Executor 不得自行把 candidate 改为 frozen/formal；只有后续 Planner 验收能生成或批准正式 artifact/hash。
+5. synthetic report 必须分别给出 empirical coordinate/reference/observer coverage、Monte Carlo seed、sample count、guard calculation 和 failure branch；不得只输出 direct-feature limit。
+
+##### D. 离线实现完整 P7-R1 执行面，但不得运行
+
+1. 把现有 30 Ray + 50 strip + 2 ambient dry-run 扩展为真实 remote-backend runner、analyzer、finalizer 和 shell wrapper；只实现代码与 fake backend 测试，不连接设备。
+2. 远程凭据由脚本/backend 自行加载 `.env`，代码、日志、plan 和测试输出不得读取后打印 secret。
+3. 使用共享 capture adapter、recorded exposure、原子 CR3 落盘、零 `.npy`、严格 source isolation/readback、Python `finally` 与 shell `trap` 双关灯。
+4. 正常完成必须严格得到计划内 82 个 logical reference/repeatability captures；自动曝光/reacquire 的额外 physical captures 必须独立审计，不能改写 82 的统计样本数。
+5. Analyzer/finalizer 必须预先实现 `R-PASS`、`R-REFERENCE-EPOCH`、`R-REFERENCE-UNSTABLE`、`R-STRIP-CLASS-HIGH`、`uncertainty_unresolved`、capture/source/readback/cleanup failure 分支；不得等实拍后再定义阈值。
+6. 生成新的 dry-run plan、offline-readiness、policy candidate schema 和所有 SHA-256；dry-run 必须证明 remote-only、82 张统计样本、额外物理上限、双 cleanup 和 formal-ineligible candidate。
+
+P7-R0B 交还 Planner 前必须同时满足：
+
+- full suite、`compileall`、全部相关 wrapper `zsh -n`、`git diff --check`、`codegraph sync` 通过；
+- v1 legacy replay 仍 byte-identical；
+- v2 formal runner/analyzer 路径有 integration test，不再只有 isolated unit calls；
+- 第 8.7.14 节的普通与 n=5 hard caps 均有 exact-boundary 和 one-over-boundary 测试；
+- synthetic joint coverage/failure branches 和 P7-R1 fake backend 成功/失败/cleanup branches 有行为断言；
+- 新 readiness 明确列出所有尚未实测的统计量，不能把 synthetic 值标成 formal；
+- Executor 更新本计划证据后停止，交还 Planner 复验。
+
+在 Planner 复验并由用户另行授权之前，`p7_targeted_reference_repeatability_v2`、P7-R1、新 sentinel、remaining 9、boundary、holdout 与 P8 全部保持锁定。
+
+#### 8.7.16 P7-R0B Executor 离线纠偏结果（2026-07-18）
+
+```text
+status = offline_complete_waiting_for_planner_acceptance
+device_calls = 0
+p7_r1_execution = not_run_not_authorized
+goal = Blocked
+```
+
+Executor 已按 8.7.15 A-D 完成纯离线纠偏，并在此停止：
+
+- formal runner 现在要求显式 `policy_version`；v1 只保留 legacy replay，v2 formal sentinel 对 waiting/candidate policy hard reject。旧 `config/hsi/strip-hsi-pilot.json` 及 sentinel 输入 hash `ca5cb49d...` 保持不变，v2 使用独立 `config/hsi/strip-hsi-pilot-v2.json` @ `8a7a2d3616365e46617ca5d7b7898c9480c1a9599b9135e808ceaab30fc62215`；
+- v2 formal integration 已接通 `evaluate_hsi_observation_v2`、two-distinct-face multiseed、target-specific guarded scale、repeat blocks、v2 status/provenance 和 analyzer audit；waiting/candidate artifact 不能进入 formal runner；
+- solver budget 由独立状态对象所有。普通点 exact cap 为 `54 logical / 67 physical CR3`，n=5 为 `62 / 75`；primary/0.5/0.25 各消费 feedback attempt，rebase 四 probe all-or-none，两个 starts 独立保留预算。耗尽返回结构化 `solver_budget_exhausted`，保留 best-valid sample/command/objective/rejection evidence，不再抛裸 budget `RuntimeError`；
+- predicted coordinate residual 和 evaluator 均使用同一 target/class-specific guarded limit；prediction error 分开报告 guarded-normalized coordinate 与 whitened rendering，不再混合 degree、percent 和 raw feature residual；
+- replay 真实驱动 proposed multiseed 状态机。旧 trace 每个四点均明确得到 `trace_support_missing`（各使用 9 logical observations、4 个 unsupported commands），不插值或伪造 observation；v1 replay 继续 byte-identical，SHA-256 `5416dfca...`；
+- v2 calibration/finalizer 使用 within-group centering、per-CFA-plane MAD/RMS regularization、coordinate/observer/reference/repeatability 分离的 99.73% MC/guard。采集前 audit 阈值已写入代码/candidate schema，覆盖 trend、双峰、非有限 feature、单帧方差主导、effective sample shortage 与 bootstrap instability；任一分支 fail closed 为 `uncertainty_unresolved`；
+- P7-R1 已实现 remote-only runner、shared native-RAW capture adapter、recorded exposure、atomic CR3、source isolation/readback、weak reacquire audit、Python finally、shell trap、analyzer 和 formal-ineligible `calibrated_waiting_for_planner` finalizer。fake backend 成功、失败和 cleanup 分支均有行为断言；真实 runner 未启动；
+- P7-R1 dry-run 仍严格为 30 Ray + 50 strip + 2 ambient = 82 logical captures。8 个 exposure cache miss、每 miss 最多 12 张 physical、最多 80 张 bounded weak reacquire，使声明的 absolute physical hard cap 为 250；统计样本数始终固定 80，额外 physical CR3 不补足或改写 formal sample；
+- `config/hsi/strip-hsi-policy-v2-waiting.json` 仍为 `waiting_for_targeted_measurement` / `formal_capture_eligible=false`，SHA-256 仍为 `db9ebef1...`。Executor 没有生成或批准 frozen formal policy。
+
+最终离线证据目录：
+
+```text
+tmp/strip-hsi-pilot-offline/p7-r0b-v2-20260718-101555-final
+```
+
+证据与 SHA-256：
+
+- `p7-r0b-v2-replay-final.json` @ `6b8862d5850053e4ad3d7c7e96da073bb7e521ad767e1f38b7ad9a23b30d4606`；
+- `p7-r1-draft/plan.json` @ `be17c55815a7fca3e14cecfc30c33bd87eb9a263d5ead4662a10389865462f35`；
+- `offline-readiness.json` @ `8441e1d594356e7d3f01befcea949506c55f9d00dd87be45553898d40663f05a`；
+- `full-suite.log` @ `21ba98d0d190770952b27cb19970ba3d4254961404610ed210e310251a188bcb`。
+
+验证结果：full suite `380/380`（72.037 s）通过；`compileall`、四个相关 wrapper `zsh -n`、`git diff --check`、`codegraph sync` 全部通过。聚焦 P7-R0B 测试 `52/52` 通过。全程未加载 `.env`，未调用网络、camera、Ray、ESPHome 或 all_off。
+
+仍未实测且必须由 P7-R1 提供的数据：当前 epoch 的 Ray center compatibility、pre/post reference repeatability、四个 strip class variance、新 sentinel-v2 convergence，以及 remaining/boundary/holdout 行为。Synthetic 数值没有被标成 formal。
+
+本节完成后必须交还 Planner。Planner 需复验 A-D、接受或拒绝 P7-R0B，并决定是否另行授权 exact named experiment `p7_targeted_reference_repeatability_v2`。在此之前 P7-R1 execution、新 sentinel、remaining 9、boundary、holdout 与 P8 继续锁定；Advisor 不需要介入，除非 Planner 认为必须改变 58-feature、联合 coverage 或 solver/target 架构。
+
+#### 8.7.17 Planner 对 P7-R0B 的复验决定（2026-07-18）
+
+```text
+decision = reject_for_named_experiment_authorization
+preserve_completed_work = true
+next_phase = P7-R0C
+solver_caps_54_67_and_62_75 = unchanged
+p7_r1_250_physical_cap = proposed_not_frozen
+p7_targeted_reference_repeatability_v2 = not_authorized
+advisor_escalation = not_required
+```
+
+Planner 独立核对全部交接 hash，并复跑 full suite `380/380` 通过。另以纯离线 deterministic fixtures 复现两个未被测试覆盖的错误：
+
+- 一个未确认 face 的单帧误差更小、另一个 face 已完整确认时，multiseed 返回 `unconfirmed` 并选择未确认 face；
+- H120/S100 与 H300/S100 各自完全稳定时，只因它们属于同一 `sat100_fullscale` class，当前 audit 把两个不同中心拼接后产生约 `1.33e6` 的伪 trend score，并返回 `uncertainty_unresolved`。
+
+因此 `380/380` 是当前测试基线，不是 P7-R0B formal acceptance。以下阻塞项必须修复：
+
+1. `analyze_strip_hsi_pilot` 仍在入口 hard-reject 非 legacy-v1 run，CLI 也只允许 `--policy-version v1`；其 target/anchor/combined audit 继续读取 `uncertainty_artifact`、`uncertainty_artifact_sha256`、`feedback.best` 和单帧 anchor evaluation，无法分析 v2 runner 实际产生的 `policy_v2_artifact`、`policy_artifact_sha256`、multiseed result 和 repeat-block analysis。现有 v2 integration test 只执行 runner，没有调用 analyzer。
+2. Multiseed 的最终选择在所有 best samples 上排序，没有先选择 `goal_confirmed=true` 的 attempt。已确认结果必须优先于任何未确认单帧结果。
+3. Confirmation 遇到第一张合法但不满足 coordinate gate 的图就提前返回，不能形成预声明的 n=3/n=5 完整 group；若 solver 从未出现 feasible sample，也没有对 best-valid command 执行最终 confirmation group。这违反“普通点 3 张、边界点 5 张”和 final verification 必须消费既有 confirmation-group budget 的合同。
+4. `audit_repeatability_groups` 虽然用 within-group residual 估 covariance，却用未按 group 中心化的跨 command/state 矩阵计算 trend、bimodal 和 single-frame dominance。不同 HSI target 的产品中心被错误当成噪声或漂移，直接污染 `R-STRIP-CLASS-HIGH` 分支。
+5. P7-R1 analyzer 没有读取 `commands.jsonl`，却直接声明 source isolation/readback pass。Weak-signal reacquire 会覆盖逻辑 record 中的原始 rejected capture，record 仍保存第一次 readback，reacquire 的独立 command/readback、原始 CR3/report 和 selected-attempt provenance 不完整；reacquire 前也没有完整执行预声明的 `off -> 1 s -> on -> 60 s`。
+6. P7-R1 的 250 physical CR3 只在 capture 完成后按 counter 检查；analyzer 不从 retained attempt/auto-exposure evidence 重算 physical count，也不验证 `<=250`、weak reacquire `<=80` 或 run counter 与实际证据一致。因此 250 只能保留为提案，不能随本次验收冻结。
+7. P7-R1 fake finalizer test只断言写出 formal-ineligible candidate，没有断言 `R-PASS`、`R-REFERENCE-EPOCH`、`R-REFERENCE-UNSTABLE`、`R-STRIP-CLASS-HIGH` 和 `uncertainty_unresolved` 的确定性分支。交接中“全部分支已有行为断言”不成立。
+
+这些都是既定架构内的实现和验收缺口，不要求改变 58-feature、联合 coverage 或 solver/target 语义，因此本轮不交还 Advisor。P7-R0B 已正确完成的 waiting-policy fail-closed、target-specific guarded scale、structured budget evidence、old-trace `trace_support_missing`、remote/fake R1 执行骨架和双 cleanup 必须保留，不得重写。
+
+#### 8.7.18 P7-R0C 唯一离线收口阶段
+
+P7-R0C 只允许修改上述阻塞路径及其测试/文档。`54/67`、`62/75`、2 starts、8 feedback attempts/start、2 rebases/start、2 confirmation groups/start 的预算数学保持不变；若修复需要增加这些上限，立即停止并交还 Planner。
+
+##### A. 正式 v2 analyzer 闭环
+
+1. 为 `analyze_strip_hsi_pilot` 增加显式 `policy_version` dispatch。v1 只允许显式 legacy replay；v2 只接受 `plan.measurement.policy_version=v2` 且 frozen/formal-eligible policy hash 与 plan 完全一致。禁止任何静默回退。
+2. 复用 capture、command、cleanup、input-hash 基础 audit，但为 v2 单独解析：
+   - `inputs.policy_v2_artifact` 与 objective `policy_artifact_sha256`；
+   - multiseed 的 `selected_result`、`best_valid_sample`、attempt budgets 和 physical budget；
+   - `reference-pre-analysis.json`/`reference-post-analysis.json` 的三张 repeat blocks、center compatibility 和 pre/post stability；
+   - `hsi_coordinate_equivalent`、`observer_equivalent`、`color_rendering_residual` 三层输出；
+   - 互斥 result status、n=3/n=5 confirmation spread、source/readback、recorded exposure、零 `.npy` 与双 cleanup。
+3. v2 sentinel analyzer 不得沿用 v1 `within_reference_coverage` 单帧 anchor 字段，不得读取 v1 `feedback.best` 或 `uncertainty_artifact`。
+4. Combined analyzer 的 shared policy key 必须随版本选择，并拒绝不同 policy hash/version 的 sentinel 与 remaining 拼接。现阶段只用 fake runs 验证，不执行 remaining。
+5. 新 integration test 必须：生成 formal-eligible fake v2 policy -> build plan -> execute fake sentinel -> 写 fake shell cleanup -> 调用 v2 analyzer -> 验证四点、12 anchors、预算、三层输出和 policy provenance。另加 waiting/candidate、hash drift、缺 cleanup、错误 confirmation 数和 command sequence 的拒绝测试。
+
+##### B. Solver 确认语义和选择优先级
+
+1. Multiseed 若存在任一 `goal_confirmed=true` attempt，只能在 confirmed attempts 中按 objective 排序；只有不存在 confirmed attempt 时，才在 best-valid samples 中选择。Overall status 必须由“是否存在 confirmed attempt”决定，不能由未确认 best sample 反向覆盖。
+2. 一个 confirmation group 一旦开始，所有**可测**的 n=3/n=5 captures 必须采完后再判 group pass/fail；一张合法但 coordinate fail 的图不能提前结束 group。Measurement rejection、physical exhaustion 或安全失败可以中止，但必须保存 partial-group evidence 和明确状态。
+3. Solver 正常结束而尚未确认时，只要存在 best-valid sample 且还有 confirmation-group budget，必须对 best-valid command 执行一个完整 final-verification group；它使用现有第二组预算，不得追加隐藏预算。
+4. 若两组 confirmation 都已消费、没有 valid sample 或 measurement 已不可达，返回相应 `solver_budget_exhausted`/`measurement_unreachable`/`unconfirmed`，保留 best-valid evidence；不得增加第三组。
+5. 新测试至少覆盖：未确认低误差 face vs 已确认高误差 face、首张 confirmation fail 仍收满 n、从未 feasible 仍执行 final group、partial group measurement rejection、两组耗尽、n=3/n=5 exact cap 和 one-over。修复后 hard caps 必须仍精确为 `54/67` 与 `62/75`。
+
+##### C. Repeatability audit 必须按 state/command/block 去中心
+
+1. Covariance、trend、bimodal 和 single-frame dominance 都只能使用同 state/command、同 block 内中心化 residual；不得把 H120 与 H300、不同 strip command 或 A/B 中心偏移直接当随机残差。
+2. 每个 Ray state 和每个 strip command 独立执行 audit；`sat100_fullscale` 可以在各 command 去中心后 pool residual 估 class covariance，但 audit failure 必须保留 command/block provenance。
+3. 每个 block 内按真实 capture chronology 检查 trend，禁止按排序后的 group id 伪造时间轴。A/B block center shift 作为独立 stability statistic 报告，不吸收到 within-block covariance。
+4. 增加 regression：H120/S100 与 H300/S100 中心显著不同但各自稳定时必须 pass；任一 command 内真实 trend、双峰、单帧主导或 A/B shift 时必须命中预声明分支。
+5. 不得根据新 synthetic 结果修改 `AUDIT_THRESHOLDS`；若现有阈值在正确中心化后仍不可辨识，停止并交还 Planner。
+
+##### D. P7-R1 物理证据、source audit 和 hard cap
+
+1. 每个 logical capture 必须保留 base attempt 及可选 weak-reacquire attempt 的完整 provenance：CR3/report、physical count、command/readback、off/on settling、quality rejection、是否 selected_for_formal。可以使用 nested attempts 或独立 `capture-attempts.jsonl`，但 `captures.jsonl` 仍严格为 82 个 logical rows。
+2. Weak reacquire 必须重新执行 `both_off -> 1 s -> exact source command/readback -> 60 s -> capture -> both_off`，并使用自己的 capture id；不得用第一次 readback 代替 reacquire readback。
+3. Runner 在调用 shared capture adapter 前传入剩余 physical budget，使 auto-exposure 无法越过 global cap；分别冻结 base/logical、auto-exposure 和 weak-reacquire counters。任何耗尽在下一次 physical capture 前 fail closed。
+4. Analyzer 必须读取 `commands.jsonl` 和 attempt evidence，逐 logical/attempt 验证 source isolation、exact readback、recorded exposure、CR3 非空、零 `.npy`，并重算 physical count；重算值必须等于 `run.json`，且 total `<=250`、weak reacquire `<=80`、auto-exposure cache miss 恰为不超过 8。
+5. 250 仍是 absolute proposal，不是预计拍摄量。新 readiness 必须同时报告 logical 82、formal 80、expected physical range、absolute 250 和按现有 dry-run 估算的最长 60-second settling 时间。Planner 下次复验后才决定冻结、收紧或拒绝该上限。
+6. Fake tests必须覆盖一次成功 weak reacquire、reacquire readback mismatch、base/reacquire 原始证据保留、auto-exposure one-over pre-reject、counter mismatch analyzer rejection、commands tamper、Python cleanup failure 与 shell cleanup failure。
+
+##### E. R1 finalizer 分支与交接
+
+1. 为 `R-PASS`、`R-REFERENCE-EPOCH`、`R-REFERENCE-UNSTABLE`、`R-STRIP-CLASS-HIGH`、`uncertainty_unresolved` 各增加一个 deterministic analyzer/finalizer test，并断言 candidate 始终 `formal_capture_eligible=false`。
+2. 非 `R-PASS` 分支可以保留诊断 candidate，但不得标成可冻结；analysis 必须列出阻塞分支和失败 state/command。
+3. 保持 P6 manifold、v1 artifact、waiting policy 和旧 sentinel evidence hash 不变；legacy v1 replay 必须继续 byte-identical。
+4. 生成新的 P7-R0C readiness、v2 fake sentinel analysis、P7-R1 dry-run 和 hash。Readiness 必须如实把 250 标为 `proposed_not_frozen`，不得再次声明 formal analyzer/branches 已通过，除非上述 integration/branch tests 实际存在并通过。
+
+P7-R0C 交还 Planner 前必须通过：full suite、focused P7 tests、`compileall`、所有相关 wrapper `zsh -n`、`git diff --check` 和 `codegraph sync`。Executor 完成后停止；不得自动运行 health/config/all_off 或任何 named experiment。
+
+在 Planner 再次验收前，Goal 继续保持 `Blocked`；`p7_targeted_reference_repeatability_v2`、新 sentinel、remaining 9、boundary、holdout 与 P8 全部锁定。
+
+#### 8.7.19 P7-R0C Executor 离线收口结果（2026-07-18）
+
+```text
+status = offline_complete_waiting_for_planner_acceptance
+device_calls = 0
+p7_r1_execution = not_run_not_authorized
+p7_r1_250_physical_cap = proposed_not_frozen
+goal = Blocked
+```
+
+Executor 已按 8.7.18 A-E 完成纯离线纠偏并停止：
+
+- `analyze_strip_hsi_pilot` 现在必须显式 dispatch `--policy-version v1|v2`。v1 仍是 legacy replay；v2 独立验证 frozen/formal-eligible policy path/hash、multiseed `selected_result`、per-start/target logical budget、physical budget、12 张 reference anchors、pre/post repeat analysis、n=3/n=5 confirmation group、互斥 result status，以及 `hsi_coordinate_equivalent` / `observer_equivalent` / `color_rendering_residual` 三层结果。Combined analyzer 按版本选择 shared policy key，拒绝 mixed version/hash；
+- multiseed 先在 `goal_confirmed=true` attempts 中选择，只有没有 confirmed attempt 时才比较 best-valid。Confirmation group 一旦开始会收满所有可测 n=3/n=5 captures；measurement rejection 保留 partial group。Solver 正常未确认且仍有 declared group 时，对 best-valid command 执行 final verification；不得超过每 start 两组；
+- `54/67`、`62/75`、2 starts、8 feedback attempts/start、2 rebases/start、2 confirmation groups/start 均未改变。Exact/one-over、n=3/n=5、confirmed-first、完整/partial group、never-feasible final verification 和两组耗尽均有回归覆盖；
+- repeatability covariance、trend、bimodal 与 single-frame dominance 现在只消费同 state/command/block 去中心 residual。Trend 使用 block 内真实 chronology；H120/S100 与 H300/S100 的不同产品中心不再产生伪 trend。每个 command 单独 audit，A/B block center shift 作为独立 stability statistic 和 command provenance 报告；冻结阈值未修改；
+- P7-R1 的 `captures.jsonl` 仍严格为 82 logical rows；新增 append-only `capture-attempts.jsonl`，每个 logical 保留 base 与可选 weak-reacquire attempt 的 CR3/report、physical count、command/readback、settling contract、quality rejection 和 selected-attempt provenance。Weak reacquire 使用独立 capture id，完整重新执行 off/1s/on/readback/60s/capture/off；
+- runner 在调用 shared capture adapter 前传入 global/auto remaining budget，并分开记录 base、auto-exposure、cache-miss、weak-reacquire 和 total counters。Analyzer 读取 `commands.jsonl` 与 attempt evidence，逐 attempt 审计 source isolation、exact readback、recorded exposure、nonempty CR3、零 `.npy`，独立重算全部 physical counters 并与 `run.json`、`<=250`、weak `<=80`、cache miss `<=8` 比对；
+- R1 分支选择对 `R-PASS`、`R-REFERENCE-EPOCH`、`R-REFERENCE-UNSTABLE`、`R-STRIP-CLASS-HIGH`、`uncertainty_unresolved` 均有 deterministic test；candidate 始终 `calibrated_waiting_for_planner` / `formal_capture_eligible=false`，analysis 保留 failed state/command/region；
+- fake tests 覆盖 formal v2 sentinel analyzer、waiting/hash/cleanup/confirmation/command drift、成功 weak reacquire、reacquire readback mismatch、原始 attempt 保留、auto-exposure pre-reject、counter mismatch、commands tamper、Python cleanup failure 和 shell cleanup failure。
+
+最终离线证据目录：
+
+```text
+tmp/strip-hsi-pilot-offline/p7-r0c-v2-20260718-final
+```
+
+证据与 SHA-256：
+
+- `p7-r0c-v2-replay.json` @ `bdf83510473eb5afb1591ceb09d6169be4107e8e0bb9efd5ff5fc41b84b63aaa`；
+- `p7-r1-draft/plan.json` @ `addaec533bd755df99c8349758a2fc52855d5704950ec422bb5943bbb756e47d`；
+- `v2-fake-sentinel-analysis.json` @ `91058d2c28d075769f8078a7fed2718aec1dbc5149f919a0ef3b229651fe50a1`；
+- `offline-readiness.json` @ `806cd77ddb067faa32eb1f33f203ca274bb0e14ad66fe0965570a0e2a2f217bf`；
+- `full-suite.log` @ `61951a9e4c3f55e49e4a988a312a8c29f133f822cc6f8dd31d6132e3fcae0cde`。
+
+验证结果：focused P7 `79/79` 通过；full suite `395/395`（81.545 s）通过；`compileall`、四个相关 wrapper `zsh -n`、`git diff --check`、`codegraph sync` 全部通过。全程未加载 `.env`，未调用网络、camera、Ray、ESPHome、health/config 或 all_off。
+
+P7-R1 dry-run 仍为 82 logical / 80 formal。按现有 adapter contract 的 expected physical range 为 `82..170`，absolute proposal 为 `250`，最坏 60-second settling 为 `9600 s`。`250` 在 readiness 中明确为 `proposed_not_frozen`，必须由 Planner 下次复验决定冻结、收紧或拒绝。
+
+仍未实测：当前 epoch Ray center compatibility、真实 pre/post stability、四个 strip class variance、新 sentinel-v2 convergence、remaining/boundary/holdout。Synthetic/fake evidence 不得标成 formal empirical pass。
+
+本节完成后交还 Planner。Planner 接受或拒绝 P7-R0C，并另行决定是否授权 exact named experiment `p7_targeted_reference_repeatability_v2`。在此之前所有设备路径、新 sentinel、remaining 9、boundary、holdout 与 P8 继续锁定；Advisor 不需要介入，除非必须改变 58-feature、联合 coverage 或 solver/target 架构。
+
 ---
 
 ## 9. Phase D：剩余九点与合并分析
 
+**当前锁定：** 本节尚未授权。只有第 8.7.11 节的新 sentinel-v2 经 Planner 明确写入放行决定后，本节才恢复有效；旧 `S-PASS` 不再是入口。
+
 ### 9.1 前提
 
-- Sentinel=`S-PASS`；
+- Sentinel-v2 满足后续 Planner 冻结的 `S-V2-PASS`；
+- reference/repeatability v2 artifact、代码检查点和 solver budget 已冻结；
 - uncertainty artifact、代码检查点和所有 frozen hash 未变化；
 - 新 session 重新执行 Phase B；
 - 不复用 sentinel 曝光 cache。
@@ -786,7 +1456,7 @@ next_action = preflight_and_run_sentinel_4
 
 - pre Ray anchors 三点；
 - remaining 九点；
-- 非-faithful full-scale 点的 3072/必要 2048 诊断；
+- 非-coordinate-equivalent full-scale 点的 3072/必要 2048 诊断；
 - post H120/S100 anchor；
 - Python/shell 双 cleanup；
 - analyzer。
@@ -815,9 +1485,10 @@ p7-int100-fullscale-13-analysis.json
 
 - 13/13 都有有效、可审计 target row；
 - 无 `reference_drift` 或 `uncertainty_unresolved`；
-- 每个主 Hue 至少有一个可继续建立 faithful 范围的有效测量；
-- 非-faithful 点已完成 scale-relaxed 诊断或明确列为待诊断；
-- 不要求 13/13 SAT100 都 faithful。
+- 每个主 Hue 至少有一个可继续建立 coordinate-equivalent 范围的有效测量；
+- 非-coordinate-equivalent 点已完成 scale-relaxed 诊断或明确列为待诊断；
+- 不要求 13/13 SAT100 都 coordinate equivalent；
+- 每点均保留独立 `observer_equivalent` 和 `color_rendering_residual`，不得因 coordinate pass 删除显色差异。
 
 不满足时停止并交还 Planner/Advisor，不进入 P8。
 
@@ -839,12 +1510,12 @@ s_exact_max_int100_fullscale(h)
 
 对每个主 Hue：
 
-1. 若 S100 full-scale faithful，记录范围上限 100，不需构造超界点；
-2. 若 S50 faithful、S100 非-faithful，以 `[50,100]` 为初始 bracket；
-3. 若 S50 非-faithful，从 P6 实测 SAT20、SAT5 方向向下寻找非零 faithful 下界；SAT0 Hue 未定义，不能作为 Hue-specific faithful 下界；
+1. 若 S100 full-scale `hsi_coordinate_equivalent`，记录范围上限 100，不需构造超界点；
+2. 若 S50 coordinate equivalent、S100 未确认，以 `[50,100]` 为初始 bracket；
+3. 若 S50 未确认，从 P6 实测 SAT20、SAT5 方向向下寻找非零 coordinate-equivalent 下界；SAT0 Hue 未定义，不能作为 Hue-specific 下界；
 4. 每个新 boundary target 使用 5 confirmations；
 5. 在 full-scale 下做整数 SAT 二分/定向加密，直到上下界相邻或无未测整数；
-6. 每个 full-scale 非-faithful 上界必须做 3072，必要时 2048 诊断；
+6. 每个 full-scale 非-coordinate-equivalent 上界必须做 3072，必要时 2048 诊断；
 7. 保存 active-set、white fraction、condition、sensitivity 和边界原因；
 8. 边界不单调或相邻 Hue 急变时只做定向加点，不用平滑覆盖真实状态。
 
@@ -852,26 +1523,26 @@ s_exact_max_int100_fullscale(h)
 
 `boundary_bracketed_at_full_scale` 必须同时有：
 
-- 同 Hue 非零 SAT 的 full-scale faithful 下界；
-- 同 Hue full-scale 非-faithful 上界；
+- 同 Hue 非零 SAT 的 full-scale coordinate-equivalent 下界；
+- 同 Hue full-scale 未确认上界；
 - 上下界均为合法测量；
 - 边界点 5 confirmations；
 - scale-relaxed 3072，必要时 2048 诊断；
 - reference anchors 和双 cleanup 通过；
 - 未发生 uncertainty model drift。
 
-如果降低 max_code 后 faithful，明确写：
+如果降低 max_code 后 coordinate equivalent，明确写：
 
 ```text
 boundary_cause = full_scale_active_channel_policy
 physical_gamut_inference = prohibited
 ```
 
-如果 3072/2048 都不 faithful，只能写当前观察与策略组合未解决，不能写物理不可达或 `hue_unreachable`。
+如果 3072/2048 都未证明 coordinate equivalent，只能写当前观察与策略组合未解决，不能写物理不可达或 `hue_unreachable`。
 
 ### 10.4 边界阶段出口
 
-- 六个主 Hue 都有 faithful 范围；
+- 六个主 Hue 都有 coordinate-equivalent 范围；
 - 所需 boundary 均 bracket 到整数 SAT；
 - full-scale 与 scale-relaxed 原因分开；
 - 生成候选 `s_exact_max_int100_fullscale` 表；
@@ -931,7 +1602,7 @@ config/hsi/rgbww-hsi-int100-fullscale-candidate.json
 30, 90, 150, 210, 270, 330
 ```
 
-SAT 使用预先冻结规则：在每个 Hue 的已验证 faithful 范围内交替选取约 35% 和 65% 的范围位置；不得观察 holdout 后改点。若某 Hue 范围过窄，使用其 faithful bracket 中点并记录规则结果。
+SAT 使用预先冻结规则：在每个 Hue 的已验证 coordinate-equivalent 范围内交替选取约 35% 和 65% 的范围位置；不得观察 holdout 后改点。若某 Hue 范围过窄，使用其 coordinate-equivalent bracket 中点并记录规则结果。
 
 #### 0/360 周期对
 
@@ -940,7 +1611,7 @@ H1
 H359
 ```
 
-使用两侧都在 faithful 范围内的同一 SAT；这两个点同时作为 wrap 高曲率专门 holdout，使用 5 confirmations。
+使用两侧都在 coordinate-equivalent 范围内的同一 SAT；这两个点同时作为 wrap 高曲率专门 holdout，使用 5 confirmations。
 
 至少八个非训练点。六扇区普通点 3 confirmations；H1/H359 和任何接近 boundary 的点 5。
 
@@ -956,9 +1627,10 @@ H359
 
 全部满足：
 
-- 至少六个扇区 non-node target 均 `faithful`；
-- H1/H359 均 `faithful`；
-- H1/H359 的观测均 faithful，且候选通过 holdout 前冻结的数值周期连续性门；
+- 至少六个扇区 non-node target 均 `hsi_coordinate_equivalent`；
+- H1/H359 均 `hsi_coordinate_equivalent`；
+- H1/H359 的观测均 coordinate equivalent，且候选通过 holdout 前冻结的数值周期连续性门；
+- 全部点保存 `observer_equivalent` 与 `color_rendering_residual`；observer false 不得被 coordinate pass 隐藏；
 - 高曲率 holdout 通过；
 - 无 reference drift、uncertainty unresolved、measurement unreachable；
 - 所有 target 达到预声明 3/5 confirmations；
@@ -986,17 +1658,17 @@ next_action = advisor_review_gate_6
 
 交接包至少包含：
 
-1. frozen uncertainty artifact、输入 hash、Monte Carlo/guard-band 报告；
+1. frozen v2 uncertainty/reference/repeatability artifact、输入 hash、Monte Carlo/guard-band 报告；
 2. sentinel、remaining、combined 13 点分析；
 3. 所有 reference anchor 和 drift 结论；
 4. 六 Hue 的 `s_exact_max_int100_fullscale` 与 scale-relaxed 诊断；
 5. full-scale 候选及 hash；
 6. 六扇区、0/360、高曲率 holdout；
-7. 每点 Hue/SAT/orthogonal/joint score；
+7. 每点 local Hue/SAT coordinate score、observer-equivalence score、color-rendering residual；
 8. 3/5 confirmation 和 uncertainty spread check；
 9. active channel、WW/CW contribution、condition/sensitivity；
 10. command/source-isolation audit；
-11. 全部失败、不可测、unconfirmed 和 solver budget 状态；
+11. 全部失败、不可测、coordinate-unconfirmed 和 solver budget 状态；
 12. Python/shell/recovery all-off；
 13. 完整测试、compileall、diff-check、CodeGraph；
 14. 未安装、默认 LUT 未改变的确认；
@@ -1013,7 +1685,7 @@ stop_hsi_route
 
 Advisor 在 Gate-6 冻结：
 
-- `faithful` 和 `gamut_compressed_int100_fullscale` 公开语义；
+- `hsi_coordinate_equivalent`、`observer_equivalent`、`color_rendering_residual` 和 `gamut_compressed_int100_fullscale` 公开语义；
 - 支持的 Hue/SAT/full-scale 范围；
 - 候选 hash；
 - 是否允许进入 P8；
@@ -1051,10 +1723,10 @@ P7 内的 `max_code=3072/2048` 只用于区分 full-scale active-channel policy�
 | `uncertainty_unresolved` | diagnostic only | 否 | 定向 repeatability 计划 | 用确认帧更新 sigma |
 | `measurement_unreachable` | 保留完整证据 | 否，除非本计划另有明确处理 | 只在 1.25x 内重拍 | 扩曝光、删 feature |
 | `solver_budget_exhausted` | 保留 best valid | 否 | 离线分析/有测试修 bug | 同 run 加轮数 |
-| `unconfirmed` | 不是 boundary | 视阶段而定 | scale-relaxed 诊断、建立 bracket | 写物理不可达 |
+| `hsi_coordinate_unconfirmed` | 不是 boundary | 视阶段而定 | scale-relaxed 诊断、建立 bracket | 写物理不可达 |
 | source/readback audit fail | invalid | 否 | 修代码、新目录完整重跑 | 拼接部分通过点 |
 | Python/shell cleanup 缺失 | invalid | 否 | 立即 recovery all-off | 假设灯已关 |
-| 3072/2048 faithful | policy diagnostic | 可按阶段继续 | 标 full-scale policy effect | 写物理 gamut |
+| 3072/2048 coordinate equivalent | policy diagnostic | 可按阶段继续 | 标 full-scale policy effect并保留 observer residual | 写物理 gamut |
 | holdout fail | candidate fail | 否 | `repeat_targeted_stage_6` 决策 | validation run 内优化 |
 
 ---
@@ -1064,8 +1736,11 @@ P7 内的 `max_code=3072/2048` 只用于区分 full-scale active-channel policy�
 每完成一个 Phase 或发生一次真实失败，立即更新本文件，不要等阶段末：
 
 ```text
-current_phase = A | B | C | D | E | F | gate_6
+current_phase = A_v1 | B | C_v1 | P7_R0 | P7_R1 | sentinel_v2 | D | E | F | gate_6
 stage_status = in_progress | code_complete_waiting_for_sentinel_authorization |
+               planner_decision_complete_waiting_for_executor_offline_implementation |
+               offline_complete_waiting_for_planner_acceptance |
+               planner_acceptance_pass_named_experiment_authorized |
                running | at_branch | pass | fail | at_decision_gate
 current_head =
 worktree_state = clean | dirty(...)
@@ -1086,17 +1761,21 @@ next_action =
 ### 当前初始值
 
 ```text
-current_phase = A
-stage_status = planner_complete_waiting_for_executor_offline_correction
-current_head = ecf47d722e6f9e7c2c09b0d7fd3e3429e7d38ad5
-worktree_state = dirty; preserve all existing P1-P7 and advisor changes
-authorization = offline_only for the next action; hardware must be rechecked before Phase B
-uncertainty_artifact = not_created
-code_checkpoint = not_created
-run_dir = none
-analysis = P6 frozen; P7 real measurement none
-branch = advisor-approved sentinel_4_then_9
-next_action = implement Phase A only
+current_phase = P7_R0C_COMPLETE_WAITING_FOR_PLANNER_REVIEW
+stage_status = offline_complete_waiting_for_planner_acceptance
+current_head = 99ec0623ed7ba1ee1d1ecb9c6539471921aeb770
+worktree_state = dirty; preserve all existing P1-P7, Phase A and advisor changes
+authorization = offline_only; named_experiment:p7_sentinel_4 consumed; p7_targeted_reference_repeatability_v2 not authorized; no authorization for P7_R1/sentinel_v2/remaining/boundary/holdout/P8
+uncertainty_artifact_v1 = config/hsi/strip-hsi-uncertainty.json @ cedaa1e9d342beb7e464c4e38d77884ad8a7790771432ebdbb5a101ca604aa94; immutable diagnostic evidence
+uncertainty_artifact_v2 = config/hsi/strip-hsi-policy-v2-waiting.json @ db9ebef1503c5e54c989649c719c4a5f75445bbd5487edb14c274e1b2894f3b4; status waiting_for_targeted_measurement; formal_capture_eligible=false
+code_checkpoint = HEAD 99ec0623ed7ba1ee1d1ecb9c6539471921aeb770 + P7-R0C offline-readiness.json @ 806cd77ddb067faa32eb1f33f203ca274bb0e14ad66fe0965570a0e2a2f217bf
+run_dir = tmp/strip-hsi-pilot-offline/p7-r0c-v2-20260718-final
+analysis = v2-fake-sentinel-analysis.json @ 91058d2c28d075769f8078a7fed2718aec1dbc5149f919a0ef3b229651fe50a1; offline-readiness.json @ 806cd77ddb067faa32eb1f33f203ca274bb0e14ad66fe0965570a0e2a2f217bf
+completed_steps = Phase A-v1 + Phase B + authorized sentinel_4 capture/audit + P7-R0/R0B + Planner R0B review + P7-R0C A-E offline implementation/fake integration/replay/full validation
+failure_evidence = none in P7-R0C offline implementation; formal empirical P7-R1 reference/repeatability/coverage statistics remain unmeasured; 250 physical cap remains proposed_not_frozen
+cleanup_evidence = no device calls in P7-R0C; fake success/failure tests verify Python cleanup and shell failure rejection; wrapper syntax verifies independent trap; old sentinel dual cleanup evidence remains unchanged
+branch = P7_R0C_READY_FOR_PLANNER_REVIEW
+next_action = Planner accepts or rejects P7-R0C and separately decides whether to freeze/revise the 250 proposal and authorize exact named experiment p7_targeted_reference_repeatability_v2; no execution authorization exists now
 ```
 
 ---
@@ -1105,12 +1784,12 @@ next_action = implement Phase A only
 
 Stage 6 只有在以下全部完成后才可写 `pass`：
 
-- uncertainty artifact 在实拍前冻结；
-- joint 99.73% coverage 和 guard band 通过离线校准；
-- sentinel 四点按分支通过；
+- reference/repeatability v2 artifact 在新 sentinel 实拍前冻结，v1 仅保留历史证据；
+- coordinate、observer、reference 和 repeatability 的各自 joint 99.73% coverage/guard band 通过离线校准且语义不混用；
+- sentinel-v2 四点按新分支通过；
 - remaining 九点完成；
 - 13 点都有有效结果，失败没有被删除；
-- 各主 Hue 有 faithful 范围；
+- 各主 Hue 有 hsi-coordinate-equivalent 范围，并保留 observer/color-rendering 结果；
 - 必要 full-scale boundary 和 3072/2048 诊断完成；
 - `s_exact_max_int100_fullscale` 命名和范围正确；
 - 候选未安装；

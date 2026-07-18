@@ -470,7 +470,10 @@ def build_native_raw_capture_step_fn(
                 min_shutter_speed=min_shutter_speed,
                 max_shutter_speed=max_shutter_speed,
                 max_trials=max_trials,
-                max_captures=max_captures,
+                max_captures=min(
+                    max_captures,
+                    int(step.get("physical_capture_budget_remaining", max_captures)),
+                ),
                 decode_formats=(),
                 scratch_dir=scratch_output,
                 initial_shutter_speed=(source_captures.get(cache_key).settings.shutter_speed if cache_key in source_captures else None),
@@ -481,6 +484,7 @@ def build_native_raw_capture_step_fn(
             capture = auto.final_capture
             source_captures[cache_key] = capture
             mode = "native_auto_exposure"
+            physical_capture_count = len(auto.trials) + 1 + len(auto.rejected_finals)
         else:
             cache_key = _source_cache_key(step)
             base_capture = source_captures.get(cache_key)
@@ -515,6 +519,10 @@ def build_native_raw_capture_step_fn(
                 if step.get("exposure_factor") is not None
                 else "fixed_cached"
             )
+            physical_capture_count = 1
+
+        if source == "ambient":
+            physical_capture_count = 1
 
         report = _write_native_capture_report(
             capture,
@@ -533,6 +541,8 @@ def build_native_raw_capture_step_fn(
             "capture": capture.to_jsonable(),
             "patch_statistics": str(report[0]),
             "quality": report[1],
+            "physical_capture_count": physical_capture_count,
+            "auto_exposure_audit": auto.to_jsonable() if mode == "native_auto_exposure" else None,
         }
 
     return capture_step
