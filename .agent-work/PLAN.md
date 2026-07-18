@@ -4,13 +4,13 @@
 
 **Planner 最新决策日期：** 2026-07-18
 
-**当前 `HEAD`：** `b4779036d9bc9610e967fa5d9514a39463034551`
+**当前 `HEAD`：** `2cbfe1377a74e7dc9cb3925b9d2ff565e0ed1e9f`
 
-**当前活动阶段：** Stage 6 / P7-R0D formal evidence audit 等待 Planner 复验
+**当前活动阶段：** Stage 6 / P7-R0F rejection-evidence closure 等待 Executor 离线修复
 
-**当前阶段状态：** `p7_r0d_offline_complete_waiting_for_planner_review`
+**当前阶段状态：** `p7_r0e_rejected_waiting_for_executor_offline_implementation`
 
-**下一条唯一动作：** Planner 复验第 8.7.22 节 P7-R0D retained evidence 与 deterministic tamper tests，并决定接受或退回；不得据此执行 `p7_targeted_reference_repeatability_v2`。在 Planner 另行明确授权前，不得连接设备、生成真实 CR3、读取 `.env`、执行真实 all-off、重跑 sentinel、执行 remaining 9、boundary、holdout、P8 或安装任何 LUT。
+**下一条唯一动作：** Executor 只执行第 8.7.28 节 P7-R0F 的离线 rejection-evidence 修复和反例测试；不得据此执行 `p7_strip_state_readback_preflight` 或 `p7_targeted_reference_repeatability_v2`。在 Planner 另行明确授权前，不得连接设备、生成真实 CR3、读取 `.env`、执行真实 all-off、刷写 firmware、重跑 sentinel、执行 remaining 9、boundary、holdout、P8 或安装任何 LUT。
 
 **上游依据：**
 
@@ -1704,6 +1704,82 @@ Evidence:
 
 Gate remains `Blocked`: no named experiment, no device preflight, and no P7-R1 execution authorization is inferred from this offline result.
 
+#### 8.7.27 P7-R0E Planner 复验结论（2026-07-18）
+
+```text
+planner_verdict = reject
+reviewed_checkpoint = 2cbfe1377a74e7dc9cb3925b9d2ff565e0ed1e9f
+reviewed_readiness_sha256 = 149a5c009d13010a2cdd31c6dff7f9a45c73a732e7dcf61925c739db16604ad2
+device_or_network_calls = 0
+named_experiment_authorized = false
+```
+
+R0E 的五个原有 fail-open 均已被独立重放验证为拒绝，generation-bearing fake device-state 路径也按预期拒绝 bare payload、旧 generation 和 channel mismatch。但仍存在一个会改变 solver 账本的证据漏洞：向 start 的 `measurement_rejections` 添加
+
+```json
+{"phase":"feedback-0","evidence":{}}
+```
+
+并同步自报 logical count/budget 后，formal v2 analyzer 仍返回 `ready_for_sentinel_branch`。该 rejection 没有 capture owner、没有质量拒绝证据，也没有明确的 pre-capture budget exhaustion 结构，却被当作一个合法 logical observation 计入。因而 R0E 仍不能验收，`p7_strip_state_readback_preflight` 和 `p7_targeted_reference_repeatability_v2` 均保持锁定。
+
+该问题属于证据合同完整性，不改变 58-feature、coverage、P6 manifold、solver 或预算数学；不需要 Advisor。固件 compile 工具缺失仍是另一个独立事实，不得用 fake API 测试替代真实 firmware compile/readback。
+
+#### 8.7.28 P7-R0F 唯一离线修复阶段
+
+##### A. 明确区分两类 rejection
+
+1. `measurement_rejected` 必须包含非空 `evidence.capture_ids`；每个 ID 必须存在于 retained captures、属于同一 target/source/phase、尚未被 sample/rejection/weak-base owner 消费，并经过共享 owner table 唯一认领。
+2. `measurement_rejected` 的 evidence 必须包含冻结 schema 所需的 rejection reason、command/phase 和 quality evidence；空 mapping、缺 `capture_ids`、未知 status、跨 target 或仅同步修改 logical count 均拒绝。
+3. 只有真正发生在 capture 之前的预算耗尽，才允许没有 `capture_ids`。它必须使用独立的 `pre_capture_exhaustion` schema，至少包含 `status=solver_budget_exhausted`、`sub_budget`、`phase`、`requested_physical_cr3`、当前各 physical counters 和明确的 `capture_attempted=false`；它不消费 capture owner，也不能伪装成 measurement quality rejection。
+4. 从 samples、rejections 和 pre-capture exhaustion evidence 重算 logical ledger；`len(samples)+len(rejections)` 仍必须等于 start ledger，但每个 rejection 的类别和 owner 必须可审计。`measurement_unreachable`、`solver_budget_exhausted`、`unconfirmed` 和 `faithful` 的既有状态语义不变。
+
+##### B. 必测反例
+
+在修复前保留并证明 `2cbfe13` 接受，修复后全部 fail closed：
+
+1. 空 `evidence`；
+2. 缺失 `capture_ids`；
+3. `capture_ids=[]`；
+4. capture ID 重复占用或 sample/rejection 交叉占用；
+5. quality rejection 伪装成 `pre_capture_exhaustion`；
+6. 合法 physical budget exhaustion 的无 capture evidence 成功通过；
+7. 弱信号 rejection 缺少 base/reacquire 两次 capture 或质量证据；
+8. 与此前 R0D 五类篡改组合后的 logical/status/physical counter 一致伪造。
+
+##### C. 离线出口
+
+1. 只修改 formal analyzer、共享 evidence schema、测试、readiness、docs/skill 和本计划；不得改 firmware、solver、coverage 或执行接口。
+2. 生成全新 fake formal-v4、R1 dry-run 和 readiness artifact；不覆盖 R0E 证据。
+3. 复跑 focused、full suite、compileall、wrapper `zsh -n`、`git diff --check`、CodeGraph；ESPHome CLI 缺失继续明确记录为 `blocked_tool_missing_esphome_cli`，不得联网安装。
+4. 只有空 rejection 及其变体全部拒绝、合法 pre-capture exhaustion 通过、既有五类反例仍拒绝，才可写 `offline_complete_waiting_for_planner_review` 并交还 Planner。
+5. R0F 通过也不产生任何实机授权；下一唯一高风险动作仍是用户明确授权的 `p7_strip_state_readback_preflight`，且必须先解决 firmware compile 门禁。
+
+#### 8.7.29 Executor P7-R0F 离线执行结果（2026-07-18）
+
+```text
+current_phase = P7_R0F
+stage_status = offline_complete_waiting_for_planner_acceptance
+current_head = 2cbfe13 (待本轮 focused commit)
+worktree_state = dirty(Planner R0F decision plus offline analyzer/docs/tests)
+authorization = offline_only; p7_strip_state_readback_preflight and p7_targeted_reference_repeatability_v2 locked
+run_dir = tmp/strip-hsi-pilot-offline/p7-r0f-v4-20260718-final
+analysis = empty/missing/duplicate/forged measurement rejection evidence now fail closed; explicit pre_capture_exhaustion schema validates; fake formal-v4 and R1 dry-run generated
+completed_steps = rejection schema validator; owner/phase/source/quality checks; pre-capture exhaustion contract; required regression matrix; docs/skill update; readiness artifact
+failure_evidence = firmware CLI remains unavailable; YAML structure check only, no firmware compile or flash
+cleanup_evidence = focused 38/38; full 409/409; compileall, four wrapper zsh -n, git diff --check and codegraph sync pass; no device/network/.env/real all_off calls
+physical_budget = absolute 250 Planner-frozen; baseline 82..170; permitted 82..250
+branch = P7_R0F_OFFLINE_COMPLETE_WAITING_PLANNER
+next_action = Planner review only; no real preflight or named experiment inferred
+```
+
+Evidence:
+
+- `offline-readiness-r0f.json` SHA-256 `a760710064eb901c1cda64d16c0b6ab9e474973c8a8e5b5daf96147088095d14`。
+- `v2-replay.json` SHA-256 `bdf83510473eb5afb1591ceb09d6169be4107e8e0bb9efd5ff5fc41b84b63aaa`；R1 dry-run plan SHA-256 `a1609cff00e83c01c23b89f40b9526124041436d060c52ff215ba34f15e3239f`。
+- ESPHome compile remains `blocked_tool_missing_esphome_cli`; fake device-state tests are not firmware/readback evidence.
+
+Gate remains `Blocked`: R0F completion does not authorize `p7_strip_state_readback_preflight` or `p7_targeted_reference_repeatability_v2`.
+
 ## 9. Phase D：剩余九点与合并分析
 
 **当前锁定：** 本节尚未授权。只有第 8.7.11 节的新 sentinel-v2 经 Planner 明确写入放行决定后，本节才恢复有效；旧 `S-PASS` 不再是入口。
@@ -2031,22 +2107,22 @@ next_action =
 ### 当前初始值
 
 ```text
-current_phase = P7_R0E
-stage_status = planner_rejected_p7_r0d_waiting_for_executor_offline_implementation
-current_head = 27a68cfb3a7d48e3cfbb620bb1575adf3e003e51
-worktree_state = dirty(.agent-work/PLAN.md Planner review only); preserve user-created commit 27a68cf and all prior P1-P7, Phase A and advisor evidence
+current_phase = P7_R0F
+stage_status = planner_rejected_p7_r0e_waiting_for_executor_offline_implementation
+current_head = 2cbfe1377a74e7dc9cb3925b9d2ff565e0ed1e9f
+worktree_state = dirty(.agent-work/PLAN.md Planner review only); preserve commits 2cbfe13/a380dfe and all prior P1-P7, Phase A and advisor evidence
 authorization = offline_only; named_experiment:p7_sentinel_4 consumed; p7_targeted_reference_repeatability_v2 not authorized; no authorization for P7_R1/sentinel_v2/remaining/boundary/holdout/P8
 uncertainty_artifact_v1 = config/hsi/strip-hsi-uncertainty.json @ cedaa1e9d342beb7e464c4e38d77884ad8a7790771432ebdbb5a101ca604aa94; immutable diagnostic evidence
 uncertainty_artifact_v2 = config/hsi/strip-hsi-policy-v2-waiting.json @ db9ebef1503c5e54c989649c719c4a5f75445bbd5487edb14c274e1b2894f3b4; status waiting_for_targeted_measurement; formal_capture_eligible=false
-code_checkpoint = 27a68cfb3a7d48e3cfbb620bb1575adf3e003e51 reviewed and rejected for R0D-REV-001..005; offline-readiness.json hash verified as f7f53dbbb21d7262ee7ef7e6b7c83d25f2310522b0c534e42ac024d45604aff0 but does not satisfy Planner acceptance
-run_dir = tmp/strip-hsi-pilot-offline/p7-r0d-v2-20260718-final-verified
-analysis = P7-R0D retained evidence and existing focused suite verified, but Planner adversarial replay found false device readback, self-reported confirmation/sub-budget trust, incomplete RAW feature/objective provenance, duplicate capture ownership, and incomplete R1 plan sequence validation
-completed_steps = Phase A-v1 + Phase B + authorized sentinel_4 capture/audit + P7-R0/R0B/R0C + P7-R0D implementation + independent Planner R0D review/rejection; no real calls in review
-failure_evidence = R0D-REV-001..005 in section 8.7.23; formal empirical P7-R1 reference/repeatability statistics and new sentinel-v2 remain unmeasured; no device-state preflight or named experiment authorization exists
-cleanup_evidence = no device/network/.env/real all-off calls in P7-R0D; fake mismatch tests prove Python cleanup and wrapper syntax proves independent shell trap; old sentinel dual cleanup evidence remains unchanged
+code_checkpoint = 2cbfe1377a74e7dc9cb3925b9d2ff565e0ed1e9f reviewed and rejected for R0E-REV-001; offline-readiness-v4 hash verified as 149a5c009d13010a2cdd31c6dff7f9a45c73a732e7dcf61925c739db16604ad2 but does not satisfy Planner acceptance
+run_dir = tmp/strip-hsi-pilot-offline/p7-r0e-v3-20260718-final
+analysis = P7-R0E closed the five R0D trust gaps in fake evidence, but an empty measurement rejection can still inflate the logical ledger without capture or explicit pre-capture exhaustion evidence
+completed_steps = Phase A-v1 + Phase B + authorized sentinel_4 capture/audit + P7-R0/R0B/R0C + P7-R0D + P7-R0E implementation + independent Planner R0E review/rejection; no real calls in review
+failure_evidence = R0E-REV-001 in section 8.7.27; firmware compile remains tool-blocked; formal empirical P7-R1 reference/repeatability statistics and new sentinel-v2 remain unmeasured; no device-state preflight or named experiment authorization exists
+cleanup_evidence = no device/network/.env/real all-off/firmware upload calls in P7-R0E review; fake device-state mismatch/timeout tests and wrapper syntax remain offline evidence only; old sentinel dual cleanup evidence remains unchanged
 physical_budget = absolute 250 Planner-frozen; baseline without weak reacquire 82..170; permitted with weak reacquire 82..250; maximum 60-second settling 9600 s
-branch = P7_R0D_REJECTED_FORMAL_EVIDENCE_AND_STRIP_DEVICE_STATE
-next_action = Executor implements only section 8.7.24 P7-R0E offline; no device/network/.env/firmware upload/real all_off/P7-R1 authorization
+branch = P7_R0E_REJECTED_EMPTY_REJECTION_EVIDENCE
+next_action = Executor implements only section 8.7.28 P7-R0F offline; no device/network/.env/firmware upload/real all_off/P7-R1 authorization
 ```
 
 ---

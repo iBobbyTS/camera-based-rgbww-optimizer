@@ -681,6 +681,10 @@ from captures, samples, attempts and auto-exposure structure instead of trusting
 target-row self-reports.
 P7-R0E additionally requires a RAW-to-58-feature/objective replay, unique
 capture ownership, exact target/attempt plan order, and frozen sub-budget caps.
+Measurement rejections are not free logical observations: quality rejections
+must carry non-empty capture IDs plus source/purpose/exposure/quality evidence;
+only an explicit pre-capture solver-budget exhaustion record may omit capture
+IDs, and it must prove no capture was attempted and retain the physical counters.
 ESPHome command acknowledgement is explicitly not device readback. The formal
 entrypoints now require an independent generation-bearing `rgbww_commanded_state`
 snapshot; the offline fake verifies stale generation, channel mismatch, missing

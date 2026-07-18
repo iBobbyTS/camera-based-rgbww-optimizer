@@ -552,17 +552,33 @@ def _validate_v2_target_evidence(
                 if not _json_numerically_equal(sample.get("residuals"), replayed["residuals"]) or not _json_numerically_equal(sample.get("objective"), replayed["objective"]):
                     raise ValueError(f"v2 P7 target {key} sample objective differs from RAW replay")
             for rejection in rejections:
-                evidence = rejection.get("evidence") or {}
-                seen_rejection_ids: set[str] = set()
-                for capture_id in evidence.get("capture_ids", []):
-                    capture_id = str(capture_id)
+                if not isinstance(rejection, Mapping):
+                    raise ValueError(f"v2 P7 target {key} has malformed measurement rejection")
+                phase = str(rejection.get("phase", ""))
+                command = rejection.get("command")
+                evidence = rejection.get("evidence")
+                if not isinstance(command, Mapping) or set(command) != {"cw", "ww", "r", "g", "b"}:
+                    raise ValueError(f"v2 P7 target {key} rejection lacks frozen command evidence")
+                _validate_measurement_rejection_evidence(
+                    evidence, phase=phase, command=command,
+                    target_index=int(declared["index"]), target_key=key,
+                )
+                capture_ids = [str(value) for value in evidence["capture_ids"]]
+                for capture_id in capture_ids:
                     capture = capture_by_id.get(capture_id)
                     if capture is None or int(capture.get("target_index", -1)) != int(declared["index"]):
                         raise ValueError(f"v2 P7 target {key} rejection capture provenance mismatch")
-                    if capture_id in seen_rejection_ids:
-                        raise ValueError(f"v2 P7 target {key} rejection repeats a capture owner")
-                    seen_rejection_ids.add(capture_id)
+                    if not str(capture.get("purpose", "")).endswith(phase):
+                        raise ValueError(f"v2 P7 target {key} rejection phase/capture mismatch")
                     _claim_capture(capture_owners, capture_id, f"target-{target_position}:rejection")
+            budget_exhaustion = result.get("budget_exhaustion")
+            if budget_exhaustion is not None:
+                _validate_pre_capture_exhaustion(
+                    budget_exhaustion, target_key=key,
+                    expected_start_index=int(attempt.get("start_index", -1)),
+                )
+            if result.get("status") == "solver_budget_exhausted" and not isinstance(budget_exhaustion, Mapping):
+                raise ValueError(f"v2 P7 target {key} solver exhaustion lacks pre-capture evidence")
             derived_goal_confirmed = confirmed_group_count > 0
             if bool(result.get("goal_confirmed")) != derived_goal_confirmed:
                 raise ValueError(f"v2 P7 target {key} goal_confirmed differs from confirmation groups")
@@ -757,6 +773,63 @@ def _claim_capture(owners: dict[str, str], capture_id: str, owner: str) -> None:
     if previous is not None:
         raise ValueError(f"capture {capture_id} has duplicate owners: {previous}, {owner}")
     owners[capture_id] = owner
+
+
+def _validate_measurement_rejection_evidence(
+    evidence: Any, *, phase: str, command: Mapping[str, Any],
+    target_index: int, target_key: tuple[int, int],
+) -> None:
+    if not isinstance(evidence, Mapping) or not evidence:
+        raise ValueError(f"v2 P7 target {target_key} measurement rejection has empty evidence")
+    if evidence.get("status") == "solver_budget_exhausted" or evidence.get("pre_capture_exhaustion") is True:
+        raise ValueError(f"v2 P7 target {target_key} quality rejection impersonates pre-capture exhaustion")
+    required = {"source", "purpose", "capture_ids", "exposure_factors", "rejected_features"}
+    if not required.issubset(evidence):
+        raise ValueError(f"v2 P7 target {target_key} measurement rejection schema is incomplete")
+    if not phase or not str(evidence.get("purpose", "")).endswith(phase):
+        raise ValueError(f"v2 P7 target {target_key} measurement rejection phase is missing")
+    capture_ids = evidence.get("capture_ids")
+    if not isinstance(capture_ids, list) or not capture_ids or len(capture_ids) != len(set(map(str, capture_ids))):
+        raise ValueError(f"v2 P7 target {target_key} measurement rejection requires unique capture ids")
+    if str(evidence.get("source")) != "strip":
+        raise ValueError(f"v2 P7 target {target_key} measurement rejection source drift")
+    exposure_factors = evidence.get("exposure_factors")
+    rejected_features = evidence.get("rejected_features")
+    if (
+        not isinstance(exposure_factors, list) or not exposure_factors
+        or not isinstance(rejected_features, list) or not rejected_features
+    ):
+        raise ValueError(f"v2 P7 target {target_key} measurement rejection lacks quality evidence")
+    if any(not isinstance(item, Mapping) or not item for item in rejected_features):
+        raise ValueError(f"v2 P7 target {target_key} measurement rejection has malformed quality evidence")
+    if set(command) != {"cw", "ww", "r", "g", "b"} or any(not isinstance(value, int) for value in command.values()):
+        raise ValueError(f"v2 P7 target {target_key} measurement rejection command is invalid")
+    if int(target_index) < 0:
+        raise ValueError(f"v2 P7 target {target_key} measurement rejection target index is invalid")
+
+
+def _validate_pre_capture_exhaustion(
+    evidence: Any, *, target_key: tuple[int, int], expected_start_index: int,
+) -> None:
+    if not isinstance(evidence, Mapping):
+        raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion evidence is missing")
+    required = {
+        "pre_capture_exhaustion", "status", "sub_budget", "phase",
+        "requested_physical_cr3", "physical_cr3_used",
+        "autoexposure_physical_cr3_used", "weak_reacquire_physical_cr3_used",
+        "capture_attempted", "start_index",
+    }
+    if not required.issubset(evidence) or evidence.get("pre_capture_exhaustion") is not True:
+        raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion schema is incomplete")
+    if evidence.get("status") != "solver_budget_exhausted" or evidence.get("capture_attempted") is not False:
+        raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion status is invalid")
+    if int(evidence.get("start_index", -1)) != int(expected_start_index):
+        raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion start mismatch")
+    if not str(evidence.get("sub_budget")) or not str(evidence.get("phase")):
+        raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion lacks budget phase")
+    for field in ("requested_physical_cr3", "physical_cr3_used", "autoexposure_physical_cr3_used", "weak_reacquire_physical_cr3_used"):
+        if not isinstance(evidence.get(field), (int, float)) or int(evidence[field]) < 0:
+            raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion counter is invalid")
 
 
 def _json_numerically_equal(left: Any, right: Any, *, tolerance: float = 1e-12) -> bool:

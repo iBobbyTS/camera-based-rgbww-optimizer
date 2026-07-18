@@ -342,6 +342,52 @@ class MeasureStripHsiPilotTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "physical frozen sub-budget drift"):
                 analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
 
+    def test_v2_analyzer_rejects_empty_and_malformed_measurement_rejections(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            policy = _frozen_policy_v2_file(root)
+            plan = subject.build_strip_hsi_pilot_plan(policy_version="v2", policy_v2_config_path=policy)
+
+            for label, evidence in (
+                ("empty", {}),
+                ("missing-capture-ids", {"source": "strip", "purpose": "candidate_feedback-0", "exposure_factors": [1.0], "rejected_features": [{"status": "weak"}]}),
+                ("empty-capture-ids", {"source": "strip", "purpose": "candidate_feedback-0", "capture_ids": [], "exposure_factors": [1.0], "rejected_features": [{"status": "weak"}]}),
+                ("fake-pre-capture", {"pre_capture_exhaustion": True, "status": "solver_budget_exhausted", "capture_ids": ["capture-0"]}),
+            ):
+                run_root = root / label
+                _execute_fake_v2_plan(plan, run_root)
+                _write_shell_cleanup(run_root)
+                rows_path = run_root / "target-results.jsonl"
+                rows = [json.loads(line) for line in rows_path.read_text(encoding="utf-8").splitlines()]
+                selected = rows[0]["feedback"]["selected_result"]
+                sample = selected["samples"][0]
+                selected["measurement_rejections"].append({
+                    "phase": "feedback-0", "command": sample["command"], "evidence": evidence,
+                })
+                selected["budget"]["consumed"]["feedback_attempts"] += 1
+                selected["budget"]["logical_observations_used"] += 1
+                rows[0]["feedback"]["logical_observations_used"] += 1
+                rows[0]["feedback"]["attempts"][rows[0]["feedback"]["selected_start_index"]]["result"] = selected
+                rows_path.write_text("\n".join(json.dumps(item) for item in rows) + "\n", encoding="utf-8")
+                with self.subTest(label=label), self.assertRaisesRegex(ValueError, "rejection|exhaustion"):
+                    analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
+
+            valid_exhaustion = {
+                "pre_capture_exhaustion": True,
+                "status": "solver_budget_exhausted",
+                "sub_budget": "logical_observations",
+                "phase": "feedback-0",
+                "requested_physical_cr3": 0,
+                "physical_cr3_used": 12,
+                "autoexposure_physical_cr3_used": 0,
+                "weak_reacquire_physical_cr3_used": 0,
+                "capture_attempted": False,
+                "start_index": 0,
+            }
+            analyze_strip_hsi_pilot._validate_pre_capture_exhaustion(
+                valid_exhaustion, target_key=(0, 0), expected_start_index=0,
+            )
+
     def test_v2_analyzer_rejects_unselected_cross_target_orphan_and_nonzero_off(self):
         with tempfile.TemporaryDirectory() as tempdir:
             root = Path(tempdir)
