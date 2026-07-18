@@ -1866,7 +1866,7 @@ R0G 已修复此前的任意 counter、capture-id 和 duplicated exhaustion ledg
 ```text
 current_phase = P7_R0H
 stage_status = offline_complete_waiting_for_planner_acceptance
-current_head = 69698c1 (待本轮 focused commit)
+current_head = d3b3531b2ed774b56b7fc5c57e65d556c543043d
 worktree_state = dirty(Planner R0H decision plus offline analyzer/tests/PLAN)
 authorization = offline_only; p7_strip_state_readback_preflight and p7_targeted_reference_repeatability_v2 locked
 analysis = explicit category exhaustion now requires consumed >= frozen category limit; each start budget.limits equals frozen target solver_budget; dual exhaustion ledger remains mandatory
