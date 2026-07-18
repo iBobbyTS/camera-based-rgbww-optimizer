@@ -10,11 +10,13 @@ esphome:
   on_boot:
     priority: -100
     then:
-      - output.turn_off: pwm_red
-      - output.turn_off: pwm_green
-      - output.turn_off: pwm_blue
-      - output.turn_off: pwm_warm_white
-      - output.turn_off: pwm_cold_white
+      - script.execute:
+          id: apply_rgbww_12bit
+          red: 0
+          green: 0
+          blue: 0
+          warm_white: 0
+          cold_white: 0
 
 esp32:
   board: esp32dev
@@ -37,25 +39,76 @@ api:
         warm_white: int
         cold_white: int
       then:
-        - lambda: |-
-            auto level = [](int value) -> float {
-              if (value <= 0) return 0.0f;
-              if (value >= 4095) return 1.0f;
-              return static_cast<float>(value) / 4095.0f;
-            };
-
-            id(pwm_red).set_level(level(red));
-            id(pwm_green).set_level(level(green));
-            id(pwm_blue).set_level(level(blue));
-            id(pwm_warm_white).set_level(level(warm_white));
-            id(pwm_cold_white).set_level(level(cold_white));
+        - script.execute:
+            id: apply_rgbww_12bit
+            red: !lambda return red;
+            green: !lambda return green;
+            blue: !lambda return blue;
+            warm_white: !lambda return warm_white;
+            cold_white: !lambda return cold_white;
     - action: all_off
       then:
-        - output.turn_off: pwm_red
-        - output.turn_off: pwm_green
-        - output.turn_off: pwm_blue
-        - output.turn_off: pwm_warm_white
-        - output.turn_off: pwm_cold_white
+        - script.execute:
+            id: apply_rgbww_12bit
+            red: 0
+            green: 0
+            blue: 0
+            warm_white: 0
+            cold_white: 0
+
+globals:
+  - id: rgbww_state_generation
+    type: uint32_t
+    restore_value: false
+    initial_value: '0'
+
+text_sensor:
+  - platform: template
+    id: rgbww_commanded_state
+    name: RGBWW Commanded State
+    entity_category: diagnostic
+    update_interval: never
+
+script:
+  - id: apply_rgbww_12bit
+    mode: queued
+    parameters:
+      red: int
+      green: int
+      blue: int
+      warm_white: int
+      cold_white: int
+    then:
+      - lambda: |-
+          auto bounded = [](int value) -> int {
+            if (value <= 0) return 0;
+            if (value >= 4095) return 4095;
+            return value;
+          };
+          auto level = [](int value) -> float {
+            return static_cast<float>(value) / 4095.0f;
+          };
+
+          const int r = bounded(red);
+          const int g = bounded(green);
+          const int b = bounded(blue);
+          const int ww = bounded(warm_white);
+          const int cw = bounded(cold_white);
+          id(pwm_red).set_level(level(r));
+          id(pwm_green).set_level(level(g));
+          id(pwm_blue).set_level(level(b));
+          id(pwm_warm_white).set_level(level(ww));
+          id(pwm_cold_white).set_level(level(cw));
+          id(rgbww_state_generation) += 1;
+          id(rgbww_commanded_state).publish_state(
+            std::string("{\"schema_version\":1,\"generation\":")
+            + std::to_string(id(rgbww_state_generation))
+            + ",\"red\":" + std::to_string(r)
+            + ",\"green\":" + std::to_string(g)
+            + ",\"blue\":" + std::to_string(b)
+            + ",\"warm_white\":" + std::to_string(ww)
+            + ",\"cold_white\":" + std::to_string(cw) + "}"
+          );
 
 ota:
   - platform: esphome

@@ -5,6 +5,7 @@ import asyncio
 import json
 import os
 import re
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
@@ -18,7 +19,41 @@ DEFAULT_CURVE_PATH = PROJECT_ROOT / "config/channel/code-duty-curve.json"
 
 SET_SERVICE = "set_rgbww_12bit"
 OFF_SERVICE = "all_off"
+STATE_OBJECT_ID = "rgbww_commanded_state"
 CHANNEL_ORDER = ("cw", "ww", "r", "g", "b")
+PAYLOAD_CHANNELS = ("red", "green", "blue", "warm_white", "cold_white")
+
+
+@dataclass(frozen=True)
+class RgbwwDeviceSnapshot:
+    schema_version: int
+    generation: int
+    red: int
+    green: int
+    blue: int
+    warm_white: int
+    cold_white: int
+
+    @classmethod
+    def parse(cls, value: str) -> "RgbwwDeviceSnapshot":
+        try:
+            raw = json.loads(value)
+        except (TypeError, json.JSONDecodeError) as exc:
+            raise ValueError("RGBWW device-state entity does not contain valid JSON") from exc
+        if not isinstance(raw, dict) or set(raw) != {"schema_version", "generation", *PAYLOAD_CHANNELS}:
+            raise ValueError("RGBWW device-state snapshot has an unsupported schema")
+        snapshot = cls(**{key: int(raw[key]) for key in raw})
+        if snapshot.schema_version != 1 or snapshot.generation < 0:
+            raise ValueError("RGBWW device-state snapshot has invalid version/generation")
+        if any(not 0 <= getattr(snapshot, channel) <= 4095 for channel in PAYLOAD_CHANNELS):
+            raise ValueError("RGBWW device-state snapshot contains an invalid channel")
+        return snapshot
+
+    def payload(self) -> dict[str, int]:
+        return {channel: int(getattr(self, channel)) for channel in PAYLOAD_CHANNELS}
+
+    def to_jsonable(self) -> dict[str, int]:
+        return asdict(self)
 
 
 def light(
@@ -34,13 +69,15 @@ def light(
     secrets_path: str | Path = DEFAULT_SECRETS_PATH,
     curve_path: str | Path | None = DEFAULT_CURVE_PATH,
 ) -> dict[str, int]:
-    """Set raw RGBWW channel codes through ESPHome Native API.
+    """Send raw RGBWW channel codes through ESPHome Native API.
 
     Channel argument order is `cw, ww, r, g, b` for calibration convenience.
     If a code-duty curve file exists, values are treated as desired linear
     brightness codes and mapped to calibrated PWM codes. Without a curve file,
     values are converted with `int()` and are not range-clamped in this script.
     If all converted values are zero, the ESPHome `all_off` action is called.
+    The return value is the locally constructed requested payload, not device
+    state. Formal measurement code must use :func:`verified_light` instead.
     """
 
     return asyncio.run(
@@ -85,6 +122,102 @@ async def async_light(
         return payload
     finally:
         await client.disconnect()
+
+
+def verified_light(
+    cw: Any, ww: Any, r: Any, g: Any, b: Any, **kwargs: Any,
+) -> dict[str, Any]:
+    """Send a command and require an independent newer device-state snapshot."""
+
+    return asyncio.run(async_verified_light(cw, ww, r, g, b, **kwargs))
+
+
+async def async_verified_light(
+    cw: Any,
+    ww: Any,
+    r: Any,
+    g: Any,
+    b: Any,
+    *,
+    host: str = DEFAULT_HOST,
+    port: int = DEFAULT_PORT,
+    expected_name: str = DEFAULT_EXPECTED_NAME,
+    secrets_path: str | Path = DEFAULT_SECRETS_PATH,
+    curve_path: str | Path | None = DEFAULT_CURVE_PATH,
+    state_timeout: float = 5.0,
+    client_factory: Any | None = None,
+) -> dict[str, Any]:
+    import aioesphomeapi
+
+    curve = _load_code_duty_curve_if_present(curve_path)
+    requested = _build_payload(cw, ww, r, g, b, curve=curve)
+    api_key = _load_api_encryption_key(secrets_path)
+    factory = client_factory or aioesphomeapi.APIClient
+    client = factory(host, port, None, noise_psk=api_key, expected_name=expected_name)
+    await client.connect(login=True)
+    try:
+        device_info, entities, services = await client.device_info_and_list_entities()
+        state_entities = [entity for entity in entities if getattr(entity, "object_id", None) == STATE_OBJECT_ID]
+        if len(state_entities) != 1:
+            raise RuntimeError("RGBWW device-state entity is missing or duplicated")
+        entity_key = int(state_entities[0].key)
+        by_name = {service.name: service for service in services}
+        if SET_SERVICE not in by_name or OFF_SERVICE not in by_name:
+            raise RuntimeError("RGBWW ESPHome command services are incomplete")
+
+        snapshots: asyncio.Queue[RgbwwDeviceSnapshot | BaseException] = asyncio.Queue()
+
+        def on_state(state: Any) -> None:
+            if int(getattr(state, "key", -1)) != entity_key:
+                return
+            try:
+                snapshots.put_nowait(RgbwwDeviceSnapshot.parse(getattr(state, "state", "")))
+            except BaseException as exc:
+                snapshots.put_nowait(exc)
+
+        client.subscribe_states(on_state)
+        baseline_value = await asyncio.wait_for(snapshots.get(), timeout=state_timeout)
+        if isinstance(baseline_value, BaseException):
+            raise baseline_value
+        baseline = baseline_value
+        if _is_all_zero(requested):
+            await client.execute_service(by_name[OFF_SERVICE], {})
+        else:
+            await client.execute_service(by_name[SET_SERVICE], requested)
+        async with asyncio.timeout(state_timeout):
+            while True:
+                observed_value = await snapshots.get()
+                if isinstance(observed_value, BaseException):
+                    raise observed_value
+                observed = observed_value
+                if observed.generation <= baseline.generation:
+                    continue
+                _validate_snapshot_transition(requested, baseline, observed)
+                return {
+                    "schema_version": 1,
+                    "requested_payload": dict(requested),
+                    "baseline_snapshot": baseline.to_jsonable(),
+                    "device_snapshot": observed.to_jsonable(),
+                    "device_state_entity": {"object_id": STATE_OBJECT_ID, "key": entity_key},
+                    "device_identity": {
+                        "name": str(getattr(device_info, "name", expected_name)),
+                        "mac_address": str(getattr(device_info, "mac_address", "")),
+                    },
+                }
+    except TimeoutError as exc:
+        raise RuntimeError("timed out waiting for RGBWW device-state generation") from exc
+    finally:
+        await client.disconnect()
+
+
+def _validate_snapshot_transition(
+    requested: dict[str, int], baseline: RgbwwDeviceSnapshot,
+    observed: RgbwwDeviceSnapshot,
+) -> None:
+    if observed.generation <= baseline.generation:
+        raise ValueError("RGBWW device-state generation did not strictly increase")
+    if observed.payload() != requested:
+        raise ValueError("RGBWW device-state channels differ from requested payload")
 
 
 def _build_payload(cw: Any, ww: Any, r: Any, g: Any, b: Any, *, curve: dict[str, Any] | None = None) -> dict[str, int]:

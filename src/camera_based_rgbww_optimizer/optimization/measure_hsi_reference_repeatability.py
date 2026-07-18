@@ -260,7 +260,7 @@ def execute_targeted_reference_repeatability_plan(
         ray = ray_off_fn()
         _append_jsonl(root / "commands.jsonl", {
             "at": _utc_now(), "event": "both_off", "capture_id": capture_id,
-            "strip_response": dict(strip), "ray_response": dict(ray),
+            "strip_device_evidence": dict(strip), "ray_response": dict(ray),
         })
         validate_both_off(strip, ray, curve)
 
@@ -296,13 +296,11 @@ def execute_targeted_reference_repeatability_plan(
             command = {channel: int(step["command"][channel]) for channel in ("cw", "ww", "r", "g", "b")}
             response = strip_light_fn(*(command[channel] for channel in ("cw", "ww", "r", "g", "b")))
             expected = esphome._build_payload(*(command[channel] for channel in ("cw", "ww", "r", "g", "b")), curve=curve)
-            if dict(response) not in (command, expected):
-                raise RuntimeError(f"strip command response mismatch for {capture_id}")
             readback = dict(response)
             _append_jsonl(root / "commands.jsonl", {
                 "at": _utc_now(), "event": "strip_on_readback_verified", "capture_id": base_attempt_id,
                 "requested_command": command, "expected_response": expected,
-                "response": dict(response), "response_verified": True,
+                "device_evidence": dict(response), "device_state_verified": True,
             })
         sleep_fn(float(settling.get("on_seconds", 0.0)))
         cache_key = step.get("exposure_cache_key")
@@ -403,12 +401,10 @@ def execute_targeted_reference_repeatability_plan(
                 command = {channel: int(step["command"][channel]) for channel in ("cw", "ww", "r", "g", "b")}
                 response = strip_light_fn(*(command[channel] for channel in ("cw", "ww", "r", "g", "b")))
                 expected = esphome._build_payload(*(command[channel] for channel in ("cw", "ww", "r", "g", "b")), curve=curve)
-                if dict(response) not in (command, expected):
-                    raise RuntimeError(f"strip reacquire response mismatch for {capture_id}")
                 _append_jsonl(root / "commands.jsonl", {
                     "at": _utc_now(), "event": "strip_reacquire_on_readback_verified",
                     "capture_id": reacquire_id, "requested_command": command,
-                    "expected_response": expected, "response": dict(response), "response_verified": True,
+                    "expected_response": expected, "device_evidence": dict(response), "device_state_verified": True,
                 })
             sleep_fn(float(settling.get("on_seconds", 0.0)))
             try:
@@ -514,7 +510,7 @@ def run_targeted_reference_repeatability(
     )
     return execute_targeted_reference_repeatability_plan(
         plan, run_dir=root, capture_step_fn=capture_step,
-        strip_light_fn=lambda cw, ww, r, g, b: esphome.light(cw, ww, r, g, b, curve_path=curve_path),
+        strip_light_fn=lambda cw, ww, r, g, b: esphome.verified_light(cw, ww, r, g, b, curve_path=curve_path),
         ray_off_fn=lambda: ray120c.set_cct(5600, intensity=0, gm=100),
         ray_set_hsi_fn=ray120c.set_hsi, ray_get_hsi_fn=ray120c.get_hsi,
         provenance_fn=lambda: raw_validation.collect_native_raw_observer_provenance(

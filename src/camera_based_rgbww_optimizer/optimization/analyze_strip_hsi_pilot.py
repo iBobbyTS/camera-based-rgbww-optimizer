@@ -10,12 +10,16 @@ from typing import Any
 from camera_based_rgbww_optimizer.measurement.hsi_policy_v2 import (
     FROZEN_STATUS,
     HsiPolicyV2,
+    conservative_class_variance,
+    evaluate_confirmation_spread,
     evaluate_reference_difference,
     summarize_within_block,
 )
+from camera_based_rgbww_optimizer.measurement.ray_hsi_manifold import RayHsiManifold
 from camera_based_rgbww_optimizer.optimization.hsi_objective import (
     P7_RESULT_STATUSES,
     hsi_objective_sort_key,
+    evaluate_hsi_observation_v2,
     required_hsi_features_from_report,
 )
 from camera_based_rgbww_optimizer.optimization.hsi_source_evidence import (
@@ -241,7 +245,9 @@ def _analyze_strip_hsi_pilot_v2(run_dir: str | Path) -> dict[str, Any]:
         raise ValueError("v2 P7 remaining target set drift")
     target_audit, points = _validate_v2_target_evidence(
         rows, plan, captures=captures, commands=commands,
-        curve=curve, policy_artifact_sha256=policy.artifact_sha256,
+        curve=curve, policy=policy, manifold=RayHsiManifold.load(
+            plan["inputs"]["ray_hsi_manifold"]["path"],
+        ),
     )
     blocking = [
         point for point in points
@@ -398,8 +404,10 @@ def _validate_v2_reference_blocks(
 def _validate_v2_target_evidence(
     rows: Sequence[Mapping[str, Any]], plan: Mapping[str, Any],
     *, captures: Sequence[Mapping[str, Any]], commands: Sequence[Mapping[str, Any]],
-    curve: Mapping[str, Any], policy_artifact_sha256: str,
+    curve: Mapping[str, Any], policy: HsiPolicyV2, manifold: RayHsiManifold,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    if [row.get("target") for row in rows] != list(plan["targets"]):
+        raise ValueError("v2 P7 target-results must exactly follow the frozen target plan")
     target_plan = {(int(item["hue"]), int(item["sat"])): item for item in plan["targets"]}
     capture_by_id = {str(item.get("capture_id")): item for item in captures}
     if len(capture_by_id) != len(captures):
@@ -407,9 +415,11 @@ def _validate_v2_target_evidence(
     commands_by_id = _group_commands(commands)
     points: list[dict[str, Any]] = []
     objective_count = 0
-    consumed_capture_ids: set[str] = set()
+    capture_owners: dict[str, str] = {}
     reconstructed_targets: list[dict[str, Any]] = []
-    for row in rows:
+    previous_command: Mapping[str, int] | None = None
+    feature_ids = tuple(policy.artifact["feature_set"]["ids"])
+    for target_position, row in enumerate(rows):
         key = (int(row["target"]["hue"]), int(row["target"]["sat"]))
         declared = target_plan[key]
         reported_status = str(row.get("result_status"))
@@ -427,7 +437,12 @@ def _validate_v2_target_evidence(
         if start_indices != list(range(len(attempts))):
             raise ValueError(f"v2 P7 target {key} start indices are incomplete or reordered")
         expected_confirmation_count = int(declared["confirmation_count"])
+        repeatability_class = _v2_repeatability_class(
+            target_sat=float(declared["sat"]), max_code=int(declared["max_code"]),
+            formal_max_code=4095,
+        )
         recomputed_logical = 0
+        derived_confirmed_attempts: list[Mapping[str, Any]] = []
         for attempt in attempts:
             result = attempt.get("result")
             if not isinstance(result, Mapping):
@@ -472,6 +487,7 @@ def _validate_v2_target_evidence(
             rebase_ids = {phase.split("-probe-", 1)[0] for phase in phases if "rebase-" in phase}
             if int(budget.get("rebases_started", -1)) != len(rebase_ids):
                 raise ValueError(f"v2 P7 target {key} rebase ledger mismatch")
+            confirmed_group_count = 0
             for group in groups:
                 indices = group.get("sample_indices")
                 if not isinstance(indices, list) or len(indices) != len(set(map(int, indices))):
@@ -499,15 +515,22 @@ def _validate_v2_target_evidence(
                     raise ValueError(f"v2 P7 target {key} confirmed group is not fully feasible")
                 if group.get("status") == "failed" and all(feasible):
                     raise ValueError(f"v2 P7 target {key} failed group lacks a failed sample")
+                derived_group_status = "partial" if len(indices) < expected_confirmation_count else (
+                    "confirmed" if all(feasible) else "failed"
+                )
+                if group.get("status") != derived_group_status:
+                    raise ValueError(f"v2 P7 target {key} confirmation status differs from replayed samples")
+                confirmed_group_count += derived_group_status == "confirmed"
             for sample in samples:
                 observation = sample.get("observation")
                 capture_id = str(observation.get("capture_id")) if isinstance(observation, Mapping) else ""
                 capture = capture_by_id.get(capture_id)
                 phase = str(sample.get("phase"))
-                if not capture_id or capture_id in consumed_capture_ids or capture is None:
+                if not capture_id or capture is None:
                     raise ValueError(f"v2 P7 target {key} sample capture id is missing, duplicate, or unknown")
                 if int(capture.get("target_index", -1)) != int(declared["index"]) or capture.get("source") != "strip" or not str(capture.get("purpose", "")).endswith(phase):
                     raise ValueError(f"v2 P7 target {key} sample capture provenance mismatch")
+                _claim_capture(capture_owners, capture_id, f"target-{target_position}:sample")
                 event_rows = [item for item in commands_by_id.get(capture_id, []) if item.get("event") != "weak_signal_reacquire"]
                 on = validate_attempt_event_grammar(
                     event_rows, source="strip", plan_step={"command": sample.get("command")},
@@ -515,22 +538,48 @@ def _validate_v2_target_evidence(
                 )
                 if on.get("requested_command") != sample.get("command"):
                     raise ValueError(f"v2 P7 target {key} sample requested command mismatch")
-                consumed_capture_ids.add(capture_id)
+                report = _load_json(Path(capture["capture"]["patch_statistics"]))
+                replayed_features = required_hsi_features_from_report(report, feature_ids)
+                if observation.get("feature_values") != replayed_features:
+                    raise ValueError(f"v2 P7 target {key} sample RAW feature provenance mismatch")
+                replayed = evaluate_hsi_observation_v2(
+                    manifold, replayed_features,
+                    target_hue=float(declared["hue"]), target_sat=float(declared["sat"]),
+                    repeatability_class=repeatability_class, policy=policy,
+                    command=sample.get("command"), previous_command=previous_command,
+                    max_code=int(declared["max_code"]),
+                )
+                if not _json_numerically_equal(sample.get("residuals"), replayed["residuals"]) or not _json_numerically_equal(sample.get("objective"), replayed["objective"]):
+                    raise ValueError(f"v2 P7 target {key} sample objective differs from RAW replay")
             for rejection in rejections:
                 evidence = rejection.get("evidence") or {}
+                seen_rejection_ids: set[str] = set()
                 for capture_id in evidence.get("capture_ids", []):
                     capture_id = str(capture_id)
                     capture = capture_by_id.get(capture_id)
                     if capture is None or int(capture.get("target_index", -1)) != int(declared["index"]):
                         raise ValueError(f"v2 P7 target {key} rejection capture provenance mismatch")
-                    consumed_capture_ids.add(capture_id)
+                    if capture_id in seen_rejection_ids:
+                        raise ValueError(f"v2 P7 target {key} rejection repeats a capture owner")
+                    seen_rejection_ids.add(capture_id)
+                    _claim_capture(capture_owners, capture_id, f"target-{target_position}:rejection")
+            derived_goal_confirmed = confirmed_group_count > 0
+            if bool(result.get("goal_confirmed")) != derived_goal_confirmed:
+                raise ValueError(f"v2 P7 target {key} goal_confirmed differs from confirmation groups")
+            if (result.get("status") == "goal_confirmed") != derived_goal_confirmed:
+                raise ValueError(f"v2 P7 target {key} result status differs from confirmation groups")
+            if derived_goal_confirmed:
+                derived_confirmed_attempts.append(attempt)
+            best = result.get("best")
+            if best is not None and best not in samples:
+                raise ValueError(f"v2 P7 target {key} best sample is not retained in its start")
             recomputed_logical += logical
         if int(feedback.get("logical_observations_used", -1)) != recomputed_logical:
             raise ValueError(f"v2 P7 target {key} target logical count differs from raw evidence")
         if recomputed_logical > int(declared["solver_budget"]["max_logical_observations_per_target"]):
             raise ValueError(f"v2 P7 target {key} exceeds target logical budget")
 
-        confirmed_attempts = [item for item in attempts if item["result"].get("goal_confirmed")]
+        confirmed_attempts = derived_confirmed_attempts
         valid_attempts = [item for item in attempts if item["result"].get("best") is not None]
         pool = confirmed_attempts or valid_attempts
         derived_attempt = min(pool, key=lambda item: hsi_objective_sort_key(item["result"]["best"]["objective"])) if pool else attempts[0]
@@ -544,8 +593,13 @@ def _validate_v2_target_evidence(
         physical = row.get("physical_budget")
         if not isinstance(physical, Mapping):
             raise ValueError(f"v2 P7 target {key} lacks physical budget evidence")
-        if int(physical.get("hard_cap", -1)) != int(declared["solver_budget"]["max_physical_cr3_per_target"]):
-            raise ValueError(f"v2 P7 target {key} physical hard cap drift")
+        expected_caps = {
+            "hard_cap": int(declared["solver_budget"]["max_physical_cr3_per_target"]),
+            "autoexposure_cap": int(declared["solver_budget"]["max_autoexposure_physical_captures_per_target"]),
+            "weak_reacquire_cap": int(declared["solver_budget"]["max_weak_signal_reacquire_physical_captures_per_target"]),
+        }
+        if any(int(physical.get(name, -1)) != value for name, value in expected_caps.items()):
+            raise ValueError(f"v2 P7 target {key} physical frozen sub-budget drift")
         target_captures = [
             item for item in captures
             if item.get("target_index") is not None and int(item["target_index"]) == int(declared["index"])
@@ -574,26 +628,26 @@ def _validate_v2_target_evidence(
             raise ValueError(f"v2 P7 target {key} physical sub-budget differs from retained captures")
         if recomputed_physical > int(physical["hard_cap"]) or recomputed_auto > int(physical["autoexposure_cap"]) or recomputed_weak > int(physical["weak_reacquire_cap"]):
             raise ValueError(f"v2 P7 target {key} exceeded physical hard cap")
-        unconsumed = {str(item["capture_id"]) for item in target_captures} - consumed_capture_ids
-        weak_bases = set()
         target_capture_by_id = {str(item["capture_id"]): item for item in target_captures}
         for event in commands:
             if event.get("event") != "weak_signal_reacquire":
                 continue
             capture_id = str(event.get("capture_id"))
             base = target_capture_by_id.get(capture_id)
-            if base is not None and any(
-                str(item.get("purpose")) == f"{base.get('purpose')}-weak-signal-reacquire"
-                for item in target_captures
-            ):
-                weak_bases.add(capture_id)
-        if unconsumed - weak_bases:
+            reacquires = [
+                item for item in target_captures
+                if str(item.get("purpose")) == f"{base.get('purpose')}-weak-signal-reacquire"
+            ] if base is not None else []
+            if len(reacquires) == 1 and str(reacquires[0]["capture_id"]) in capture_owners and capture_id not in capture_owners:
+                _claim_capture(capture_owners, capture_id, f"target-{target_position}:weak-base")
+        unconsumed = {str(item["capture_id"]) for item in target_captures} - set(capture_owners)
+        if unconsumed:
             raise ValueError(f"v2 P7 target {key} contains orphan captures")
         objectives = [sample.get("objective", {}) for attempt in attempts for sample in attempt.get("result", {}).get("samples", [])]
         if not objectives:
             raise ValueError(f"v2 P7 target {key} has no objective evidence")
         for objective in objectives:
-            if objective.get("policy_artifact_sha256") != policy_artifact_sha256:
+            if objective.get("policy_artifact_sha256") != policy.artifact_sha256:
                 raise ValueError(f"v2 P7 target {key} objective policy hash drift")
             for layer in ("hsi_coordinate_equivalent", "observer_equivalent", "color_rendering_residual"):
                 if layer not in objective:
@@ -605,9 +659,23 @@ def _validate_v2_target_evidence(
         best_objective = best["objective"]
         confirmed_groups = [item for item in selected.get("confirmation_attempts", []) if item.get("status") == "confirmed"]
         evidence_samples = [selected["samples"][int(index)] for index in confirmed_groups[-1]["sample_indices"]] if confirmed_groups else []
-        spread = row.get("confirmation_spread")
-        unresolved = any(item.get("objective", {}).get("hsi_coordinate_equivalent") in {"unresolved", "uncertainty_unresolved"} for item in evidence_samples) or (spread is not None and spread.get("decision") != "pass")
-        derived_status = "uncertainty_unresolved" if unresolved else "faithful" if selected.get("goal_confirmed") else "solver_budget_exhausted" if overall_status == "solver_budget_exhausted" else "measurement_unreachable" if overall_status == "measurement_unreachable" else "unconfirmed"
+        replayed_spread = None
+        if evidence_samples:
+            class_policy = policy.artifact["repeatability_policy"]["classes"][repeatability_class]
+            replayed_spread = evaluate_confirmation_spread(
+                [sample["observation"]["feature_values"] for sample in evidence_samples],
+                feature_ids=feature_ids, class_name=repeatability_class,
+                class_variance=conservative_class_variance(
+                    class_policy["p1_floor_diagonal_variance"],
+                    class_policy["targeted_variance"], feature_ids,
+                ),
+                limit=class_policy["limits"][str(expected_confirmation_count)],
+            )
+        if not _json_numerically_equal(row.get("confirmation_spread"), replayed_spread):
+            raise ValueError(f"v2 P7 target {key} confirmation spread differs from RAW replay")
+        unresolved = any(item.get("objective", {}).get("hsi_coordinate_equivalent") in {"unresolved", "uncertainty_unresolved"} for item in evidence_samples) or (replayed_spread is not None and replayed_spread.get("decision") != "pass")
+        selected_confirmed = selected in [item["result"] for item in derived_confirmed_attempts]
+        derived_status = "uncertainty_unresolved" if unresolved else "faithful" if selected_confirmed else "solver_budget_exhausted" if overall_status == "solver_budget_exhausted" else "measurement_unreachable" if overall_status == "measurement_unreachable" else "unconfirmed"
         if reported_status != derived_status:
             raise ValueError(f"v2 P7 target {key} result status differs from reconstructed evidence")
         reconstructed_targets.append({
@@ -627,20 +695,26 @@ def _validate_v2_target_evidence(
             "logical_observations_used": int(feedback["logical_observations_used"]),
             "physical_cr3_used": int(physical["physical_cr3_used"]),
             "confirmation_count": expected_confirmation_count,
-            "confirmation_spread": row.get("confirmation_spread"),
+            "confirmation_spread": replayed_spread,
             "hsi_coordinate_equivalent": best_objective["hsi_coordinate_equivalent"],
             "observer_equivalent": best_objective["observer_equivalent"],
             "color_rendering_residual": best_objective["color_rendering_residual"],
         })
+        previous_command = {channel: int(row["selected_command"][channel]) for channel in ("cw", "ww", "r", "g", "b")}
     return ({
         "target_count": len(rows),
         "objective_count": objective_count,
-        "policy_artifact_sha256": policy_artifact_sha256,
+        "policy_artifact_sha256": policy.artifact_sha256,
         "multiseed_provenance": "pass",
         "budget_audit": "pass",
         "confirmation_group_audit": "pass",
         "three_layer_result_audit": "pass",
         "status_exclusivity": "pass",
+        "capture_owner_audit": "pass",
+        "feature_provenance_audit": "pass",
+        "objective_replay_audit": "pass",
+        "confirmation_derived_status_audit": "pass",
+        "frozen_sub_budget_audit": "pass",
         "reconstructed_targets": reconstructed_targets,
     }, sorted(points, key=lambda item: (item["hue"], item["sat"])))
 
@@ -676,6 +750,35 @@ def _point_summary(row: Mapping[str, Any]) -> dict[str, Any]:
         "rounds_completed": int(feedback["rounds_completed"]),
         "settled_evidence_count": sum(len(item.get("sample_indices", [])) for item in feedback["confirmation_attempts"]) + len(row.get("final_verification", [])),
     }
+
+
+def _claim_capture(owners: dict[str, str], capture_id: str, owner: str) -> None:
+    previous = owners.get(capture_id)
+    if previous is not None:
+        raise ValueError(f"capture {capture_id} has duplicate owners: {previous}, {owner}")
+    owners[capture_id] = owner
+
+
+def _json_numerically_equal(left: Any, right: Any, *, tolerance: float = 1e-12) -> bool:
+    if isinstance(left, Mapping) and isinstance(right, Mapping):
+        return set(left) == set(right) and all(_json_numerically_equal(left[key], right[key], tolerance=tolerance) for key in left)
+    if isinstance(left, Sequence) and not isinstance(left, (str, bytes)) and isinstance(right, Sequence) and not isinstance(right, (str, bytes)):
+        return len(left) == len(right) and all(_json_numerically_equal(a, b, tolerance=tolerance) for a, b in zip(left, right))
+    if isinstance(left, (int, float)) and isinstance(right, (int, float)):
+        return abs(float(left) - float(right)) <= tolerance
+    return left == right
+
+
+def _v2_repeatability_class(*, target_sat: float, max_code: int, formal_max_code: int) -> str:
+    if max_code != formal_max_code:
+        if target_sat != 0.0:
+            raise ValueError("v2 scale-relaxed repeatability is frozen only for neutral targets")
+        return "neutral_scale_relaxed"
+    if target_sat == 0.0:
+        return "neutral_fullscale"
+    if target_sat == 100.0:
+        return "sat100_fullscale"
+    return "mid_sat_fullscale"
 
 
 def _faithful(row: Mapping[str, Any]) -> bool:

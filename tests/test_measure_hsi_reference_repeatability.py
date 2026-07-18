@@ -253,7 +253,7 @@ class MeasureHsiReferenceRepeatabilityTests(unittest.TestCase):
                 )
 
             nonzero = copy.deepcopy(commands)
-            next(item for item in nonzero if item["event"] == "both_off")["strip_response"]["r"] = 1
+            next(item for item in nonzero if item["event"] == "both_off")["strip_device_evidence"]["device_snapshot"]["red"] = 1
             with self.assertRaisesRegex(ValueError, "frozen command"):
                 analyzer._audit_capture_contract(
                     captures, attempts, nonzero, feature_ids, run=run,
@@ -273,6 +273,29 @@ class MeasureHsiReferenceRepeatabilityTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "counter mismatch"):
                 analyzer._audit_capture_contract(
                     captures, attempts, commands, feature_ids, run=drift_run,
+                    physical_contract=plan["measurement"]["physical_capture_audit"], plan=plan,
+                )
+
+    def test_analyzer_rejects_missing_plan_step_replaced_by_duplicate_ambient(self):
+        plan = subject.build_targeted_reference_repeatability_plan(
+            named_experiment_authorization=subject.EXPERIMENT_NAME,
+        )
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir) / "run"
+            _execute_fake(plan, root)
+            (root / "all-off-shell.json").write_text(json.dumps([
+                {"name": "esphome", "ok": True}, {"name": "ray120c", "ok": True},
+            ]), encoding="utf-8")
+            captures = [json.loads(line) for line in (root / "captures.jsonl").read_text(encoding="utf-8").splitlines()]
+            attempts = [json.loads(line) for line in (root / "capture-attempts.jsonl").read_text(encoding="utf-8").splitlines()]
+            commands = [json.loads(line) for line in (root / "commands.jsonl").read_text(encoding="utf-8").splitlines()]
+            run = json.loads((root / "run.json").read_text(encoding="utf-8"))
+            feature_ids = analyzer.HsiPolicyV2.load(plan["inputs"]["policy_v2_waiting"]["path"]).artifact["feature_set"]["ids"]
+            tampered = copy.deepcopy(captures)
+            tampered[-1] = copy.deepcopy(tampered[0])
+            with self.assertRaisesRegex(ValueError, "complete frozen plan order"):
+                analyzer._audit_capture_contract(
+                    tampered, attempts, commands, feature_ids, run=run,
                     physical_contract=plan["measurement"]["physical_capture_audit"], plan=plan,
                 )
 
@@ -306,8 +329,8 @@ class MeasureHsiReferenceRepeatabilityTests(unittest.TestCase):
             strip_commands = copy.deepcopy(commands)
             record = next(item for item in strip_captures if item["source"] == "strip")
             attempt_id = record["selected_attempt_capture_id"]
-            response = next(item for item in strip_commands if item["capture_id"] == attempt_id and item["event"] == "strip_on_readback_verified")["response"]
-            response["r"] = int(response.get("r", 0)) + 1
+            response = next(item for item in strip_commands if item["capture_id"] == attempt_id and item["event"] == "strip_on_readback_verified")["device_evidence"]
+            response["device_snapshot"]["red"] = int(response["device_snapshot"].get("red", 0)) + 1
             next(item for item in strip_attempts if item["attempt_capture_id"] == attempt_id)["readback"] = copy.deepcopy(response)
             record["readback"] = copy.deepcopy(response)
             with self.assertRaisesRegex(ValueError, "frozen command"):
@@ -435,6 +458,8 @@ def _execute_fake(
     ray_state = {}
     ray_set_calls = 0
     force_readback_mismatch = False
+    strip_generation = 0
+    curve = json.loads(Path(plan["inputs"]["code_duty_curve"]["path"]).read_text(encoding="utf-8"))
 
     def capture_step(step):
         if fail_at is not None and int(step["index"]) == fail_at:
@@ -474,7 +499,11 @@ def _execute_fake(
         }
 
     def strip_light(cw, ww, r, g, b):
-        return {"cw": cw, "ww": ww, "r": r, "g": g, "b": b}
+        nonlocal strip_generation
+        payload = subject.esphome._build_payload(cw, ww, r, g, b, curve=curve)
+        baseline = strip_generation
+        strip_generation += 1
+        return _strip_device_evidence(payload, baseline, strip_generation)
 
     def ray_set_hsi(hue, sat, *, intensity_percent):
         nonlocal ray_set_calls, force_readback_mismatch
@@ -498,6 +527,17 @@ def _execute_fake(
         sleep_fn=lambda _seconds: None,
         all_off_fn=lambda: [ShutdownStep("esphome", cleanup_ok), ShutdownStep("ray120c", True)],
     )
+
+
+def _strip_device_evidence(payload, baseline_generation, generation):
+    return {
+        "schema_version": 1,
+        "requested_payload": dict(payload),
+        "baseline_snapshot": {"schema_version": 1, "generation": baseline_generation, **dict(payload)},
+        "device_snapshot": {"schema_version": 1, "generation": generation, **dict(payload)},
+        "device_state_entity": {"object_id": "rgbww_commanded_state", "key": 7},
+        "device_identity": {"name": "bedroom-rgbww-strip", "mac_address": "fake"},
+    }
 
 
 def _report(values, raw):

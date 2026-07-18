@@ -647,7 +647,7 @@ anchors, confirmation spread, and the separate coordinate/observer/rendering
 layers. Combined sentinel/remaining analysis rejects mixed policy versions or
 hashes.
 
-Offline P7-R0D commands are:
+Offline P7-R0E commands are:
 
 ```bash
 .venv/bin/python -m camera_based_rgbww_optimizer.measurement.hsi_policy_v2
@@ -663,7 +663,7 @@ The last command only emits the draft named-experiment schema
 `p7_targeted_reference_repeatability_v2`: 30 formal Ray measurements, 50
 formal strip measurements, and two ambient frames in the fixed order ambient,
 Ray A, strip A, strip B, Ray B, ambient. Dry-run does not load `.env`, create a
-camera backend, or call a light. P7-R0D implements—but does not run—the remote
+camera backend, or call a light. P7-R0E implements—but does not run—the remote
 execution surface, analyzer, formal-ineligible `calibrated_waiting_for_planner`
 finalizer, and `tmp/run-hsi-reference-repeatability.zsh` dual-cleanup wrapper.
 Every P7-R1 logical row retains append-only base and optional weak-reacquire
@@ -679,6 +679,12 @@ share one narrow validator for both off responses and the single exact source-on
 readback. Formal target logical/physical counts and result status are rebuilt
 from captures, samples, attempts and auto-exposure structure instead of trusting
 target-row self-reports.
+P7-R0E additionally requires a RAW-to-58-feature/objective replay, unique
+capture ownership, exact target/attempt plan order, and frozen sub-budget caps.
+ESPHome command acknowledgement is explicitly not device readback. The formal
+entrypoints now require an independent generation-bearing `rgbww_commanded_state`
+snapshot; the offline fake verifies stale generation, channel mismatch, missing
+entity, and timeout failures. The firmware config is not flashed by this phase.
 The execution CLI is fail-closed unless both `--allow-high-output` and the exact
 `--named-experiment p7_targeted_reference_repeatability_v2` are supplied.
 P7-R1 still requires Planner acceptance plus a new explicit named-experiment

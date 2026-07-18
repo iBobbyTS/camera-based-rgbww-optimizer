@@ -489,9 +489,24 @@ def _audit_capture_contract(
     if len(planned_by_id) != len(planned):
         raise ValueError("P7-R1 frozen plan contains duplicate capture ids")
     curve = _load_json(Path(plan["inputs"]["code_duty_curve"]["path"]))
+    if [str(item.get("capture_id")) for item in captures] != [str(item.get("capture_id")) for item in planned]:
+        raise ValueError("P7-R1 captures do not exactly follow the complete frozen plan order")
+    if [item.get("plan_step") for item in captures] != planned:
+        raise ValueError("P7-R1 capture plan steps differ from the complete frozen plan")
+    seen_exposure_keys: set[str] = set()
+    expected_auto_by_logical: dict[str, bool] = {}
+    for step in planned:
+        logical_id = str(step["capture_id"])
+        cache_key = step.get("exposure_cache_key")
+        expected_auto_by_logical[logical_id] = step.get("source") != "ambient" and cache_key not in seen_exposure_keys
+        if step.get("source") != "ambient" and cache_key is not None:
+            seen_exposure_keys.add(str(cache_key))
     attempts_by_logical: dict[str, list[Mapping[str, Any]]] = defaultdict(list)
     for attempt in attempts:
         attempts_by_logical[str(attempt.get("logical_capture_id"))].append(attempt)
+    attempt_ids = [str(item.get("attempt_capture_id")) for item in attempts]
+    if len(attempt_ids) != len(set(attempt_ids)):
+        raise ValueError("P7-R1 attempt evidence contains duplicate attempt ids")
     commands_by_attempt: dict[str, list[Mapping[str, Any]]] = defaultdict(list)
     for command in commands:
         commands_by_attempt[str(command.get("capture_id"))].append(command)
@@ -523,6 +538,11 @@ def _audit_capture_contract(
             raise ValueError(f"P7-R1 logical capture {logical_id} attempt provenance mismatch")
         if len(logical_attempts) not in {1, 2} or logical_attempts[0].get("attempt_kind") != "base":
             raise ValueError(f"P7-R1 logical capture {logical_id} has invalid base/reacquire attempts")
+        expected_attempt_ids = [f"{logical_id}-base"]
+        if len(logical_attempts) == 2:
+            expected_attempt_ids.append(f"{logical_id}-weak-signal-reacquire")
+        if expected_ids != expected_attempt_ids:
+            raise ValueError(f"P7-R1 logical capture {logical_id} attempt ids drift from frozen plan")
         selected = [item for item in logical_attempts if item.get("selected_for_formal") is True]
         if len(selected) != 1 or selected[0].get("attempt_capture_id") != record.get("selected_attempt_capture_id"):
             raise ValueError(f"P7-R1 logical capture {logical_id} selected attempt mismatch")
@@ -535,6 +555,10 @@ def _audit_capture_contract(
             attempt_id = str(attempt.get("attempt_capture_id"))
             if attempt.get("source") != source:
                 raise ValueError(f"P7-R1 attempt {attempt_id} source drift")
+            if attempt.get("attempt_kind") == "base":
+                expected_auto = expected_auto_by_logical[logical_id]
+                if bool(attempt.get("auto_exposure")) != expected_auto:
+                    raise ValueError(f"P7-R1 attempt {attempt_id} auto-exposure policy drift")
             physical = recompute_physical_count(attempt)
             capture = attempt.get("capture") or {}
             if int(capture.get("physical_capture_count", physical)) != physical:
@@ -554,7 +578,7 @@ def _audit_capture_contract(
                 attempt_kind=str(attempt.get("attempt_kind")),
             )
             if source != "ambient":
-                retained = on.get("readback") if source == "ray" else on.get("response")
+                retained = on.get("readback") if source == "ray" else on.get("device_evidence")
                 if retained != attempt.get("readback"):
                     raise ValueError(f"P7-R1 attempt {attempt_id} readback mismatch")
             recomputed_physical += physical
@@ -616,7 +640,7 @@ def _audit_capture_contract(
         raise ValueError("P7-R1 retained evidence exceeds frozen physical limits")
     if any(recompute_physical_count(item) > maximum_per_auto for item in attempts if item.get("auto_exposure")):
         raise ValueError("P7-R1 retained auto-exposure attempt exceeds per-cache-miss cap")
-    if set(commands_by_attempt) != {str(item.get("attempt_capture_id")) for item in attempts}:
+    if set(commands_by_attempt) != set(attempt_ids):
         raise ValueError("P7-R1 command evidence contains orphan attempt ids")
     return {
         "logical_count": len(captures),

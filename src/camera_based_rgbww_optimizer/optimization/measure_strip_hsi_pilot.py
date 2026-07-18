@@ -331,13 +331,13 @@ def execute_strip_hsi_pilot_plan(
     reference_position_analyses: dict[str, dict[str, Any]] = {}
 
     def both_off(capture_id: str) -> None:
-        strip_response = strip_light_fn(0, 0, 0, 0, 0)
+        strip_evidence = strip_light_fn(0, 0, 0, 0, 0)
         ray_response = ray_off_fn()
         _append_jsonl(root / "commands.jsonl", {
             "at": _utc_now(), "event": "both_off", "capture_id": capture_id,
-            "strip_response": dict(strip_response), "ray_response": dict(ray_response),
+            "strip_device_evidence": dict(strip_evidence), "ray_response": dict(ray_response),
         })
-        validate_both_off(strip_response, ray_response, curve_config)
+        validate_both_off(strip_evidence, ray_response, curve_config)
 
     def capture_source(
         *,
@@ -380,14 +380,12 @@ def execute_strip_hsi_pilot_plan(
                 raise ValueError("P7 strip capture requires a command")
             normalized = {channel: int(command[channel]) for channel in CHANNELS}
             step["strip_command"] = normalized
-            response = strip_light_fn(*(normalized[channel] for channel in CHANNELS))
+            device_evidence = strip_light_fn(*(normalized[channel] for channel in CHANNELS))
             expected_response = esphome._build_payload(*(normalized[channel] for channel in CHANNELS), curve=curve_config)
-            if dict(response) not in (normalized, expected_response):
-                raise RuntimeError(f"strip command response mismatch for {capture_id}")
             _append_jsonl(root / "commands.jsonl", {
                 "at": _utc_now(), "event": "strip_on_readback_verified", "capture_id": capture_id,
                 "requested_command": normalized, "expected_response": expected_response,
-                "response": dict(response), "response_verified": True,
+                "device_evidence": dict(device_evidence), "device_state_verified": True,
             })
         sleep_fn(float(confirmation["settled_seconds"]) if settled_confirmation else float(confirmation["feedback_settle_seconds"]))
         try:
@@ -764,7 +762,7 @@ def run_strip_hsi_pilot(
         plan,
         run_dir=run_dir,
         capture_step_fn=capture_step,
-        strip_light_fn=lambda cw, ww, r, g, b: esphome.light(cw, ww, r, g, b, curve_path=curve_path),
+        strip_light_fn=lambda cw, ww, r, g, b: esphome.verified_light(cw, ww, r, g, b, curve_path=curve_path),
         ray_off_fn=lambda: ray120c.set_cct(5600, intensity=0, gm=100),
         ray_set_hsi_fn=ray120c.set_hsi,
         ray_get_hsi_fn=ray120c.get_hsi,

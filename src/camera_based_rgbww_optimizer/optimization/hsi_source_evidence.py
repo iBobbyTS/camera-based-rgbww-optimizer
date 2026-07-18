@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from collections.abc import Mapping, Sequence
 from typing import Any
 
@@ -39,7 +40,7 @@ def validate_ray_off(response: Mapping[str, Any]) -> None:
         raise ValueError("Ray off response does not explicitly prove intensity zero")
 
 
-def expected_strip_responses(
+def expected_strip_payloads(
     command: Mapping[str, Any], curve: Mapping[str, Any],
 ) -> tuple[dict[str, int], dict[str, Any]]:
     raw = {channel: int(command[channel]) for channel in CHANNELS}
@@ -47,19 +48,56 @@ def expected_strip_responses(
     return raw, payload
 
 
-def validate_strip_response(
-    response: Mapping[str, Any], command: Mapping[str, Any], curve: Mapping[str, Any],
-) -> None:
-    raw, payload = expected_strip_responses(command, curve)
-    if dict(response) not in (raw, payload):
-        raise ValueError("strip response differs from frozen command/curve payload")
+def validate_strip_device_evidence(
+    evidence: Mapping[str, Any], command: Mapping[str, Any], curve: Mapping[str, Any],
+) -> Mapping[str, Any]:
+    _raw, payload = expected_strip_payloads(command, curve)
+    required = {
+        "schema_version", "requested_payload", "baseline_snapshot",
+        "device_snapshot", "device_state_entity", "device_identity",
+    }
+    if set(evidence) != required or int(evidence.get("schema_version", -1)) != 1:
+        raise ValueError("strip evidence is not an independent device-state schema")
+    if evidence.get("requested_payload") != payload:
+        raise ValueError("strip requested payload differs from frozen command/curve payload")
+    baseline = evidence.get("baseline_snapshot")
+    observed = evidence.get("device_snapshot")
+    if not isinstance(baseline, Mapping) or not isinstance(observed, Mapping):
+        raise ValueError("strip evidence lacks baseline/device snapshots")
+    try:
+        baseline_snapshot = esphome.RgbwwDeviceSnapshot.parse(json.dumps(dict(baseline), sort_keys=True))
+        observed_snapshot = esphome.RgbwwDeviceSnapshot.parse(json.dumps(dict(observed), sort_keys=True))
+    except (TypeError, ValueError) as exc:
+        raise ValueError("strip evidence contains an invalid device-state snapshot") from exc
+    if observed_snapshot.generation <= baseline_snapshot.generation:
+        raise ValueError("strip device-state generation did not strictly increase")
+    actual = observed_snapshot.payload()
+    if actual != payload:
+        raise ValueError("strip device snapshot differs from frozen command/curve payload")
+    entity = evidence.get("device_state_entity")
+    if (
+        not isinstance(entity, Mapping)
+        or set(entity) != {"object_id", "key"}
+        or entity.get("object_id") != esphome.STATE_OBJECT_ID
+        or not isinstance(entity.get("key"), int)
+    ):
+        raise ValueError("strip evidence lacks the frozen device-state entity")
+    identity = evidence.get("device_identity")
+    if (
+        not isinstance(identity, Mapping)
+        or set(identity) != {"name", "mac_address"}
+        or not str(identity.get("name"))
+        or not str(identity.get("mac_address"))
+    ):
+        raise ValueError("strip evidence lacks device identity")
+    return observed_snapshot.to_jsonable()
 
 
 def validate_both_off(
-    strip_response: Mapping[str, Any], ray_response: Mapping[str, Any],
+    strip_evidence: Mapping[str, Any], ray_response: Mapping[str, Any],
     curve: Mapping[str, Any],
 ) -> None:
-    validate_strip_response(strip_response, {channel: 0 for channel in CHANNELS}, curve)
+    validate_strip_device_evidence(strip_evidence, {channel: 0 for channel in CHANNELS}, curve)
     validate_ray_off(ray_response)
 
 
@@ -78,8 +116,8 @@ def validate_attempt_event_grammar(
     expected_names = ["both_off", "both_off"] if source == "ambient" else ["both_off", on_event, "both_off"]
     if names != expected_names:
         raise ValueError(f"source isolation command evidence grammar mismatch: {names} != {expected_names}")
-    validate_both_off(events[0].get("strip_response", {}), events[0].get("ray_response", {}), curve)
-    validate_both_off(events[-1].get("strip_response", {}), events[-1].get("ray_response", {}), curve)
+    validate_both_off(events[0].get("strip_device_evidence", {}), events[0].get("ray_response", {}), curve)
+    validate_both_off(events[-1].get("strip_device_evidence", {}), events[-1].get("ray_response", {}), curve)
     if source == "ambient":
         return None
     on = events[1]
@@ -92,7 +130,7 @@ def validate_attempt_event_grammar(
         command = plan_step.get("command")
         if not isinstance(command, Mapping):
             raise ValueError("strip plan step lacks frozen command")
-        validate_strip_response(on.get("response", {}), command, curve)
+        validate_strip_device_evidence(on.get("device_evidence", {}), command, curve)
         if on.get("requested_command") != {channel: int(command[channel]) for channel in CHANNELS}:
             raise ValueError("strip requested command differs from frozen plan")
     return on

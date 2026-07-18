@@ -20,10 +20,12 @@ SOURCE_FILES = (
     PROJECT_ROOT / "src/camera_based_rgbww_optimizer/optimization/analyze_hsi_policy_v2_replay.py",
     PROJECT_ROOT / "src/camera_based_rgbww_optimizer/optimization/analyze_strip_hsi_pilot.py",
     PROJECT_ROOT / "src/camera_based_rgbww_optimizer/optimization/hsi_source_evidence.py",
+    PROJECT_ROOT / "src/camera_based_rgbww_optimizer/control/esphome.py",
     PROJECT_ROOT / "src/camera_based_rgbww_optimizer/optimization/build_hsi_p7_r0_readiness.py",
     PROJECT_ROOT / "src/camera_based_rgbww_optimizer/optimization/measure_hsi_reference_repeatability.py",
     PROJECT_ROOT / "src/camera_based_rgbww_optimizer/optimization/analyze_hsi_reference_repeatability.py",
     PROJECT_ROOT / "src/camera_based_rgbww_optimizer/optimization/measure_strip_hsi_pilot.py",
+    PROJECT_ROOT / "firmware/esphome/bedroom-rgbww-strip-common.yaml",
 )
 
 
@@ -56,6 +58,8 @@ def build_readiness(
         or fake_analysis.get("point_count") != 4
         or fake_analysis.get("anchor_validation", {}).get("anchor_count") != 12
         or fake_analysis.get("target_evidence_validation", {}).get("three_layer_result_audit") != "pass"
+        or fake_analysis.get("target_evidence_validation", {}).get("objective_replay_audit") != "pass"
+        or fake_analysis.get("target_evidence_validation", {}).get("capture_owner_audit") != "pass"
     ):
         raise ValueError("P7-R0D fake sentinel did not close the formal v2 evidence analyzer")
     physical = dry_run["measurement"]["physical_capture_audit"]
@@ -63,10 +67,10 @@ def build_readiness(
         raise ValueError("P7-R0D requires the Planner-frozen 250-CR3 absolute cap")
     return {
         "schema_version": 2,
-        "readiness": "P7-R0D-offline-v2",
+        "readiness": "P7-R0E-offline-v3",
         "status": "ready_for_planner_review",
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "authorization_consumed": "P7-R0D_offline_only",
+        "authorization_consumed": "P7-R0E_offline_only",
         "inputs": {
             "frozen_sentinel_run": {
                 "path": str(DEFAULT_SENTINEL_RUN),
@@ -86,6 +90,7 @@ def build_readiness(
             "unit_test_count": int(test_count),
             "commands": list(validation_commands),
             "compileall": "pass",
+            "firmware_compile": "blocked_tool_missing_esphome_cli",
             "wrapper_zsh_syntax": [{"path": str(path), "status": "pass"} for path in wrapper_paths],
             "git_diff_check": "pass",
             "codegraph_sync": "pass",
@@ -114,6 +119,7 @@ def build_readiness(
             "commands_jsonl_audited": True,
             "physical_count_independently_recomputed": True,
             "frozen_plan_source_and_off_responses_audited": True,
+            "device_state_readback": "offline_fake_only",
             "candidate_status": dry_run["execution_contract"]["candidate_status"],
             "candidate_formal_capture_eligible": dry_run["execution_contract"]["candidate_formal_capture_eligible"],
         },
@@ -144,6 +150,12 @@ def build_readiness(
         ],
         "planner_review_required": True,
         "named_experiment_authorized": False,
+        "device_state_contract": {
+            "firmware_snapshot": "offline_config_only_not_flashed",
+            "generation_required": True,
+            "independent_snapshot_required": True,
+            "real_device_preflight": "p7_strip_state_readback_preflight_not_authorized",
+        },
         "locked": replay["locked"],
     }
 

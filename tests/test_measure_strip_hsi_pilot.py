@@ -285,7 +285,7 @@ class MeasureStripHsiPilotTests(unittest.TestCase):
             selected["samples"][1]["observation"]["capture_id"] = selected["samples"][0]["observation"]["capture_id"]
             rows[0]["feedback"]["attempts"][rows[0]["feedback"]["selected_start_index"]]["result"] = selected
             (run_root / "target-results.jsonl").write_text("\n".join(json.dumps(item) for item in rows) + "\n", encoding="utf-8")
-            with self.assertRaisesRegex(ValueError, "duplicate"):
+            with self.assertRaisesRegex(ValueError, "duplicate|provenance"):
                 analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
 
             run_root = root / "auto"
@@ -296,6 +296,50 @@ class MeasureStripHsiPilotTests(unittest.TestCase):
             auto["capture"]["auto_exposure_audit"]["capture_count"] = 2
             (run_root / "captures.jsonl").write_text("\n".join(json.dumps(item) for item in captures) + "\n", encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "audit structure"):
+                analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
+
+    def test_v2_analyzer_replays_objective_and_requires_confirmed_group(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            policy = _frozen_policy_v2_file(root)
+            plan = subject.build_strip_hsi_pilot_plan(policy_version="v2", policy_v2_config_path=policy)
+
+            run_root = root / "objective"
+            _execute_fake_v2_plan(plan, run_root)
+            _write_shell_cleanup(run_root)
+            rows_path = run_root / "target-results.jsonl"
+            original = [json.loads(line) for line in rows_path.read_text(encoding="utf-8").splitlines()]
+            tampered = copy.deepcopy(original)
+            sample = tampered[0]["feedback"]["selected_result"]["samples"][0]
+            sample["objective"]["observer_equivalent"] = not bool(sample["objective"]["observer_equivalent"])
+            tampered[0]["feedback"]["attempts"][0]["result"] = tampered[0]["feedback"]["selected_result"]
+            rows_path.write_text("\n".join(json.dumps(item) for item in tampered) + "\n", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "objective differs from RAW replay"):
+                analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
+
+            run_root = root / "no-confirmed-group"
+            _execute_fake_v2_plan(plan, run_root)
+            _write_shell_cleanup(run_root)
+            rows = [json.loads(line) for line in (run_root / "target-results.jsonl").read_text(encoding="utf-8").splitlines()]
+            selected = rows[0]["feedback"]["selected_result"]
+            for group in selected["confirmation_attempts"]:
+                group["status"] = "failed"
+                group["partial_group"] = False
+            selected["goal_confirmed"] = True
+            selected["status"] = "goal_confirmed"
+            rows[0]["feedback"]["attempts"][rows[0]["feedback"]["selected_start_index"]]["result"] = selected
+            rows_path = run_root / "target-results.jsonl"
+            rows_path.write_text("\n".join(json.dumps(item) for item in rows) + "\n", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "failed group lacks a failed sample|confirmation status differs from replayed samples"):
+                analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
+
+            run_root = root / "row-cap"
+            _execute_fake_v2_plan(plan, run_root)
+            _write_shell_cleanup(run_root)
+            rows = [json.loads(line) for line in (run_root / "target-results.jsonl").read_text(encoding="utf-8").splitlines()]
+            rows[0]["physical_budget"]["autoexposure_cap"] = 9999
+            (run_root / "target-results.jsonl").write_text("\n".join(json.dumps(item) for item in rows) + "\n", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "physical frozen sub-budget drift"):
                 analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
 
     def test_v2_analyzer_rejects_unselected_cross_target_orphan_and_nonzero_off(self):
@@ -341,7 +385,7 @@ class MeasureStripHsiPilotTests(unittest.TestCase):
             write(rows_path, original_rows)
 
             commands = copy.deepcopy(original_commands)
-            next(item for item in commands if item["event"] == "both_off")["strip_response"]["r"] = 1
+            next(item for item in commands if item["event"] == "both_off")["strip_device_evidence"]["device_snapshot"]["red"] = 1
             write(commands_path, commands)
             with self.assertRaisesRegex(ValueError, "frozen command"):
                 analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
@@ -374,6 +418,8 @@ def _execute_fake_plan(plan, root: Path, *, mismatch_readback: bool = False, sle
     manifold = RayHsiManifold.load()
     target_by_index = {target["index"]: target for target in plan["targets"]}
     ray_state = {}
+    strip_generation = 0
+    curve = json.loads(Path(plan["inputs"]["code_duty_curve"]["path"]).read_text(encoding="utf-8"))
 
     def capture_step(step):
         capture_id = step["capture_id"]
@@ -397,7 +443,11 @@ def _execute_fake_plan(plan, root: Path, *, mismatch_readback: bool = False, sle
         return {"capture": {"saved_file": str(raw), "byte_count": 3, "camera_backend": "remote"}, "patch_statistics": str(report)}
 
     def strip_light(cw, ww, r, g, b):
-        return {"cw": cw, "ww": ww, "r": r, "g": g, "b": b}
+        nonlocal strip_generation
+        payload = subject.esphome._build_payload(cw, ww, r, g, b, curve=curve)
+        baseline = strip_generation
+        strip_generation += 1
+        return _strip_device_evidence(payload, baseline, strip_generation)
 
     def ray_set_hsi(hue, sat, *, intensity_percent):
         ray_state.update({"hue": hue, "sat": sat, "intensity": int(intensity_percent * 10)})
@@ -427,6 +477,8 @@ def _execute_fake_v2_plan(plan, root: Path):
     target_by_index = {target["index"]: target for target in plan["targets"]}
     ray_state = {}
     capture_count = 0
+    strip_generation = 0
+    curve = json.loads(Path(plan["inputs"]["code_duty_curve"]["path"]).read_text(encoding="utf-8"))
 
     def capture_step(step):
         nonlocal capture_count
@@ -460,7 +512,11 @@ def _execute_fake_v2_plan(plan, root: Path):
         }
 
     def strip_light(cw, ww, r, g, b):
-        return {"cw": cw, "ww": ww, "r": r, "g": g, "b": b}
+        nonlocal strip_generation
+        payload = subject.esphome._build_payload(cw, ww, r, g, b, curve=curve)
+        baseline = strip_generation
+        strip_generation += 1
+        return _strip_device_evidence(payload, baseline, strip_generation)
 
     def ray_set_hsi(hue, sat, *, intensity_percent):
         ray_state.update({"hue": hue, "sat": sat, "intensity": int(intensity_percent * 10)})
@@ -480,6 +536,17 @@ def _execute_fake_v2_plan(plan, root: Path):
 def _write_shell_cleanup(root: Path) -> None:
     cleanup = [{"name": "esphome", "ok": True}, {"name": "ray120c", "ok": True}]
     (root / "all-off-shell.json").write_text(json.dumps(cleanup), encoding="utf-8")
+
+
+def _strip_device_evidence(payload, baseline_generation, generation):
+    return {
+        "schema_version": 1,
+        "requested_payload": dict(payload),
+        "baseline_snapshot": {"schema_version": 1, "generation": baseline_generation, **dict(payload)},
+        "device_snapshot": {"schema_version": 1, "generation": generation, **dict(payload)},
+        "device_state_entity": {"object_id": "rgbww_commanded_state", "key": 7},
+        "device_identity": {"name": "bedroom-rgbww-strip", "mac_address": "fake"},
+    }
 
 
 def _report(values, raw):
