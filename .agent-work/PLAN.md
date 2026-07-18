@@ -1682,7 +1682,7 @@ p7_strip_state_readback_preflight
 ```text
 current_phase = P7_R0E
 stage_status = offline_complete_waiting_for_planner_acceptance
-current_head = 27a68cf (待本轮 focused commit)
+current_head = a380dfe63c732ddf126e8aa396a41b2985da4713
 worktree_state = dirty(本节及 P7-R0E 实现，保留 Planner 既有修改)
 authorization = offline_only; p7_targeted_reference_repeatability_v2 未授权
 run_dir = tmp/strip-hsi-pilot-offline/p7-r0e-v3-20260718-final
