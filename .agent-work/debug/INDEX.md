@@ -2,7 +2,6 @@
 
 | file | summary |
 | --- | --- |
-| active/20260718-p7-d0-device-state-preflight.md | Implement and execute the bounded generation-bearing ESPHome readback preflight with independent Python/shell cleanup evidence. |
 | active/20260714-p1-exposure-response.md | CR3 recorded exposure fixes the large P1 shutter error; residual high-signal RAW shape still blocks thresholds and P2 pending a lower-exposure full P1. |
 | active/20260712-white-lut-repeatability-and-strict-anchors.md | Measure repeatability, validate strict anchors, and explain the cross-day regression of near-boundary 14x5 nodes. |
 
@@ -10,6 +9,7 @@
 
 | file | summary |
 | --- | --- |
+| unresolved/20260718-p7-d0-device-state-preflight.md | Real D0 stopped before low output because the installed device lacks the generation-bearing entity; four all-off acknowledgements pass but final independent zero is unavailable pending separate firmware authorization. |
 | resolved/20260718-p7-r0d-evidence-reconstruction.md | P7-R0D now reconstructs formal target facts and P7-R1 source/physical evidence from retained artifacts against the frozen plan. |
 
 ## Resolved

@@ -12,11 +12,11 @@
 
 **当前阶段：** P7-D0 / `p7_strip_state_readback_preflight`
 
-**当前状态：** `authorized_waiting_for_executor_implementation_and_execution`
+**当前状态：** `fail_waiting_for_planner`
 
 **本次授权解释：** 用户在 Planner 明确说明唯一下一动作是 `p7_strip_state_readback_preflight` 后回复“可以继续”。该授权只覆盖本计划第 3 节的离线实现、低输出设备 preflight 和必要的双关灯；不包含 firmware upload、相机访问、真实 CR3、P7-R1、sentinel-v2 或其他高输出实验。
 
-**下一条唯一动作：** Executor 按第 3 节实现并验证独立 preflight module/wrapper，然后使用全新 run 目录执行一次 `p7_strip_state_readback_preflight`。无论通过或失败，完成证据审计和双关灯后必须停止并交还 Planner；不得自动启动 P7-R1。
+**下一条唯一动作：** Planner 复验第 3.8 节的 `D0-FIRMWARE-MISSING` 与 `D0-CLEANUP-UNKNOWN` 证据，并决定是否向用户申请单独的 firmware compile/upload 授权。Executor 不得自动编译、刷写、重试 D0 或启动 P7-R1。
 
 ---
 
@@ -263,6 +263,51 @@ Wrapper 必须：
 `D0-CODE`：实现/测试错误。只允许离线修复；若实机已启动，先完成双关灯，使用全新 run 目录重试。
 
 任何分支都不得在同一任务自动进入第 4 节。
+
+### 3.8 P7-D0 Executor 实机结果（2026-07-18）
+
+```text
+executor_verdict = fail_waiting_for_planner
+implementation_checkpoint = eb226bd
+plan_split_checkpoint = 2e3192b
+named_experiment = p7_strip_state_readback_preflight
+run_dir = /Volumes/4T/temp/rgbww-optimizer/strip-state-readback-preflight/p7-strip-state-readback-preflight-20260718-223408
+primary_branch = D0-FIRMWARE-MISSING
+safety_branch = D0-CLEANUP-UNKNOWN
+passed_transitions = 0
+failed_transitions = 2
+low_output_command_attempted = false
+camera_calls = 0
+cr3 = 0
+npy = 0
+firmware_compile_or_upload = 0
+```
+
+Executor 已完成独立 module、测试、shell wrapper、dry-run 审计和唯一一次授权实机 preflight。离线验证为 focused D0/ESPHome/all-off `17/17`、full suite `432/432`（`143.567s`）、`compileall`、wrapper `zsh -n`、`git diff --check` 与 `codegraph sync` 全部通过。Dry-run 只有 `plan.json/run.json`，五步顺序、重复低输出 payload、`curve_path=null`、最大 raw PWM 48 与零设备/相机调用均通过审计。
+
+正式 run 在第一步 `startup_zero` 即由现有 `control.esphome.verified_light()` fail closed：当前真实设备没有唯一的 generation-bearing `rgbww_commanded_state` entity。Python finally 后的 `final_zero` 得到相同错误，因此没有任何 verified transition 通过，也没有发送 `(8,16,24,32,48)` 低输出命令。`failure.json` 同时保留：
+
+- primary failure：`D0-FIRMWARE-MISSING` / `RGBWW device-state entity is missing or duplicated`；
+- cleanup failure：final verified zero 无法建立独立 snapshot，故安全分支为 `D0-CLEANUP-UNKNOWN`。
+
+preflight、Python finally、shell trap 和一次独立 recovery 共四份 all-off evidence 均包含 ESPHome 五通道全零 acknowledgement 与 Ray `intensity=0` 成功响应；recovery CLI exit 为 0。由于 installed firmware 不提供独立 readback entity，不能把 command acknowledgement 升格为 snapshot，安全状态仍按 unknown 报告。run 内无 CR3、`.npy`、secret/token 字段，runner PID `31476` 已退出。
+
+关键 artifact：
+
+```text
+run.json sha256 = 250bb03b0259e527f7201a54ec9338b60c2169ac1c2cc2d5c02899acab237553
+failure.json sha256 = 94030b34ec7258386f750f96cc317cc3b71e4043ebc2360b56ab3c8903d053b8
+transitions.jsonl sha256 = e45d08c13318f6d3d79807cae2529616ddd86b855904155f14ee5799f99c1fab
+all-off-python.json sha256 = bbb1ee50f05ab028d9da97b084ba9cbcbe9d76830ef0f0893d952f69d50c51c8
+all-off-shell.json sha256 = b373aad2db50db933122f9d7f63f818c43914755ad195f712493e344b30b4f71
+recovery-all-off.json sha256 = a1387d5e207f4318bce4ed57c93265ecb39b0692a060bd43d8b7ef727c1c313f
+```
+
+仓库所需 generation-bearing firmware diff 已存在于 `a380dfe63c732ddf126e8aa396a41b2985da4713`：它把 boot、`set_rgbww_12bit` 和 `all_off` 统一到 `apply_rgbww_12bit`，新增 `rgbww_state_generation`、diagnostic text sensor `rgbww_commanded_state`，并在每次包括相同命令的 apply 后递增 generation/publish 五通道 JSON。当前文件 hash 仍为冻结的 `deaf0a0717130b60805e3beddb9fa3b59e0f8695d8a22d4f2997859235082ab0`，工作区无 firmware diff。实机证据只能证明 installed target 没有暴露恰好一个可用的冻结 entity，不能从同一错误进一步区分缺失或重复。恢复方案只能是：Planner/用户单独授权对目标 `bedroom-rgbww-strip` 执行 firmware compile/upload，明确保留现有 OTA recovery 路径，然后使用全新 run 目录重新执行 D0。尽管当前 `.venv` 已有 ESPHome `2026.5.2`，本轮未运行 compile、install 或 upload。
+
+启动外层 shell 在 wrapper 后打印了字面 `WRAPPER_EXIT=0`，没有捕获真实 `$?`；该行不能作为 wrapper exit evidence。正式 `runner.log`、`run.json` 和 `failure.json` 均明确记录失败，shell trap artifact 已生成。该调用证据缺口不影响 firmware/readback 结论，但必须保留，重跑 D0 时应显式记录 wrapper exit code。
+
+本阶段在此停止。P7-R1、sentinel-v2、remaining 9、boundary、holdout、Gate-6 和 P8 继续锁定，不需要 Advisor 介入。
 
 ---
 
@@ -525,16 +570,17 @@ next_action =
 
 ```text
 current_phase = P7_D0
-stage_status = authorized_waiting_for_executor_implementation_and_execution
-current_head = 1f9a5881b1021619eb0c8b12df1058e03d42a50e before Planner archive/new-plan changes
-worktree_state = dirty(archived completed plan plus new active plan); preserve all user/Executor work
-authorization = exact p7_strip_state_readback_preflight only; low raw PWM <=48 plus Ray off and dual all_off; no firmware upload/camera/P7-R1/high-output
-run_dir = none
+stage_status = fail_waiting_for_planner
+current_head = eb226bd implementation checkpoint; documentation-only D0 result handoff is its successor
+worktree_state = clean after committing this D0 result handoff; preserve all prior work
+authorization = exact p7_strip_state_readback_preflight consumed; no firmware compile/upload/camera/P7-R1/high-output authorization
+run_dir = /Volumes/4T/temp/rgbww-optimizer/strip-state-readback-preflight/p7-strip-state-readback-preflight-20260718-223408
 input_hashes = section 1.3
-analysis = P7-R0K accepted; real generation-bearing firmware/device state still unverified
-failure_evidence = none for current stage
-cleanup_evidence = no device calls made while writing this plan
-tests = no code changed and no tests required for plan-only split
-branch = P7_D0_IMPLEMENT_THEN_EXECUTE
-next_action = implement section 3.2-3.5 offline, validate dry-run, execute section 3.6 once, audit section 3.7, stop for Planner
+capture_counts = passed transitions 0; failed startup_zero/final_zero 2; low raw PWM command not attempted; CR3 0; NPY 0
+analysis = current device lacks unique rgbww_commanded_state; primary D0-FIRMWARE-MISSING and safety D0-CLEANUP-UNKNOWN
+failure_evidence = failure.json @ 94030b34ec7258386f750f96cc317cc3b71e4043ebc2360b56ab3c8903d053b8; outer launch did not preserve real wrapper exit code
+cleanup_evidence = preflight/Python/shell/recovery all-off each report ESPHome zero acknowledgement plus Ray intensity 0; final independent zero unavailable; safety remains unknown
+tests = focused 17/17; full 432/432 in 143.567s; compileall, wrapper syntax, diff-check and CodeGraph pass
+branch = D0_FIRMWARE_MISSING_AND_CLEANUP_UNKNOWN
+next_action = Planner reviews section 3.8 and decides whether to request separate firmware compile/upload authorization; no automatic retry or P7-R1
 ```
