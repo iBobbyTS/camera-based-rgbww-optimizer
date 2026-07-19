@@ -4,13 +4,13 @@
 
 **Planner 最新决策日期：** 2026-07-18
 
-**当前 `HEAD`：** `719d28abb39d690945a77ef253ded3e6d1135ef2`
+**当前实现检查点：** `16f47c1f63b2431db88130d1f19f4456466ec91d`
 
-**当前活动阶段：** Stage 6 / P7-R0J production exhaustion round-trip 等待 Executor 离线修复
+**当前活动阶段：** Stage 6 / P7-R0K physical pre-capture reachability 分支等待 Planner 决策
 
-**当前阶段状态：** `p7_r0i_rejected_waiting_for_executor_offline_implementation`
+**当前阶段状态：** `p7_r0k_blocked_waiting_for_planner_physical_reachability_decision`
 
-**下一条唯一动作：** Executor 只执行第 8.7.39 节 P7-R0J 的离线 production runner -> retained evidence -> public analyzer exhaustion round-trip 收口；不得据此执行 `p7_strip_state_readback_preflight` 或 `p7_targeted_reference_repeatability_v2`。在 Planner 另行明确授权前，不得连接设备、生成真实 CR3、读取 `.env`、执行真实 all-off、刷写 firmware、重跑 sentinel、执行 remaining 9、boundary、holdout、P8 或安装任何 LUT。
+**下一条唯一动作：** Planner 决定第 8.7.43 节 `physical.pre_capture_denial` 应冻结为 guarded-unreachable，还是授权新的 target-scoped producer trigger；Executor 在决策前不得继续构造 physical success fixture。不得据此执行 `p7_strip_state_readback_preflight` 或 `p7_targeted_reference_repeatability_v2`。在 Planner 另行明确授权前，不得连接设备、生成真实 CR3、读取 `.env`、执行真实 all-off、刷写 firmware、重跑 sentinel、执行 remaining 9、boundary、holdout、P8 或安装任何 LUT。
 
 **上游依据：**
 
@@ -2016,6 +2016,82 @@ Evidence:
 
 Gate remains `Blocked`: R0J completion does not authorize device preflight, P7-R1, new sentinel, remaining, boundary, holdout or P8.
 
+#### 8.7.41 P7-R0J Planner 复验结论（2026-07-18）
+
+```text
+planner_verdict = reject
+finding = R0J-REV-001, R0J-REV-002, R0J-REV-003
+reviewed_checkpoint = 84577a40c24685f57b6c11b5872918c80b5d65cc
+implementation_checkpoint = b0af5bf756c84468680ceb4cb0a581eb94766429
+reviewed_readiness_sha256 = 4db40dd3c1548d8820c8c83679799174c560dd896ccbb2da61290b782b0f5178
+device_or_network_calls = 0
+named_experiment_authorized = false
+```
+
+R0J 应保留的实现：canonical enrichment 已位于正式 runner finalization；logical/physical counter scope 已区分；真实 feedback/backtrack exhaustion 已完成 runner persistence -> public analyzer round-trip；post-capture overrun 现在以 `physical_budget_accounting_violation` 失败并保留 failure/cleanup 证据。readiness hash 与报告一致；Planner 独立复跑 P7 analyzer/feedback/budget focused suite `37/37` 通过。
+
+以下三项仍阻塞验收：
+
+1. `R0J-REV-001`：`EXHAUSTIBILITY_MATRIX` 只被 readiness builder、docs/skill 和矩阵单测读取，正式 canonicalizer 与 analyzer 均不使用它。独立篡改 replay 将矩阵标记为 `guarded_unreachable` 的 `initial` exhaustion 写成 internally consistent 双 ledger 后，public analyzer 仍返回 `ready_for_sentinel_branch` 且 `budget_audit=pass`。矩阵因此不是所声明的 source of truth。
+2. `R0J-REV-002`：矩阵本身错误地把 `confirmation_groups` 标为 `guarded_unreachable`。使用未修改的 production `run_hsi_feedback_multiseed()`，令两组 confirmation 均失败后，第三次 `confirm()` reservation 会稳定产生 `sub_budget=confirmation_groups`、`phase=confirm-2`、两组 retained failed evidence。当前 analyzer 的 `_phase_matches_sub_budget()` 不支持该值，所以 canonicalized production output 仍不能 round-trip。
+3. `R0J-REV-003`：physical target case 只经过 solver -> private canonicalizer -> private `_validate_pre_capture_exhaustion()`，没有按第 8.7.39-6 条经过 formal runner persistence 和公开 analyzer。readiness 也只写 `producer_canonical_schema_pass`，不能替代这一缺失门禁。
+
+因此 `417/417` 仍没有覆盖真实可达性集合和完整 physical public round-trip。问题限定在 formal contract/reachability enforcement，不改变 solver budget 数值、coverage、58-feature 或设备协议，不需要 Advisor。
+
+#### 8.7.42 P7-R0K 唯一离线修复阶段
+
+P7-R0K 只允许修复 exhaustibility contract 的可执行性、可达性分类和缺失 round-trip。必须保留 R0J canonical finalization、start/target scope、post-capture fatal accounting、R0I 对称 ledger 与全部历史反例；不得调整任何冻结预算、solver 行为目标、uncertainty、P6 manifold、target 或设备接口。
+
+1. 将 `EXHAUSTIBILITY_MATRIX` 从文档型 dict 改为正式 producer/analyzer 共同读取的 schema contract。它只定义允许的 origin/scope/status/phase family，不提供或相信 observed counters；runner 用它拒绝不允许持久化的 sparse producer value，analyzer 用它独立拒绝 `guarded_unreachable` 与 `fatal_accounting_error` 被伪装成 `solver_budget_exhausted`。readiness 必须序列化同一个对象，不得复制。
+2. 矩阵必须按 **path** 而不是仅按 `sub_budget` 建模，因为 `physical_cr3` 同时存在 pre-capture denial（正式 `solver_budget_exhausted`）和 post-capture overrun（fatal accounting）两条路径。每条 path 使用稳定 ID，至少冻结 `sub_budget`、trigger point、classification、origin、counter scope、capture_attempted、formal status 和 phase pattern。
+3. 把 production 可复现的 `confirmation_groups` / `confirm-2` 修正为 `production_reachable`、`logical_start`、`counter_scope=start`。formal analyzer 必须验证 `confirmation_groups_started` 已达到 frozen group limit、前两组结构完整且未 confirmed、下一 phase 恰为下一 group reservation；不得把它降级成 `confirmation_captures`。
+4. 重新审计全部 `HsiStartBudget._exhaust()` 调用点。每个 matrix path 必须有 production state-machine test：`production_reachable` 由真实 `run_hsi_feedback()`/multiseed 触发；`guarded_unreachable` 证明正常控制流无法触发，并在 public analyzer 注入时拒绝；fatal path 必须形成 run failure 而非 target result。禁止用直接修改 `target-results.jsonl` 作为 success proof。
+5. 新增至少两个完整 logical public round-trip：既有 `feedback_attempts` 与新增 `confirmation_groups`。两者都必须经正式 fake runner 生成 capture/command/target-result evidence，再由公开 analyzer 接受为结构有效的 exhausted attempt；若同 target 另一个 start confirmed，overall selection 仍按冻结 confirmed-first 规则。
+6. 新增 physical pre-capture denial 的完整 formal runner -> persisted JSONL -> public analyzer round-trip。必须在 frozen target physical cap 下产生 target-scoped ledger，证明 requested > 0、produced=0、capture_attempted=false、target counters 等于 retained captures；不允许只调用 private canonicalizer/validator。
+7. 增加确定性反例：exact-limit `initial`、`initial_probes`、`rebase_probes`、`confirmation_captures`、`rebases`、`logical_observations` 和 `weak_reacquire` 若仍分类为 guarded，public analyzer 均必须拒绝；`autoexposure` 或 post-capture `physical_cr3` 不得出现在 completed target row。matrix classification、origin、scope、phase pattern 任一 drift 均拒绝。
+8. post-capture accounting fixture 继续验证 run/failure/Python cleanup，并额外验证 produced CR3 路径在 failure evidence 中可定位且文件非空；shell wrapper 语法与 trap 保持不变。不得把 orphan capture 填入正常 target owner ledger。
+9. 生成全新 `fake-formal-v9-run`、analysis、R1 dry-run 与 `offline-readiness-r0k.json`，明确列出每条 path 的 production trigger 或 rejection test。复跑 focused/full、`compileall`、四个 wrapper `zsh -n`、`git diff --check` 与 `codegraph sync`。
+10. 全程 offline-only。完成后 Goal 继续 `Blocked` 并交还 Planner；R0K 通过也不自动授权设备 preflight、P7-R1、新 sentinel 或后续阶段。
+
+#### 8.7.43 P7-R0K Executor 分支交还（2026-07-18）
+
+```text
+executor_status = blocked_for_planner
+branch = R0K-EXEC-BRANCH-001
+implementation_checkpoint = 16f47c1f63b2431db88130d1f19f4456466ec91d
+device_or_network_calls = 0
+named_experiment_authorized = false
+```
+
+R0K 的 logical path contract 已取得实质进展：`EXHAUSTIBILITY_MATRIX` 改为 stable path ID schema，正式 runner canonicalizer、public analyzer、readiness 和测试读取同一个对象；真实 `run_hsi_feedback_multiseed()` 已触发 `confirmation_groups` / `confirm-2`，并完成正式 fake runner persistence -> public analyzer 回环；既有 feedback exhaustion 回环继续通过；伪造 guarded `initial` 已被 public analyzer 拒绝。post-capture overrun 现在写入 fatal path ID，failure evidence 可定位非空 CR3，并保留 Python cleanup。
+
+但第 8.7.42-6 条出现必须由 Planner 选择的合同分支。冻结普通点预算满足：
+
+```text
+logical cap = 54
+physical cap = 54 + (10 - 1) + 4 = 67
+```
+
+用实际 `HsiStartBudget`/`HsiPhysicalBudget` 状态机把两个 start 的所有 category、首个 auto-exposure 10 CR3 和 4 次 weak reacquire 全部用满后，确定性结果为：
+
+```text
+logical_per_target = 54 / 54
+physical_used = 67 / 67
+physical_remaining = 0
+next logical reservation = false
+next exhaustion sub_budget = feedback_attempts
+capture callback reached = false
+```
+
+也就是说，physical cap 只能与 logical cap 同时用满；第 55 次 capture request 之前，solver 的 `HsiStartBudget.consume()` 已先拒绝，正式 runner 的 `capture_source()` 不会抵达 pre-capture physical check。n=5 的 `62/75` 同构。因此当前 `physical.pre_capture_denial=production_reachable` 与实际 producer 顺序不一致，无法诚实完成 formal runner -> persisted JSONL -> public analyzer success round-trip。禁止用 patched solver 额外调用第 55 次 callback 或手工 target row 伪造 production proof。
+
+Planner 需二选一：
+
+1. 将 `physical.pre_capture_denial` 冻结为 `guarded_unreachable`，R0K 以 public analyzer 拒绝该伪造路径、以及 post-capture physical/auto/weak fatal accounting 作为正式门禁；或
+2. 明确授权新的 target-scoped capture producer trigger，使 physical pre-denial 可在正式 runner 中发生。该选择会改变 runner/solver target 架构，按既有边界可能需要 Advisor。
+
+在 Planner 决策前，Executor 不继续构造 physical success fixture，不生成 v9 readiness/交接 artifact，也不执行 P7-R1 或设备 preflight。最终 focused budget/feedback/P7 suite 为 `40/40` 通过，`compileall`、四个 wrapper `zsh -n`、`git diff --check` 与 `codegraph sync` 通过。Goal 保持 `Blocked`。
+
 ## 9. Phase D：剩余九点与合并分析
 
 **当前锁定：** 本节尚未授权。只有第 8.7.11 节的新 sentinel-v2 经 Planner 明确写入放行决定后，本节才恢复有效；旧 `S-PASS` 不再是入口。
@@ -2343,22 +2419,22 @@ next_action =
 ### 当前初始值
 
 ```text
-current_phase = P7_R0J
-stage_status = planner_rejected_p7_r0i_waiting_for_executor_offline_implementation
-current_head = 719d28abb39d690945a77ef253ded3e6d1135ef2
-worktree_state = dirty(.agent-work/PLAN.md Planner review only); preserve commits 719d28a/60b0710 and all prior P1-P7, Phase A and advisor evidence
+current_phase = P7_R0K
+stage_status = executor_blocked_waiting_for_planner_physical_reachability_decision
+current_head = 16f47c1f63b2431db88130d1f19f4456466ec91d implementation checkpoint; focused PLAN handoff commit follows
+worktree_state = PLAN handoff pending only; preserve 16f47c1/84577a4/b0af5bf and all prior P1-P7, Phase A and advisor evidence
 authorization = offline_only; named_experiment:p7_sentinel_4 consumed; p7_targeted_reference_repeatability_v2 not authorized; no authorization for P7_R1/sentinel_v2/remaining/boundary/holdout/P8
 uncertainty_artifact_v1 = config/hsi/strip-hsi-uncertainty.json @ cedaa1e9d342beb7e464c4e38d77884ad8a7790771432ebdbb5a101ca604aa94; immutable diagnostic evidence
 uncertainty_artifact_v2 = config/hsi/strip-hsi-policy-v2-waiting.json @ db9ebef1503c5e54c989649c719c4a5f75445bbd5487edb14c274e1b2894f3b4; status waiting_for_targeted_measurement; formal_capture_eligible=false
-code_checkpoint = 719d28abb39d690945a77ef253ded3e6d1135ef2 reviewed and rejected for R0I-REV-001/002; offline-readiness-r0i hash verified as d45fc5880e0a515539d7f5c5280c4f985536c3f772b6d065a0858284c8146e78 but does not satisfy production round-trip acceptance
-run_dir = tmp/strip-hsi-pilot-offline/p7-r0i-v7-20260718-final
-analysis = R0I closes synthetic ledger tampering, but production logical exhaustion lacks canonical provenance and production physical exhaustion is top-only; hand-built analyzer fixtures do not prove producer/consumer compatibility
-completed_steps = Phase A-v1 + Phase B + authorized sentinel_4 capture/audit + P7-R0/R0B/R0C + P7-R0D + P7-R0E + P7-R0F + P7-R0G + P7-R0H + P7-R0I implementation + independent Planner R0I review/rejection; no real calls in review
-failure_evidence = R0I-REV-001/002 in section 8.7.38; production solver deterministic replay proves schema mismatch; firmware compile remains tool-blocked; P7-R1 and sentinel-v2 remain unmeasured and unauthorized
-cleanup_evidence = no device/network/.env/real all-off/firmware upload calls in R0I review; independent focused 33/33 and nested-only rejection pass; old sentinel dual cleanup evidence remains unchanged
+code_checkpoint = 16f47c1f63b2431db88130d1f19f4456466ec91d implements executable path contract, confirm-2 public round-trip and fatal path evidence; blocked before R0K readiness by R0K-EXEC-BRANCH-001
+run_dir = none; branch established with deterministic in-memory HsiStartBudget/HsiPhysicalBudget replay, not a fabricated formal run
+analysis = logical and physical maxima fill simultaneously; start logical/category gate rejects the next request before capture_source can emit physical pre-capture denial
+completed_steps = Phase A-v1 + Phase B + authorized sentinel_4 capture/audit + P7-R0/R0B/R0C + P7-R0D/R0E/R0F/R0G/R0H/R0I/R0J + partial R0K executable logical/fatal paths + branch handoff; no real calls in R0K
+failure_evidence = R0K-EXEC-BRANCH-001 in section 8.7.43; physical.pre_capture_denial production classification conflicts with frozen 54/67 and 62/75 producer ordering; firmware compile remains tool-blocked; P7-R1/sentinel-v2 remain unauthorized
+cleanup_evidence = no device/network/.env/real all-off/firmware upload calls in R0K; focused 40/40, compileall, four wrapper syntax checks, diff-check and CodeGraph sync passed; old sentinel dual cleanup evidence remains unchanged
 physical_budget = absolute 250 Planner-frozen; baseline without weak reacquire 82..170; permitted with weak reacquire 82..250; maximum 60-second settling 9600 s
-branch = P7_R0I_REJECTED_PRODUCTION_EXHAUSTION_ROUNDTRIP
-next_action = Executor implements only section 8.7.39 P7-R0J offline; no device/network/.env/firmware upload/real all_off/P7-R1 authorization
+branch = P7_R0K_EXEC_BRANCH_001_PHYSICAL_PRECAPTURE_REACHABILITY
+next_action = Planner chooses guarded classification or explicitly authorizes a new target-scoped producer trigger; Executor performs no further fixture/acquisition work before decision
 ```
 
 ---
