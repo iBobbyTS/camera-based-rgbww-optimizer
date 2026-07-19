@@ -716,6 +716,11 @@ must advance the device generation with an exact, stable name/MAC snapshot.
 The wrapper adds an independent EXIT/INT/TERM/HUP all-off trap. A missing state
 entity, identity/readback drift, or unverified cleanup stops at P7-D0 and does
 not authorize firmware upload, camera access, or P7-R1.
+Before a rerun, the wrapper also atomically records the child exit, shell
+cleanup exit, final wrapper exit, and received signal. Signal exits take
+priority as `128+n`, followed by the original child failure; a cleanup-only
+failure maps to `70`. Cleanup stdout and stderr remain separate, and cleanup is
+run exactly once.
 The execution CLI is fail-closed unless both `--allow-high-output` and the exact
 `--named-experiment p7_targeted_reference_repeatability_v2` are supplied.
 P7-R1 still requires Planner acceptance plus a new explicit named-experiment

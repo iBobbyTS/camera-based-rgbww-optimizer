@@ -202,10 +202,16 @@ class StripStateReadbackPreflightTests(unittest.TestCase):
                     step.to_jsonable() if hasattr(step, "to_jsonable") else step for step in steps
                 ])
 
-    def test_wrapper_runs_exactly_one_shell_cleanup_on_exit_exception_and_signals(self):
-        modes = [("success", None), ("failure", None), ("sleep", signal.SIGINT),
-                 ("sleep", signal.SIGTERM), ("sleep", signal.SIGHUP)]
-        for mode, sent_signal in modes:
+    def test_wrapper_records_atomic_exit_evidence_and_runs_cleanup_once(self):
+        cases = [
+            ("success", None, 0, 0, 0, "complete", None),
+            ("failure", None, 7, 0, 7, "child_failed", None),
+            ("cleanup_failure", None, 0, 9, 70, "cleanup_failed", None),
+            ("sleep", signal.SIGINT, 130, 0, 130, "signaled", "INT"),
+            ("sleep", signal.SIGTERM, 143, 0, 143, "signaled", "TERM"),
+            ("sleep", signal.SIGHUP, 129, 0, 129, "signaled", "HUP"),
+        ]
+        for mode, sent_signal, child_code, cleanup_code, wrapper_code, status, signal_name in cases:
             with self.subTest(mode=mode, sent_signal=sent_signal), tempfile.TemporaryDirectory() as tempdir:
                 root, wrapper, call_log = _make_fake_wrapper_project(Path(tempdir))
                 run_dir = root / "runs" / f"{mode}-{getattr(sent_signal, 'name', 'exit')}"
@@ -225,7 +231,7 @@ class StripStateReadbackPreflightTests(unittest.TestCase):
                         while not ready_file.exists() and time.monotonic() < deadline:
                             time.sleep(0.02)
                         self.assertTrue(ready_file.exists())
-                        os.killpg(process.pid, sent_signal)
+                        os.kill(process.pid, sent_signal)
                     process.wait(timeout=8)
                 finally:
                     if process.poll() is None:
@@ -234,11 +240,27 @@ class StripStateReadbackPreflightTests(unittest.TestCase):
                 calls = call_log.read_text(encoding="utf-8").splitlines()
                 cleanup_calls = [line for line in calls if "camera_based_rgbww_optimizer.control.all_off" in line]
                 self.assertEqual(len(cleanup_calls), 1)
-                self.assertTrue((run_dir / "all-off-shell.json").exists())
-                if mode == "success":
-                    self.assertEqual(process.returncode, 0)
+                self.assertEqual(process.returncode, wrapper_code)
+                self.assertEqual((run_dir / "child-exit-status.txt").read_text(encoding="utf-8").strip(), str(child_code))
+                self.assertEqual((run_dir / "all-off-shell.exit-status.txt").read_text(encoding="utf-8").strip(), str(cleanup_code))
+                result = _read_json(run_dir / "wrapper-result.json")
+                self.assertEqual(result["status"], status)
+                self.assertEqual(result["child_exit_code"], child_code)
+                self.assertEqual(result["shell_cleanup_exit_code"], cleanup_code)
+                self.assertEqual(result["wrapper_exit_code"], wrapper_code)
+                self.assertEqual(result["signal"], signal_name)
+                self.assertEqual(Path(result["artifacts"]["run_dir"]), run_dir.resolve())
+                self.assertEqual(Path(result["artifacts"]["shell_cleanup"]), run_dir.resolve() / "all-off-shell.json")
+                self.assertFalse(list(run_dir.glob(".*.tmp.*")))
+                self.assertNotIn("secret", json.dumps(result).lower())
+                self.assertNotIn("token", json.dumps(result).lower())
+                cleanup_stdout = (run_dir / "all-off-shell.json").read_text(encoding="utf-8")
+                self.assertIn('"name": "esphome"', cleanup_stdout)
+                cleanup_stderr = (run_dir / "all-off-shell.stderr.log").read_text(encoding="utf-8")
+                if mode == "cleanup_failure":
+                    self.assertIn("fake cleanup failed", cleanup_stderr)
                 else:
-                    self.assertNotEqual(process.returncode, 0)
+                    self.assertEqual(cleanup_stderr, "")
 
     def _assert_no_secret_keys(self, run_dir: Path):
         forbidden = ("secret", "token", "api_key", "encryption_key")
@@ -302,11 +324,16 @@ import time
 
 with open(os.environ["FAKE_CALL_LOG"], "a", encoding="utf-8") as handle:
     handle.write(" ".join(sys.argv[1:]) + "\\n")
+if len(sys.argv) > 1 and sys.argv[1] == "-c":
+    os.execv(sys.executable, [sys.executable, *sys.argv[1:]])
 if "camera_based_rgbww_optimizer.control.all_off" in sys.argv:
     print(json.dumps([{"name": "esphome", "ok": True}, {"name": "ray120c", "ok": True}]))
+    if os.environ.get("FAKE_RUNNER_MODE") == "cleanup_failure":
+        print("fake cleanup failed", file=sys.stderr)
+        raise SystemExit(9)
     raise SystemExit(0)
 mode = os.environ.get("FAKE_RUNNER_MODE", "success")
-if mode == "success":
+if mode in {"success", "cleanup_failure"}:
     raise SystemExit(0)
 if mode == "failure":
     raise SystemExit(7)

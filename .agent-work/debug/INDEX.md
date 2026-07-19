@@ -9,13 +9,14 @@
 
 | file | summary |
 | --- | --- |
-| unresolved/20260718-p7-d0-device-state-preflight.md | Real D0 stopped before low output because the installed device lacks the generation-bearing entity; four all-off acknowledgements pass but final independent zero is unavailable pending separate firmware authorization. |
 | resolved/20260718-p7-r0d-evidence-reconstruction.md | P7-R0D now reconstructs formal target facts and P7-R1 source/physical evidence from retained artifacts against the frozen plan. |
 
 ## Resolved
 
 | file | summary |
 | --- | --- |
+| resolved/20260718-p7-d0-wrapper-exit-evidence.md | D0 wrapper now preserves atomic child, cleanup, signal, and final exit evidence across six fake-only paths. |
+| resolved/20260718-p7-d0-device-state-preflight.md | Initial D0 validly failed before low output; firmware OTA and independent zero readback later resolved its firmware prerequisite. |
 | resolved/20260718-p7-r0k-executable-exhaustibility.md | P7-R0K freezes physical pre-capture denial as guarded, proves n=3/n=5 logical preemption, and keeps all produced-CR3 overruns fatal. |
 | resolved/20260718-p7-r0j-production-roundtrip.md | P7-R0J canonicalizes sparse solver exhaustion at the runner ownership boundary, distinguishes start/target counters, and makes post-capture overrun fatal. |
 | resolved/20260718-p7-r0e-trust-boundaries.md | P7-R0E offline closure added generation-bearing device-state verification, RAW/objective/owner reconstruction, exact frozen-plan auditing, and explicit firmware compile tooling block; no real execution authorized. |

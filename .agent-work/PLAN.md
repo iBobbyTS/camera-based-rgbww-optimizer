@@ -6,17 +6,21 @@
 
 **历史归档：** `.agent-work/PLANS/20260718-2210.md`
 
-**已验收代码检查点：** `bb4554a9afd0ff8b5356766335ed232e7daa6e08`
+**已验收 R0K 代码检查点：** `bb4554a9afd0ff8b5356766335ed232e7daa6e08`
 
-**已验收交接检查点：** `1f9a5881b1021619eb0c8b12df1058e03d42a50e`
+**已验收 R0K 交接检查点：** `1f9a5881b1021619eb0c8b12df1058e03d42a50e`
+
+**已验收 firmware OTA 检查点：** `ac36e77eff13c09da88ff54fd8b34cbb9673120a`
 
 **当前阶段：** P7-D0 / `p7_strip_state_readback_preflight`
 
-**当前状态：** `firmware_uploaded_waiting_for_d0_rerun_authorization`
+**当前状态：** `d0_wrapper_evidence_ready_waiting_for_planner_acceptance`
 
-**本次授权解释：** 用户先授权并完成 generation-bearing WebUI firmware 编译，随后于 2026-07-18 明确要求“开始刷写”。该新增授权仅覆盖把第 3.9 节已核验的 OTA artifact 上传到 exact target `bedroom-rgbww-strip.local`、刷写前后关灯以及零输出 device-state 验证；Executor 不得重复询问 firmware upload 授权。它不包含低输出 D0 重跑、相机访问、真实 CR3、P7-R1、sentinel-v2 或其他高输出实验。
+**本次授权解释：** 用户先授权并完成 generation-bearing WebUI firmware 编译，随后明确授权刷写。该授权已经由第 3.10 节记录的一次 OTA、刷写前后关灯和零输出 device-state 验证完整消耗；Planner 已在第 3.11 节验收。Planner 更新第 3.12 节后，Human 在同一交接消息中又明确“允许D0低输出重跑，最高 raw PWM 为 48”。该新增授权只可在 Planner 验收第 3.13 节离线收口后消费一次，Executor 不得重复询问；它不包含相机访问、真实 CR3、P7-R1、sentinel-v2 或其他高输出实验。
 
-**下一条唯一动作：** Planner 复验第 3.10 节的 OTA、零输出 readback 和双关灯证据，再决定是否向用户申请重新执行 exact `p7_strip_state_readback_preflight`。Executor 不得自动重试 D0 或启动 P7-R1。
+**Planner 验收结论：** 原 D0 run 作为有效失败证据验收；generation-bearing firmware 的 compile、OTA、重新上线、独立零输出 readback 和三层关灯证据验收。`D0-FIRMWARE-MISSING` 的 installed-firmware 前置阻塞已解决，但完整五步 D0 尚未通过。
+
+**下一条唯一动作：** Planner 只验收第 3.13 节的 wrapper 退出证据修复、测试和 dry-run。若验收通过，可把已记录的一次 exact `p7_strip_state_readback_preflight` Human 授权标为 executable；本轮 Executor 在此停止，不得访问设备、自动重跑 D0 或启动 P7-R1。
 
 ---
 
@@ -36,8 +40,8 @@
 
 Executor 可以：
 
-- 完成当前已授权阶段的代码、测试、dry-run 和一次真实 preflight；
-- 修复当前阶段暴露的确定性代码问题，并使用新 run 目录重试；
+- 完成当前明确授权的代码、测试和 dry-run；只有授权矩阵改为“是”时才可执行一次真实 preflight；
+- 离线修复当前阶段暴露的确定性代码问题；实机重试必须由本计划记录新的 exact Human authorization，并使用全新 run 目录；
 - 更新 docs、项目 skill、本计划状态和 debug 记录；
 - 按仓库 Git 规则形成聚焦提交，但不得 push 或创建 PR。
 
@@ -74,10 +78,11 @@ R0K 已经通过 Planner 验收。不得继续审计或重写 exhaustion contrac
 
 | 动作 | 当前是否授权 | 说明 |
 | --- | --- | --- |
-| 离线实现 preflight module/tests/wrapper | 是 | 当前唯一实现任务 |
-| ESPHome 低输出 readback preflight 重跑 | 否 | 原授权已由失败 run 消耗；刷写授权不包含 D0 重跑 |
-| Ray120c 关灯命令 | 是 | 仅 intensity=0 与 cleanup，不得点亮 |
-| Python/shell `all_off` | 是 | preflight 安全路径 |
+| 离线实现 preflight module/tests/wrapper | 是，主体已完成 | 保留既有 module/tests；只补第 3.12 节退出证据 |
+| 离线修复 D0 wrapper 退出证据 | 是，已完成待验收 | 第 3.13 节；全程未调用网络、设备、`.env`、all-off 或真实 execute |
+| ESPHome 低输出 readback preflight 重跑 | 是，待 Planner 验收后一次 | Human 已明确授权 exact D0 低输出重跑，raw PWM 最大 48；本轮不得执行 |
+| Ray120c 关灯命令 | 有条件 | 仅未来已授权实机 preflight 的 cleanup 或已发生事件的 recovery；当前离线任务禁止调用 |
+| Python/shell `all_off` | 有条件 | 仅未来已授权实机 preflight 的安全路径或已发生事件的 recovery；当前离线任务禁止调用 |
 | 相机 remote health/config/capture | 否 | 当前阶段不需要相机 |
 | 读取 `.env` | 否 | 当前 module 不得加载；后续相机脚本自行加载 |
 | firmware compile | 是，已完成 | 用户于 2026-07-18 明确要求“开始编译”；仅 WebUI candidate，不含上传 |
@@ -103,9 +108,9 @@ R0K 已经通过 Planner 验收。不得继续审计或重写 exhaustion contrac
 - 不运行任何高输出；
 - 不放行 P7-R1。
 
-### 3.2 先实现正式执行面
+### 3.2 已实现正式执行面（冻结）
 
-当前仓库已有 `control.esphome.verified_light()`，但没有独立 preflight module/wrapper。Executor 应新增：
+当前仓库已有 `control.esphome.verified_light()` 和以下独立 preflight 执行面：
 
 ```text
 src/camera_based_rgbww_optimizer/control/strip_state_readback_preflight.py
@@ -113,7 +118,7 @@ tests/test_strip_state_readback_preflight.py
 tmp/run-strip-state-readback-preflight.zsh
 ```
 
-不得在 root 增加兼容脚本，不得复制 `verified_light()` 的协议解析。新 module 只编排现有 `verified_light`、Ray off 和 `control.all_off`。
+不得重复实现或另建平行执行面，不得在 root 增加兼容脚本，不得复制 `verified_light()` 的协议解析。Module 只编排现有 `verified_light`、Ray off 和 `control.all_off`；第 3.12 节只允许修改 wrapper 退出证据和对应测试/文档。
 
 CLI 合同：
 
@@ -189,6 +194,10 @@ preflight-all-off.json
 final-zero.json
 all-off-python.json
 all-off-shell.json
+all-off-shell.stderr.log
+child-exit-status.txt
+all-off-shell.exit-status.txt
+wrapper-result.json
 failure.json                 # 仅失败时
 <run-name>.runner.log        # run 目录相邻
 <run-name>.wrapper.log       # 若 wrapper 记录 stdout/stderr
@@ -196,7 +205,32 @@ failure.json                 # 仅失败时
 
 `plan.json` 在任何设备调用前冻结：experiment id、device identity、五个 transition、raw-PWM 命令、最大 PWM、`curve_path=null`、超时、Python/shell cleanup 和零 camera/CR3 声明。
 
-`run.json` 至少记录：status、start/finish、completed transition count、first/last generation、device identity、failure branch 和 cleanup summary。禁止记录 API key、secrets 内容或 `.env`。
+`run.json` 至少记录：status、start/finish、completed transition count、first/last generation、device identity、failure branch 和 cleanup summary。`wrapper-result.json` 必须独立记录 child exit、shell cleanup exit、wrapper exit、signal、开始/结束时间和 artifact 路径。禁止记录 API key、secrets 内容或 `.env`。
+
+`wrapper-result.json` schema 冻结为：
+
+```json
+{
+  "schema_version": 1,
+  "experiment": "p7_strip_state_readback_preflight",
+  "status": "complete|child_failed|cleanup_failed|signaled",
+  "child_pid": 12345,
+  "child_exit_code": 0,
+  "shell_cleanup_exit_code": 0,
+  "wrapper_exit_code": 0,
+  "signal": null,
+  "started_at": "UTC ISO-8601",
+  "finished_at": "UTC ISO-8601",
+  "artifacts": {
+    "run_dir": "absolute path",
+    "runner_log": "absolute path",
+    "wrapper_log": "absolute path",
+    "shell_cleanup": "absolute path"
+  }
+}
+```
+
+若 signal 发生在 child 成功创建前，`child_pid` 与 `child_exit_code` 可为 `null`，`child-exit-status.txt` 必须写字面 `not_started`；其他路径必须为真实整数。`signal` 只能是 `null|INT|TERM|HUP`。JSON stdout 与 stderr 必须分别保存为 `all-off-shell.json` 和 `all-off-shell.stderr.log`，不得把 stderr 混入 JSON。
 
 ### 3.5 必须新增的测试
 
@@ -210,6 +244,9 @@ failure.json                 # 仅失败时
 8. shell wrapper 在正常、Python exception、INT/TERM/HUP 都执行一次 trap cleanup；
 9. frozen command 的 raw payload 最大值确实为 48，且 module 不加载 curve；
 10. artifact 不含 secret/token 字段。
+11. 正常 child success、child failure 和 INT/TERM/HUP 均原子落盘真实 child/wrapper exit evidence；
+12. shell cleanup 退出码独立保存，cleanup 失败不得被 `|| true` 静默变成成功；
+13. wrapper 在所有上述路径只执行一次 shell cleanup，并保持预冻结的最终退出码优先级。
 
 离线检查：
 
@@ -239,6 +276,9 @@ Wrapper 必须：
 - 保存 child PID、runner log、wrapper log 和启动时间；
 - 前台等待短 preflight 完成，不创建 heartbeat；
 - signal 时先传递给 child、等待 child cleanup，再执行 shell all-off；
+- 不得让 `set -e` 在保存 `wait` 的真实退出码前终止 wrapper；
+- 原子保存 `child-exit-status.txt`、`all-off-shell.exit-status.txt` 和 `wrapper-result.json`；
+- 无 signal 时，child 非零优先作为 wrapper exit；child 为零但 shell cleanup 非零时 wrapper exit 固定为 `70`；二者均为零时 wrapper exit 为零；signal 时 wrapper exit 固定为 `128 + signal number`；
 - 不调用相机、不生成 CR3、不访问 remote camera API。
 
 ### 3.7 D0 验收与分支
@@ -251,6 +291,7 @@ Wrapper 必须：
 - 两次 low payload 完全相同且 raw PWM 最大 48；
 - main/final zero 全零；Ray 保持 intensity 0；
 - Python/shell cleanup 均两步成功；
+- child、shell cleanup 和 wrapper 三个退出码均为 0，`wrapper-result.json` 与文本退出码证据一致；
 - 无 failure、CR3、`.npy` 或 secret；
 - 更新本计划证据后停止，交还 Planner。
 
@@ -354,6 +395,115 @@ upload exit = 0
 - 未调用相机、未产生 CR3、未发送任何非零灯带或 Ray 命令。
 
 这证明 generation-bearing firmware 已安装、Native API 可重新连接且零输出 readback/cleanup 正常；它不等于完整 D0-PASS，因为冻结的 raw PWM 最大 48 序列尚未在新固件上重跑。原 D0 实机失败证据继续保留为历史，当前后续分支改为等待 Planner/用户单独授权全新目录的 D0 重跑。
+
+### 3.11 Planner 验收：D0 失败与 firmware OTA（2026-07-18）
+
+```text
+initial_d0_run = accepted_as_valid_failure
+firmware_compile = accepted
+firmware_upload = accepted
+installed_zero_readback = accepted
+d0_pass = not_established
+advisor_required = false
+d0_rerun_authorized = false
+```
+
+Planner 已独立复核第 3.8 至 3.10 节及保留 artifact，结论如下：
+
+1. 初始 D0 在 `startup_zero` 对缺失/重复 `rgbww_commanded_state` fail closed，未发送低输出命令；primary `D0-FIRMWARE-MISSING` 与 final snapshot 不可得导致的 `D0-CLEANUP-UNKNOWN` 均符合冻结分支。四份 all-off acknowledgement 和 Ray intensity 0 不能替代当时缺失的独立 snapshot，因此不得把历史 run 改写为 pass。
+2. WebUI firmware compile 使用 ESPHome `2026.5.2` 成功，OTA 上传到 `bedroom-rgbww-strip.local` 解析出的 `192.168.0.74:3232`，upload exit 为 0，日志明确包含 `OTA successful`。
+3. 上传日志中的 `firmware.bin` 与编译记录中的 `firmware.ota.bin` 均为 `893744` bytes，当前两个文件 SHA-256 都为 `c24a60463d37314b0c041188ec2d55dbb1be19614fb512a5a619308137cbcbc0`；文件名差异不构成 provenance 分叉。
+4. 刷写后 exact identity 为 `bedroom-rgbww-strip` / `E0:8C:FE:63:C9:40`，唯一 entity 为 `rgbww_commanded_state`，同一零命令独立 snapshot generation `2 -> 3`，requested/observed 五通道均为零。
+5. 刷写前、刷写后和 shell trap all-off 均报告 ESPHome 五通道全零 acknowledgement、Ray intensity 0；upload 与 shell cleanup exit 均为 0。没有相机调用、CR3、`.npy` 或非零输出。
+
+因此，installed firmware 的 D0 前置阻塞已经解除，无需 Advisor 改变实验方向，也不需要再次编译或刷写。零输出单点只能证明 entity、identity、generation 和 zero cleanup 的最小链路；它不能替代冻结的五步 D0，也不能解锁 P7-R1。
+
+初始 D0 外层启动命令没有保存 wrapper 的真实退出码。`run.json`、`failure.json`、runner log 和 shell cleanup 足以验收该 run 的“失败”结论，但此证据缺口不得带入下一次正式 D0。重跑前必须先完成第 3.12 节。
+
+### 3.12 D0 重跑前离线收口与授权门
+
+#### 3.12.1 当前已授权离线任务
+
+Executor 仅修改 `tmp/run-strip-state-readback-preflight.zsh`、对应行为测试以及必要的 docs/skill/本计划记录，不得调用网络、ESPHome、Ray、相机、`.env`、`control.all_off` 或 module `--execute`：
+
+1. 将末尾直接 `wait "$child_pid"` 改为显式捕获 child exit 的控制流，保证 `set -e` 不会在证据落盘前退出；
+2. 正常、child failure、INT、TERM、HUP 五类路径都必须保存真实 child exit、shell cleanup exit、最终 wrapper exit 和收到的 signal；
+3. artifact 固定为 run 内 `child-exit-status.txt`、`all-off-shell.exit-status.txt`、`wrapper-result.json`，全部以同目录临时文件加原子 `mv` 落盘；
+4. shell cleanup 仍只执行一次；stdout/stderr 分别保存，其命令失败必须保留非零退出码和原始输出，不得用 `|| true` 抹去状态；
+5. 最终退出码优先级冻结为：signal `128+n`；否则 child 非零；否则 cleanup 非零映射为 `70`；否则 `0`。`wrapper-result.json` 同时保留原始 child/cleanup code，禁止只保留聚合结果；
+6. 不改变五步命令、PWM、generation、identity、timeout、Python cleanup、设备 API 或任何 P7 solver/coverage 合同。
+
+测试必须使用 fake child/fake cleanup，不得触达设备，并至少断言：
+
+- success：child/cleanup/wrapper 均 0；
+- child failure：真实 child code 保留，cleanup 仍执行一次且 wrapper 返回同一 code；
+- cleanup failure：child 0、cleanup 非零、wrapper 70；
+- INT/TERM/HUP：signal、child wait、cleanup once、`128+n` 和 artifact 一致；
+- artifact 原子落盘且不含 secret；旧的字面 `WRAPPER_EXIT=0` 不能满足测试。
+
+完成后执行：focused D0/device/all-off tests、full suite、`compileall`、四个实际存在的 P6/P7 wrapper `zsh -n`、`git diff --check` 和 `codegraph sync`。再运行一次 module `--dry-run`，证明无设备调用；不得运行 wrapper 或 module `--execute`。更新本计划为：
+
+```text
+stage_status = blocked_waiting_for_authorization
+current_state = d0_wrapper_evidence_ready_waiting_for_rerun_authorization
+next_action = Human explicitly authorizes one exact p7_strip_state_readback_preflight rerun
+```
+
+#### 3.12.2 已获 Human 授权、待离线验收的未来实机范围
+
+Human 已在本次 Planner 交接消息中明确授权下述范围。Planner 只有验收第 3.13 节离线收口后才可把它标为 executable；Executor 随后可消费一次且不得再次询问：
+
+```text
+named experiment = p7_strip_state_readback_preflight
+run count = one fresh run directory
+strip sequence = startup zero -> (8,16,24,32,48) -> same repeat -> main zero -> final zero
+raw PWM maximum = 48
+curve_path = null
+Ray = intensity 0 only
+camera/CR3/NPY = prohibited
+cleanup = Python finally + final verified zero + shell trap
+firmware compile/upload = prohibited
+P7-R1 and later = prohibited
+```
+
+本轮必须在离线收口后停止，不能把同一 Executor turn 自动延伸为实机重跑。OTA 授权已经消耗；本次 D0 授权来自 Human 在第 3.12 节交接后的独立明确许可。
+
+### 3.13 Executor 离线收口结果（2026-07-18）
+
+```text
+stage_status = blocked_waiting_for_planner_acceptance
+current_state = d0_wrapper_evidence_ready_waiting_for_planner_acceptance
+human_authorization = one exact p7_strip_state_readback_preflight rerun after Planner acceptance; raw PWM maximum 48
+device_network_env_calls = 0
+dry_run = tmp/strip-state-readback-preflight-offline/p7-d0-wrapper-evidence-20260718-234814-dry
+next_action = Planner accepts or rejects the offline wrapper evidence; no automatic execute or P7-R1
+```
+
+实现收口：
+
+- wrapper 不再让 `set -e` 在保存 child status 前终止；显式等待并原子写入 `child-exit-status.txt`；
+- shell cleanup stdout/stderr 分离，真实退出码原子写入 `all-off-shell.exit-status.txt`，不再用 `|| true` 抹除；
+- `wrapper-result.json` 原子记录 child PID/exit、cleanup exit、wrapper exit、signal、UTC 时间和绝对 artifact 路径；
+- 最终优先级为 signal `128+n`，否则 child 非零，否则 cleanup 非零映射 `70`，否则 `0`；cleanup 保持 exactly once；
+- 未修改五步命令、raw PWM、generation、identity、timeout、Python cleanup、设备 API 或 P7 solver/coverage。
+
+确定性回归覆盖 success、child exit `7`、cleanup exit `9 -> wrapper 70`、INT `130`、TERM `143`、HUP `129`；逐路径校验三层退出码、signal、cleanup once、stdout/stderr、原子临时文件清零和无 secret/token。第二遍调试还捕获并修复了 zsh 特有的 tied `$path`/`$PATH` 与 read-only `$status` 局部变量冲突。
+
+验证结果：
+
+```text
+focused D0/device/all-off = 17/17 pass
+full suite = 432/432 pass / 168.035s
+compileall src tests = pass
+zsh -n = run-ray-hsi-manifold, run-hsi-uncertainty, run-strip-hsi-pilot,
+         run-hsi-reference-repeatability, run-strip-state-readback-preflight pass
+git diff --check = pass
+codegraph sync = pass / already up to date
+dry-run = dry_run_complete / 5 steps / raw PWM max 48 / curve_path null /
+          device_calls_performed false / no secret-token fields
+```
+
+未运行 wrapper 或 module `--execute`，未调用 ESPHome、Ray、相机、`.env` 或 `control.all_off`。本轮在此停止并交还 Planner；即使 Human 授权已记录，也不得在同一轮继续实机。
 
 ---
 
@@ -616,17 +766,17 @@ next_action =
 
 ```text
 current_phase = P7_D0
-stage_status = fail_waiting_for_planner
-current_head = eb226bd implementation checkpoint; documentation-only D0 result handoff is its successor
-worktree_state = clean after committing this D0 result handoff; preserve all prior work
-authorization = exact p7_strip_state_readback_preflight consumed; no firmware compile/upload/camera/P7-R1/high-output authorization
-run_dir = /Volumes/4T/temp/rgbww-optimizer/strip-state-readback-preflight/p7-strip-state-readback-preflight-20260718-223408
+stage_status = pass_waiting_for_planner
+current_head = ac36e77eff13c09da88ff54fd8b34cbb9673120a plus this focused Executor delta pending commit
+worktree_state = preserves the Planner PLAN update and contains only the section 3.12 offline closure delta
+authorization = Human authorized one exact D0 low-output rerun at raw PWM max 48 after Planner accepts section 3.13; no camera/P7-R1/high-output authorization
+run_dir = dry-run tmp/strip-state-readback-preflight-offline/p7-d0-wrapper-evidence-20260718-234814-dry; historical failed real run remains unchanged
 input_hashes = section 1.3
-capture_counts = passed transitions 0; failed startup_zero/final_zero 2; low raw PWM command not attempted; CR3 0; NPY 0
-analysis = current device lacks unique rgbww_commanded_state; primary D0-FIRMWARE-MISSING and safety D0-CLEANUP-UNKNOWN
-failure_evidence = failure.json @ 94030b34ec7258386f750f96cc317cc3b71e4043ebc2360b56ab3c8903d053b8; outer launch did not preserve real wrapper exit code
-cleanup_evidence = preflight/Python/shell/recovery all-off each report ESPHome zero acknowledgement plus Ray intensity 0; final independent zero unavailable; safety remains unknown
-tests = focused 17/17; full 432/432 in 143.567s; compileall, wrapper syntax, diff-check and CodeGraph pass
-branch = D0_FIRMWARE_MISSING_AND_CLEANUP_UNKNOWN
-next_action = Planner reviews section 3.8 and decides whether to request separate firmware compile/upload authorization; no automatic retry or P7-R1
+capture_counts = offline dry-run five planned transitions; device calls 0; CR3 0; NPY 0
+analysis = wrapper reconstructs child/cleanup/signal/final exit across success, child failure, cleanup failure, INT, TERM and HUP; five-step device contract unchanged
+failure_evidence = historical launch gap retained; new fake regression proves old broad test missed exact exit evidence and validates the repaired contract
+cleanup_evidence = fake-only cleanup exactly once; stdout/stderr and exit code independently retained; no real all-off invoked
+tests = focused 17/17; full 432/432 in 168.035s; compileall, five wrapper syntax checks, diff-check, CodeGraph and audited dry-run pass
+branch = D0_WRAPPER_EVIDENCE_READY_PENDING_PLANNER_ACCEPTANCE
+next_action = Planner accepts or rejects section 3.13; this Executor turn stops without device access or P7-R1
 ```
