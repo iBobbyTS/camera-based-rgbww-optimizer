@@ -93,6 +93,33 @@ class MeasureHsiReferenceRepeatabilityTests(unittest.TestCase):
         self.assertEqual(run["physical_cr3_count"], 82)
         self.assertTrue(all(item["ok"] for item in cleanup["steps"]))
 
+    def test_remote_runtime_uses_current_iso_and_aperture_choices(self):
+        plan = subject.build_targeted_reference_repeatability_plan(
+            named_experiment_authorization=subject.EXPERIMENT_NAME,
+        )
+        backend = object()
+        with tempfile.TemporaryDirectory() as tempdir, mock.patch.object(
+            subject.raw_validation,
+            "build_native_raw_capture_step_fn",
+            return_value=lambda _step: {},
+        ) as build_capture, mock.patch.object(
+            subject,
+            "execute_targeted_reference_repeatability_plan",
+            return_value=Path(tempdir) / "run",
+        ):
+            result = subject.run_targeted_reference_repeatability(
+                plan,
+                output_root=tempdir,
+                run_name="run",
+                curve_path=subject.DEFAULT_CURVE,
+                camera_backend=backend,
+            )
+        self.assertEqual(result, Path(tempdir) / "run")
+        self.assertIsNone(build_capture.call_args.kwargs["iso"])
+        self.assertIsNone(build_capture.call_args.kwargs["aperture"])
+        self.assertIs(build_capture.call_args.kwargs["camera_backend"], backend)
+        self.assertEqual(build_capture.call_args.kwargs["recorded_exposure_purpose"], "P7-R1")
+
     def test_fake_backend_failure_preserves_evidence_and_python_cleanup(self):
         plan = subject.build_targeted_reference_repeatability_plan(
             named_experiment_authorization=subject.EXPERIMENT_NAME,

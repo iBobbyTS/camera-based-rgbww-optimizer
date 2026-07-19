@@ -32,3 +32,12 @@ Planner must decide whether the zero-command/zero-capture launch-ownership failu
 - The first AppleScript `do script` attempt embedded the entire preflight and wrapper command. Terminal received only a truncated prefix ending at `camera...`, remained at a shell continuation prompt, and created no preflight/run artifact. No device command executed.
 - Root cause appears to be the oversized inline Terminal command boundary, not Terminal process ownership.
 - The minimal correction is `tmp/launch-hsi-reference-repeatability-terminal.zsh`: Terminal receives only one short absolute script path; the script records Terminal-shell/launcher PID, PGID and TTY, runs the frozen read-only/off preflight, and then `exec`s the already-tested formal wrapper. Preflight failure has its own independent all-off trap; after successful handoff, the formal wrapper remains the sole experiment cleanup owner.
+
+## Terminal-owned run reached the formal runner
+
+- The short launcher succeeded: Terminal shell PID `48758` on `ttys003` owned wrapper PID `48898` in a distinct PGID, and child PID `49142` was not tied to a Codex command process group.
+- Preflight passed with a clean checkout, both all-off responses successful, remote health/config readable, and Ray HSI/CCT intensity zero.
+- The formal run failed before its first ambient CR3 because `run_targeted_reference_repeatability()` inherited local-camera defaults `iso="100"` and `aperture="4"`, while the current remote config exposes aperture choices only `Unknown value 0c00` and `implicit auto`.
+- Evidence is zero high output and zero physical capture: run counters are `0/0/0`, the two command rows are both-off, no CR3 exists, and Python plus shell cleanup both succeeded. Wrapper exit correctly retained child `1`, cleanup `0`, wrapper `1`.
+- The shared remote capture path already defines the correct convention: callers pass `iso=None, aperture=None` so `RemoteCameraBackend.resolve_capture_settings()` resolves the current remote values. P7-R1 alone omitted those two arguments.
+- Minimal fix: pass `iso=None, aperture=None` from the P7-R1 runtime and add a regression asserting the remote runtime delegates those values to the shared capture builder. No exposure, capture-budget, source, or measurement contract changes.

@@ -505,6 +505,8 @@ def run_targeted_reference_repeatability(
         max_shutter_speed=str(plan["measurement"]["auto_exposure"]["maximum_shutter"]),
         max_trials=int(plan["measurement"]["auto_exposure"]["maximum_trials_per_cache_miss"]),
         max_captures=int(plan["measurement"]["auto_exposure"]["maximum_trials_per_cache_miss"]),
+        iso=None,
+        aperture=None,
         camera_backend=camera_backend,
         recorded_exposure_purpose="P7-R1",
     )

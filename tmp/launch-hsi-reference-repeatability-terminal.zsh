@@ -25,7 +25,7 @@ ps -o pid=,ppid=,pgid=,tty=,stat=,etime=,command= -p "$$" "$PPID" \
 git rev-parse HEAD >"$PREFLIGHT_DIR/git-head.txt"
 git status --porcelain=v1 >"$PREFLIGHT_DIR/git-status.txt"
 git diff --name-only e8c6af203c0292cebe8d6a9d004824cba7d7f0b7..HEAD -- \
-  src tests config tmp/run-hsi-reference-repeatability.zsh \
+  src config tmp/run-hsi-reference-repeatability.zsh \
   >"$PREFLIGHT_DIR/execution-tree-drift.txt"
 df -h "$RUN_DIR:h" >"$PREFLIGHT_DIR/disk.txt"
 
