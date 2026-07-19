@@ -1994,7 +1994,7 @@ P7-R0J 只负责把正式 producer 与 formal analyzer 的 exhaustion 合同收�
 ```text
 current_phase = P7_R0J
 stage_status = offline_complete_waiting_for_planner_acceptance
-current_head = 719d28a (待本轮 focused commit)
+current_head = b0af5bf7b0a8db32f0f8de7beac28e7ab487eec6
 worktree_state = dirty(Planner R0J decision plus producer/runner/analyzer/tests/readiness/docs/debug)
 authorization = offline_only; all device and named-experiment gates locked
 run_dir = tmp/strip-hsi-pilot-offline/p7-r0j-v8-20260718-final
