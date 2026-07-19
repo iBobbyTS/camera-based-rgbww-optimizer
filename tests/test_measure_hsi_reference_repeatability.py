@@ -207,6 +207,22 @@ class MeasureHsiReferenceRepeatabilityTests(unittest.TestCase):
                 else:
                     self.assertEqual(cleanup_stderr, "")
 
+    def test_terminal_launcher_records_ownership_and_execs_only_the_formal_wrapper(self):
+        launcher = (
+            Path(__file__).parents[1]
+            / "tmp"
+            / "launch-hsi-reference-repeatability-terminal.zsh"
+        ).read_text(encoding="utf-8")
+        self.assertIn('print -r -- "$$" >"$PREFLIGHT_DIR/launcher.pid"', launcher)
+        self.assertIn('print -r -- "$PPID" >"$PREFLIGHT_DIR/terminal-shell.pid"', launcher)
+        self.assertIn("pid=,ppid=,pgid=,tty=", launcher)
+        self.assertIn("trap cleanup_preflight_failure EXIT INT TERM HUP", launcher)
+        self.assertIn("camera_based_rgbww_optimizer.control.all_off --json", launcher)
+        self.assertIn('exec /bin/zsh "$WRAPPER" "$RUN_DIR"', launcher)
+        self.assertNotIn("measure_hsi_reference_repeatability", launcher)
+        self.assertNotIn("--allow-high-output", launcher)
+        self.assertNotIn("set-hsi", launcher)
+
     def test_analyzer_finalizer_writes_only_formal_ineligible_candidate(self):
         plan = subject.build_targeted_reference_repeatability_plan(
             named_experiment_authorization=subject.EXPERIMENT_NAME,

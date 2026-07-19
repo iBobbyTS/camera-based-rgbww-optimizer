@@ -25,3 +25,10 @@
 ## Decision needed
 
 Planner must decide whether the zero-command/zero-capture launch-ownership failure consumed the one complete R1 acquisition authorization. If a new run is authorized, use an OS-owned launch mechanism such as a dedicated Terminal or `launchctl` service and prove a different session/process-group owner before the five-minute health check. Do not reuse the failed run directory.
+
+## Resumed Terminal launch pass
+
+- The resumed goal explicitly permits launching through macOS Terminal so Codex shell lifecycle management does not own the experiment process.
+- The first AppleScript `do script` attempt embedded the entire preflight and wrapper command. Terminal received only a truncated prefix ending at `camera...`, remained at a shell continuation prompt, and created no preflight/run artifact. No device command executed.
+- Root cause appears to be the oversized inline Terminal command boundary, not Terminal process ownership.
+- The minimal correction is `tmp/launch-hsi-reference-repeatability-terminal.zsh`: Terminal receives only one short absolute script path; the script records Terminal-shell/launcher PID, PGID and TTY, runs the frozen read-only/off preflight, and then `exec`s the already-tested formal wrapper. Preflight failure has its own independent all-off trap; after successful handoff, the formal wrapper remains the sole experiment cleanup owner.
