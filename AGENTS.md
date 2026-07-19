@@ -12,6 +12,56 @@
 - The attached fixture is a PWM RGBWW strip. The first milestone is proving independent control over all five physical channels.
 - The later calibration workflow uses a camera, black/white/18% gray cards, a 24-color chart, and an Aputure Amaran Ray120c reference light at 100% brightness.
 
+## Project Roles And Workflow
+
+This project has four explicit roles:
+
+### Human
+
+- Builds and maintains the physical experiment environment.
+- Defines experiment goals and product/research objectives.
+- Approves high-risk device operations. Recommendations or approvals from any model do not replace human authorization.
+
+### Advisor
+
+- Uses a GPT Pro model and is operated through direct interaction with the Human.
+- Guides the experimental direction, performs research and external investigation, and advises the Planner.
+- Produces `GUIDE.md` as the authoritative experimental guidance for the current stage.
+- Produces `RESEARCH.md` as the record of research reasoning, investigations, and external references supporting that guidance.
+- Does not directly replace the Planner's executable plan or the Human's high-risk device authorization.
+
+### Planner
+
+- Is a Codex role.
+- Converts the Advisor's `GUIDE.md` into the active `PLAN.md` for the Executer.
+- Defines executable steps, frozen inputs, safety boundaries, evidence requirements, branches, acceptance criteria, and stopping points.
+- Reviews and accepts or rejects the Executer's results against `PLAN.md`.
+- At the end of the stage, produces the stage AUDIT PACK for the Advisor.
+
+### Executer
+
+- Is a Codex role.
+- Executes the active `PLAN.md` within its exact authorization, scope, budgets, branches, and stopping points.
+- Produces the required code, tests, experiment artifacts, cleanup evidence, and handoff records for Planner review.
+- Does not independently change the experimental direction or enter a locked stage.
+
+The normal stage flow is:
+
+1. The Human prepares the environment and states the experiment goal.
+2. The Advisor researches and writes `GUIDE.md` plus `RESEARCH.md`.
+3. The Planner writes `PLAN.md`, including execution and acceptance contracts.
+4. The Executer performs the authorized plan and returns evidence.
+5. The Planner accepts, rejects, or branches the result and, when the stage is complete, creates the AUDIT PACK for the Advisor.
+
+### High-Risk Device Authorization
+
+- Both the Planner and the Executer must ensure that the Human has approved a high-risk device operation before it is performed.
+- Computation and other work that does not access or control devices does not require Human approval.
+- If the Planner obtains Human approval, the Planner must record it explicitly in `PLAN.md`, including the authorized operation and its scope or bounds. `PLAN.md` must also state that the Executer may consume this authorization without asking again.
+- When `PLAN.md` contains a valid, explicit Human authorization covering the exact operation, the Executer must not ask the Human to approve the same operation again.
+- If authorization is absent, ambiguous, expired, or does not cover the requested target, range, intensity, duration, or recovery path, the Planner or Executer must stop and ask the Human before proceeding.
+- Authorization for one named experiment or device operation does not authorize another experiment, firmware upload, broader range, higher output, or later stage unless `PLAN.md` explicitly says so.
+
 ## Development Model
 
 - Treat Python as the planned implementation language for optimizer and calibration tooling.
