@@ -793,6 +793,43 @@ Planner 需决定：零 command、零 capture 的 launch-ownership failure 是�
 6. 验证 `analysis.json` 与 `strip-hsi-policy-v2-candidate.json` 均存在并记录 SHA-256；candidate 必须保持 `calibrated_waiting_for_planner`、`formal_capture_eligible=false`；
 7. 更新本计划、docs、项目 skill 和 resolved/unresolved debug evidence，运行 focused/full/compileall/wrapper syntax/diff-check/CodeGraph，形成聚焦提交。
 
+#### 4.4.5a Executor R1 acquisition/analyzer 结果（2026-07-19）
+
+```text
+run_dir = /Volumes/4T/temp/rgbww-optimizer/hsi-reference-repeatability/p7-r1-20260719-091000-terminal-retry1
+execution_checkpoint = 1d51098181881dea0f93845a07c3c02bc0592ead
+run = complete / 82 logical / 80 formal / 105 physical
+sources = 30 Ray / 50 strip / 2 ambient
+auto_exposure = 8 caches / 31 physical
+weak_reacquire = 0
+analysis_status = calibrated_waiting_for_planner
+analysis_branch = uncertainty_unresolved
+ray_failure_branch = R-REFERENCE-UNSTABLE
+reference_epoch_shift = false
+candidate_formal_capture_eligible = false
+```
+
+Acquisition/evidence audit 全部通过：82 retained CR3 非空；selected attempt ownership 唯一；source isolation、exact readback、commands/capture-attempt ledger、recorded exposure、live input hash 和 physical cap 重建通过；无 `failure.json`、无 `.npy`。Python cleanup、shell cleanup、child/shell/wrapper exit 均为零。
+
+Artifact SHA-256：
+
+```text
+plan.json = 55c25a4b51d4a247e1888f3d6a075dea313f3dadc3e5e8435e53c419131a1c2e
+run.json = e14720376504dda8f1536aeb107a8d667253ab7094378edb7bd2ebbc65c924d7
+captures.jsonl = ce8e74ab87e1570107f1c7708bcdaa9be360c254a6ff4047124370a9bdd979e4
+capture-attempts.jsonl = 8da9b65385d464b0430e1ba028e43117c8797da8556f7ef7f789a7cb891e6977
+commands.jsonl = 2d0667d235bffff9119eea54e76d76ed1914f246fec64903f2dd1a9b675b4ca3
+analysis.json = ac5630e26180dc9f288eacb1ff0f8352e9acc6f9f0ea4a2e857ff3552eaf243f
+strip-hsi-policy-v2-candidate.json = 755bbe775cf7cfe4ef6d01751aca2ea2e7b3a2d61fbc05f19bca087f47609a01
+all-off-python.json = 9207281fbabd6ab49306e755d03dc1367a7713f8ab5b3211735f7e09febd5cfb
+all-off-shell.json = a42b3103a7391e3c855015e0b8a8429a1d413d319ed94032612c57c21ae05ff2
+wrapper-result.json = 79d9d15bf5a88ba3e2a1f5e9cc0f6f40283eee33a7b70ceae38a62af946ef198
+```
+
+Measured repeatability 不通过：Ray H0/S0、H120/S100、H300/S100 的 A/B compatibility scores 分别为 `51.97 > 9.51`、`29.25 > 9.48`、`17.81 > 9.63`；三个 state 均有冻结 trend gate failure，其中后两者还有 single-frame variance dominance。五组 strip command 均为 `uncertainty_unresolved`；四组 block-center fail，3072 relaxed neutral 虽 block-center pass，仍有 block-B trend `7.71 > 4.0`。Synthetic joint coverage 的全部 region 通过，但不能覆盖真实 repeatability/reference failure。
+
+Executor 冻结当前 candidate 和 evidence，不调整阈值/covariance/guard/58-feature，不重跑 R1，不进入 sentinel-v2。下一步仅为 Planner 验收并决定是否需要 Advisor 研究 reference/thermal/camera chronology；当前 architecture 未由 Executor 改动。
+
 #### 4.4.6 连续推进的停止分支
 
 - D0 非 PASS、identity/readback/source mismatch、cleanup unknown：立即停止，禁止 R1。
@@ -1018,17 +1055,17 @@ next_action =
 ```text
 current_phase = P7_R1
 stage_status = fail_waiting_for_planner
-current_head = e8c6af203c0292cebe8d6a9d004824cba7d7f0b7 during D0 and failed R1 launch; evidence-only commit follows
-worktree_state = execution code unchanged; PLAN/debug evidence pending focused commit
+current_head = 1d51098181881dea0f93845a07c3c02bc0592ead during completed R1; final evidence commit pending
+worktree_state = acquisition/analyzer complete; final evidence changes validated and pending focused commit
 authorization = one exact D0 at raw PWM max 48, then only on D0-PASS one exact P7-R1 with Ray 100%, strip max code 4095, remote camera and physical CR3 cap 250; no second R1 or sentinel-v2
-run_dir = D0 PASS /Volumes/4T/temp/rgbww-optimizer/strip-state-readback-preflight/p7-strip-state-readback-preflight-20260719-013500; failed R1 /Volumes/4T/temp/rgbww-optimizer/hsi-reference-repeatability/p7-r1-20260719-062500
-runner_pid_tty = wrapper 48221 / child 48228 / process group 48066; both disappeared with terminal cleanup before first command/capture
+run_dir = /Volumes/4T/temp/rgbww-optimizer/hsi-reference-repeatability/p7-r1-20260719-091000-terminal-retry1
+runner_pid_tty = completed wrapper 66482 / child 66934 / Terminal ttys004; OS-owned launch verified
 input_hashes = sections 1.3 and 4.4.3
-capture_counts = D0 five transitions passed; failed R1 0 logical / 0 formal / 0 physical, no command/capture/CR3
-analysis = D0-PASS; R1 exact formal plan matched scope except created_at, but background detachment failed before five-minute health check
-failure_evidence = failed R1 retained with running run.json, absent PIDs and executor-process-loss.json; must not splice or reuse
-cleanup_evidence = failed wrapper produced neither Python nor shell cleanup; independent recovery all-off plus verified generation 13->14 strip zero and Ray intensity-zero readback passed
-tests = Executor focused 36/36, full 432/432, compileall, five wrapper syntax checks, diff check and CodeGraph sync pass
-branch = R1_PROCESS_LOSS_BEFORE_FIRST_COMMAND_OR_CAPTURE
-next_action = Planner decides whether the zero-command/zero-capture failed launch preserves authorization; any new run must use an OS-owned detached launcher and a fresh directory
+capture_counts = 82 logical / 80 formal / 105 physical; 30 Ray / 50 strip / 2 ambient; zero weak reacquire
+analysis = calibrated_waiting_for_planner / formal_capture_eligible=false / uncertainty_unresolved / R-REFERENCE-UNSTABLE; synthetic coverage pass
+failure_evidence = Ray three-state compatibility/trend failures and five strip-command unresolved trends retained in analysis.json; no acquisition failure
+cleanup_evidence = Python and shell both pass; child/shell/wrapper exit 0; final both-off evidence retained
+tests = final focused 65/65 in 26.681s; full 434/434 in 144.148s; compileall, six wrapper/launcher syntax checks, diff check and CodeGraph sync pass
+branch = R-REFERENCE-UNSTABLE + uncertainty_unresolved
+next_action = Planner reviews frozen R1 candidate/evidence and decides whether chronology requires Advisor; sentinel-v2 and all later stages remain locked
 ```

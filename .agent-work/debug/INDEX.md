@@ -2,7 +2,7 @@
 
 | file | summary |
 | --- | --- |
-| active/20260719-p7-r1-background-detachment.md | R1 wrote its exact plan but the Codex terminal removed the still-associated wrapper/child process group before any command or capture; recovery zero is proven and rerun needs Planner decision. |
+| active/20260719-p7-r1-reference-instability.md | Completed R1 passes acquisition/coverage evidence but fails all Ray A/B compatibility and measured Ray/strip trend gates; candidate remains formal-ineligible for Planner review. |
 | active/20260714-p1-exposure-response.md | CR3 recorded exposure fixes the large P1 shutter error; residual high-signal RAW shape still blocks thresholds and P2 pending a lower-exposure full P1. |
 | active/20260712-white-lut-repeatability-and-strict-anchors.md | Measure repeatability, validate strict anchors, and explain the cross-day regression of near-boundary 14x5 nodes. |
 
@@ -16,6 +16,7 @@
 
 | file | summary |
 | --- | --- |
+| resolved/20260719-p7-r1-background-detachment.md | macOS Terminal ownership plus shared remote ISO/aperture resolution closed the zero-capture launcher and camera-setting failures. |
 | resolved/20260719-p7-r1-wrapper-exit-evidence.md | P7-R1 long-task wrapper now atomically preserves PID/log state and exact child, cleanup, signal, and final exit evidence across six fake-only paths. |
 | resolved/20260718-p7-d0-wrapper-exit-evidence.md | D0 wrapper now preserves atomic child, cleanup, signal, and final exit evidence across six fake-only paths. |
 | resolved/20260718-p7-d0-device-state-preflight.md | Initial D0 validly failed before low output; firmware OTA and independent zero readback later resolved its firmware prerequisite. |

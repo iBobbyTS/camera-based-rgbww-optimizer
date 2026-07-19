@@ -731,6 +731,16 @@ The PLAN section 4.4 continuous package authorizes one exact R1 only after the
 same-session D0 gate passes; this does not authorize a second R1. New sentinel,
 remaining nine, boundary, holdout, and P8 remain locked.
 
+The completed 2026-07-19 R1 run retained 82 logical captures (30 Ray, 50 strip,
+two ambient) and consumed 105 physical CR3 with zero weak reacquire. Source,
+readback, ownership, recorded-exposure, physical-budget, no-NPY, and Python plus
+shell cleanup audits pass. The calibrated candidate remains formal-ineligible:
+all three Ray states fail A/B center compatibility and measured trend gates,
+and all five strip commands have unresolved within-command trend (four also
+fail block-center stability). Synthetic joint coverage passes, but it cannot
+override the measured `R-REFERENCE-UNSTABLE` / `uncertainty_unresolved` branch.
+Do not rerun R1, relax thresholds, or enter sentinel-v2 before Planner review.
+
 ## Location Picker
 
 Use the local Web UI to capture a preview and mark color-chart patches:
