@@ -737,6 +737,41 @@ Preflight 可在确定性代码修复后最多重新执行一次，但每次都�
 
 五分钟健康检查后不得停止或杀死任务，也不得短间隔轮询。按已完成 capture 和实际耗时估计完成时间，为当前 task 使用一次性恢复机制；恢复时先检查同一 PID/run/log。若仍运行，重新估时并安排下一次单次恢复。Executor 的 goal 保持覆盖到 acquisition 完成、analysis/finalizer 和交接，不得只把后台 PID 留给用户后就宣称本阶段完成。
 
+#### 4.4.4a Executor D0-PASS 与 R1 启动失败（2026-07-19）
+
+D0 在 Phase A 聚焦提交 `e8c6af203c0292cebe8d6a9d004824cba7d7f0b7` 的干净 checkout 上完成：
+
+```text
+d0_verdict = pass
+d0_run_dir = /Volumes/4T/temp/rgbww-optimizer/strip-state-readback-preflight/p7-strip-state-readback-preflight-20260719-013500
+d0_run_sha256 = 7c2207a85ab162c493cb5a6191b0b4613c1e3e9f9941a0a0b0f6a25392990754
+d0_plan_sha256 = a096fa837ab5d6086a3739804fd7049d4190aec0d85fe74532f05bc508861067
+d0_transitions_sha256 = 9236e2cd5d84288305b6e953f440b244a0fa0c16ccebb0e9f88d7f05a988c803
+generations = 3,4,5,6,8; globally strictly increasing
+identity = bedroom-rgbww-strip / E0:8C:FE:63:C9:40
+low_payload = (cw,ww,r,g,b)=(8,16,24,32,48) repeated exactly
+cleanup = preflight/Python/shell each ESPHome zero plus Ray intensity 0
+exit = child 0 / shell cleanup 0 / wrapper 0
+forbidden_artifacts = no failure, CR3, NPY, secret or token marker
+```
+
+R1 preflight 目录为 `/Volumes/4T/temp/rgbww-optimizer/hsi-reference-repeatability/p7-r1-20260719-062500-preflight`。前后 all-off、remote health/config、Ray node-config、HSI intensity-zero readback、CCT intensity-zero off readback、D0 identity、1.2 TiB free disk、clean checkout 和冻结 hash 均通过；stderr 全空。
+
+正式 wrapper 随后在 `/Volumes/4T/temp/rgbww-optimizer/hsi-reference-repeatability/p7-r1-20260719-062500` 写入 exact named `plan.json`。它除 `created_at` 外与 Planner scope snapshot 完全相同，10 个 input SHA-256、82 logical / 80 formal / 30 Ray / 50 strip / 2 ambient、五组 strip command、三组 Ray state 和全部 physical/settling hard cap 均精确匹配。`plan.json` SHA-256 为 `7c040b333f23bd4f9e6c6c147749c2f2627c5bfee3970621eb9e5cda13fbb27e`。
+
+但 wrapper PID `48221` 和 child PID `48228` 仍属于启动 Codex terminal 的 process group `48066`；terminal command 结束后两者被外部移除。`run.json` 保持 `running`，logical/formal/physical 为 `0/0/0`，且没有 commands、captures、CR3、failure、Python cleanup、shell cleanup 或 wrapper result。`nohup` 没有满足“脱离当前终端”的合同，五分钟健康检查因此在起点失败。
+
+Executor 按 fail-closed 分支没有启动第二个 R1，也没有拼接该目录。独立 recovery all-off 成功；generation-bearing strip zero 从 `13 → 14`，identity 不变、五通道全零，Ray 独立 CCT readback intensity 0。关键 recovery hash：
+
+```text
+executor-process-loss.json = ca22b15539b294ca78a267dd1655ca8a1df39fbbb69f652ada28e08478f5c838
+recovery-all-off.json = cb6f3737dc7b0bf22e79ca21cf4e2fca514417c20d2de2314fa880a63560801e
+recovery-strip-zero.json = 9d0dd8ac13fa9a915fa0fc26fa87254b0f30f8700aaa93c8f13aadcf9da61a32
+recovery-ray-off.json = be7c617bddd9fff29ae2ad995e3b1885fab1eb25901258fce46bcc4f395999cb
+```
+
+Planner 需决定：零 command、零 capture 的 launch-ownership failure 是否消费“一次 complete acquisition attempt”。若重新授权，必须使用 OS-owned dedicated Terminal 或 `launchctl` service，在新目录启动，并在健康检查前证明 wrapper 的 session/process-group owner 不再是当前 Codex terminal。不得复用或续写本次 running run。
+
 #### 4.4.5 Phase E：完成审计、analysis 与 finalizer
 
 只有 wrapper 和 child 都退出后执行：
@@ -981,19 +1016,19 @@ next_action =
 ### 当前值
 
 ```text
-current_phase = P7_D0
-stage_status = implementation_complete_waiting_for_clean_checkpoint
-current_head = Phase A focused commit pending; record exact checkpoint before D0
-worktree_state = Phase A wrapper/tests/PLAN/docs/skill/debug ready to commit; no device call occurred
+current_phase = P7_R1
+stage_status = fail_waiting_for_planner
+current_head = e8c6af203c0292cebe8d6a9d004824cba7d7f0b7 during D0 and failed R1 launch; evidence-only commit follows
+worktree_state = execution code unchanged; PLAN/debug evidence pending focused commit
 authorization = one exact D0 at raw PWM max 48, then only on D0-PASS one exact P7-R1 with Ray 100%, strip max code 4095, remote camera and physical CR3 cap 250; no second R1 or sentinel-v2
-run_dir = next fresh D0 and R1 directories; scope snapshot tmp/hsi-reference-repeatability-offline/planner-authorized-scope-20260718
-runner_pid_tty = none; Executor must record for real R1
+run_dir = D0 PASS /Volumes/4T/temp/rgbww-optimizer/strip-state-readback-preflight/p7-strip-state-readback-preflight-20260719-013500; failed R1 /Volumes/4T/temp/rgbww-optimizer/hsi-reference-repeatability/p7-r1-20260719-062500
+runner_pid_tty = wrapper 48221 / child 48228 / process group 48066; both disappeared with terminal cleanup before first command/capture
 input_hashes = sections 1.3 and 4.4.3
-capture_counts = D0 five transitions; conditional R1 82 logical/80 formal/82..250 physical; not yet executed
-analysis = D0 wrapper offline closure accepted; R1 wrapper exit-evidence hardening and exact authorized dry-run passed offline
-failure_evidence = historical D0 failure retained; no new failure
-cleanup_evidence = no device call during Planner review; future D0/R1 require Python plus shell cleanup and independent exit evidence
+capture_counts = D0 five transitions passed; failed R1 0 logical / 0 formal / 0 physical, no command/capture/CR3
+analysis = D0-PASS; R1 exact formal plan matched scope except created_at, but background detachment failed before five-minute health check
+failure_evidence = failed R1 retained with running run.json, absent PIDs and executor-process-loss.json; must not splice or reuse
+cleanup_evidence = failed wrapper produced neither Python nor shell cleanup; independent recovery all-off plus verified generation 13->14 strip zero and Ray intensity-zero readback passed
 tests = Executor focused 36/36, full 432/432, compileall, five wrapper syntax checks, diff check and CodeGraph sync pass
-branch = CONTINUOUS_D0_THEN_P7_R1_AUTHORIZED
-next_action = create focused Phase A commit and exact clean checkpoint, then run one D0; on D0-PASS continue directly to R1
+branch = R1_PROCESS_LOSS_BEFORE_FIRST_COMMAND_OR_CAPTURE
+next_action = Planner decides whether the zero-command/zero-capture failed launch preserves authorization; any new run must use an OS-owned detached launcher and a fresh directory
 ```
