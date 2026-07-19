@@ -461,6 +461,9 @@ def _validate_v2_target_evidence(
             frozen_budget = declared["solver_budget"]
             if not isinstance(budget, Mapping) or budget.get("limits") != frozen_budget:
                 raise ValueError(f"v2 P7 target {key} start budget limits differ from frozen solver budget")
+            budget_exhaustion = _paired_exhaustion_ledger(
+                result.get("budget_exhaustion"), budget.get("exhaustion"), target_key=key,
+            )
             logical = len(samples) + len(rejections)
             consumed = budget.get("consumed")
             reconstructed_consumed = {
@@ -484,6 +487,12 @@ def _validate_v2_target_evidence(
                 reconstructed_consumed[category] += 1
             if consumed != reconstructed_consumed or sum(reconstructed_consumed.values()) != logical:
                 raise ValueError(f"v2 P7 target {key} start logical ledger mismatch")
+            category_limits = _frozen_category_limits(frozen_budget)
+            if any(
+                count < 0 or count > category_limits[category]
+                for category, count in reconstructed_consumed.items()
+            ):
+                raise ValueError(f"v2 P7 target {key} start category ledger exceeds frozen limit")
             if int(budget.get("logical_observations_used", -1)) != logical:
                 raise ValueError(f"v2 P7 target {key} start logical count differs from raw evidence")
             if logical > int(declared["solver_budget"]["max_logical_observations_per_start"]):
@@ -582,10 +591,16 @@ def _validate_v2_target_evidence(
                         raise ValueError(f"v2 P7 target {key} rejection phase/capture mismatch")
                     _claim_capture(capture_owners, capture_id, f"target-{target_position}:start-{start_index}:rejection")
                     start_capture_ids[(target_position, start_index)].add(capture_id)
-            budget_exhaustion = result.get("budget_exhaustion")
-            if result.get("status") == "solver_budget_exhausted" and not isinstance(budget_exhaustion, Mapping):
-                raise ValueError(f"v2 P7 target {key} solver exhaustion lacks pre-capture evidence")
             derived_goal_confirmed = confirmed_group_count > 0
+            has_exhaustion = isinstance(budget_exhaustion, Mapping)
+            if has_exhaustion and (
+                result.get("status") != "solver_budget_exhausted"
+                or bool(result.get("goal_confirmed"))
+                or confirmed_group_count > 0
+            ):
+                raise ValueError(f"v2 P7 target {key} exhaustion conflicts with confirmed result state")
+            if (result.get("status") == "solver_budget_exhausted") != has_exhaustion:
+                raise ValueError(f"v2 P7 target {key} solver exhaustion ledger/status mismatch")
             if bool(result.get("goal_confirmed")) != derived_goal_confirmed:
                 raise ValueError(f"v2 P7 target {key} goal_confirmed differs from confirmation groups")
             if (result.get("status") == "goal_confirmed") != derived_goal_confirmed:
@@ -882,6 +897,30 @@ def _validate_pre_capture_exhaustion(
         raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion phase/sub-budget mismatch")
 
 
+def _paired_exhaustion_ledger(
+    top_level: Any, nested: Any, *, target_key: tuple[int, int],
+) -> Mapping[str, Any] | None:
+    if top_level is None and nested is None:
+        return None
+    if not isinstance(top_level, Mapping) or not top_level:
+        raise ValueError(f"v2 P7 target {target_key} exhaustion top-level ledger is missing or invalid")
+    if not isinstance(nested, Mapping) or not nested:
+        raise ValueError(f"v2 P7 target {target_key} exhaustion nested ledger is missing or invalid")
+    if dict(top_level) != dict(nested):
+        raise ValueError(f"v2 P7 target {target_key} exhaustion ledgers differ")
+    return top_level
+
+
+def _frozen_category_limits(limits: Mapping[str, Any]) -> dict[str, int]:
+    return {
+        "initial": 1,
+        "initial_probes": int(limits["rebase_probe_count"]),
+        "feedback_attempts": int(limits["max_feedback_capture_attempts_per_start"]),
+        "rebase_probes": int(limits["max_rebases_per_start"]) * int(limits["rebase_probe_count"]),
+        "confirmation_captures": int(limits["max_confirmation_groups_per_start"]) * int(limits["confirmation_captures_per_group"]),
+    }
+
+
 def _phase_matches_sub_budget(phase: str, sub_budget: str, budget: Mapping[str, Any]) -> bool:
     prefixes = {
         "initial": "initial",
@@ -894,13 +933,8 @@ def _phase_matches_sub_budget(phase: str, sub_budget: str, budget: Mapping[str, 
     limits = budget.get("limits")
     if not isinstance(consumed, Mapping) or not isinstance(limits, Mapping):
         return False
-    category_limits = {
-        "initial": ("initial", 1),
-        "initial_probes": ("probe-", int(limits.get("rebase_probe_count", 0))),
-        "rebase_probes": ("rebase-", int(limits.get("max_rebases_per_start", 0)) * int(limits.get("rebase_probe_count", 0))),
-        "feedback_attempts": ("feedback-", int(limits.get("max_feedback_capture_attempts_per_start", 0))),
-        "confirmation_captures": ("confirm-", int(limits.get("max_confirmation_groups_per_start", 0)) * int(limits.get("confirmation_captures_per_group", 0))),
-    }
+    frozen_limits = _frozen_category_limits(limits)
+    category_limits = {category: (prefixes[category], maximum) for category, maximum in frozen_limits.items()}
     if sub_budget in prefixes:
         category_limit = category_limits[sub_budget]
         return (

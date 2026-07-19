@@ -288,6 +288,90 @@ class MeasureStripHsiPilotTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "budget limits differ from frozen solver budget"):
                 analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
 
+    def test_v2_public_analyzer_rejects_asymmetric_exhaustion_ledgers(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            policy = _frozen_policy_v2_file(root)
+            plan = subject.build_strip_hsi_pilot_plan(policy_version="v2", policy_v2_config_path=policy)
+            cases = ("nested-only", "top-only", "mismatch", "nested-empty", "confirmed-with-exhaustion", "status-without-ledgers")
+            for case in cases:
+                run_root = root / case
+                _execute_fake_v2_plan(plan, run_root)
+                _write_shell_cleanup(run_root)
+                rows_path = run_root / "target-results.jsonl"
+                rows = [json.loads(line) for line in rows_path.read_text(encoding="utf-8").splitlines()]
+                feedback = rows[0]["feedback"]
+                selected = feedback["selected_result"]
+                ledger = {"status": "solver_budget_exhausted", "case": case}
+                if case == "nested-only":
+                    selected["budget"]["exhaustion"] = ledger
+                elif case == "top-only":
+                    selected["budget_exhaustion"] = ledger
+                elif case == "mismatch":
+                    selected["budget_exhaustion"] = ledger
+                    selected["budget"]["exhaustion"] = {**ledger, "case": "different"}
+                elif case == "nested-empty":
+                    selected["budget"]["exhaustion"] = {}
+                elif case == "confirmed-with-exhaustion":
+                    selected["budget_exhaustion"] = ledger
+                    selected["budget"]["exhaustion"] = ledger
+                else:
+                    selected["status"] = "solver_budget_exhausted"
+                    selected["goal_confirmed"] = False
+                feedback["attempts"][feedback["selected_start_index"]]["result"] = selected
+                rows_path.write_text("\n".join(json.dumps(item) for item in rows) + "\n", encoding="utf-8")
+                with self.subTest(case=case), self.assertRaisesRegex(ValueError, "exhaustion"):
+                    analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
+
+    def test_v2_public_analyzer_accepts_five_frozen_category_exhaustions(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            policy = _frozen_policy_v2_file(root)
+            plan = subject.build_strip_hsi_pilot_plan(policy_version="v2", policy_v2_config_path=policy)
+            categories = {
+                "initial": ["initial"],
+                "initial_probes": [f"probe-{index}" for index in range(4)],
+                "feedback_attempts": [f"feedback-{index}" for index in range(8)],
+                "rebase_probes": [f"rebase-{index // 4}-probe-{index % 4}" for index in range(8)],
+                "confirmation_captures": [f"confirm-{index // 3}-{index % 3}" for index in range(6)],
+            }
+            for category, phases in categories.items():
+                run_root = root / category
+                _execute_fake_v2_plan(plan, run_root)
+                _write_shell_cleanup(run_root)
+                _append_fake_exhausted_start(run_root, plan, category=category, phases=phases)
+                analysis = analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
+                self.assertEqual(analysis["status"], "ready_for_sentinel_branch")
+
+    def test_v2_public_analyzer_rejects_category_under_over_and_phase_drift(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            policy = _frozen_policy_v2_file(root)
+            plan = subject.build_strip_hsi_pilot_plan(policy_version="v2", policy_v2_config_path=policy)
+            cases = {
+                "one-under": [f"feedback-{index}" for index in range(7)],
+                "one-over": [f"feedback-{index}" for index in range(9)],
+                "wrong-phase": [f"feedback-{index}" for index in range(8)],
+                "wrong-sub-budget": [f"feedback-{index}" for index in range(8)],
+            }
+            for case, phases in cases.items():
+                run_root = root / case
+                _execute_fake_v2_plan(plan, run_root)
+                _write_shell_cleanup(run_root)
+                _append_fake_exhausted_start(run_root, plan, category="feedback_attempts", phases=phases)
+                if case.startswith("wrong-"):
+                    rows_path = run_root / "target-results.jsonl"
+                    rows = [json.loads(line) for line in rows_path.read_text(encoding="utf-8").splitlines()]
+                    result = rows[0]["feedback"]["attempts"][1]["result"]
+                    if case == "wrong-phase":
+                        result["budget_exhaustion"]["phase"] = "probe-next"
+                    else:
+                        result["budget_exhaustion"]["sub_budget"] = "initial_probes"
+                    result["budget"]["exhaustion"] = copy.deepcopy(result["budget_exhaustion"])
+                    rows_path.write_text("\n".join(json.dumps(item) for item in rows) + "\n", encoding="utf-8")
+                with self.subTest(case=case), self.assertRaisesRegex(ValueError, "category|exhaustion"):
+                    analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
+
     def test_v2_analyzer_rejects_duplicate_capture_and_auto_audit_drift(self):
         with tempfile.TemporaryDirectory() as tempdir:
             root = Path(tempdir)
@@ -666,6 +750,111 @@ def _execute_fake_v2_plan(plan, root: Path):
 def _write_shell_cleanup(root: Path) -> None:
     cleanup = [{"name": "esphome", "ok": True}, {"name": "ray120c", "ok": True}]
     (root / "all-off-shell.json").write_text(json.dumps(cleanup), encoding="utf-8")
+
+
+def _append_fake_exhausted_start(root: Path, plan, *, category: str, phases: list[str]) -> None:
+    captures_path = root / "captures.jsonl"
+    commands_path = root / "commands.jsonl"
+    rows_path = root / "target-results.jsonl"
+    captures = [json.loads(line) for line in captures_path.read_text(encoding="utf-8").splitlines()]
+    commands = [json.loads(line) for line in commands_path.read_text(encoding="utf-8").splitlines()]
+    rows = [json.loads(line) for line in rows_path.read_text(encoding="utf-8").splitlines()]
+    row = rows[0]
+    feedback = row["feedback"]
+    selected = feedback["selected_result"]
+    command = dict(selected["selected_command"])
+    base_sample = selected["samples"][-1]
+    base_id = base_sample["observation"]["capture_id"]
+    base_capture = next(item for item in captures if item["capture_id"] == base_id)
+    base_commands = [item for item in commands if item["capture_id"] == base_id]
+    rejections = []
+    for index, phase in enumerate(phases):
+        capture_id = f"r0i-{category}-{index}"
+        capture = copy.deepcopy(base_capture)
+        capture["capture_id"] = capture_id
+        capture["purpose"] = f"candidate_{phase}"
+        captures.append(capture)
+        for event in base_commands:
+            copied = copy.deepcopy(event)
+            copied["capture_id"] = capture_id
+            commands.append(copied)
+        rejections.append({
+            "phase": phase,
+            "command": command,
+            "evidence": {
+                "source": "strip",
+                "purpose": f"candidate_{phase}",
+                "capture_ids": [capture_id],
+                "exposure_factors": [1.0],
+                "rejected_features": [{"status": "weak_signal", "feature": "fake"}],
+            },
+        })
+        row["physical_budget"]["events"].append({
+            "phase": f"candidate_{phase}", "physical_cr3": 1,
+            "auto_exposure": False, "weak_reacquire": False,
+        })
+    row["physical_budget"]["physical_cr3_used"] += len(phases)
+    limits = dict(plan["targets"][0]["solver_budget"])
+    consumed = {name: 0 for name in ("initial", "initial_probes", "feedback_attempts", "rebase_probes", "confirmation_captures")}
+    consumed[category] = len(phases)
+    next_phase = {
+        "initial": "initial",
+        "initial_probes": "probe-next",
+        "feedback_attempts": "feedback-8",
+        "rebase_probes": "rebase-2-probe-0",
+        "confirmation_captures": "confirm-2-0",
+    }[category]
+    ledger = {
+        "pre_capture_exhaustion": True,
+        "status": "solver_budget_exhausted",
+        "sub_budget": category,
+        "phase": next_phase,
+        "requested_physical_cr3": 0,
+        "physical_cr3_used": len(phases),
+        "autoexposure_physical_cr3_used": 0,
+        "weak_reacquire_physical_cr3_used": 0,
+        "capture_attempted": False,
+        "start_index": 1,
+    }
+    exhausted = {
+        "kind": "hsi_bounded_local_feedback",
+        "status": "solver_budget_exhausted",
+        "active_channel": plan["targets"][0]["distinct_face_seeds"][1]["active_channel"],
+        "initial_command": command,
+        "selected_command": command,
+        "goal_confirmed": False,
+        "rounds_requested": 8,
+        "rounds_completed": 0,
+        "confirmation_attempts": [{
+            "status": "partial", "sample_indices": [], "candidate_command": command,
+            "captured_count": 0, "expected_capture_count": 3,
+            "feasible_capture_count": 0, "partial_group": True,
+        }],
+        "thermal_rebases": [],
+        "measurement_rejections": rejections,
+        "step_records": [],
+        "group_order": ["coordinate", "rendering"],
+        "best": None,
+        "samples": [],
+        "budget": {
+            "start_index": 1, "limits": limits, "consumed": consumed,
+            "logical_observations_used": len(phases),
+            "confirmation_groups_started": 1,
+            "rebases_started": 2 if category == "rebase_probes" else 0,
+            "exhaustion": ledger,
+        },
+        "budget_exhaustion": ledger,
+    }
+    feedback["attempts"].append({
+        "start_index": 1,
+        "seed": dict(plan["targets"][0]["distinct_face_seeds"][1]),
+        "result": exhausted,
+    })
+    feedback["attempt_count"] = 2
+    feedback["logical_observations_used"] += len(phases)
+    captures_path.write_text("\n".join(json.dumps(item) for item in captures) + "\n", encoding="utf-8")
+    commands_path.write_text("\n".join(json.dumps(item) for item in commands) + "\n", encoding="utf-8")
+    rows_path.write_text("\n".join(json.dumps(item) for item in rows) + "\n", encoding="utf-8")
 
 
 def _strip_device_evidence(payload, baseline_generation, generation):

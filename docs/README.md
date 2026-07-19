@@ -685,6 +685,9 @@ Measurement rejections are not free logical observations: quality rejections
 must carry non-empty capture IDs plus source/purpose/exposure/quality evidence;
 only an explicit pre-capture solver-budget exhaustion record may omit capture
 IDs, and it must prove no capture was attempted and retain the physical counters.
+Top-level and nested exhaustion ledgers must either both be absent or be identical
+non-empty mappings; any exhaustion also requires an exhausted frozen category,
+`solver_budget_exhausted` start status, and no confirmed group.
 ESPHome command acknowledgement is explicitly not device readback. The formal
 entrypoints now require an independent generation-bearing `rgbww_commanded_state`
 snapshot; the offline fake verifies stale generation, channel mismatch, missing

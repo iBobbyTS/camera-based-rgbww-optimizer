@@ -91,6 +91,20 @@ def build_readiness(
             "commands": list(validation_commands),
             "compileall": "pass",
             "firmware_compile": "blocked_tool_missing_esphome_cli",
+            "public_analyzer_integration_cases": {
+                "accepted": [
+                    "initial_exhausted", "initial_probes_exhausted",
+                    "feedback_attempts_exhausted", "rebase_probes_exhausted",
+                    "confirmation_captures_exhausted",
+                ],
+                "rejected": [
+                    "nested_only", "top_level_only", "ledger_mismatch",
+                    "nested_empty", "confirmed_with_exhaustion",
+                    "status_without_ledgers", "category_one_under",
+                    "category_one_over", "wrong_next_phase",
+                    "wrong_sub_budget", "frozen_limits_drift",
+                ],
+            },
             "wrapper_zsh_syntax": [{"path": str(path), "status": "pass"} for path in wrapper_paths],
             "git_diff_check": "pass",
             "codegraph_sync": "pass",
