@@ -8,17 +8,45 @@ from camera_based_rgbww_optimizer.optimization.hsi_budget import (
     HsiPhysicalBudgetExhausted,
     HsiSolverBudgetLimits,
     HsiStartBudget,
+    match_exhaustibility_path,
 )
 
 
 class HsiBudgetTests(unittest.TestCase):
     def test_exhaustibility_matrix_freezes_scope_and_reachability(self):
-        self.assertEqual(EXHAUSTIBILITY_MATRIX["feedback_attempts"]["classification"], "production_reachable")
-        self.assertEqual(EXHAUSTIBILITY_MATRIX["feedback_attempts"]["counter_scope"], "start")
-        self.assertEqual(EXHAUSTIBILITY_MATRIX["physical_cr3"]["classification"], "production_reachable")
-        self.assertEqual(EXHAUSTIBILITY_MATRIX["physical_cr3"]["counter_scope"], "target")
-        self.assertEqual(EXHAUSTIBILITY_MATRIX["autoexposure"]["classification"], "fatal_accounting_error")
-        self.assertTrue(all("call_point" in item and "formal_status" in item for item in EXHAUSTIBILITY_MATRIX.values()))
+        self.assertEqual(EXHAUSTIBILITY_MATRIX["logical.feedback_attempts"]["classification"], "production_reachable")
+        self.assertEqual(EXHAUSTIBILITY_MATRIX["logical.confirmation_groups"]["classification"], "production_reachable")
+        self.assertEqual(EXHAUSTIBILITY_MATRIX["logical.feedback_attempts"]["counter_scope"], "start")
+        self.assertEqual(EXHAUSTIBILITY_MATRIX["physical.pre_capture_denial"]["classification"], "production_reachable")
+        self.assertEqual(EXHAUSTIBILITY_MATRIX["physical.pre_capture_denial"]["counter_scope"], "target")
+        self.assertEqual(EXHAUSTIBILITY_MATRIX["physical.autoexposure_overrun"]["classification"], "fatal_accounting_error")
+        self.assertTrue(all(
+            {
+                "sub_budget", "trigger_point", "classification", "origin", "counter_scope",
+                "capture_attempted", "formal_status", "phase_pattern",
+            } == set(item)
+            for item in EXHAUSTIBILITY_MATRIX.values()
+        ))
+
+    def test_exhaustibility_path_match_is_exact_and_distinguishes_physical_trigger(self):
+        path_id, _contract = match_exhaustibility_path(
+            sub_budget="physical_cr3", origin="physical_target", counter_scope="target",
+            capture_attempted=False, formal_status="solver_budget_exhausted",
+            phase="candidate_feedback-7",
+        )
+        self.assertEqual(path_id, "physical.pre_capture_denial")
+        path_id, _contract = match_exhaustibility_path(
+            sub_budget="physical_cr3", origin="physical_target", counter_scope="target",
+            capture_attempted=True, formal_status="physical_budget_accounting_violation",
+            phase="candidate_feedback-7",
+        )
+        self.assertEqual(path_id, "physical.post_capture_overrun")
+        with self.assertRaisesRegex(ValueError, "exactly one"):
+            match_exhaustibility_path(
+                sub_budget="physical_cr3", origin="logical_start", counter_scope="start",
+                capture_attempted=False, formal_status="solver_budget_exhausted",
+                phase="candidate_feedback-7",
+            )
 
     def test_planner_caps_are_exact_for_n3_and_n5(self):
         ordinary = HsiSolverBudgetLimits(confirmations_per_group=3)

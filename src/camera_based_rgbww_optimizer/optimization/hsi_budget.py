@@ -1,35 +1,44 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from typing import Any, Mapping
 
 
 EXHAUSTIBILITY_MATRIX = {
-    "initial": {"classification": "guarded_unreachable", "counter_scope": "start", "capture_attempted": False, "call_point": "capture(initial) on fresh HsiStartBudget"},
-    "initial_probes": {"classification": "guarded_unreachable", "counter_scope": "start", "capture_attempted": False, "call_point": "single reserve_probe_group plus exact four probes"},
-    "feedback_attempts": {"classification": "production_reachable", "counter_scope": "start", "capture_attempted": False, "call_point": "feedback backtrack consume before capture_observation_fn"},
-    "rebase_probes": {"classification": "guarded_unreachable", "counter_scope": "start", "capture_attempted": False, "call_point": "bounded rebase reservation plus exact probe groups"},
-    "confirmation_captures": {"classification": "guarded_unreachable", "counter_scope": "start", "capture_attempted": False, "call_point": "confirmation group reservation guarantees complete group capacity"},
-    "confirmation_groups": {"classification": "guarded_unreachable", "counter_scope": "start", "capture_attempted": False, "call_point": "final verification checks remaining group before confirm"},
-    "rebases": {"classification": "guarded_unreachable", "counter_scope": "start", "capture_attempted": False, "call_point": "state machine checks rebase count before reservation"},
-    "logical_observations": {"classification": "guarded_unreachable", "counter_scope": "start", "capture_attempted": False, "call_point": "category caps sum to logical cap and category check runs first"},
-    "physical_cr3": {"classification": "production_reachable", "counter_scope": "target", "capture_attempted": False, "call_point": "capture_source remaining precheck"},
-    "autoexposure": {"classification": "fatal_accounting_error", "counter_scope": "target", "capture_attempted": True, "call_point": "adapter returns physical count above declared remaining auto cap"},
-    "weak_reacquire": {"classification": "guarded_unreachable", "counter_scope": "target", "capture_attempted": False, "call_point": "allow_weak_reacquire precheck"},
+    "logical.initial": {"sub_budget": "initial", "trigger_point": "capture.consume", "classification": "guarded_unreachable", "origin": "logical_start", "counter_scope": "start", "capture_attempted": False, "formal_status": "not_emitted", "phase_pattern": r"^initial$"},
+    "logical.initial_probes": {"sub_budget": "initial_probes", "trigger_point": "reserve_or_consume_initial_probes", "classification": "guarded_unreachable", "origin": "logical_start", "counter_scope": "start", "capture_attempted": False, "formal_status": "not_emitted", "phase_pattern": r"^probe(?:-|$)"},
+    "logical.feedback_attempts": {"sub_budget": "feedback_attempts", "trigger_point": "feedback_backtrack_consume", "classification": "production_reachable", "origin": "logical_start", "counter_scope": "start", "capture_attempted": False, "formal_status": "solver_budget_exhausted", "phase_pattern": r"^feedback-\d+(?:-backtrack-(?:0\.5|0\.25))?$"},
+    "logical.rebase_probes": {"sub_budget": "rebase_probes", "trigger_point": "reserve_or_consume_rebase_probes", "classification": "guarded_unreachable", "origin": "logical_start", "counter_scope": "start", "capture_attempted": False, "formal_status": "not_emitted", "phase_pattern": r"^(?:prediction|thermal)-rebase-\d+(?:-|$)"},
+    "logical.confirmation_captures": {"sub_budget": "confirmation_captures", "trigger_point": "confirmation_capture_consume", "classification": "guarded_unreachable", "origin": "logical_start", "counter_scope": "start", "capture_attempted": False, "formal_status": "not_emitted", "phase_pattern": r"^confirm-\d+-\d+$"},
+    "logical.confirmation_groups": {"sub_budget": "confirmation_groups", "trigger_point": "confirmation_group_reservation", "classification": "production_reachable", "origin": "logical_start", "counter_scope": "start", "capture_attempted": False, "formal_status": "solver_budget_exhausted", "phase_pattern": r"^confirm-\d+$"},
+    "logical.rebases": {"sub_budget": "rebases", "trigger_point": "rebase_group_reservation", "classification": "guarded_unreachable", "origin": "logical_start", "counter_scope": "start", "capture_attempted": False, "formal_status": "not_emitted", "phase_pattern": r"^(?:prediction|thermal)-rebase-\d+$"},
+    "logical.total": {"sub_budget": "logical_observations", "trigger_point": "logical_total_consume_or_reserve", "classification": "guarded_unreachable", "origin": "logical_start", "counter_scope": "start", "capture_attempted": False, "formal_status": "not_emitted", "phase_pattern": r"^(?:initial|probe|feedback|confirm|(?:prediction|thermal)-rebase)(?:-|$)"},
+    "physical.pre_capture_denial": {"sub_budget": "physical_cr3", "trigger_point": "capture_source_remaining_precheck", "classification": "production_reachable", "origin": "physical_target", "counter_scope": "target", "capture_attempted": False, "formal_status": "solver_budget_exhausted", "phase_pattern": r"^[a-z0-9][a-z0-9_.-]*$"},
+    "physical.post_capture_overrun": {"sub_budget": "physical_cr3", "trigger_point": "physical_budget_record_after_capture", "classification": "fatal_accounting_error", "origin": "physical_target", "counter_scope": "target", "capture_attempted": True, "formal_status": "physical_budget_accounting_violation", "phase_pattern": r"^[a-z0-9][a-z0-9_.-]*$"},
+    "physical.autoexposure_overrun": {"sub_budget": "autoexposure", "trigger_point": "physical_budget_record_after_capture", "classification": "fatal_accounting_error", "origin": "physical_target", "counter_scope": "target", "capture_attempted": True, "formal_status": "physical_budget_accounting_violation", "phase_pattern": r"^[a-z0-9][a-z0-9_.-]*$"},
+    "physical.weak_reacquire": {"sub_budget": "weak_reacquire", "trigger_point": "allow_weak_reacquire_precheck", "classification": "guarded_unreachable", "origin": "physical_target", "counter_scope": "target", "capture_attempted": False, "formal_status": "not_emitted", "phase_pattern": r"^[a-z0-9][a-z0-9_.-]*$"},
+    "physical.weak_reacquire_overrun": {"sub_budget": "weak_reacquire", "trigger_point": "physical_budget_record_after_capture", "classification": "fatal_accounting_error", "origin": "physical_target", "counter_scope": "target", "capture_attempted": True, "formal_status": "physical_budget_accounting_violation", "phase_pattern": r"^[a-z0-9][a-z0-9_.-]*$"},
 }
-EXHAUSTIBILITY_MATRIX = {
-    name: {
-        **entry,
-        "formal_status": (
-            "physical_budget_accounting_violation"
-            if entry["classification"] == "fatal_accounting_error"
-            else "not_emitted"
-            if entry["classification"] == "guarded_unreachable"
-            else "solver_budget_exhausted"
-        ),
-    }
-    for name, entry in EXHAUSTIBILITY_MATRIX.items()
-}
+
+
+def match_exhaustibility_path(
+    *, sub_budget: str, origin: str, counter_scope: str,
+    capture_attempted: bool, formal_status: str, phase: str,
+) -> tuple[str, Mapping[str, Any]]:
+    matches = [
+        (path_id, contract)
+        for path_id, contract in EXHAUSTIBILITY_MATRIX.items()
+        if contract["sub_budget"] == sub_budget
+        and contract["origin"] == origin
+        and contract["counter_scope"] == counter_scope
+        and contract["capture_attempted"] is capture_attempted
+        and contract["formal_status"] == formal_status
+        and re.fullmatch(str(contract["phase_pattern"]), phase) is not None
+    ]
+    if len(matches) != 1:
+        raise ValueError("exhaustion evidence does not match exactly one frozen path")
+    return matches[0]
 
 
 @dataclass(frozen=True)

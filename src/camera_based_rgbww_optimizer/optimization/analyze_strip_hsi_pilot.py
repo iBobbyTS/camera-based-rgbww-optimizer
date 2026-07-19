@@ -23,6 +23,10 @@ from camera_based_rgbww_optimizer.optimization.hsi_objective import (
     evaluate_hsi_observation_v2,
     required_hsi_features_from_report,
 )
+from camera_based_rgbww_optimizer.optimization.hsi_budget import (
+    EXHAUSTIBILITY_MATRIX,
+    match_exhaustibility_path,
+)
 from camera_based_rgbww_optimizer.optimization.hsi_source_evidence import (
     recompute_physical_count,
     validate_attempt_event_grammar,
@@ -880,7 +884,7 @@ def _validate_pre_capture_exhaustion(
     if not isinstance(evidence, Mapping):
         raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion evidence is missing")
     required = {
-        "pre_capture_exhaustion", "status", "origin", "counter_scope",
+        "path_id", "pre_capture_exhaustion", "status", "origin", "counter_scope",
         "sub_budget", "phase",
         "requested_physical_cr3", "physical_cr3_used",
         "autoexposure_physical_cr3_used", "weak_reacquire_physical_cr3_used",
@@ -895,6 +899,21 @@ def _validate_pre_capture_exhaustion(
     scope = str(evidence.get("counter_scope"))
     if (scope, evidence.get("origin")) not in {("start", "logical_start"), ("target", "physical_target")}:
         raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion scope/origin mismatch")
+    try:
+        path_id, contract = match_exhaustibility_path(
+            sub_budget=str(evidence.get("sub_budget")),
+            origin=str(evidence.get("origin")),
+            counter_scope=scope,
+            capture_attempted=bool(evidence.get("capture_attempted")),
+            formal_status=str(evidence.get("status")),
+            phase=str(evidence.get("phase")),
+        )
+    except ValueError as exc:
+        raise ValueError(f"v2 P7 target {target_key} exhaustion violates frozen path contract") from exc
+    if evidence.get("path_id") != path_id or contract != EXHAUSTIBILITY_MATRIX[path_id]:
+        raise ValueError(f"v2 P7 target {target_key} exhaustion path identity drift")
+    if contract["classification"] != "production_reachable":
+        raise ValueError(f"v2 P7 target {target_key} exhaustion path is not production reachable")
     if int(evidence.get("start_index", -1)) != int(expected_start_index):
         raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion start mismatch")
     if not str(evidence.get("sub_budget")) or not str(evidence.get("phase")):
@@ -971,6 +990,14 @@ def _phase_matches_sub_budget(phase: str, sub_budget: str, budget: Mapping[str, 
         return False
     frozen_limits = _frozen_category_limits(limits)
     category_limits = {category: (prefixes[category], maximum) for category, maximum in frozen_limits.items()}
+    if sub_budget == "confirmation_groups":
+        match = re.fullmatch(r"confirm-(\d+)", phase)
+        return (
+            match is not None
+            and int(match.group(1)) == int(budget.get("confirmation_groups_started", -1))
+            and int(budget.get("confirmation_groups_started", -1))
+            >= int(limits.get("max_confirmation_groups_per_start", -1))
+        )
     if sub_budget in prefixes:
         category_limit = category_limits[sub_budget]
         return (

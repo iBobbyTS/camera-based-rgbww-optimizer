@@ -30,6 +30,7 @@ from camera_based_rgbww_optimizer.optimization.hsi_budget import (
     HsiPhysicalBudget,
     HsiPhysicalBudgetExhausted,
     HsiSolverBudgetLimits,
+    match_exhaustibility_path,
 )
 from camera_based_rgbww_optimizer.optimization.hsi_feedback import (
     HsiMeasurementRejected,
@@ -407,13 +408,28 @@ def execute_strip_hsi_pilot_plan(
                         weak_reacquire=exposure_factor is not None,
                     )
                 except HsiPhysicalBudgetExhausted as exc:
-                    raise HsiPhysicalBudgetAccountingViolation({
+                    evidence = {
                         **exc.evidence,
+                        "status": "physical_budget_accounting_violation",
+                        "origin": "physical_target",
+                        "counter_scope": "target",
                         "capture_id": capture_id,
                         "capture_attempted": True,
                         "produced_physical_cr3": physical_count,
                         "saved_file": (capture.get("capture") or {}).get("saved_file"),
-                    }) from exc
+                    }
+                    path_id, contract = match_exhaustibility_path(
+                        sub_budget=str(evidence.get("sub_budget")),
+                        origin="physical_target",
+                        counter_scope="target",
+                        capture_attempted=True,
+                        formal_status="physical_budget_accounting_violation",
+                        phase=str(evidence.get("phase", "")),
+                    )
+                    if contract["classification"] != "fatal_accounting_error":
+                        raise AssertionError(f"post-capture exhaustion is not fatal: {path_id}")
+                    evidence["path_id"] = path_id
+                    raise HsiPhysicalBudgetAccountingViolation(evidence) from exc
             _append_jsonl(root / "captures.jsonl", {"capture_id": capture_id, "source": source, "purpose": purpose, "target_index": target_index, "capture": capture})
             capture_audit_by_id[capture_id] = {
                 "physical_cr3": physical_count,
@@ -962,13 +978,25 @@ def _canonicalize_feedback_exhaustion(
             requested = 0
             scope = "start"
             origin = "logical_start"
+        phase = str(raw.get("phase", result.get("exhaustion_phase", "")))
+        path_id, contract = match_exhaustibility_path(
+            sub_budget=sub_budget,
+            origin=origin,
+            counter_scope=scope,
+            capture_attempted=False,
+            formal_status="solver_budget_exhausted",
+            phase=phase,
+        )
+        if contract["classification"] != "production_reachable":
+            raise ValueError(f"runner refuses non-production exhaustion path: {path_id}")
         ledger = {
+            "path_id": path_id,
             "pre_capture_exhaustion": True,
             "status": "solver_budget_exhausted",
             "origin": origin,
             "counter_scope": scope,
             "sub_budget": sub_budget,
-            "phase": str(raw.get("phase", result.get("exhaustion_phase", ""))),
+            "phase": phase,
             "requested_physical_cr3": requested,
             "produced_physical_cr3": 0,
             **counters,

@@ -693,6 +693,16 @@ start capture ledger and target physical budget: logical exhaustion uses start
 counters, while physical denial uses target counters. A CR3 produced before an
 adapter reports an overrun is a fatal `physical_budget_accounting_violation`, not
 pre-capture exhaustion.
+`EXHAUSTIBILITY_MATRIX` is keyed by stable path ID so producer finalization,
+formal analysis, readiness output and tests share the same origin/scope/status/
+phase-family contract. `logical.feedback_attempts` and
+`logical.confirmation_groups` are production-reachable; guarded logical paths
+are rejected by the public analyzer, and post-capture physical overruns are fatal
+paths. R0K has not resolved whether `physical.pre_capture_denial` is reachable:
+the frozen 54/67 and 62/75 equations reach the physical cap only when both start
+logical caps are already full, and the solver checks the logical gate before the
+capture callback. Planner must choose whether that path is guarded or authorize
+a new producer trigger; no fixture may manufacture a completed-target success.
 ESPHome command acknowledgement is explicitly not device readback. The formal
 entrypoints now require an independent generation-bearing `rgbww_commanded_state`
 snapshot; the offline fake verifies stale generation, channel mismatch, missing

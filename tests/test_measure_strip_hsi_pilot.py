@@ -359,6 +359,25 @@ class MeasureStripHsiPilotTests(unittest.TestCase):
                 with self.subTest(case=case), self.assertRaisesRegex(ValueError, "category|exhaustion"):
                     analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
 
+    def test_v2_public_analyzer_rejects_guarded_initial_exhaustion_path(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            policy = _frozen_policy_v2_file(root)
+            plan = subject.build_strip_hsi_pilot_plan(
+                policy_version="v2", policy_v2_config_path=policy,
+            )
+            run_root = root / "guarded-initial"
+            _execute_fake_v2_plan(plan, run_root)
+            _write_shell_cleanup(run_root)
+            _append_fake_exhausted_start(
+                run_root, plan, category="initial", phases=["initial"],
+            )
+
+            with self.assertRaisesRegex(ValueError, "frozen path contract|not production reachable"):
+                analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(
+                    run_root, policy_version="v2",
+                )
+
     def test_production_solver_physical_exhaustion_is_canonicalized_symmetrically(self):
         physical = HsiPhysicalBudget(hard_cap=67, autoexposure_cap=10, weak_reacquire_cap=4)
         physical.record(phase="retained", physical_count=67, auto_exposure=False, weak_reacquire=False)
@@ -572,6 +591,84 @@ class MeasureStripHsiPilotTests(unittest.TestCase):
                 analysis = analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
             self.assertEqual(analysis["status"], "blocked_for_planner_review")
 
+    def test_formal_runner_persists_production_confirmation_group_exhaustion(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            policy_path = _frozen_policy_v2_file(root)
+            plan = subject.build_strip_hsi_pilot_plan(policy_version="v2", policy_v2_config_path=policy_path)
+            run_root = root / "confirmation-groups-roundtrip"
+
+            def finite_json(value):
+                if isinstance(value, dict):
+                    return {key: finite_json(item) for key, item in value.items()}
+                if isinstance(value, list):
+                    return [finite_json(item) for item in value]
+                if isinstance(value, float) and not np.isfinite(value):
+                    return 1e9
+                return value
+
+            def production_multiseed(*, capture_observation_fn, **kwargs):
+                def adapted(command, *, phase, settled_confirmation):
+                    original = dict(capture_observation_fn(
+                        command, phase=phase, settled_confirmation=settled_confirmation,
+                    ))
+                    delta = np.asarray([
+                        (command["ww"] - 1600) / 4095.0,
+                        (command["r"] - 2400) / 4095.0,
+                        (command["g"] - 1200) / 4095.0,
+                        (command["b"] - 3000) / 4095.0,
+                    ])
+                    objective = finite_json(copy.deepcopy(original["objective"]))
+                    objective.update({
+                        "feasible": not settled_confirmation,
+                        "coordinate_guarded_excess": 0.0 if not settled_confirmation else 1.0,
+                        "command_continuity_l1": 0.0,
+                    })
+                    return {
+                        **original,
+                        "residuals": {"coordinate": delta[:2].tolist(), "rendering": delta[2:].tolist()},
+                        "objective": objective,
+                    }
+
+                produced = finite_json(run_hsi_feedback_multiseed(
+                    capture_observation_fn=adapted, **kwargs,
+                ))
+                valid = [item for item in produced["attempts"] if item["result"].get("best") is not None]
+                selected = min(
+                    valid,
+                    key=lambda item: analyze_strip_hsi_pilot.hsi_objective_sort_key(item["result"]["best"]["objective"]),
+                )
+                produced["selected_start_index"] = selected["start_index"]
+                produced["selected_result"] = selected["result"]
+                produced["best_valid_sample"] = selected["result"]["best"]
+                return produced
+
+            with mock.patch.object(subject, "run_hsi_feedback_multiseed", side_effect=production_multiseed):
+                _execute_fake_v2_plan(plan, run_root)
+            _write_shell_cleanup(run_root)
+            rows = [json.loads(line) for line in (run_root / "target-results.jsonl").read_text(encoding="utf-8").splitlines()]
+            exhausted = [
+                attempt["result"]
+                for row in rows for attempt in row["feedback"]["attempts"]
+                if attempt["result"]["status"] == "solver_budget_exhausted"
+            ]
+            self.assertTrue(exhausted)
+            self.assertTrue(all(result["budget_exhaustion"]["path_id"] == "logical.confirmation_groups" for result in exhausted))
+            self.assertTrue(all(len(result["confirmation_attempts"]) == 2 for result in exhausted))
+            replay = [
+                {"residuals": sample["residuals"], "objective": sample["objective"]}
+                for row in rows for attempt in row["feedback"]["attempts"]
+                for sample in attempt["result"]["samples"]
+            ]
+
+            def replay_evaluate(*_args, **_kwargs):
+                return replay.pop(0)
+
+            with mock.patch.object(analyze_strip_hsi_pilot, "evaluate_hsi_observation_v2", side_effect=replay_evaluate):
+                analysis = analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
+            self.assertEqual(analysis["status"], "blocked_for_planner_review")
+            self.assertFalse(replay)
+
     def test_post_capture_physical_overrun_is_fatal_accounting_violation(self):
         with tempfile.TemporaryDirectory() as tempdir:
             root = Path(tempdir)
@@ -586,6 +683,10 @@ class MeasureStripHsiPilotTests(unittest.TestCase):
             self.assertEqual(failure["message"], "physical_budget_accounting_violation")
             self.assertTrue(failure["evidence"]["capture_attempted"])
             self.assertEqual(failure["evidence"]["produced_physical_cr3"], 11)
+            self.assertEqual(failure["evidence"]["path_id"], "physical.autoexposure_overrun")
+            produced = Path(failure["evidence"]["saved_file"])
+            self.assertTrue(produced.is_file())
+            self.assertGreater(produced.stat().st_size, 0)
             self.assertTrue(all(item["ok"] for item in cleanup["steps"]))
 
     def test_v2_analyzer_rejects_duplicate_capture_and_auto_audit_drift(self):
@@ -689,12 +790,13 @@ class MeasureStripHsiPilotTests(unittest.TestCase):
                     analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
 
             valid_exhaustion = {
+                "path_id": "logical.feedback_attempts",
                 "pre_capture_exhaustion": True,
                 "status": "solver_budget_exhausted",
                 "origin": "logical_start",
                 "counter_scope": "start",
-                "sub_budget": "logical_observations",
-                "phase": "feedback-0",
+                "sub_budget": "feedback_attempts",
+                "phase": "feedback-2-backtrack-0.25",
                 "requested_physical_cr3": 0,
                 "produced_physical_cr3": 0,
                 "physical_cr3_used": 12,
@@ -1045,6 +1147,13 @@ def _append_fake_exhausted_start(root: Path, plan, *, category: str, phases: lis
         "confirmation_captures": "confirm-2-0",
     }[category]
     ledger = {
+        "path_id": {
+            "initial": "logical.initial",
+            "initial_probes": "logical.initial_probes",
+            "feedback_attempts": "logical.feedback_attempts",
+            "rebase_probes": "logical.rebase_probes",
+            "confirmation_captures": "logical.confirmation_captures",
+        }[category],
         "pre_capture_exhaustion": True,
         "status": "solver_budget_exhausted",
         "origin": "logical_start",
