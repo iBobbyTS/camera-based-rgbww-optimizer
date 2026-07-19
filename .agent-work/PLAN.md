@@ -12,11 +12,11 @@
 
 **当前阶段：** P7-D0 / `p7_strip_state_readback_preflight`
 
-**当前状态：** `compiled_waiting_for_upload_authorization`
+**当前状态：** `firmware_uploaded_waiting_for_d0_rerun_authorization`
 
-**本次授权解释：** 用户在 Planner 明确说明唯一下一动作是 `p7_strip_state_readback_preflight` 后回复“可以继续”。该授权只覆盖本计划第 3 节的离线实现、低输出设备 preflight 和必要的双关灯；不包含 firmware upload、相机访问、真实 CR3、P7-R1、sentinel-v2 或其他高输出实验。
+**本次授权解释：** 用户先授权并完成 generation-bearing WebUI firmware 编译，随后于 2026-07-18 明确要求“开始刷写”。该新增授权仅覆盖把第 3.9 节已核验的 OTA artifact 上传到 exact target `bedroom-rgbww-strip.local`、刷写前后关灯以及零输出 device-state 验证；Executor 不得重复询问 firmware upload 授权。它不包含低输出 D0 重跑、相机访问、真实 CR3、P7-R1、sentinel-v2 或其他高输出实验。
 
-**下一条唯一动作：** generation-bearing WebUI firmware 已按用户单独授权完成编译；Planner 应复验第 3.9 节的 artifact 证据并决定是否向用户申请单独的 firmware upload 授权。Executor 不得自动刷写、重试 D0 或启动 P7-R1。
+**下一条唯一动作：** Planner 复验第 3.10 节的 OTA、零输出 readback 和双关灯证据，再决定是否向用户申请重新执行 exact `p7_strip_state_readback_preflight`。Executor 不得自动重试 D0 或启动 P7-R1。
 
 ---
 
@@ -75,13 +75,14 @@ R0K 已经通过 Planner 验收。不得继续审计或重写 exhaustion contrac
 | 动作 | 当前是否授权 | 说明 |
 | --- | --- | --- |
 | 离线实现 preflight module/tests/wrapper | 是 | 当前唯一实现任务 |
-| ESPHome 低输出 readback preflight | 是 | 仅第 3 节冻结序列，raw PWM 最大 48 |
+| ESPHome 低输出 readback preflight 重跑 | 否 | 原授权已由失败 run 消耗；刷写授权不包含 D0 重跑 |
 | Ray120c 关灯命令 | 是 | 仅 intensity=0 与 cleanup，不得点亮 |
 | Python/shell `all_off` | 是 | preflight 安全路径 |
 | 相机 remote health/config/capture | 否 | 当前阶段不需要相机 |
 | 读取 `.env` | 否 | 当前 module 不得加载；后续相机脚本自行加载 |
 | firmware compile | 是，已完成 | 用户于 2026-07-18 明确要求“开始编译”；仅 WebUI candidate，不含上传 |
-| firmware install/upload | 否 | 不得安装依赖、运行 `esphome run/upload` 或连接设备 |
+| firmware install | 否 | 不得安装或升级依赖 |
+| firmware upload | 是，已完成 | exact WebUI OTA artifact → `bedroom-rgbww-strip.local`；前后关灯及零输出验证通过，不含 D0 重跑 |
 | `p7_targeted_reference_repeatability_v2` | 否 | 必须在 preflight 经 Planner 验收后另行授权 |
 | `p7_sentinel_4_v2` | 否 | 需 P7-R1 通过和新的高输出授权 |
 | remaining 9 / boundary / holdout / P8 | 否 | 继续锁定 |
@@ -328,7 +329,31 @@ firmware.factory.bin = 959280 bytes / ed8c868277e4a8ac0315365f308576f8e8a55a1ea5
 
 编译使用已有 ESPHome/PlatformIO 环境，没有执行依赖安装。第一次完整编译本体成功，但记录 shell 误用 zsh 只读变量 `status`，外层退出为 1；该日志保留在前一个 run 目录，不作为正式退出证据。随后使用修正后的记录变量做增量复编，得到上述 `exit=0`、持续落盘日志、artifact size 和 SHA-256。
 
-本次没有执行 `esphome run`、`esphome upload`、设备连接、灯光命令或 D0 重跑。新 candidate 尚未安装到设备，因此第 3.8 节的 `D0-FIRMWARE-MISSING` 与 `D0-CLEANUP-UNKNOWN` 仍是当前实机状态；firmware upload 仍需用户单独批准。
+截至本节的编译步骤，没有执行 `esphome run`、`esphome upload`、设备连接、灯光命令或 D0 重跑；当时新 candidate 尚未安装。后续用户另行批准并完成的 OTA 与零输出验证记录在第 3.10 节。
+
+### 3.10 Generation-bearing firmware OTA 结果（2026-07-18）
+
+用户明确要求“开始刷写”后，Executor 使用第 3.9 节已核验 WebUI artifact 对 exact target 执行了一次 OTA：
+
+```text
+command = .venv/bin/python -m esphome upload firmware/esphome/bedroom-rgbww-strip-webui.yaml --device bedroom-rgbww-strip.local
+run = tmp/firmware-upload/webui-20260718-232524
+resolved target = 192.168.0.74:3232
+artifact = firmware.bin / 893744 bytes
+artifact sha256 = c24a60463d37314b0c041188ec2d55dbb1be19614fb512a5a619308137cbcbc0
+upload = OTA successful
+upload exit = 0
+```
+
+安全与恢复证据：
+
+- OTA 前 `control.all_off`：ESPHome 五通道全零、Ray intensity 0，二者均成功；
+- OTA 后显式 `control.all_off`：ESPHome 五通道全零、Ray intensity 0，二者均成功；
+- 新固件零输出 independent readback：exact name `bedroom-rgbww-strip`、MAC `E0:8C:FE:63:C9:40`、entity `rgbww_commanded_state`、generation `2 -> 3`、requested/observed 五通道全零；
+- EXIT trap `control.all_off`：ESPHome 与 Ray 均成功，shell cleanup exit `0`；
+- 未调用相机、未产生 CR3、未发送任何非零灯带或 Ray 命令。
+
+这证明 generation-bearing firmware 已安装、Native API 可重新连接且零输出 readback/cleanup 正常；它不等于完整 D0-PASS，因为冻结的 raw PWM 最大 48 序列尚未在新固件上重跑。原 D0 实机失败证据继续保留为历史，当前后续分支改为等待 Planner/用户单独授权全新目录的 D0 重跑。
 
 ---
 

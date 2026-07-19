@@ -64,10 +64,13 @@ No-WebUI variant:
 
 WebUI variant:
 
-- Status: the generation-bearing candidate was compiled successfully with
-  ESPHome `2026.5.2` on 2026-07-18. It has not been uploaded or validated on
-  hardware. The hardware observations below describe the older image validated
-  on 2026-06-06, not this newly compiled candidate.
+- Status: the generation-bearing candidate was compiled and uploaded over OTA
+  with ESPHome `2026.5.2` on 2026-07-18. After reboot, Native API identity and
+  `rgbww_commanded_state` were verified at zero output: generation advanced
+  from `2` to `3`, and all five requested/observed channels were zero. The full
+  low-output D0 sequence has not yet been rerun. The remaining WebUI/port
+  observations below are from the older image validated on 2026-06-06.
+- OTA target resolved to `192.168.0.74:3232`; ESPHome reported `OTA successful`.
 - Hostname after OTA: `bedroom-rgbww-strip.local`, resolving to
   `192.168.31.21` during validation.
 - Verified ports after OTA: Native API `6053`, ESPHome OTA `3232`, WebUI `80`.
