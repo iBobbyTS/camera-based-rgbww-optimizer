@@ -2,7 +2,6 @@
 
 | file | summary |
 | --- | --- |
-| active/20260718-p7-r0k-executable-exhaustibility.md | P7-R0K makes exhaustibility a path-based executable producer/analyzer contract and closes confirmation-groups plus physical-denial public round-trips. |
 | active/20260714-p1-exposure-response.md | CR3 recorded exposure fixes the large P1 shutter error; residual high-signal RAW shape still blocks thresholds and P2 pending a lower-exposure full P1. |
 | active/20260712-white-lut-repeatability-and-strict-anchors.md | Measure repeatability, validate strict anchors, and explain the cross-day regression of near-boundary 14x5 nodes. |
 
@@ -16,6 +15,7 @@
 
 | file | summary |
 | --- | --- |
+| resolved/20260718-p7-r0k-executable-exhaustibility.md | P7-R0K freezes physical pre-capture denial as guarded, proves n=3/n=5 logical preemption, and keeps all produced-CR3 overruns fatal. |
 | resolved/20260718-p7-r0j-production-roundtrip.md | P7-R0J canonicalizes sparse solver exhaustion at the runner ownership boundary, distinguishes start/target counters, and makes post-capture overrun fatal. |
 | resolved/20260718-p7-r0e-trust-boundaries.md | P7-R0E offline closure added generation-bearing device-state verification, RAW/objective/owner reconstruction, exact frozen-plan auditing, and explicit firmware compile tooling block; no real execution authorized. |
 | resolved/20260718-p7-r0c-formal-closure.md | P7-R0C closed the six Planner repros with explicit v2 analysis, confirmed-first/full-group solver semantics, centered audits, and independently reconstructed R1 physical evidence. |

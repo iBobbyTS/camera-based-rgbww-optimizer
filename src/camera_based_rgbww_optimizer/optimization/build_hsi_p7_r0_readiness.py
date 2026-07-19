@@ -67,11 +67,11 @@ def build_readiness(
     if physical.get("absolute_cap_status") != "planner_frozen" or int(physical.get("maximum_total_physical_cr3", -1)) != 250:
         raise ValueError("P7-R0D requires the Planner-frozen 250-CR3 absolute cap")
     return {
-        "schema_version": 2,
-        "readiness": "P7-R0E-offline-v3",
+        "schema_version": 3,
+        "readiness": "P7-R0K-offline-final-v9",
         "status": "ready_for_planner_review",
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "authorization_consumed": "P7-R0E_offline_only",
+        "authorization_consumed": "P7-R0K_offline_only",
         "inputs": {
             "frozen_sentinel_run": {
                 "path": str(DEFAULT_SENTINEL_RUN),
@@ -95,7 +95,7 @@ def build_readiness(
             "public_analyzer_integration_cases": {
                 "accepted": [
                     "production_feedback_attempts_solver_runner_public_analyzer",
-                    "production_physical_target_canonical_schema",
+                    "production_confirmation_groups_solver_runner_public_analyzer",
                     "normal_confirmed_absent_exhaustion_ledgers",
                 ],
                 "rejected": [
@@ -104,6 +104,8 @@ def build_readiness(
                     "status_without_ledgers", "category_one_under",
                     "category_one_over", "wrong_next_phase",
                     "wrong_sub_budget", "frozen_limits_drift",
+                    "all_guarded_paths_including_physical_pre_capture_denial",
+                    "post_capture_physical_paths_in_completed_target_rows",
                 ],
             },
             "wrapper_zsh_syntax": [{"path": str(path), "status": "pass"} for path in wrapper_paths],
@@ -120,10 +122,28 @@ def build_readiness(
         "old_sentinel_holdout_replay": replay["old_sentinel_holdout_replay"],
         "solver_architecture": replay["solver_architecture"],
         "exhaustibility_matrix": EXHAUSTIBILITY_MATRIX,
+        "exhaustibility_path_evidence": {
+            path_id: _path_evidence_type(path_id, contract)
+            for path_id, contract in EXHAUSTIBILITY_MATRIX.items()
+        },
         "production_roundtrip": {
             "logical_feedback_attempts": "runner_persisted_public_analyzer_pass",
-            "physical_target_scope": "producer_canonical_schema_pass",
-            "post_capture_overrun": "fatal_physical_budget_accounting_violation",
+            "logical_confirmation_groups": "runner_persisted_public_analyzer_pass",
+            "physical_pre_capture_denial": {
+                "classification": "guarded_unreachable",
+                "production_success_roundtrip": False,
+                "n3_producer_unreachability": "54_logical_and_67_physical_then_logical_gate_preempts_callback",
+                "n5_producer_unreachability": "62_logical_and_75_physical_then_logical_gate_preempts_callback",
+                "runner_canonicalizer_rejection": "pass",
+                "public_analyzer_rejection": "pass",
+            },
+            "post_capture_overrun": {
+                "physical_cr3": "fatal_physical_budget_accounting_violation",
+                "autoexposure": "fatal_physical_budget_accounting_violation",
+                "weak_reacquire": "fatal_physical_budget_accounting_violation",
+                "produced_cr3_retained_in_failure_evidence": True,
+                "python_cleanup": "pass",
+            },
             "manual_target_row_success_fixture_used": False,
         },
         "p7_r1_draft": {
@@ -179,6 +199,24 @@ def build_readiness(
             "real_device_preflight": "p7_strip_state_readback_preflight_not_authorized",
         },
         "locked": replay["locked"],
+    }
+
+
+def _path_evidence_type(path_id: str, contract: dict[str, Any]) -> dict[str, Any]:
+    classification = str(contract["classification"])
+    if path_id == "physical.pre_capture_denial":
+        evidence_type = "n3_n5_producer_unreachability_plus_runner_and_public_analyzer_rejection"
+    elif classification == "production_reachable":
+        evidence_type = "production_solver_runner_public_analyzer_roundtrip"
+    elif classification == "guarded_unreachable":
+        evidence_type = "producer_guard_plus_runner_and_public_analyzer_rejection"
+    else:
+        evidence_type = "run_level_fatal_failure_with_produced_cr3_and_cleanup"
+    return {
+        "classification": classification,
+        "formal_status": contract["formal_status"],
+        "evidence_type": evidence_type,
+        "completed_target_success_allowed": classification == "production_reachable",
     }
 
 

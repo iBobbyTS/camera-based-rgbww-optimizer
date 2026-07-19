@@ -468,6 +468,8 @@ def _validate_v2_target_evidence(
             budget_exhaustion = _paired_exhaustion_ledger(
                 result.get("budget_exhaustion"), budget.get("exhaustion"), target_key=key,
             )
+            if budget_exhaustion is not None:
+                _validate_exhaustion_path_contract(budget_exhaustion, target_key=key)
             logical = len(samples) + len(rejections)
             consumed = budget.get("consumed")
             reconstructed_consumed = {
@@ -899,21 +901,7 @@ def _validate_pre_capture_exhaustion(
     scope = str(evidence.get("counter_scope"))
     if (scope, evidence.get("origin")) not in {("start", "logical_start"), ("target", "physical_target")}:
         raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion scope/origin mismatch")
-    try:
-        path_id, contract = match_exhaustibility_path(
-            sub_budget=str(evidence.get("sub_budget")),
-            origin=str(evidence.get("origin")),
-            counter_scope=scope,
-            capture_attempted=bool(evidence.get("capture_attempted")),
-            formal_status=str(evidence.get("status")),
-            phase=str(evidence.get("phase")),
-        )
-    except ValueError as exc:
-        raise ValueError(f"v2 P7 target {target_key} exhaustion violates frozen path contract") from exc
-    if evidence.get("path_id") != path_id or contract != EXHAUSTIBILITY_MATRIX[path_id]:
-        raise ValueError(f"v2 P7 target {target_key} exhaustion path identity drift")
-    if contract["classification"] != "production_reachable":
-        raise ValueError(f"v2 P7 target {target_key} exhaustion path is not production reachable")
+    _validate_exhaustion_path_contract(evidence, target_key=target_key)
     if int(evidence.get("start_index", -1)) != int(expected_start_index):
         raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion start mismatch")
     if not str(evidence.get("sub_budget")) or not str(evidence.get("phase")):
@@ -950,6 +938,27 @@ def _validate_pre_capture_exhaustion(
         fields = field_by_sub_budget.get(str(evidence.get("sub_budget")))
         if fields is None or int(evidence[fields[0]]) + requested <= int(physical.get(fields[1], -1)):
             raise ValueError(f"v2 P7 target {target_key} physical exhaustion did not exceed frozen sub-budget")
+
+
+def _validate_exhaustion_path_contract(
+    evidence: Mapping[str, Any], *, target_key: tuple[int, int],
+) -> None:
+    try:
+        path_id, contract = match_exhaustibility_path(
+            sub_budget=str(evidence.get("sub_budget")),
+            origin=str(evidence.get("origin")),
+            counter_scope=str(evidence.get("counter_scope")),
+            capture_attempted=bool(evidence.get("capture_attempted")),
+            phase=str(evidence.get("phase")),
+        )
+    except ValueError as exc:
+        raise ValueError(f"v2 P7 target {target_key} exhaustion violates frozen path contract") from exc
+    if evidence.get("path_id") != path_id or contract != EXHAUSTIBILITY_MATRIX[path_id]:
+        raise ValueError(f"v2 P7 target {target_key} exhaustion path identity drift")
+    if contract["classification"] != "production_reachable":
+        raise ValueError(f"v2 P7 target {target_key} exhaustion path is not production reachable")
+    if evidence.get("status") != contract["formal_status"]:
+        raise ValueError(f"v2 P7 target {target_key} exhaustion formal status drift")
 
 
 def _paired_exhaustion_ledger(

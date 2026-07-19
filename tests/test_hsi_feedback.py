@@ -4,9 +4,14 @@ import unittest
 
 import numpy as np
 
-from camera_based_rgbww_optimizer.optimization.hsi_budget import HsiSolverBudgetLimits, HsiStartBudget
+from camera_based_rgbww_optimizer.optimization.hsi_budget import (
+    HsiPhysicalBudget,
+    HsiSolverBudgetLimits,
+    HsiStartBudget,
+)
 
 from camera_based_rgbww_optimizer.optimization.hsi_feedback import (
+    HsiLogicalBudgetExhausted,
     run_hsi_feedback,
     run_hsi_feedback_multiseed,
 )
@@ -16,6 +21,102 @@ CHANNELS = ("cw", "ww", "r", "g", "b")
 
 
 class HsiFeedbackTests(unittest.TestCase):
+    def test_n3_frozen_state_machine_preempts_physical_pre_capture_denial(self):
+        self._assert_frozen_state_machine_preempts_physical_pre_capture_denial(
+            confirmations_per_group=3, expected_logical=54, expected_physical=67,
+        )
+
+    def test_n5_frozen_state_machine_preempts_physical_pre_capture_denial(self):
+        self._assert_frozen_state_machine_preempts_physical_pre_capture_denial(
+            confirmations_per_group=5, expected_logical=62, expected_physical=75,
+        )
+
+    def _assert_frozen_state_machine_preempts_physical_pre_capture_denial(
+        self, *, confirmations_per_group: int,
+        expected_logical: int, expected_physical: int,
+    ) -> None:
+        limits = HsiSolverBudgetLimits(confirmations_per_group=confirmations_per_group)
+        start_budgets = [HsiStartBudget(limits, start_index=index) for index in range(2)]
+        for budget in start_budgets:
+            self.assertTrue(budget.consume(phase="initial"))
+            self.assertTrue(budget.reserve_probe_group(phase="probe", rebase=False))
+            for channel in ("ww", "r", "g", "b"):
+                self.assertTrue(budget.consume(phase=f"probe-{channel}"))
+            for index in range(limits.feedback_attempts_per_start):
+                self.assertTrue(budget.consume(phase=f"feedback-{index}"))
+            for rebase in range(limits.rebase_count_per_start):
+                self.assertTrue(budget.reserve_probe_group(
+                    phase=f"prediction-rebase-{rebase}", rebase=True,
+                ))
+                for channel in ("ww", "r", "g", "b"):
+                    self.assertTrue(budget.consume(
+                        phase=f"prediction-rebase-{rebase}-{channel}",
+                    ))
+            for group in range(limits.confirmation_groups_per_start):
+                self.assertTrue(budget.reserve_confirmation_group(phase=f"confirm-{group}"))
+                for index in range(confirmations_per_group):
+                    self.assertTrue(budget.consume(phase=f"confirm-{group}-{index}"))
+            self.assertEqual(budget.logical_used, limits.logical_per_start)
+            self.assertIsNone(budget.exhaustion)
+
+        physical = HsiPhysicalBudget(
+            hard_cap=limits.physical_per_target,
+            autoexposure_cap=limits.autoexposure_physical_captures_per_target,
+            weak_reacquire_cap=limits.weak_signal_reacquire_physical_captures_per_target,
+        )
+        physical.record(
+            phase="logical-0-auto", physical_count=10,
+            auto_exposure=True, weak_reacquire=False,
+        )
+        for index in range(limits.weak_signal_reacquire_physical_captures_per_target):
+            physical.record(
+                phase=f"logical-{index + 1}-base", physical_count=1,
+                auto_exposure=False, weak_reacquire=False,
+            )
+            physical.record(
+                phase=f"logical-{index + 1}-weak-signal-reacquire", physical_count=1,
+                auto_exposure=False, weak_reacquire=True,
+            )
+        remaining_logical = (
+            limits.logical_per_target
+            - 1
+            - limits.weak_signal_reacquire_physical_captures_per_target
+        )
+        for index in range(remaining_logical):
+            physical.record(
+                phase=f"logical-fixed-{index}", physical_count=1,
+                auto_exposure=False, weak_reacquire=False,
+            )
+
+        capture_calls = []
+
+        def capture(_command, *, phase, settled_confirmation):
+            capture_calls.append((phase, settled_confirmation))
+            raise AssertionError("logical gate must run before the capture callback")
+
+        with self.assertRaises(HsiLogicalBudgetExhausted) as caught:
+            run_hsi_feedback(
+                initial_command={
+                    "cw": 1000, "ww": 4095, "r": 1000, "g": 1000, "b": 1000,
+                },
+                active_channel="ww",
+                capture_observation_fn=capture,
+                rounds=limits.feedback_attempts_per_start,
+                confirmations=confirmations_per_group,
+                thermal_rebases=limits.rebase_count_per_start,
+                group_order=("coordinate", "rendering"),
+                start_budget=start_budgets[-1],
+            )
+
+        self.assertFalse(capture_calls)
+        self.assertEqual(caught.exception.evidence["status"], "solver_budget_exhausted")
+        self.assertEqual(caught.exception.evidence["sub_budget"], "initial")
+        self.assertEqual(sum(budget.logical_used for budget in start_budgets), expected_logical)
+        self.assertEqual(limits.logical_per_target, expected_logical)
+        self.assertEqual(physical.physical_used, expected_physical)
+        self.assertEqual(physical.remaining(), 0)
+        self.assertEqual(limits.physical_per_target, expected_physical)
+
     def test_linear_feedback_converges_and_confirms(self):
         target = np.asarray([0.4, 0.6, 0.2, 0.8])
         calls = []

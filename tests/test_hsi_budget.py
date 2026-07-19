@@ -17,7 +17,8 @@ class HsiBudgetTests(unittest.TestCase):
         self.assertEqual(EXHAUSTIBILITY_MATRIX["logical.feedback_attempts"]["classification"], "production_reachable")
         self.assertEqual(EXHAUSTIBILITY_MATRIX["logical.confirmation_groups"]["classification"], "production_reachable")
         self.assertEqual(EXHAUSTIBILITY_MATRIX["logical.feedback_attempts"]["counter_scope"], "start")
-        self.assertEqual(EXHAUSTIBILITY_MATRIX["physical.pre_capture_denial"]["classification"], "production_reachable")
+        self.assertEqual(EXHAUSTIBILITY_MATRIX["physical.pre_capture_denial"]["classification"], "guarded_unreachable")
+        self.assertEqual(EXHAUSTIBILITY_MATRIX["physical.pre_capture_denial"]["formal_status"], "not_emitted")
         self.assertEqual(EXHAUSTIBILITY_MATRIX["physical.pre_capture_denial"]["counter_scope"], "target")
         self.assertEqual(EXHAUSTIBILITY_MATRIX["physical.autoexposure_overrun"]["classification"], "fatal_accounting_error")
         self.assertTrue(all(
@@ -31,10 +32,15 @@ class HsiBudgetTests(unittest.TestCase):
     def test_exhaustibility_path_match_is_exact_and_distinguishes_physical_trigger(self):
         path_id, _contract = match_exhaustibility_path(
             sub_budget="physical_cr3", origin="physical_target", counter_scope="target",
-            capture_attempted=False, formal_status="solver_budget_exhausted",
-            phase="candidate_feedback-7",
+            capture_attempted=False, phase="candidate_feedback-7",
         )
         self.assertEqual(path_id, "physical.pre_capture_denial")
+        with self.assertRaisesRegex(ValueError, "exactly one"):
+            match_exhaustibility_path(
+                sub_budget="physical_cr3", origin="physical_target", counter_scope="target",
+                capture_attempted=False, formal_status="solver_budget_exhausted",
+                phase="candidate_feedback-7",
+            )
         path_id, _contract = match_exhaustibility_path(
             sub_budget="physical_cr3", origin="physical_target", counter_scope="target",
             capture_attempted=True, formal_status="physical_budget_accounting_violation",

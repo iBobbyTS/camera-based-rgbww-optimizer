@@ -12,7 +12,11 @@ import numpy as np
 
 from camera_based_rgbww_optimizer.control.all_off import ShutdownStep
 from camera_based_rgbww_optimizer.measurement.ray_hsi_manifold import RayHsiManifold
-from camera_based_rgbww_optimizer.optimization.hsi_budget import HsiPhysicalBudget, HsiSolverBudgetLimits
+from camera_based_rgbww_optimizer.optimization.hsi_budget import (
+    EXHAUSTIBILITY_MATRIX,
+    HsiPhysicalBudget,
+    HsiSolverBudgetLimits,
+)
 from camera_based_rgbww_optimizer.optimization.hsi_feedback import run_hsi_feedback_multiseed
 from camera_based_rgbww_optimizer.optimization import analyze_strip_hsi_pilot
 from camera_based_rgbww_optimizer.optimization import measure_strip_hsi_pilot as subject
@@ -359,26 +363,70 @@ class MeasureStripHsiPilotTests(unittest.TestCase):
                 with self.subTest(case=case), self.assertRaisesRegex(ValueError, "category|exhaustion"):
                     analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
 
-    def test_v2_public_analyzer_rejects_guarded_initial_exhaustion_path(self):
+    def test_v2_public_analyzer_rejects_every_guarded_exhaustion_path(self):
         with tempfile.TemporaryDirectory() as tempdir:
             root = Path(tempdir)
             policy = _frozen_policy_v2_file(root)
             plan = subject.build_strip_hsi_pilot_plan(
                 policy_version="v2", policy_v2_config_path=policy,
             )
-            run_root = root / "guarded-initial"
+            run_root = root / "guarded-paths"
             _execute_fake_v2_plan(plan, run_root)
             _write_shell_cleanup(run_root)
-            _append_fake_exhausted_start(
-                run_root, plan, category="initial", phases=["initial"],
-            )
-
-            with self.assertRaisesRegex(ValueError, "frozen path contract|not production reachable"):
-                analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(
-                    run_root, policy_version="v2",
+            rows_path = run_root / "target-results.jsonl"
+            original = [json.loads(line) for line in rows_path.read_text(encoding="utf-8").splitlines()]
+            example_phases = {
+                "logical.initial": "initial",
+                "logical.initial_probes": "probe-ww",
+                "logical.rebase_probes": "prediction-rebase-2-ww",
+                "logical.confirmation_captures": "confirm-2-0",
+                "logical.rebases": "prediction-rebase-2",
+                "logical.total": "feedback-8",
+                "physical.pre_capture_denial": "candidate_feedback-8",
+                "physical.weak_reacquire": "candidate_feedback-8",
+            }
+            guarded = {
+                path_id: contract
+                for path_id, contract in EXHAUSTIBILITY_MATRIX.items()
+                if contract["classification"] == "guarded_unreachable"
+            }
+            self.assertEqual(set(guarded), set(example_phases))
+            for path_id, contract in guarded.items():
+                rows = copy.deepcopy(original)
+                row = rows[0]
+                feedback = row["feedback"]
+                start_index = int(feedback["selected_start_index"])
+                selected = feedback["selected_result"]
+                ledger = {
+                    "path_id": path_id,
+                    "pre_capture_exhaustion": True,
+                    "status": "solver_budget_exhausted",
+                    "origin": contract["origin"],
+                    "counter_scope": contract["counter_scope"],
+                    "sub_budget": contract["sub_budget"],
+                    "phase": example_phases[path_id],
+                    "requested_physical_cr3": 1 if contract["counter_scope"] == "target" else 0,
+                    "produced_physical_cr3": 0,
+                    "physical_cr3_used": int(row["physical_budget"]["physical_cr3_used"]),
+                    "autoexposure_physical_cr3_used": int(row["physical_budget"]["autoexposure_physical_cr3_used"]),
+                    "weak_reacquire_physical_cr3_used": int(row["physical_budget"]["weak_reacquire_physical_cr3_used"]),
+                    "capture_attempted": False,
+                    "start_index": start_index,
+                }
+                selected["budget_exhaustion"] = ledger
+                selected["budget"]["exhaustion"] = copy.deepcopy(ledger)
+                feedback["attempts"][start_index]["result"] = selected
+                rows_path.write_text(
+                    "\n".join(json.dumps(item) for item in rows) + "\n", encoding="utf-8",
                 )
+                with self.subTest(path_id=path_id), self.assertRaisesRegex(
+                    ValueError, "exhaustion path is not production reachable",
+                ):
+                    analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(
+                        run_root, policy_version="v2",
+                    )
 
-    def test_production_solver_physical_exhaustion_is_canonicalized_symmetrically(self):
+    def test_runner_refuses_guarded_physical_pre_capture_exhaustion(self):
         physical = HsiPhysicalBudget(hard_cap=67, autoexposure_cap=10, weak_reacquire_cap=4)
         physical.record(phase="retained", physical_count=67, auto_exposure=False, weak_reacquire=False)
         calls = 0
@@ -413,29 +461,16 @@ class MeasureStripHsiPilotTests(unittest.TestCase):
             capture_observation_fn=capture,
             max_starts=2, rounds_per_start=8, budget_limits=limits,
         )
-        subject._canonicalize_feedback_exhaustion(
-            feedback, physical_budget=physical,
-            capture_audit_by_id={"retained-0": {"physical_cr3": 1, "auto_exposure": False, "weak_reacquire": False, "target_index": 0}},
-        )
         exhausted = [attempt["result"] for attempt in feedback["attempts"] if attempt["result"]["status"] == "solver_budget_exhausted"]
         self.assertTrue(exhausted)
-        for result in exhausted:
-            self.assertEqual(result["budget_exhaustion"], result["budget"]["exhaustion"])
-            self.assertEqual(result["budget_exhaustion"]["counter_scope"], "target")
-            self.assertFalse(result["budget_exhaustion"]["capture_attempted"])
-            self.assertEqual(result["budget_exhaustion"]["produced_physical_cr3"], 0)
-            analyze_strip_hsi_pilot._validate_pre_capture_exhaustion(
-                result["budget_exhaustion"], target_key=(0, 0),
-                expected_start_index=result["budget_exhaustion"]["start_index"],
-                expected_counters={
-                    "physical_cr3_used": 67,
-                    "autoexposure_physical_cr3_used": 0,
-                    "weak_reacquire_physical_cr3_used": 0,
-                },
-                expected_budget=result["budget"],
-                expected_physical_budget={
-                    "hard_cap": 67, "autoexposure_cap": 10,
-                    "weak_reacquire_cap": 4,
+        with self.assertRaisesRegex(ValueError, "runner refuses non-production exhaustion path"):
+            subject._canonicalize_feedback_exhaustion(
+                feedback, physical_budget=physical,
+                capture_audit_by_id={
+                    "retained-0": {
+                        "physical_cr3": 1, "auto_exposure": False,
+                        "weak_reacquire": False, "target_index": 0,
+                    },
                 },
             )
 
@@ -669,25 +704,36 @@ class MeasureStripHsiPilotTests(unittest.TestCase):
             self.assertEqual(analysis["status"], "blocked_for_planner_review")
             self.assertFalse(replay)
 
-    def test_post_capture_physical_overrun_is_fatal_accounting_violation(self):
+    def test_all_post_capture_physical_overruns_are_fatal_accounting_violations(self):
         with tempfile.TemporaryDirectory() as tempdir:
             root = Path(tempdir)
             policy_path = _frozen_policy_v2_file(root)
             plan = subject.build_strip_hsi_pilot_plan(policy_version="v2", policy_v2_config_path=policy_path)
-            run_root = root / "physical-overrun"
-            with self.assertRaises(subject.HsiPhysicalBudgetAccountingViolation):
-                _execute_fake_v2_plan(plan, run_root, first_target_physical_count=11)
-            failure = json.loads((run_root / "failure.json").read_text(encoding="utf-8"))
-            cleanup = json.loads((run_root / "all-off-python.json").read_text(encoding="utf-8"))
-            self.assertEqual(failure["type"], "HsiPhysicalBudgetAccountingViolation")
-            self.assertEqual(failure["message"], "physical_budget_accounting_violation")
-            self.assertTrue(failure["evidence"]["capture_attempted"])
-            self.assertEqual(failure["evidence"]["produced_physical_cr3"], 11)
-            self.assertEqual(failure["evidence"]["path_id"], "physical.autoexposure_overrun")
-            produced = Path(failure["evidence"]["saved_file"])
-            self.assertTrue(produced.is_file())
-            self.assertGreater(produced.stat().st_size, 0)
-            self.assertTrue(all(item["ok"] for item in cleanup["steps"]))
+            cases = (
+                ("auto", {"first_target_physical_count": 11}, "physical.autoexposure_overrun", 11),
+                ("hard", {"first_target_physical_count": 68}, "physical.post_capture_overrun", 68),
+                (
+                    "weak",
+                    {"first_target_initial_weak": True, "weak_reacquire_physical_count": 5},
+                    "physical.weak_reacquire_overrun",
+                    5,
+                ),
+            )
+            for label, kwargs, expected_path, expected_count in cases:
+                run_root = root / f"{label}-overrun"
+                with self.subTest(label=label), self.assertRaises(subject.HsiPhysicalBudgetAccountingViolation):
+                    _execute_fake_v2_plan(plan, run_root, **kwargs)
+                failure = json.loads((run_root / "failure.json").read_text(encoding="utf-8"))
+                cleanup = json.loads((run_root / "all-off-python.json").read_text(encoding="utf-8"))
+                self.assertEqual(failure["type"], "HsiPhysicalBudgetAccountingViolation")
+                self.assertEqual(failure["message"], "physical_budget_accounting_violation")
+                self.assertTrue(failure["evidence"]["capture_attempted"])
+                self.assertEqual(failure["evidence"]["produced_physical_cr3"], expected_count)
+                self.assertEqual(failure["evidence"]["path_id"], expected_path)
+                produced = Path(failure["evidence"]["saved_file"])
+                self.assertTrue(produced.is_file())
+                self.assertGreater(produced.stat().st_size, 0)
+                self.assertTrue(all(item["ok"] for item in cleanup["steps"]))
 
     def test_v2_analyzer_rejects_duplicate_capture_and_auto_audit_drift(self):
         with tempfile.TemporaryDirectory() as tempdir:
@@ -1012,6 +1058,8 @@ def _execute_fake_v2_plan(
     reject_feedback_as_weak: bool = False,
     exhaust_feedback_backtracks: bool = False,
     first_target_physical_count: int | None = None,
+    first_target_initial_weak: bool = False,
+    weak_reacquire_physical_count: int | None = None,
 ):
     manifold = RayHsiManifold.load()
     target_by_index = {target["index"]: target for target in plan["targets"]}
@@ -1050,9 +1098,18 @@ def _execute_fake_v2_plan(
         ) or (
             exhaust_feedback_backtracks and step["source"] == "strip"
             and "feedback-" in purpose and "backtrack-0.25" not in purpose
+        ) or (
+            first_target_initial_weak and step["source"] == "strip"
+            and target_index is not None and int(target_index) == 0
+            and purpose == "candidate_initial"
         )
         report.write_text(json.dumps(_report(values, raw, weak=weak)), encoding="utf-8")
         physical_count = (
+            int(weak_reacquire_physical_count)
+            if weak_reacquire_physical_count is not None and step["source"] == "strip"
+            and target_index is not None and int(target_index) == 0
+            and purpose.endswith("weak-signal-reacquire")
+            else
             int(first_target_physical_count)
             if first_target_physical_count is not None and step["source"] == "strip"
             and target_index is not None and int(target_index) == 0

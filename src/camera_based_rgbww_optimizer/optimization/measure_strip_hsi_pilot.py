@@ -984,7 +984,6 @@ def _canonicalize_feedback_exhaustion(
             origin=origin,
             counter_scope=scope,
             capture_attempted=False,
-            formal_status="solver_budget_exhausted",
             phase=phase,
         )
         if contract["classification"] != "production_reachable":
