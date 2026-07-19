@@ -1930,7 +1930,7 @@ P7-R0I 只允许修复 `R0H-REV-001`、补齐 exhaustion formal integration fixt
 ```text
 current_phase = P7_R0I
 stage_status = offline_complete_waiting_for_planner_acceptance
-current_head = 140d40e (待本轮 focused commit)
+current_head = 60b07108f43a8ebbd52e2bb8a608b7b66ca0771e
 worktree_state = dirty(Planner R0I decision plus analyzer/integration fixtures/readiness/docs/PLAN)
 authorization = offline_only; all device and named-experiment gates locked
 run_dir = tmp/strip-hsi-pilot-offline/p7-r0i-v7-20260718-final
