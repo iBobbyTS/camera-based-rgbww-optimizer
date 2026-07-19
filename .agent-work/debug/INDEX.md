@@ -15,6 +15,7 @@
 
 | file | summary |
 | --- | --- |
+| resolved/20260719-p7-r1-wrapper-exit-evidence.md | P7-R1 long-task wrapper now atomically preserves PID/log state and exact child, cleanup, signal, and final exit evidence across six fake-only paths. |
 | resolved/20260718-p7-d0-wrapper-exit-evidence.md | D0 wrapper now preserves atomic child, cleanup, signal, and final exit evidence across six fake-only paths. |
 | resolved/20260718-p7-d0-device-state-preflight.md | Initial D0 validly failed before low output; firmware OTA and independent zero readback later resolved its firmware prerequisite. |
 | resolved/20260718-p7-r0k-executable-exhaustibility.md | P7-R0K freezes physical pre-capture denial as guarded, proves n=3/n=5 logical preemption, and keeps all produced-CR3 overruns fatal. |

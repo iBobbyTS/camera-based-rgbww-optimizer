@@ -722,10 +722,14 @@ priority as `128+n`, followed by the original child failure; a cleanup-only
 failure maps to `70`. Cleanup stdout and stderr remain separate, and cleanup is
 run exactly once.
 The execution CLI is fail-closed unless both `--allow-high-output` and the exact
-`--named-experiment p7_targeted_reference_repeatability_v2` are supplied.
-P7-R1 still requires Planner acceptance plus a new explicit named-experiment
-authorization. New sentinel, remaining nine, boundary, holdout, and P8 remain
-locked.
+`--named-experiment p7_targeted_reference_repeatability_v2` are supplied. The
+long-task wrapper records adjacent running/finished state with wrapper and child
+PIDs plus runner/wrapper logs, then atomically retains child, shell-cleanup,
+signal, and final wrapper exit evidence. Signal `128+n` outranks child failure,
+child failure outranks cleanup-only exit `70`, and cleanup runs exactly once.
+The PLAN section 4.4 continuous package authorizes one exact R1 only after the
+same-session D0 gate passes; this does not authorize a second R1. New sentinel,
+remaining nine, boundary, holdout, and P8 remain locked.
 
 ## Location Picker
 

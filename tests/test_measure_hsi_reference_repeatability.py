@@ -2,7 +2,12 @@ from __future__ import annotations
 
 import json
 import copy
+import os
+import shutil
+import signal
+import subprocess
 import tempfile
+import time
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -122,11 +127,85 @@ class MeasureHsiReferenceRepeatabilityTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "Python and shell cleanup"):
                 analyzer.analyze_reference_repeatability_run(root2, monte_carlo_samples=1000, bootstrap_replicates=100)
 
-    def test_shell_wrapper_has_independent_trap_cleanup(self):
-        wrapper = (Path(__file__).parents[1] / "tmp" / "run-hsi-reference-repeatability.zsh").read_text(encoding="utf-8")
-        self.assertIn("trap cleanup EXIT", wrapper)
-        self.assertIn("camera_based_rgbww_optimizer.control.all_off", wrapper)
-        self.assertIn("p7_targeted_reference_repeatability_v2", wrapper)
+    def test_shell_wrapper_records_atomic_long_task_exit_evidence_and_cleanup_once(self):
+        cases = [
+            ("success", None, 0, 0, 0, "complete", None),
+            ("failure", None, 7, 0, 7, "child_failed", None),
+            ("cleanup_failure", None, 0, 9, 70, "cleanup_failed", None),
+            ("sleep", signal.SIGINT, 130, 0, 130, "signaled", "INT"),
+            ("sleep", signal.SIGTERM, 143, 0, 143, "signaled", "TERM"),
+            ("sleep", signal.SIGHUP, 129, 0, 129, "signaled", "HUP"),
+        ]
+        for mode, sent_signal, child_code, cleanup_code, wrapper_code, status, signal_name in cases:
+            with self.subTest(mode=mode, sent_signal=sent_signal), tempfile.TemporaryDirectory() as tempdir:
+                root, wrapper, call_log = _make_fake_r1_wrapper_project(Path(tempdir))
+                run_dir = root / "runs" / f"{mode}-{getattr(sent_signal, 'name', 'exit')}"
+                state_path = run_dir.parent / f"{run_dir.name}.wrapper-state.json"
+                env = os.environ.copy()
+                env["FAKE_RUNNER_MODE"] = mode
+                env["FAKE_CALL_LOG"] = str(call_log)
+                ready_file = Path(tempdir) / "runner-ready"
+                env["FAKE_READY_FILE"] = str(ready_file)
+                process = subprocess.Popen(
+                    ["zsh", str(wrapper), str(run_dir)], env=env,
+                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                    start_new_session=True,
+                )
+                try:
+                    if sent_signal is not None:
+                        deadline = time.monotonic() + 5
+                        while (not ready_file.exists() or not state_path.exists()) and time.monotonic() < deadline:
+                            time.sleep(0.02)
+                        self.assertTrue(ready_file.exists())
+                        running_state = _load_json(state_path)
+                        self.assertEqual(running_state["status"], "running")
+                        os.kill(process.pid, sent_signal)
+                    process.wait(timeout=8)
+                finally:
+                    if process.poll() is None:
+                        os.killpg(process.pid, signal.SIGKILL)
+                        process.wait(timeout=5)
+
+                calls = call_log.read_text(encoding="utf-8").splitlines()
+                cleanup_calls = [line for line in calls if "camera_based_rgbww_optimizer.control.all_off" in line]
+                runner_calls = [line for line in calls if "measure_hsi_reference_repeatability" in line]
+                self.assertEqual(len(cleanup_calls), 1)
+                self.assertEqual(len(runner_calls), 1)
+                self.assertIn("--named-experiment p7_targeted_reference_repeatability_v2", runner_calls[0])
+                self.assertEqual(process.returncode, wrapper_code)
+                self.assertEqual((run_dir / "child-exit-status.txt").read_text(encoding="utf-8").strip(), str(child_code))
+                self.assertEqual((run_dir / "all-off-shell.exit-status.txt").read_text(encoding="utf-8").strip(), str(cleanup_code))
+
+                result = _load_json(run_dir / "wrapper-result.json")
+                state = _load_json(state_path)
+                self.assertEqual(result["experiment"], subject.EXPERIMENT_NAME)
+                self.assertEqual(result["status"], status)
+                self.assertEqual(result["child_exit_code"], child_code)
+                self.assertEqual(result["shell_cleanup_exit_code"], cleanup_code)
+                self.assertEqual(result["wrapper_exit_code"], wrapper_code)
+                self.assertEqual(result["signal"], signal_name)
+                self.assertEqual(Path(result["artifacts"]["run_dir"]), run_dir.resolve())
+                self.assertEqual(Path(result["artifacts"]["shell_cleanup"]), run_dir.resolve() / "all-off-shell.json")
+                self.assertEqual(state["experiment"], subject.EXPERIMENT_NAME)
+                self.assertEqual(state["status"], "finished")
+                self.assertEqual(state["wrapper_pid"], process.pid)
+                self.assertEqual(state["child_pid"], result["child_pid"])
+                self.assertEqual(state["wrapper_exit_code"], wrapper_code)
+                self.assertEqual(Path(state["run_dir"]), run_dir.resolve())
+                self.assertEqual(Path(state["runner_log"]), run_dir.parent.resolve() / f"{run_dir.name}.runner.log")
+                self.assertEqual(Path(state["wrapper_log"]), run_dir.parent.resolve() / f"{run_dir.name}.wrapper.log")
+                self.assertFalse(list(run_dir.glob(".*.tmp.*")))
+                self.assertFalse(list(run_dir.parent.glob(".*.tmp.*")))
+                self.assertNotIn("secret", json.dumps([result, state]).lower())
+                self.assertNotIn("token", json.dumps([result, state]).lower())
+
+                cleanup_stdout = (run_dir / "all-off-shell.json").read_text(encoding="utf-8")
+                self.assertIn('"name": "esphome"', cleanup_stdout)
+                cleanup_stderr = (run_dir / "all-off-shell.stderr.log").read_text(encoding="utf-8")
+                if mode == "cleanup_failure":
+                    self.assertIn("fake cleanup failed", cleanup_stderr)
+                else:
+                    self.assertEqual(cleanup_stderr, "")
 
     def test_analyzer_finalizer_writes_only_formal_ineligible_candidate(self):
         plan = subject.build_targeted_reference_repeatability_plan(
@@ -564,6 +643,50 @@ def _report(values, raw):
             },
         } for patch, planes in sorted(grouped.items())],
     }
+
+
+def _make_fake_r1_wrapper_project(tempdir: Path):
+    root = tempdir / "project"
+    (root / "tmp").mkdir(parents=True)
+    (root / ".venv/bin").mkdir(parents=True)
+    (root / "config/location").mkdir(parents=True)
+    source = Path(__file__).parents[1] / "tmp/run-hsi-reference-repeatability.zsh"
+    wrapper = root / "tmp/run-hsi-reference-repeatability.zsh"
+    shutil.copy2(source, wrapper)
+    fake_python = root / ".venv/bin/python"
+    fake_python.write_text("""#!/usr/bin/env python3
+import json
+import os
+import signal
+import sys
+import time
+
+with open(os.environ["FAKE_CALL_LOG"], "a", encoding="utf-8") as handle:
+    handle.write(" ".join(sys.argv[1:]) + "\\n")
+if len(sys.argv) > 1 and sys.argv[1] == "-c":
+    os.execv(sys.executable, [sys.executable, *sys.argv[1:]])
+if "camera_based_rgbww_optimizer.control.all_off" in sys.argv:
+    print(json.dumps([{"name": "esphome", "ok": True}, {"name": "ray120c", "ok": True}]))
+    if os.environ.get("FAKE_RUNNER_MODE") == "cleanup_failure":
+        print("fake cleanup failed", file=sys.stderr)
+        raise SystemExit(9)
+    raise SystemExit(0)
+mode = os.environ.get("FAKE_RUNNER_MODE", "success")
+if mode in {"success", "cleanup_failure"}:
+    raise SystemExit(0)
+if mode == "failure":
+    raise SystemExit(7)
+for signum in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+    signal.signal(signum, lambda received, _frame: sys.exit(128 + received))
+open(os.environ["FAKE_READY_FILE"], "w", encoding="utf-8").write("ready\\n")
+time.sleep(30)
+""", encoding="utf-8")
+    fake_python.chmod(0o755)
+    return root, wrapper, tempdir / "calls.log"
+
+
+def _load_json(path: Path):
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

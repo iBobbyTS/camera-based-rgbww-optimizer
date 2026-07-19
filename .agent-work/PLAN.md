@@ -12,15 +12,17 @@
 
 **已验收 firmware OTA 检查点：** `ac36e77eff13c09da88ff54fd8b34cbb9673120a`
 
-**当前阶段：** P7-D0 / `p7_strip_state_readback_preflight`
+**已验收 D0 wrapper 检查点：** `3aa613051d2c1c8f6f4f4b94778bb9ef01cbec86`
 
-**当前状态：** `d0_wrapper_evidence_ready_waiting_for_planner_acceptance`
+**当前阶段：** P7-D0 → P7-R1 连续工作包
 
-**本次授权解释：** 用户先授权并完成 generation-bearing WebUI firmware 编译，随后明确授权刷写。该授权已经由第 3.10 节记录的一次 OTA、刷写前后关灯和零输出 device-state 验证完整消耗；Planner 已在第 3.11 节验收。Planner 更新第 3.12 节后，Human 在同一交接消息中又明确“允许D0低输出重跑，最高 raw PWM 为 48”。该新增授权只可在 Planner 验收第 3.13 节离线收口后消费一次，Executor 不得重复询问；它不包含相机访问、真实 CR3、P7-R1、sentinel-v2 或其他高输出实验。
+**当前状态：** `d0_and_p7_r1_continuous_package_authorized`
 
-**Planner 验收结论：** 原 D0 run 作为有效失败证据验收；generation-bearing firmware 的 compile、OTA、重新上线、独立零输出 readback 和三层关灯证据验收。`D0-FIRMWARE-MISSING` 的 installed-firmware 前置阻塞已解决，但完整五步 D0 尚未通过。
+**本次授权解释：** Human 已授权一次 exact D0 低输出重跑；本轮又明确要求“下一步给它工作多一点，允许高亮度开灯，不要工作一小段就停下”。Planner 将后一句保守且精确地限定为第 4.4 节的一个连续工作包：D0 通过后，在同一 Executor goal 内执行一次 exact `p7_targeted_reference_repeatability_v2`，允许计划内 Ray 100% HSI、五组 exact strip command（最高 code 4095）、remote camera 最多 250 张 physical CR3 和最多 160 次 60 秒 settling。Executor 可直接消费，不得再次询问；它不包含第二次完整 R1、sentinel-v2、remaining 9、boundary、holdout、P8、firmware 或默认配置安装。
 
-**下一条唯一动作：** Planner 只验收第 3.13 节的 wrapper 退出证据修复、测试和 dry-run。若验收通过，可把已记录的一次 exact `p7_strip_state_readback_preflight` Human 授权标为 executable；本轮 Executor 在此停止，不得访问设备、自动重跑 D0 或启动 P7-R1。
+**Planner 验收结论：** 第 3.13 节 D0 wrapper 离线收口通过，见第 3.14 节；一次 D0 重跑授权现已 executable。R1 已经离线实现，但其长任务 wrapper 必须先按第 4.4.1 节补齐同等级退出/cleanup 证据，之后才可进入设备步骤。
+
+**下一条唯一动作：** Executor 连续完成第 4.4 节：离线加固 R1 wrapper → 一次 D0 → D0-PASS 后直接完整 R1 acquisition → analyzer/finalizer/audit。除真实失败或安全分支外，不得在 D0-PASS 后停止交还 Planner；完成 R1 后才停在 Planner 决策门。
 
 ---
 
@@ -40,14 +42,15 @@
 
 Executor 可以：
 
-- 完成当前明确授权的代码、测试和 dry-run；只有授权矩阵改为“是”时才可执行一次真实 preflight；
-- 离线修复当前阶段暴露的确定性代码问题；实机重试必须由本计划记录新的 exact Human authorization，并使用全新 run 目录；
+- 完成第 4.4 节明确授权的离线代码、测试、dry-run、一次 D0 和条件式一次完整 P7-R1；
+- D0-PASS 后在同一 goal 自动进入 P7-R1，不需要再次请求 Human 或 Planner；
+- 离线修复当前阶段暴露的确定性代码问题；任何重新进行已开始的完整高输出 run 都需要新的 Human authorization；
 - 更新 docs、项目 skill、本计划状态和 debug 记录；
 - 按仓库 Git 规则形成聚焦提交，但不得 push 或创建 PR。
 
 Executor 不可以：
 
-- 把本次“可以继续”解释为 firmware upload、P7-R1 或高输出授权；
+- 把本次高输出授权扩大为第二次完整 P7-R1、sentinel-v2、remaining 9、boundary、holdout、P8、firmware 或任意手工灯光命令；
 - 手工读取、打印、source 或持久化 `.env`、ESPHome key 或 remote camera token；
 - 修改 58-feature、RAW observer、coverage、guard band、P6 manifold、solver budget 或 target set；
 - 覆盖任何默认 LUT；
@@ -79,16 +82,18 @@ R0K 已经通过 Planner 验收。不得继续审计或重写 exhaustion contrac
 | 动作 | 当前是否授权 | 说明 |
 | --- | --- | --- |
 | 离线实现 preflight module/tests/wrapper | 是，主体已完成 | 保留既有 module/tests；只补第 3.12 节退出证据 |
-| 离线修复 D0 wrapper 退出证据 | 是，已完成待验收 | 第 3.13 节；全程未调用网络、设备、`.env`、all-off 或真实 execute |
-| ESPHome 低输出 readback preflight 重跑 | 是，待 Planner 验收后一次 | Human 已明确授权 exact D0 低输出重跑，raw PWM 最大 48；本轮不得执行 |
-| Ray120c 关灯命令 | 有条件 | 仅未来已授权实机 preflight 的 cleanup 或已发生事件的 recovery；当前离线任务禁止调用 |
-| Python/shell `all_off` | 有条件 | 仅未来已授权实机 preflight 的安全路径或已发生事件的 recovery；当前离线任务禁止调用 |
-| 相机 remote health/config/capture | 否 | 当前阶段不需要相机 |
-| 读取 `.env` | 否 | 当前 module 不得加载；后续相机脚本自行加载 |
-| firmware compile | 是，已完成 | 用户于 2026-07-18 明确要求“开始编译”；仅 WebUI candidate，不含上传 |
+| 离线修复 D0 wrapper 退出证据 | 是，已完成并验收 | `3aa6130` / 第 3.14 节 |
+| 离线加固 P7-R1 wrapper | 是 | 第 4.4.1 节；先完成，零设备 |
+| ESPHome 低输出 readback preflight 重跑 | 是，一次 | exact D0；raw PWM 最大 48；D0-PASS 后直接进入 R1 |
+| Ray120c 高输出 | 是，有界一次 R1 | 只允许 H0/S0、H120/S100、H300/S100，intensity 100%；其余只允许 intensity 0 |
+| ESPHome strip 高输出 | 是，有界一次 R1 | 只允许第 4.4.3 节五组 command；最高 channel code 4095 |
+| Python/shell `all_off` | 是 | D0/R1 preflight、finally、trap、异常 recovery；不得独立点亮 |
+| 相机 remote health/config/capture | 是，有界一次 R1 | remote-only；82 logical，physical absolute cap 250 |
+| 读取 `.env` | 脚本内允许 | 仅正式 remote camera/Ray/ESPHome 客户端自行加载；禁止人工读取、打印、source 或持久化 |
+| firmware compile | 已完成，本包禁止 | 已验收 WebUI candidate；不得重编译 |
 | firmware install | 否 | 不得安装或升级依赖 |
-| firmware upload | 是，已完成 | exact WebUI OTA artifact → `bedroom-rgbww-strip.local`；前后关灯及零输出验证通过，不含 D0 重跑 |
-| `p7_targeted_reference_repeatability_v2` | 否 | 必须在 preflight 经 Planner 验收后另行授权 |
+| firmware upload | 已完成，本包禁止 | exact WebUI OTA artifact 已上传并验收；不得再次刷写 |
+| `p7_targeted_reference_repeatability_v2` | 是，条件式一次 | 仅 D0-PASS 后；完整 acquisition、analysis、finalizer 后停止 |
 | `p7_sentinel_4_v2` | 否 | 需 P7-R1 通过和新的高输出授权 |
 | remaining 9 / boundary / holdout / P8 | 否 | 继续锁定 |
 
@@ -106,7 +111,7 @@ R0K 已经通过 Planner 验收。不得继续审计或重写 exhaustion contrac
 - 不证明 firmware 已正确编译；
 - 不刷写 firmware；
 - 不运行任何高输出；
-- 不放行 P7-R1。
+- 不凭 D0 本身无条件放行 P7-R1；只有第 4.4 节全部授权、hash、preflight 和 D0-PASS 条件同时满足时才可连续进入。
 
 ### 3.2 已实现正式执行面（冻结）
 
@@ -293,7 +298,7 @@ Wrapper 必须：
 - Python/shell cleanup 均两步成功；
 - child、shell cleanup 和 wrapper 三个退出码均为 0，`wrapper-result.json` 与文本退出码证据一致；
 - 无 failure、CR3、`.npy` 或 secret；
-- 更新本计划证据后停止，交还 Planner。
+- 在当前第 4.4 节连续工作包内，先把 D0 artifact/hash 写入本计划，然后直接进入 P7-R1 preflight；不得仅因 D0-PASS 停止交还 Planner。
 
 `D0-FIRMWARE-MISSING`：缺少 generation-bearing entity 或 required services。保留 run/failure/cleanup，停止。不得安装 ESPHome CLI、编译或刷写；向 Planner 报告当前 firmware diff、目标设备和 recovery 方案，等待用户单独授权。
 
@@ -449,9 +454,9 @@ current_state = d0_wrapper_evidence_ready_waiting_for_rerun_authorization
 next_action = Human explicitly authorizes one exact p7_strip_state_readback_preflight rerun
 ```
 
-#### 3.12.2 已获 Human 授权、待离线验收的未来实机范围
+#### 3.12.2 已获 Human 授权且经 Planner 放行的实机范围
 
-Human 已在本次 Planner 交接消息中明确授权下述范围。Planner 只有验收第 3.13 节离线收口后才可把它标为 executable；Executor 随后可消费一次且不得再次询问：
+Human 已明确授权下述范围，Planner 已在第 3.14 节验收离线收口并把它标为 executable。Executor 可消费一次且不得再次询问：
 
 ```text
 named experiment = p7_strip_state_readback_preflight
@@ -463,10 +468,11 @@ Ray = intensity 0 only
 camera/CR3/NPY = prohibited
 cleanup = Python finally + final verified zero + shell trap
 firmware compile/upload = prohibited
-P7-R1 and later = prohibited
+P7-R1 = only the separately authorized section 4.4 package after D0-PASS
+sentinel-v2 and later = prohibited
 ```
 
-本轮必须在离线收口后停止，不能把同一 Executor turn 自动延伸为实机重跑。OTA 授权已经消耗；本次 D0 授权来自 Human 在第 3.12 节交接后的独立明确许可。
+OTA 授权已经消耗；本次 D0 授权来自 Human 在第 3.12 节交接后的独立明确许可。当前新 Executor goal 必须把 D0 与第 4.4 节条件式 R1 视为一个连续工作包。
 
 ### 3.13 Executor 离线收口结果（2026-07-18）
 
@@ -505,21 +511,40 @@ dry-run = dry_run_complete / 5 steps / raw PWM max 48 / curve_path null /
 
 未运行 wrapper 或 module `--execute`，未调用 ESPHome、Ray、相机、`.env` 或 `control.all_off`。本轮在此停止并交还 Planner；即使 Human 授权已记录，也不得在同一轮继续实机。
 
+### 3.14 Planner 验收：D0 wrapper 离线收口（2026-07-18）
+
+```text
+checkpoint = 3aa613051d2c1c8f6f4f4b94778bb9ef01cbec86
+planner_verdict = accepted
+d0_rerun_authorization = executable_once
+device_calls_during_review = 0
+```
+
+Planner 复核了 wrapper 实现、确定性测试和 dry-run，并独立重跑 focused D0/device/all-off suite，结果 `17/17` 通过。实现满足：
+
+- child、shell cleanup、signal 和最终 wrapper exit 分别保存；
+- cleanup stdout/stderr 分离且失败不被吞掉；
+- success、child failure、cleanup failure、INT、TERM、HUP 都保持 cleanup exactly once；
+- 最终退出优先级、原子落盘和无 secret 合同与第 3.4 至 3.6 节一致；
+- dry-run 恰好五步、最大 raw PWM 48、全部 `curve_path=null`，`run.json` 明确 device/camera calls 为 false。
+
+没有发现需要阻止 D0 的代码问题。若未来发生 artifact 写入或 cleanup 失败，D0-PASS 本身要求三层 exit artifact 完整且为零，因此会 fail closed。无需 Advisor 或额外 wrapper 重构。
+
 ---
 
-## 4. P7-R1：Targeted Reference/Repeatability（锁定）
+## 4. P7-R1：Targeted Reference/Repeatability（条件式已授权）
 
 ### 4.1 解锁条件
 
 必须全部满足：
 
-1. D0-PASS 经 Planner 验收；
-2. 用户另行明确授权 exact named experiment `p7_targeted_reference_repeatability_v2`；
+1. 当前新 run 达到第 3.7 节全部 D0-PASS 条件；当前连续工作包允许 Executor 按冻结条件自审后直接继续，最终与 R1 一并交 Planner 复验；
+2. Human 已通过“允许高亮度开灯，不要工作一小段就停下”授权 exact named experiment `p7_targeted_reference_repeatability_v2` 的第 4.4 节范围；
 3. 若 D0 要求 firmware upload，upload 已另行授权、完成并重新通过 D0；
 4. 当前 checkout、R0K readiness、location/manifold/observer/basis/hash 未漂移；
 5. 新 session 重新执行 all-off、remote health/config、Ray get/readback 与 source isolation preflight。
 
-本次“可以继续”不满足第 2 条。
+上述授权只能在 D0-PASS 后消费一次。任何 D0 非 PASS 分支都不得进入 R1。
 
 ### 4.2 冻结协议
 
@@ -555,6 +580,197 @@ Strip 50 张：冻结旧 sentinel 的 H0/S0@4095、H120/S100@4095、H120/S50@409
 - `R-MEASUREMENT/CODE/SAFETY`：整个 run invalid；双关灯、保留证据、修复后全新目录完整重跑。
 
 R1 完成后必须由 Planner 验收并冻结 v2 artifact/hash。不得自动进入 sentinel-v2。
+
+### 4.4 当前连续执行包
+
+#### 4.4.1 Phase A：先离线加固长任务 wrapper
+
+当前 `tmp/run-hsi-reference-repeatability.zsh` 仍会把 cleanup stderr 混入 JSON、以 `|| true` 丢弃 cleanup exit、在 `set -e` 下直接 `wait`，且 INT/TERM/HUP 都返回固定 `128`。在高输出 R1 前，Executor 必须把第 3.13 节已验收的退出证据语义局部移植到该 wrapper；这是当前唯一设备前代码修改。
+
+不得抽取新的跨-wrapper framework。保持 R1 wrapper 自己拥有长任务 PID/log/trap，新增并原子保存：
+
+```text
+<run-name>.wrapper-state.json     # run 目录相邻
+<run-name>.wrapper.log            # run 目录相邻
+child-exit-status.txt
+all-off-shell.json
+all-off-shell.stderr.log
+all-off-shell.exit-status.txt
+wrapper-result.json
+```
+
+相邻的 `wrapper-state.json` 至少记录 experiment、absolute run dir、wrapper PID、child PID、runner/wrapper log、UTC start 和状态。它不得在 child 启动前写进 run 目录，因为正式 Python runner 要求 run 目录为空；其余 exit/cleanup artifact 只能在 child 已取得 run 目录所有权后写入。`wrapper-result.json` 使用第 3.4 节相同字段，把 experiment 改为 `p7_targeted_reference_repeatability_v2`。退出优先级保持：signal `128+n`；否则 child 非零；否则 cleanup 非零映射 70；否则 0。正常/异常/signal 都必须 cleanup exactly once；signal 先传给 child，等待 Python finally，再执行 shell cleanup。
+
+在 `tests/test_measure_hsi_reference_repeatability.py` 使用 fake child/fake cleanup 覆盖 success、child failure、cleanup failure、INT、TERM、HUP，并断言：PID/路径、三层 exit、signal、stdout/stderr、原子临时文件清零、cleanup once 和无 secret。保留现有 analyzer/runner 行为测试，不改变 measurement、policy、solver 或 capture budget。
+
+设备前检查必须全部通过：
+
+```text
+focused D0 + P7-R1 + device/all-off tests
+full unittest suite
+compileall src tests
+all five current P6/P7 wrappers zsh -n
+git diff --check
+codegraph sync
+```
+
+然后仅生成一次带 exact named authorization 的 R1 dry-run，审计第 4.4.3 节全部字段。Phase A 不得访问 `.env`、网络、ESPHome、Ray、相机、`all_off` 或任何 `--execute`。检查通过后不要停，直接进入 Phase B。
+
+Phase A 检查通过后先形成一个聚焦提交，包含本次 Planner PLAN、R1 wrapper、测试及对应 docs/skill/debug 更新；记录 clean worktree 和 exact HEAD。D0 与 R1 必须在该同一 clean checkpoint 上运行，禁止带未提交执行代码开始实机。
+
+#### 4.4.1a Executor Phase A 离线收口（2026-07-19）
+
+```text
+phase_a_status = pass_waiting_for_clean_checkpoint
+device_calls = 0
+authorized_dry_run = tmp/hsi-reference-repeatability-offline/executor-authorized-scope-20260719-001154-dry
+```
+
+Executor 已把 D0 已验收的退出语义局部移植到 R1 wrapper，未抽取新的共享 framework。相邻状态文件在 child 启动后原子记录 absolute run dir、wrapper/child PID、runner/wrapper log、UTC start 和 running/finished；run-owned artifact 分别保留 child、shell cleanup、signal 和 wrapper exit。退出优先级为 signal `128+n` → child 非零 → cleanup-only `70` → `0`，六条 fake 路径均证明 cleanup exactly once。
+
+离线验证：
+
+```text
+focused D0/R1/device/all-off = 36/36 pass in 20.544s
+full unittest = 432/432 pass in 146.058s
+compileall src tests = pass
+five P6/P7 wrappers zsh -n = pass
+git diff --check = pass
+codegraph sync = pass
+```
+
+Exact named dry-run 重建 82 logical、30 Ray、50 strip、2 ambient、physical cap 250、8 exposure caches、每 cache 最多 12 trials、最多 80 weak reacquire、160 次/9600 秒 settling，以及第 4.4.3 节五组 strip command、三组 Ray state 和全部冻结 input hash。`formal_capture_eligible=false`；offline contract 中 env/network/device/all-off 调用均为 0。Phase A 未访问 `.env`、网络、ESPHome、Ray、相机、`all_off` 或任何 `--execute`。
+
+#### 4.4.2 Phase B：一次 D0，PASS 后连续推进
+
+使用全新目录并且只通过 `tmp/run-strip-state-readback-preflight.zsh` 执行一次。D0 完成后程序化审计第 3.7 节全部条件和 wrapper exit artifacts。
+
+- `D0-PASS`：把 run dir、五次 generation、identity、payload、cleanup、exit 和 artifact hash 写入本计划；不交还 Planner，立即进入 Phase C。
+- 任一非 PASS：禁止进入 R1；确认 Python/shell cleanup，缺任一证据立即执行 recovery `control.all_off` 并保存结果，然后停止交还 Planner。
+- 不允许为了获得 PASS 删除失败 run 或在本工作包自动消费第二次 D0。
+
+#### 4.4.3 Phase C：Human 授权的 exact R1 高输出边界
+
+Planner 已生成零设备授权范围快照：
+
+```text
+scope snapshot = tmp/hsi-reference-repeatability-offline/planner-authorized-scope-20260718/plan.json
+snapshot sha256 = 243d844d093a15f0196ca16bacf6e00860b9d14797737ec39727b488c3ca573b
+named experiment = p7_targeted_reference_repeatability_v2
+run count = one complete acquisition attempt
+camera backend = remote
+```
+
+该 snapshot 只用于审计 scope，不作为可变 runtime 输入。正式 run 必须重新构建 plan，并逐项匹配下列冻结输入：
+
+```text
+sentinel run.json = 2a6cf9147c322b1a0913d059007150d0b05ca2491e6aa620e11522616fed422b
+sentinel plan.json = 02d2dfa913ce5983cabc777b975a8b0323151ea56ce307eaf763b42ae93e92bf
+sentinel target-results.jsonl = 00cad843d2b8ceb96a82044ef9ab04a6b7d5a52c93e2a560f4ccaccb60f25f1b
+policy v2 waiting = db9ebef1503c5e54c989649c719c4a5f75445bbd5487edb14c274e1b2894f3b4
+Ray manifold = 20baaa26679039590679a122a5b4d2e658eae867c63e98d0a5d0556a2dc3bc34
+location = 21f02328bff8b5ffcfc10c767e15cdefbf8bb883bc352eff6f0fb7ade38a8f80
+RAW observer = b81d563eba1910286d879e560538dd497385e422c1bab762008c2b28a26fc4d9
+code-duty curve = 0b03ce50bda13112c95d64d1f5974991514067bbd9f48e920214654c122ff911
+P6 run.json = 1c208227e453992a443a782f57693d56adaa3752271f88254dd2a370d7d3a357
+P6 captures.jsonl = 2548a79bd90ca0d2177ded12388571f43b841840ecb26c23eaa397fefe958643
+```
+
+Ray 只允许以下 HSI，均为 intensity 100%，每 state 在 A/B block 各 5 次：
+
+```text
+H0/S0
+H120/S100
+H300/S100
+```
+
+Strip 只允许以下五组 command；字段顺序为 `(cw,ww,r,g,b)`，A/B block 各 5 次：
+
+```text
+h0-s0-fullscale          = (4095,4095,0,1887,1535)
+h120-s100-fullscale      = (518,0,0,4095,0)
+h120-s50-fullscale       = (4095,0,0,3118,13)
+h300-s100-fullscale      = (406,0,4095,0,1541)
+h0-s0-scale-relaxed-3072 = (3072,2816,0,1416,1152)
+```
+
+其他输出只允许 strip 全零和 Ray intensity 0。禁止手工命令、其他 Hue/SAT、其他 strip command 或提高预算。
+
+Capture/时间边界冻结为：
+
+```text
+logical = 82 exactly
+formal = 80 exactly = 30 Ray + 50 strip
+ambient = 2
+physical CR3 = 82..170 without weak reacquire; 82..250 permitted; hard cap 250
+auto-exposure caches = 8
+auto-exposure trials/cache miss <= 12; total auto-exposure physical <= 96
+weak-reacquire physical <= 80
+target_max = 19661
+shutter = 1/16000..25 s
+off/on settling = 1 s off + 60 s on per formal/reacquire event
+60-second events <= 160; settling total <= 9600 s
+retained NPY = 0
+```
+
+Human 的高亮授权覆盖上述 bounded Ray/strip 输出、remote camera capture 和脚本内部凭据加载。它不授权第二个完整 R1 run。
+
+#### 4.4.4 Phase D：preflight、启动与长任务监督
+
+正式 R1 前依次执行并保存证据：
+
+1. `control.all_off`，要求 ESPHome 五通道全零 acknowledgement 和 Ray intensity 0；
+2. remote camera `/health` 与 `/v1/config`，不得打印或保存 token；
+3. Ray node-config、当前 HSI/get readback 与 off readback；
+4. D0-PASS 的 exact device identity/MAC/entity 与当前 checkout/hash 未漂移；
+5. 带 named authorization 的正式 `plan.json` 已在点亮前落盘，且第 4.4.3 节 scope 全部匹配。
+
+Preflight 可在确定性代码修复后最多重新执行一次，但每次都必须先后 all-off；不得在 preflight 未全通过时发送高输出。
+
+正式根目录：
+
+```text
+/Volumes/4T/temp/rgbww-optimizer/hsi-reference-repeatability/
+```
+
+只能通过已加固的 `tmp/run-hsi-reference-repeatability.zsh` 启动。使用独立 Terminal/TTY 或可跨 task 恢复的后台进程，保存 wrapper/child PID、TTY、run dir、runner/wrapper logs 和 UTC start。启动后监督至少五分钟，确认 captures/attempts 持续落盘、无 `failure.json`、每张只有一个 source、readback 精确且 CR3 非空。
+
+五分钟健康检查后不得停止或杀死任务，也不得短间隔轮询。按已完成 capture 和实际耗时估计完成时间，为当前 task 使用一次性恢复机制；恢复时先检查同一 PID/run/log。若仍运行，重新估时并安排下一次单次恢复。Executor 的 goal 保持覆盖到 acquisition 完成、analysis/finalizer 和交接，不得只把后台 PID 留给用户后就宣称本阶段完成。
+
+#### 4.4.5 Phase E：完成审计、analysis 与 finalizer
+
+只有 wrapper 和 child 都退出后执行：
+
+1. 验证 `run.json.status=complete`、82 logical/80 formal、physical 计数及各 sub-budget 在冻结范围；
+2. 验证全部 CR3 非空、每条 selected capture 有 recorded exposure/patch statistics、零 `.npy`、无 `failure.json`；
+3. 从 retained commands/capture-attempts 重算 source isolation、exact readback、capture ownership 和计数；
+4. 验证 Python cleanup、shell cleanup、child/cleanup/wrapper exit 全部成功且 artifact 一致；
+5. 运行：
+
+```bash
+.venv/bin/python -m camera_based_rgbww_optimizer.optimization.analyze_hsi_reference_repeatability \
+  RUN_DIR --policy-version v2 \
+  --monte-carlo-samples 20000 \
+  --bootstrap-replicates 400 \
+  --seed 27072026
+```
+
+6. 验证 `analysis.json` 与 `strip-hsi-policy-v2-candidate.json` 均存在并记录 SHA-256；candidate 必须保持 `calibrated_waiting_for_planner`、`formal_capture_eligible=false`；
+7. 更新本计划、docs、项目 skill 和 resolved/unresolved debug evidence，运行 focused/full/compileall/wrapper syntax/diff-check/CodeGraph，形成聚焦提交。
+
+#### 4.4.6 连续推进的停止分支
+
+- D0 非 PASS、identity/readback/source mismatch、cleanup unknown：立即停止，禁止 R1。
+- R1 wrapper 离线测试不通过：继续离线修复到通过；不得提前访问设备。
+- R1 preflight 两次仍失败：双关灯、保留证据并停止。
+- R1 高输出开始后任何 runner/camera/readback/measurement/physical-budget/cleanup failure：保留当前完整证据并停止；不得自动启动第二个完整 R1。
+- R1 acquisition complete：必须继续完成 analyzer/finalizer/audit，不能在采集结束即交还。
+- `R-PASS`：停在 Planner 对 candidate/hash 的正式验收；不得自动 sentinel-v2。
+- `R-REFERENCE-EPOCH`：停给 Planner/Advisor 决定 epoch，不得同 run 重拟合 P6。
+- `R-REFERENCE-UNSTABLE`、`R-STRIP-CLASS-HIGH` 或 `uncertainty_unresolved`：保留具体 failed state/command/region，停给 Planner；不得放宽阈值。
+- 缺任一 Python/shell cleanup 或进程消失但 run 仍 running：立即 recovery all-off 并保存独立证据。
+
+该 R1 停止点预计包含最多 250 张 CR3 和最多 9600 秒 settled high-output evidence，属于完整测量阶段，而不是短 preflight。Sentinel-v2 仍锁定，因为 R1 新 candidate 的 covariance/coverage/guard 是否可冻结只能依据本次未发生的测量结果决定。
 
 ---
 
@@ -766,17 +982,18 @@ next_action =
 
 ```text
 current_phase = P7_D0
-stage_status = pass_waiting_for_planner
-current_head = ac36e77eff13c09da88ff54fd8b34cbb9673120a plus this focused Executor delta pending commit
-worktree_state = preserves the Planner PLAN update and contains only the section 3.12 offline closure delta
-authorization = Human authorized one exact D0 low-output rerun at raw PWM max 48 after Planner accepts section 3.13; no camera/P7-R1/high-output authorization
-run_dir = dry-run tmp/strip-state-readback-preflight-offline/p7-d0-wrapper-evidence-20260718-234814-dry; historical failed real run remains unchanged
-input_hashes = section 1.3
-capture_counts = offline dry-run five planned transitions; device calls 0; CR3 0; NPY 0
-analysis = wrapper reconstructs child/cleanup/signal/final exit across success, child failure, cleanup failure, INT, TERM and HUP; five-step device contract unchanged
-failure_evidence = historical launch gap retained; new fake regression proves old broad test missed exact exit evidence and validates the repaired contract
-cleanup_evidence = fake-only cleanup exactly once; stdout/stderr and exit code independently retained; no real all-off invoked
-tests = focused 17/17; full 432/432 in 168.035s; compileall, five wrapper syntax checks, diff-check, CodeGraph and audited dry-run pass
-branch = D0_WRAPPER_EVIDENCE_READY_PENDING_PLANNER_ACCEPTANCE
-next_action = Planner accepts or rejects section 3.13; this Executor turn stops without device access or P7-R1
+stage_status = implementation_complete_waiting_for_clean_checkpoint
+current_head = Phase A focused commit pending; record exact checkpoint before D0
+worktree_state = Phase A wrapper/tests/PLAN/docs/skill/debug ready to commit; no device call occurred
+authorization = one exact D0 at raw PWM max 48, then only on D0-PASS one exact P7-R1 with Ray 100%, strip max code 4095, remote camera and physical CR3 cap 250; no second R1 or sentinel-v2
+run_dir = next fresh D0 and R1 directories; scope snapshot tmp/hsi-reference-repeatability-offline/planner-authorized-scope-20260718
+runner_pid_tty = none; Executor must record for real R1
+input_hashes = sections 1.3 and 4.4.3
+capture_counts = D0 five transitions; conditional R1 82 logical/80 formal/82..250 physical; not yet executed
+analysis = D0 wrapper offline closure accepted; R1 wrapper exit-evidence hardening and exact authorized dry-run passed offline
+failure_evidence = historical D0 failure retained; no new failure
+cleanup_evidence = no device call during Planner review; future D0/R1 require Python plus shell cleanup and independent exit evidence
+tests = Executor focused 36/36, full 432/432, compileall, five wrapper syntax checks, diff check and CodeGraph sync pass
+branch = CONTINUOUS_D0_THEN_P7_R1_AUTHORIZED
+next_action = create focused Phase A commit and exact clean checkpoint, then run one D0; on D0-PASS continue directly to R1
 ```
