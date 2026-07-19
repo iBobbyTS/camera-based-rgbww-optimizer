@@ -12,11 +12,11 @@
 
 **当前阶段：** P7-D0 / `p7_strip_state_readback_preflight`
 
-**当前状态：** `fail_waiting_for_planner`
+**当前状态：** `compiled_waiting_for_upload_authorization`
 
 **本次授权解释：** 用户在 Planner 明确说明唯一下一动作是 `p7_strip_state_readback_preflight` 后回复“可以继续”。该授权只覆盖本计划第 3 节的离线实现、低输出设备 preflight 和必要的双关灯；不包含 firmware upload、相机访问、真实 CR3、P7-R1、sentinel-v2 或其他高输出实验。
 
-**下一条唯一动作：** Planner 复验第 3.8 节的 `D0-FIRMWARE-MISSING` 与 `D0-CLEANUP-UNKNOWN` 证据，并决定是否向用户申请单独的 firmware compile/upload 授权。Executor 不得自动编译、刷写、重试 D0 或启动 P7-R1。
+**下一条唯一动作：** generation-bearing WebUI firmware 已按用户单独授权完成编译；Planner 应复验第 3.9 节的 artifact 证据并决定是否向用户申请单独的 firmware upload 授权。Executor 不得自动刷写、重试 D0 或启动 P7-R1。
 
 ---
 
@@ -80,7 +80,8 @@ R0K 已经通过 Planner 验收。不得继续审计或重写 exhaustion contrac
 | Python/shell `all_off` | 是 | preflight 安全路径 |
 | 相机 remote health/config/capture | 否 | 当前阶段不需要相机 |
 | 读取 `.env` | 否 | 当前 module 不得加载；后续相机脚本自行加载 |
-| firmware compile/install/upload | 否 | CLI 缺失时也不得联网安装 |
+| firmware compile | 是，已完成 | 用户于 2026-07-18 明确要求“开始编译”；仅 WebUI candidate，不含上传 |
+| firmware install/upload | 否 | 不得安装依赖、运行 `esphome run/upload` 或连接设备 |
 | `p7_targeted_reference_repeatability_v2` | 否 | 必须在 preflight 经 Planner 验收后另行授权 |
 | `p7_sentinel_4_v2` | 否 | 需 P7-R1 通过和新的高输出授权 |
 | remaining 9 / boundary / holdout / P8 | 否 | 继续锁定 |
@@ -308,6 +309,26 @@ recovery-all-off.json sha256 = a1387d5e207f4318bce4ed57c93265ecb39b0692a060bd43d
 启动外层 shell 在 wrapper 后打印了字面 `WRAPPER_EXIT=0`，没有捕获真实 `$?`；该行不能作为 wrapper exit evidence。正式 `runner.log`、`run.json` 和 `failure.json` 均明确记录失败，shell trap artifact 已生成。该调用证据缺口不影响 firmware/readback 结论，但必须保留，重跑 D0 时应显式记录 wrapper exit code。
 
 本阶段在此停止。P7-R1、sentinel-v2、remaining 9、boundary、holdout、Gate-6 和 P8 继续锁定，不需要 Advisor 介入。
+
+### 3.9 Generation-bearing firmware 编译结果（2026-07-18）
+
+用户明确要求“开始编译”后，Executor 只执行了 WebUI candidate 的本地编译：
+
+```text
+command = .venv/bin/python -m esphome compile firmware/esphome/bedroom-rgbww-strip-webui.yaml
+esphome = 2026.5.2
+input common sha256 = deaf0a0717130b60805e3beddb9fa3b59e0f8695d8a22d4f2997859235082ab0
+verified run = tmp/firmware-compile/webui-20260718-230656-verified
+exit = 0
+RAM = 46512 / 327680 bytes (14.2%)
+Flash = 893343 / 1835008 bytes (48.7%)
+firmware.ota.bin = 893744 bytes / c24a60463d37314b0c041188ec2d55dbb1be19614fb512a5a619308137cbcbc0
+firmware.factory.bin = 959280 bytes / ed8c868277e4a8ac0315365f308576f8e8a55a1ea5f09c2e82df7f7927fe2ffc
+```
+
+编译使用已有 ESPHome/PlatformIO 环境，没有执行依赖安装。第一次完整编译本体成功，但记录 shell 误用 zsh 只读变量 `status`，外层退出为 1；该日志保留在前一个 run 目录，不作为正式退出证据。随后使用修正后的记录变量做增量复编，得到上述 `exit=0`、持续落盘日志、artifact size 和 SHA-256。
+
+本次没有执行 `esphome run`、`esphome upload`、设备连接、灯光命令或 D0 重跑。新 candidate 尚未安装到设备，因此第 3.8 节的 `D0-FIRMWARE-MISSING` 与 `D0-CLEANUP-UNKNOWN` 仍是当前实机状态；firmware upload 仍需用户单独批准。
 
 ---
 

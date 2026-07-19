@@ -64,8 +64,10 @@ No-WebUI variant:
 
 WebUI variant:
 
-- Status: compiled and OTA-validated on hardware as `bedroom-rgbww-strip` on
-  2026-06-06.
+- Status: the generation-bearing candidate was compiled successfully with
+  ESPHome `2026.5.2` on 2026-07-18. It has not been uploaded or validated on
+  hardware. The hardware observations below describe the older image validated
+  on 2026-06-06, not this newly compiled candidate.
 - Hostname after OTA: `bedroom-rgbww-strip.local`, resolving to
   `192.168.31.21` during validation.
 - Verified ports after OTA: Native API `6053`, ESPHome OTA `3232`, WebUI `80`.
@@ -77,10 +79,10 @@ WebUI variant:
   `{'red': 0, 'green': 0, 'blue': 0, 'warm_white': 0, 'cold_white': 0}`.
 - OTA binary:
   `firmware/esphome/.esphome/build/bedroom-rgbww-strip-webui/.pioenvs/bedroom-rgbww-strip/firmware.ota.bin`
-  (`885552 bytes`, `SHA256 57f37196bab1af3289f9a464ef83b334d2d73f32e6a59b92717240e03d0fcbb3`)
+  (`893744 bytes`, `SHA256 c24a60463d37314b0c041188ec2d55dbb1be19614fb512a5a619308137cbcbc0`)
 - Factory binary:
   `firmware/esphome/.esphome/build/bedroom-rgbww-strip-webui/.pioenvs/bedroom-rgbww-strip/firmware.factory.bin`
-  (`951088 bytes`, `SHA256 23e0d601dc4bd2083ecd60a782c4ae6fb12c59df38d593fbf49b2c17e75975fb`)
+  (`959280 bytes`, `SHA256 ed8c868277e4a8ac0315365f308576f8e8a55a1ea5f09c2e82df7f7927fe2ffc`)
 
 ESPHome/PlatformIO stores toolchains under `~/.platformio/` and build outputs
 under `firmware/esphome/.esphome/`.
