@@ -708,6 +708,14 @@ ESPHome command acknowledgement is explicitly not device readback. The formal
 entrypoints now require an independent generation-bearing `rgbww_commanded_state`
 snapshot; the offline fake verifies stale generation, channel mismatch, missing
 entity, and timeout failures. The firmware config is not flashed by this phase.
+Before any P7-R1 execution, run the separately authorized low-output device gate
+only through `tmp/run-strip-state-readback-preflight.zsh RUN_DIR`. Its frozen raw
+PWM sequence is zero, `(cw,ww,r,g,b)=(8,16,24,32,48)` twice, zero, then a final
+verified zero after Python all-off; every call bypasses the code-duty curve and
+must advance the device generation with an exact, stable name/MAC snapshot.
+The wrapper adds an independent EXIT/INT/TERM/HUP all-off trap. A missing state
+entity, identity/readback drift, or unverified cleanup stops at P7-D0 and does
+not authorize firmware upload, camera access, or P7-R1.
 The execution CLI is fail-closed unless both `--allow-high-output` and the exact
 `--named-experiment p7_targeted_reference_repeatability_v2` are supplied.
 P7-R1 still requires Planner acceptance plus a new explicit named-experiment

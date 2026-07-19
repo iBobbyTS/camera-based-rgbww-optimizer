@@ -14,10 +14,10 @@ from camera_based_rgbww_optimizer.optimization.hsi_source_evidence import (
 
 
 class _FakeClient:
-    def __init__(self, *_args, baseline=None, observed=None, missing_entity=False, **_kwargs):
+    def __init__(self, *_args, baseline=None, observed=None, entity_count=1, **_kwargs):
         self.baseline = baseline
         self.observed = observed
-        self.missing_entity = missing_entity
+        self.entity_count = entity_count
         self.callback = None
         self.disconnected = False
 
@@ -28,7 +28,10 @@ class _FakeClient:
         self.disconnected = True
 
     async def device_info_and_list_entities(self):
-        entities = [] if self.missing_entity else [SimpleNamespace(object_id=esphome.STATE_OBJECT_ID, key=7)]
+        entities = [
+            SimpleNamespace(object_id=esphome.STATE_OBJECT_ID, key=7 + index)
+            for index in range(self.entity_count)
+        ]
         services = [SimpleNamespace(name=esphome.SET_SERVICE), SimpleNamespace(name=esphome.OFF_SERVICE)]
         return SimpleNamespace(name=esphome.DEFAULT_EXPECTED_NAME, mac_address="fake"), entities, services
 
@@ -42,11 +45,11 @@ class _FakeClient:
 
 
 class EspHomeVerifiedStateTests(unittest.TestCase):
-    def _run(self, baseline, observed, *, missing_entity=False, timeout=0.02):
+    def _run(self, baseline, observed, *, entity_count=1, timeout=0.02):
         with tempfile.TemporaryDirectory() as tempdir:
             secrets = Path(tempdir) / "secrets.yaml"
             secrets.write_text("api_encryption_key: fake\n", encoding="utf-8")
-            client = _FakeClient(baseline=baseline, observed=observed, missing_entity=missing_entity)
+            client = _FakeClient(baseline=baseline, observed=observed, entity_count=entity_count)
             result = asyncio.run(esphome.async_verified_light(
                 5, 4, 1, 2, 3, secrets_path=secrets, curve_path=None,
                 state_timeout=timeout, client_factory=lambda *_args, **_kwargs: client,
@@ -65,8 +68,9 @@ class EspHomeVerifiedStateTests(unittest.TestCase):
 
     def test_missing_entity_channel_mismatch_and_stale_generation_fail_closed(self):
         baseline = _snapshot(10, red=0, green=0, blue=0, warm_white=0, cold_white=0)
-        with self.assertRaisesRegex(RuntimeError, "missing or duplicated"):
-            self._run(baseline, None, missing_entity=True)
+        for entity_count in (0, 2):
+            with self.subTest(entity_count=entity_count), self.assertRaisesRegex(RuntimeError, "missing or duplicated"):
+                self._run(baseline, None, entity_count=entity_count)
         mismatch = _snapshot(11, red=9, green=2, blue=3, warm_white=4, cold_white=5)
         with self.assertRaisesRegex(ValueError, "channels differ"):
             self._run(baseline, mismatch)
