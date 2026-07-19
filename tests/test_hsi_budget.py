@@ -3,6 +3,7 @@ from __future__ import annotations
 import unittest
 
 from camera_based_rgbww_optimizer.optimization.hsi_budget import (
+    EXHAUSTIBILITY_MATRIX,
     HsiPhysicalBudget,
     HsiPhysicalBudgetExhausted,
     HsiSolverBudgetLimits,
@@ -11,6 +12,14 @@ from camera_based_rgbww_optimizer.optimization.hsi_budget import (
 
 
 class HsiBudgetTests(unittest.TestCase):
+    def test_exhaustibility_matrix_freezes_scope_and_reachability(self):
+        self.assertEqual(EXHAUSTIBILITY_MATRIX["feedback_attempts"]["classification"], "production_reachable")
+        self.assertEqual(EXHAUSTIBILITY_MATRIX["feedback_attempts"]["counter_scope"], "start")
+        self.assertEqual(EXHAUSTIBILITY_MATRIX["physical_cr3"]["classification"], "production_reachable")
+        self.assertEqual(EXHAUSTIBILITY_MATRIX["physical_cr3"]["counter_scope"], "target")
+        self.assertEqual(EXHAUSTIBILITY_MATRIX["autoexposure"]["classification"], "fatal_accounting_error")
+        self.assertTrue(all("call_point" in item and "formal_status" in item for item in EXHAUSTIBILITY_MATRIX.values()))
+
     def test_planner_caps_are_exact_for_n3_and_n5(self):
         ordinary = HsiSolverBudgetLimits(confirmations_per_group=3)
         boundary = HsiSolverBudgetLimits(confirmations_per_group=5)

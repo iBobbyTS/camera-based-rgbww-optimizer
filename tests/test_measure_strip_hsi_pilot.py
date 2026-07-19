@@ -12,6 +12,8 @@ import numpy as np
 
 from camera_based_rgbww_optimizer.control.all_off import ShutdownStep
 from camera_based_rgbww_optimizer.measurement.ray_hsi_manifold import RayHsiManifold
+from camera_based_rgbww_optimizer.optimization.hsi_budget import HsiPhysicalBudget, HsiSolverBudgetLimits
+from camera_based_rgbww_optimizer.optimization.hsi_feedback import run_hsi_feedback_multiseed
 from camera_based_rgbww_optimizer.optimization import analyze_strip_hsi_pilot
 from camera_based_rgbww_optimizer.optimization import measure_strip_hsi_pilot as subject
 
@@ -174,6 +176,11 @@ class MeasureStripHsiPilotTests(unittest.TestCase):
         self.assertTrue(all(row["feedback"]["kind"] == "hsi_bounded_multiseed_feedback_v2" for row in rows))
         self.assertTrue(all(row["feedback"]["budget_declaration"]["max_logical_observations_per_target"] == 54 for row in rows))
         self.assertTrue(all(row["physical_budget"]["physical_cr3_used"] <= 67 for row in rows))
+        self.assertTrue(all(
+            attempt["result"].get("budget_exhaustion") is None
+            and attempt["result"]["budget"].get("exhaustion") is None
+            for row in rows for attempt in row["feedback"]["attempts"]
+        ))
         self.assertEqual(analysis["policy_version"], "v2")
         self.assertEqual(analysis["point_count"], 4)
         self.assertEqual(analysis["anchor_validation"]["anchor_count"], 12)
@@ -323,26 +330,6 @@ class MeasureStripHsiPilotTests(unittest.TestCase):
                 with self.subTest(case=case), self.assertRaisesRegex(ValueError, "exhaustion"):
                     analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
 
-    def test_v2_public_analyzer_accepts_five_frozen_category_exhaustions(self):
-        with tempfile.TemporaryDirectory() as tempdir:
-            root = Path(tempdir)
-            policy = _frozen_policy_v2_file(root)
-            plan = subject.build_strip_hsi_pilot_plan(policy_version="v2", policy_v2_config_path=policy)
-            categories = {
-                "initial": ["initial"],
-                "initial_probes": [f"probe-{index}" for index in range(4)],
-                "feedback_attempts": [f"feedback-{index}" for index in range(8)],
-                "rebase_probes": [f"rebase-{index // 4}-probe-{index % 4}" for index in range(8)],
-                "confirmation_captures": [f"confirm-{index // 3}-{index % 3}" for index in range(6)],
-            }
-            for category, phases in categories.items():
-                run_root = root / category
-                _execute_fake_v2_plan(plan, run_root)
-                _write_shell_cleanup(run_root)
-                _append_fake_exhausted_start(run_root, plan, category=category, phases=phases)
-                analysis = analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
-                self.assertEqual(analysis["status"], "ready_for_sentinel_branch")
-
     def test_v2_public_analyzer_rejects_category_under_over_and_phase_drift(self):
         with tempfile.TemporaryDirectory() as tempdir:
             root = Path(tempdir)
@@ -371,6 +358,235 @@ class MeasureStripHsiPilotTests(unittest.TestCase):
                     rows_path.write_text("\n".join(json.dumps(item) for item in rows) + "\n", encoding="utf-8")
                 with self.subTest(case=case), self.assertRaisesRegex(ValueError, "category|exhaustion"):
                     analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
+
+    def test_production_solver_physical_exhaustion_is_canonicalized_symmetrically(self):
+        physical = HsiPhysicalBudget(hard_cap=67, autoexposure_cap=10, weak_reacquire_cap=4)
+        physical.record(phase="retained", physical_count=67, auto_exposure=False, weak_reacquire=False)
+        calls = 0
+
+        def capture(command, *, phase, settled_confirmation):
+            nonlocal calls
+            calls += 1
+            if calls > 1:
+                return {
+                    "measurement_rejected": True,
+                    "rejection_evidence": physical.evidence(phase=phase, requested=1),
+                }
+            return {
+                "residuals": {"coordinate": [2.0, 2.0], "rendering": [0.0, 0.0]},
+                "objective": {
+                    "kind": "ray_hsi_policy_v2_lexicographic", "feasible": False,
+                    "hue_defined": True, "hue_error_degrees": 2.0,
+                    "sat_error_percent": 2.0, "coordinate_guarded_limit": 1.0,
+                    "coordinate_guarded_excess": 1.0,
+                    "color_rendering_residual": {"whitened_score": 0.0},
+                    "command_continuity_l1": 0.0,
+                },
+                "capture_id": "retained-0",
+            }
+
+        limits = HsiSolverBudgetLimits()
+        feedback = run_hsi_feedback_multiseed(
+            seeds=[
+                {"active_channel": "cw", "command": {"cw": 4095, "ww": 1000, "r": 1000, "g": 1000, "b": 1000}},
+                {"active_channel": "ww", "command": {"cw": 1000, "ww": 4095, "r": 1000, "g": 1000, "b": 1000}},
+            ],
+            capture_observation_fn=capture,
+            max_starts=2, rounds_per_start=8, budget_limits=limits,
+        )
+        subject._canonicalize_feedback_exhaustion(
+            feedback, physical_budget=physical,
+            capture_audit_by_id={"retained-0": {"physical_cr3": 1, "auto_exposure": False, "weak_reacquire": False, "target_index": 0}},
+        )
+        exhausted = [attempt["result"] for attempt in feedback["attempts"] if attempt["result"]["status"] == "solver_budget_exhausted"]
+        self.assertTrue(exhausted)
+        for result in exhausted:
+            self.assertEqual(result["budget_exhaustion"], result["budget"]["exhaustion"])
+            self.assertEqual(result["budget_exhaustion"]["counter_scope"], "target")
+            self.assertFalse(result["budget_exhaustion"]["capture_attempted"])
+            self.assertEqual(result["budget_exhaustion"]["produced_physical_cr3"], 0)
+            analyze_strip_hsi_pilot._validate_pre_capture_exhaustion(
+                result["budget_exhaustion"], target_key=(0, 0),
+                expected_start_index=result["budget_exhaustion"]["start_index"],
+                expected_counters={
+                    "physical_cr3_used": 67,
+                    "autoexposure_physical_cr3_used": 0,
+                    "weak_reacquire_physical_cr3_used": 0,
+                },
+                expected_budget=result["budget"],
+                expected_physical_budget={
+                    "hard_cap": 67, "autoexposure_cap": 10,
+                    "weak_reacquire_cap": 4,
+                },
+            )
+
+    def test_production_solver_feedback_exhaustion_is_canonicalized_with_start_counters(self):
+        target = np.asarray([0.4, 0.6, 0.2, 0.8])
+        audits = {}
+        call_index = 0
+
+        def capture(command, *, phase, settled_confirmation):
+            nonlocal call_index
+            capture_id = f"production-{call_index}"
+            call_index += 1
+            audits[capture_id] = {"physical_cr3": 1, "auto_exposure": False, "weak_reacquire": False, "target_index": 0}
+            if phase.startswith("feedback-") and "backtrack-0.25" not in phase:
+                return {
+                    "measurement_rejected": True,
+                    "rejection_evidence": {
+                        "source": "strip", "purpose": f"candidate_{phase}",
+                        "capture_ids": [capture_id], "exposure_factors": [1.0],
+                        "rejected_features": [{"status": "weak_signal"}],
+                    },
+                }
+            values = np.asarray([command[channel] / 4095.0 for channel in ("ww", "r", "g", "b")])
+            delta = values - target
+            return {
+                "residuals": {"coordinate": delta[:2].tolist(), "rendering": delta[2:].tolist()},
+                "objective": {
+                    "kind": "ray_hsi_policy_v2_lexicographic", "feasible": False,
+                    "hue_defined": True, "hue_error_degrees": float(delta[0]),
+                    "sat_error_percent": float(delta[1]), "coordinate_guarded_limit": 0.01,
+                    "coordinate_guarded_excess": float(np.linalg.norm(delta[:2])),
+                    "color_rendering_residual": {"whitened_score": float(np.linalg.norm(delta[2:]))},
+                    "command_continuity_l1": 0.0,
+                },
+                "capture_id": capture_id,
+            }
+
+        limits = HsiSolverBudgetLimits()
+        feedback = run_hsi_feedback_multiseed(
+            seeds=[
+                {"active_channel": "cw", "command": {"cw": 4095, "ww": 3000, "r": 500, "g": 3000, "b": 500}},
+                {"active_channel": "ww", "command": {"cw": 500, "ww": 4095, "r": 500, "g": 3000, "b": 500}},
+            ],
+            capture_observation_fn=capture,
+            max_starts=2, rounds_per_start=8, budget_limits=limits,
+            group_order=("coordinate", "rendering"),
+            probe_step_code=256, max_step_code=1024, damping=0.001,
+        )
+        physical = HsiPhysicalBudget(hard_cap=67, autoexposure_cap=10, weak_reacquire_cap=4)
+        subject._canonicalize_feedback_exhaustion(
+            feedback, physical_budget=physical, capture_audit_by_id=audits,
+        )
+        self.assertEqual(feedback["status"], "solver_budget_exhausted")
+        for attempt in feedback["attempts"]:
+            result = attempt["result"]
+            ledger = result["budget_exhaustion"]
+            self.assertEqual(ledger, result["budget"]["exhaustion"])
+            self.assertEqual(ledger["origin"], "logical_start")
+            self.assertEqual(ledger["counter_scope"], "start")
+            expected_ids = {
+                sample["observation"]["capture_id"] for sample in result["samples"]
+            }
+            for rejection in result["measurement_rejections"]:
+                expected_ids.update(rejection["evidence"]["capture_ids"])
+            self.assertEqual(ledger["physical_cr3_used"], len(expected_ids))
+
+    def test_formal_runner_persists_production_feedback_exhaustion_for_public_analyzer(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            policy_path = _frozen_policy_v2_file(root)
+            plan = subject.build_strip_hsi_pilot_plan(policy_version="v2", policy_v2_config_path=policy_path)
+            run_root = root / "roundtrip"
+            real_evaluate = analyze_strip_hsi_pilot.evaluate_hsi_observation_v2
+
+            def finite_json(value):
+                if isinstance(value, dict):
+                    return {key: finite_json(item) for key, item in value.items()}
+                if isinstance(value, list):
+                    return [finite_json(item) for item in value]
+                if isinstance(value, float) and not np.isfinite(value):
+                    return 1e9
+                return value
+
+            def synthetic_from_original(original, command):
+                delta = np.asarray([
+                    (command["ww"] - 1600) / 4095.0,
+                    (command["r"] - 2400) / 4095.0,
+                    (command["g"] - 1200) / 4095.0,
+                    (command["b"] - 3000) / 4095.0,
+                ])
+                objective = finite_json(copy.deepcopy(original["objective"]))
+                objective.update({
+                    "feasible": False,
+                    "coordinate_guarded_excess": float(np.linalg.norm(delta[:2])) + 1.0,
+                    "command_continuity_l1": 0.0,
+                })
+                return {
+                    **original,
+                    "residuals": {"coordinate": delta[:2].tolist(), "rendering": delta[2:].tolist()},
+                    "objective": objective,
+                }
+
+            def synthetic_evaluate(manifold, features, **kwargs):
+                return synthetic_from_original(
+                    real_evaluate(manifold, features, **kwargs), kwargs["command"],
+                )
+
+            def production_multiseed(*, capture_observation_fn, **kwargs):
+                def adapted(command, *, phase, settled_confirmation):
+                    observation = dict(capture_observation_fn(
+                        command, phase=phase, settled_confirmation=settled_confirmation,
+                    ))
+                    if phase.startswith("feedback-") and "backtrack-0.25" not in phase:
+                        return {
+                            "measurement_rejected": True,
+                            "rejection_evidence": {
+                                "source": "strip", "purpose": f"candidate_{phase}",
+                                "capture_ids": [observation["capture_id"]],
+                                "exposure_factors": [1.0],
+                                "rejected_features": [{"status": "synthetic_weak_signal"}],
+                            },
+                        }
+                    evaluated = synthetic_from_original(observation, command)
+                    return {**observation, **evaluated}
+
+                produced = finite_json(run_hsi_feedback_multiseed(
+                    capture_observation_fn=adapted, **kwargs,
+                ))
+                valid = [item for item in produced["attempts"] if item["result"].get("best") is not None]
+                selected = min(
+                    valid,
+                    key=lambda item: analyze_strip_hsi_pilot.hsi_objective_sort_key(item["result"]["best"]["objective"]),
+                )
+                produced["selected_start_index"] = selected["start_index"]
+                produced["selected_result"] = selected["result"]
+                produced["best_valid_sample"] = selected["result"]["best"]
+                return produced
+
+            with mock.patch.object(subject, "run_hsi_feedback_multiseed", side_effect=production_multiseed):
+                _execute_fake_v2_plan(plan, run_root)
+            _write_shell_cleanup(run_root)
+            rows = [json.loads(line) for line in (run_root / "target-results.jsonl").read_text(encoding="utf-8").splitlines()]
+            self.assertTrue(any(
+                attempt["result"]["status"] == "solver_budget_exhausted"
+                for row in rows for attempt in row["feedback"]["attempts"]
+            ))
+            for row in rows:
+                for attempt in row["feedback"]["attempts"]:
+                    result = attempt["result"]
+                    if result["status"] == "solver_budget_exhausted":
+                        self.assertEqual(result["budget_exhaustion"], result["budget"]["exhaustion"])
+            with mock.patch.object(analyze_strip_hsi_pilot, "evaluate_hsi_observation_v2", side_effect=synthetic_evaluate):
+                analysis = analyze_strip_hsi_pilot.analyze_strip_hsi_pilot(run_root, policy_version="v2")
+            self.assertEqual(analysis["status"], "blocked_for_planner_review")
+
+    def test_post_capture_physical_overrun_is_fatal_accounting_violation(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            policy_path = _frozen_policy_v2_file(root)
+            plan = subject.build_strip_hsi_pilot_plan(policy_version="v2", policy_v2_config_path=policy_path)
+            run_root = root / "physical-overrun"
+            with self.assertRaises(subject.HsiPhysicalBudgetAccountingViolation):
+                _execute_fake_v2_plan(plan, run_root, first_target_physical_count=11)
+            failure = json.loads((run_root / "failure.json").read_text(encoding="utf-8"))
+            cleanup = json.loads((run_root / "all-off-python.json").read_text(encoding="utf-8"))
+            self.assertEqual(failure["type"], "HsiPhysicalBudgetAccountingViolation")
+            self.assertEqual(failure["message"], "physical_budget_accounting_violation")
+            self.assertTrue(failure["evidence"]["capture_attempted"])
+            self.assertEqual(failure["evidence"]["produced_physical_cr3"], 11)
+            self.assertTrue(all(item["ok"] for item in cleanup["steps"]))
 
     def test_v2_analyzer_rejects_duplicate_capture_and_auto_audit_drift(self):
         with tempfile.TemporaryDirectory() as tempdir:
@@ -475,9 +691,12 @@ class MeasureStripHsiPilotTests(unittest.TestCase):
             valid_exhaustion = {
                 "pre_capture_exhaustion": True,
                 "status": "solver_budget_exhausted",
+                "origin": "logical_start",
+                "counter_scope": "start",
                 "sub_budget": "logical_observations",
                 "phase": "feedback-0",
                 "requested_physical_cr3": 0,
+                "produced_physical_cr3": 0,
                 "physical_cr3_used": 12,
                 "autoexposure_physical_cr3_used": 0,
                 "weak_reacquire_physical_cr3_used": 0,
@@ -686,7 +905,12 @@ def _execute_fake_plan(plan, root: Path, *, mismatch_readback: bool = False, sle
     )
 
 
-def _execute_fake_v2_plan(plan, root: Path):
+def _execute_fake_v2_plan(
+    plan, root: Path, *, force_infeasible: bool = False,
+    reject_feedback_as_weak: bool = False,
+    exhaust_feedback_backtracks: bool = False,
+    first_target_physical_count: int | None = None,
+):
     manifold = RayHsiManifold.load()
     target_by_index = {target["index"]: target for target in plan["targets"]}
     ray_state = {}
@@ -710,15 +934,31 @@ def _execute_fake_v2_plan(plan, root: Path):
             row = target_by_index[int(target_index)]
             target = manifold.target_at(row["hue"], row["sat"])
         values = {feature: target.features[feature] for feature in manifold.coordinate_feature_ids}
+        if force_infeasible and step["source"] == "strip" and target_index is not None and int(target_index) >= 0:
+            for index, feature in enumerate(manifold.coordinate_feature_ids):
+                values[feature] *= 4.0 if index % 2 == 0 else 0.25
         for plane in ("R", "G1", "G2", "B"):
             feature = next(item for item in manifold.coordinate_feature_ids if item.endswith(f"::{plane}"))
             values[feature] += (capture_count % 3 - 1) * 1e-7
         report = root / "measurements" / f"{capture_id}.json"
         report.parent.mkdir(parents=True, exist_ok=True)
-        report.write_text(json.dumps(_report(values, raw)), encoding="utf-8")
+        purpose = str(step["purpose"])
+        weak = (
+            reject_feedback_as_weak and step["source"] == "strip" and "feedback-" in purpose
+        ) or (
+            exhaust_feedback_backtracks and step["source"] == "strip"
+            and "feedback-" in purpose and "backtrack-0.25" not in purpose
+        )
+        report.write_text(json.dumps(_report(values, raw, weak=weak)), encoding="utf-8")
+        physical_count = (
+            int(first_target_physical_count)
+            if first_target_physical_count is not None and step["source"] == "strip"
+            and target_index is not None and int(target_index) == 0
+            else 1
+        )
         return {
             "capture": {"saved_file": str(raw), "byte_count": 3, "camera_backend": "remote"},
-            "patch_statistics": str(report), "physical_capture_count": 1,
+            "patch_statistics": str(report), "physical_capture_count": physical_count,
             "auto_exposure_audit": ({
                 "capture_count": 1, "trials": [], "final": {"status": "accepted"},
                 "rejected_finals": [],
@@ -807,9 +1047,12 @@ def _append_fake_exhausted_start(root: Path, plan, *, category: str, phases: lis
     ledger = {
         "pre_capture_exhaustion": True,
         "status": "solver_budget_exhausted",
+        "origin": "logical_start",
+        "counter_scope": "start",
         "sub_budget": category,
         "phase": next_phase,
         "requested_physical_cr3": 0,
+        "produced_physical_cr3": 0,
         "physical_cr3_used": len(phases),
         "autoexposure_physical_cr3_used": 0,
         "weak_reacquire_physical_cr3_used": 0,
@@ -868,7 +1111,7 @@ def _strip_device_evidence(payload, baseline_generation, generation):
     }
 
 
-def _report(values, raw):
+def _report(values, raw, *, weak: bool = False):
     grouped = {}
     for feature, value in values.items():
         patch, plane = feature.split("::")
@@ -880,8 +1123,8 @@ def _report(values, raw):
             "optimization_eligible": True,
             "planes": {
                 plane: {
-                    "quality": {"status": "accepted"},
-                    "metrics": {"valid_pixel_count": 30000, "nonfinite_fraction": 0.0, "clipped_fraction": 0.0, "near_noise_floor_fraction": 0.0},
+                    "quality": {"status": "rejected" if weak else "accepted"},
+                    "metrics": {"valid_pixel_count": 30000, "nonfinite_fraction": 0.0, "clipped_fraction": 0.0, "near_noise_floor_fraction": 0.1 if weak else 0.0},
                     "ambient_subtracted": {"trimmed_mean_per_second": float(planes.get(plane, 0.01))},
                 }
                 for plane in ("R", "G1", "G2", "B")

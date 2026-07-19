@@ -498,11 +498,15 @@ def _validate_v2_target_evidence(
             if logical > int(declared["solver_budget"]["max_logical_observations_per_start"]):
                 raise ValueError(f"v2 P7 target {key} exceeds per-start logical budget")
             groups = result.get("confirmation_attempts")
-            if not isinstance(groups, list) or not groups:
+            if not isinstance(groups, list) or (not groups and not isinstance(budget_exhaustion, Mapping)):
                 raise ValueError(f"v2 P7 target {key} lacks final-verification group evidence")
             if int(budget.get("confirmation_groups_started", -1)) != len(groups) or len(groups) > int(declared["solver_budget"]["max_confirmation_groups_per_start"]):
                 raise ValueError(f"v2 P7 target {key} exceeds confirmation-group budget")
-            rebase_ids = {phase.split("-probe-", 1)[0] for phase in phases if "rebase-" in phase}
+            rebase_ids = {
+                (match.group(1), int(match.group(2)))
+                for phase in phases
+                if (match := re.search(r"(prediction|thermal)-rebase-(\d+)", phase)) is not None
+            }
             if int(budget.get("rebases_started", -1)) != len(rebase_ids):
                 raise ValueError(f"v2 P7 target {key} rebase ledger mismatch")
             confirmed_group_count = 0
@@ -707,8 +711,17 @@ def _validate_v2_target_evidence(
             _validate_pre_capture_exhaustion(
                 budget_exhaustion, target_key=key,
                 expected_start_index=start_index,
-                expected_counters=start_counters.get(start_index, {}),
+                expected_counters=(
+                    {
+                        "physical_cr3_used": recomputed_physical,
+                        "autoexposure_physical_cr3_used": recomputed_auto,
+                        "weak_reacquire_physical_cr3_used": recomputed_weak,
+                    }
+                    if budget_exhaustion.get("counter_scope") == "target"
+                    else start_counters.get(start_index, {})
+                ),
                 expected_budget=budget,
+                expected_physical_budget=physical,
             )
         objectives = [sample.get("objective", {}) for attempt in attempts for sample in attempt.get("result", {}).get("samples", [])]
         if not objectives:
@@ -862,14 +875,16 @@ def _validate_measurement_rejection_evidence(
 def _validate_pre_capture_exhaustion(
     evidence: Any, *, target_key: tuple[int, int], expected_start_index: int,
     expected_counters: Mapping[str, int], expected_budget: Mapping[str, Any],
+    expected_physical_budget: Mapping[str, Any] | None = None,
 ) -> None:
     if not isinstance(evidence, Mapping):
         raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion evidence is missing")
     required = {
-        "pre_capture_exhaustion", "status", "sub_budget", "phase",
+        "pre_capture_exhaustion", "status", "origin", "counter_scope",
+        "sub_budget", "phase",
         "requested_physical_cr3", "physical_cr3_used",
         "autoexposure_physical_cr3_used", "weak_reacquire_physical_cr3_used",
-        "capture_attempted", "start_index",
+        "produced_physical_cr3", "capture_attempted", "start_index",
     }
     if not required.issubset(evidence) or evidence.get("pre_capture_exhaustion") is not True:
         raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion schema is incomplete")
@@ -877,12 +892,20 @@ def _validate_pre_capture_exhaustion(
         raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion status is invalid")
     if "capture_ids" in evidence:
         raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion cannot contain capture ids")
+    scope = str(evidence.get("counter_scope"))
+    if (scope, evidence.get("origin")) not in {("start", "logical_start"), ("target", "physical_target")}:
+        raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion scope/origin mismatch")
     if int(evidence.get("start_index", -1)) != int(expected_start_index):
         raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion start mismatch")
     if not str(evidence.get("sub_budget")) or not str(evidence.get("phase")):
         raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion lacks budget phase")
-    if int(evidence.get("requested_physical_cr3", -1)) != 0:
-        raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion requested a capture")
+    requested = int(evidence.get("requested_physical_cr3", -1))
+    if int(evidence.get("produced_physical_cr3", -1)) != 0:
+        raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion produced a capture")
+    if scope == "start" and requested != 0:
+        raise ValueError(f"v2 P7 target {target_key} logical exhaustion requested a physical capture")
+    if scope == "target" and requested < 1:
+        raise ValueError(f"v2 P7 target {target_key} physical exhaustion lacks requested count")
     for field in ("physical_cr3_used", "autoexposure_physical_cr3_used", "weak_reacquire_physical_cr3_used"):
         if not isinstance(evidence.get(field), (int, float)) or int(evidence[field]) < 0:
             raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion counter is invalid")
@@ -891,10 +914,23 @@ def _validate_pre_capture_exhaustion(
     budget_exhaustion = expected_budget.get("exhaustion")
     if not isinstance(budget_exhaustion, Mapping) or dict(budget_exhaustion) != dict(evidence):
         raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion differs from budget ledger")
-    if not _phase_matches_sub_budget(
-        str(evidence.get("phase")), str(evidence.get("sub_budget")), expected_budget,
-    ):
-        raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion phase/sub-budget mismatch")
+    if scope == "start":
+        if not _phase_matches_sub_budget(
+            str(evidence.get("phase")), str(evidence.get("sub_budget")), expected_budget,
+        ):
+            raise ValueError(f"v2 P7 target {target_key} pre-capture exhaustion phase/sub-budget mismatch")
+    else:
+        physical = expected_physical_budget
+        if not isinstance(physical, Mapping):
+            raise ValueError(f"v2 P7 target {target_key} lacks target physical budget")
+        field_by_sub_budget = {
+            "physical_cr3": ("physical_cr3_used", "hard_cap"),
+            "autoexposure": ("autoexposure_physical_cr3_used", "autoexposure_cap"),
+            "weak_reacquire": ("weak_reacquire_physical_cr3_used", "weak_reacquire_cap"),
+        }
+        fields = field_by_sub_budget.get(str(evidence.get("sub_budget")))
+        if fields is None or int(evidence[fields[0]]) + requested <= int(physical.get(fields[1], -1)):
+            raise ValueError(f"v2 P7 target {target_key} physical exhaustion did not exceed frozen sub-budget")
 
 
 def _paired_exhaustion_ledger(

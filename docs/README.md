@@ -688,6 +688,11 @@ IDs, and it must prove no capture was attempted and retain the physical counters
 Top-level and nested exhaustion ledgers must either both be absent or be identical
 non-empty mappings; any exhaustion also requires an exhausted frozen category,
 `solver_budget_exhausted` start status, and no confirmed group.
+The formal runner canonicalizes sparse producer exhaustion once it owns both the
+start capture ledger and target physical budget: logical exhaustion uses start
+counters, while physical denial uses target counters. A CR3 produced before an
+adapter reports an overrun is a fatal `physical_budget_accounting_violation`, not
+pre-capture exhaustion.
 ESPHome command acknowledgement is explicitly not device readback. The formal
 entrypoints now require an independent generation-bearing `rgbww_commanded_state`
 snapshot; the offline fake verifies stale generation, channel mismatch, missing

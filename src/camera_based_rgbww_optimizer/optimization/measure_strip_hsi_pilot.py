@@ -74,6 +74,12 @@ class ReferenceDriftError(RuntimeError):
     pass
 
 
+class HsiPhysicalBudgetAccountingViolation(RuntimeError):
+    def __init__(self, evidence: Mapping[str, Any]):
+        super().__init__("physical_budget_accounting_violation")
+        self.evidence = dict(evidence)
+
+
 def build_strip_hsi_pilot_plan(
     *,
     config_path: str | Path | None = None,
@@ -329,6 +335,7 @@ def execute_strip_hsi_pilot_plan(
     physical_budget: HsiPhysicalBudget | None = None
     reference_records: list[dict[str, Any]] = []
     reference_position_analyses: dict[str, dict[str, Any]] = {}
+    capture_audit_by_id: dict[str, dict[str, Any]] = {}
 
     def both_off(capture_id: str) -> None:
         strip_evidence = strip_light_fn(0, 0, 0, 0, 0)
@@ -392,13 +399,28 @@ def execute_strip_hsi_pilot_plan(
             capture = dict(capture_step_fn(step))
             physical_count = int(capture.get("physical_capture_count", 1))
             if source == "strip" and physical_budget is not None:
-                physical_budget.record(
-                    phase=purpose,
-                    physical_count=physical_count,
-                    auto_exposure=auto_exposure,
-                    weak_reacquire=exposure_factor is not None,
-                )
+                try:
+                    physical_budget.record(
+                        phase=purpose,
+                        physical_count=physical_count,
+                        auto_exposure=auto_exposure,
+                        weak_reacquire=exposure_factor is not None,
+                    )
+                except HsiPhysicalBudgetExhausted as exc:
+                    raise HsiPhysicalBudgetAccountingViolation({
+                        **exc.evidence,
+                        "capture_id": capture_id,
+                        "capture_attempted": True,
+                        "produced_physical_cr3": physical_count,
+                        "saved_file": (capture.get("capture") or {}).get("saved_file"),
+                    }) from exc
             _append_jsonl(root / "captures.jsonl", {"capture_id": capture_id, "source": source, "purpose": purpose, "target_index": target_index, "capture": capture})
+            capture_audit_by_id[capture_id] = {
+                "physical_cr3": physical_count,
+                "auto_exposure": auto_exposure,
+                "weak_reacquire": exposure_factor is not None,
+                "target_index": target_index,
+            }
             if source == "strip":
                 exposure_ready.add(target_index)
         finally:
@@ -624,6 +646,11 @@ def execute_strip_hsi_pilot_plan(
                     damping=float(solver["damping"]),
                     group_order=("coordinate", "rendering"),
                 )
+                _canonicalize_feedback_exhaustion(
+                    feedback,
+                    physical_budget=physical_budget,
+                    capture_audit_by_id=capture_audit_by_id,
+                )
                 selected = feedback["selected_result"]
                 confirmed_attempts = [
                     item for item in selected["confirmation_attempts"] if item.get("status") == "confirmed"
@@ -724,7 +751,10 @@ def execute_strip_hsi_pilot_plan(
     except BaseException as exc:
         failure = exc
         run["status"] = "interrupted" if isinstance(exc, KeyboardInterrupt) else "failed"
-        _write_json(root / "failure.json", {"at": _utc_now(), "type": type(exc).__name__, "message": str(exc)})
+        _write_json(root / "failure.json", {
+            "at": _utc_now(), "type": type(exc).__name__, "message": str(exc),
+            **({"evidence": dict(exc.evidence)} if isinstance(getattr(exc, "evidence", None), Mapping) else {}),
+        })
     finally:
         cleanup = {"at": _utc_now(), "steps": [step.to_jsonable() for step in all_off_fn()]}
         _write_json(root / "all-off-python.json", cleanup)
@@ -890,6 +920,66 @@ def _validate_solver_budget_config(solver: Mapping[str, Any]) -> None:
     mismatches = {key: {"expected": value, "actual": solver.get(key)} for key, value in expected.items() if solver.get(key) != value}
     if mismatches:
         raise ValueError(f"P7 solver budget config does not match Planner freeze: {mismatches}")
+
+
+def _canonicalize_feedback_exhaustion(
+    feedback: Mapping[str, Any], *, physical_budget: HsiPhysicalBudget,
+    capture_audit_by_id: Mapping[str, Mapping[str, Any]],
+) -> None:
+    for attempt in feedback.get("attempts", []):
+        result = attempt.get("result")
+        if not isinstance(result, dict) or result.get("status") != "solver_budget_exhausted":
+            continue
+        raw = result.get("budget_exhaustion")
+        if not isinstance(raw, Mapping):
+            raise ValueError("solver_budget_exhausted result lacks producer exhaustion evidence")
+        start_index = int(attempt.get("start_index", -1))
+        sub_budget = str(raw.get("sub_budget", ""))
+        target_scope = sub_budget in {"physical_cr3", "autoexposure", "weak_reacquire"}
+        if target_scope:
+            counters = {
+                "physical_cr3_used": int(physical_budget.physical_used),
+                "autoexposure_physical_cr3_used": int(physical_budget.autoexposure_used),
+                "weak_reacquire_physical_cr3_used": int(physical_budget.weak_reacquire_used),
+            }
+            requested = int(raw.get("requested_physical_cr3", 0))
+            scope = "target"
+            origin = "physical_target"
+        else:
+            capture_ids = {
+                str(sample.get("observation", {}).get("capture_id"))
+                for sample in result.get("samples", [])
+                if sample.get("observation", {}).get("capture_id")
+            }
+            for rejection in result.get("measurement_rejections", []):
+                capture_ids.update(str(value) for value in rejection.get("evidence", {}).get("capture_ids", []))
+            audits = [capture_audit_by_id[capture_id] for capture_id in capture_ids if capture_id in capture_audit_by_id]
+            counters = {
+                "physical_cr3_used": sum(int(item["physical_cr3"]) for item in audits),
+                "autoexposure_physical_cr3_used": sum(int(item["physical_cr3"]) for item in audits if item["auto_exposure"]),
+                "weak_reacquire_physical_cr3_used": sum(int(item["physical_cr3"]) for item in audits if item["weak_reacquire"]),
+            }
+            requested = 0
+            scope = "start"
+            origin = "logical_start"
+        ledger = {
+            "pre_capture_exhaustion": True,
+            "status": "solver_budget_exhausted",
+            "origin": origin,
+            "counter_scope": scope,
+            "sub_budget": sub_budget,
+            "phase": str(raw.get("phase", result.get("exhaustion_phase", ""))),
+            "requested_physical_cr3": requested,
+            "produced_physical_cr3": 0,
+            **counters,
+            "capture_attempted": False,
+            "start_index": start_index,
+        }
+        budget = result.get("budget")
+        if not isinstance(budget, dict):
+            raise ValueError("solver exhaustion lacks start budget ledger")
+        result["budget_exhaustion"] = ledger
+        budget["exhaustion"] = copy.deepcopy(ledger)
 
 
 def _file_reference(path: Path) -> dict[str, str]:

@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Sequence
 
 from camera_based_rgbww_optimizer.measurement.hsi_policy_v2 import DEFAULT_WAITING_OUTPUT
+from camera_based_rgbww_optimizer.optimization.hsi_budget import EXHAUSTIBILITY_MATRIX
 from camera_based_rgbww_optimizer.optimization.measure_hsi_reference_repeatability import DEFAULT_SENTINEL_RUN
 
 
@@ -93,9 +94,9 @@ def build_readiness(
             "firmware_compile": "blocked_tool_missing_esphome_cli",
             "public_analyzer_integration_cases": {
                 "accepted": [
-                    "initial_exhausted", "initial_probes_exhausted",
-                    "feedback_attempts_exhausted", "rebase_probes_exhausted",
-                    "confirmation_captures_exhausted",
+                    "production_feedback_attempts_solver_runner_public_analyzer",
+                    "production_physical_target_canonical_schema",
+                    "normal_confirmed_absent_exhaustion_ledgers",
                 ],
                 "rejected": [
                     "nested_only", "top_level_only", "ledger_mismatch",
@@ -118,6 +119,13 @@ def build_readiness(
         "v2_synthetic_coverage": replay["v2_synthetic_coverage"],
         "old_sentinel_holdout_replay": replay["old_sentinel_holdout_replay"],
         "solver_architecture": replay["solver_architecture"],
+        "exhaustibility_matrix": EXHAUSTIBILITY_MATRIX,
+        "production_roundtrip": {
+            "logical_feedback_attempts": "runner_persisted_public_analyzer_pass",
+            "physical_target_scope": "producer_canonical_schema_pass",
+            "post_capture_overrun": "fatal_physical_budget_accounting_violation",
+            "manual_target_row_success_fixture_used": False,
+        },
         "p7_r1_draft": {
             "experiment": dry_run["experiment"],
             "formal_ray_count": dry_run["measurement"]["formal_ray_count"],

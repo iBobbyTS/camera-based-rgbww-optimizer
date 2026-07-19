@@ -4,6 +4,34 @@ from dataclasses import dataclass, field
 from typing import Any, Mapping
 
 
+EXHAUSTIBILITY_MATRIX = {
+    "initial": {"classification": "guarded_unreachable", "counter_scope": "start", "capture_attempted": False, "call_point": "capture(initial) on fresh HsiStartBudget"},
+    "initial_probes": {"classification": "guarded_unreachable", "counter_scope": "start", "capture_attempted": False, "call_point": "single reserve_probe_group plus exact four probes"},
+    "feedback_attempts": {"classification": "production_reachable", "counter_scope": "start", "capture_attempted": False, "call_point": "feedback backtrack consume before capture_observation_fn"},
+    "rebase_probes": {"classification": "guarded_unreachable", "counter_scope": "start", "capture_attempted": False, "call_point": "bounded rebase reservation plus exact probe groups"},
+    "confirmation_captures": {"classification": "guarded_unreachable", "counter_scope": "start", "capture_attempted": False, "call_point": "confirmation group reservation guarantees complete group capacity"},
+    "confirmation_groups": {"classification": "guarded_unreachable", "counter_scope": "start", "capture_attempted": False, "call_point": "final verification checks remaining group before confirm"},
+    "rebases": {"classification": "guarded_unreachable", "counter_scope": "start", "capture_attempted": False, "call_point": "state machine checks rebase count before reservation"},
+    "logical_observations": {"classification": "guarded_unreachable", "counter_scope": "start", "capture_attempted": False, "call_point": "category caps sum to logical cap and category check runs first"},
+    "physical_cr3": {"classification": "production_reachable", "counter_scope": "target", "capture_attempted": False, "call_point": "capture_source remaining precheck"},
+    "autoexposure": {"classification": "fatal_accounting_error", "counter_scope": "target", "capture_attempted": True, "call_point": "adapter returns physical count above declared remaining auto cap"},
+    "weak_reacquire": {"classification": "guarded_unreachable", "counter_scope": "target", "capture_attempted": False, "call_point": "allow_weak_reacquire precheck"},
+}
+EXHAUSTIBILITY_MATRIX = {
+    name: {
+        **entry,
+        "formal_status": (
+            "physical_budget_accounting_violation"
+            if entry["classification"] == "fatal_accounting_error"
+            else "not_emitted"
+            if entry["classification"] == "guarded_unreachable"
+            else "solver_budget_exhausted"
+        ),
+    }
+    for name, entry in EXHAUSTIBILITY_MATRIX.items()
+}
+
+
 @dataclass(frozen=True)
 class HsiSolverBudgetLimits:
     max_starts: int = 2

@@ -15,6 +15,7 @@
 
 | file | summary |
 | --- | --- |
+| resolved/20260718-p7-r0j-production-roundtrip.md | P7-R0J canonicalizes sparse solver exhaustion at the runner ownership boundary, distinguishes start/target counters, and makes post-capture overrun fatal. |
 | resolved/20260718-p7-r0e-trust-boundaries.md | P7-R0E offline closure added generation-bearing device-state verification, RAW/objective/owner reconstruction, exact frozen-plan auditing, and explicit firmware compile tooling block; no real execution authorized. |
 | resolved/20260718-p7-r0c-formal-closure.md | P7-R0C closed the six Planner repros with explicit v2 analysis, confirmed-first/full-group solver semantics, centered audits, and independently reconstructed R1 physical evidence. |
 | resolved/20260714-p1-raw-black-level-linearity.md | CR3 optical-margin black fallback corrects implausible rawpy metadata and P1 acquisition now completes without the prior auto-exposure failure. |
