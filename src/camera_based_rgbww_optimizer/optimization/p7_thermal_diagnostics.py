@@ -135,6 +135,7 @@ def build_diagnostic_plan(
     for_execution: bool = False,
     human_authorization: str | None = None,
     exposure_start_capability: bool = False,
+    v2_capture_capability: bool = False,
 ) -> dict[str, Any]:
     if experiment_id not in EXPERIMENT_IDS:
         raise ValueError(f"unsupported exact experiment id: {experiment_id}")
@@ -151,8 +152,9 @@ def build_diagnostic_plan(
     _enforce_prerequisites(experiment_id, variant, envelope, for_execution=for_execution)
     if for_execution and human_authorization != experiment_id:
         raise PermissionError(f"execution requires exact Human authorization for {experiment_id}")
-    if for_execution and not exposure_start_capability:
-        raise PermissionError("execution requires camera-adapter actual exposure-start provenance")
+    timing_capability = bool(v2_capture_capability or exposure_start_capability)
+    if for_execution and not timing_capability:
+        raise PermissionError("execution requires remote v2 capture timing capability")
 
     commands = load_r1_commands(r1_run)
     shutters = load_r1_shutters(r1_run)
@@ -178,8 +180,18 @@ def build_diagnostic_plan(
         "camera": {
             "backend": "remote", "location": inputs["location"],
             "auto_exposure_in_timed_cycle": False,
-            "actual_exposure_start_provenance_required": ACTUAL_EXPOSURE_START_PROVENANCE,
-            "adapter_capability_available": bool(exposure_start_capability),
+            "actual_exposure_start_provenance_required": False,
+            "adapter_capability_available": timing_capability,
+            "v2_capture_timing_capability_available": timing_capability,
+        },
+        "timing_contract": {
+            "name": "best_effort_gphoto2_v1",
+            "decision_owner": "Developer/Human",
+            "network_assumption": "wired_lan_latency_negligible_developer_decision",
+            "accepted_tiers": ["tier_a", "tier_b"],
+            "absolute_exposure_start_required": False,
+            "absolute_exposure_start": False,
+            "provenance": "best_effort_gphoto2_exposure_start_estimate",
         },
         "cold_proxy": envelope["cold_proxy"],
         "cleanup": {"python_finally": "required", "shell_trap": "EXIT_INT_TERM_HUP_required"},

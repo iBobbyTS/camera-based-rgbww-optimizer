@@ -21,6 +21,7 @@ from camera_based_rgbww_optimizer.measurement.hsi_uncertainty import (
 from camera_based_rgbww_optimizer.measurement.ray_hsi_manifold import RayHsiManifold
 
 from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
+from camera_based_rgbww_optimizer.control import camera_remote_v2
 from camera_based_rgbww_optimizer.optimization.analyze_hsi_reference_repeatability import (
     write_reference_epoch_v2_derived,
 )
@@ -37,6 +38,16 @@ def analyze_thermal_run(
     if plan.get("experiment_id") not in thermal.EXPERIMENT_IDS or run.get("status") != "complete":
         raise ValueError("thermal analyzer requires a completed exact experiment")
     _verify_frozen_inputs(plan["inputs"])
+    if plan.get("timing_contract") != {
+        "name": "best_effort_gphoto2_v1",
+        "decision_owner": "Developer/Human",
+        "network_assumption": "wired_lan_latency_negligible_developer_decision",
+        "accepted_tiers": ["tier_a", "tier_b"],
+        "absolute_exposure_start_required": False,
+        "absolute_exposure_start": False,
+        "provenance": "best_effort_gphoto2_exposure_start_estimate",
+    }:
+        raise ValueError("thermal timing contract differs from frozen best-effort contract")
     captures = _load_jsonl(root / "captures.jsonl")
     covariates = _load_jsonl(root / "thermal-covariates.jsonl")
     commands = _load_jsonl(root / "commands.jsonl")
@@ -86,14 +97,14 @@ def analyze_thermal_run(
     recomputed_physical = 0
     formal_captures = []
     ambient_captures = []
+    timing_tiers: dict[str, int] = defaultdict(int)
+    timing_unknown = 0
     for step, capture, covariate in zip(plan["captures"], captures, covariates, strict=True):
         if capture.get("plan_step") != step or capture.get("source_id") != step.get("source_id"):
             raise ValueError("thermal capture owner or frozen step mismatch")
         if capture.get("capture_role") != step.get("capture_role") or bool(capture.get("formal_measurement")) != bool(step.get("formal_measurement")):
             raise ValueError("thermal capture formal/ambient role mismatch")
         payload = capture.get("capture") or {}
-        if payload.get("exposure_start_provenance") != thermal.ACTUAL_EXPOSURE_START_PROVENANCE:
-            raise ValueError("thermal capture lacks actual exposure-start provenance")
         if step["formal_measurement"]:
             requested = float(step["requested_elapsed_s"])
             actual = float(capture["actual_elapsed_s"])
@@ -119,6 +130,18 @@ def analyze_thermal_run(
         raw_path = payload.get("saved_file") or (payload.get("capture") or {}).get("saved_file")
         if not raw_path or not Path(raw_path).is_file() or Path(raw_path).stat().st_size <= 0:
             raise ValueError("thermal capture lacks retained nonempty CR3 provenance")
+        timing = _replay_timing_evidence(capture, payload, Path(raw_path))
+        timing_tiers[str(timing["tier"])] += 1
+        if timing["tier"] == "tier_c":
+            timing_unknown += 1
+        stored_timing = capture.get("timing_evidence")
+        if not isinstance(stored_timing, Mapping) or dict(stored_timing) != timing:
+            raise ValueError("thermal timing evidence differs from independent replay")
+        capture_actual = timing.get("best_effort_elapsed_s")
+        if step["formal_measurement"] and capture_actual is not None:
+            expected_error = None if step.get("requested_elapsed_s") is None else float(capture_actual) - float(step["requested_elapsed_s"])
+            if capture.get("actual_elapsed_s") != capture_actual or capture.get("timing_error_s") != expected_error:
+                raise ValueError("thermal timing elapsed or error was self-reported inconsistently")
         exposure = payload.get("recorded_exposure") or payload.get("exposure_metadata") or {}
         if exposure.get("status") != "recorded":
             raise ValueError("thermal capture lacks recorded exposure provenance")
@@ -154,8 +177,37 @@ def analyze_thermal_run(
         "covariate_contract": "pass", "source_isolation_contract": "pass",
         "formal_capture_count": recomputed_formal, "ambient_capture_count": recomputed_ambient,
         "physical_cr3_count": recomputed_physical, "retained_npy_count": 0,
+        "timing_absolute_truth": False,
+        "timing_source": "best_effort_gphoto2",
+        "tier_distribution": dict(timing_tiers),
+        "unknown_uncertainty_count": timing_unknown,
         **result,
     }
+
+
+def _replay_timing_evidence(
+    capture: Mapping[str, Any], payload: Mapping[str, Any], raw_path: Path,
+) -> dict[str, Any]:
+    metadata_path = payload.get("remote_metadata_path")
+    if not isinstance(metadata_path, str):
+        raise ValueError("thermal capture lacks retained remote v2 metadata path")
+    metadata = _load_json(Path(metadata_path))
+    camera_remote_v2.validate_capture_metadata(metadata, payload=raw_path.read_bytes())
+    receipt = metadata.get("_local_receipt")
+    if not isinstance(receipt, Mapping):
+        raise ValueError("thermal v2 metadata lacks local receipt evidence")
+    timing = receipt.get("timing_evidence")
+    if not isinstance(timing, Mapping):
+        raise ValueError("thermal v2 metadata lacks local timing evidence")
+    replayed = camera_remote_v2.reconstruct_best_effort_timing(
+        metadata,
+        local_request_started_monotonic_s=float(timing["local_request_started_monotonic_s"]),
+        local_response_received_monotonic_s=float(timing["local_response_received_monotonic_s"]),
+        local_readback_done_monotonic_s=float(timing["local_readback_done_monotonic_s"]),
+    )
+    if dict(timing) != replayed:
+        raise ValueError("thermal local timing receipt was tampered")
+    return replayed
 
 
 def analyze_td_a(

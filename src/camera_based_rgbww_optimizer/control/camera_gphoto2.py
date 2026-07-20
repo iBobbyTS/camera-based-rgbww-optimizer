@@ -13,7 +13,7 @@ import tempfile
 from dataclasses import dataclass
 from fractions import Fraction
 from pathlib import Path
-from typing import Any, Callable, Protocol, Sequence
+from typing import Any, Callable, Mapping, Protocol, Sequence
 
 from camera_based_rgbww_optimizer.paths import PROJECT_TMP_DIR
 from camera_based_rgbww_optimizer.utils import location_regions
@@ -91,6 +91,9 @@ class CaptureResult:
     backend: str | None = None
     endpoint: str | None = None
     http_attempts: int | None = None
+    remote_metadata_path: Path | None = None
+    timing_metadata: Mapping[str, Any] | None = None
+    timing_evidence: Mapping[str, Any] | None = None
 
     def to_jsonable(self) -> dict[str, object]:
         data: dict[str, object] = {
@@ -117,6 +120,12 @@ class CaptureResult:
             data["remote_endpoint"] = self.endpoint
         if self.http_attempts is not None:
             data["http_attempts"] = self.http_attempts
+        if self.remote_metadata_path is not None:
+            data["remote_metadata_path"] = str(self.remote_metadata_path)
+        if self.timing_metadata is not None:
+            data["timing_metadata"] = dict(self.timing_metadata)
+        if self.timing_evidence is not None:
+            data["timing_evidence"] = dict(self.timing_evidence)
         return data
 
 

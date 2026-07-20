@@ -13,11 +13,15 @@ from typing import BinaryIO, Callable, Mapping, Sequence
 from urllib import error, parse, request
 
 from camera_based_rgbww_optimizer.control import camera_gphoto2
+from camera_based_rgbww_optimizer.control import camera_remote_v2
+
+RemoteCameraV2Error = camera_remote_v2.RemoteCaptureV2Error
 from camera_based_rgbww_optimizer.paths import PROJECT_ROOT
 
 
 DEFAULT_BASE_URL = "http://ibobby-rpi-4.local:8088"
 DEFAULT_CAPTURE_PATH = "/v1/capture"
+DEFAULT_V2_CAPTURE_PATH = "/v2/capture"
 DEFAULT_CONFIG_PATH = "/v1/config"
 DEFAULT_HEALTH_PATH = "/health"
 DEFAULT_ENV_FILE = PROJECT_ROOT / ".env"
@@ -90,6 +94,29 @@ class RemoteCaptureResult:
             "saved_file": str(self.saved_file),
             "byte_count": self.byte_count,
             "http_attempts": self.http_attempts,
+        }
+
+
+@dataclass(frozen=True)
+class RemoteCaptureResultV2:
+    saved_file: Path
+    metadata_path: Path
+    metadata: Mapping[str, object]
+    timing_evidence: Mapping[str, object]
+    byte_count: int
+    endpoint: str
+    http_attempts: int
+
+    def to_jsonable(self) -> dict[str, object]:
+        return {
+            "backend": "remote",
+            "model": REMOTE_CAMERA_MODEL,
+            "endpoint": self.endpoint,
+            "saved_file": str(self.saved_file),
+            "metadata_path": str(self.metadata_path),
+            "byte_count": self.byte_count,
+            "http_attempts": self.http_attempts,
+            "timing_evidence": dict(self.timing_evidence),
         }
 
 
@@ -293,6 +320,134 @@ def capture_remote_image(
     )
 
 
+def capture_remote_image_v2(
+    *,
+    output_dir: str | Path,
+    filename_template: str = DEFAULT_FILENAME_TEMPLATE,
+    config: RemoteCameraConfig | None = None,
+    env_file: str | Path = DEFAULT_ENV_FILE,
+    base_url: str | None = None,
+    token: str | None = None,
+    timeout: float = DEFAULT_TIMEOUT,
+    opener: UrlOpen = request.urlopen,
+    settings: camera_gphoto2.CaptureSettings | None = None,
+    busy_retries: int = DEFAULT_BUSY_RETRIES,
+    busy_retry_delay: float = DEFAULT_BUSY_RETRY_DELAY,
+    sleep_fn: SleepFn = time.sleep,
+    now: datetime | None = None,
+    local_readback_done_monotonic_s: float | None = None,
+    monotonic_fn: Callable[[], float] = time.monotonic,
+) -> RemoteCaptureResultV2:
+    """Capture through /v2/capture and rebuild best-effort timing locally."""
+    if timeout <= 0:
+        raise RemoteCameraError("timeout must be positive")
+    if local_readback_done_monotonic_s is None:
+        raise RemoteCameraV2Error("local_readback_done_monotonic_s is required")
+    resolved_config = config or load_remote_camera_config(env_file=env_file, base_url=base_url, token=token)
+    destination = _resolve_destination(output_dir, filename_template, now=now)
+    metadata_destination = destination.with_suffix(destination.suffix + ".metadata.json")
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    payload = _capture_payload(settings)
+    capture_request = request.Request(
+        f"{resolved_config.base_url.rstrip('/')}{DEFAULT_V2_CAPTURE_PATH}",
+        data=json.dumps(payload, separators=(",", ":")).encode("utf-8"),
+        method="POST",
+        headers={
+            "Authorization": f"Bearer {resolved_config.token}",
+            "Accept": "multipart/mixed",
+            "Content-Type": "application/json",
+        },
+    )
+    local_request_started = float(monotonic_fn())
+    temporary_path: Path | None = None
+    metadata_temporary_path: Path | None = None
+    byte_count = 0
+    http_attempts = 0
+
+    def counted_opener(*args: object, **kwargs: object) -> BinaryIO:
+        nonlocal http_attempts
+        http_attempts += 1
+        return opener(*args, **kwargs)
+
+    try:
+        with _open_authenticated_request(
+            capture_request, opener=counted_opener, timeout=timeout,
+            busy_retries=busy_retries, busy_retry_delay=busy_retry_delay, sleep_fn=sleep_fn,
+        ) as response:
+            status = getattr(response, "status", None)
+            if status is not None and int(status) != 200:
+                raise RemoteCameraV2Error(f"v2 capture returned unexpected status {status}")
+            response_headers = camera_remote_v2.response_header_summary(response)
+            chunks: list[bytes] = []
+            while True:
+                chunk = response.read(DOWNLOAD_CHUNK_SIZE)
+                if not chunk:
+                    break
+                byte_count += len(chunk)
+                if byte_count > camera_remote_v2.MAX_MULTIPART_BYTES:
+                    raise RemoteCameraV2Error("v2 multipart body exceeds the conservative size limit")
+                chunks.append(chunk)
+        local_response_received = float(monotonic_fn())
+        parsed = camera_remote_v2.parse_v2_multipart(
+            content_type=response_headers.get("content-type"),
+            body=b"".join(chunks), response_headers=response_headers,
+        )
+        metadata = dict(parsed.metadata)
+        header_capture_id = response_headers.get("x-capture-id")
+        header_request_id = response_headers.get("x-request-id")
+        camera_remote_v2.validate_capture_metadata(
+            metadata, payload=parsed.cr3_bytes,
+            expected_capture_id=header_capture_id,
+            expected_request_id=header_request_id,
+        )
+        schema_header = response_headers.get("x-capture-metadata-schema")
+        if schema_header is not None and schema_header != camera_remote_v2.SCHEMA:
+            raise RemoteCameraV2Error("v2 metadata schema header mismatch")
+        timing = camera_remote_v2.reconstruct_best_effort_timing(
+            metadata,
+            local_request_started_monotonic_s=local_request_started,
+            local_response_received_monotonic_s=local_response_received,
+            local_readback_done_monotonic_s=float(local_readback_done_monotonic_s),
+        )
+        metadata["_local_receipt"] = {
+            "parser_version": camera_remote_v2.PARSER_VERSION,
+            "response_headers": response_headers,
+            "received_monotonic_s": local_response_received,
+            "timing_evidence": timing,
+        }
+        if destination.exists() or metadata_destination.exists():
+            raise RemoteCameraV2Error("v2 capture destination already exists")
+        temporary_path = destination.with_name(f".{destination.name}.{os.getpid()}.part")
+        metadata_temporary_path = metadata_destination.with_name(f".{metadata_destination.name}.{os.getpid()}.part")
+        temporary_path.write_bytes(parsed.cr3_bytes)
+        with metadata_temporary_path.open("w", encoding="utf-8") as handle:
+            json.dump(metadata, handle, indent=2, sort_keys=True, allow_nan=False)
+            handle.write("\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        with temporary_path.open("rb") as handle:
+            os.fsync(handle.fileno())
+        os.replace(temporary_path, destination)
+        try:
+            os.replace(metadata_temporary_path, metadata_destination)
+        except BaseException:
+            destination.unlink(missing_ok=True)
+            raise
+        temporary_path = None
+        metadata_temporary_path = None
+        return RemoteCaptureResultV2(
+            saved_file=destination, metadata_path=metadata_destination, metadata=metadata,
+            timing_evidence=timing, byte_count=len(parsed.cr3_bytes),
+            endpoint=f"{resolved_config.base_url.rstrip('/')}{DEFAULT_V2_CAPTURE_PATH}",
+            http_attempts=http_attempts,
+        )
+    finally:
+        if temporary_path is not None:
+            temporary_path.unlink(missing_ok=True)
+        if metadata_temporary_path is not None:
+            metadata_temporary_path.unlink(missing_ok=True)
+
+
 def read_remote_camera_settings(
     *,
     config: RemoteCameraConfig | None = None,
@@ -428,6 +583,31 @@ class RemoteCameraBackend:
             backend="remote",
             endpoint=DEFAULT_CAPTURE_PATH,
             http_attempts=remote_result.http_attempts,
+        )
+
+    def capture_with_timing(
+        self,
+        *,
+        output_dir: str | Path,
+        filename_template: str,
+        settings: camera_gphoto2.CaptureSettings,
+        connection: camera_gphoto2.CameraConnection,
+        local_readback_done_monotonic_s: float,
+    ) -> camera_gphoto2.CaptureResult:
+        if settings.shutter_speed.strip().lower() == "bulb":
+            raise RemoteCameraError("remote camera backend does not allow bulb capture")
+        result = capture_remote_image_v2(
+            output_dir=output_dir, filename_template=filename_template, config=self.config,
+            timeout=self.timeout, opener=self.opener, settings=settings,
+            busy_retries=self.busy_retries, busy_retry_delay=self.busy_retry_delay,
+            sleep_fn=self.sleep_fn, local_readback_done_monotonic_s=local_readback_done_monotonic_s,
+        )
+        return camera_gphoto2.CaptureResult(
+            connection=connection, settings=settings, saved_file=result.saved_file,
+            stdout=json.dumps(result.to_jsonable(), sort_keys=True), backend="remote",
+            endpoint=DEFAULT_V2_CAPTURE_PATH, http_attempts=result.http_attempts,
+            remote_metadata_path=result.metadata_path, timing_metadata=result.metadata,
+            timing_evidence=result.timing_evidence,
         )
 
     def _load_settings(self, *, refresh: bool = False) -> RemoteCameraSettings:

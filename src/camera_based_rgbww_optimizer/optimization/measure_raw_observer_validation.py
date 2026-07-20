@@ -384,6 +384,7 @@ def build_native_raw_capture_step_fn(
     camera_backend: camera_gphoto2.CameraBackend | None = None,
     recorded_exposure_purpose: str = "P1",
     frozen_shutter_by_cache: Mapping[str, str | None] | None = None,
+    timed_capture_fn: Callable[..., camera_gphoto2.CaptureResult] | None = None,
 ) -> CaptureStepFn:
     """Build the production camera side of P1 while leaving device control injected.
 
@@ -402,6 +403,8 @@ def build_native_raw_capture_step_fn(
     exposures_by_path: dict[Path, recorded_exposure.RecordedExposure] = {}
 
     def fixed_capture(**kwargs: Any) -> camera_gphoto2.CaptureResult:
+        if timed_capture_fn is not None:
+            return timed_capture_fn(**kwargs)
         if camera_backend is None:
             return capture_fn(**kwargs)
         return camera_remote.capture_with_backend(
@@ -538,14 +541,22 @@ def build_native_raw_capture_step_fn(
             raw_analyze_fn=raw_analyze_fn,
             raw_report_writer=raw_report_writer,
         )
-        return {
+        capture_json = capture.to_jsonable()
+        output = {
             "mode": mode,
-            "capture": capture.to_jsonable(),
+            "capture": capture_json,
             "patch_statistics": str(report[0]),
             "quality": report[1],
             "physical_capture_count": physical_capture_count,
             "auto_exposure_audit": auto.to_jsonable() if mode == "native_auto_exposure" else None,
         }
+        if capture.timing_metadata is not None:
+            output["timing_metadata"] = dict(capture.timing_metadata)
+        if capture.timing_evidence is not None:
+            output["timing_evidence"] = dict(capture.timing_evidence)
+        if capture.remote_metadata_path is not None:
+            output["remote_metadata_path"] = str(capture.remote_metadata_path)
+        return output
 
     return capture_step
 

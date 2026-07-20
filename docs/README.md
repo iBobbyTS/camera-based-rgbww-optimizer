@@ -152,6 +152,18 @@ keep the corresponding current remote value. A `camera_busy` response is retried
 as a bounded complete request. Neither local nor remote capture keeps a second
 copy on the camera.
 
+The legacy `/v1/capture` binary contract remains unchanged. P7's thermal
+diagnostic runner uses the explicit `/v2/capture` path only: it consumes the
+structured `multipart/mixed` response, atomically retains the CR3 beside its
+original `remote_capture_result_v2` metadata, and rechecks metadata hash and
+capture/request IDs locally. The accepted timing source is
+`best_effort_gphoto2_exposure_start_estimate`; Tier A and Tier B are usable
+best-effort anchors, while Tier C is unavailable for formal timing. Bridge and
+local monotonic clocks are never subtracted directly. The local runner stores
+request/response/readback times and recomputes the relative bridge offset;
+`absolute_exposure_start=false` remains explicit. This does not unlock TD-A or
+change any formal P7 gate.
+
 Decode a CR3 into linear 16-bit camera RGB:
 
 ```bash

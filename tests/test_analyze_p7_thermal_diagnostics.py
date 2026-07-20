@@ -10,6 +10,7 @@ from camera_based_rgbww_optimizer.optimization import analyze_p7_thermal_diagnos
 from camera_based_rgbww_optimizer.optimization import measure_p7_thermal_diagnostics as measure
 from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
 from camera_based_rgbww_optimizer.optimization.hsi_source_evidence import expected_strip_payloads
+from camera_based_rgbww_optimizer.control import camera_remote_v2
 
 
 FEATURE_IDS = json.loads(thermal.POLICY_PATH.read_text(encoding="utf-8"))["feature_set"]["ids"]
@@ -82,10 +83,39 @@ def _build_formal_td_a_run(root: Path) -> Path:
         output = {
             "saved_file": str(saved), "physical_capture_count": 1,
             "recorded_exposure": {"status": "recorded", "seconds": 0.01},
-            "exposure_start_monotonic_s": clock.value,
-            "exposure_start_provenance": thermal.ACTUAL_EXPOSURE_START_PROVENANCE,
             "thermal_covariates": covariate,
         }
+        requested = float(step["requested_elapsed_s"] or 1.0)
+        bridge_request = 1_000_000_000
+        estimate = bridge_request + int(requested * 1_000_000_000)
+        metadata = {
+            "schema": "remote_capture_result_v2", "capture_id": step["capture_id"], "request_id": f"request-{sequence}",
+            "timing_quality": "best_effort_gphoto2", "formal_p7_eligibility": "unchanged_requires_later_planner_advisor_decision",
+            "cr3": {"sha256": __import__("hashlib").sha256(b"raw").hexdigest(), "byte_count": 3, "content_type": "image/x-canon-cr3"},
+            "gphoto2": {
+                "driver_event_type": None, "event_sequence": [], "request_received_monotonic_ns": bridge_request,
+                "capture_call_started_monotonic_ns": bridge_request + 1, "capture_call_returned_monotonic_ns": estimate + 10_000_000,
+                "camera_event_observed_monotonic_ns": None, "file_added_observed_monotonic_ns": None,
+                "download_started_monotonic_ns": estimate + 20_000_000, "download_completed_monotonic_ns": estimate + 30_000_000,
+                "cr3_saved_observed_monotonic_ns": estimate + 40_000_000, "clock_domain": "bridge_monotonic",
+            },
+            "recorded_exposure": {"seconds": 0.01, "source": "Canon:ExposureTime", "status": "recorded"},
+            "exposure_start_estimate": {"timestamp_monotonic_ns": estimate, "clock_domain": "bridge_monotonic", "method": "gphoto_capture_return_minus_recorded_exposure", "status": "weak_estimate", "uncertainty_ms": None, "uncertainty_basis": "unknown"},
+            "network_observation": {"request_id": f"request-{sequence}", "response_or_event_round_trip_ms": None, "uncertainty_ms": None, "uncertainty_basis": "unknown"},
+        }
+        metadata["_local_receipt"] = {
+            "parser_version": camera_remote_v2.PARSER_VERSION,
+            "response_headers": {}, "received_monotonic_s": 0.2,
+            "timing_evidence": camera_remote_v2.reconstruct_best_effort_timing(
+                metadata, local_request_started_monotonic_s=0.0,
+                local_response_received_monotonic_s=0.2,
+                local_readback_done_monotonic_s=0.0,
+            ),
+        }
+        output["timing_metadata"] = metadata
+        output["timing_evidence"] = metadata["_local_receipt"]["timing_evidence"]
+        output["remote_metadata_path"] = str(root / f"{step['capture_id']}.metadata.json")
+        (root / f"{step['capture_id']}.metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
         if step["formal_measurement"]:
             output["feature_values"] = _feature()
         else:
@@ -133,9 +163,18 @@ class AnalyzeP7ThermalDiagnosticsTests(unittest.TestCase):
             (root / "captures.jsonl").write_text(original_captures, encoding="utf-8")
 
             rows = [json.loads(line) for line in original_captures.splitlines()]
-            rows[1]["capture"]["exposure_start_provenance"] = "host_camera_request_start_monotonic"
+            rows[1]["timing_evidence"]["best_effort_elapsed_s"] = 1.0
             _write_jsonl(root / "captures.jsonl", rows)
-            with self.assertRaisesRegex(ValueError, "actual exposure-start"):
+            with self.assertRaisesRegex(ValueError, "independent replay"):
+                subject.analyze_thermal_run(root, feature_ids=FEATURE_IDS, compatibility_fn=lambda _left, _right: True)
+
+            _write_jsonl(root / "captures.jsonl", [json.loads(line) for line in original_captures.splitlines()])
+            clean_rows = [json.loads(line) for line in original_captures.splitlines()]
+            metadata_path = Path(clean_rows[1]["capture"]["remote_metadata_path"])
+            metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+            metadata["exposure_start_estimate"]["timestamp_monotonic_ns"] += 1
+            metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "timing estimate"):
                 subject.analyze_thermal_run(root, feature_ids=FEATURE_IDS, compatibility_fn=lambda _left, _right: True)
 
     def test_public_analyzer_rejects_missing_or_forged_both_off_ledger(self):

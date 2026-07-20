@@ -8,6 +8,7 @@ from unittest import mock
 
 from camera_based_rgbww_optimizer.optimization import measure_p7_thermal_diagnostics as measure
 from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as subject
+from camera_based_rgbww_optimizer.control import camera_remote_v2
 
 
 class _Clock:
@@ -34,6 +35,8 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
         self.assertTrue(all(step["exact_command_hash"] == subject.canonical_sha256(step["command"]) for step in formal))
         self.assertTrue(all(plan["hard_locks"].values()))
         self.assertEqual(plan["offline_contract"], {"env_calls": 0, "network_calls": 0, "device_calls": 0, "all_off_calls": 0})
+        self.assertEqual(plan["timing_contract"]["name"], "best_effort_gphoto2_v1")
+        self.assertFalse(plan["timing_contract"]["absolute_exposure_start"])
 
     def test_td_b_and_c_dry_plans_exist_but_execute_stays_locked(self):
         td_b = subject.build_diagnostic_plan(subject.TD_B, source="ray")
@@ -101,9 +104,21 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                     monotonic_fn=clock.monotonic, sleep_fn=clock.sleep,
                 )
 
+    def test_best_effort_timing_boundaries_are_exposed_without_actual_provenance(self):
+        self.assertEqual(subject.TIMING_TOLERANCE_S[60], 2.0)
+        self.assertEqual(subject.TIMING_TOLERANCE_S[120], 2.0)
+        self.assertEqual(subject.TIMING_TOLERANCE_S[300], 5.0)
+        self.assertEqual(subject.TIMING_TOLERANCE_S[600], 5.0)
+        plan = subject.build_diagnostic_plan(
+            subject.TD_A, source="ray", for_execution=True,
+            human_authorization=subject.TD_A, v2_capture_capability=True,
+        )
+        self.assertTrue(plan["camera"]["v2_capture_timing_capability_available"])
+        self.assertFalse(plan["camera"]["actual_exposure_start_provenance_required"])
+
     def test_execute_plan_fails_before_calls_when_adapter_lacks_actual_exposure_start(self):
         calls = []
-        with self.assertRaisesRegex(PermissionError, "exposure-start"):
+        with self.assertRaisesRegex(PermissionError, "v2 capture timing"):
             subject.build_diagnostic_plan(
                 subject.TD_A, source="ray", for_execution=True,
                 human_authorization=subject.TD_A, exposure_start_capability=False,
@@ -133,9 +148,21 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                 load_history={60: 0, 300: 0, 900: 0}, readback={},
             )
             result = {
-                "exposure_start_monotonic_s": clock.value,
-                "exposure_start_provenance": subject.ACTUAL_EXPOSURE_START_PROVENANCE,
                 "physical_capture_count": 1, "thermal_covariates": covariate,
+            }
+            requested = float(step["requested_elapsed_s"] or 1.0)
+            result["timing_evidence"] = {
+                "provenance": camera_remote_v2.TIMING_PROVENANCE,
+                "timing_contract": camera_remote_v2.TIMING_CONTRACT,
+                "tier": "tier_b", "status": "accepted_best_effort_anchor",
+                "local_request_started_monotonic_s": 0.0,
+                "local_response_received_monotonic_s": requested + 0.2,
+                "local_round_trip_s": requested + 0.2,
+                "local_readback_done_monotonic_s": 0.0,
+                "bridge_relative_delay_s": requested,
+                "best_effort_elapsed_s": requested,
+                "network_assumption": "wired_lan_latency_negligible_developer_decision",
+                "absolute_exposure_start": False,
             }
             if step["capture_role"] == "ambient":
                 result["ambient_diagnostic"] = {"geometry_hash": "g", "black_levels": [512] * 4}
@@ -175,6 +202,42 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                 cleanup_fn=lambda: {"status": "pass"}, monotonic_fn=lambda: 0, sleep_fn=lambda _seconds: None,
             )
         self.assertEqual(captures, [])
+
+    def test_formal_tier_c_timing_fails_closed_before_capture_ledger(self):
+        plan = subject.build_diagnostic_plan(
+            subject.TD_A, source="ray", for_execution=True,
+            human_authorization=subject.TD_A, v2_capture_capability=True,
+        )
+        def tier_c_capture(step):
+            result = {
+                "thermal_covariates": {
+                    "monotonic_timestamp_ns": 1, "wall_clock_timestamp": "x", "session_elapsed_s": 0,
+                    "source_id": step["source_id"], "state_id": step["state_id"],
+                    "exact_command_hash": subject.canonical_sha256(step["command"] or {"strip": "off", "ray": "off"}),
+                    "source_on_elapsed_s": 0, "state_on_elapsed_s": 0, "off_duration_before_s": 0,
+                    "previous_state_id": None, "previous_state_dwell_s": None, "sequence_index": 0,
+                    "capture_order": 0, "source_order": 0, "ambient_temperature_c": None,
+                    "source_surface_temperature_c": None, "fan_mode": None, "power_mode": None,
+                    "shutter_seconds": 0.01, "raw_black_levels": [512] * 4, "raw_white_level": 16383,
+                    "load_history_proxy_60s": 0, "load_history_proxy_300s": 0, "load_history_proxy_900s": 0,
+                },
+                "timing_evidence": {
+                    "provenance": "best_effort_gphoto2_exposure_start_estimate",
+                    "tier": "tier_c", "status": "timing_evidence_unavailable",
+                    "best_effort_elapsed_s": None,
+                },
+            }
+            if step["capture_role"] == "ambient":
+                result["ambient_diagnostic"] = {"geometry_hash": "g", "black_levels": [512] * 4}
+            return result
+        with tempfile.TemporaryDirectory() as tempdir, self.assertRaisesRegex(RuntimeError, "Tier A/B"):
+            root = Path(tempdir) / "run"
+            measure.execute_plan(
+                plan, run_dir=root, apply_command_fn=lambda _step: {}, readback_fn=lambda _step: {},
+                capture_fn=tier_c_capture,
+                both_off_gate_fn=lambda _gate: {"status": "pass", "strip_verified_off": True, "ray_verified_off": True},
+                cleanup_fn=lambda: {"status": "pass"}, monotonic_fn=lambda: 0, sleep_fn=lambda _seconds: None,
+            )
 
     def test_cleanup_exception_is_retained_and_marks_run_failed(self):
         plan = subject.build_diagnostic_plan(
@@ -245,7 +308,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
 
     def test_exact_authorization_still_fails_before_backend_when_exposure_start_is_unavailable(self):
         from camera_based_rgbww_optimizer.control import camera_remote
-        with mock.patch.object(camera_remote, "create_camera_backend") as backend, self.assertRaisesRegex(PermissionError, "exposure-start"):
+        with mock.patch.object(camera_remote, "create_camera_backend") as backend, self.assertRaisesRegex(PermissionError, "v2 capture timing"):
             measure.main([
                 "--experiment-id", subject.TD_A, "--source", "ray", "--run-name", "x", "--execute",
                 "--allow-device-control", "--human-authorization", subject.TD_A,

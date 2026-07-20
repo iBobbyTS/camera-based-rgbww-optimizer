@@ -32,6 +32,7 @@ def execute_plan(
     capture_fn: Callable[[Mapping[str, Any]], Mapping[str, Any]],
     both_off_gate_fn: Callable[[str], Mapping[str, Any]],
     cleanup_fn: Callable[[], Mapping[str, Any]],
+    set_capture_context_fn: Callable[[float], None] | None = None,
     monotonic_fn: Callable[[], float] = time.monotonic,
     monotonic_ns_fn: Callable[[], int] = time.monotonic_ns,
     sleep_fn: Callable[[float], None] = time.sleep,
@@ -40,8 +41,8 @@ def execute_plan(
         raise PermissionError("thermal diagnostic execution requires an exact authorized plan")
     if any(step.get("formal_measurement") and step.get("requested_elapsed_s") is None for step in plan.get("captures", [])):
         raise PermissionError("thermal diagnostic execution rejects unresolved deferred timing")
-    if plan.get("camera", {}).get("adapter_capability_available") is not True:
-        raise PermissionError("thermal diagnostic execution requires actual exposure-start capability")
+    if plan.get("camera", {}).get("v2_capture_timing_capability_available") is not True:
+        raise PermissionError("thermal diagnostic execution requires remote v2 capture timing capability")
     root = Path(run_dir)
     root.mkdir(parents=True, exist_ok=True)
     if any(root.iterdir()):
@@ -68,20 +69,26 @@ def execute_plan(
         step: Mapping[str, Any], capture: Mapping[str, Any],
         *, owner_start: float | None,
     ) -> None:
-        if capture.get("exposure_start_provenance") != thermal.ACTUAL_EXPOSURE_START_PROVENANCE:
-            raise RuntimeError("capture lacks camera-adapter actual exposure-start provenance")
-        if "exposure_start_monotonic_s" not in capture:
-            raise RuntimeError("capture lacks camera-adapter actual exposure-start timestamp")
-        actual = None if owner_start is None else float(capture["exposure_start_monotonic_s"]) - owner_start
+        timing = capture.get("timing_evidence")
+        if not isinstance(timing, Mapping):
+            raise RuntimeError("capture lacks remote v2 timing evidence")
+        if timing.get("provenance") != "best_effort_gphoto2_exposure_start_estimate":
+            raise RuntimeError("capture has unsupported timing provenance")
+        actual = timing.get("best_effort_elapsed_s") if step["formal_measurement"] else None
+        if actual is not None:
+            actual = float(actual)
         requested = step.get("requested_elapsed_s")
         error = None if requested is None or actual is None else actual - float(requested)
         timing_valid = True if error is None else abs(error) <= float(step["timing_tolerance_s"])
+        if step["formal_measurement"] and timing.get("status") != "accepted_best_effort_anchor":
+            raise RuntimeError(f"formal capture lacks accepted Tier A/B timing: {step['capture_id']}")
         record = {
             "capture_id": step["capture_id"], "source_id": step["source_id"],
             "state_id": step["state_id"], "capture_role": step["capture_role"],
             "formal_measurement": bool(step["formal_measurement"]), "plan_step": dict(step),
             "requested_elapsed_s": requested, "actual_elapsed_s": actual,
             "timing_error_s": error, "timing_valid": timing_valid, "capture": dict(capture),
+            "timing_evidence": dict(timing),
         }
         if not timing_valid:
             raise RuntimeError(f"missed timing for {step['capture_id']}")
@@ -114,6 +121,8 @@ def execute_plan(
             if len(item) == 1 and item[0]["capture_role"] == "ambient":
                 step = item[0]
                 record_gate(str(step["isolation_gate_before"]))
+                if set_capture_context_fn is not None:
+                    set_capture_context_fn(monotonic_fn())
                 retain_capture(step, dict(capture_fn(step)), owner_start=None)
                 continue
             first = item[0]
@@ -128,6 +137,8 @@ def execute_plan(
                 "applied": applied, "readback": readback,
             })
             owner_start = monotonic_fn()
+            if set_capture_context_fn is not None:
+                set_capture_context_fn(owner_start)
             for step in item:
                 remaining = owner_start + float(step["requested_elapsed_s"]) - monotonic_fn()
                 if remaining > 0:
@@ -192,26 +203,21 @@ def run_authorized_plan(
     camera_backend: Any,
     actual_exposure_start_fn: Callable[[Mapping[str, Any]], float] | None = None,
 ) -> Path:
-    if actual_exposure_start_fn is None:
-        raise PermissionError("remote camera adapter lacks actual exposure-start provenance")
+    if plan.get("camera", {}).get("v2_capture_timing_capability_available") is not True:
+        raise PermissionError("remote camera adapter lacks v2 capture timing capability")
     from camera_based_rgbww_optimizer.control import all_off, esphome, ray120c
     from camera_based_rgbww_optimizer.optimization import measure_raw_observer_validation as raw_validation
     from camera_based_rgbww_optimizer.optimization.hsi_objective import required_hsi_features_from_report
     from camera_based_rgbww_optimizer.optimization.measure_ray_hsi_manifold import _verify_readback
 
     root = Path(output_dir) / run_name
-    raw_capture = raw_validation.build_native_raw_capture_step_fn(
-        camera_dir=root / "camera", measurements_dir=root / "measurements", scratch_dir=root / "scratch",
-        location_config_path=thermal.LOCATION_PATH, observer_config_path=thermal.OBSERVER_PATH,
-        iso=None, aperture=None, camera_backend=camera_backend,
-        recorded_exposure_purpose=str(plan["experiment_id"]),
-        frozen_shutter_by_cache=plan["frozen_shutters"],
-    )
     policy = json.loads(thermal.POLICY_PATH.read_text(encoding="utf-8"))
     feature_ids = tuple(policy["feature_set"]["ids"])
     curve = json.loads(thermal.CURVE_PATH.read_text(encoding="utf-8"))
     applied: dict[str, Mapping[str, Any]] = {}
     readbacks: dict[str, Mapping[str, Any]] = {}
+    timing_context: dict[str, float | None] = {"local_readback_done_monotonic_s": None}
+    timing_connection = camera_backend.connect()
     session_start = time.monotonic()
     load_segments: dict[str, list[tuple[float, float]]] = {"ray": [], "strip": []}
 
@@ -258,6 +264,26 @@ def run_authorized_plan(
         readbacks[f"{step['source_id']}:{step['state_id']}"] = dict(value)
         return value
 
+    def timed_capture(**kwargs: Any) -> camera_gphoto2.CaptureResult:
+        if timing_context["local_readback_done_monotonic_s"] is None:
+            raise RuntimeError("P7 timing context is missing command/readback completion")
+        method = getattr(camera_backend, "capture_with_timing", None)
+        if not callable(method):
+            raise PermissionError("remote camera adapter lacks capture_with_timing")
+        return method(
+            output_dir=kwargs["output_dir"], filename_template=kwargs["filename_template"],
+            settings=kwargs["settings"], connection=timing_connection,
+            local_readback_done_monotonic_s=float(timing_context["local_readback_done_monotonic_s"]),
+        )
+
+    raw_capture = raw_validation.build_native_raw_capture_step_fn(
+        camera_dir=root / "camera", measurements_dir=root / "measurements", scratch_dir=root / "scratch",
+        location_config_path=thermal.LOCATION_PATH, observer_config_path=thermal.OBSERVER_PATH,
+        iso=None, aperture=None, camera_backend=camera_backend,
+        recorded_exposure_purpose=str(plan["experiment_id"]),
+        frozen_shutter_by_cache=plan["frozen_shutters"], timed_capture_fn=timed_capture,
+    )
+
     def capture(step: Mapping[str, Any]) -> Mapping[str, Any]:
         source = str(step["source_id"])
         state = str(step["state_id"])
@@ -276,12 +302,17 @@ def run_authorized_plan(
             "physical_capture_budget_remaining": int(plan["budgets"]["physical_cr3_cap"]),
             "analysis_context": {"phase": plan["stage"], "formal_measurement": bool(step["formal_measurement"])},
         }
-        captured = dict(raw_capture(raw_step))
-        exposure_start = float(actual_exposure_start_fn(captured))
-        report = json.loads(Path(captured["patch_statistics"]).read_text(encoding="utf-8"))
+        captured_result = raw_capture(raw_step)
+        if not isinstance(captured_result, Mapping):
+            raise RuntimeError("timed RAW capture adapter returned malformed result")
+        report = json.loads(Path(captured_result["patch_statistics"]).read_text(encoding="utf-8"))
         exposure = report["exposure_metadata"]
         raw_metadata = report["raw_metadata"]
-        elapsed = float(step["requested_elapsed_s"] or 0.0)
+        timing = captured_result.get("timing_evidence")
+        if not isinstance(timing, Mapping):
+            raise RuntimeError("timed RAW capture lacks v2 timing evidence")
+        elapsed = float(timing["best_effort_elapsed_s"] or 0.0)
+        exposure_start = float(timing["local_readback_done_monotonic_s"]) + elapsed
         load = {window: 0.0 for window in (60, 300, 900)} if source == "ambient" else {
             window: integrated_history(source, exposure_start, window) for window in (60, 300, 900)
         }
@@ -300,10 +331,10 @@ def run_authorized_plan(
             readback=readbacks.get(f"{source}:{state}"), curve=curve if source == "strip" else None,
         )
         output = {
-            **captured, "saved_file": captured["capture"]["saved_file"],
+            **captured_result, "saved_file": captured_result["capture"]["saved_file"],
             "recorded_exposure": exposure,
-            "exposure_start_monotonic_s": exposure_start,
-            "exposure_start_provenance": thermal.ACTUAL_EXPOSURE_START_PROVENANCE,
+            "timing_evidence": dict(timing),
+            "timing_metadata": dict(captured_result.get("timing_metadata") or {}),
             "thermal_covariates": covariate,
         }
         if source == "ambient":
@@ -344,6 +375,7 @@ def run_authorized_plan(
     return execute_plan(
         plan, run_dir=root, apply_command_fn=apply, readback_fn=readback,
         capture_fn=capture, both_off_gate_fn=both_off_gate, cleanup_fn=cleanup,
+        set_capture_context_fn=lambda value: timing_context.__setitem__("local_readback_done_monotonic_s", value),
     )
 
 

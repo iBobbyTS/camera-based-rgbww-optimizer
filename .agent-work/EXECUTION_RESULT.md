@@ -243,3 +243,42 @@ Advisor 需决定：
 2. 根据相机/bridge 实际可提供的证据重写 TD timing 合同。
 
 两条路径都会改变 remote service 或测量合同，超出当前 Executer 授权。TD-A、TD-B、TD-C 及后续阶段继续锁定；不得申请设备授权。
+
+---
+
+## 9. P7 本地 v2 timing integration（Executor 离线收口）
+
+**执行范围：** 仅实现并重放本地 `/v2/capture` multipart 解析、CR3/metadata hash 与 capture ID 关联、Tier A/B/C best-effort timing 重建，以及 P7 runner/analyzer round-trip。未访问设备、网络、`.env`、remote API、ESPHome、Ray120c 或相机，未调用 `all_off`。
+
+### 9.1 交付内容
+
+- 新增结构化 MIME parser：严格要求 JSON metadata 在前、CR3 在后，校验 boundary、Content-Length、schema、capture/request ID、MIME、byte count、SHA-256、事件时序和 timing 字段；v1 路径未改变。
+- 新增原子 CR3 保存与同名 metadata sidecar；hash/byte-count/ID 不一致、部分写入和 metadata replace 失败均 fail closed 并清理 `.part`。
+- `CaptureResult` 保留 `timing_metadata`、`timing_evidence` 与 `remote_metadata_path`，旧构造方式仍兼容。
+- 按冻结的 wired-LAN latency-negligible 决策重建 `best_effort_gphoto2`：Tier A=`estimated_not_absolute`、Tier B=`weak_estimate`、Tier C=`unavailable`；不得把 request-start、HTTP 返回、filename 或写盘时间冒充 exposure start，结果显式 `absolute_exposure_start=false`。
+- P7 runner 强制 v2 timing capability；formal capture 只接受 Tier A/B，Tier C fail closed，并持久化独立 metadata path、local receipt 与 timing evidence。
+- P7 public analyzer 独立读取 metadata sidecar，重新校验 CR3 hash/ID 和 timing arithmetic，再与 runner row 对照；输出 timing source、tier distribution、unknown count 和 `timing_absolute_truth=false`。
+- 更新项目 README 与 camera skill，记录 v2 adapter、证据边界和 best-effort 语义。
+
+### 9.2 验证
+
+```text
+focused = 70/70 pass (0.200 s)
+full suite = 467/467 pass (101.358 s, log: /Volumes/4T/temp/rgbww-optimizer/full-v2-final.log)
+compileall = pass (PYTHONPYCACHEPREFIX=/Volumes/4T/temp/rgbww-optimizer/pycache-v2-final)
+wrapper zsh syntax = pass
+git diff --check = pass
+CodeGraph sync = pass (7 changed files)
+```
+
+测试覆盖包括 multipart 顺序/schema/hash/ID 篡改、Content-Length 与原子清理边界、Tier A/C timing、v2 文件保存、P7 runner/analyzer 独立 sidecar round-trip，以及篡改 row/metadata 的拒绝路径。
+
+### 9.3 停止点与 Planner 请求
+
+```text
+status = local_v2_timing_integration_complete_waiting_for_planner
+TD-A / TD-B / TD-C = locked
+P7-R1 / sentinel / remaining 9 / boundary / holdout / Gate-6 / P8 = locked
+```
+
+本轮只证明本地 producer/consumer 的离线证据合同闭环；没有证明 remote service 已部署或设备端能提供真实 exposure-start provenance。请 Planner 验收本地实现，并决定是否另行授权 remote service 变更或新的实机阶段。不得将本轮结果解释为设备授权或 TD-A 放行。
