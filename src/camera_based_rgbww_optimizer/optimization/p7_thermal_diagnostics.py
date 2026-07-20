@@ -125,6 +125,34 @@ def _command(source: str, state: str, commands: Mapping[str, Mapping[str, int]])
     return {channel: int(commands[STRIP_COMMAND_KEYS[state]][channel]) for channel in CHANNELS}
 
 
+def shutter_cache_key_for_step(step: Mapping[str, Any]) -> str | None:
+    source = str(step.get("source_id"))
+    if source == "ambient":
+        return None
+    state = str(step.get("state_id"))
+    command = step.get("command")
+    if not isinstance(command, Mapping):
+        raise ValueError("formal thermal capture lacks a command for its shutter cache")
+    if source == "ray":
+        try:
+            return f"ray-h{int(command['hue'])}-s{int(command['sat'])}"
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ValueError("Ray thermal capture lacks a valid HSI shutter owner") from exc
+    if source == "strip":
+        if state not in STRIP_COMMAND_KEYS:
+            raise ValueError(f"strip thermal capture has unknown state: {state}")
+        return f"strip-{STRIP_COMMAND_KEYS[state]}"
+    raise ValueError(f"thermal capture has unknown source: {source}")
+
+
+def required_shutter_cache_keys(captures: Sequence[Mapping[str, Any]]) -> tuple[str, ...]:
+    return tuple(sorted({
+        key
+        for step in captures
+        if (key := shutter_cache_key_for_step(step)) is not None
+    }))
+
+
 def build_diagnostic_plan(
     experiment_id: str,
     *,
@@ -157,7 +185,15 @@ def build_diagnostic_plan(
         raise PermissionError("execution requires remote v2 capture timing capability")
 
     commands = load_r1_commands(r1_run)
-    shutters = load_r1_shutters(r1_run)
+    retained_shutters = load_r1_shutters(r1_run)
+    if experiment_id == TD_A:
+        stage_plan = _td_a_plan(str(source), commands)
+    elif experiment_id == TD_B:
+        stage_plan = _td_b_plan(str(source), commands, envelope)
+    else:
+        stage_plan = _td_c_plan(variant, commands, envelope)
+    required_shutters = required_shutter_cache_keys(stage_plan["captures"])
+    frozen_shutters = {key: retained_shutters.get(key) for key in required_shutters}
     inputs = {
         "r1_commands": file_reference(Path(r1_run) / "commands.jsonl"),
         "r1_plan": file_reference(Path(r1_run) / "plan.json"),
@@ -208,20 +244,20 @@ def build_diagnostic_plan(
             "cold_steady_covariance_merge": True,
         },
         "formal_capture_eligible": False,
-        "frozen_shutters": shutters,
-        "exposure_setup_required": sorted(key for key, value in shutters.items() if value is None),
+        "frozen_shutters": frozen_shutters,
+        "exposure_setup_required": sorted(key for key, value in frozen_shutters.items() if value is None),
+        "shutter_ledger_provenance": {
+            "owner": "experiment_capture_steps",
+            "required_cache_keys": list(required_shutters),
+            "frozen_shutters_sha256": canonical_sha256(frozen_shutters),
+        },
         "capture_ledger_contract": {
             "formal_measurement": "boolean", "capture_role": ["formal", "ambient"],
             "ambient_counts_as_physical_cr3": True,
         },
         "source_isolation_contract": "independent_both_off_readback_at_run_ambient_and_transition_gates",
     }
-    if experiment_id == TD_A:
-        plan.update(_td_a_plan(str(source), commands))
-    elif experiment_id == TD_B:
-        plan.update(_td_b_plan(str(source), commands, envelope))
-    else:
-        plan.update(_td_c_plan(variant, commands, envelope))
+    plan.update(stage_plan)
     return plan
 
 

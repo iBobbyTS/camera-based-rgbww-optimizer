@@ -8,7 +8,7 @@ from unittest import mock
 
 from camera_based_rgbww_optimizer.optimization import measure_p7_thermal_diagnostics as measure
 from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as subject
-from camera_based_rgbww_optimizer.control import camera_remote_v2
+from camera_based_rgbww_optimizer.control import camera_gphoto2, camera_remote_v2
 
 
 class _Clock:
@@ -37,6 +37,38 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
         self.assertEqual(plan["offline_contract"], {"env_calls": 0, "network_calls": 0, "device_calls": 0, "all_off_calls": 0})
         self.assertEqual(plan["timing_contract"]["name"], "best_effort_gphoto2_v1")
         self.assertFalse(plan["timing_contract"]["absolute_exposure_start"])
+
+    def test_shutter_ledgers_are_scoped_to_exact_experiment_and_source(self):
+        expected = {
+            (subject.TD_A, "ray"): ({"ray-h120-s100": "1/5000"}, []),
+            (subject.TD_A, "strip"): ({"strip-h120-s100-fullscale": "1/320"}, []),
+            (subject.TD_B, "ray"): ({
+                "ray-h0-s0": "1/8000",
+                "ray-h120-s100": "1/5000",
+                "ray-h120-s50": None,
+                "ray-h300-s100": "1/2000",
+            }, ["ray-h120-s50"]),
+            (subject.TD_B, "strip"): ({
+                "strip-h0-s0-fullscale": "1/500",
+                "strip-h120-s100-fullscale": "1/320",
+                "strip-h120-s50-fullscale": "1/400",
+                "strip-h300-s100-fullscale": "1/125",
+            }, []),
+        }
+        for (experiment, source), (shutters, setup) in expected.items():
+            with self.subTest(experiment=experiment, source=source):
+                first = subject.build_diagnostic_plan(experiment, source=source)
+                second = subject.build_diagnostic_plan(experiment, source=source)
+                self.assertEqual(first["frozen_shutters"], shutters)
+                self.assertEqual(first["exposure_setup_required"], setup)
+                self.assertEqual(first["shutter_ledger_provenance"], second["shutter_ledger_provenance"])
+                self.assertEqual(
+                    first["shutter_ledger_provenance"]["frozen_shutters_sha256"],
+                    subject.canonical_sha256(shutters),
+                )
+                self.assertEqual(set(shutters), set(subject.required_shutter_cache_keys(first["captures"])))
+        self.assertNotIn("ray-h120-s50", subject.build_diagnostic_plan(subject.TD_A, source="ray")["frozen_shutters"])
+        self.assertNotIn("ray-h120-s50", subject.build_diagnostic_plan(subject.TD_A, source="strip")["frozen_shutters"])
 
     def test_td_b_and_c_dry_plans_exist_but_execute_stays_locked(self):
         td_b = subject.build_diagnostic_plan(subject.TD_B, source="ray")
@@ -251,7 +283,18 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
             subject.TD_A, source="ray", for_execution=True,
             human_authorization=subject.TD_A, v2_capture_capability=True,
         )
-        plan = {**plan, "captures": [], "budgets": {"formal_cap": 0, "ambient_cap": 0, "physical_cr3_cap": 0}}
+        plan = {
+            **plan,
+            "captures": [],
+            "budgets": {"formal_cap": 0, "ambient_cap": 0, "physical_cr3_cap": 0},
+            "frozen_shutters": {},
+            "exposure_setup_required": [],
+            "shutter_ledger_provenance": {
+                "owner": "experiment_capture_steps",
+                "required_cache_keys": [],
+                "frozen_shutters_sha256": subject.canonical_sha256({}),
+            },
+        }
         with tempfile.TemporaryDirectory() as tempdir:
             root = Path(tempdir) / "run"
             with self.assertRaisesRegex(RuntimeError, "cleanup failed"):
@@ -358,6 +401,9 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                 self.connect_calls += 1
                 return object()
 
+            def resolve_capture_settings(self, **_kwargs):
+                return camera_gphoto2.CaptureSettings(iso="125", aperture="implicit auto", image_format="RAW")
+
             def capture_with_timing(self, **_kwargs):
                 raise AssertionError("capture must not run")
 
@@ -395,6 +441,189 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                 camera_backend=local_backend,
             )
         self.assertEqual(local_backend.connect_calls, 0)
+
+    def test_authorized_runner_rejects_shutter_drift_before_backend_connect(self):
+        class FakeBackend:
+            backend_name = "remote"
+            v2_capture_capability = measure.REMOTE_V2_CAPABILITY
+
+            def __init__(self):
+                self.connect_calls = 0
+
+            def connect(self):
+                self.connect_calls += 1
+                return object()
+
+            def resolve_capture_settings(self, **_kwargs):
+                raise AssertionError("invalid shutter plan must fail before settings resolution")
+
+            def capture_with_timing(self, **_kwargs):
+                raise AssertionError("invalid shutter plan must not capture")
+
+        base = subject.build_diagnostic_plan(
+            subject.TD_A, source="ray", for_execution=True,
+            human_authorization=subject.TD_A, v2_capture_capability=True,
+        )
+        missing = {
+            **base,
+            "frozen_shutters": {"ray-h120-s100": None},
+            "exposure_setup_required": ["ray-h120-s100"],
+        }
+        missing["shutter_ledger_provenance"] = {
+            **base["shutter_ledger_provenance"],
+            "frozen_shutters_sha256": subject.canonical_sha256(missing["frozen_shutters"]),
+        }
+        contaminated = {
+            **base,
+            "frozen_shutters": {**base["frozen_shutters"], "ray-h120-s50": "1/1000"},
+        }
+        for label, plan in (("missing", missing), ("contaminated", contaminated)):
+            backend = FakeBackend()
+            with self.subTest(label=label), self.assertRaises(PermissionError):
+                measure.run_authorized_plan(
+                    plan,
+                    output_dir=Path("/Volumes/4T/temp/rgbww-optimizer/p7-r0d-negative"),
+                    run_name=label,
+                    camera_backend=backend,
+                )
+            self.assertEqual(backend.connect_calls, 0)
+
+    def test_authorized_runner_resolves_once_and_binds_non_null_settings_to_ambient_and_formal(self):
+        for source, formal_shutter in (("ray", "1/5000"), ("strip", "1/320")):
+            captured_settings = []
+            executed_plans = []
+            raw_steps = []
+
+            class FakeCaptureComplete(Exception):
+                pass
+
+            class FakeBackend:
+                backend_name = "remote"
+                v2_capture_capability = measure.REMOTE_V2_CAPABILITY
+
+                def __init__(self):
+                    self.connect_calls = 0
+                    self.resolve_calls = 0
+
+                def connect(self):
+                    self.connect_calls += 1
+                    return camera_gphoto2.CameraConnection("fake-remote", "fake://camera")
+
+                def resolve_capture_settings(self, **kwargs):
+                    self.resolve_calls += 1
+                    self.asserted_request = kwargs
+                    return camera_gphoto2.CaptureSettings(
+                        iso="125", aperture="implicit auto", shutter_speed="1/100", image_format="RAW"
+                    )
+
+                def capture_with_timing(self, **kwargs):
+                    captured_settings.append(kwargs["settings"])
+                    return object()
+
+            backend = FakeBackend()
+            plan = subject.build_diagnostic_plan(
+                subject.TD_A, source=source, for_execution=True,
+                human_authorization=subject.TD_A, v2_capture_capability=True,
+            )
+
+            def adapter_builder(**kwargs):
+                def adapter(step):
+                    raw_steps.append(dict(step))
+                    cache_key = step.get("source_exposure_cache")
+                    shutter = "30" if step["source"] == "ambient" else kwargs["frozen_shutter_by_cache"][cache_key]
+                    kwargs["timed_capture_fn"](
+                        output_dir=kwargs["camera_dir"], filename_template="fake.cr3",
+                        settings=camera_gphoto2.CaptureSettings(
+                            iso=kwargs["iso"], aperture=kwargs["aperture"],
+                            shutter_speed=shutter, image_format=kwargs["image_format"],
+                        ),
+                    )
+                    raise FakeCaptureComplete
+                return adapter
+
+            def fake_execute(resolved_plan, **kwargs):
+                executed_plans.append(resolved_plan)
+                kwargs["set_capture_context_fn"](100.0)
+                ambient = next(step for step in resolved_plan["captures"] if step["capture_role"] == "ambient")
+                formal = next(step for step in resolved_plan["captures"] if step["formal_measurement"])
+                for step in (ambient, formal):
+                    try:
+                        kwargs["capture_fn"](step)
+                    except FakeCaptureComplete:
+                        pass
+                return Path("fake-run")
+
+            with self.subTest(source=source), mock.patch(
+                "camera_based_rgbww_optimizer.optimization.measure_raw_observer_validation.build_native_raw_capture_step_fn",
+                side_effect=adapter_builder,
+            ), mock.patch.object(measure, "execute_plan", side_effect=fake_execute):
+                result = measure.run_authorized_plan(
+                    plan,
+                    output_dir=Path("/Volumes/4T/temp/rgbww-optimizer/p7-r0d-binding"),
+                    run_name=source,
+                    camera_backend=backend,
+                )
+            self.assertEqual(result, Path("fake-run"))
+            self.assertEqual(backend.connect_calls, 1)
+            self.assertEqual(backend.resolve_calls, 1)
+            self.assertEqual(backend.asserted_request, {"iso": None, "aperture": None, "image_format": "RAW"})
+            self.assertEqual([item.shutter_speed for item in captured_settings], ["30", formal_shutter])
+            self.assertTrue(all(item.iso == "125" for item in captured_settings))
+            self.assertTrue(all(item.aperture == "implicit auto" for item in captured_settings))
+            self.assertTrue(all(item.image_format == "RAW" for item in captured_settings))
+            self.assertNotIn(None, [item.iso for item in captured_settings] + [item.aperture for item in captured_settings])
+            self.assertTrue(all(step["auto_exposure"] is False for step in raw_steps))
+            self.assertIsNone(raw_steps[0]["source_exposure_cache"])
+            self.assertEqual(raw_steps[1]["source_exposure_cache"], next(iter(plan["frozen_shutters"])))
+            self.assertEqual(executed_plans[0]["camera"]["resolved_capture_settings"], {
+                "owner": "remote_backend.resolve_capture_settings",
+                "iso": "125", "aperture": "implicit auto", "image_format": "RAW",
+            })
+
+    def test_authorized_runner_settings_failure_is_before_run_directory_and_lights(self):
+        class FakeBackend:
+            backend_name = "remote"
+            v2_capture_capability = measure.REMOTE_V2_CAPABILITY
+
+            def __init__(self, value):
+                self.value = value
+                self.connect_calls = 0
+                self.resolve_calls = 0
+
+            def connect(self):
+                self.connect_calls += 1
+                return object()
+
+            def resolve_capture_settings(self, **_kwargs):
+                self.resolve_calls += 1
+                if isinstance(self.value, BaseException):
+                    raise self.value
+                return self.value
+
+            def capture_with_timing(self, **_kwargs):
+                raise AssertionError("invalid settings must not capture")
+
+        plan = subject.build_diagnostic_plan(
+            subject.TD_A, source="ray", for_execution=True,
+            human_authorization=subject.TD_A, v2_capture_capability=True,
+        )
+        invalid = {
+            "resolver_error": RuntimeError("invalid remote choice"),
+            "null_iso": camera_gphoto2.CaptureSettings(iso=None, aperture="implicit auto", image_format="RAW"),
+            "empty_aperture": camera_gphoto2.CaptureSettings(iso="125", aperture="", image_format="RAW"),
+            "non_raw": camera_gphoto2.CaptureSettings(iso="125", aperture="implicit auto", image_format="JPEG"),
+        }
+        for label, value in invalid.items():
+            backend = FakeBackend(value)
+            output = Path("/Volumes/4T/temp/rgbww-optimizer/p7-r0d-settings-negative") / label
+            self.assertFalse(output.exists())
+            with self.subTest(label=label), self.assertRaises((PermissionError, RuntimeError)):
+                measure.run_authorized_plan(
+                    plan, output_dir=output.parent, run_name=output.name, camera_backend=backend,
+                )
+            self.assertEqual(backend.connect_calls, 1)
+            self.assertEqual(backend.resolve_calls, 1)
+            self.assertFalse(output.exists())
 
     def test_operating_envelope_has_no_prefilled_settle(self):
         artifact = json.loads(subject.OPERATING_ENVELOPE_PATH.read_text(encoding="utf-8"))

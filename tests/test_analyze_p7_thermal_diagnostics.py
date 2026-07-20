@@ -44,6 +44,12 @@ def _build_formal_td_a_run(root: Path) -> Path:
         thermal.TD_A, source="ray", for_execution=True,
         human_authorization=thermal.TD_A, v2_capture_capability=True,
     )
+    plan["camera"]["resolved_capture_settings"] = {
+        "owner": "remote_backend.resolve_capture_settings",
+        "iso": "125",
+        "aperture": "implicit auto",
+        "image_format": "RAW",
+    }
     clock = _Clock()
     curve = json.loads(thermal.CURVE_PATH.read_text(encoding="utf-8"))
     _raw, off_payload = expected_strip_payloads({channel: 0 for channel in thermal.CHANNELS}, curve)
@@ -82,6 +88,10 @@ def _build_formal_td_a_run(root: Path) -> Path:
         )
         output = {
             "saved_file": str(saved), "physical_capture_count": 1,
+            "capture": {
+                "saved_file": str(saved), "iso": "125",
+                "aperture": "implicit auto", "image_format": "RAW",
+            },
             "recorded_exposure": {"status": "recorded", "seconds": 0.01},
             "thermal_covariates": covariate,
         }
@@ -161,6 +171,15 @@ class AnalyzeP7ThermalDiagnosticsTests(unittest.TestCase):
             self.assertEqual(report["formal_capture_count"], 12)
             self.assertEqual(report["ambient_capture_count"], 3)
             self.assertEqual(report["physical_cr3_count"], 15)
+
+            original_run = json.loads((root / "run.json").read_text(encoding="utf-8"))
+            tampered_run = {**original_run, "capture_settings_provenance": {
+                **original_run["capture_settings_provenance"], "iso": "400",
+            }}
+            _write_json(root / "run.json", tampered_run)
+            with self.assertRaisesRegex(ValueError, "capture settings provenance"):
+                subject.analyze_thermal_run(root, feature_ids=FEATURE_IDS, compatibility_fn=lambda _left, _right: True)
+            _write_json(root / "run.json", original_run)
 
             original_captures = (root / "captures.jsonl").read_text(encoding="utf-8")
             rows = [json.loads(line) for line in original_captures.splitlines()]

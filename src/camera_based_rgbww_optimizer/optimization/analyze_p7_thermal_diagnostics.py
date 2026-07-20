@@ -48,6 +48,7 @@ def analyze_thermal_run(
         "provenance": "best_effort_gphoto2_exposure_start_estimate",
     }:
         raise ValueError("thermal timing contract differs from frozen best-effort contract")
+    capture_settings = _validate_capture_settings_provenance(plan, run)
     captures = _load_jsonl(root / "captures.jsonl")
     covariates = _load_jsonl(root / "thermal-covariates.jsonl")
     commands = _load_jsonl(root / "commands.jsonl")
@@ -105,6 +106,12 @@ def analyze_thermal_run(
         if capture.get("capture_role") != step.get("capture_role") or bool(capture.get("formal_measurement")) != bool(step.get("formal_measurement")):
             raise ValueError("thermal capture formal/ambient role mismatch")
         payload = capture.get("capture") or {}
+        camera_capture = payload.get("capture")
+        if not isinstance(camera_capture, Mapping) or any(
+            camera_capture.get(key) != capture_settings[key]
+            for key in ("iso", "aperture", "image_format")
+        ):
+            raise ValueError("thermal capture settings differ from resolved remote provenance")
         if step["formal_measurement"]:
             requested = float(step["requested_elapsed_s"])
             actual = float(capture["actual_elapsed_s"])
@@ -183,6 +190,29 @@ def analyze_thermal_run(
         "unknown_uncertainty_count": timing_unknown,
         **result,
     }
+
+
+def _validate_capture_settings_provenance(
+    plan: Mapping[str, Any], run: Mapping[str, Any],
+) -> dict[str, str]:
+    camera = plan.get("camera")
+    settings = camera.get("resolved_capture_settings") if isinstance(camera, Mapping) else None
+    if not isinstance(settings, Mapping):
+        raise ValueError("thermal plan lacks resolved remote capture settings provenance")
+    expected = {
+        "owner": "remote_backend.resolve_capture_settings",
+        "iso": settings.get("iso"),
+        "aperture": settings.get("aperture"),
+        "image_format": settings.get("image_format"),
+    }
+    if (
+        dict(settings) != expected
+        or any(not isinstance(expected[key], str) or not expected[key].strip() for key in ("iso", "aperture"))
+        or expected["image_format"] != "RAW"
+        or run.get("capture_settings_provenance") != expected
+    ):
+        raise ValueError("thermal run capture settings provenance is inconsistent")
+    return expected
 
 
 def _replay_timing_evidence(

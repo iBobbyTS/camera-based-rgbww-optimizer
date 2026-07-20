@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import time
 from datetime import datetime, timezone
@@ -13,6 +14,60 @@ from camera_based_rgbww_optimizer.paths import PROJECT_TMP_DIR
 
 DEFAULT_OUTPUT = PROJECT_TMP_DIR / "p7-thermal-diagnostics-offline"
 REMOTE_V2_CAPABILITY = "remote_v2_capture_timing_v1"
+
+
+def _validate_execution_shutter_ledger(plan: Mapping[str, Any]) -> None:
+    captures = plan.get("captures")
+    frozen = plan.get("frozen_shutters")
+    if not isinstance(captures, Sequence) or isinstance(captures, (str, bytes)):
+        raise PermissionError("thermal diagnostic execution lacks a capture ledger")
+    if not isinstance(frozen, Mapping):
+        raise PermissionError("thermal diagnostic execution lacks a frozen shutter ledger")
+    try:
+        required = thermal.required_shutter_cache_keys(captures)
+    except (TypeError, ValueError) as exc:
+        raise PermissionError("thermal diagnostic execution has an invalid shutter owner") from exc
+    if set(frozen) != set(required):
+        raise PermissionError("thermal diagnostic frozen shutters differ from experiment capture steps")
+    unresolved = sorted(
+        key for key in required
+        if not isinstance(frozen.get(key), str) or not str(frozen[key]).strip()
+    )
+    if plan.get("exposure_setup_required") != unresolved:
+        raise PermissionError("thermal diagnostic exposure setup ledger is inconsistent")
+    provenance = plan.get("shutter_ledger_provenance")
+    if (
+        not isinstance(provenance, Mapping)
+        or provenance.get("owner") != "experiment_capture_steps"
+        or provenance.get("required_cache_keys") != list(required)
+        or provenance.get("frozen_shutters_sha256") != thermal.canonical_sha256(dict(frozen))
+    ):
+        raise PermissionError("thermal diagnostic shutter provenance is inconsistent")
+    if unresolved:
+        raise PermissionError(f"thermal diagnostic execution has unresolved shutter setup: {unresolved}")
+
+
+def _resolve_remote_capture_settings(camera_backend: Any) -> tuple[Any, dict[str, str]]:
+    resolver = getattr(camera_backend, "resolve_capture_settings", None)
+    if not callable(resolver):
+        raise PermissionError("remote v2 backend lacks capture settings resolution")
+    resolved = resolver(iso=None, aperture=None, image_format="RAW")
+    values = {
+        "iso": getattr(resolved, "iso", None),
+        "aperture": getattr(resolved, "aperture", None),
+        "image_format": getattr(resolved, "image_format", None),
+    }
+    if any(not isinstance(value, str) or not value.strip() for value in values.values()):
+        raise PermissionError("remote capture settings must be non-empty strings")
+    if values["image_format"] != "RAW":
+        raise PermissionError("remote capture settings must resolve exact RAW image format")
+    provenance = {
+        "owner": "remote_backend.resolve_capture_settings",
+        "iso": values["iso"],
+        "aperture": values["aperture"],
+        "image_format": values["image_format"],
+    }
+    return resolved, provenance
 
 
 def validate_authorized_execution_plan(
@@ -40,11 +95,13 @@ def validate_authorized_execution_plan(
         raise PermissionError("thermal diagnostic execution requires remote v2 capture timing capability")
     if any(step.get("formal_measurement") and step.get("requested_elapsed_s") is None for step in plan.get("captures", [])):
         raise PermissionError("thermal diagnostic execution rejects unresolved deferred timing")
+    _validate_execution_shutter_ledger(plan)
     if camera_backend is not None:
         if (
             getattr(camera_backend, "backend_name", None) != "remote"
             or getattr(camera_backend, "v2_capture_capability", None) != REMOTE_V2_CAPABILITY
             or not callable(getattr(camera_backend, "connect", None))
+            or not callable(getattr(camera_backend, "resolve_capture_settings", None))
             or not callable(getattr(camera_backend, "capture_with_timing", None))
         ):
             raise PermissionError("thermal diagnostic execution requires the formal remote v2 backend owner")
@@ -83,6 +140,7 @@ def execute_plan(
         "schema": "p7_thermal_diagnostic_run_v1", "experiment_id": plan["experiment_id"],
         "status": "running", "started_at": _utc_now(), "completed_formal": 0,
         "ambient_capture_count": 0, "physical_cr3_count": 0, "cleanup": "pending",
+        "capture_settings_provenance": copy.deepcopy(plan["camera"].get("resolved_capture_settings")),
     }
     _write_json(root / "run.json", run)
     failure: BaseException | None = None
@@ -248,6 +306,9 @@ def run_authorized_plan(
     readbacks: dict[str, Mapping[str, Any]] = {}
     timing_context: dict[str, float | None] = {"local_readback_done_monotonic_s": None}
     timing_connection = camera_backend.connect()
+    resolved_settings, settings_provenance = _resolve_remote_capture_settings(camera_backend)
+    plan = copy.deepcopy(dict(plan))
+    plan["camera"] = {**dict(plan["camera"]), "resolved_capture_settings": settings_provenance}
     session_start = time.monotonic()
     load_segments: dict[str, list[tuple[float, float]]] = {"ray": [], "strip": []}
 
@@ -309,7 +370,8 @@ def run_authorized_plan(
     raw_capture = raw_validation.build_native_raw_capture_step_fn(
         camera_dir=root / "camera", measurements_dir=root / "measurements", scratch_dir=root / "scratch",
         location_config_path=thermal.LOCATION_PATH, observer_config_path=thermal.OBSERVER_PATH,
-        iso=None, aperture=None, camera_backend=camera_backend,
+        iso=str(resolved_settings.iso), aperture=str(resolved_settings.aperture),
+        image_format=str(resolved_settings.image_format), camera_backend=camera_backend,
         recorded_exposure_purpose=str(plan["experiment_id"]),
         frozen_shutter_by_cache=plan["frozen_shutters"], timed_capture_fn=timed_capture,
     )

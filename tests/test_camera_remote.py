@@ -495,6 +495,16 @@ class RemoteCameraExposureTests(unittest.TestCase):
         self.assertEqual(resolved.iso, "125")
         self.assertEqual(resolved.aperture, "implicit auto")
 
+    def test_resolve_capture_settings_rejects_current_value_outside_remote_choices(self):
+        payload = json.loads(json.dumps(self.CONFIG_PAYLOAD))
+        payload["iso"]["current"] = "400"
+        backend = camera_remote.RemoteCameraBackend(
+            config=camera_remote.RemoteCameraConfig("http://camera.local:8088", "secret"),
+            opener=lambda *_args, **_kwargs: FakeResponse([json.dumps(payload).encode("utf-8")]),
+        )
+        with self.assertRaisesRegex(camera_remote.RemoteCameraError, "unavailable"):
+            backend.resolve_capture_settings(iso=None, aperture=None, image_format="RAW")
+
     def test_shared_auto_exposure_runs_entire_search_through_remote_backend(self):
         capture_payloads = []
 

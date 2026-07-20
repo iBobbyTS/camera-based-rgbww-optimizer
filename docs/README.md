@@ -794,6 +794,14 @@ inflation are prohibited. Future authorized execution must use
 `tmp/run-p7-thermal-diagnostics.zsh` so Python cleanup and independent shell
 cleanup both retain evidence.
 
+Each thermal plan derives its frozen shutter ledger only from that exact
+experiment/source capture schedule. In particular, TD-A never inherits the
+future TD-B `ray-h120-s50` setup key. Before any run directory or light command,
+the production remote runner connects and resolves ISO, aperture, and RAW format
+once through `RemoteCameraBackend.resolve_capture_settings`; the same non-empty
+choice strings are then bound to ambient and all fixed timed captures. Missing,
+cross-experiment, null, or non-RAW settings fail closed before acquisition.
+
 Ambient frames have a separate non-formal ledger but still consume physical
 CR3 budget. TD-A freezes start/mid/end ambient frames; every TD-C session freezes
 start/end ambient frames. The TD-C core therefore owns 8 formal plus 8 ambient
