@@ -73,7 +73,7 @@ class RemoteCameraConfigTests(unittest.TestCase):
 
 
 class RemoteCameraCaptureTests(unittest.TestCase):
-    def _v2_response(self, *, payload=b"fake-cr3-v2", boundary="v2-boundary", metadata=None, headers=None):
+    def _v2_response(self, *, payload=b"fake-cr3-v2", boundary="v2-boundary", metadata=None, headers=None, omit_headers=()):
         if metadata is None:
             metadata = {
                 "schema": "remote_capture_result_v2", "capture_id": "capture-v2", "request_id": "request-v2",
@@ -97,18 +97,28 @@ class RemoteCameraCaptureTests(unittest.TestCase):
                     "uncertainty_ms": None, "uncertainty_basis": "unknown",
                 },
                 "network_observation": {"request_id": "request-v2", "response_or_event_round_trip_ms": None, "uncertainty_ms": None, "uncertainty_basis": "unknown"},
+                "bridge_utc_observation": {"request_received": "2026-07-20T00:00:00+00:00", "source": "bridge_system_clock_utc"},
             }
         self._last_v2_metadata = json.loads(json.dumps(metadata))
         content = (
-            f"--{boundary}\r\nContent-Type: application/json\r\nContent-ID: metadata\r\n\r\n".encode()
+            f"--{boundary}\r\nContent-Type: application/json\r\nContent-Disposition: inline; name=\"metadata\"\r\nContent-ID: <metadata>\r\n\r\n".encode()
             + json.dumps(metadata, sort_keys=True).encode()
-            + f"\r\n--{boundary}\r\nContent-Type: image/x-canon-cr3\r\nContent-ID: cr3\r\n\r\n".encode()
+            + f"\r\n--{boundary}\r\nContent-Type: image/x-canon-cr3\r\nContent-Disposition: attachment; name=\"cr3\"; filename=\"fake.cr3\"\r\nContent-ID: <cr3>\r\n\r\n".encode()
             + payload + f"\r\n--{boundary}--\r\n".encode()
         )
+        required_headers = {
+            "Content-Length": str(len(content)),
+            "X-Capture-ID": metadata["capture_id"],
+            "X-Request-ID": metadata["request_id"],
+            "X-Capture-Metadata-Schema": camera_remote_v2.SCHEMA,
+            **(headers or {}),
+        }
+        for name in omit_headers:
+            required_headers.pop(name, None)
         return FakeV2Response(
             content,
             content_type=f'multipart/mixed; boundary="{boundary}"',
-            headers={"X-Capture-ID": metadata["capture_id"], "X-Request-ID": metadata["request_id"], **(headers or {})},
+            headers=required_headers,
         )
 
     def test_v2_multipart_saves_cr3_metadata_and_rebuilds_tier_b_timing(self):
@@ -141,7 +151,10 @@ class RemoteCameraCaptureTests(unittest.TestCase):
                 mutated["cr3"]["sha256"] = "0" * 64
             response = self._v2_response(payload=payload, metadata=mutated)
             with self.subTest(mutation=mutation), self.assertRaises(camera_remote_v2.RemoteCaptureV2Error):
-                camera_remote_v2.parse_v2_multipart(content_type=response.headers["Content-Type"], body=b"".join(response.chunks))
+                camera_remote_v2.parse_v2_multipart(
+                    content_type=response.headers["Content-Type"], body=b"".join(response.chunks),
+                    response_headers={key.lower(): value for key, value in response.headers.items()},
+                )
         with self.assertRaises(camera_remote_v2.RemoteCaptureV2Error):
             response = self._v2_response(payload=payload, headers={"X-Capture-ID": "wrong"})
             camera_remote.capture_remote_image_v2(
@@ -154,7 +167,9 @@ class RemoteCameraCaptureTests(unittest.TestCase):
         body = b"".join(base.chunks)
         extra = body.replace(b"\r\n--v2-boundary--", b"\r\n--v2-boundary\r\nContent-Type: text/plain\r\n\r\nextra\r\n--v2-boundary--")
         with self.assertRaises(camera_remote_v2.RemoteCaptureV2Error):
-            camera_remote_v2.parse_v2_multipart(content_type=base.headers["Content-Type"], body=extra)
+            headers = {key.lower(): value for key, value in base.headers.items()}
+            headers["content-length"] = str(len(extra))
+            camera_remote_v2.parse_v2_multipart(content_type=base.headers["Content-Type"], body=extra, response_headers=headers)
 
     def test_v2_metadata_replace_failure_removes_cr3_and_partial_files(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -172,14 +187,17 @@ class RemoteCameraCaptureTests(unittest.TestCase):
     def test_v2_tier_a_and_tier_c_reconstruction_boundaries(self):
         payload = b"tier-a"
         response = self._v2_response(payload=payload)
-        parsed = camera_remote_v2.parse_v2_multipart(content_type=response.headers["Content-Type"], body=b"".join(response.chunks))
+        parsed = camera_remote_v2.parse_v2_multipart(
+            content_type=response.headers["Content-Type"], body=b"".join(response.chunks),
+            response_headers={key.lower(): value for key, value in response.headers.items()},
+        )
         parsed.metadata["exposure_start_estimate"] = {
             "timestamp_monotonic_ns": 2_000_000_000, "clock_domain": "bridge_monotonic",
             "method": "gphoto_event_minus_recorded_exposure", "status": "estimated_not_absolute",
             "uncertainty_ms": None, "uncertainty_basis": "unknown",
         }
         parsed.metadata["gphoto2"]["file_added_observed_monotonic_ns"] = 2_250_000_000
-        parsed.metadata["gphoto2"]["event_sequence"] = [{"monotonic_ns": 2_250_000_000, "clock_domain": "bridge_monotonic", "event_type": "file_added", "source": "fake", "payload_summary": {}}]
+        parsed.metadata["gphoto2"]["event_sequence"] = [{"monotonic_ns": 2_250_000_000, "clock_domain": "bridge_monotonic", "event_type": "file_added", "source": "gphoto2_event", "payload_summary": {}}]
         camera_remote_v2.validate_capture_metadata(parsed.metadata, payload=payload)
         evidence = camera_remote_v2.reconstruct_best_effort_timing(parsed.metadata, local_request_started_monotonic_s=10, local_response_received_monotonic_s=12, local_readback_done_monotonic_s=9)
         self.assertEqual(evidence["tier"], "tier_a")
@@ -197,6 +215,90 @@ class RemoteCameraCaptureTests(unittest.TestCase):
         self.assertEqual(unavailable["tier"], "tier_c")
         self.assertEqual(unavailable["status"], "timing_evidence_unavailable")
         self.assertIsNone(unavailable["best_effort_elapsed_s"])
+
+    def test_v2_requires_all_response_association_headers(self):
+        required = ("Content-Length", "X-Capture-ID", "X-Request-ID", "X-Capture-Metadata-Schema")
+        for missing in required:
+            with self.subTest(missing=missing), tempfile.TemporaryDirectory() as tmpdir:
+                response = self._v2_response(omit_headers=(missing,))
+                with self.assertRaises(camera_remote_v2.RemoteCaptureV2Error):
+                    camera_remote.capture_remote_image_v2(
+                        output_dir=tmpdir, filename_template="capture.cr3",
+                        config=camera_remote.RemoteCameraConfig("http://camera.local:8088", "token"),
+                        opener=lambda *_args, **_kwargs: response, local_readback_done_monotonic_s=9,
+                        monotonic_fn=iter((10.0, 12.0)).__next__,
+                    )
+                self.assertEqual(list(Path(tmpdir).iterdir()), [])
+
+    def test_v2_rejects_network_id_unknown_sensitive_fields_and_part_association(self):
+        cases = []
+        response = self._v2_response()
+        bad_network = json.loads(json.dumps(self._last_v2_metadata))
+        bad_network["network_observation"]["request_id"] = "forged"
+        cases.append(("network", self._v2_response(metadata=bad_network)))
+        unknown = json.loads(json.dumps(self._last_v2_metadata))
+        unknown["camera_serial"] = "secret-serial"
+        cases.append(("unknown", self._v2_response(metadata=unknown)))
+        for label, bad_response in cases:
+            with self.subTest(label=label), self.assertRaises(camera_remote_v2.RemoteCaptureV2Error):
+                camera_remote_v2.parse_v2_multipart(
+                    content_type=bad_response.headers["Content-Type"], body=b"".join(bad_response.chunks),
+                    response_headers={key.lower(): value for key, value in bad_response.headers.items()},
+                )
+        body = b"".join(response.chunks).replace(b"Content-ID: <metadata>", b"Content-ID: <cr3>", 1)
+        headers = {key.lower(): value for key, value in response.headers.items()}
+        headers["content-length"] = str(len(body))
+        with self.assertRaisesRegex(camera_remote_v2.RemoteCaptureV2Error, "Content-ID"):
+            camera_remote_v2.parse_v2_multipart(
+                content_type=response.headers["Content-Type"], body=body, response_headers=headers,
+            )
+
+    def test_v2_busy_retry_uses_successful_attempt_request_clock(self):
+        response = self._v2_response()
+        calls = 0
+
+        def opener(remote_request, *, timeout):
+            nonlocal calls
+            calls += 1
+            if calls == 1:
+                raise error.HTTPError(
+                    remote_request.full_url, 409, "Conflict", {},
+                    io.BytesIO(b'{"error":"camera_busy"}'),
+                )
+            return response
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            result = camera_remote.capture_remote_image_v2(
+                output_dir=tmpdir, filename_template="capture.cr3",
+                config=camera_remote.RemoteCameraConfig("http://camera.local:8088", "token"),
+                opener=opener, busy_retries=1, busy_retry_delay=5,
+                sleep_fn=lambda _seconds: None, local_readback_done_monotonic_s=9,
+                monotonic_fn=iter((10.0, 20.0, 22.0)).__next__,
+            )
+        receipt = result.metadata["_local_receipt"]
+        self.assertEqual(receipt["http_attempts"], 2)
+        self.assertEqual(receipt["successful_attempt_index"], 2)
+        self.assertEqual(receipt["local_request_started_monotonic_s"], 20.0)
+        self.assertEqual(result.timing_evidence["local_round_trip_s"], 2.0)
+        self.assertAlmostEqual(result.timing_evidence["best_effort_elapsed_s"], 11.75)
+
+    def test_v2_all_busy_attempts_leave_no_artifacts(self):
+        def opener(remote_request, *, timeout):
+            raise error.HTTPError(
+                remote_request.full_url, 409, "Conflict", {},
+                io.BytesIO(b'{"error":"camera_busy"}'),
+            )
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with self.assertRaises(camera_remote.RemoteCameraHTTPError):
+                camera_remote.capture_remote_image_v2(
+                    output_dir=tmpdir, filename_template="capture.cr3",
+                    config=camera_remote.RemoteCameraConfig("http://camera.local:8088", "token"),
+                    opener=opener, busy_retries=1, busy_retry_delay=0, sleep_fn=lambda _seconds: None,
+                    local_readback_done_monotonic_s=9,
+                    monotonic_fn=iter((10.0, 20.0)).__next__,
+                )
+            self.assertEqual(list(Path(tmpdir).iterdir()), [])
     def test_capture_posts_bearer_token_and_atomically_saves_response(self):
         observed = {}
 

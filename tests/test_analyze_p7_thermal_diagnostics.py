@@ -42,7 +42,7 @@ def _write_jsonl(path: Path, rows):
 def _build_formal_td_a_run(root: Path) -> Path:
     plan = thermal.build_diagnostic_plan(
         thermal.TD_A, source="ray", for_execution=True,
-        human_authorization=thermal.TD_A, exposure_start_capability=True,
+        human_authorization=thermal.TD_A, v2_capture_capability=True,
     )
     clock = _Clock()
     curve = json.loads(thermal.CURVE_PATH.read_text(encoding="utf-8"))
@@ -102,10 +102,25 @@ def _build_formal_td_a_run(root: Path) -> Path:
             "recorded_exposure": {"seconds": 0.01, "source": "Canon:ExposureTime", "status": "recorded"},
             "exposure_start_estimate": {"timestamp_monotonic_ns": estimate, "clock_domain": "bridge_monotonic", "method": "gphoto_capture_return_minus_recorded_exposure", "status": "weak_estimate", "uncertainty_ms": None, "uncertainty_basis": "unknown"},
             "network_observation": {"request_id": f"request-{sequence}", "response_or_event_round_trip_ms": None, "uncertainty_ms": None, "uncertainty_basis": "unknown"},
+            "bridge_utc_observation": {"request_received": "2026-07-20T00:00:00+00:00", "source": "bridge_system_clock_utc"},
         }
+        multipart_size = 1000 + sequence
         metadata["_local_receipt"] = {
             "parser_version": camera_remote_v2.PARSER_VERSION,
-            "response_headers": {}, "received_monotonic_s": 0.2,
+            "response_headers": {
+                "content-type": "multipart/mixed; boundary=fake",
+                "content-length": str(multipart_size),
+                "x-capture-id": step["capture_id"],
+                "x-request-id": f"request-{sequence}",
+                "x-capture-metadata-schema": camera_remote_v2.SCHEMA,
+            },
+            "multipart_body_byte_count": multipart_size,
+            "multipart_body_sha256": "a" * 64,
+            "http_attempts": 1,
+            "successful_attempt_index": 1,
+            "local_request_started_monotonic_s": 0.0,
+            "local_response_received_monotonic_s": 0.2,
+            "received_monotonic_s": 0.2,
             "timing_evidence": camera_remote_v2.reconstruct_best_effort_timing(
                 metadata, local_request_started_monotonic_s=0.0,
                 local_response_received_monotonic_s=0.2,
@@ -114,8 +129,8 @@ def _build_formal_td_a_run(root: Path) -> Path:
         }
         output["timing_metadata"] = metadata
         output["timing_evidence"] = metadata["_local_receipt"]["timing_evidence"]
-        output["remote_metadata_path"] = str(root / f"{step['capture_id']}.metadata.json")
-        (root / f"{step['capture_id']}.metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
+        output["remote_metadata_path"] = str(root / f"{step['capture_id']}.CR3.metadata.json")
+        (root / f"{step['capture_id']}.CR3.metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
         if step["formal_measurement"]:
             output["feature_values"] = _feature()
         else:
@@ -175,6 +190,35 @@ class AnalyzeP7ThermalDiagnosticsTests(unittest.TestCase):
             metadata["exposure_start_estimate"]["timestamp_monotonic_ns"] += 1
             metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "timing estimate"):
+                subject.analyze_thermal_run(root, feature_ids=FEATURE_IDS, compatibility_fn=lambda _left, _right: True)
+
+    def test_public_analyzer_replays_v2_headers_parser_attempt_and_sidecar_owner(self):
+        def mutate_sidecar(label, mutation):
+            with tempfile.TemporaryDirectory() as tempdir:
+                root = _build_formal_td_a_run(Path(tempdir) / "run")
+                rows = [json.loads(line) for line in (root / "captures.jsonl").read_text(encoding="utf-8").splitlines()]
+                metadata_path = Path(rows[1]["capture"]["remote_metadata_path"])
+                metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+                mutation(metadata)
+                metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
+                with self.subTest(label=label), self.assertRaises((ValueError, camera_remote_v2.RemoteCaptureV2Error)):
+                    subject.analyze_thermal_run(root, feature_ids=FEATURE_IDS, compatibility_fn=lambda _left, _right: True)
+
+        mutate_sidecar("missing header", lambda value: value["_local_receipt"]["response_headers"].pop("content-length"))
+        mutate_sidecar("header id", lambda value: value["_local_receipt"]["response_headers"].__setitem__("x-capture-id", "forged"))
+        mutate_sidecar("schema header", lambda value: value["_local_receipt"]["response_headers"].__setitem__("x-capture-metadata-schema", "forged"))
+        mutate_sidecar("parser", lambda value: value["_local_receipt"].__setitem__("parser_version", "forged"))
+        mutate_sidecar("network id", lambda value: value["network_observation"].__setitem__("request_id", "forged"))
+        mutate_sidecar("attempt index", lambda value: value["_local_receipt"].__setitem__("successful_attempt_index", 2))
+        mutate_sidecar("successful start", lambda value: value["_local_receipt"].__setitem__("local_request_started_monotonic_s", -1.0))
+        mutate_sidecar("unknown sensitive", lambda value: value.__setitem__("remote_camera_serial", "secret"))
+
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = _build_formal_td_a_run(Path(tempdir) / "run")
+            rows = [json.loads(line) for line in (root / "captures.jsonl").read_text(encoding="utf-8").splitlines()]
+            rows[1]["capture"]["remote_metadata_path"] = str(Path(tempdir) / "outside.metadata.json")
+            _write_jsonl(root / "captures.jsonl", rows)
+            with self.assertRaisesRegex(ValueError, "outside the current run"):
                 subject.analyze_thermal_run(root, feature_ids=FEATURE_IDS, compatibility_fn=lambda _left, _right: True)
 
     def test_public_analyzer_rejects_missing_or_forged_both_off_ledger(self):

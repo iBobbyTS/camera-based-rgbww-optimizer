@@ -4,6 +4,7 @@ import hashlib
 import json
 import math
 from dataclasses import dataclass
+from datetime import datetime
 from email import policy
 from email.parser import BytesParser
 from email.message import Message
@@ -22,6 +23,24 @@ ALLOWED_RESPONSE_HEADERS = frozenset(
 )
 ALLOWED_PART_HEADERS = frozenset(
     ("content-type", "content-id", "content-disposition", "content-transfer-encoding")
+)
+REQUIRED_RESPONSE_HEADERS = frozenset(
+    ("content-type", "content-length", "x-capture-id", "x-request-id", "x-capture-metadata-schema")
+)
+REMOTE_METADATA_KEYS = frozenset(
+    (
+        "schema", "capture_id", "request_id", "timing_quality", "formal_p7_eligibility",
+        "cr3", "gphoto2", "recorded_exposure", "exposure_start_estimate",
+        "network_observation", "bridge_utc_observation",
+    )
+)
+LOCAL_RECEIPT_KEYS = frozenset(
+    (
+        "parser_version", "response_headers", "multipart_body_byte_count",
+        "multipart_body_sha256", "http_attempts", "successful_attempt_index",
+        "local_request_started_monotonic_s", "local_response_received_monotonic_s",
+        "received_monotonic_s", "timing_evidence",
+    )
 )
 
 
@@ -87,6 +106,23 @@ def _part_headers_are_allowed(part: Message) -> None:
             raise RemoteCaptureV2Error(f"unsupported multipart part header: {name}")
 
 
+def _require_exact_keys(value: Mapping[str, Any], expected: frozenset[str], name: str) -> None:
+    actual = set(value)
+    if actual != expected:
+        unknown = sorted(actual - expected)
+        missing = sorted(expected - actual)
+        raise RemoteCaptureV2Error(f"{name} fields differ from frozen schema; missing={missing}, unknown={unknown}")
+
+
+def _validate_part_association(part: Message, *, content_id: str, disposition: str, name: str) -> None:
+    if part.get("Content-ID") != f"<{content_id}>":
+        raise RemoteCaptureV2Error(f"v2 {name} part Content-ID mismatch")
+    if part.get_content_disposition() != disposition:
+        raise RemoteCaptureV2Error(f"v2 {name} part Content-Disposition mismatch")
+    if part.get_param("name", header="content-disposition") != name:
+        raise RemoteCaptureV2Error(f"v2 {name} part disposition name mismatch")
+
+
 def _json_metadata(payload: bytes) -> dict[str, Any]:
     if len(payload) > MAX_METADATA_BYTES:
         raise RemoteCaptureV2Error("v2 metadata exceeds the conservative size limit")
@@ -102,13 +138,17 @@ def _json_metadata(payload: bytes) -> dict[str, Any]:
 def parse_v2_multipart(*, content_type: str | None, body: bytes, response_headers: Mapping[str, str] | None = None) -> ParsedV2Multipart:
     if len(body) > MAX_MULTIPART_BYTES:
         raise RemoteCaptureV2Error("v2 multipart body exceeds the conservative size limit")
-    if response_headers is not None and response_headers.get("content-length") is not None:
-        try:
-            declared_length = int(response_headers["content-length"])
-        except (TypeError, ValueError) as exc:
-            raise RemoteCaptureV2Error("v2 Content-Length is invalid") from exc
-        if declared_length != len(body):
-            raise RemoteCaptureV2Error("v2 Content-Length differs from received body")
+    if response_headers is None or not REQUIRED_RESPONSE_HEADERS.issubset(response_headers):
+        missing = sorted(REQUIRED_RESPONSE_HEADERS - set(response_headers or {}))
+        raise RemoteCaptureV2Error(f"v2 response lacks required association headers: {missing}")
+    try:
+        declared_length = int(response_headers["content-length"])
+    except (TypeError, ValueError) as exc:
+        raise RemoteCaptureV2Error("v2 Content-Length is invalid") from exc
+    if declared_length < 0 or declared_length != len(body):
+        raise RemoteCaptureV2Error("v2 Content-Length differs from received body")
+    if response_headers["x-capture-metadata-schema"] != SCHEMA:
+        raise RemoteCaptureV2Error("v2 metadata schema header mismatch")
     _content_type_and_boundary(content_type)
     envelope = (
         f"MIME-Version: 1.0\r\nContent-Type: {content_type}\r\n\r\n".encode("ascii", "strict")
@@ -128,12 +168,19 @@ def parse_v2_multipart(*, content_type: str | None, body: bytes, response_header
         _part_headers_are_allowed(part)
     if parts[0].get_content_type() != "application/json" or parts[1].get_content_type() not in CR3_CONTENT_TYPES:
         raise RemoteCaptureV2Error("v2 response must contain one JSON and one CR3 part")
+    _validate_part_association(parts[0], content_id="metadata", disposition="inline", name="metadata")
+    _validate_part_association(parts[1], content_id="cr3", disposition="attachment", name="cr3")
     metadata_payload = parts[0].get_payload(decode=True)
     cr3_payload = parts[1].get_payload(decode=True)
     if not isinstance(metadata_payload, bytes) or not isinstance(cr3_payload, bytes) or not cr3_payload:
         raise RemoteCaptureV2Error("v2 multipart contains an empty or undecodable part")
     metadata = _json_metadata(metadata_payload)
-    validate_capture_metadata(metadata, payload=cr3_payload)
+    validate_capture_metadata(
+        metadata,
+        payload=cr3_payload,
+        expected_capture_id=response_headers["x-capture-id"],
+        expected_request_id=response_headers["x-request-id"],
+    )
     return ParsedV2Multipart(
         metadata=metadata,
         cr3_bytes=cr3_payload,
@@ -158,6 +205,7 @@ def validate_capture_metadata(
     metadata: Mapping[str, Any], *, payload: bytes,
     expected_capture_id: str | None = None, expected_request_id: str | None = None,
 ) -> None:
+    _require_exact_keys(metadata, REMOTE_METADATA_KEYS, "remote_capture_result_v2")
     if metadata.get("schema") != SCHEMA:
         raise RemoteCaptureV2Error("v2 metadata schema mismatch")
     capture_id = metadata.get("capture_id")
@@ -170,15 +218,25 @@ def validate_capture_metadata(
         raise RemoteCaptureV2Error("v2 request ID mismatch")
     if metadata.get("timing_quality") != "best_effort_gphoto2":
         raise RemoteCaptureV2Error("v2 timing quality is unsupported")
+    if metadata.get("formal_p7_eligibility") != "unchanged_requires_later_planner_advisor_decision":
+        raise RemoteCaptureV2Error("v2 formal P7 eligibility marker is unsupported")
     cr3 = metadata.get("cr3")
     if not isinstance(cr3, Mapping) or cr3.get("content_type") not in CR3_CONTENT_TYPES:
         raise RemoteCaptureV2Error("v2 CR3 metadata is missing or has an unsupported content type")
+    _require_exact_keys(cr3, frozenset(("sha256", "byte_count", "content_type")), "cr3")
     digest = hashlib.sha256(payload).hexdigest()
     if cr3.get("sha256") != digest or cr3.get("byte_count") != len(payload):
         raise RemoteCaptureV2Error("v2 CR3 hash or byte count mismatch")
     gphoto = metadata.get("gphoto2")
     if not isinstance(gphoto, Mapping) or gphoto.get("clock_domain") != "bridge_monotonic":
         raise RemoteCaptureV2Error("v2 gphoto timing clock domain is missing")
+    _require_exact_keys(gphoto, frozenset((
+        "driver_event_type", "event_sequence", "request_received_monotonic_ns",
+        "capture_call_started_monotonic_ns", "capture_call_returned_monotonic_ns",
+        "camera_event_observed_monotonic_ns", "file_added_observed_monotonic_ns",
+        "download_started_monotonic_ns", "download_completed_monotonic_ns",
+        "cr3_saved_observed_monotonic_ns", "clock_domain",
+    )), "gphoto2")
     required = ("request_received_monotonic_ns", "capture_call_started_monotonic_ns", "download_completed_monotonic_ns")
     timestamps: dict[str, int] = {}
     for name in required:
@@ -204,6 +262,29 @@ def validate_capture_metadata(
     for event in events:
         if not isinstance(event, Mapping) or event.get("clock_domain") != "bridge_monotonic":
             raise RemoteCaptureV2Error("v2 event sequence entry is malformed")
+        _require_exact_keys(event, frozenset(("monotonic_ns", "clock_domain", "event_type", "source", "payload_summary")), "event_sequence entry")
+        if event.get("event_type") not in {
+            "capture_command_started", "capture_result_path_observed", "download_started",
+            "capture_process_returned", "cr3_saved_observed", "file_added", "capture_complete",
+        } or event.get("source") not in {
+            "bridge_subprocess", "bridge_filesystem_observation", "gphoto2_cli_stdout",
+            "gphoto2_cli_stderr", "gphoto2_event",
+        }:
+            raise RemoteCaptureV2Error("v2 event sequence type/source is unsupported")
+        payload_summary = event.get("payload_summary")
+        if not isinstance(payload_summary, Mapping) or not set(payload_summary).issubset(
+            {"operation", "success", "kind", "raw_payload_included", "path_included"}
+        ):
+            raise RemoteCaptureV2Error("v2 event payload summary differs from frozen safe schema")
+        if "operation" in payload_summary and payload_summary["operation"] != "capture_image_and_download":
+            raise RemoteCaptureV2Error("v2 event operation is unsupported")
+        if "kind" in payload_summary and payload_summary["kind"] not in {
+            "camera_file_reported", "local_download_reported", "single_cr3_present",
+        }:
+            raise RemoteCaptureV2Error("v2 event kind is unsupported")
+        for boolean_key in ("success", "raw_payload_included", "path_included"):
+            if boolean_key in payload_summary and not isinstance(payload_summary[boolean_key], bool):
+                raise RemoteCaptureV2Error(f"v2 event {boolean_key} must be boolean")
         event_ns = int(_finite_number(event.get("monotonic_ns"), "event.monotonic_ns", integer=True))
         if event_ns < previous:
             raise RemoteCaptureV2Error("v2 event sequence is not monotonic")
@@ -211,6 +292,10 @@ def validate_capture_metadata(
     estimate = metadata.get("exposure_start_estimate")
     if not isinstance(estimate, Mapping) or estimate.get("clock_domain") != "bridge_monotonic":
         raise RemoteCaptureV2Error("v2 exposure estimate is missing its clock domain")
+    _require_exact_keys(estimate, frozenset((
+        "timestamp_monotonic_ns", "clock_domain", "method", "status",
+        "uncertainty_ms", "uncertainty_basis",
+    )), "exposure_start_estimate")
     status = estimate.get("status")
     if status not in {"estimated_not_absolute", "weak_estimate", "unavailable"}:
         raise RemoteCaptureV2Error("v2 exposure estimate status is unsupported")
@@ -229,6 +314,7 @@ def validate_capture_metadata(
     exposure = metadata.get("recorded_exposure")
     if not isinstance(exposure, Mapping):
         raise RemoteCaptureV2Error("v2 recorded exposure is missing")
+    _require_exact_keys(exposure, frozenset(("seconds", "source", "status")), "recorded_exposure")
     seconds = exposure.get("seconds")
     try:
         exposure_value = float(seconds) if seconds is not None and not isinstance(seconds, bool) else float("nan")
@@ -257,8 +343,74 @@ def validate_capture_metadata(
             returned = gphoto.get("capture_call_returned_monotonic_ns")
             if returned is None or int(estimate["timestamp_monotonic_ns"]) != int(returned) - exposure_ns:
                 raise RemoteCaptureV2Error("v2 capture-return timing estimate does not match recorded exposure")
-    if not isinstance(metadata.get("network_observation"), Mapping):
+    network = metadata.get("network_observation")
+    if not isinstance(network, Mapping):
         raise RemoteCaptureV2Error("v2 network observation is missing")
+    _require_exact_keys(network, frozenset((
+        "request_id", "response_or_event_round_trip_ms", "uncertainty_ms", "uncertainty_basis",
+    )), "network_observation")
+    if network.get("request_id") != request_id:
+        raise RemoteCaptureV2Error("v2 network observation request ID mismatch")
+    if network.get("uncertainty_basis") != "unknown":
+        raise RemoteCaptureV2Error("v2 network uncertainty basis is unsupported")
+    for name in ("response_or_event_round_trip_ms", "uncertainty_ms"):
+        value = network.get(name)
+        if value is not None and float(_finite_number(value, f"network_observation.{name}")) < 0:
+            raise RemoteCaptureV2Error(f"network_observation.{name} must be non-negative")
+    bridge_utc = metadata.get("bridge_utc_observation")
+    if not isinstance(bridge_utc, Mapping):
+        raise RemoteCaptureV2Error("v2 bridge UTC observation is missing")
+    _require_exact_keys(bridge_utc, frozenset(("request_received", "source")), "bridge_utc_observation")
+    if not isinstance(bridge_utc.get("request_received"), str) or bridge_utc.get("source") != "bridge_system_clock_utc":
+        raise RemoteCaptureV2Error("v2 bridge UTC observation is invalid")
+    try:
+        datetime.fromisoformat(bridge_utc["request_received"])
+    except ValueError as exc:
+        raise RemoteCaptureV2Error("v2 bridge UTC timestamp is invalid") from exc
+
+
+def split_and_validate_sidecar(
+    sidecar: Mapping[str, Any], *, payload: bytes,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    if set(sidecar) != REMOTE_METADATA_KEYS | {"_local_receipt"}:
+        raise RemoteCaptureV2Error("v2 sidecar fields differ from frozen remote-plus-local schema")
+    remote = {key: sidecar[key] for key in REMOTE_METADATA_KEYS}
+    validate_capture_metadata(remote, payload=payload)
+    receipt = sidecar.get("_local_receipt")
+    if not isinstance(receipt, Mapping):
+        raise RemoteCaptureV2Error("v2 sidecar lacks local receipt")
+    _require_exact_keys(receipt, LOCAL_RECEIPT_KEYS, "local receipt")
+    if receipt.get("parser_version") != PARSER_VERSION:
+        raise RemoteCaptureV2Error("v2 sidecar parser version mismatch")
+    headers = receipt.get("response_headers")
+    if not isinstance(headers, Mapping) or not REQUIRED_RESPONSE_HEADERS.issubset(headers):
+        raise RemoteCaptureV2Error("v2 sidecar lacks required response headers")
+    if headers.get("x-capture-id") != remote["capture_id"] or headers.get("x-request-id") != remote["request_id"]:
+        raise RemoteCaptureV2Error("v2 sidecar response IDs differ from metadata")
+    if headers.get("x-capture-metadata-schema") != SCHEMA:
+        raise RemoteCaptureV2Error("v2 sidecar schema header mismatch")
+    body_count = _finite_number(receipt.get("multipart_body_byte_count"), "local receipt multipart byte count", integer=True)
+    try:
+        declared = int(headers["content-length"])
+    except (TypeError, ValueError) as exc:
+        raise RemoteCaptureV2Error("v2 sidecar Content-Length is invalid") from exc
+    if declared != body_count:
+        raise RemoteCaptureV2Error("v2 sidecar Content-Length differs from received byte count")
+    body_digest = receipt.get("multipart_body_sha256")
+    if not isinstance(body_digest, str) or len(body_digest) != 64:
+        raise RemoteCaptureV2Error("v2 sidecar multipart digest is invalid")
+    attempts = _finite_number(receipt.get("http_attempts"), "local receipt http attempts", integer=True)
+    successful = _finite_number(receipt.get("successful_attempt_index"), "local receipt successful attempt", integer=True)
+    if attempts < 1 or successful != attempts:
+        raise RemoteCaptureV2Error("v2 sidecar successful attempt index is inconsistent")
+    local_start = float(_finite_number(receipt.get("local_request_started_monotonic_s"), "local receipt request start"))
+    local_response = float(_finite_number(receipt.get("local_response_received_monotonic_s"), "local receipt response time"))
+    received = float(_finite_number(receipt.get("received_monotonic_s"), "local receipt received time"))
+    if min(local_start, local_response, received) < 0 or local_start > local_response or received != local_response:
+        raise RemoteCaptureV2Error("v2 sidecar successful-attempt local clocks are inconsistent")
+    if not isinstance(receipt.get("timing_evidence"), Mapping):
+        raise RemoteCaptureV2Error("v2 sidecar timing evidence is missing")
+    return remote, dict(receipt)
 
 
 def reconstruct_best_effort_timing(

@@ -282,3 +282,49 @@ P7-R1 / sentinel / remaining 9 / boundary / holdout / Gate-6 / P8 = locked
 ```
 
 本轮只证明本地 producer/consumer 的离线证据合同闭环；没有证明 remote service 已部署或设备端能提供真实 exposure-start provenance。请 Planner 验收本地实现，并决定是否另行授权 remote service 变更或新的实机阶段。不得将本轮结果解释为设备授权或 TD-A 放行。
+
+---
+
+## 10. P7-LV2-R0C 第二轮离线纠偏
+
+**当前状态：** `local_v2_timing_r0c_complete_waiting_for_planner`
+
+本节是对 Planner 针对 `cb9db30` 的部分验收结论的追加记录；历史章节保留，不把旧的“严格 Content-Length/strict schema”描述当作当前状态。
+
+### 10.1 已修复
+
+- `run_authorized_plan()` 现在第一步执行无副作用的 exact-plan/Human/v2/backend-owner validator；失败时不 import/construct/connect backend，不创建 run 目录，不触发灯光或 cleanup。legacy `exposure_start_capability` 仅保留为 deprecated dry-run 标记，不能满足 production v2 eligibility。
+- CLI 在 backend 构造前要求 exact Human authorization、`remote` backend 和正式 v2 capability；支持注入 fake backend/runner 的离线 round-trip，local backend、缺失 v2、deferred、伪造 status 均 fail closed。
+- v2 response 强制 HTTP 200、`Content-Length` 精确匹配、`X-Capture-ID`、`X-Request-ID`、`X-Capture-Metadata-Schema`；JSON/CR3 part 强制固定 Content-ID、Content-Disposition/name 和顺序。
+- remote metadata 改为递归 strict allowlist；未知字段、remote path、camera serial、敏感 provenance 不会进入 sidecar；`network_observation.request_id` 必须等于顶层 request ID。
+- 每个 busy retry attempt 单独记录 local request-start；sidecar 保留总 attempts、successful attempt index、成功 attempt 的本地 response/header/parser receipt。所有 attempts 失败时不保存 CR3/metadata。
+- public analyzer 重新验证 response headers、schema header、parser version、successful attempt timing、sidecar owner/path、CR3 hash/byte count，并要求 capture row 中的 duplicate timing metadata 与 sidecar 精确一致。
+
+### 10.2 新增回归覆盖
+
+```text
+focused = 77/77 pass
+```
+
+新增反例包含：缺少四类 response header、network request ID drift、unknown sensitive metadata、part Content-ID drift、busy retry successful-attempt clock、all-busy no-artifact、legacy capability impersonation、authorization-before-connect、deferred/local backend/forged status、analyzer header/parser/attempt/owner tampering。
+
+### 10.3 离线 validation artifacts
+
+生成器：
+
+```text
+camera_based_rgbww_optimizer.optimization.validate_p7_local_v2_timing
+```
+
+目标根目录：
+
+```text
+/Volumes/4T/temp/rgbww-optimizer/p7-local-v2-timing-offline/p7-lv2-r0c-<timestamp>/
+```
+
+包含 `plan.json`、valid fake response/CR3/metadata、malformed response fixtures、
+`timing-reconstruction.json`、`production-roundtrip-analysis.json` 和
+`validation-summary.json`。全部 fixture 仅使用假 CR3 bytes；计数固定为
+`device=0, network=0, env=0, all_off=0`。最终生成目录、summary hash 和 full-suite 结果在本节完成后追加。
+
+TD-A、TD-B、TD-C、P7-R1、sentinel、remaining 9、boundary、holdout、Gate-6 和 P8 继续锁定；本轮不包含任何设备、网络、`.env`、remote API 或 `all_off` 调用。

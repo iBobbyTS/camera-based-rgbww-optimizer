@@ -12,6 +12,42 @@ from camera_based_rgbww_optimizer.paths import PROJECT_TMP_DIR
 
 
 DEFAULT_OUTPUT = PROJECT_TMP_DIR / "p7-thermal-diagnostics-offline"
+REMOTE_V2_CAPABILITY = "remote_v2_capture_timing_v1"
+
+
+def validate_authorized_execution_plan(
+    plan: Mapping[str, Any], *, camera_backend: Any | None = None,
+) -> None:
+    if plan.get("schema") != "p7_thermal_diagnostic_plan_v1":
+        raise PermissionError("thermal diagnostic execution requires the frozen plan schema")
+    experiment_id = plan.get("experiment_id")
+    if plan.get("status") != "execute_authorized" or experiment_id not in thermal.EXPERIMENT_IDS:
+        raise PermissionError("thermal diagnostic execution requires an exact authorized plan")
+    authorization = plan.get("execution_authorization")
+    if (
+        not isinstance(authorization, Mapping)
+        or authorization.get("human_authorization_verified") is not True
+        or authorization.get("human_authorization_experiment_id") != experiment_id
+        or authorization.get("remote_v2_capability") is not True
+    ):
+        raise PermissionError("thermal diagnostic execution lacks exact Human/v2 authorization evidence")
+    camera = plan.get("camera")
+    if (
+        not isinstance(camera, Mapping)
+        or camera.get("backend") != "remote"
+        or camera.get("v2_capture_timing_capability_available") is not True
+    ):
+        raise PermissionError("thermal diagnostic execution requires remote v2 capture timing capability")
+    if any(step.get("formal_measurement") and step.get("requested_elapsed_s") is None for step in plan.get("captures", [])):
+        raise PermissionError("thermal diagnostic execution rejects unresolved deferred timing")
+    if camera_backend is not None:
+        if (
+            getattr(camera_backend, "backend_name", None) != "remote"
+            or getattr(camera_backend, "v2_capture_capability", None) != REMOTE_V2_CAPABILITY
+            or not callable(getattr(camera_backend, "connect", None))
+            or not callable(getattr(camera_backend, "capture_with_timing", None))
+        ):
+            raise PermissionError("thermal diagnostic execution requires the formal remote v2 backend owner")
 
 
 def write_dry_run(
@@ -37,12 +73,7 @@ def execute_plan(
     monotonic_ns_fn: Callable[[], int] = time.monotonic_ns,
     sleep_fn: Callable[[float], None] = time.sleep,
 ) -> Path:
-    if plan.get("status") != "execute_authorized" or plan.get("experiment_id") not in thermal.EXPERIMENT_IDS:
-        raise PermissionError("thermal diagnostic execution requires an exact authorized plan")
-    if any(step.get("formal_measurement") and step.get("requested_elapsed_s") is None for step in plan.get("captures", [])):
-        raise PermissionError("thermal diagnostic execution rejects unresolved deferred timing")
-    if plan.get("camera", {}).get("v2_capture_timing_capability_available") is not True:
-        raise PermissionError("thermal diagnostic execution requires remote v2 capture timing capability")
+    validate_authorized_execution_plan(plan)
     root = Path(run_dir)
     root.mkdir(parents=True, exist_ok=True)
     if any(root.iterdir()):
@@ -203,8 +234,7 @@ def run_authorized_plan(
     camera_backend: Any,
     actual_exposure_start_fn: Callable[[Mapping[str, Any]], float] | None = None,
 ) -> Path:
-    if plan.get("camera", {}).get("v2_capture_timing_capability_available") is not True:
-        raise PermissionError("remote camera adapter lacks v2 capture timing capability")
+    validate_authorized_execution_plan(plan, camera_backend=camera_backend)
     from camera_based_rgbww_optimizer.control import all_off, esphome, ray120c
     from camera_based_rgbww_optimizer.optimization import measure_raw_observer_validation as raw_validation
     from camera_based_rgbww_optimizer.optimization.hsi_objective import required_hsi_features_from_report
@@ -414,7 +444,11 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def main(argv: Sequence[str] | None = None) -> int:
+def main(
+    argv: Sequence[str] | None = None, *,
+    backend_factory: Callable[..., Any] | None = None,
+    run_fn: Callable[..., Path] = run_authorized_plan,
+) -> int:
     args = parse_args(argv)
     if args.dry_run:
         print(write_dry_run(
@@ -424,17 +458,23 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
     if not args.allow_device_control or args.human_authorization != args.experiment_id:
         raise PermissionError("--execute requires --allow-device-control and exact --human-authorization")
-    from camera_based_rgbww_optimizer.control import camera_remote
+    if args.camera_backend != "remote":
+        raise PermissionError("thermal diagnostics require the formal remote v2 camera backend")
 
     plan = thermal.build_diagnostic_plan(
         args.experiment_id, source=args.source, variant=args.variant,
         for_execution=True, human_authorization=args.human_authorization,
+        v2_capture_capability=True,
     )
-    backend = camera_remote.create_camera_backend(
+    validate_authorized_execution_plan(plan)
+    if backend_factory is None:
+        from camera_based_rgbww_optimizer.control import camera_remote
+        backend_factory = camera_remote.create_camera_backend
+    backend = backend_factory(
         args.camera_backend, env_file=args.remote_env_file,
         base_url=args.remote_base_url, timeout=args.remote_timeout,
     )
-    print(run_authorized_plan(plan, output_dir=args.output_dir, run_name=args.run_name, camera_backend=backend))
+    print(run_fn(plan, output_dir=args.output_dir, run_name=args.run_name, camera_backend=backend))
     return 0
 
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import sys
@@ -33,6 +34,7 @@ REMOTE_CAMERA_MODEL = "Canon EOS R6 Mark III via r6-camera-bridge"
 DOWNLOAD_CHUNK_SIZE = 1024 * 1024
 DEFAULT_BUSY_RETRIES = 3
 DEFAULT_BUSY_RETRY_DELAY = 0.5
+REMOTE_V2_CAPTURE_CAPABILITY = "remote_v2_capture_timing_v1"
 
 
 class RemoteCameraError(RuntimeError):
@@ -358,16 +360,19 @@ def capture_remote_image_v2(
             "Content-Type": "application/json",
         },
     )
-    local_request_started = float(monotonic_fn())
     temporary_path: Path | None = None
     metadata_temporary_path: Path | None = None
     byte_count = 0
     http_attempts = 0
+    successful_request_started: float | None = None
 
     def counted_opener(*args: object, **kwargs: object) -> BinaryIO:
-        nonlocal http_attempts
+        nonlocal http_attempts, successful_request_started
         http_attempts += 1
-        return opener(*args, **kwargs)
+        attempt_started = float(monotonic_fn())
+        response = opener(*args, **kwargs)
+        successful_request_started = attempt_started
+        return response
 
     try:
         with _open_authenticated_request(
@@ -375,7 +380,7 @@ def capture_remote_image_v2(
             busy_retries=busy_retries, busy_retry_delay=busy_retry_delay, sleep_fn=sleep_fn,
         ) as response:
             status = getattr(response, "status", None)
-            if status is not None and int(status) != 200:
+            if status is None or int(status) != 200:
                 raise RemoteCameraV2Error(f"v2 capture returned unexpected status {status}")
             response_headers = camera_remote_v2.response_header_summary(response)
             chunks: list[bytes] = []
@@ -388,30 +393,34 @@ def capture_remote_image_v2(
                     raise RemoteCameraV2Error("v2 multipart body exceeds the conservative size limit")
                 chunks.append(chunk)
         local_response_received = float(monotonic_fn())
+        if successful_request_started is None:
+            raise RemoteCameraV2Error("v2 capture lacks successful-attempt request timing")
+        multipart_body = b"".join(chunks)
         parsed = camera_remote_v2.parse_v2_multipart(
             content_type=response_headers.get("content-type"),
-            body=b"".join(chunks), response_headers=response_headers,
+            body=multipart_body, response_headers=response_headers,
         )
         metadata = dict(parsed.metadata)
-        header_capture_id = response_headers.get("x-capture-id")
-        header_request_id = response_headers.get("x-request-id")
         camera_remote_v2.validate_capture_metadata(
             metadata, payload=parsed.cr3_bytes,
-            expected_capture_id=header_capture_id,
-            expected_request_id=header_request_id,
+            expected_capture_id=response_headers["x-capture-id"],
+            expected_request_id=response_headers["x-request-id"],
         )
-        schema_header = response_headers.get("x-capture-metadata-schema")
-        if schema_header is not None and schema_header != camera_remote_v2.SCHEMA:
-            raise RemoteCameraV2Error("v2 metadata schema header mismatch")
         timing = camera_remote_v2.reconstruct_best_effort_timing(
             metadata,
-            local_request_started_monotonic_s=local_request_started,
+            local_request_started_monotonic_s=successful_request_started,
             local_response_received_monotonic_s=local_response_received,
             local_readback_done_monotonic_s=float(local_readback_done_monotonic_s),
         )
         metadata["_local_receipt"] = {
             "parser_version": camera_remote_v2.PARSER_VERSION,
             "response_headers": response_headers,
+            "multipart_body_byte_count": len(multipart_body),
+            "multipart_body_sha256": hashlib.sha256(multipart_body).hexdigest(),
+            "http_attempts": http_attempts,
+            "successful_attempt_index": http_attempts,
+            "local_request_started_monotonic_s": successful_request_started,
+            "local_response_received_monotonic_s": local_response_received,
             "received_monotonic_s": local_response_received,
             "timing_evidence": timing,
         }
@@ -500,6 +509,8 @@ def read_remote_camera_settings(
 
 @dataclass
 class RemoteCameraBackend:
+    backend_name = "remote"
+    v2_capture_capability = REMOTE_V2_CAPTURE_CAPABILITY
     config: RemoteCameraConfig
     timeout: float = DEFAULT_TIMEOUT
     opener: UrlOpen = request.urlopen

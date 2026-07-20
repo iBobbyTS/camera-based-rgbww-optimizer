@@ -130,7 +130,7 @@ def analyze_thermal_run(
         raw_path = payload.get("saved_file") or (payload.get("capture") or {}).get("saved_file")
         if not raw_path or not Path(raw_path).is_file() or Path(raw_path).stat().st_size <= 0:
             raise ValueError("thermal capture lacks retained nonempty CR3 provenance")
-        timing = _replay_timing_evidence(capture, payload, Path(raw_path))
+        timing = _replay_timing_evidence(capture, payload, Path(raw_path), root)
         timing_tiers[str(timing["tier"])] += 1
         if timing["tier"] == "tier_c":
             timing_unknown += 1
@@ -186,23 +186,35 @@ def analyze_thermal_run(
 
 
 def _replay_timing_evidence(
-    capture: Mapping[str, Any], payload: Mapping[str, Any], raw_path: Path,
+    capture: Mapping[str, Any], payload: Mapping[str, Any], raw_path: Path, run_root: Path,
 ) -> dict[str, Any]:
     metadata_path = payload.get("remote_metadata_path")
     if not isinstance(metadata_path, str):
         raise ValueError("thermal capture lacks retained remote v2 metadata path")
-    metadata = _load_json(Path(metadata_path))
-    camera_remote_v2.validate_capture_metadata(metadata, payload=raw_path.read_bytes())
-    receipt = metadata.get("_local_receipt")
-    if not isinstance(receipt, Mapping):
-        raise ValueError("thermal v2 metadata lacks local receipt evidence")
+    root = run_root.resolve()
+    resolved_raw = raw_path.resolve()
+    resolved_metadata = Path(metadata_path).resolve()
+    if not resolved_raw.is_relative_to(root) or not resolved_metadata.is_relative_to(root):
+        raise ValueError("thermal v2 CR3/sidecar owner is outside the current run")
+    expected_metadata = resolved_raw.with_suffix(resolved_raw.suffix + ".metadata.json")
+    if resolved_metadata != expected_metadata:
+        raise ValueError("thermal v2 sidecar path does not belong to the retained CR3")
+    sidecar = _load_json(resolved_metadata)
+    remote_metadata, receipt = camera_remote_v2.split_and_validate_sidecar(
+        sidecar, payload=resolved_raw.read_bytes(),
+    )
+    duplicate_metadata = payload.get("timing_metadata")
+    if not isinstance(duplicate_metadata, Mapping) or dict(duplicate_metadata) != sidecar:
+        raise ValueError("thermal duplicate timing metadata differs from retained sidecar")
     timing = receipt.get("timing_evidence")
     if not isinstance(timing, Mapping):
         raise ValueError("thermal v2 metadata lacks local timing evidence")
+    if receipt.get("received_monotonic_s") != receipt.get("local_response_received_monotonic_s"):
+        raise ValueError("thermal v2 successful-attempt response timing is inconsistent")
     replayed = camera_remote_v2.reconstruct_best_effort_timing(
-        metadata,
-        local_request_started_monotonic_s=float(timing["local_request_started_monotonic_s"]),
-        local_response_received_monotonic_s=float(timing["local_response_received_monotonic_s"]),
+        remote_metadata,
+        local_request_started_monotonic_s=float(receipt["local_request_started_monotonic_s"]),
+        local_response_received_monotonic_s=float(receipt["local_response_received_monotonic_s"]),
         local_readback_done_monotonic_s=float(timing["local_readback_done_monotonic_s"]),
     )
     if dict(timing) != replayed:

@@ -125,10 +125,17 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
             )
         self.assertEqual(calls, [])
 
+    def test_legacy_exposure_capability_cannot_impersonate_remote_v2(self):
+        with self.assertRaisesRegex(PermissionError, "remote v2"):
+            subject.build_diagnostic_plan(
+                subject.TD_A, source="ray", for_execution=True,
+                human_authorization=subject.TD_A, exposure_start_capability=True,
+            )
+
     def test_fake_td_a_execution_keeps_ambient_separate_and_counts_all_physical(self):
         plan = subject.build_diagnostic_plan(
             subject.TD_A, source="ray", for_execution=True,
-            human_authorization=subject.TD_A, exposure_start_capability=True,
+            human_authorization=subject.TD_A, v2_capture_capability=True,
         )
         clock = _Clock()
         gates = []
@@ -191,7 +198,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
     def test_isolation_gate_failure_stops_before_capture(self):
         plan = subject.build_diagnostic_plan(
             subject.TD_A, source="ray", for_execution=True,
-            human_authorization=subject.TD_A, exposure_start_capability=True,
+            human_authorization=subject.TD_A, v2_capture_capability=True,
         )
         captures = []
         with tempfile.TemporaryDirectory() as tempdir, self.assertRaisesRegex(RuntimeError, "both-source"):
@@ -242,7 +249,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
     def test_cleanup_exception_is_retained_and_marks_run_failed(self):
         plan = subject.build_diagnostic_plan(
             subject.TD_A, source="ray", for_execution=True,
-            human_authorization=subject.TD_A, exposure_start_capability=True,
+            human_authorization=subject.TD_A, v2_capture_capability=True,
         )
         plan = {**plan, "captures": [], "budgets": {"formal_cap": 0, "ambient_cap": 0, "physical_cr3_cap": 0}}
         with tempfile.TemporaryDirectory() as tempdir:
@@ -265,6 +272,12 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
         plan = subject.build_diagnostic_plan(subject.TD_B, source="strip")
         plan["status"] = "execute_authorized"
         plan["camera"]["adapter_capability_available"] = True
+        plan["camera"]["v2_capture_timing_capability_available"] = True
+        plan["execution_authorization"] = {
+            "human_authorization_experiment_id": subject.TD_B,
+            "human_authorization_verified": True,
+            "remote_v2_capability": True,
+        }
         calls = []
         with tempfile.TemporaryDirectory() as tempdir, self.assertRaisesRegex(PermissionError, "deferred"):
             measure.execute_plan(
@@ -303,17 +316,85 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
         self.assertEqual(plan["offline_contract"]["device_calls"], 0)
 
     def test_execute_cli_fails_before_adapter_binding_without_exact_authorization(self):
+        constructs = []
         with self.assertRaises(PermissionError):
-            measure.main(["--experiment-id", subject.TD_A, "--source", "ray", "--run-name", "x", "--execute"])
+            measure.main(
+                ["--experiment-id", subject.TD_A, "--source", "ray", "--run-name", "x", "--execute"],
+                backend_factory=lambda *args, **kwargs: constructs.append((args, kwargs)),
+            )
+        self.assertEqual(constructs, [])
 
-    def test_exact_authorization_still_fails_before_backend_when_exposure_start_is_unavailable(self):
-        from camera_based_rgbww_optimizer.control import camera_remote
-        with mock.patch.object(camera_remote, "create_camera_backend") as backend, self.assertRaisesRegex(PermissionError, "v2 capture timing"):
-            measure.main([
+    def test_exact_authorized_cli_binds_v2_capability_and_enters_injected_runner(self):
+        calls = []
+
+        class FakeBackend:
+            backend_name = "remote"
+            v2_capture_capability = measure.REMOTE_V2_CAPABILITY
+
+            def connect(self):
+                raise AssertionError("fake CLI runner must own whether connect occurs")
+
+            def capture_with_timing(self, **_kwargs):
+                raise AssertionError("fake CLI runner does not capture")
+
+        result = measure.main([
                 "--experiment-id", subject.TD_A, "--source", "ray", "--run-name", "x", "--execute",
                 "--allow-device-control", "--human-authorization", subject.TD_A,
-            ])
-        backend.assert_not_called()
+            ], backend_factory=lambda *_args, **_kwargs: FakeBackend(),
+            run_fn=lambda plan, **kwargs: calls.append((plan, kwargs)) or Path("fake-run"))
+        self.assertEqual(result, 0)
+        self.assertEqual(len(calls), 1)
+        self.assertTrue(calls[0][0]["camera"]["v2_capture_timing_capability_available"])
+
+    def test_run_authorized_plan_rejects_before_connect_filesystem_or_cleanup(self):
+        class FakeBackend:
+            backend_name = "remote"
+            v2_capture_capability = measure.REMOTE_V2_CAPABILITY
+
+            def __init__(self):
+                self.connect_calls = 0
+
+            def connect(self):
+                self.connect_calls += 1
+                return object()
+
+            def capture_with_timing(self, **_kwargs):
+                raise AssertionError("capture must not run")
+
+        authorized = subject.build_diagnostic_plan(
+            subject.TD_A, source="ray", for_execution=True,
+            human_authorization=subject.TD_A, v2_capture_capability=True,
+        )
+        dry_run = subject.build_diagnostic_plan(subject.TD_A, source="ray")
+        first_formal_index = next(
+            index for index, step in enumerate(authorized["captures"]) if step.get("formal_measurement")
+        )
+        deferred_captures = [dict(step) for step in authorized["captures"]]
+        deferred_captures[first_formal_index]["requested_elapsed_s"] = None
+        cases = {
+            "dry-run": dry_run,
+            "wrong experiment": {**authorized, "experiment_id": "forged"},
+            "forged status": {**authorized, "status": "ready"},
+            "missing v2": {**authorized, "camera": {**authorized["camera"], "v2_capture_timing_capability_available": False}},
+            "deferred": {**authorized, "captures": deferred_captures},
+        }
+        for label, plan in cases.items():
+            backend = FakeBackend()
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as tempdir:
+                output = Path(tempdir) / "must-not-exist"
+                with self.assertRaises(PermissionError):
+                    measure.run_authorized_plan(plan, output_dir=output, run_name="run", camera_backend=backend)
+                self.assertFalse(output.exists())
+            self.assertEqual(backend.connect_calls, 0)
+
+        local_backend = FakeBackend()
+        local_backend.backend_name = "local"
+        with tempfile.TemporaryDirectory() as tempdir, self.assertRaisesRegex(PermissionError, "formal remote v2"):
+            measure.run_authorized_plan(
+                authorized, output_dir=Path(tempdir) / "must-not-exist", run_name="run",
+                camera_backend=local_backend,
+            )
+        self.assertEqual(local_backend.connect_calls, 0)
 
     def test_operating_envelope_has_no_prefilled_settle(self):
         artifact = json.loads(subject.OPERATING_ENVELOPE_PATH.read_text(encoding="utf-8"))

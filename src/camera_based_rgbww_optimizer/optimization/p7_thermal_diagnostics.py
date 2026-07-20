@@ -152,7 +152,7 @@ def build_diagnostic_plan(
     _enforce_prerequisites(experiment_id, variant, envelope, for_execution=for_execution)
     if for_execution and human_authorization != experiment_id:
         raise PermissionError(f"execution requires exact Human authorization for {experiment_id}")
-    timing_capability = bool(v2_capture_capability or exposure_start_capability)
+    timing_capability = bool(v2_capture_capability)
     if for_execution and not timing_capability:
         raise PermissionError("execution requires remote v2 capture timing capability")
 
@@ -183,6 +183,12 @@ def build_diagnostic_plan(
             "actual_exposure_start_provenance_required": False,
             "adapter_capability_available": timing_capability,
             "v2_capture_timing_capability_available": timing_capability,
+            "legacy_exposure_start_capability_deprecated_dry_run_only": bool(exposure_start_capability),
+        },
+        "execution_authorization": {
+            "human_authorization_experiment_id": experiment_id if for_execution else None,
+            "human_authorization_verified": bool(for_execution and human_authorization == experiment_id),
+            "remote_v2_capability": timing_capability,
         },
         "timing_contract": {
             "name": "best_effort_gphoto2_v1",

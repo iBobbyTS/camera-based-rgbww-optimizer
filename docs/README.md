@@ -156,11 +156,18 @@ The legacy `/v1/capture` binary contract remains unchanged. P7's thermal
 diagnostic runner uses the explicit `/v2/capture` path only: it consumes the
 structured `multipart/mixed` response, atomically retains the CR3 beside its
 original `remote_capture_result_v2` metadata, and rechecks metadata hash and
-capture/request IDs locally. The accepted timing source is
+capture/request IDs locally. Production responses must be exactly HTTP 200
+with `Content-Length`, `X-Capture-ID`, `X-Request-ID`, and
+`X-Capture-Metadata-Schema`; JSON/CR3 parts must carry the frozen Content-ID
+and disposition association. Unknown remote metadata is rejected rather than
+persisted. The accepted timing source is
 `best_effort_gphoto2_exposure_start_estimate`; Tier A and Tier B are usable
 best-effort anchors, while Tier C is unavailable for formal timing. Bridge and
-local monotonic clocks are never subtracted directly. The local runner stores
-request/response/readback times and recomputes the relative bridge offset;
+local monotonic clocks are never subtracted directly. Each busy retry owns its
+own local request-start, and only the successful attempt is used. The local
+runner stores response headers, parser version, attempt index, request/
+response/readback times and recomputes the relative bridge offset; the public
+analyzer replays those fields from the sidecar and verifies its CR3 owner.
 `absolute_exposure_start=false` remains explicit. This does not unlock TD-A or
 change any formal P7 gate.
 
