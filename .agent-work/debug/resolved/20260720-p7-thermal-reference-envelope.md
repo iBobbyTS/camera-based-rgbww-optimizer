@@ -2,7 +2,7 @@
 
 ## Status
 
-Second-pass offline contract repair implemented and fully validated; waiting for Planner review. Real TD-A remains locked and no device authorization may be requested.
+Second-pass offline contract repair implemented, fully validated, and accepted by Planner. Real TD-A remains locked behind the separate actual-exposure-start adapter gap and new Human authorization.
 
 ## Planner rejection 2026-07-20
 
@@ -48,6 +48,6 @@ P7-R1 is valid failure evidence: acquisition and evidence integrity passed, but 
 - Corrected derived R1 epoch artifacts are under `/Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics-offline-r0b/r1-derived/`.
 - No device, network, `.env`, capture, or `all_off` call was made while generating them.
 
-## Next decision
+## Resolution
 
-Planner reviews the offline checkpoint. If accepted, Planner asks the Human for the exact bounded `p7_td_a_cold_settling_v1` authorization; code completion alone does not authorize a run.
+Planner accepted the offline ledger/timing/isolation/analyzer contract at commit `5572aa2`. The remaining adapter capability gap is tracked separately under `unresolved/20260720-p7-actual-exposure-start-adapter.md`; this resolved note does not authorize a device run.

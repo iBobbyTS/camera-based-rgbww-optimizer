@@ -2,7 +2,6 @@
 
 | file | summary |
 | --- | --- |
-| active/20260720-p7-thermal-reference-envelope.md | Offline operating-envelope, monotonic scheduler, thermal covariates, epoch-v2 semantics, and TD-A authorization boundary. |
 | active/20260719-p7-r1-reference-instability.md | Completed R1 passes acquisition/coverage evidence but fails all Ray A/B compatibility and measured Ray/strip trend gates; candidate remains formal-ineligible for Planner review. |
 | active/20260714-p1-exposure-response.md | CR3 recorded exposure fixes the large P1 shutter error; residual high-signal RAW shape still blocks thresholds and P2 pending a lower-exposure full P1. |
 | active/20260712-white-lut-repeatability-and-strict-anchors.md | Measure repeatability, validate strict anchors, and explain the cross-day regression of near-boundary 14x5 nodes. |
@@ -11,12 +10,14 @@
 
 | file | summary |
 | --- | --- |
+| unresolved/20260720-p7-actual-exposure-start-adapter.md | Deployed bridge contract and local remote client expose no verifiable actual exposure-start field; Advisor must decide whether to change the bridge or timing contract. |
 | resolved/20260718-p7-r0d-evidence-reconstruction.md | P7-R0D now reconstructs formal target facts and P7-R1 source/physical evidence from retained artifacts against the frozen plan. |
 
 ## Resolved
 
 | file | summary |
 | --- | --- |
+| resolved/20260720-p7-thermal-reference-envelope.md | Planner accepted the ambient/formal ledger, deferred timing, isolation evidence, physical accounting, and TD-C gate production round-trip. |
 | resolved/20260719-p7-r1-background-detachment.md | macOS Terminal ownership plus shared remote ISO/aperture resolution closed the zero-capture launcher and camera-setting failures. |
 | resolved/20260719-p7-r1-wrapper-exit-evidence.md | P7-R1 long-task wrapper now atomically preserves PID/log state and exact child, cleanup, signal, and final exit evidence across six fake-only paths. |
 | resolved/20260718-p7-d0-wrapper-exit-evidence.md | D0 wrapper now preserves atomic child, cleanup, signal, and final exit evidence across six fake-only paths. |

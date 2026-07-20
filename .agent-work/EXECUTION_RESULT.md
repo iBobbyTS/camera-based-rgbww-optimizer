@@ -194,3 +194,52 @@ sentinel / remaining 9 / boundary / holdout / Gate-6 / P8 = locked
 ```
 
 当前 remote camera adapter 没有真实 exposure-start provenance，因此即使 Planner 接受本轮离线代码，也不能直接进入 TD-A；需由 Planner 决定如何提供或验证 camera-adapter actual exposure-start capability，之后再另行申请精确实机授权。
+
+---
+
+## 8. Actual exposure-start adapter 离线能力核查
+
+**Planner 输入：** `offline_contract_accepted`
+
+**结果：** `api_capability_absent_advisor_decision_required`
+
+**执行边界：** 仅检查本地源码、测试、部署时保留的 bridge 源码和历史 API 合同；未访问设备、网络、`.env`、remote API，未调用 capture 或 `all_off`。
+
+### 8.1 结论
+
+当前 remote API 没有实际曝光起点字段，因此按 PLAN branch 2 停止代码扩展并交还 Advisor。
+
+- 本地 `RemoteCaptureResult` 只有 `saved_file`、`byte_count`、`endpoint`、`http_attempts`。
+- `capture_remote_image()` 将成功响应作为纯 CR3 二进制流读取，没有 timing header 或 metadata envelope 的解析入口。
+- 部署时保留的 bridge 源码成功响应只包含 CR3 bytes、`Content-Type`、`Cache-Control`、`Content-Disposition` 和长度。
+- bridge 的 filename timestamp 在拍摄和下载完成后生成，不能证明 shutter/exposure start。
+- 部署时 API 文档没有 exposure-start 字段、单位、时钟域或来源 hash。
+
+因此不存在可在 client 侧“补齐解析”的已有字段。禁止使用 request-start、HTTP response time、filename time、CR3 写入/下载时间或 fake callback。
+
+### 8.2 固化证据
+
+```text
+/Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics-offline-r0b/actual-exposure-start-capability-audit.json
+```
+
+```text
+SHA-256 = 0abac8e03f1ed39a6657e606edd7aff675ef04b8058f1a1f1cb123aee906cdcc
+```
+
+输入 SHA-256：
+
+```text
+camera_remote.py = 75f9647b1dd343eca9b9b1e3a6e0a77a1d41e8af56adbd6eeb615eac208844b9
+retained r6_camera_bridge.py = da844a3306dcdd56ab806abcf3bae58055b3b2ab26dae48d079e68e87a4acee6
+bridge rollout summary = 44736b892bf59918aa41575046263d7061fbd381faf30bf0e7115fffabed60d4
+```
+
+### 8.3 Advisor 决策请求
+
+Advisor 需决定：
+
+1. 修改 remote camera service，定义并输出可独立验证的 actual exposure-start provenance；或
+2. 根据相机/bridge 实际可提供的证据重写 TD timing 合同。
+
+两条路径都会改变 remote service 或测量合同，超出当前 Executer 授权。TD-A、TD-B、TD-C 及后续阶段继续锁定；不得申请设备授权。
