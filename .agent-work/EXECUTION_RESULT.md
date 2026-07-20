@@ -333,7 +333,8 @@ camera_based_rgbww_optimizer.optimization.validate_p7_local_v2_timing
 root = /Volumes/4T/temp/rgbww-optimizer/p7-local-v2-timing-offline/p7-lv2-r0c-20260720-095000/
 validation-summary.json SHA-256 = 8ddab5eface59100c3f59e70ce26b505fbb9c375da4470dd97ba09b1b02c4b14
 production-roundtrip-analysis.json SHA-256 = 3fcb86ffbc469aba1a08cf04c0304683b1fff782f8ab25f55672257b4f142699
-source commit = 8689da7 fix(p7): harden local v2 timing evidence
+implementation commit = 8689da7 fix(p7): harden local v2 timing evidence
+artifact-generation commit = f788b8d docs(p7): record r0c validation evidence
 ```
 
 artifact `validation_results` 为 focused `78/78`、full `475/475`（`105.313s`）、
