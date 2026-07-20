@@ -1,12 +1,12 @@
 # Executor 执行结果
 
-**记录日期：** 2026-07-19
+**记录日期：** 2026-07-20
 
 **执行角色：** Executer
 
 **输入计划：** `.agent-work/PLAN.md`
 
-**结果状态：** `offline_contract_fixes_complete_waiting_for_planner_review`
+**结果状态：** `p7_td_a_r0d_complete_waiting_for_planner_review`
 
 **设备授权消费：** 无
 
@@ -432,3 +432,125 @@ physical CR3 = 0
 
 TD-A 未开始，Ray/strip 实机目录、wrapper PID、Terminal task 和 heartbeat 均未创建。TD-B、TD-C、
 sentinel、remaining 9、boundary、holdout、Gate-6、P8、firmware 和 remote deployment 继续锁定。
+
+---
+
+## 12. P7-TD-A-R0D 离线 runner settings/shutter 修复
+
+**Planner 输入状态：** `td_a_authorized_blocked_pending_r0d_offline_runner_fix`
+
+**执行结果：** `p7_td_a_r0d_complete_waiting_for_planner_review`
+
+**PLAN 所有权：** 本轮未修改 `.agent-work/PLAN.md`；执行时只读快照 SHA-256 为
+`37a78f16aef8d6fa8120277ff2a35742ac870fe1a80e5900b82ed59e336a6371`。
+
+**实现提交：** `3cbc72a fix(p7): bind thermal capture settings`
+
+### 12.1 已闭合的 production contract
+
+- plan builder 先生成 exact experiment/source capture steps，再由单一 step-to-shutter owner 反推
+  shutter ledger。TD-A Ray 仅保留 `ray-h120-s100=1/5000`，TD-A strip 仅保留
+  `strip-h120-s100-fullscale=1/320`；两者 `exposure_setup_required=[]`，均不含 TD-B-only
+  `ray-h120-s50`。
+- TD-B Ray dry contract 仍保留 `ray-h120-s50=null` 与显式 non-formal setup requirement；TD-B
+  strip 四个正式 state shutter 均保留，没有破坏 future contract。
+- production validator 从 capture steps 独立重算 exact shutter keys、ledger hash 和 setup list；
+  缺失/空 shutter、extra TD-B key、owner/hash drift 均在 backend connect 前拒绝。
+- runner 在 formal remote backend connect 后只调用一次
+  `resolve_capture_settings(iso=None, aperture=None, image_format="RAW")`。空值、非字符串、
+  non-RAW 或 backend choice failure 在 run directory、灯光、capture 和 cleanup 副作用前拒绝。
+- 已解析 ISO/aperture/RAW 写入 plan/run provenance，并注入 ambient、fixed cached 和 timed capture。
+  public analyzer 逐张重放 capture settings，拒绝 plan/run 与实际 CR3 capture row 不一致。
+
+### 12.2 Fake-only binding round-trip
+
+fake backend 对 Ray/strip 各执行一次 production runner binding；没有构造 network client：
+
+```text
+resolve_capture_settings calls = 1 per source run
+synthetic ISO = 125
+synthetic aperture = implicit auto
+image format = RAW
+ambient shutter = 30
+Ray formal shutter = 1/5000
+strip formal shutter = 1/320
+auto_exposure = false for every observed raw step
+null ISO/aperture = 0
+```
+
+ISO/aperture 是 synthetic choices，仅证明绑定和 analyzer replay，不是设备或 remote config 观测。
+反例覆盖 resolver failure、null ISO、empty aperture、non-RAW、remote current 不属于 choices、
+shutter 缺失和 TD-B key 污染。
+
+### 12.3 全新 TD-A dry-run artifacts
+
+根目录：
+
+```text
+/Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/p7-td-a-r0d-20260720-122701
+```
+
+```text
+ray-dry/plan.json
+SHA-256 = 37e0cc9ce14b0b3d95edc6cbc406b870393743bc4763e7b752067efbf786c4f2
+
+strip-dry/plan.json
+SHA-256 = 20aad47e315ce71b1d87399e0e0556b58be1eb36b0f45fe60298d135dd4b54be
+
+validation-summary.json
+SHA-256 = 4e0c256677ef25a4c39d57462a0c63862eac8b6e72876bcb1ed8fcd149cc3b4a
+```
+
+两份 plan 均为 TD-A、3 cycles、`60/120/300/600`、12 formal、3 ambient、physical cap 22、
+timed-cycle auto exposure false、`exposure_setup_required=[]`。递归搜索确认 artifacts 中不存在
+`ray-h120-s50`、`"iso": null` 或 `"aperture": null`。
+
+冻结输入 SHA-256：
+
+```text
+code-duty curve = 0b03ce50bda13112c95d64d1f5974991514067bbd9f48e920214654c122ff911
+location = 21f02328bff8b5ffcfc10c767e15cdefbf8bb883bc352eff6f0fb7ade38a8f80
+Ray manifold = 20baaa26679039590679a122a5b4d2e658eae867c63e98d0a5d0556a2dc3bc34
+RAW observer = b81d563eba1910286d879e560538dd497385e422c1bab762008c2b28a26fc4d9
+operating envelope = d553a32fdb5ad0bba1fcfc1dbee4cc2e96cc8ffa151a289de810cd55c316fc25
+P7 v2 policy = db9ebef1503c5e54c989649c719c4a5f75445bbd5487edb14c274e1b2894f3b4
+R1 commands = 2d0667d235bffff9119eea54e76d76ed1914f246fec64903f2dd1a9b675b4ca3
+R1 plan = 55c25a4b51d4a247e1888f3d6a075dea313f3dadc3e5e8435e53c419131a1c2e
+P7 uncertainty = cedaa1e9d342beb7e464c4e38d77884ad8a7790771432ebdbb5a101ca604aa94
+```
+
+### 12.4 最终验证
+
+```text
+focused = 83/83 pass, 0.527 s
+focused log SHA-256 = 9d9ee0b0eec32e1b0e1f4d34cfd06daaac63284c9e54d221b953ce2390fd620a
+full suite = 480/480 pass, 145.348 s
+full log SHA-256 = c2a69cb4d24c2dbb01c797b116bb213bc6b8f763b24183a8c2bd63bd226ab1b0
+compileall = pass
+all tmp/*.zsh syntax = pass
+git diff --check = pass
+CodeGraph sync = pass
+```
+
+所有 test temp、pycache、logs 和 dry artifacts 均位于
+`/Volumes/4T/temp/rgbww-optimizer`。
+
+### 12.5 零设备计数与停止点
+
+```text
+device = 0
+network = 0
+.env = 0
+remote API = 0
+camera = 0
+Ray = 0
+ESPHome = 0
+all_off = 0
+CR3 = 0
+formal capture = 0
+physical CR3 = 0
+```
+
+Human 的 exact TD-A 一次性授权未被消费；TD-A Ray/strip 实机 run、wrapper、PID、Terminal task
+和 heartbeat 均未创建。R0D 按计划停在 Planner 验收门；不得自动进入 TD-A、TD-B、TD-C、
+sentinel、remaining 9、boundary、holdout、Gate-6 或 P8。
