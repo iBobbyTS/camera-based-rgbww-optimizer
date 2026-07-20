@@ -4,4 +4,4 @@ from pathlib import Path
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-PROJECT_TMP_DIR = PROJECT_ROOT / "tmp"
+PROJECT_TMP_DIR = Path("/Volumes/4T/temp/rgbww-optimizer")

@@ -61,8 +61,10 @@ not part of the current project interface.
 ## Temporary Data
 
 All project temporary data, captures, decoded images, probe outputs, and scratch
-artifacts must live under the repository `tmp/` directory. Do not write project
-temporary data to the system `/tmp`.
+artifacts must live under `/Volumes/4T/temp/rgbww-optimizer`. Do not create new
+temporary data under the repository `tmp/` directory or the system `/tmp`.
+Repository `tmp/*.zsh` files remain version-controlled wrapper sources; their
+run directories and logs belong on the external temporary volume.
 
 Scripts that can leave the RGBWW fixture on must turn it off before exiting,
 except explicit light-on/control tools.
@@ -740,6 +742,61 @@ and all five strip commands have unresolved within-command trend (four also
 fail block-center stability). Synthetic joint coverage passes, but it cannot
 override the measured `R-REFERENCE-UNSTABLE` / `uncertainty_unresolved` branch.
 Do not rerun R1, relax thresholds, or enter sentinel-v2 before Planner review.
+
+P7 now treats thermal state as part of the measurand instead of absorbing a
+deterministic settling trend into covariance. The versioned schema is
+`config/hsi/p7-operating-envelope-v1.json`. Before TD-A it is intentionally
+`offline_schema_only`: all settle fields are null. The primary envelope is
+`conditioned_steady_after_switch_v1`; the 60-second cold observation remains a
+separate `emitter_cold_t60_v1` qualification and may not share covariance with
+steady measurements.
+
+Build the six device-free diagnostic plans with
+`optimization.measure_p7_thermal_diagnostics --dry-run`. The exact experiment
+IDs are `p7_td_a_cold_settling_v1`,
+`p7_td_b_command_switch_history_v1`, and
+`p7_td_c_balanced_source_comparison_v1`. TD-A freezes three independent cold
+cycles at 60/120/300/600 seconds per source; 600 seconds is validation-only and
+can never become an automatically selected settle time. TD-B and TD-C dry plans
+are inspectable, but execute remains locked behind the preceding accepted
+artifact and a new exact Human authorization. TD-C uses balanced
+Ray-strip/strip-Ray sessions and does not claim classic ABBA drift elimination.
+
+The scheduler uses monotonic time from completed source readback to the actual
+exposure start reported by a camera adapter, freezes shutter before a timed
+cycle, and forbids exposure trials between timed points. A host-side capture
+request timestamp is not exposure-start evidence; production execution fails
+closed until the selected adapter exposes the required provenance. Every
+retained capture owns a `thermal-covariates.jsonl` row with
+exact command hash, chronology, previous-state dwell, recorded exposure fields,
+temperature/null values, and 60/300/900-second command-load proxies. These are
+diagnostic only; same-run correction, threshold fitting, and covariance
+inflation are prohibited. Future authorized execution must use
+`tmp/run-p7-thermal-diagnostics.zsh` so Python cleanup and independent shell
+cleanup both retain evidence.
+
+Ambient frames have a separate non-formal ledger but still consume physical
+CR3 budget. TD-A freezes start/mid/end ambient frames; every TD-C session freezes
+start/end ambient frames. The TD-C core therefore owns 8 formal plus 8 ambient
+captures, a physical core cap of 16, and a total diagnostic allocation of 128
+under the Advisor's 130 ceiling. Exact order, capture owner, role, exposure,
+ambient diagnostic, covariate, and physical counts are replayed by the public
+analyzer. Independent Ray-plus-strip all-off/readback evidence is required at
+run start, before each ambient, and after source/state transitions. TD-B and
+TD-C unresolved dependency times remain null/deferred and are rejected by the
+runner until an accepted prerequisite artifact freezes a value in
+60/120/300 seconds.
+
+TD-C analysis is a real gate: it reports structured decisions for paired
+compatibility, balanced order effect, stable centers, current Ray center versus
+P6 interpretability, and ambient trend. Any failed component returns
+`td_c_gate_failed`; it cannot emit the Planner-waiting pass status
+unconditionally.
+
+`optimization.analyze_p7_thermal_diagnostics --derive-r1-output` creates
+reference-epoch v2 artifacts without modifying immutable R1 evidence. The
+retained R1 class is `not_identifiable`: legacy false means only that the old
+detector did not classify a shift, not that no shift occurred.
 
 ## Location Picker
 

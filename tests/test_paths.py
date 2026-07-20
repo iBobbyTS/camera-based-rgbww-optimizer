@@ -9,7 +9,7 @@ class PathsTests(unittest.TestCase):
         expected_root = Path(__file__).resolve().parents[1]
         self.assertEqual(PROJECT_ROOT, expected_root)
         self.assertTrue((PROJECT_ROOT / "pyproject.toml").exists())
-        self.assertEqual(PROJECT_TMP_DIR, PROJECT_ROOT / "tmp")
+        self.assertEqual(PROJECT_TMP_DIR, Path("/Volumes/4T/temp/rgbww-optimizer"))
 
 
 if __name__ == "__main__":

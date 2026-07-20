@@ -2,6 +2,7 @@
 
 | file | summary |
 | --- | --- |
+| active/20260720-p7-thermal-reference-envelope.md | Offline operating-envelope, monotonic scheduler, thermal covariates, epoch-v2 semantics, and TD-A authorization boundary. |
 | active/20260719-p7-r1-reference-instability.md | Completed R1 passes acquisition/coverage evidence but fails all Ray A/B compatibility and measured Ray/strip trend gates; candidate remains formal-ineligible for Planner review. |
 | active/20260714-p1-exposure-response.md | CR3 recorded exposure fixes the large P1 shutter error; residual high-signal RAW shape still blocks thresholds and P2 pending a lower-exposure full P1. |
 | active/20260712-white-lut-repeatability-and-strict-anchors.md | Measure repeatability, validate strict anchors, and explain the cross-day regression of near-boundary 14x5 nodes. |

@@ -1,0 +1,29 @@
+{
+  "ambient_range": {},
+  "cold_proxy": {
+    "instrumented": {
+      "absolute_slope_c_per_min_max": 0.1,
+      "surface_within_ambient_c": 1.0,
+      "window_minutes": 5
+    },
+    "uninstrumented": {
+      "after_long_high_load_minutes": [45, 60],
+      "minimum_off_minutes": 30,
+      "thermal_label": "cold_proxy_uninstrumented"
+    }
+  },
+  "derived_from_runs": [],
+  "feature_hash": "4a37bf13a1dcfa6b652bd4ce6a7793aa8ac0344c293d1a7fc73ff7fad763ab86",
+  "merge_cold_and_steady_covariance": "prohibited",
+  "observer_hash": "b81d563eba1910286d879e560538dd497385e422c1bab762008c2b28a26fc4d9",
+  "previous_state_contract": {},
+  "primary": "conditioned_steady_after_switch_v1",
+  "schema": "p7_operating_envelope_v1",
+  "secondary": "emitter_cold_t60_v1",
+  "status": "offline_schema_only",
+  "t_formal_provisional_s": null,
+  "t_formal_s": null,
+  "t_settle_ray_s": null,
+  "t_settle_strip_s": null,
+  "uncertainty_hash": "cedaa1e9d342beb7e464c4e38d77884ad8a7790771432ebdbb5a101ca604aa94"
+}

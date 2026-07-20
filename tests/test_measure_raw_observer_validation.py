@@ -614,6 +614,23 @@ Focal Length: 50mm
             self.assertAlmostEqual(stored_report["analysis_context"]["exposure_seconds"], 0.0075)
             self.assertEqual(list(root.rglob("*.npy")), [])
 
+            frozen_adapter = measure_raw_observer_validation.build_native_raw_capture_step_fn(
+                camera_dir=root / "frozen-camera",
+                measurements_dir=root / "frozen-measurements",
+                scratch_dir=root / "frozen-scratch",
+                location_config_path=root / "locations.json",
+                observer_config_path=root / "observer.json",
+                capture_fn=capture,
+                raw_analyze_fn=lambda *_args, **_kwargs: {"quality": {"status": "pending_thresholds"}},
+                raw_report_writer=write_report,
+                recorded_exposure_fn=exposure,
+                frozen_shutter_by_cache={"ray": "1/320"},
+            )
+            frozen_adapter({**ambient, "capture_id": "frozen-ambient"})
+            frozen_result = frozen_adapter({**ray_pair, "capture_id": "frozen-ray"})
+            self.assertEqual(frozen_result["mode"], "fixed_cached")
+            self.assertEqual(fixed_calls[-1]["settings"].shutter_speed, "1/320")
+
     def test_native_capture_adapter_reuses_one_injected_backend_for_auto_and_fixed_captures(self):
         with tempfile.TemporaryDirectory() as tempdir:
             root = Path(tempdir)

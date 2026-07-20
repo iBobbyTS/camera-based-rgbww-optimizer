@@ -44,6 +44,9 @@ This project has four explicit roles:
 - Executes the active `PLAN.md` within its exact authorization, scope, budgets, branches, and stopping points.
 - Produces the required code, tests, experiment artifacts, cleanup evidence, and handoff records for Planner review.
 - Does not independently change the experimental direction or enter a locked stage.
+- Must treat `.agent-work/PLAN.md` as Planner-owned and read-only. The Executer is prohibited from editing, appending to, changing status in, renaming, archiving, or otherwise modifying `PLAN.md`.
+- Must write execution progress, validation results, artifacts, failures, discovered plan contradictions, and Planner decision requests to `.agent-work/EXECUTION_RESULT.md` instead.
+- If execution discovers a branch or contradiction requiring Planner judgment, stop the affected work, record the exact evidence and decision request in `EXECUTION_RESULT.md`, and leave `PLAN.md` unchanged for the Planner to update.
 
 The normal stage flow is:
 
@@ -51,7 +54,8 @@ The normal stage flow is:
 2. The Advisor researches and writes `GUIDE.md` plus `RESEARCH.md`.
 3. The Planner writes `PLAN.md`, including execution and acceptance contracts.
 4. The Executer performs the authorized plan and returns evidence.
-5. The Planner accepts, rejects, or branches the result and, when the stage is complete, creates the AUDIT PACK for the Advisor.
+5. The Executer records that evidence in `.agent-work/EXECUTION_RESULT.md` without modifying `PLAN.md`.
+6. The Planner reads `EXECUTION_RESULT.md`, accepts, rejects, or branches the result, updates `PLAN.md`, and, when the stage is complete, creates the AUDIT PACK for the Advisor.
 
 ### High-Risk Device Authorization
 
@@ -69,7 +73,8 @@ The normal stage flow is:
 - Do not add root-level CLI compatibility wrappers. Use `python -m camera_based_rgbww_optimizer...` module commands and document them in `docs/README.md`.
 - The project uses a minimal `pyproject.toml`; install locally with `.venv/bin/python -m pip install -e .`.
 - Prefer local execution. Use Docker only when a concrete dependency requires it; if Docker is needed, use Colima and prefer `docker-compose`.
-- Put all temporary data, probe outputs, decoded images, scratch virtual environments, and other disposable artifacts under this repository's `tmp/` directory. Do not write project temporary data to the system `/tmp`.
+- Put all temporary data, probe outputs, decoded images, scratch virtual environments, logs, and other disposable artifacts under `/Volumes/4T/temp/rgbww-optimizer`. Do not create new temporary data under this repository's `tmp/` directory or the system `/tmp`.
+- Repository `tmp/*.zsh` files are version-controlled execution wrappers, not temporary data; keep those wrapper sources in the repository while their run directories and logs live under `/Volumes/4T/temp/rgbww-optimizer`.
 
 ## Documentation
 

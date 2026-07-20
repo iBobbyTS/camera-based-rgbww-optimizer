@@ -172,6 +172,77 @@ def select_reference_repeatability_branch(
     return "R-PASS"
 
 
+def build_reference_epoch_v2(analysis: Mapping[str, Any]) -> dict[str, Any]:
+    """Translate legacy P7-R1 evidence without claiming that false means no shift."""
+    ray = analysis.get("ray_reference")
+    if not isinstance(ray, Mapping):
+        raise ValueError("P7-R1 analysis lacks Ray reference evidence")
+    unstable = ray.get("failure_branch") == "R-REFERENCE-UNSTABLE"
+    compatibility_failed = any(
+        item.get("compatibility") == "fail"
+        for item in ray.get("failed_states", [])
+        if isinstance(item, Mapping)
+    )
+    if unstable:
+        return {
+            "schema": "reference_epoch_analysis_v2",
+            "reference_stationarity": "fail",
+            "raw_p6_compatibility_gate": "fail" if compatibility_failed else "not_tested",
+            "interpretable_p6_compatibility": "not_evaluable",
+            "reference_shift_class": "not_identifiable",
+            "reference_shift_reason": "within_run_nonstationarity_and_protocol_mismatch",
+            "legacy_reference_epoch_shift": bool(ray.get("reference_epoch_shift", False)),
+            "legacy_false_semantics": "not_classified_as_true; not evidence of no shift",
+        }
+    legacy = bool(ray.get("reference_epoch_shift", False))
+    return {
+        "schema": "reference_epoch_analysis_v2",
+        "reference_stationarity": "pass",
+        "raw_p6_compatibility_gate": "fail" if legacy else "pass",
+        "interpretable_p6_compatibility": "fail" if legacy else "pass",
+        "reference_shift_class": "common" if legacy else "none",
+        "reference_shift_reason": "stable_current_center_compared_with_frozen_p6",
+        "legacy_reference_epoch_shift": legacy,
+        "legacy_false_semantics": "not_classified_as_true; not evidence of no shift",
+    }
+
+
+def write_reference_epoch_v2_derived(
+    run_dir: str | Path, output_dir: str | Path,
+) -> tuple[Path, Path]:
+    root = Path(run_dir)
+    output = Path(output_dir)
+    output.mkdir(parents=True, exist_ok=True)
+    analysis_path = root / "analysis.json"
+    analysis = _load_json(analysis_path)
+    epoch = build_reference_epoch_v2(analysis)
+    if epoch != {
+        **epoch,
+        "reference_stationarity": "fail",
+        "raw_p6_compatibility_gate": "fail",
+        "interpretable_p6_compatibility": "not_evaluable",
+        "reference_shift_class": "not_identifiable",
+        "reference_shift_reason": "within_run_nonstationarity_and_protocol_mismatch",
+        "legacy_reference_epoch_shift": False,
+    }:
+        raise ValueError("retained P7-R1 no longer reproduces the frozen reference-epoch-v2 result")
+    source = {
+        "path": str(analysis_path),
+        "sha256": hashlib.sha256(analysis_path.read_bytes()).hexdigest(),
+    }
+    epoch["derived_from"] = source
+    derived = copy.deepcopy(analysis)
+    derived["schema_version"] = 3
+    derived["derived_only"] = True
+    derived["original_artifacts_modified"] = False
+    derived["reference_epoch_v2"] = epoch
+    epoch_path = output / "reference-epoch-analysis-v2.json"
+    derived_path = output / "p7-r1-analysis-v2-derived.json"
+    _write_json(epoch_path, epoch)
+    _write_json(derived_path, derived)
+    return epoch_path, derived_path
+
+
 def finalize_reference_repeatability_run(
     run_dir: str | Path, *, analysis: Mapping[str, Any] | None = None,
     **kwargs: Any,

@@ -383,6 +383,7 @@ def build_native_raw_capture_step_fn(
     recorded_exposure_fn: RecordedExposureFn = recorded_exposure.resolve_recorded_exposure,
     camera_backend: camera_gphoto2.CameraBackend | None = None,
     recorded_exposure_purpose: str = "P1",
+    frozen_shutter_by_cache: Mapping[str, str | None] | None = None,
 ) -> CaptureStepFn:
     """Build the production camera side of P1 while leaving device control injected.
 
@@ -488,9 +489,10 @@ def build_native_raw_capture_step_fn(
         else:
             cache_key = _source_cache_key(step)
             base_capture = source_captures.get(cache_key)
-            if base_capture is None:
+            frozen_shutter = None if frozen_shutter_by_cache is None else frozen_shutter_by_cache.get(cache_key)
+            if base_capture is None and frozen_shutter is None:
                 raise ValueError(f"capture {step['capture_id']} has no {cache_key} exposure baseline")
-            shutter_speed = base_capture.settings.shutter_speed
+            shutter_speed = str(frozen_shutter) if base_capture is None else base_capture.settings.shutter_speed
             if step.get("exposure_factor") is not None:
                 shutter_speed = _resolve_bracket_shutter_speed(
                     base_capture,
@@ -510,8 +512,8 @@ def build_native_raw_capture_step_fn(
                     shutter_speed=shutter_speed,
                     image_format=image_format,
                 ),
-                port=base_capture.connection.port,
-                expected_model=base_capture.connection.model,
+                port=None if base_capture is None else base_capture.connection.port,
+                expected_model=(camera_gphoto2.DEFAULT_CAMERA_MODEL if base_capture is None else base_capture.connection.model),
                 timeout=120.0,
             )
             mode = (

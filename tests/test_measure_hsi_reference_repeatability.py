@@ -20,6 +20,18 @@ from camera_based_rgbww_optimizer.optimization import analyze_hsi_reference_repe
 
 
 class MeasureHsiReferenceRepeatabilityTests(unittest.TestCase):
+    def test_reference_epoch_v2_does_not_summarize_legacy_false_as_no_shift(self):
+        epoch = analyzer.build_reference_epoch_v2({
+            "ray_reference": {
+                "failure_branch": "R-REFERENCE-UNSTABLE",
+                "reference_epoch_shift": False,
+                "failed_states": [{"compatibility": "fail"}],
+            }
+        })
+        self.assertEqual(epoch["reference_stationarity"], "fail")
+        self.assertEqual(epoch["interpretable_p6_compatibility"], "not_evaluable")
+        self.assertEqual(epoch["reference_shift_class"], "not_identifiable")
+
     def test_dry_run_has_exact_30_ray_50_strip_and_never_touches_devices(self):
         with tempfile.TemporaryDirectory(dir=subject.PROJECT_TMP_DIR) as tempdir:
             with (

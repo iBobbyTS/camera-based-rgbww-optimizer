@@ -22,5 +22,6 @@ config/hsi/*
 !config/hsi/strip-hsi-pilot-v2.json
 !config/hsi/strip-hsi-uncertainty.json
 !config/hsi/strip-hsi-policy-v2-waiting.json
+!config/hsi/p7-operating-envelope-v1.json
 # 人工编写的测试代码。
 test.py
