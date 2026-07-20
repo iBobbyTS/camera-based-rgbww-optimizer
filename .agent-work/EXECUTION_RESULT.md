@@ -325,6 +325,18 @@ camera_based_rgbww_optimizer.optimization.validate_p7_local_v2_timing
 包含 `plan.json`、valid fake response/CR3/metadata、malformed response fixtures、
 `timing-reconstruction.json`、`production-roundtrip-analysis.json` 和
 `validation-summary.json`。全部 fixture 仅使用假 CR3 bytes；计数固定为
-`device=0, network=0, env=0, all_off=0`。最终生成目录、summary hash 和 full-suite 结果在本节完成后追加。
+`device=0, network=0, env=0, all_off=0`。
+
+本轮最终 artifact：
+
+```text
+root = /Volumes/4T/temp/rgbww-optimizer/p7-local-v2-timing-offline/p7-lv2-r0c-20260720-094000/
+validation-summary.json SHA-256 = c4bfc1b80e8e3018923007f32d7a6719c20d6f76cff242f386645982d3af74e5
+production-roundtrip-analysis.json SHA-256 = 3fcb86ffbc469aba1a08cf04c0304683b1fff782f8ab25f55672257b4f142699
+source commit = 8689da7 fix(p7): harden local v2 timing evidence
+```
+
+artifact `validation_results` 为 focused `78/78`、full `475/475`（`102.809s`）、
+compileall/wrapper/diff/CodeGraph 全部 `pass`；每个 required negative fixture 的实际结果均为 `reject`。
 
 TD-A、TD-B、TD-C、P7-R1、sentinel、remaining 9、boundary、holdout、Gate-6 和 P8 继续锁定；本轮不包含任何设备、网络、`.env`、remote API 或 `all_off` 调用。
