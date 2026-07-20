@@ -341,3 +341,94 @@ artifact `validation_results` 为 focused `78/78`、full `475/475`（`105.313s`�
 compileall/wrapper/diff/CodeGraph 全部 `pass`；每个 required negative fixture 的实际结果均为 `reject`。
 
 TD-A、TD-B、TD-C、P7-R1、sentinel、remaining 9、boundary、holdout、Gate-6 和 P8 继续锁定；本轮不包含任何设备、网络、`.env`、remote API 或 `all_off` 调用。
+
+---
+
+## 11. TD-A 授权后离线进入门
+
+**结果状态：** `td_a_offline_entry_rejected_pending_runner_contract_fix`
+
+**授权消费：** 已确认 PLAN 记录 Human 于 `2026-07-20T16:04:40Z` 对 exact
+`p7_td_a_cold_settling_v1` 的一次性授权；未重复询问。由于离线进入门失败，本节没有消费任何
+设备调用、实拍或灯光预算。
+
+### 11.1 已通过检查
+
+- HEAD `c1c273a` 包含 PLAN 冻结的 local-v2 accepted commits。
+- Advisor GUIDE/RESEARCH、location、Ray manifold、operating envelope、两份归档、R1 command
+  ledger 和 local-v2 validation-summary 的 SHA-256 全部与 PLAN 一致。
+- operating-envelope 的 `t_settle_ray_s`、`t_settle_strip_s`、
+  `t_formal_provisional_s`、`t_formal_s` 仍全部为 `null`。
+- 两个全新且不同的 dry-run 已生成：
+
+```text
+/Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/p7-td-a-ray-dry-20260720-101500/plan.json
+/Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/p7-td-a-strip-dry-20260720-101500/plan.json
+```
+
+- 两个 plan 都冻结为 TD-A、3 cycles、`60/120/300/600`、12 formal、3 ambient、physical cap
+  22、remote backend、`best_effort_gphoto2_v1`、双 cleanup；Ray command 为
+  `H120/S100/INT100`，strip command 为 `518,0,0,4095,0`。source-specific retained shutter
+  分别为 Ray `1/5000`、strip `1/320`。
+- `tmp/run-p7-thermal-diagnostics.zsh` syntax 和 `git diff --check` 通过。
+
+### 11.2 阻塞问题
+
+1. 两个 TD-A dry plan 均自报：
+
+```json
+{"exposure_setup_required":["ray-h120-s50"]}
+```
+
+该 key 只属于未来 TD-B；当前 TD-A 的 Ray/strip source-specific shutter 均已存在。这个全局字段使
+TD-A plan 看起来仍需未授权 exposure setup，违反“本次无额外 light-on exposure setup”的证据语义。
+
+2. production runner 在
+`measure_p7_thermal_diagnostics.run_authorized_plan()` 构造 native capture adapter 时显式传入：
+
+```text
+iso=None
+aperture=None
+```
+
+adapter 的 ambient/fixed path 直接构造 `CaptureSettings`，不会先调用 remote backend 的
+`resolve_capture_settings()`。纯离线 fake probe 已重现：
+
+```text
+CaptureSettings = {iso: None, aperture: None, shutter_speed: "30", image_format: "RAW"}
+/v2/capture payload = {iso: null, aperture: null, shutter_speed: "30"}
+```
+
+归档 remote API 要求 `iso`、`aperture` 和 `shutter_speed` 若出现就必须是当前 config choice 的精确
+字符串；因此当前正式路径会在首张 ambient 返回 `invalid_iso`/`invalid_aperture`，不能启动已知必败
+实机 run。
+
+### 11.3 Planner 决策请求
+
+请 Planner 定义一个纯离线 TD-A runner 修复包，至少要求：
+
+- 正式 remote backend 在任何 capture/灯光前解析一次 ISO/aperture，并把精确字符串注入全部
+  ambient/formal timed capture；不得硬编码 `4` 或把 `null` 发给 remote API；
+- remote config 解析失败时在灯光和 run directory 副作用前 fail closed；
+- `exposure_setup_required` 只列当前 experiment/source 实际使用且缺失的 shutter key，TD-A 必须为空；
+- 增加 production runner -> timed capture fake round-trip，断言 ambient `30` 与 Ray/strip retained
+  shutter 都携带合法 ISO/aperture 字符串，并断言零 auto-exposure；
+- 验证修复后重新生成两个新 dry-run，再决定是否继续消费现有一次性 TD-A 授权。
+
+本轮精确计数：
+
+```text
+device = 0
+network = 0
+.env = 0
+remote API = 0
+camera = 0
+Ray = 0
+ESPHome = 0
+all_off = 0
+formal capture = 0
+physical CR3 = 0
+```
+
+TD-A 未开始，Ray/strip 实机目录、wrapper PID、Terminal task 和 heartbeat 均未创建。TD-B、TD-C、
+sentinel、remaining 9、boundary、holdout、Gate-6、P8、firmware 和 remote deployment 继续锁定。

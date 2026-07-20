@@ -10,6 +10,7 @@
 
 | file | summary |
 | --- | --- |
+| unresolved/20260720-p7-td-a-runner-settings.md | TD-A is blocked before device access because dry plans leak a future TD-B shutter requirement and production timed captures serialize ISO/aperture as null. |
 | unresolved/20260720-p7-actual-exposure-start-adapter.md | Deployed bridge contract and local remote client expose no verifiable actual exposure-start field; Advisor must decide whether to change the bridge or timing contract. |
 | resolved/20260718-p7-r0d-evidence-reconstruction.md | P7-R0D now reconstructs formal target facts and P7-R1 source/physical evidence from retained artifacts against the frozen plan. |
 
