@@ -1123,3 +1123,20 @@ remote subproject tests claimed = false
 
 状态：`timing_v2_r1_complete_waiting_for_planner`。未申请或消费新的实拍授权，TD-A 实机及后续阶段
 继续锁定。
+
+## 19. Human TD-A authorization received; Planner plan gate still open
+
+执行日期：2026-07-21T21:07:17Z。Human 明确授权开始执行当前活动计划所命名的
+`p7_td_a_cold_settling_v1`。该授权与 PLAN 第 3 节冻结范围一致：Ray120c 后 bedroom-rgbww-strip，
+每个 source 三个独立 cold cycle，timed points 为 `60/120/300/600s`，每 source `12 formal + 3 ambient`、
+physical cap `22`，非并发顺序，约四小时窗口，高输出状态，remote v2 camera，以及 Python finally +
+shell EXIT/INT/TERM/HUP + independent recovery cleanup。
+
+本轮未启动设备动作。当前 `PLAN.md` 仍为 `waiting_for_new_exact_human_authorization`，并明确要求
+Planner 先把授权原文、时间、范围、预算、恢复路径写入新的 active PLAN，之后 Executor 才可消费一次授权。
+Executor 按角色边界不得自行修改或替换 Planner-owned `PLAN.md`，因此在该计划门完成前停止，不执行
+preflight、网络请求、source command、camera capture、Ray/ESPHome 或 `all_off`。
+
+状态：`human_authorization_received_pending_planner_plan_update`。
+请求 Planner：归档当前等待授权计划并重写 active `PLAN.md`，明确记录上述授权后再交还 Executor；在此之前
+不得启动 TD-A 实拍。副作用审计：`device/network/.env/remote_api/camera/ray/esphome/all_off/new_real_cr3/heartbeat = 0`。
