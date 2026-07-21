@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 from collections import defaultdict
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
@@ -90,8 +91,7 @@ def analyze_thermal_run(
             raise ValueError("thermal command/readback evidence differs from frozen plan")
     if not (root / "commands-audit.json").is_file() or _load_json(root / "commands-audit.json").get("status") != "pass":
         raise ValueError("thermal command audit artifact is missing")
-    if not (root / "all-off-python.json").is_file() or not (root / "all-off-shell.json").is_file():
-        raise ValueError("thermal analyzer requires Python and shell cleanup artifacts")
+    completion_audit = _validate_completion_evidence(root, run)
     thermal.audit_chronology(covariates)
     recomputed_formal = 0
     recomputed_ambient = 0
@@ -180,8 +180,11 @@ def analyze_thermal_run(
         )
     return {
         "schema": "p7_thermal_diagnostic_analysis_v1", "experiment_id": experiment,
+        "source_id": str(plan.get("source")),
         "capture_contract": "pass", "timing_contract": "pass",
         "covariate_contract": "pass", "source_isolation_contract": "pass",
+        "cleanup_contract": completion_audit["cleanup_contract"],
+        "wrapper_contract": completion_audit["wrapper_contract"],
         "formal_capture_count": recomputed_formal, "ambient_capture_count": recomputed_ambient,
         "physical_cr3_count": recomputed_physical, "retained_npy_count": 0,
         "timing_absolute_truth": False,
@@ -190,6 +193,71 @@ def analyze_thermal_run(
         "unknown_uncertainty_count": timing_unknown,
         **result,
     }
+
+
+def _validate_completion_evidence(root: Path, run: Mapping[str, Any]) -> dict[str, str]:
+    if run.get("cleanup") != "pass":
+        raise ValueError("thermal run.json cleanup did not pass")
+
+    python_cleanup = _load_json(root / "all-off-python.json")
+    if set(python_cleanup) != {"status", "steps"} or python_cleanup.get("status") != "pass":
+        raise ValueError("thermal Python cleanup artifact has an unsupported or failed schema")
+    _validate_shutdown_steps(python_cleanup.get("steps"), artifact="Python")
+
+    shell_cleanup = _load_json_value(root / "all-off-shell.json")
+    _validate_shutdown_steps(shell_cleanup, artifact="shell")
+
+    wrapper = _load_json(root / "wrapper-result.json")
+    expected_wrapper_keys = {
+        "schema_version", "experiment", "status", "run_dir", "wrapper_pid", "child_pid",
+        "child_exit_code", "shell_cleanup_exit_code", "wrapper_exit_code", "signal", "started_at",
+    }
+    if set(wrapper) != expected_wrapper_keys:
+        raise ValueError("thermal wrapper result schema drift")
+    if (
+        wrapper.get("schema_version") != 1
+        or wrapper.get("experiment") != "p7_thermal_diagnostics_v1"
+        or wrapper.get("status") != "complete"
+        or Path(str(wrapper.get("run_dir"))).resolve() != root.resolve()
+        or type(wrapper.get("wrapper_pid")) is not int
+        or int(wrapper["wrapper_pid"]) <= 0
+        or type(wrapper.get("child_pid")) is not int
+        or int(wrapper["child_pid"]) <= 0
+        or wrapper.get("child_exit_code") != 0
+        or wrapper.get("shell_cleanup_exit_code") != 0
+        or wrapper.get("wrapper_exit_code") != 0
+        or wrapper.get("signal") is not None
+        or not isinstance(wrapper.get("started_at"), str)
+        or not str(wrapper["started_at"]).strip()
+    ):
+        raise ValueError("thermal wrapper did not complete cleanly")
+    _validate_zero_exit_file(root / "child-exit-status.txt", artifact="child")
+    _validate_zero_exit_file(root / "all-off-shell.exit-status.txt", artifact="shell cleanup")
+    return {"cleanup_contract": "pass", "wrapper_contract": "pass"}
+
+
+def _validate_shutdown_steps(value: Any, *, artifact: str) -> None:
+    if not isinstance(value, list) or len(value) != 2:
+        raise ValueError(f"thermal {artifact} cleanup must contain exactly two shutdown steps")
+    for expected_name, item in zip(("esphome", "ray120c"), value, strict=True):
+        if not isinstance(item, Mapping) or set(item) != {"name", "ok", "detail", "error"}:
+            raise ValueError(f"thermal {artifact} cleanup step schema drift")
+        if (
+            item.get("name") != expected_name
+            or item.get("ok") is not True
+            or item.get("error") is not None
+            or not isinstance(item.get("detail"), Mapping)
+        ):
+            raise ValueError(f"thermal {artifact} cleanup did not prove both lights off")
+
+
+def _validate_zero_exit_file(path: Path, *, artifact: str) -> None:
+    try:
+        value = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        raise ValueError(f"thermal {artifact} exit artifact is missing or unreadable") from exc
+    if value.strip() != "0":
+        raise ValueError(f"thermal {artifact} exit status is not zero")
 
 
 def _validate_capture_settings_provenance(
@@ -455,11 +523,158 @@ def _verify_frozen_inputs(inputs: Mapping[str, Any]) -> None:
             raise ValueError(f"thermal frozen input hash drift: {name}")
 
 
+def analyze_td_a_pair(
+    ray_run: str | Path,
+    strip_run: str | Path,
+    output_dir: str | Path,
+    *,
+    feature_ids: Sequence[str],
+) -> dict[str, Any]:
+    ray_root = Path(ray_run)
+    strip_root = Path(strip_run)
+    ray_report = analyze_thermal_run(ray_root, feature_ids=feature_ids)
+    strip_report = analyze_thermal_run(strip_root, feature_ids=feature_ids)
+    ray_plan = _load_json(ray_root / "plan.json")
+    strip_plan = _load_json(strip_root / "plan.json")
+
+    if ray_plan.get("experiment_id") != thermal.TD_A or strip_plan.get("experiment_id") != thermal.TD_A:
+        raise ValueError("TD-A paired finalizer requires two exact TD-A runs")
+    if ray_plan.get("source") != "ray" or strip_plan.get("source") != "strip":
+        raise ValueError("TD-A paired finalizer requires Ray first and strip second")
+    if ray_report.get("source_id") != "ray" or strip_report.get("source_id") != "strip":
+        raise ValueError("TD-A paired finalizer source owner mismatch")
+    if ray_plan.get("inputs") != strip_plan.get("inputs"):
+        raise ValueError("TD-A paired finalizer frozen input path/hash mismatch")
+    if ray_plan.get("timing_contract") != strip_plan.get("timing_contract"):
+        raise ValueError("TD-A paired finalizer timing contract mismatch")
+
+    reports = (ray_report, strip_report)
+    for source, report in zip(("ray", "strip"), reports, strict=True):
+        if (
+            report.get("experiment_id") != thermal.TD_A
+            or report.get("source_id") != source
+            or report.get("capture_contract") != "pass"
+            or report.get("timing_contract") != "pass"
+            or report.get("covariate_contract") != "pass"
+            or report.get("source_isolation_contract") != "pass"
+            or report.get("cleanup_contract") != "pass"
+            or report.get("wrapper_contract") != "pass"
+            or report.get("formal_capture_count") != 12
+            or report.get("ambient_capture_count") != 3
+            or not isinstance(report.get("physical_cr3_count"), int)
+            or int(report["physical_cr3_count"]) > 22
+            or report.get("retained_npy_count") != 0
+            or report.get("unknown_uncertainty_count") != 0
+        ):
+            raise ValueError(f"TD-A paired finalizer {source} contract did not pass")
+        tiers = report.get("tier_distribution")
+        if (
+            not isinstance(tiers, Mapping)
+            or set(tiers) - {"tier_a", "tier_b"}
+            or sum(int(count) for count in tiers.values()) != int(report["physical_cr3_count"])
+        ):
+            raise ValueError(f"TD-A paired finalizer {source} timing tier ledger is invalid")
+
+    formal_total = sum(int(report["formal_capture_count"]) for report in reports)
+    ambient_total = sum(int(report["ambient_capture_count"]) for report in reports)
+    physical_total = sum(int(report["physical_cr3_count"]) for report in reports)
+    if formal_total != 24 or ambient_total != 6 or physical_total > 44:
+        raise ValueError("TD-A paired finalizer combined capture budget mismatch")
+
+    ray_settle = _validated_td_a_settle(ray_report, source="ray")
+    strip_settle = _validated_td_a_settle(strip_report, source="strip")
+    both_settled = ray_settle is not None and strip_settle is not None
+    provisional = max(ray_settle, strip_settle) if both_settled else None
+    status = "td_a_pass" if both_settled else "settling_not_demonstrated_by_600"
+    combined = {
+        "schema": "p7_td_a_combined_analysis_v1",
+        "experiment_id": thermal.TD_A,
+        "status": status,
+        "ray_run": str(ray_root.resolve()),
+        "strip_run": str(strip_root.resolve()),
+        "input_contract": "pass",
+        "timing_contract": "pass",
+        "capture_contract": "pass",
+        "cleanup_contract": "pass",
+        "wrapper_contract": "pass",
+        "formal_capture_count": formal_total,
+        "ambient_capture_count": ambient_total,
+        "physical_cr3_count": physical_total,
+        "physical_cr3_cap": 44,
+        "t_settle_ray_s": ray_settle,
+        "t_settle_strip_s": strip_settle,
+        "t_formal_provisional_s": provisional,
+        "t_formal_s": None,
+        "six_hundred_is_validation_only": True,
+        "default_operating_envelope_modified": False,
+        "source_results": {"ray": ray_report, "strip": strip_report},
+    }
+
+    output = Path(output_dir)
+    output.mkdir(parents=True, exist_ok=False)
+    analysis_path = output / "td-a-combined-analysis.json"
+    summary_path = output / "EXPERIMENT_SUMMARY.md"
+    _write_text_atomic(
+        analysis_path,
+        json.dumps(combined, indent=2, sort_keys=True, ensure_ascii=False, allow_nan=False) + "\n",
+    )
+    _write_text_atomic(summary_path, _render_td_a_summary(combined))
+    return combined
+
+
+def _validated_td_a_settle(report: Mapping[str, Any], *, source: str) -> int | None:
+    value = report.get("source_specific_settle_time")
+    if value is None:
+        if report.get("status") != "settling_not_demonstrated_by_600":
+            raise ValueError(f"TD-A paired finalizer {source} has an invalid non-settle status")
+        return None
+    if type(value) is not int or value not in thermal.TIMED_POINTS[:-1]:
+        raise ValueError(f"TD-A paired finalizer {source} has an invalid settle time")
+    if report.get("status") != "td_a_pass":
+        raise ValueError(f"TD-A paired finalizer {source} settle/status mismatch")
+    return value
+
+
+def _render_td_a_summary(combined: Mapping[str, Any]) -> str:
+    return (
+        "# P7 TD-A Combined Analysis\n\n"
+        f"- status: `{combined['status']}`\n"
+        f"- Ray settle: `{combined['t_settle_ray_s']}` s\n"
+        f"- strip settle: `{combined['t_settle_strip_s']}` s\n"
+        f"- provisional formal settle: `{combined['t_formal_provisional_s']}` s\n"
+        f"- captures: `{combined['formal_capture_count']}` formal + "
+        f"`{combined['ambient_capture_count']}` ambient / `{combined['physical_cr3_count']}` physical CR3\n"
+        "- default operating envelope modified: `false`\n"
+    )
+
+
+def _write_text_atomic(path: Path, value: str) -> None:
+    temporary = path.with_name(f".{path.name}.tmp-{os.getpid()}")
+    try:
+        temporary.write_text(value, encoding="utf-8")
+        temporary.replace(path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
 def _load_json(path: Path) -> dict[str, Any]:
-    value = json.loads(path.read_text(encoding="utf-8"))
+    value = _load_json_value(path)
     if not isinstance(value, dict):
         raise ValueError(f"expected JSON object: {path}")
     return value
+
+
+def _load_json_value(path: Path) -> Any:
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        raise ValueError(f"missing or unreadable JSON artifact: {path}") from exc
+    if not text.strip():
+        raise ValueError(f"empty JSON artifact: {path}")
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"invalid JSON artifact: {path}") from exc
 
 
 def _load_jsonl(path: Path) -> list[dict[str, Any]]:
@@ -492,11 +707,15 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("run_dir", type=Path)
     parser.add_argument("--feature-ids", type=Path)
     parser.add_argument("--derive-r1-output", type=Path)
+    parser.add_argument("--paired-run", type=Path, help="Strip TD-A run paired with positional Ray TD-A run.")
+    parser.add_argument("--combined-output", type=Path, help="New output directory for paired TD-A finalization.")
     return parser.parse_args(argv)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(argv)
+    if args.derive_r1_output is not None and (args.paired_run is not None or args.combined_output is not None):
+        raise ValueError("R1 derivation cannot be combined with TD-A paired finalization")
     if args.derive_r1_output is not None:
         paths = write_reference_epoch_v2_derived(args.run_dir, args.derive_r1_output)
         print("\n".join(str(path) for path in paths))
@@ -505,9 +724,20 @@ def main(argv: Sequence[str] | None = None) -> int:
         raise ValueError("--feature-ids is required for thermal run analysis")
     artifact = _load_json(args.feature_ids)
     feature_ids = artifact.get("feature_set", {}).get("ids") or artifact.get("ids")
+    if args.paired_run is not None:
+        if args.combined_output is None:
+            raise ValueError("--combined-output is required with --paired-run")
+        analyze_td_a_pair(
+            args.run_dir, args.paired_run, args.combined_output, feature_ids=feature_ids,
+        )
+        print(args.combined_output / "td-a-combined-analysis.json")
+        print(args.combined_output / "EXPERIMENT_SUMMARY.md")
+        return 0
+    if args.combined_output is not None:
+        raise ValueError("--combined-output requires --paired-run")
     report = analyze_thermal_run(args.run_dir, feature_ids=feature_ids)
     output = args.run_dir / "analysis.json"
-    output.write_text(json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n", encoding="utf-8")
+    _write_text_atomic(output, json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n")
     print(output)
     return 0
 

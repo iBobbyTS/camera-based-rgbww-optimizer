@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import hashlib
 import json
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -39,9 +41,16 @@ def _write_jsonl(path: Path, rows):
     path.write_text("".join(json.dumps(row, sort_keys=True) + "\n" for row in rows), encoding="utf-8")
 
 
-def _build_formal_td_a_run(root: Path) -> Path:
+def _cleanup_steps():
+    return [
+        {"name": "esphome", "ok": True, "detail": {"payload": {}}, "error": None},
+        {"name": "ray120c", "ok": True, "detail": {"response": {}}, "error": None},
+    ]
+
+
+def _build_formal_td_a_run(root: Path, *, source: str = "ray", settle: bool = True) -> Path:
     plan = thermal.build_diagnostic_plan(
-        thermal.TD_A, source="ray", for_execution=True,
+        thermal.TD_A, source=source, for_execution=True,
         human_authorization=thermal.TD_A, v2_capture_capability=True,
     )
     plan["camera"]["resolved_capture_settings"] = {
@@ -84,7 +93,7 @@ def _build_formal_td_a_run(root: Path) -> Path:
             state_on_elapsed_s=float(step["requested_elapsed_s"] or 0),
             off_duration_before_s=1800, previous_state_id=None, previous_state_dwell_s=None,
             shutter_seconds=0.01, raw_black_levels=[512] * 4, raw_white_level=16383,
-            load_history={60: 0, 300: 0, 900: 0}, readback={},
+            load_history={60: 0, 300: 0, 900: 0}, readback={}, curve=curve,
         )
         output = {
             "saved_file": str(saved), "physical_capture_count": 1,
@@ -142,7 +151,9 @@ def _build_formal_td_a_run(root: Path) -> Path:
         output["remote_metadata_path"] = str(root / f"{step['capture_id']}.CR3.metadata.json")
         (root / f"{step['capture_id']}.CR3.metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
         if step["formal_measurement"]:
-            output["feature_values"] = _feature()
+            output["feature_values"] = _feature(
+                1.0 if settle else float(step["requested_elapsed_s"]),
+            )
         else:
             output["ambient_diagnostic"] = {
                 "geometry_hash": "frozen-geometry", "black_levels": [512] * 4,
@@ -153,10 +164,25 @@ def _build_formal_td_a_run(root: Path) -> Path:
     measure.execute_plan(
         plan, run_dir=root, apply_command_fn=lambda _step: {}, readback_fn=lambda _step: {},
         capture_fn=capture, both_off_gate_fn=both_off,
-        cleanup_fn=lambda: {"status": "pass"},
+        cleanup_fn=lambda: {"status": "pass", "steps": _cleanup_steps()},
         monotonic_fn=clock.monotonic, sleep_fn=clock.sleep,
     )
-    _write_json(root / "all-off-shell.json", {"status": "pass"})
+    _write_json(root / "all-off-shell.json", _cleanup_steps())
+    (root / "child-exit-status.txt").write_text("0\n", encoding="utf-8")
+    (root / "all-off-shell.exit-status.txt").write_text("0\n", encoding="utf-8")
+    _write_json(root / "wrapper-result.json", {
+        "schema_version": 1,
+        "experiment": "p7_thermal_diagnostics_v1",
+        "status": "complete",
+        "run_dir": str(root.resolve()),
+        "wrapper_pid": 1001,
+        "child_pid": 1002,
+        "child_exit_code": 0,
+        "shell_cleanup_exit_code": 0,
+        "wrapper_exit_code": 0,
+        "signal": None,
+        "started_at": "2026-07-20T00:00:00Z",
+    })
     return root
 
 
@@ -264,6 +290,157 @@ class AnalyzeP7ThermalDiagnosticsTests(unittest.TestCase):
             _write_jsonl(root / "commands.jsonl", commands)
             with self.assertRaisesRegex(ValueError, "differs from frozen plan"):
                 subject.analyze_thermal_run(root, feature_ids=FEATURE_IDS, compatibility_fn=lambda _left, _right: True)
+
+    def test_public_analyzer_replays_cleanup_and_wrapper_completion(self):
+        def mutate_json(path: Path, mutation):
+            value = json.loads(path.read_text(encoding="utf-8"))
+            mutation(value)
+            _write_json(path, value)
+
+        cases = {
+            "python cleanup": lambda root: mutate_json(
+                root / "all-off-python.json", lambda value: value["steps"][0].__setitem__("ok", False),
+            ),
+            "shell cleanup": lambda root: mutate_json(
+                root / "all-off-shell.json", lambda value: value[1].__setitem__("ok", False),
+            ),
+            "run cleanup": lambda root: mutate_json(
+                root / "run.json", lambda value: value.__setitem__("cleanup", "fail"),
+            ),
+            "wrapper child": lambda root: mutate_json(
+                root / "wrapper-result.json", lambda value: value.__setitem__("child_exit_code", 1),
+            ),
+            "wrapper cleanup": lambda root: mutate_json(
+                root / "wrapper-result.json", lambda value: value.__setitem__("shell_cleanup_exit_code", 1),
+            ),
+            "wrapper exit": lambda root: mutate_json(
+                root / "wrapper-result.json", lambda value: value.__setitem__("wrapper_exit_code", 70),
+            ),
+            "wrapper signal": lambda root: mutate_json(
+                root / "wrapper-result.json", lambda value: value.__setitem__("signal", "TERM"),
+            ),
+            "wrapper schema": lambda root: mutate_json(
+                root / "wrapper-result.json", lambda value: value.__setitem__("unknown", True),
+            ),
+            "child exit file": lambda root: (root / "child-exit-status.txt").write_text("1\n", encoding="utf-8"),
+            "shell exit file": lambda root: (root / "all-off-shell.exit-status.txt").write_text("1\n", encoding="utf-8"),
+            "empty cleanup": lambda root: (root / "all-off-shell.json").write_text("", encoding="utf-8"),
+        }
+        for label, mutation in cases.items():
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as tempdir:
+                root = _build_formal_td_a_run(Path(tempdir) / "run")
+                mutation(root)
+                with self.assertRaises(ValueError):
+                    subject.analyze_thermal_run(
+                        root, feature_ids=FEATURE_IDS, compatibility_fn=lambda _left, _right: True,
+                    )
+
+    def test_td_a_pair_finalizer_replays_both_runs_and_writes_atomic_outputs(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            ray = _build_formal_td_a_run(root / "ray", source="ray")
+            strip = _build_formal_td_a_run(root / "strip", source="strip")
+            output = root / "combined"
+            envelope_before = hashlib.sha256(thermal.OPERATING_ENVELOPE_PATH.read_bytes()).hexdigest()
+            report = subject.analyze_td_a_pair(ray, strip, output, feature_ids=FEATURE_IDS)
+            envelope_after = hashlib.sha256(thermal.OPERATING_ENVELOPE_PATH.read_bytes()).hexdigest()
+
+            self.assertEqual(report["status"], "td_a_pass")
+            self.assertEqual(
+                report["t_formal_provisional_s"],
+                max(report["t_settle_ray_s"], report["t_settle_strip_s"]),
+            )
+            self.assertEqual(report["formal_capture_count"], 24)
+            self.assertEqual(report["ambient_capture_count"], 6)
+            self.assertLessEqual(report["physical_cr3_count"], 44)
+            self.assertTrue((output / "td-a-combined-analysis.json").is_file())
+            self.assertTrue((output / "EXPERIMENT_SUMMARY.md").is_file())
+            self.assertEqual(list(output.glob(".*.tmp-*")), [])
+            self.assertEqual(envelope_before, envelope_after)
+
+    def test_td_a_pair_cli_writes_combined_artifacts(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            ray = _build_formal_td_a_run(root / "ray", source="ray")
+            strip = _build_formal_td_a_run(root / "strip", source="strip")
+            output = root / "combined"
+            self.assertEqual(subject.main([
+                str(ray), "--feature-ids", str(thermal.POLICY_PATH),
+                "--paired-run", str(strip), "--combined-output", str(output),
+            ]), 0)
+            self.assertTrue((output / "td-a-combined-analysis.json").is_file())
+            self.assertTrue((output / "EXPERIMENT_SUMMARY.md").is_file())
+
+    def test_td_a_pair_finalizer_preserves_legal_nonsettle(self):
+        for unsettled_source in ("ray", "strip"):
+            with self.subTest(source=unsettled_source), tempfile.TemporaryDirectory() as tempdir:
+                root = Path(tempdir)
+                ray = _build_formal_td_a_run(
+                    root / "ray", source="ray", settle=unsettled_source != "ray",
+                )
+                strip = _build_formal_td_a_run(
+                    root / "strip", source="strip", settle=unsettled_source != "strip",
+                )
+                report = subject.analyze_td_a_pair(
+                    ray, strip, root / "combined", feature_ids=FEATURE_IDS,
+                )
+                self.assertEqual(report["status"], "settling_not_demonstrated_by_600")
+                self.assertIsNone(report["t_formal_provisional_s"])
+                self.assertIsNone(report[f"t_settle_{unsettled_source}_s"])
+
+    def test_td_a_pair_finalizer_rejects_source_and_input_owner_mismatch(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            ray_a = _build_formal_td_a_run(root / "ray-a", source="ray")
+            ray_b = _build_formal_td_a_run(root / "ray-b", source="ray")
+            strip = _build_formal_td_a_run(root / "strip", source="strip")
+            with self.assertRaisesRegex(ValueError, "Ray first and strip second"):
+                subject.analyze_td_a_pair(ray_a, ray_b, root / "duplicate", feature_ids=FEATURE_IDS)
+            with self.assertRaisesRegex(ValueError, "Ray first and strip second"):
+                subject.analyze_td_a_pair(strip, ray_a, root / "reversed", feature_ids=FEATURE_IDS)
+
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            ray = _build_formal_td_a_run(root / "ray", source="ray")
+            strip = _build_formal_td_a_run(root / "strip", source="strip")
+            strip_plan = json.loads((strip / "plan.json").read_text(encoding="utf-8"))
+            input_name = next(iter(strip_plan["inputs"]))
+            original = Path(strip_plan["inputs"][input_name]["path"])
+            alternate = root / f"alternate-{original.name}"
+            shutil.copyfile(original, alternate)
+            strip_plan["inputs"][input_name]["path"] = str(alternate)
+            _write_json(strip / "plan.json", strip_plan)
+            with self.assertRaisesRegex(ValueError, "input path/hash mismatch"):
+                subject.analyze_td_a_pair(ray, strip, root / "mismatch", feature_ids=FEATURE_IDS)
+
+    def test_td_a_pair_finalizer_rejects_capture_settings_timing_and_exposure_tampering(self):
+        def mutate_capture(root: Path, mutation):
+            rows = [json.loads(line) for line in (root / "captures.jsonl").read_text(encoding="utf-8").splitlines()]
+            mutation(rows[0])
+            _write_jsonl(root / "captures.jsonl", rows)
+
+        cases = {
+            "missing CR3": lambda root: Path(
+                json.loads((root / "captures.jsonl").read_text(encoding="utf-8").splitlines()[0])["capture"]["saved_file"],
+            ).unlink(),
+            "settings": lambda root: mutate_capture(
+                root, lambda row: row["capture"]["capture"].__setitem__("iso", "400"),
+            ),
+            "recorded exposure": lambda root: mutate_capture(
+                root, lambda row: row["capture"]["recorded_exposure"].__setitem__("status", "missing"),
+            ),
+            "timing": lambda root: mutate_capture(
+                root, lambda row: row["timing_evidence"].__setitem__("best_effort_elapsed_s", 999.0),
+            ),
+        }
+        for label, mutation in cases.items():
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as tempdir:
+                root = Path(tempdir)
+                ray = _build_formal_td_a_run(root / "ray", source="ray")
+                strip = _build_formal_td_a_run(root / "strip", source="strip")
+                mutation(strip)
+                with self.assertRaises(ValueError):
+                    subject.analyze_td_a_pair(ray, strip, root / "combined", feature_ids=FEATURE_IDS)
 
     def test_settle_never_returns_600(self):
         stable = {str(cycle): {point: [_feature()] for point in thermal.TIMED_POINTS} for cycle in range(3)}
