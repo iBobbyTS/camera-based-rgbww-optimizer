@@ -35,7 +35,7 @@ atomic_text() {
 
 write_json() {
   local target="$1"
-  local status="$2"
+  local result_status="$2"
   local wrapper_exit="${3:-}"
   local temporary="${target:h}/.${target:t}.tmp.$$"
   "$PYTHON" -c '
@@ -47,7 +47,7 @@ value={"schema_version":1,"experiment":"p7_thermal_diagnostics_v1","status":stat
 "child_exit_code":None if not child_exit else int(child_exit),"shell_cleanup_exit_code":None if not cleanup_exit else int(cleanup_exit),
 "wrapper_exit_code":None if not wrapper_exit else int(wrapper_exit),"signal":signal_name or None,"started_at":started}
 Path(target).write_text(json.dumps(value,indent=2,sort_keys=True)+"\n")
-' "$temporary" "$status" "$RUN_DIR" "$$" "$child_pid" "$child_exit" "$cleanup_exit" "$wrapper_exit" "$received_signal" "$started_at"
+' "$temporary" "$result_status" "$RUN_DIR" "$$" "$child_pid" "$child_exit" "$cleanup_exit" "$wrapper_exit" "$received_signal" "$started_at"
   mv -f "$temporary" "$target"
 }
 
@@ -80,17 +80,17 @@ finalize() {
   wait_child
   if [[ -z "$child_exit" ]]; then atomic_text "$RUN_DIR/child-exit-status.txt" "not_started"; fi
   cleanup_once
-  local final_exit status
+  local final_exit final_status
   if [[ -n "$received_signal" ]]; then
-    final_exit=$((128 + signal_number)); status="signaled"
+    final_exit=$((128 + signal_number)); final_status="signaled"
   elif [[ -n "$child_exit" && "$child_exit" -ne 0 ]]; then
-    final_exit="$child_exit"; status="child_failed"
+    final_exit="$child_exit"; final_status="child_failed"
   elif [[ "$cleanup_exit" -ne 0 ]]; then
-    final_exit=70; status="cleanup_failed"
+    final_exit=70; final_status="cleanup_failed"
   else
-    final_exit="$incoming"; status="complete"
+    final_exit="$incoming"; final_status="complete"
   fi
-  write_json "$RUN_DIR/wrapper-result.json" "$status" "$final_exit"
+  write_json "$RUN_DIR/wrapper-result.json" "$final_status" "$final_exit"
   write_json "$WRAPPER_STATE" "finished" "$final_exit"
   return "$final_exit"
 }

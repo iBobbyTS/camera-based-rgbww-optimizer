@@ -1,7 +1,13 @@
 from __future__ import annotations
 
+import hashlib
 import json
+import os
+import shutil
+import signal
+import subprocess
 import tempfile
+import time
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -9,6 +15,9 @@ from unittest import mock
 from camera_based_rgbww_optimizer.optimization import measure_p7_thermal_diagnostics as measure
 from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as subject
 from camera_based_rgbww_optimizer.control import camera_gphoto2, camera_remote_v2
+
+
+W0_TEMP_ROOT = Path("/Volumes/4T/temp/rgbww-optimizer/p7-td-a-w0-offline/test-runtime")
 
 
 class _Clock:
@@ -642,6 +651,217 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
         self.assertIn("wrapper-result.json", wrapper)
         self.assertIn("child-exit-status.txt", wrapper)
         self.assertIn("cleanup_once", wrapper)
+
+    def test_production_wrapper_real_zsh_runtime_round_trip(self):
+        cases = (
+            ("success", None, 0, 0, 0, "complete", None),
+            ("child_failure", None, 7, 0, 7, "child_failed", None),
+            ("cleanup_failure", None, 0, 9, 70, "cleanup_failed", None),
+            ("signal_wait", signal.SIGINT, 130, 0, 130, "signaled", "INT"),
+            ("signal_wait", signal.SIGTERM, 143, 0, 143, "signaled", "TERM"),
+            ("signal_wait", signal.SIGHUP, 129, 0, 129, "signaled", "HUP"),
+        )
+        for mode, sent_signal, child_code, cleanup_code, wrapper_code, result_status, signal_name in cases:
+            with self.subTest(mode=mode, signal=signal_name), _w0_temporary_directory() as tempdir:
+                root, wrapper, call_log, source_hash = _make_fake_thermal_wrapper_project(Path(tempdir))
+                copied_hash = hashlib.sha256(wrapper.read_bytes()).hexdigest()
+                self.assertEqual(copied_hash, source_hash)
+                self.assertEqual(
+                    wrapper.read_bytes(),
+                    (Path(__file__).parents[1] / "tmp/run-p7-thermal-diagnostics.zsh").read_bytes(),
+                )
+                run_dir = root / "runs" / f"{mode}-{signal_name or 'exit'}"
+                state_path = run_dir.parent / f"{run_dir.name}.wrapper-state.json"
+                runner_log = run_dir.parent / f"{run_dir.name}.runner.log"
+                wrapper_log = run_dir.parent / f"{run_dir.name}.wrapper.log"
+                ready_file = Path(tempdir) / "runner-ready"
+                env = os.environ.copy()
+                env.update({
+                    "FAKE_RUNNER_MODE": mode,
+                    "FAKE_CALL_LOG": str(call_log),
+                    "FAKE_READY_FILE": str(ready_file),
+                })
+                process = subprocess.Popen(
+                    ["zsh", str(wrapper), str(run_dir)],
+                    env=env,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    start_new_session=True,
+                )
+                child_pid = None
+                try:
+                    if sent_signal is not None:
+                        deadline = time.monotonic() + 8
+                        while time.monotonic() < deadline:
+                            if ready_file.exists() and state_path.exists():
+                                running_state = _read_json(state_path)
+                                if running_state.get("status") == "running":
+                                    break
+                            time.sleep(0.02)
+                        else:
+                            self.fail("fake thermal wrapper did not reach running state")
+                        self.assertEqual(running_state["status"], "running")
+                        self.assertEqual(running_state["wrapper_pid"], process.pid)
+                        child_pid = running_state["child_pid"]
+                        os.kill(process.pid, sent_signal)
+                    process.wait(timeout=12)
+                finally:
+                    if process.poll() is None:
+                        os.killpg(process.pid, signal.SIGKILL)
+                        process.wait(timeout=5)
+
+                calls = call_log.read_text(encoding="utf-8").splitlines()
+                runner_calls = [line for line in calls if "measure_p7_thermal_diagnostics" in line]
+                cleanup_calls = [line for line in calls if "camera_based_rgbww_optimizer.control.all_off" in line]
+                self.assertEqual(len(runner_calls), 1)
+                self.assertEqual(len(cleanup_calls), 1)
+                self.assertIn("--execute --allow-device-control", runner_calls[0])
+                self.assertEqual(process.returncode, wrapper_code)
+                self.assertEqual(
+                    (run_dir / "child-exit-status.txt").read_text(encoding="utf-8").strip(),
+                    str(child_code),
+                )
+                self.assertEqual(
+                    (run_dir / "all-off-shell.exit-status.txt").read_text(encoding="utf-8").strip(),
+                    str(cleanup_code),
+                )
+
+                expected_keys = {
+                    "schema_version", "experiment", "status", "run_dir", "wrapper_pid",
+                    "child_pid", "child_exit_code", "shell_cleanup_exit_code",
+                    "wrapper_exit_code", "signal", "started_at",
+                }
+                result = _read_json(run_dir / "wrapper-result.json")
+                state = _read_json(state_path)
+                self.assertEqual(set(result), expected_keys)
+                self.assertEqual(set(state), expected_keys)
+                self.assertEqual(result["status"], result_status)
+                self.assertEqual(result["experiment"], "p7_thermal_diagnostics_v1")
+                self.assertEqual(Path(result["run_dir"]), run_dir.resolve())
+                self.assertEqual(result["wrapper_pid"], process.pid)
+                self.assertEqual(result["child_exit_code"], child_code)
+                self.assertEqual(result["shell_cleanup_exit_code"], cleanup_code)
+                self.assertEqual(result["wrapper_exit_code"], wrapper_code)
+                self.assertEqual(result["signal"], signal_name)
+                self.assertEqual(state["status"], "finished")
+                self.assertEqual(state["wrapper_pid"], process.pid)
+                self.assertEqual(state["child_pid"], result["child_pid"])
+                self.assertEqual(state["wrapper_exit_code"], wrapper_code)
+                self.assertEqual(Path(state["run_dir"]), run_dir.resolve())
+                self.assertTrue(runner_log.is_file())
+                self.assertTrue(wrapper_log.is_file())
+                self.assertEqual(list(run_dir.glob(".*.tmp.*")), [])
+                self.assertEqual(list(run_dir.parent.glob(".*.tmp.*")), [])
+                retained_text = "\n".join(
+                    path.read_text(encoding="utf-8", errors="replace")
+                    for path in (*run_dir.glob("*"), state_path, runner_log, wrapper_log)
+                    if path.is_file()
+                ).lower()
+                for forbidden in ("secret", "token", "api_key", ".env"):
+                    self.assertNotIn(forbidden, retained_text)
+                cleanup_stdout = (run_dir / "all-off-shell.json").read_text(encoding="utf-8")
+                self.assertIn('"name": "esphome"', cleanup_stdout)
+                cleanup_stderr = (run_dir / "all-off-shell.stderr.log").read_text(encoding="utf-8")
+                if mode == "cleanup_failure":
+                    self.assertIn("fake cleanup failed", cleanup_stderr)
+                else:
+                    self.assertEqual(cleanup_stderr, "")
+                child_pid = result["child_pid"]
+                with self.assertRaises(ProcessLookupError):
+                    os.kill(child_pid, 0)
+                retained_root = os.environ.get("P7_W0_RUNTIME_EVIDENCE_DIR")
+                if retained_root:
+                    case_name = f"{mode}-{signal_name or 'exit'}"
+                    target = Path(retained_root) / case_name
+                    target.mkdir(parents=True, exist_ok=False)
+                    shutil.copytree(root, target / "project")
+                    shutil.copy2(call_log, target / "calls.log")
+                    (target / "case-summary.json").write_text(
+                        json.dumps({
+                            "case": case_name,
+                            "child_exit_code": child_code,
+                            "shell_cleanup_exit_code": cleanup_code,
+                            "wrapper_exit_code": wrapper_code,
+                            "status": result_status,
+                            "signal": signal_name,
+                            "runner_call_count": len(runner_calls),
+                            "cleanup_call_count": len(cleanup_calls),
+                            "residual_process": False,
+                            "production_wrapper_sha256": source_hash,
+                        }, indent=2, sort_keys=True) + "\n",
+                        encoding="utf-8",
+                    )
+
+    def test_thermal_wrapper_locals_avoid_zsh_readonly_special_parameters(self):
+        wrapper = (Path(__file__).parents[1] / "tmp/run-p7-thermal-diagnostics.zsh").read_text(encoding="utf-8")
+        local_names = set()
+        for line in wrapper.splitlines():
+            stripped = line.strip()
+            if not stripped.startswith("local "):
+                continue
+            for declaration in stripped.removeprefix("local ").split():
+                local_names.add(declaration.split("=", 1)[0])
+        readonly_special = {
+            "status", "pipestatus", "signals", "argv", "ARGC", "RANDOM", "SECONDS",
+            "LINENO", "ZSH_SUBSHELL", "ZSH_EVAL_CONTEXT", "ZSH_ARGZERO", "ZSH_PATCHLEVEL",
+            "functions", "commands", "modules", "options", "parameters", "dirstack",
+            "funcstack", "functrace", "funcsourcetrace", "funcfiletrace", "history",
+        }
+        self.assertTrue(local_names)
+        self.assertEqual(local_names & readonly_special, set())
+
+
+def _w0_temporary_directory():
+    W0_TEMP_ROOT.mkdir(parents=True, exist_ok=True)
+    return tempfile.TemporaryDirectory(dir=W0_TEMP_ROOT)
+
+
+def _read_json(path: Path):
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _make_fake_thermal_wrapper_project(tempdir: Path):
+    root = tempdir / "project"
+    (root / "tmp").mkdir(parents=True)
+    (root / ".venv/bin").mkdir(parents=True)
+    source = Path(__file__).parents[1] / "tmp/run-p7-thermal-diagnostics.zsh"
+    wrapper = root / "tmp/run-p7-thermal-diagnostics.zsh"
+    source_bytes = source.read_bytes()
+    shutil.copy2(source, wrapper)
+    fake_python = root / ".venv/bin/python"
+    fake_python.write_text("""#!/usr/bin/env python3
+import json
+import os
+import signal
+import sys
+import time
+
+with open(os.environ["FAKE_CALL_LOG"], "a", encoding="utf-8") as handle:
+    handle.write(" ".join(sys.argv[1:]) + "\\n")
+if len(sys.argv) > 1 and sys.argv[1] == "-c":
+    os.execv(sys.executable, [sys.executable, *sys.argv[1:]])
+if "camera_based_rgbww_optimizer.control.all_off" in sys.argv:
+    print(json.dumps([
+        {"name": "esphome", "ok": True, "detail": {}, "error": None},
+        {"name": "ray120c", "ok": True, "detail": {}, "error": None},
+    ]))
+    if os.environ.get("FAKE_RUNNER_MODE") == "cleanup_failure":
+        print("fake cleanup failed", file=sys.stderr)
+        raise SystemExit(9)
+    raise SystemExit(0)
+mode = os.environ.get("FAKE_RUNNER_MODE", "success")
+if mode in {"success", "cleanup_failure"}:
+    raise SystemExit(0)
+if mode == "child_failure":
+    raise SystemExit(7)
+for signum in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+    signal.signal(signum, lambda received, _frame: sys.exit(128 + received))
+with open(os.environ["FAKE_READY_FILE"], "w", encoding="utf-8") as handle:
+    handle.write("ready\\n")
+time.sleep(30)
+""", encoding="utf-8")
+    fake_python.chmod(0o755)
+    return root, wrapper, tempdir / "calls.log", hashlib.sha256(source_bytes).hexdigest()
 
 
 if __name__ == "__main__":

@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 from collections import defaultdict
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
@@ -26,6 +27,23 @@ from camera_based_rgbww_optimizer.control import camera_remote_v2
 from camera_based_rgbww_optimizer.optimization.analyze_hsi_reference_repeatability import (
     write_reference_epoch_v2_derived,
 )
+
+
+TD_A_COMBINED_ANALYSIS_SCHEMA = "p7_td_a_combined_analysis_v1"
+TD_A_INPUT_MANIFEST_SCHEMA = "p7_td_a_input_manifest_v1"
+TD_A_DECISION_OWNER = "Planner"
+TD_A_ANALYZER_MODULE = (
+    "camera_based_rgbww_optimizer.optimization.analyze_p7_thermal_diagnostics"
+)
+TD_A_COMMAND_CONTRACT = {
+    "module_entry": f"python -m {TD_A_ANALYZER_MODULE}",
+    "ray_positional_owner": "run_dir",
+    "strip_paired_owner": "--paired-run",
+    "feature_file_owner": "--feature-ids",
+    "combined_output_owner": "--combined-output",
+    "code_checkpoint_owner": "--code-checkpoint",
+}
+_GIT_CHECKPOINT_RE = re.compile(r"[0-9a-f]{7,64}")
 
 
 def analyze_thermal_run(
@@ -529,9 +547,17 @@ def analyze_td_a_pair(
     output_dir: str | Path,
     *,
     feature_ids: Sequence[str],
+    feature_ids_path: str | Path,
+    code_checkpoint: str,
 ) -> dict[str, Any]:
-    ray_root = Path(ray_run)
-    strip_root = Path(strip_run)
+    checkpoint = _validate_code_checkpoint(code_checkpoint)
+    ray_root = Path(ray_run).resolve()
+    strip_root = Path(strip_run).resolve()
+    feature_path = Path(feature_ids_path).resolve()
+    if ray_root == strip_root:
+        raise ValueError("TD-A paired finalizer requires distinct Ray and strip runs")
+    if _feature_ids_from_artifact(feature_path) != list(feature_ids):
+        raise ValueError("TD-A paired finalizer feature IDs differ from the retained feature file")
     ray_report = analyze_thermal_run(ray_root, feature_ids=feature_ids)
     strip_report = analyze_thermal_run(strip_root, feature_ids=feature_ids)
     ray_plan = _load_json(ray_root / "plan.json")
@@ -547,6 +573,13 @@ def analyze_td_a_pair(
         raise ValueError("TD-A paired finalizer frozen input path/hash mismatch")
     if ray_plan.get("timing_contract") != strip_plan.get("timing_contract"):
         raise ValueError("TD-A paired finalizer timing contract mismatch")
+    policy_reference = ray_plan.get("inputs", {}).get("policy")
+    if (
+        not isinstance(policy_reference, Mapping)
+        or Path(str(policy_reference.get("path"))).resolve() != feature_path
+        or policy_reference.get("sha256") != _sha256_file(feature_path)
+    ):
+        raise ValueError("TD-A paired finalizer feature file differs from frozen policy input")
 
     reports = (ray_report, strip_report)
     for source, report in zip(("ray", "strip"), reports, strict=True):
@@ -587,7 +620,7 @@ def analyze_td_a_pair(
     provisional = max(ray_settle, strip_settle) if both_settled else None
     status = "td_a_pass" if both_settled else "settling_not_demonstrated_by_600"
     combined = {
-        "schema": "p7_td_a_combined_analysis_v1",
+        "schema": TD_A_COMBINED_ANALYSIS_SCHEMA,
         "experiment_id": thermal.TD_A,
         "status": status,
         "ray_run": str(ray_root.resolve()),
@@ -614,12 +647,243 @@ def analyze_td_a_pair(
     output.mkdir(parents=True, exist_ok=False)
     analysis_path = output / "td-a-combined-analysis.json"
     summary_path = output / "EXPERIMENT_SUMMARY.md"
-    _write_text_atomic(
-        analysis_path,
-        json.dumps(combined, indent=2, sort_keys=True, ensure_ascii=False, allow_nan=False) + "\n",
-    )
-    _write_text_atomic(summary_path, _render_td_a_summary(combined))
+    manifest_path = output / "input-manifest.json"
+    try:
+        _write_text_atomic(
+            analysis_path,
+            json.dumps(combined, indent=2, sort_keys=True, ensure_ascii=False, allow_nan=False) + "\n",
+        )
+        _write_text_atomic(summary_path, _render_td_a_summary(combined))
+        manifest = _build_td_a_input_manifest(
+            ray_root=ray_root,
+            strip_root=strip_root,
+            feature_path=feature_path,
+            analysis_path=analysis_path,
+            summary_path=summary_path,
+            frozen_inputs=ray_plan["inputs"],
+            timing_contract=ray_plan["timing_contract"],
+            code_checkpoint=checkpoint,
+        )
+        _write_text_atomic(
+            manifest_path,
+            json.dumps(manifest, indent=2, sort_keys=True, ensure_ascii=False, allow_nan=False) + "\n",
+        )
+        validate_td_a_input_manifest(manifest_path)
+    except BaseException:
+        for path in (manifest_path, summary_path, analysis_path):
+            path.unlink(missing_ok=True)
+        try:
+            output.rmdir()
+        except OSError:
+            pass
+        raise
     return combined
+
+
+def _build_td_a_input_manifest(
+    *,
+    ray_root: Path,
+    strip_root: Path,
+    feature_path: Path,
+    analysis_path: Path,
+    summary_path: Path,
+    frozen_inputs: Mapping[str, Any],
+    timing_contract: Mapping[str, Any],
+    code_checkpoint: str,
+) -> dict[str, Any]:
+    def source_entry(root: Path) -> dict[str, str]:
+        plan_path = (root / "plan.json").resolve()
+        run_path = (root / "run.json").resolve()
+        return {
+            "run_dir": str(root.resolve()),
+            "plan_path": str(plan_path),
+            "plan_sha256": _sha256_file(plan_path),
+            "run_path": str(run_path),
+            "run_sha256": _sha256_file(run_path),
+        }
+
+    return {
+        "schema": TD_A_INPUT_MANIFEST_SCHEMA,
+        "experiment_id": thermal.TD_A,
+        "decision_owner": TD_A_DECISION_OWNER,
+        "generated_by": {
+            "module": TD_A_ANALYZER_MODULE,
+            "analysis_schema": TD_A_COMBINED_ANALYSIS_SCHEMA,
+            "code_checkpoint": code_checkpoint,
+            "command_contract": dict(TD_A_COMMAND_CONTRACT),
+        },
+        "sources": {
+            "ray": source_entry(ray_root),
+            "strip": source_entry(strip_root),
+        },
+        "feature_ids": {
+            "path": str(feature_path.resolve()),
+            "sha256": _sha256_file(feature_path),
+        },
+        "frozen_inputs": dict(frozen_inputs),
+        "timing_contract": dict(timing_contract),
+        "outputs": {
+            analysis_path.name: {
+                "path": str(analysis_path.resolve()),
+                "sha256": _sha256_file(analysis_path),
+            },
+            summary_path.name: {
+                "path": str(summary_path.resolve()),
+                "sha256": _sha256_file(summary_path),
+            },
+        },
+    }
+
+
+def validate_td_a_input_manifest(manifest_path: str | Path) -> dict[str, Any]:
+    path = Path(manifest_path).resolve()
+    manifest = _load_json(path)
+    if set(manifest) != {
+        "schema", "experiment_id", "decision_owner", "generated_by", "sources",
+        "feature_ids", "frozen_inputs", "timing_contract", "outputs",
+    }:
+        raise ValueError("TD-A input manifest top-level schema drift")
+    if (
+        manifest.get("schema") != TD_A_INPUT_MANIFEST_SCHEMA
+        or manifest.get("experiment_id") != thermal.TD_A
+        or manifest.get("decision_owner") != TD_A_DECISION_OWNER
+    ):
+        raise ValueError("TD-A input manifest owner or schema mismatch")
+
+    generated = manifest.get("generated_by")
+    if not isinstance(generated, Mapping) or set(generated) != {
+        "module", "analysis_schema", "code_checkpoint", "command_contract",
+    }:
+        raise ValueError("TD-A input manifest generated_by schema drift")
+    if (
+        generated.get("module") != TD_A_ANALYZER_MODULE
+        or generated.get("analysis_schema") != TD_A_COMBINED_ANALYSIS_SCHEMA
+        or generated.get("command_contract") != TD_A_COMMAND_CONTRACT
+    ):
+        raise ValueError("TD-A input manifest generator contract mismatch")
+    _validate_code_checkpoint(generated.get("code_checkpoint"))
+
+    sources = manifest.get("sources")
+    if not isinstance(sources, Mapping) or set(sources) != {"ray", "strip"}:
+        raise ValueError("TD-A input manifest source schema drift")
+    source_plans: dict[str, dict[str, Any]] = {}
+    source_roots: dict[str, Path] = {}
+    for source in ("ray", "strip"):
+        entry = sources.get(source)
+        if not isinstance(entry, Mapping) or set(entry) != {
+            "run_dir", "plan_path", "plan_sha256", "run_path", "run_sha256",
+        }:
+            raise ValueError(f"TD-A input manifest {source} source schema drift")
+        root = _absolute_path(entry.get("run_dir"), label=f"{source} run_dir")
+        plan_path = _absolute_path(entry.get("plan_path"), label=f"{source} plan_path")
+        run_path = _absolute_path(entry.get("run_path"), label=f"{source} run_path")
+        if plan_path != root / "plan.json" or run_path != root / "run.json":
+            raise ValueError(f"TD-A input manifest {source} retained path owner mismatch")
+        if _sha256_file(plan_path) != entry.get("plan_sha256"):
+            raise ValueError(f"TD-A input manifest {source} plan hash mismatch")
+        if _sha256_file(run_path) != entry.get("run_sha256"):
+            raise ValueError(f"TD-A input manifest {source} run hash mismatch")
+        plan = _load_json(plan_path)
+        run = _load_json(run_path)
+        if (
+            plan.get("experiment_id") != thermal.TD_A
+            or plan.get("source") != source
+            or run.get("experiment_id") != thermal.TD_A
+            or run.get("status") != "complete"
+        ):
+            raise ValueError(f"TD-A input manifest {source} plan/run owner mismatch")
+        _verify_frozen_inputs(plan.get("inputs", {}))
+        source_plans[source] = plan
+        source_roots[source] = root
+    if source_roots["ray"] == source_roots["strip"]:
+        raise ValueError("TD-A input manifest Ray and strip run paths must differ")
+
+    feature = manifest.get("feature_ids")
+    if not isinstance(feature, Mapping) or set(feature) != {"path", "sha256"}:
+        raise ValueError("TD-A input manifest feature file schema drift")
+    feature_path = _absolute_path(feature.get("path"), label="feature_ids path")
+    if _sha256_file(feature_path) != feature.get("sha256"):
+        raise ValueError("TD-A input manifest feature file hash mismatch")
+    _feature_ids_from_artifact(feature_path)
+
+    frozen_inputs = manifest.get("frozen_inputs")
+    timing_contract = manifest.get("timing_contract")
+    if not isinstance(frozen_inputs, Mapping) or not isinstance(timing_contract, Mapping):
+        raise ValueError("TD-A input manifest frozen input or timing schema drift")
+    policy_reference = frozen_inputs.get("policy")
+    if (
+        not isinstance(policy_reference, Mapping)
+        or Path(str(policy_reference.get("path"))).resolve() != feature_path
+        or policy_reference.get("sha256") != feature.get("sha256")
+    ):
+        raise ValueError("TD-A input manifest feature file is not the frozen policy input")
+
+    if (
+        source_plans["ray"].get("inputs") != source_plans["strip"].get("inputs")
+        or frozen_inputs != source_plans["ray"].get("inputs")
+    ):
+        raise ValueError("TD-A input manifest frozen input replay mismatch")
+    if (
+        source_plans["ray"].get("timing_contract")
+        != source_plans["strip"].get("timing_contract")
+        or timing_contract != source_plans["ray"].get("timing_contract")
+    ):
+        raise ValueError("TD-A input manifest timing contract replay mismatch")
+
+    outputs = manifest.get("outputs")
+    expected_output_names = {"td-a-combined-analysis.json", "EXPERIMENT_SUMMARY.md"}
+    if not isinstance(outputs, Mapping) or set(outputs) != expected_output_names:
+        raise ValueError("TD-A input manifest output schema drift")
+    output_paths: dict[str, Path] = {}
+    for name in expected_output_names:
+        entry = outputs.get(name)
+        if not isinstance(entry, Mapping) or set(entry) != {"path", "sha256"}:
+            raise ValueError(f"TD-A input manifest output schema drift: {name}")
+        output_path = _absolute_path(entry.get("path"), label=f"output {name}")
+        if output_path != path.parent / name:
+            raise ValueError(f"TD-A input manifest output path owner mismatch: {name}")
+        if _sha256_file(output_path) != entry.get("sha256"):
+            raise ValueError(f"TD-A input manifest output hash mismatch: {name}")
+        output_paths[name] = output_path
+    analysis = _load_json(output_paths["td-a-combined-analysis.json"])
+    if (
+        analysis.get("schema") != TD_A_COMBINED_ANALYSIS_SCHEMA
+        or analysis.get("experiment_id") != thermal.TD_A
+        or Path(str(analysis.get("ray_run"))).resolve() != Path(sources["ray"]["run_dir"])
+        or Path(str(analysis.get("strip_run"))).resolve() != Path(sources["strip"]["run_dir"])
+    ):
+        raise ValueError("TD-A input manifest combined analysis owner mismatch")
+    return manifest
+
+
+def _validate_code_checkpoint(value: Any) -> str:
+    if not isinstance(value, str) or _GIT_CHECKPOINT_RE.fullmatch(value.strip()) is None:
+        raise ValueError("TD-A paired finalizer requires an auditable Git code checkpoint")
+    return value.strip()
+
+
+def _absolute_path(value: Any, *, label: str) -> Path:
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"TD-A input manifest {label} is missing")
+    path = Path(value)
+    if not path.is_absolute():
+        raise ValueError(f"TD-A input manifest {label} must be absolute")
+    return path.resolve()
+
+
+def _sha256_file(path: Path) -> str:
+    try:
+        return hashlib.sha256(path.read_bytes()).hexdigest()
+    except OSError as exc:
+        raise ValueError(f"missing or unreadable retained artifact: {path}") from exc
+
+
+def _feature_ids_from_artifact(path: Path) -> list[str]:
+    artifact = _load_json(path)
+    ids = artifact.get("feature_set", {}).get("ids") or artifact.get("ids")
+    if not isinstance(ids, list) or not ids or any(not isinstance(item, str) or not item for item in ids):
+        raise ValueError("thermal feature file lacks a non-empty string ID list")
+    return ids
 
 
 def _validated_td_a_settle(report: Mapping[str, Any], *, source: str) -> int | None:
@@ -709,12 +973,15 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--derive-r1-output", type=Path)
     parser.add_argument("--paired-run", type=Path, help="Strip TD-A run paired with positional Ray TD-A run.")
     parser.add_argument("--combined-output", type=Path, help="New output directory for paired TD-A finalization.")
+    parser.add_argument("--code-checkpoint", help="Explicit Git checkpoint owning paired TD-A finalization.")
     return parser.parse_args(argv)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(argv)
-    if args.derive_r1_output is not None and (args.paired_run is not None or args.combined_output is not None):
+    if args.derive_r1_output is not None and (
+        args.paired_run is not None or args.combined_output is not None or args.code_checkpoint is not None
+    ):
         raise ValueError("R1 derivation cannot be combined with TD-A paired finalization")
     if args.derive_r1_output is not None:
         paths = write_reference_epoch_v2_derived(args.run_dir, args.derive_r1_output)
@@ -722,19 +989,23 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
     if args.feature_ids is None:
         raise ValueError("--feature-ids is required for thermal run analysis")
-    artifact = _load_json(args.feature_ids)
-    feature_ids = artifact.get("feature_set", {}).get("ids") or artifact.get("ids")
+    feature_ids = _feature_ids_from_artifact(args.feature_ids)
     if args.paired_run is not None:
         if args.combined_output is None:
             raise ValueError("--combined-output is required with --paired-run")
+        if args.code_checkpoint is None:
+            raise ValueError("--code-checkpoint is required with --paired-run")
         analyze_td_a_pair(
-            args.run_dir, args.paired_run, args.combined_output, feature_ids=feature_ids,
+            args.run_dir, args.paired_run, args.combined_output,
+            feature_ids=feature_ids, feature_ids_path=args.feature_ids,
+            code_checkpoint=args.code_checkpoint,
         )
         print(args.combined_output / "td-a-combined-analysis.json")
         print(args.combined_output / "EXPERIMENT_SUMMARY.md")
+        print(args.combined_output / "input-manifest.json")
         return 0
-    if args.combined_output is not None:
-        raise ValueError("--combined-output requires --paired-run")
+    if args.combined_output is not None or args.code_checkpoint is not None:
+        raise ValueError("--combined-output/--code-checkpoint require --paired-run")
     report = analyze_thermal_run(args.run_dir, feature_ids=feature_ids)
     output = args.run_dir / "analysis.json"
     _write_text_atomic(output, json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n")

@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import shutil
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from camera_based_rgbww_optimizer.optimization import analyze_hsi_reference_repeatability as r1
 from camera_based_rgbww_optimizer.optimization import analyze_p7_thermal_diagnostics as subject
@@ -16,6 +18,7 @@ from camera_based_rgbww_optimizer.control import camera_remote_v2
 
 
 FEATURE_IDS = json.loads(thermal.POLICY_PATH.read_text(encoding="utf-8"))["feature_set"]["ids"]
+CODE_CHECKPOINT = "a" * 40
 
 
 def _feature(seed: float = 1.0):
@@ -41,11 +44,51 @@ def _write_jsonl(path: Path, rows):
     path.write_text("".join(json.dumps(row, sort_keys=True) + "\n" for row in rows), encoding="utf-8")
 
 
+def _analyze_pair(
+    ray: Path,
+    strip: Path,
+    output: Path,
+    *,
+    feature_path: Path = thermal.POLICY_PATH,
+    code_checkpoint: str | None = None,
+):
+    checkpoint = code_checkpoint or os.environ.get("P7_W0_CODE_CHECKPOINT", CODE_CHECKPOINT)
+    return subject.analyze_td_a_pair(
+        ray,
+        strip,
+        output,
+        feature_ids=FEATURE_IDS,
+        feature_ids_path=feature_path,
+        code_checkpoint=checkpoint,
+    )
+
+
 def _cleanup_steps():
     return [
         {"name": "esphome", "ok": True, "detail": {"payload": {}}, "error": None},
         {"name": "ray120c", "ok": True, "detail": {"response": {}}, "error": None},
     ]
+
+
+def _retain_td_a_manifest_evidence_if_requested() -> None:
+    requested = os.environ.get("P7_W0_MANIFEST_EVIDENCE_DIR")
+    if not requested:
+        return
+    root = Path(requested)
+    root.mkdir(parents=True, exist_ok=False)
+    ray = _build_formal_td_a_run(root / "ray", source="ray")
+    strip = _build_formal_td_a_run(root / "strip", source="strip")
+    output = root / "combined"
+    report = _analyze_pair(ray, strip, output)
+    manifest = subject.validate_td_a_input_manifest(output / "input-manifest.json")
+    _write_json(root / "retained-evidence-summary.json", {
+        "status": report["status"],
+        "code_checkpoint": manifest["generated_by"]["code_checkpoint"],
+        "manifest_path": str((output / "input-manifest.json").resolve()),
+        "analysis_path": str((output / "td-a-combined-analysis.json").resolve()),
+        "summary_path": str((output / "EXPERIMENT_SUMMARY.md").resolve()),
+        "manifest_replay": "pass",
+    })
 
 
 def _build_formal_td_a_run(root: Path, *, source: str = "ray", settle: bool = True) -> Path:
@@ -342,7 +385,7 @@ class AnalyzeP7ThermalDiagnosticsTests(unittest.TestCase):
             strip = _build_formal_td_a_run(root / "strip", source="strip")
             output = root / "combined"
             envelope_before = hashlib.sha256(thermal.OPERATING_ENVELOPE_PATH.read_bytes()).hexdigest()
-            report = subject.analyze_td_a_pair(ray, strip, output, feature_ids=FEATURE_IDS)
+            report = _analyze_pair(ray, strip, output)
             envelope_after = hashlib.sha256(thermal.OPERATING_ENVELOPE_PATH.read_bytes()).hexdigest()
 
             self.assertEqual(report["status"], "td_a_pass")
@@ -355,8 +398,19 @@ class AnalyzeP7ThermalDiagnosticsTests(unittest.TestCase):
             self.assertLessEqual(report["physical_cr3_count"], 44)
             self.assertTrue((output / "td-a-combined-analysis.json").is_file())
             self.assertTrue((output / "EXPERIMENT_SUMMARY.md").is_file())
+            self.assertTrue((output / "input-manifest.json").is_file())
+            manifest = subject.validate_td_a_input_manifest(output / "input-manifest.json")
+            self.assertEqual(manifest["schema"], subject.TD_A_INPUT_MANIFEST_SCHEMA)
+            self.assertEqual(manifest["decision_owner"], "Planner")
+            self.assertEqual(
+                manifest["generated_by"]["code_checkpoint"],
+                os.environ.get("P7_W0_CODE_CHECKPOINT", CODE_CHECKPOINT),
+            )
+            self.assertEqual(Path(manifest["sources"]["ray"]["run_dir"]), ray.resolve())
+            self.assertEqual(Path(manifest["sources"]["strip"]["run_dir"]), strip.resolve())
             self.assertEqual(list(output.glob(".*.tmp-*")), [])
             self.assertEqual(envelope_before, envelope_after)
+            _retain_td_a_manifest_evidence_if_requested()
 
     def test_td_a_pair_cli_writes_combined_artifacts(self):
         with tempfile.TemporaryDirectory() as tempdir:
@@ -364,12 +418,43 @@ class AnalyzeP7ThermalDiagnosticsTests(unittest.TestCase):
             ray = _build_formal_td_a_run(root / "ray", source="ray")
             strip = _build_formal_td_a_run(root / "strip", source="strip")
             output = root / "combined"
-            self.assertEqual(subject.main([
-                str(ray), "--feature-ids", str(thermal.POLICY_PATH),
-                "--paired-run", str(strip), "--combined-output", str(output),
-            ]), 0)
+            with mock.patch("builtins.print") as print_mock:
+                self.assertEqual(subject.main([
+                    str(ray), "--feature-ids", str(thermal.POLICY_PATH),
+                    "--paired-run", str(strip), "--combined-output", str(output),
+                    "--code-checkpoint", os.environ.get("P7_W0_CODE_CHECKPOINT", CODE_CHECKPOINT),
+                ]), 0)
+            self.assertEqual([call.args[0] for call in print_mock.call_args_list], [
+                output / "td-a-combined-analysis.json",
+                output / "EXPERIMENT_SUMMARY.md",
+                output / "input-manifest.json",
+            ])
             self.assertTrue((output / "td-a-combined-analysis.json").is_file())
             self.assertTrue((output / "EXPERIMENT_SUMMARY.md").is_file())
+            self.assertTrue((output / "input-manifest.json").is_file())
+
+    def test_td_a_pair_cli_requires_explicit_code_checkpoint(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            ray = _build_formal_td_a_run(root / "ray", source="ray")
+            strip = _build_formal_td_a_run(root / "strip", source="strip")
+            with self.assertRaisesRegex(ValueError, "code-checkpoint"):
+                subject.main([
+                    str(ray), "--feature-ids", str(thermal.POLICY_PATH),
+                    "--paired-run", str(strip), "--combined-output", str(root / "combined"),
+                ])
+
+    def test_single_run_cli_remains_independent_of_paired_checkpoint(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            run = _build_formal_td_a_run(root / "ray", source="ray")
+            self.assertEqual(subject.main([
+                str(run), "--feature-ids", str(thermal.POLICY_PATH),
+            ]), 0)
+            analysis = json.loads((run / "analysis.json").read_text(encoding="utf-8"))
+            self.assertEqual(analysis["experiment_id"], thermal.TD_A)
+            self.assertEqual(analysis["source_id"], "ray")
+            self.assertEqual(analysis["wrapper_contract"], "pass")
 
     def test_td_a_pair_finalizer_preserves_legal_nonsettle(self):
         for unsettled_source in ("ray", "strip"):
@@ -381,9 +466,7 @@ class AnalyzeP7ThermalDiagnosticsTests(unittest.TestCase):
                 strip = _build_formal_td_a_run(
                     root / "strip", source="strip", settle=unsettled_source != "strip",
                 )
-                report = subject.analyze_td_a_pair(
-                    ray, strip, root / "combined", feature_ids=FEATURE_IDS,
-                )
+                report = _analyze_pair(ray, strip, root / "combined")
                 self.assertEqual(report["status"], "settling_not_demonstrated_by_600")
                 self.assertIsNone(report["t_formal_provisional_s"])
                 self.assertIsNone(report[f"t_settle_{unsettled_source}_s"])
@@ -395,9 +478,9 @@ class AnalyzeP7ThermalDiagnosticsTests(unittest.TestCase):
             ray_b = _build_formal_td_a_run(root / "ray-b", source="ray")
             strip = _build_formal_td_a_run(root / "strip", source="strip")
             with self.assertRaisesRegex(ValueError, "Ray first and strip second"):
-                subject.analyze_td_a_pair(ray_a, ray_b, root / "duplicate", feature_ids=FEATURE_IDS)
+                _analyze_pair(ray_a, ray_b, root / "duplicate")
             with self.assertRaisesRegex(ValueError, "Ray first and strip second"):
-                subject.analyze_td_a_pair(strip, ray_a, root / "reversed", feature_ids=FEATURE_IDS)
+                _analyze_pair(strip, ray_a, root / "reversed")
 
         with tempfile.TemporaryDirectory() as tempdir:
             root = Path(tempdir)
@@ -411,7 +494,7 @@ class AnalyzeP7ThermalDiagnosticsTests(unittest.TestCase):
             strip_plan["inputs"][input_name]["path"] = str(alternate)
             _write_json(strip / "plan.json", strip_plan)
             with self.assertRaisesRegex(ValueError, "input path/hash mismatch"):
-                subject.analyze_td_a_pair(ray, strip, root / "mismatch", feature_ids=FEATURE_IDS)
+                _analyze_pair(ray, strip, root / "mismatch")
 
     def test_td_a_pair_finalizer_rejects_capture_settings_timing_and_exposure_tampering(self):
         def mutate_capture(root: Path, mutation):
@@ -440,7 +523,132 @@ class AnalyzeP7ThermalDiagnosticsTests(unittest.TestCase):
                 strip = _build_formal_td_a_run(root / "strip", source="strip")
                 mutation(strip)
                 with self.assertRaises(ValueError):
-                    subject.analyze_td_a_pair(ray, strip, root / "combined", feature_ids=FEATURE_IDS)
+                    _analyze_pair(ray, strip, root / "combined")
+
+    def test_td_a_input_manifest_rejects_manifest_owner_and_hash_tampering(self):
+        cases = {
+            "unknown key": lambda value: value.__setitem__("unknown", True),
+            "missing key": lambda value: value.pop("timing_contract"),
+            "wrong schema": lambda value: value.__setitem__("schema", "wrong"),
+            "wrong owner": lambda value: value.__setitem__("decision_owner", "Executor"),
+            "empty checkpoint": lambda value: value["generated_by"].__setitem__("code_checkpoint", ""),
+            "checkpoint shape": lambda value: value["generated_by"].__setitem__("code_checkpoint", "not-a-commit"),
+            "hash one-character drift": lambda value: value["sources"]["ray"].__setitem__(
+                "plan_sha256",
+                ("0" if value["sources"]["ray"]["plan_sha256"][0] != "0" else "1")
+                + value["sources"]["ray"]["plan_sha256"][1:],
+            ),
+            "source reversed": lambda value: value["sources"].update(
+                ray=value["sources"]["strip"], strip=value["sources"]["ray"],
+            ),
+            "source duplicate": lambda value: value["sources"].__setitem__(
+                "strip", dict(value["sources"]["ray"]),
+            ),
+            "output hash": lambda value: value["outputs"]["EXPERIMENT_SUMMARY.md"].__setitem__(
+                "sha256", "f" * 64,
+            ),
+            "generated unknown": lambda value: value["generated_by"].__setitem__("unknown", True),
+            "source missing": lambda value: value["sources"]["ray"].pop("run_sha256"),
+        }
+        for label, mutation in cases.items():
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as tempdir:
+                root = Path(tempdir)
+                ray = _build_formal_td_a_run(root / "ray", source="ray")
+                strip = _build_formal_td_a_run(root / "strip", source="strip")
+                output = root / "combined"
+                _analyze_pair(ray, strip, output)
+                manifest_path = output / "input-manifest.json"
+                manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+                mutation(manifest)
+                _write_json(manifest_path, manifest)
+                with self.assertRaises(ValueError):
+                    subject.validate_td_a_input_manifest(manifest_path)
+
+    def test_td_a_input_manifest_rejects_retained_artifact_byte_tampering(self):
+        def tamper_plan(ray: Path, _strip: Path, _feature: Path, output: Path):
+            (ray / "plan.json").write_bytes((ray / "plan.json").read_bytes() + b" ")
+
+        def tamper_run(_ray: Path, strip: Path, _feature: Path, _output: Path):
+            (strip / "run.json").write_bytes((strip / "run.json").read_bytes() + b" ")
+
+        def tamper_feature(_ray: Path, _strip: Path, feature: Path, _output: Path):
+            feature.write_bytes(feature.read_bytes() + b" ")
+
+        def tamper_analysis(_ray: Path, _strip: Path, _feature: Path, output: Path):
+            (output / "td-a-combined-analysis.json").write_bytes(
+                (output / "td-a-combined-analysis.json").read_bytes() + b" "
+            )
+
+        def tamper_summary(_ray: Path, _strip: Path, _feature: Path, output: Path):
+            (output / "EXPERIMENT_SUMMARY.md").write_text("tampered\n", encoding="utf-8")
+
+        for label, mutation in {
+            "plan": tamper_plan,
+            "run": tamper_run,
+            "feature": tamper_feature,
+            "combined analysis": tamper_analysis,
+            "summary": tamper_summary,
+        }.items():
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as tempdir:
+                root = Path(tempdir)
+                ray = _build_formal_td_a_run(root / "ray", source="ray")
+                strip = _build_formal_td_a_run(root / "strip", source="strip")
+                if label == "feature":
+                    feature = root / "feature-ids.json"
+                    shutil.copyfile(thermal.POLICY_PATH, feature)
+                    feature_reference = {
+                        "path": str(feature.resolve()),
+                        "sha256": hashlib.sha256(feature.read_bytes()).hexdigest(),
+                    }
+                    for run_root in (ray, strip):
+                        plan = json.loads((run_root / "plan.json").read_text(encoding="utf-8"))
+                        plan["inputs"]["policy"] = feature_reference
+                        _write_json(run_root / "plan.json", plan)
+                else:
+                    feature = thermal.POLICY_PATH
+                output = root / "combined"
+                _analyze_pair(ray, strip, output, feature_path=feature)
+                mutation(ray, strip, feature, output)
+                with self.assertRaises(ValueError):
+                    subject.validate_td_a_input_manifest(output / "input-manifest.json")
+
+    def test_td_a_pair_finalizer_fails_closed_for_existing_output_and_atomic_write_failure(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            ray = _build_formal_td_a_run(root / "ray", source="ray")
+            strip = _build_formal_td_a_run(root / "strip", source="strip")
+            existing = root / "existing"
+            existing.mkdir()
+            marker = existing / "user-evidence.txt"
+            marker.write_text("retain\n", encoding="utf-8")
+            with self.assertRaises(FileExistsError):
+                _analyze_pair(ray, strip, existing)
+            self.assertEqual(marker.read_text(encoding="utf-8"), "retain\n")
+
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            ray = _build_formal_td_a_run(root / "ray", source="ray")
+            strip = _build_formal_td_a_run(root / "strip", source="strip")
+            output = root / "combined"
+            envelope_before = thermal.OPERATING_ENVELOPE_PATH.read_bytes()
+            original_write = subject._write_text_atomic
+            writes = []
+
+            def fail_manifest(path, value):
+                writes.append(Path(path).name)
+                if Path(path).name == "input-manifest.json":
+                    raise OSError("synthetic manifest write failure")
+                return original_write(path, value)
+
+            with mock.patch.object(subject, "_write_text_atomic", side_effect=fail_manifest):
+                with self.assertRaisesRegex(OSError, "synthetic manifest"):
+                    _analyze_pair(ray, strip, output)
+            self.assertEqual(writes, [
+                "td-a-combined-analysis.json", "EXPERIMENT_SUMMARY.md", "input-manifest.json",
+            ])
+            self.assertFalse(output.exists())
+            self.assertEqual(list(root.glob("**/.*.tmp-*")), [])
+            self.assertEqual(thermal.OPERATING_ENVELOPE_PATH.read_bytes(), envelope_before)
 
     def test_settle_never_returns_600(self):
         stable = {str(cycle): {point: [_feature()] for point in thermal.TIMED_POINTS} for cycle in range(3)}
