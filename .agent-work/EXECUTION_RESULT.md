@@ -1140,3 +1140,28 @@ preflight、网络请求、source command、camera capture、Ray/ESPHome 或 `al
 状态：`human_authorization_received_pending_planner_plan_update`。
 请求 Planner：归档当前等待授权计划并重写 active `PLAN.md`，明确记录上述授权后再交还 Executor；在此之前
 不得启动 TD-A 实拍。副作用审计：`device/network/.env/remote_api/camera/ray/esphome/all_off/new_real_cr3/heartbeat = 0`。
+
+## 20. TD-A authorized execution started: Ray run
+
+执行日期：2026-07-21。Planner 已将 active plan 更新为 `execute_authorized_waiting_for_executor`，Human
+授权可由 Executor 直接消费。本轮完成正式 preflight：remote `/health`、认证 `/v1/config`、Ray node
+config/readback、ESPHome `bedroom-rgbww-strip` identity/generation/zero readback，以及现有
+`all_off` 和独立双源 zero readback 均通过。remote settings 为 RAW、ISO `100`、非空 aperture；未打印凭据。
+
+首次 `nohup` launcher 没有留下 wrapper state/run/log，PID 立即退出；该空启动目录未产生 command、capture
+或 CR3，保留为启动证据，未据此重跑完整实验。随后只启动一个正式 wrapper-owned Ray run：
+
+```text
+run_dir = /Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/p7-td-a-ray-debug
+wrapper_pid = 90615
+child_pid = 90626
+wrapper_state = /Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/p7-td-a-ray-debug.wrapper-state.json
+runner_log = /Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/p7-td-a-ray-debug.runner.log
+wrapper_log = /Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/p7-td-a-ray-debug.wrapper.log
+started_at = 2026-07-21T21:21:36Z
+```
+
+三分钟健康检查通过：wrapper/child 已脱离当前 TTY，状态仍为 `running`，无 `failure.json`；run ledger
+持续落盘，当前 `ambient=1 / formal=0 / physical_cr3=1`，CR3 非空且 capture settings provenance 完整。
+按长任务规则已为当前 thread 创建一次性 10 分钟 heartbeat，恢复提示包含上述目录、PID、日志与失败/cleanup
+检查规则。当前 goal 状态为等待后台 Ray run 完成，未启动 strip。
