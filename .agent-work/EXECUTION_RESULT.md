@@ -627,3 +627,149 @@ CR3 = 0
 E0 已满足 active PLAN 第 5 节，按计划不在此交回 Planner；下一步直接执行第 6 节实机前离线进入门，
 再消费 PLAN 已记录的 exact Human TD-A 授权。TD-B/C、sentinel、remaining、boundary、holdout、P8、
 firmware 和 remote deployment 继续锁定。
+
+## 14. TD-A 实机进入与 Ray wrapper hard-invalid
+
+**执行结果：** `TD-A-RAY-HARD-INVALID / blocked_for_planner_review`
+
+**PLAN 所有权：** 本轮未修改 `.agent-work/PLAN.md`。
+
+### 14.1 第 6 节离线进入门
+
+全部 accepted commit、三份 Planner 归档、第 3 节 frozen input、R1 retained plan/commands 与 R0D
+validation hash 均一致；operating-envelope 四个 settle 字段仍为 `null`。
+
+离线进入根目录：
+
+```text
+/Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/p7-td-a-entry-20260721-040137
+```
+
+```text
+ray dry plan SHA-256   = 779c39152fa4b34e957c85403f4671195aafd350e1795d2367f477457a682d0f
+strip dry plan SHA-256 = 05e791f97cbd032bea087c9398f6c61cb539b4305edfcba81f0162bf1b6cc6dc
+offline-entry.json SHA-256 = 0eafb358b69936390e65535aba9ebfcf51572345f01161a42a7952362085ca2f
+focused entry = 67/67 pass
+```
+
+两个 dry plan 均为 exact TD-A、3 cycles、`60/120/300/600`、12 formal、3 ambient、cap 22；
+Ray shutter 为 `1/5000`、strip 为 `1/320`；`exposure_setup_required=[]`，无 `ray-h120-s50`，
+timed-cycle auto-exposure false。计划中的两个实机路径在进入时均不存在。
+
+### 14.2 实机 preflight
+
+未发现其他 calibration、gphoto2、相机、Ray、ESPHome 或 thermal wrapper process。随后按 PLAN 消费
+既有 Human 授权执行 preflight：
+
+```text
+remote health = pass
+remote v2 capability = remote_v2_capture_timing_v1
+resolved ISO/aperture/format = 100 / implicit auto / RAW
+Ray before/off readback = reachable, final intensity 0
+strip identity = bedroom-rgbww-strip / E0:8C:FE:63:C9:40
+strip generation = 2 -> 3
+strip five channels = all zero
+Python cleanup = pass
+shell cleanup exit = 0 / pass
+capture = 0
+nonzero probe = 0
+```
+
+```text
+device-preflight.json SHA-256 = d9cfe1183233084f1dbbad932dfb82da9d066a1693962f05f8b7bd6cd6d0b57c
+preflight Python cleanup SHA-256 = 5b73d5c1ef2442ca276651eecff35925b58c49eeb910064e82c34f0d946577ec
+preflight shell cleanup SHA-256 = 6a70ab3d3bc51d12c14e3b2ac3270c29d78683445a920e68309817dc6755d2a5
+```
+
+### 14.3 Ray wrapper runtime failure
+
+Ray 通过 OS-owned Terminal 启动：
+
+```text
+Terminal window id = 164034
+tab = 1
+TTY = ttys002
+wrapper PID = 84031
+child PID = 84267
+run dir = /Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/p7-td-a-ray-20260721-040137
+started_at = 2026-07-21T04:07:38.770885+00:00
+```
+
+正式 wrapper 在 child 启动后第一次写 `wrapper-state.json` 时失败：
+
+```text
+write_json:2: read-only variable: status
+```
+
+根因是 `tmp/run-p7-thermal-diagnostics.zsh` 的 `write_json()` 使用 `local status=...`；`status` 是
+zsh 只读特殊变量。`set -e` 使 wrapper 进入 EXIT finalizer 并等待 child，finalizer 后续同样使用
+`local ... status`，因此 completion evidence 必然再次失败：
+
+```text
+finalize:12: read-only variable: status
+```
+
+该问题未被 E0 的 `zsh -n` 和静态 wrapper-source assertions 触发；正式 runtime round-trip 并未在
+active PLAN E0 fixture 中执行。
+
+发现时 child 仍在第一次 `cold_proxy_wait_s=1800`，尚未发出非零 command 或 capture。Executor 对已
+核对 PID 的 child 发送 TERM；结果：
+
+```text
+child exit = 143
+formal = 0
+ambient = 0
+physical CR3 = 0
+commands = 0
+captures = 0
+runner log = empty
+strip run = not created
+automatic retry = false
+```
+
+wrapper 的 shell cleanup 仍执行成功：`all-off-shell.exit-status.txt=0`，ESPHome/Ray 两步均
+`ok=true`。由于 Python 被 TERM 且 wrapper completion writer 已损坏，本 run 按预期缺少
+`all-off-python.json`、`wrapper-result.json` 和 `wrapper-state.json`，`run.json` 保留
+`status=running / cleanup=pending`，不能被 analyzer 接受。
+
+### 14.4 独立 recovery 与保留证据
+
+Executor 在 child/wrapper 均退出后调用独立 recovery all-off，并再次做 generation-bearing readback：
+
+```text
+recovery status = pass
+strip generation = 10 -> 11
+strip five channels = all zero
+strip identity = bedroom-rgbww-strip / E0:8C:FE:63:C9:40
+Ray = CCT 5600 / GM 100 / intensity 0
+```
+
+```text
+recovery-all-off.json SHA-256 = 98f083771475c80b09465e82ee7fe01ab0a5bc999e5b8397ed01108327d28c8f
+wrapper log SHA-256 = bc0e618f19ed2a1cc0956e3efb1bf7ce6bfb7d0e5a898deb0ae69e9f201552ad
+shell cleanup SHA-256 = e41c9caa98137b314a88d55a1ec276aca40044e00a350c7f39b46fd236179391
+Ray plan SHA-256 = dcbbc250f4a48311ebabbb4ff0b4ec5c77d1631708d49eaa522fc447d2d78f77
+Ray run SHA-256 = 37f2b0e02e47f06e39fe1d69c6b4b72aa14a74dcf934e713b7b5624b195f2eed
+Ray isolation SHA-256 = 6391db7b3be69b3a4119a4773d644549fe6e50b318252f6fdc65db08c031baea
+```
+
+汇总 artifact：
+
+```text
+/Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/
+  p7-td-a-entry-20260721-040137/ray-hard-invalid-summary.json
+```
+
+### 14.5 Planner 决策请求
+
+按 active PLAN 第 8.3/12 节，Ray wrapper hard-invalid 后不得启动 strip、不得自动 retry。本轮已停止。
+需要 Planner：
+
+1. 归档此 zero-capture Ray valid-failure；
+2. 授权一个纯离线 wrapper runtime fix，至少把两个 `status` local 改为非保留名，并增加真实 zsh
+   runtime success/failure round-trip，不能只保留 `zsh -n`；
+3. 明确本次已执行 preflight 且创建正式 Ray run/child、但无非零 command/capture 的失败，是否已消费
+   Human 的一次性 TD-A run authorization；若允许修复后重试，必须在新 PLAN 中明确写出，不由
+   Executor自行解释；
+4. 在 Planner 新决定前继续锁定 strip TD-A、paired finalizer、TD-B/C、sentinel、remaining、
+   boundary、holdout、Gate-6、P8、firmware 和 remote deployment。
