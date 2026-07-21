@@ -554,3 +554,76 @@ physical CR3 = 0
 Human 的 exact TD-A 一次性授权未被消费；TD-A Ray/strip 实机 run、wrapper、PID、Terminal task
 和 heartbeat 均未创建。R0D 按计划停在 Planner 验收门；不得自动进入 TD-A、TD-B、TD-C、
 sentinel、remaining 9、boundary、holdout、Gate-6 或 P8。
+
+## 13. P7 TD-A E0 production completion gate
+
+**执行结果：** `td_a_e0_pass_continuing_to_authorized_device_entry`
+
+**PLAN 所有权：** 本轮未修改 `.agent-work/PLAN.md`；E0 执行时只读 SHA-256 为
+`805053e7dafb42f16f896e1b1d68d76c9d66be222676bd97a51f0a3b1b925e47`。
+
+**实现提交：** `d5cc596521f938c4f353a7d7a498f6f7be6453f8 feat(p7): finalize td-a completion evidence`
+
+### 13.1 单源 completion evidence replay
+
+- `analyze_p7_thermal_diagnostics` 现在解析 `all-off-python.json`，要求 exact ESPHome/Ray 两步均
+  `ok=true`、无 error 且 detail 可审计；解析 shell `all_off --json` 的 exact 两步结果。
+- 独立要求 `run.json.cleanup=pass`，并重放 `wrapper-result.json` 的 schema、run owner、child/shell/
+  wrapper exit `0`、signal `null` 与正 PID。
+- 独立要求 `child-exit-status.txt=0`、`all-off-shell.exit-status.txt=0`；缺失、空 JSON、非零、
+  schema drift 或任一灯 cleanup 未知均 fail closed。
+- 单源报告新增 `source_id`、`cleanup_contract=pass`、`wrapper_contract=pass`，因此 analyzer 在 shell
+  wrapper 完整退出前不能产出通过结果。
+
+### 13.2 双源 TD-A finalizer
+
+- 同一 analyzer module 新增 `analyze_td_a_pair(ray_run, strip_run, output_dir, feature_ids=...)` 和 CLI
+  `--paired-run STRIP_RUN --combined-output OUTPUT_DIR`，没有建立第二套 analyzer。
+- finalizer 对两个 run 重新执行完整单源 replay，要求 positional Ray owner + paired strip owner、exact
+  TD-A、相同 frozen input path/hash 与 timing contract。
+- 每源要求 12 formal、3 ambient、physical `<=22`、Tier A/B、零 NPY、capture/timing/covariate/
+  isolation/cleanup/wrapper 全 pass；合计要求 24 formal、6 ambient、physical `<=44`。
+- 双源 settle 均存在时写 `td_a_pass` 和 `max(ray,strip)`；任一合法 non-settle 时写
+  `settling_not_demonstrated_by_600` 且 provisional 为 `null`。600 仍为 validation-only。
+- 原子写入新的 `td-a-combined-analysis.json` 与 `EXPERIMENT_SUMMARY.md`；未生成或覆盖默认
+  `config/hsi/p7-operating-envelope-v1.json`。
+
+### 13.3 验证
+
+验证根目录：
+
+```text
+/Volumes/4T/temp/rgbww-optimizer/p7-td-a-e0
+```
+
+```text
+focused = 67/67 pass, 1.085 s
+focused log SHA-256 = b11bfb8d723a4b5b7f79e53a7958d7504d9ae9be754f68aa824dd3b03e5c9e4b
+full suite = 486/486 pass, 110.772 s
+full log SHA-256 = 1031580bd1663c93627f73251fe61f4f9b37221edb8837a4bec2a6634de8496f
+compileall = pass
+all tmp/*.zsh syntax = pass
+git diff --check = pass
+CodeGraph sync = pass / already up to date
+```
+
+`validation-summary.json` 位于上述目录；默认 operating envelope SHA-256 仍为
+`d553a32fdb5ad0bba1fcfc1dbee4cc2e96cc8ffa151a289de810cd55c316fc25`。
+
+### 13.4 E0 零设备计数与连续推进
+
+```text
+device = 0
+network = 0
+.env = 0
+remote API = 0
+camera = 0
+Ray = 0
+ESPHome = 0
+all_off = 0
+CR3 = 0
+```
+
+E0 已满足 active PLAN 第 5 节，按计划不在此交回 Planner；下一步直接执行第 6 节实机前离线进入门，
+再消费 PLAN 已记录的 exact Human TD-A 授权。TD-B/C、sentinel、remaining、boundary、holdout、P8、
+firmware 和 remote deployment 继续锁定。
