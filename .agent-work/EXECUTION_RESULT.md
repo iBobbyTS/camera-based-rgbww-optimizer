@@ -884,3 +884,172 @@ TD-B / TD-C / sentinel / remaining / boundary / holdout / Gate-6 / P8 = locked
 
 已到达 active PLAN 唯一 Planner stop。下一步仅允许 Planner 验收；Executor 不执行 preflight、Ray、
 strip、capture、`all_off` probe 或 TD-A retry。
+
+## 16. P7 TD-A Cold Settling 授权执行（进行中）
+
+**当前结果：** `ray_run_running_waiting_for_sparse_heartbeat`
+
+**PLAN 所有权：** Executor 未修改 `.agent-work/PLAN.md`；本轮只读 SHA-256 为
+`f3df0e06b45de7fa254cae7e3313f17e85afc30ae01dfae94e93f01291a42ff0`。
+
+### 16.1 离线进入门
+
+```text
+entry = /Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/p7-td-a-entry-20260721-150200
+offline-entry.json sha256 = 84fe544f891d30494ee3304dfca31c0d108d59f6fe93bb42d4d40631f9218cd5
+ray dry plan sha256 = 1a9874bde3c94afb4c0e1fb2b60179353ccbb4b6bf0c7928abb171f9487f5fe3
+strip dry plan sha256 = ec01fff713eac4480493a92a0b459d7ac96655b7ab34949f8b9017be9bc99b76
+focused thermal = 48/48 pass
+wrapper syntax = pass
+git diff --check = pass
+```
+
+- accepted commits `3cbc72a`、`d5cc596`、`960484e`、`1c592c9` 均存在；
+- production wrapper SHA-256 为
+  `4f776135b18df57897011d6c37f7683768d772cd5a9ee7f73c07f2ffae0d7dfb`；
+- frozen input hash、R1 retained plan/commands、W0 validation 和 operating-envelope hash 全部一致；
+- operating-envelope 四个 settle/formal 字段仍为 `null`；
+- 旧失败 run `p7-td-a-ray-20260721-040137` 已只读保留，未复用；
+- 没有其他 calibration、gphoto2、camera、Ray、ESPHome 或 thermal wrapper process；
+- 新 Ray、strip、combined path 在进入时均不存在；
+- 两个 dry plan 均为 exact TD-A、3 cycles、`60/120/300/600`、12 formal、3 ambient、physical cap
+  22、cold proxy 1800 秒；Ray shutter 仅 `1/5000`，strip 仅 `1/320`，
+  `exposure_setup_required=[]`，无 `ray-h120-s50`。
+
+### 16.2 实机 preflight
+
+```text
+device-preflight.json sha256 = 9cbeff9c5d64bb74020ce7e447547b2f2fd54532f2d9c0a69cc8c812fd483b50
+preflight Python cleanup sha256 = 48b4b4d46ceb55f737f94e00670f8794f032d96dfe613dfe43de3a7fe17a5670
+preflight shell cleanup sha256 = bb9ad3719f4e284e0817d02e4145596c054e8660bd433466d56130b575da8956
+shell cleanup exit = 0
+```
+
+- remote health/config 通过，v2 capability 为 `remote_v2_capture_timing_v1`；
+- resolved settings 为 ISO `100`、aperture `implicit auto`、format `RAW`；
+- Ray independent readback 为 CCT `5600` / GM `100` / intensity `0`；
+- strip identity 为 `bedroom-rgbww-strip` / `E0:8C:FE:63:C9:40`，generation `2 -> 3`，五通道全零；
+- capture `0`、nonzero probe `0`，Python/shell cleanup 均通过。
+
+### 16.3 Ray 长跑与 heartbeat
+
+```text
+run = /Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/p7-td-a-ray-20260721-150200
+Terminal window = 159069
+TTY = ttys002
+wrapper PID = 30196
+child PID = 30379
+PGID = 30195
+started_at = 2026-07-21T15:06:27Z
+runner log = /Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/p7-td-a-ray-20260721-150200.runner.log
+wrapper log = /Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/p7-td-a-ray-20260721-150200.wrapper.log
+wrapper state = /Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/p7-td-a-ray-20260721-150200.wrapper-state.json
+```
+
+约 3 分钟健康检查：wrapper state `running`，PID/PPID/PGID/TTY ownership 一致，进程已由独立
+Terminal 持有，没有 `failure.json`。当前 `1 ambient / 0 formal / 1 physical`，一张 CR3 非空；仍在
+首次 cold proxy，非零 source command 尚未成功发送，因此 Human 授权在该健康点仍未消费。
+
+已创建当前同一 task 的 sparse heartbeat：
+
+```text
+automation_id = p7-td-a-ray
+target_thread = 019f71b5-53fa-7f41-a15c-7335051aa944
+schedule = 40 minutes
+estimated_next_run = 2026-07-21T15:52:51Z
+estimated_ray_remaining = approximately 115 minutes at health check
+```
+
+下一次恢复先删除该 heartbeat；仍运行则按实际进度重建单次 heartbeat，不短轮询。失败时审计双
+cleanup 并按需 independent recovery，禁止自动重跑或启动 strip；Ray 结构合法完成后才运行单源
+analyzer 并继续唯一 strip run。TD-B 及全部后续阶段继续锁定。
+
+### 16.4 Ray hard-invalid：首次 t60 timing miss
+
+heartbeat `p7-td-a-ray` 已在恢复时删除，没有残留重复调度。Ray wrapper 在
+`2026-07-21T15:38:35Z` 完整退出：
+
+```text
+run status = failed
+failure = RuntimeError: missed timing for 001-ray-a-t60
+wrapper status = child_failed
+child exit = 1
+shell cleanup exit = 0
+wrapper exit = 1
+residual wrapper/child process = 0
+```
+
+首次非零 Ray command 于 `2026-07-21T15:37:20.829299+00:00` 成功发送并精确读回：
+
+```text
+H = 120
+S = 100
+INT raw = 1000 / 100%
+command hash = 88de37b2161c25b401d616a34c105199243afe21c15545fe5a27691adbdbc96c
+```
+
+因此 Human 的 exact `p7_td_a_cold_settling_v1` 一次性授权已在该时间点消费。禁止自动重跑 Ray、
+启动 strip 或复用本 run。
+
+失败 capture 的 remote-v2 timing evidence：
+
+```text
+capture = 001-ray-a-t60
+tier = tier_b
+status = accepted_best_effort_anchor
+requested elapsed = 60.0 s
+best_effort elapsed = 64.40580299403518 s
+timing error = +4.40580299403518 s
+allowed error = +/-2.0 s
+bridge relative delay = 4.402104535 s
+local round trip = 8.251924375072122 s
+```
+
+当前 scheduler 在 readback 后等到 nominal `t=60` 才发起 remote request；bridge 的曝光起点估计再晚
+约 `4.402 s`，因此实际 best-effort exposure-start 超出冻结误差。runner 按合同 fail closed，没有把
+附近帧静默替代为正式 t60。
+
+保留的物理事实：
+
+```text
+ambient retained ledger = 1
+formal retained ledger = 0
+run.json physical_cr3_count = 1
+actual nonempty physical CR3 on disk = 2
+failed t60 CR3 exists and is not entered into accepted capture ledger
+retained NPY = 0
+```
+
+关键 SHA-256：
+
+```text
+plan.json = ebbe657c4b9b11b2dee0f93dd9d38d8fbeffc9d577e3dfc30675677153943c88
+run.json = e15c7834c036f12df8c9a819f7d3ce33beda17323c88162f2928e4fe7f17a04f
+failure.json = a002378287807d353849048eabd40eace1a38ef25aba107d9838751358b81a91
+captures.jsonl = 6ea1676d27cfcc563aa70854ab1f3365de97f8cb7729d3d3c1c0eba8488d6563
+commands.jsonl = d2c969652cf83e17fbd555ff23f80459da49b63b5bf3b91ba8f37cc80862a039
+isolation-gates.jsonl = c7d83c1888e24628a62581d1cda3c823bbea640c4132344d38ea8d8bb7c43029
+all-off-python.json = cf9c45b3cc3d7c4a89f61653b5c57876020c4e87aab90ecfe365d09f8c35a1f4
+all-off-shell.json = 86ff1100dcb07dc5579079f6a7d22b81711e4655983e96b90d73df21c4a96427
+wrapper-result.json = 461e9f288859658da2d7571716673858c6bf6fb119ea76f3270a80344fe620a1
+failed t60 CR3 = 2c44295d5d949ef6f0b652b596173d2c177bb115e64f87efa061dc383b2c303c
+failed t60 sidecar = 168d7cf616d5f95d3ef4851c1288370fcb5beec3040b54663fb481592c488fef
+runner log = 7c2a11661c6e1b44804257e2e59cd4b12a86e085b45f7b06c7a624dfaf62868c
+```
+
+Python cleanup 与 shell cleanup 都记录两源 off 成功。由于失败后没有独立 Ray state readback，Executor
+额外执行一次 recovery all-off；结果：
+
+```text
+recovery-all-off.json sha256 = 7271ef39a4e245a58c280bb425fb0b96e50225662b5a17349aaa18ef2f1a8cb5
+strip identity = bedroom-rgbww-strip / E0:8C:FE:63:C9:40
+strip generation = 4 -> 5
+strip cw/ww/r/g/b = 0/0/0/0/0
+Ray readback = CCT 5600 / GM 100 / intensity 0
+recovery status = pass
+```
+
+**停止分支：** `TD-A-RAY-HARD-INVALID`。未运行单源 analyzer，未创建 strip run，未运行 paired
+finalizer，未执行 retry。需要 Planner 归档本次已消费授权的 timing hard-invalid，并制定仅离线的
+scheduler/remote timing 纠偏与新 Human 授权决策；TD-B/C、sentinel、remaining、boundary、holdout、
+Gate-6、P8、firmware、remote deployment 和默认安装继续锁定。
