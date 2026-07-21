@@ -171,6 +171,13 @@ analyzer replays those fields from the sidecar and verifies its CR3 owner.
 `absolute_exposure_start=false` remains explicit. This does not unlock TD-A or
 change any formal P7 gate.
 
+For the TD-A timing-v2 contract, a nominal 60/120/300/600-second slot is only
+a scheduler target. Finite Tier A/B observed elapsed estimates are retained,
+reported with their offsets, and used for chronology and settling summaries;
+there is no nominal-proximity acceptance gate. The estimate is best-effort,
+not absolute exposure-start truth, and a CR3 produced before a later timing
+validation failure remains in the physical ledger and failure evidence.
+
 Decode a CR3 into linear 16-bit camera RGB:
 
 ```bash

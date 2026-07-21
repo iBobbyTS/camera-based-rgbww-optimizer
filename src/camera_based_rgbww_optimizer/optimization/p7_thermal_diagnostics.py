@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -23,7 +24,21 @@ TD_C = "p7_td_c_balanced_source_comparison_v1"
 EXPERIMENT_IDS = (TD_A, TD_B, TD_C)
 TIMED_POINTS = (60, 120, 300, 600)
 SELECTABLE_SETTLE_POINTS = (60, 120, 300)
-TIMING_TOLERANCE_S = {60: 2.0, 120: 2.0, 300: 5.0, 600: 5.0}
+PLAN_SCHEMA_V1 = "p7_thermal_diagnostic_plan_v1"
+PLAN_SCHEMA_V2 = "p7_thermal_diagnostic_plan_v2"
+ANALYSIS_SCHEMA_V2 = "p7_thermal_diagnostic_analysis_v2"
+TIMING_CONTRACT_V2 = {
+    "name": "best_effort_gphoto2_observed_elapsed_v2",
+    "decision_owner": "Developer/Human",
+    "network_assumption": "wired_lan_latency_negligible_developer_decision",
+    "accepted_tiers": ["tier_a", "tier_b"],
+    "absolute_exposure_start_required": False,
+    "absolute_exposure_start": False,
+    "provenance": "best_effort_gphoto2_exposure_start_estimate",
+    "nominal_slot_semantics": "scheduler_target_only",
+    "acceptance_basis": "evidence_integrity_not_nominal_proximity",
+    "nominal_offset_gate": "none_developer_decision",
+}
 ACTUAL_EXPOSURE_START_PROVENANCE = "camera_adapter_actual_exposure_start_monotonic"
 CHANNELS = ("cw", "ww", "r", "g", "b")
 R1_RUN = Path(
@@ -206,7 +221,7 @@ def build_diagnostic_plan(
         "operating_envelope": file_reference(prerequisite_artifact),
     }
     plan = {
-        "schema": "p7_thermal_diagnostic_plan_v1",
+        "schema": PLAN_SCHEMA_V2,
         "status": "execute_authorized" if for_execution else "dry_run_complete_device_locked",
         "experiment_id": experiment_id,
         "variant": variant,
@@ -226,15 +241,7 @@ def build_diagnostic_plan(
             "human_authorization_verified": bool(for_execution and human_authorization == experiment_id),
             "remote_v2_capability": timing_capability,
         },
-        "timing_contract": {
-            "name": "best_effort_gphoto2_v1",
-            "decision_owner": "Developer/Human",
-            "network_assumption": "wired_lan_latency_negligible_developer_decision",
-            "accepted_tiers": ["tier_a", "tier_b"],
-            "absolute_exposure_start_required": False,
-            "absolute_exposure_start": False,
-            "provenance": "best_effort_gphoto2_exposure_start_estimate",
-        },
+        "timing_contract": dict(TIMING_CONTRACT_V2),
         "cold_proxy": envelope["cold_proxy"],
         "cleanup": {"python_finally": "required", "shell_trap": "EXIT_INT_TERM_HUP_required"},
         "offline_contract": {"env_calls": 0, "network_calls": 0, "device_calls": 0, "all_off_calls": 0},
@@ -291,7 +298,7 @@ def _step(
         "command": command,
         "exact_command_hash": canonical_sha256(command),
         "requested_elapsed_s": elapsed,
-        "timing_tolerance_s": None if elapsed is None else TIMING_TOLERANCE_S.get(elapsed, 5.0),
+        "timing_acceptance": "observed_elapsed_record_only" if elapsed is not None else None,
         "timing_status": "resolved" if elapsed is not None else "deferred",
         "formal_measurement": True,
         "capture_role": "formal",
@@ -304,7 +311,7 @@ def _ambient_step(index: int, *, position: str, **extra: Any) -> dict[str, Any]:
         "capture_id": f"{index:03d}-ambient-{position}",
         "source_id": "ambient", "state_id": "ambient",
         "command": None, "exact_command_hash": canonical_sha256({"strip": "off", "ray": "off"}),
-        "requested_elapsed_s": None, "timing_tolerance_s": None,
+        "requested_elapsed_s": None, "timing_acceptance": None,
         "timing_status": "diagnostic_not_timed", "formal_measurement": False,
         "capture_role": "ambient", "ambient_position": position,
         **extra,
@@ -405,10 +412,10 @@ def _td_c_plan(variant: str, commands: Mapping[str, Mapping[str, int]], envelope
 
 @dataclass(frozen=True)
 class TimedCaptureResult:
-    requested_elapsed_s: float
-    actual_elapsed_s: float
-    timing_error_s: float
-    timing_valid: bool
+    nominal_slot_s: float
+    best_effort_exposure_start_elapsed_s: float
+    timing_offset_s: float
+    timing_evidence_status: str
     capture: Mapping[str, Any]
 
 
@@ -430,14 +437,24 @@ def run_timed_schedule(
         if remaining > 0:
             sleep_fn(remaining)
         capture = dict(capture_fn(int(requested)))
-        if capture.get("exposure_start_provenance") != ACTUAL_EXPOSURE_START_PROVENANCE:
-            raise ValueError("timed capture lacks camera-adapter actual exposure-start provenance")
-        if "exposure_start_monotonic_s" not in capture:
-            raise ValueError("timed capture lacks camera-adapter actual exposure-start timestamp")
-        actual = float(capture["exposure_start_monotonic_s"]) - owner_start
-        error = actual - float(requested)
-        tolerance = TIMING_TOLERANCE_S[int(requested)]
-        output.append(TimedCaptureResult(float(requested), actual, error, abs(error) <= tolerance, capture))
+        timing = capture.get("timing_evidence")
+        if not isinstance(timing, Mapping):
+            raise ValueError("timed capture lacks best-effort timing evidence")
+        observed = timing.get("best_effort_elapsed_s")
+        if (
+            timing.get("tier") not in TIMING_CONTRACT_V2["accepted_tiers"]
+            or timing.get("status") != "accepted_best_effort_anchor"
+            or timing.get("provenance") != TIMING_CONTRACT_V2["provenance"]
+            or isinstance(observed, bool)
+            or not isinstance(observed, (int, float))
+            or not math.isfinite(float(observed))
+            or float(observed) < 0
+        ):
+            raise ValueError("timed capture lacks accepted best-effort observed elapsed evidence")
+        offset = float(observed) - float(requested)
+        output.append(TimedCaptureResult(
+            float(requested), float(observed), offset, "accepted", capture,
+        ))
     return output
 
 

@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import argparse
 import copy
+import hashlib
 import json
+import math
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -73,8 +75,15 @@ def _resolve_remote_capture_settings(camera_backend: Any) -> tuple[Any, dict[str
 def validate_authorized_execution_plan(
     plan: Mapping[str, Any], *, camera_backend: Any | None = None,
 ) -> None:
-    if plan.get("schema") != "p7_thermal_diagnostic_plan_v1":
-        raise PermissionError("thermal diagnostic execution requires the frozen plan schema")
+    if plan.get("schema") != thermal.PLAN_SCHEMA_V2:
+        raise PermissionError("thermal diagnostic production execution requires plan schema v2")
+    if plan.get("timing_contract") != thermal.TIMING_CONTRACT_V2:
+        raise PermissionError("thermal diagnostic execution timing contract differs from frozen v2")
+    for step in plan.get("captures", []):
+        if "timing_tolerance_s" in step or "actual_elapsed_s" in step:
+            raise PermissionError("thermal diagnostic v2 plan contains legacy timing fields")
+        if step.get("formal_measurement") and step.get("timing_acceptance") != "observed_elapsed_record_only":
+            raise PermissionError("thermal diagnostic v2 plan lacks observed-elapsed acceptance semantics")
     experiment_id = plan.get("experiment_id")
     if plan.get("status") != "execute_authorized" or experiment_id not in thermal.EXPERIMENT_IDS:
         raise PermissionError("thermal diagnostic execution requires an exact authorized plan")
@@ -137,7 +146,7 @@ def execute_plan(
         raise FileExistsError(f"thermal run directory must be empty: {root}")
     _write_json(root / "plan.json", dict(plan))
     run = {
-        "schema": "p7_thermal_diagnostic_run_v1", "experiment_id": plan["experiment_id"],
+        "schema": "p7_thermal_diagnostic_run_v2", "experiment_id": plan["experiment_id"],
         "status": "running", "started_at": _utc_now(), "completed_formal": 0,
         "ambient_capture_count": 0, "physical_cr3_count": 0, "cleanup": "pending",
         "capture_settings_provenance": copy.deepcopy(plan["camera"].get("resolved_capture_settings")),
@@ -147,6 +156,8 @@ def execute_plan(
     session_start = monotonic_fn()
     previous_state: str | None = None
     previous_dwell: float | None = None
+    last_observed_by_group: dict[tuple[str, str, Any, Any], float] = {}
+    rejected_capture: dict[str, Any] | None = None
 
     def record_gate(gate_id: str) -> None:
         evidence = dict(both_off_gate_fn(gate_id))
@@ -158,29 +169,64 @@ def execute_plan(
         step: Mapping[str, Any], capture: Mapping[str, Any],
         *, owner_start: float | None,
     ) -> None:
+        nonlocal rejected_capture
+        physical = int(capture.get("physical_capture_count", 1))
+        if physical != 1:
+            raise RuntimeError("thermal timed/ambient capture must consume exactly one physical CR3")
+        raw_path_value = capture.get("saved_file") or (capture.get("capture") or {}).get("saved_file")
+        raw_path = Path(str(raw_path_value)) if raw_path_value else None
+        sidecar_value = capture.get("remote_metadata_path")
+        sidecar_path = Path(str(sidecar_value)) if sidecar_value else None
+        rejected_capture = {
+            "capture_id": step["capture_id"],
+            "rejection_stage": "post_capture_timing_validation",
+            "physical_capture_count": physical,
+            "cr3_path": None if raw_path is None else str(raw_path.resolve()),
+            "cr3_sha256": None if raw_path is None or not raw_path.is_file() else hashlib.sha256(raw_path.read_bytes()).hexdigest(),
+            "sidecar_path": None if sidecar_path is None else str(sidecar_path.resolve()),
+            "sidecar_sha256": None if sidecar_path is None or not sidecar_path.is_file() else hashlib.sha256(sidecar_path.read_bytes()).hexdigest(),
+        }
+        run["physical_cr3_count"] += physical
+        if run["physical_cr3_count"] > int(plan["budgets"]["physical_cr3_cap"]):
+            raise RuntimeError("thermal diagnostic physical CR3 cap exceeded")
+        _write_json(root / "run.json", run)
+
         timing = capture.get("timing_evidence")
         if not isinstance(timing, Mapping):
             raise RuntimeError("capture lacks remote v2 timing evidence")
-        if timing.get("provenance") != "best_effort_gphoto2_exposure_start_estimate":
+        if timing.get("provenance") != thermal.TIMING_CONTRACT_V2["provenance"]:
             raise RuntimeError("capture has unsupported timing provenance")
-        actual = timing.get("best_effort_elapsed_s") if step["formal_measurement"] else None
-        if actual is not None:
-            actual = float(actual)
-        requested = step.get("requested_elapsed_s")
-        error = None if requested is None or actual is None else actual - float(requested)
-        timing_valid = True if error is None else abs(error) <= float(step["timing_tolerance_s"])
-        if step["formal_measurement"] and timing.get("status") != "accepted_best_effort_anchor":
+        observed = timing.get("best_effort_elapsed_s") if step["formal_measurement"] else None
+        if step["formal_measurement"] and (
+            timing.get("tier") not in thermal.TIMING_CONTRACT_V2["accepted_tiers"]
+            or timing.get("status") != "accepted_best_effort_anchor"
+            or isinstance(observed, bool)
+            or not isinstance(observed, (int, float))
+            or not math.isfinite(float(observed))
+            or float(observed) < 0
+        ):
+            rejected_capture["timing_evidence"] = dict(timing)
             raise RuntimeError(f"formal capture lacks accepted Tier A/B timing: {step['capture_id']}")
+        nominal = step.get("requested_elapsed_s")
+        offset = None if nominal is None or observed is None else float(observed) - float(nominal)
+        if step["formal_measurement"]:
+            group = (str(step["source_id"]), str(step["state_id"]), step.get("cycle_index"), step.get("role"))
+            previous_observed = last_observed_by_group.get(group)
+            if previous_observed is not None and float(observed) <= previous_observed:
+                rejected_capture["timing_evidence"] = dict(timing)
+                raise RuntimeError(f"non-increasing observed chronology for {step['capture_id']}")
+            last_observed_by_group[group] = float(observed)
         record = {
             "capture_id": step["capture_id"], "source_id": step["source_id"],
             "state_id": step["state_id"], "capture_role": step["capture_role"],
             "formal_measurement": bool(step["formal_measurement"]), "plan_step": dict(step),
-            "requested_elapsed_s": requested, "actual_elapsed_s": actual,
-            "timing_error_s": error, "timing_valid": timing_valid, "capture": dict(capture),
+            "nominal_slot_s": nominal,
+            "best_effort_exposure_start_elapsed_s": observed,
+            "timing_offset_s": offset,
+            "timing_evidence_status": "accepted" if step["formal_measurement"] else "diagnostic_not_timed",
+            "capture": dict(capture),
             "timing_evidence": dict(timing),
         }
-        if not timing_valid:
-            raise RuntimeError(f"missed timing for {step['capture_id']}")
         if step["capture_role"] == "ambient" and not isinstance(capture.get("ambient_diagnostic"), Mapping):
             raise RuntimeError("ambient capture lacks ambient_diagnostic payload")
         covariate = dict(capture.get("thermal_covariates", {}))
@@ -196,12 +242,7 @@ def execute_plan(
             run["completed_formal"] += 1
         else:
             run["ambient_capture_count"] += 1
-        physical = int(capture.get("physical_capture_count", 1))
-        if physical != 1:
-            raise RuntimeError("thermal timed/ambient capture must consume exactly one physical CR3")
-        run["physical_cr3_count"] += physical
-        if run["physical_cr3_count"] > int(plan["budgets"]["physical_cr3_cap"]):
-            raise RuntimeError("thermal diagnostic physical CR3 cap exceeded")
+        rejected_capture = None
         _write_json(root / "run.json", run)
 
     try:
@@ -250,7 +291,10 @@ def execute_plan(
     except BaseException as exc:
         failure = exc
         run["status"] = "failed"
-        _write_json(root / "failure.json", {"type": type(exc).__name__, "message": str(exc), "at": _utc_now()})
+        failure_payload = {"type": type(exc).__name__, "message": str(exc), "at": _utc_now()}
+        if rejected_capture is not None:
+            failure_payload["rejected_capture"] = {**rejected_capture, "current_physical_cr3_count": run["physical_cr3_count"]}
+        _write_json(root / "failure.json", failure_payload)
     finally:
         try:
             cleanup = dict(cleanup_fn())

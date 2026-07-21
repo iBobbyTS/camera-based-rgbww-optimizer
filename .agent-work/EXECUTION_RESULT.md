@@ -1053,3 +1053,22 @@ recovery status = pass
 finalizer，未执行 retry。需要 Planner 归档本次已消费授权的 timing hard-invalid，并制定仅离线的
 scheduler/remote timing 纠偏与新 Human 授权决策；TD-B/C、sentinel、remaining、boundary、holdout、
 Gate-6、P8、firmware、remote deployment 和默认安装继续锁定。
+
+## 17. P7-TD-A-T0 observed-elapsed timing v2 离线纠偏
+
+执行日期：2026-07-21。严格遵守当前 `PLAN.md`：未访问设备、网络、`.env`、remote API、相机、Ray、
+ESPHome、真实 `all_off`，未创建新 CR3，未启动 heartbeat；`PLAN.md` 保持 Planner-owned 未修改。
+
+实现范围：
+
+- `p7_thermal_diagnostics.py` 新增共享 `PLAN_SCHEMA_V2`、`TIMING_CONTRACT_V2` 和 observed-elapsed 字段；nominal slot 仅为 scheduler target，不再生成 proximity tolerance。
+- `measure_p7_thermal_diagnostics.py` production execute 只接受 v2；Tier A/B finite observed elapsed 无论 offset 大小均保留；同 cycle chronology 非递增 fail closed。
+- capture adapter 返回非空 CR3 后立即增加 `physical_cr3_count`；后续 timing/quality 失败保留 capture/CR3/sidecar 路径与 hash 到 `failure.json.rejected_capture`。
+- `analyze_p7_thermal_diagnostics.py` 显式分派 v1 只读兼容与 v2 replay；v2 从 retained sidecar 重算 observed elapsed、offset、tier、provenance、chronology 和 slot summary，并在 paired 输出中生成 observed settle max。
+- `docs/README.md` 与 `.agents/skills/camera-based-rgbww-optimizer/SKILL.md` 已记录 nominal/observed 分离、无 proximity gate、best-effort 非绝对 timing 和 produced-CR3 accounting。
+
+验证：`focused=50/50`；`full suite=495/495 (127.257s)`；`compileall=pass`；全部 `tmp/*.zsh` 语法通过；`git diff --check=pass`；`codegraph sync=pass`。
+
+离线 artifact 根目录：`/Volumes/4T/temp/rgbww-optimizer/p7-td-a-timing-v2-offline/p7-td-a-t0-20260721-114338`。`retained-t60-forensic-replay.json` 独立重放得到 `64.40580299403518s`、offset `+4.40580299403518s`、Tier B，decision 为 `timing_evidence_would_be_accepted_under_v2`，旧 run 未修改且未作为 settling evidence。fake single/paired analyzer、summary、manifest 和 `validation-summary.json` 均已生成；设备/网络/`.env`/remote/camera/Ray/ESPHome/all_off/new CR3/heartbeat 副作用均为 0。
+
+代码与测试已完成 focused commit，等待 Planner 按 T0-PASS/T0-CONTRACT-FAIL 门验收；本轮不申请或消费新的实拍授权，不解锁 TD-A 实机、TD-B、TD-C 或后续阶段。

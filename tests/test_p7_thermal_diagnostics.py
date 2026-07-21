@@ -31,6 +31,20 @@ class _Clock:
         self.value += seconds
 
 
+def _minimal_covariate(step):
+    command = step["command"]
+    return subject.build_covariate_record(
+        source_id=step["source_id"], state_id=step["state_id"], command=command,
+        sequence_index=0, capture_order=0, source_order=0, monotonic_timestamp_ns=1,
+        wall_clock_timestamp="2026-07-21T00:00:00Z", session_elapsed_s=0,
+        source_on_elapsed_s=0, state_on_elapsed_s=0, off_duration_before_s=0,
+        previous_state_id=None, previous_state_dwell_s=None, shutter_seconds=0.01,
+        raw_black_levels=[512] * 4, raw_white_level=16383,
+        load_history={60: 0, 300: 0, 900: 0}, readback={},
+        curve=json.loads(subject.CURVE_PATH.read_text(encoding="utf-8")) if step["source_id"] == "strip" else None,
+    )
+
+
 class P7ThermalDiagnosticsTests(unittest.TestCase):
     def test_td_a_plan_freezes_exact_command_schedule_and_caps(self):
         plan = subject.build_diagnostic_plan(subject.TD_A, source="strip")
@@ -44,7 +58,8 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
         self.assertTrue(all(step["exact_command_hash"] == subject.canonical_sha256(step["command"]) for step in formal))
         self.assertTrue(all(plan["hard_locks"].values()))
         self.assertEqual(plan["offline_contract"], {"env_calls": 0, "network_calls": 0, "device_calls": 0, "all_off_calls": 0})
-        self.assertEqual(plan["timing_contract"]["name"], "best_effort_gphoto2_v1")
+        self.assertEqual(plan["schema"], subject.PLAN_SCHEMA_V2)
+        self.assertEqual(plan["timing_contract"]["name"], "best_effort_gphoto2_observed_elapsed_v2")
         self.assertFalse(plan["timing_contract"]["absolute_exposure_start"])
 
     def test_shutter_ledgers_are_scoped_to_exact_experiment_and_source(self):
@@ -101,20 +116,20 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
         with self.assertRaisesRegex(PermissionError, "TD-C"):
             subject.build_diagnostic_plan(subject.TD_C, for_execution=True, human_authorization=subject.TD_C)
 
-    def test_scheduler_accepts_boundary_and_rejects_one_over(self):
-        for requested, tolerance in subject.TIMING_TOLERANCE_S.items():
-            for delta, valid in ((tolerance, True), (tolerance + 0.001, False)):
-                with self.subTest(requested=requested, delta=delta):
-                    clock = _Clock()
-                    results = subject.run_timed_schedule(
-                        [requested], command_apply_fn=lambda: None, readback_fn=lambda: None,
-                        capture_fn=lambda _point, d=delta: {
-                            "exposure_start_monotonic_s": clock.value + d,
-                            "exposure_start_provenance": subject.ACTUAL_EXPOSURE_START_PROVENANCE,
-                        },
-                        monotonic_fn=clock.monotonic, sleep_fn=clock.sleep,
-                    )
-                    self.assertEqual(results[0].timing_valid, valid)
+    def test_scheduler_accepts_large_finite_best_effort_offset(self):
+        clock = _Clock()
+        results = subject.run_timed_schedule(
+            [60], command_apply_fn=lambda: None, readback_fn=lambda: None,
+            capture_fn=lambda _point: {"timing_evidence": {
+                "tier": "tier_b", "status": "accepted_best_effort_anchor",
+                "provenance": subject.TIMING_CONTRACT_V2["provenance"],
+                "best_effort_elapsed_s": 64.40580299403518,
+            }}, monotonic_fn=clock.monotonic, sleep_fn=clock.sleep,
+        )
+        self.assertEqual(results[0].nominal_slot_s, 60)
+        self.assertAlmostEqual(results[0].best_effort_exposure_start_elapsed_s, 64.40580299403518)
+        self.assertAlmostEqual(results[0].timing_offset_s, 4.40580299403518)
+        self.assertEqual(results[0].timing_evidence_status, "accepted")
 
     def test_readback_completion_owns_elapsed_and_wall_clock_is_irrelevant(self):
         clock = _Clock()
@@ -123,13 +138,14 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
             clock.value += 7
         result = subject.run_timed_schedule(
             [60, 120], command_apply_fn=lambda: calls.append("apply"), readback_fn=readback,
-            capture_fn=lambda point: {
-                "point": point, "exposure_start_monotonic_s": clock.value,
-                "exposure_start_provenance": subject.ACTUAL_EXPOSURE_START_PROVENANCE,
-            },
+            capture_fn=lambda point: {"point": point, "timing_evidence": {
+                "tier": "tier_b", "status": "accepted_best_effort_anchor",
+                "provenance": subject.TIMING_CONTRACT_V2["provenance"],
+                "best_effort_elapsed_s": float(point),
+            }},
             monotonic_fn=clock.monotonic, sleep_fn=clock.sleep,
         )
-        self.assertEqual([item.actual_elapsed_s for item in result], [60, 120])
+        self.assertEqual([item.best_effort_exposure_start_elapsed_s for item in result], [60, 120])
         self.assertEqual(calls, ["apply"])
 
     def test_scheduler_rejects_request_start_or_missing_actual_exposure_provenance(self):
@@ -137,7 +153,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
             {"exposure_start_monotonic_s": 60},
             {"exposure_start_monotonic_s": 60, "exposure_start_provenance": "host_camera_request_start_monotonic"},
         ):
-            with self.subTest(capture=capture), self.assertRaisesRegex(ValueError, "actual exposure-start"):
+            with self.subTest(capture=capture), self.assertRaisesRegex(ValueError, "best-effort timing"):
                 clock = _Clock()
                 subject.run_timed_schedule(
                     [60], command_apply_fn=lambda: None, readback_fn=lambda: None,
@@ -146,10 +162,6 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                 )
 
     def test_best_effort_timing_boundaries_are_exposed_without_actual_provenance(self):
-        self.assertEqual(subject.TIMING_TOLERANCE_S[60], 2.0)
-        self.assertEqual(subject.TIMING_TOLERANCE_S[120], 2.0)
-        self.assertEqual(subject.TIMING_TOLERANCE_S[300], 5.0)
-        self.assertEqual(subject.TIMING_TOLERANCE_S[600], 5.0)
         plan = subject.build_diagnostic_plan(
             subject.TD_A, source="ray", for_execution=True,
             human_authorization=subject.TD_A, v2_capture_capability=True,
@@ -312,13 +324,58 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                     capture_fn=lambda _step: {},
                     both_off_gate_fn=lambda _gate: {"status": "pass", "strip_verified_off": True, "ray_verified_off": True},
                     cleanup_fn=lambda: (_ for _ in ()).throw(RuntimeError("cleanup failed")),
-                    monotonic_fn=lambda: 0, sleep_fn=lambda _seconds: None,
-                )
+                monotonic_fn=lambda: 0, sleep_fn=lambda _seconds: None,
+            )
             run = json.loads((root / "run.json").read_text(encoding="utf-8"))
             cleanup = json.loads((root / "all-off-python.json").read_text(encoding="utf-8"))
-        self.assertEqual(run["status"], "failed")
-        self.assertEqual(run["cleanup"], "fail")
-        self.assertEqual(cleanup["message"], "cleanup failed")
+            self.assertEqual(run["status"], "failed")
+            self.assertEqual(run["cleanup"], "fail")
+            self.assertEqual(cleanup["message"], "cleanup failed")
+
+    def test_rejected_post_capture_timing_retains_physical_ledger_and_failure_evidence(self):
+        plan = subject.build_diagnostic_plan(
+            subject.TD_A, source="ray", for_execution=True,
+            human_authorization=subject.TD_A, v2_capture_capability=True,
+        )
+        def capture(step):
+            root = current_root[0]
+            raw = root / "rejected.CR3"
+            raw.write_bytes(b"cr3")
+            result = {"saved_file": str(raw), "physical_capture_count": 1,
+                      "thermal_covariates": _minimal_covariate(step),
+                      "timing_evidence": {
+                          "provenance": subject.TIMING_CONTRACT_V2["provenance"],
+                          "tier": "tier_b", "status": "accepted_best_effort_anchor",
+                          "best_effort_elapsed_s": 64.4,
+                      }}
+            return result
+        current_root = [None]
+        with tempfile.TemporaryDirectory() as tempdir, self.assertRaisesRegex(RuntimeError, "non-increasing"):
+            root = Path(tempdir) / "run"
+            current_root[0] = root
+            # Reuse a two-point schedule to exercise a retained CR3 followed by chronology rejection.
+            plan = {**plan, "captures": [plan["captures"][1], plan["captures"][2]],
+                    "budgets": {"formal_cap": 2, "ambient_cap": 0, "physical_cr3_cap": 22},
+                    "frozen_shutters": {"ray-h120-s100": "1/5000"}, "exposure_setup_required": [],
+                    "shutter_ledger_provenance": {"owner": "experiment_capture_steps",
+                        "required_cache_keys": ["ray-h120-s100"],
+                        "frozen_shutters_sha256": subject.canonical_sha256({"ray-h120-s100": "1/5000"})}}
+            measure.execute_plan(
+                plan, run_dir=root, apply_command_fn=lambda _step: {}, readback_fn=lambda _step: {},
+                capture_fn=capture,
+                both_off_gate_fn=lambda _gate: {"status": "pass", "strip_verified_off": True, "ray_verified_off": True},
+                cleanup_fn=lambda: {"status": "pass"}, monotonic_fn=lambda: 0, sleep_fn=lambda _seconds: None,
+            )
+            run = json.loads((root / "run.json").read_text(encoding="utf-8"))
+            failure = json.loads((root / "failure.json").read_text(encoding="utf-8"))
+            self.assertEqual(run["physical_cr3_count"], 2)
+            self.assertEqual(failure["rejected_capture"]["current_physical_cr3_count"], 2)
+
+    def test_v1_production_plan_is_rejected_before_backend_connect(self):
+        plan = subject.build_diagnostic_plan(subject.TD_A, source="ray")
+        plan["schema"] = subject.PLAN_SCHEMA_V1
+        with self.assertRaisesRegex(PermissionError, "schema v2"):
+            measure.validate_authorized_execution_plan(plan)
 
     def test_deferred_td_b_plan_is_rejected_by_runner_before_calls(self):
         plan = subject.build_diagnostic_plan(subject.TD_B, source="strip")
@@ -331,7 +388,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
             "remote_v2_capability": True,
         }
         calls = []
-        with tempfile.TemporaryDirectory() as tempdir, self.assertRaisesRegex(PermissionError, "deferred"):
+        with tempfile.TemporaryDirectory() as tempdir, self.assertRaisesRegex(PermissionError, "observed-elapsed|deferred"):
             measure.execute_plan(
                 plan, run_dir=Path(tempdir) / "run",
                 apply_command_fn=lambda step: calls.append(step) or {}, readback_fn=lambda _step: {},

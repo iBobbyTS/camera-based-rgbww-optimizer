@@ -237,6 +237,9 @@ class AnalyzeP7ThermalDiagnosticsTests(unittest.TestCase):
                 root, feature_ids=FEATURE_IDS, compatibility_fn=lambda _left, _right: True,
             )
             self.assertEqual(report["capture_contract"], "pass")
+            self.assertEqual(report["schema"], thermal.ANALYSIS_SCHEMA_V2)
+            self.assertEqual(report["timing_contract_evidence"]["nominal_offset_gate"], "none_developer_decision")
+            self.assertTrue(report["timing_slot_summary"]["60"]["observed_elapsed_s"])
             self.assertEqual(report["formal_capture_count"], 12)
             self.assertEqual(report["ambient_capture_count"], 3)
             self.assertEqual(report["physical_cr3_count"], 15)

@@ -77,3 +77,11 @@ description: Use when working on camera-based RGBWW calibration, RGBWW channel c
 - Do not run broad high-output sweeps without an explicit bounded range.
 - Confirm channel order, brightness scaling, and thermal behavior before increasing PWM levels.
 - All scripts that can leave the RGBWW fixture on must explicitly turn it off before exiting, except dedicated light-on/control tools.
+
+P7 thermal timing-v2 uses `p7_thermal_diagnostic_plan_v2` and the shared
+`best_effort_gphoto2_observed_elapsed_v2` contract. Nominal slots are scheduler
+targets only; finite Tier A/B observed elapsed values are accepted regardless
+of offset and feed chronology/settling summaries. Tier C, missing, non-finite,
+negative, or non-monotonic evidence fails closed. The estimate is never
+absolute exposure-start truth. Count a nonempty CR3 before later timing
+validation and retain rejected capture paths/hashes in failure evidence.

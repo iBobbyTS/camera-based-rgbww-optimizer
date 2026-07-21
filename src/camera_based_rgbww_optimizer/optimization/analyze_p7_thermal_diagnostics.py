@@ -29,8 +29,8 @@ from camera_based_rgbww_optimizer.optimization.analyze_hsi_reference_repeatabili
 )
 
 
-TD_A_COMBINED_ANALYSIS_SCHEMA = "p7_td_a_combined_analysis_v1"
-TD_A_INPUT_MANIFEST_SCHEMA = "p7_td_a_input_manifest_v1"
+TD_A_COMBINED_ANALYSIS_SCHEMA = "p7_td_a_combined_analysis_v2"
+TD_A_INPUT_MANIFEST_SCHEMA = "p7_td_a_input_manifest_v2"
 TD_A_DECISION_OWNER = "Planner"
 TD_A_ANALYZER_MODULE = (
     "camera_based_rgbww_optimizer.optimization.analyze_p7_thermal_diagnostics"
@@ -57,7 +57,8 @@ def analyze_thermal_run(
     if plan.get("experiment_id") not in thermal.EXPERIMENT_IDS or run.get("status") != "complete":
         raise ValueError("thermal analyzer requires a completed exact experiment")
     _verify_frozen_inputs(plan["inputs"])
-    if plan.get("timing_contract") != {
+    schema = plan.get("schema")
+    legacy_contract = {
         "name": "best_effort_gphoto2_v1",
         "decision_owner": "Developer/Human",
         "network_assumption": "wired_lan_latency_negligible_developer_decision",
@@ -65,8 +66,23 @@ def analyze_thermal_run(
         "absolute_exposure_start_required": False,
         "absolute_exposure_start": False,
         "provenance": "best_effort_gphoto2_exposure_start_estimate",
-    }:
+    }
+    if schema == thermal.PLAN_SCHEMA_V1:
+        timing_version = 1
+        expected_contract = legacy_contract
+    elif schema == thermal.PLAN_SCHEMA_V2:
+        timing_version = 2
+        expected_contract = thermal.TIMING_CONTRACT_V2
+    else:
+        raise ValueError("thermal analyzer requires an explicit supported plan schema")
+    if plan.get("timing_contract") != expected_contract:
         raise ValueError("thermal timing contract differs from frozen best-effort contract")
+    if timing_version == 2:
+        for step in plan.get("captures", []):
+            if "timing_tolerance_s" in step or "actual_elapsed_s" in step:
+                raise ValueError("thermal v2 plan contains legacy timing fields")
+            if step.get("formal_measurement") and step.get("timing_acceptance") != "observed_elapsed_record_only":
+                raise ValueError("thermal v2 plan lacks observed-elapsed acceptance semantics")
     capture_settings = _validate_capture_settings_provenance(plan, run)
     captures = _load_jsonl(root / "captures.jsonl")
     covariates = _load_jsonl(root / "thermal-covariates.jsonl")
@@ -76,8 +92,13 @@ def analyze_thermal_run(
         raise ValueError("thermal capture/covariate count differs from frozen plan")
     if [row.get("capture_id") for row in captures] != [row.get("capture_id") for row in plan["captures"]]:
         raise ValueError("thermal capture evidence is missing, duplicated, or reordered")
-    if any(not row.get("timing_valid") for row in captures):
+    if timing_version == 1 and any(not row.get("timing_valid") for row in captures):
         raise ValueError("thermal run contains a missed-timing capture")
+    if timing_version == 2 and any(
+        any(key in row for key in ("actual_elapsed_s", "timing_error_s", "timing_valid"))
+        for row in captures
+    ):
+        raise ValueError("thermal v2 capture ledger contains legacy timing fields")
     expected_gate_ids = ["run_start"] + [
         str(gate_id) for step in plan["captures"]
         for gate_id in (step.get("isolation_gate_before"), step.get("isolation_gate_after"))
@@ -118,6 +139,8 @@ def analyze_thermal_run(
     ambient_captures = []
     timing_tiers: dict[str, int] = defaultdict(int)
     timing_unknown = 0
+    observed_by_cycle: dict[tuple[str, str, Any, Any], float] = {}
+    slot_observed: dict[int, list[float]] = defaultdict(list)
     for step, capture, covariate in zip(plan["captures"], captures, covariates, strict=True):
         if capture.get("plan_step") != step or capture.get("source_id") != step.get("source_id"):
             raise ValueError("thermal capture owner or frozen step mismatch")
@@ -132,15 +155,18 @@ def analyze_thermal_run(
             raise ValueError("thermal capture settings differ from resolved remote provenance")
         if step["formal_measurement"]:
             requested = float(step["requested_elapsed_s"])
-            actual = float(capture["actual_elapsed_s"])
-            error = float(capture["timing_error_s"])
-            if abs((actual - requested) - error) > 1e-9 or abs(error) > float(step["timing_tolerance_s"]):
-                raise ValueError("thermal capture timing evidence is inconsistent")
+            if timing_version == 1:
+                actual = float(capture["actual_elapsed_s"])
+                error = float(capture["timing_error_s"])
+                if abs((actual - requested) - error) > 1e-9 or abs(error) > float(step["timing_tolerance_s"]):
+                    raise ValueError("thermal capture timing evidence is inconsistent")
             recomputed_formal += 1
             formal_captures.append(capture)
             expected_command = step["command"]
         else:
-            if capture.get("actual_elapsed_s") is not None or capture.get("timing_error_s") is not None:
+            legacy_present = capture.get("actual_elapsed_s") is not None or capture.get("timing_error_s") is not None
+            observed_present = capture.get("best_effort_exposure_start_elapsed_s") is not None or capture.get("timing_offset_s") is not None
+            if legacy_present or observed_present:
                 raise ValueError("ambient capture cannot masquerade as a timed formal capture")
             if not isinstance(payload.get("ambient_diagnostic"), Mapping):
                 raise ValueError("ambient capture lacks ambient_diagnostic payload")
@@ -165,8 +191,28 @@ def analyze_thermal_run(
         capture_actual = timing.get("best_effort_elapsed_s")
         if step["formal_measurement"] and capture_actual is not None:
             expected_error = None if step.get("requested_elapsed_s") is None else float(capture_actual) - float(step["requested_elapsed_s"])
-            if capture.get("actual_elapsed_s") != capture_actual or capture.get("timing_error_s") != expected_error:
-                raise ValueError("thermal timing elapsed or error was self-reported inconsistently")
+            if timing_version == 1:
+                if capture.get("actual_elapsed_s") != capture_actual or capture.get("timing_error_s") != expected_error:
+                    raise ValueError("thermal timing elapsed or error was self-reported inconsistently")
+            else:
+                if (
+                    timing.get("tier") not in thermal.TIMING_CONTRACT_V2["accepted_tiers"]
+                    or timing.get("status") != "accepted_best_effort_anchor"
+                    or capture.get("nominal_slot_s") != step.get("requested_elapsed_s")
+                    or capture.get("best_effort_exposure_start_elapsed_s") != capture_actual
+                    or capture.get("timing_offset_s") != expected_error
+                    or capture.get("timing_evidence_status") != "accepted"
+                ):
+                    raise ValueError("thermal v2 observed timing was self-reported inconsistently")
+                observed = float(capture_actual)
+                if not np.isfinite(observed) or observed < 0:
+                    raise ValueError("thermal v2 observed elapsed is invalid")
+                group = (str(step["source_id"]), str(step["state_id"]), step.get("cycle_index"), step.get("role"))
+                previous_observed = observed_by_cycle.get(group)
+                if previous_observed is not None and observed <= previous_observed:
+                    raise ValueError("thermal v2 observed chronology is not strictly increasing")
+                observed_by_cycle[group] = observed
+                slot_observed[int(step["requested_elapsed_s"])].append(observed)
         exposure = payload.get("recorded_exposure") or payload.get("exposure_metadata") or {}
         if exposure.get("status") != "recorded":
             raise ValueError("thermal capture lacks recorded exposure provenance")
@@ -196,8 +242,20 @@ def analyze_thermal_run(
             formal_captures, ambients=ambient_captures, feature_ids=feature_ids,
             p6_compare_fn=lambda rows: compare_current_ray_center_to_p6(rows, feature_ids),
         )
+    timing_slot_summary = {
+        str(slot): {
+            "sample_count": len(values),
+            "observed_elapsed_s": list(values),
+            "offset_s": [value - float(slot) for value in values],
+            "min_observed_elapsed_s": min(values),
+            "median_observed_elapsed_s": float(np.median(values)),
+            "max_observed_elapsed_s": max(values),
+        }
+        for slot, values in sorted(slot_observed.items())
+    }
     return {
-        "schema": "p7_thermal_diagnostic_analysis_v1", "experiment_id": experiment,
+        "schema": thermal.ANALYSIS_SCHEMA_V2 if timing_version == 2 else "p7_thermal_diagnostic_analysis_v1",
+        "experiment_id": experiment,
         "source_id": str(plan.get("source")),
         "capture_contract": "pass", "timing_contract": "pass",
         "covariate_contract": "pass", "source_isolation_contract": "pass",
@@ -206,7 +264,9 @@ def analyze_thermal_run(
         "formal_capture_count": recomputed_formal, "ambient_capture_count": recomputed_ambient,
         "physical_cr3_count": recomputed_physical, "retained_npy_count": 0,
         "timing_absolute_truth": False,
-        "timing_source": "best_effort_gphoto2",
+        "timing_source": "best_effort_gphoto2_observed_elapsed" if timing_version == 2 else "best_effort_gphoto2",
+        "timing_contract_evidence": dict(expected_contract),
+        "timing_slot_summary": timing_slot_summary,
         "tier_distribution": dict(timing_tiers),
         "unknown_uncertainty_count": timing_unknown,
         **result,
@@ -348,6 +408,11 @@ def analyze_td_a(
         features = _features(row, feature_ids)
         cycles[str(step["cycle_index"])][int(step["requested_elapsed_s"])].append(features)
     settling = thermal.settle_from_cycles(cycles, feature_ids, compatibility_fn=compatibility_fn)
+    observed_by_slot: dict[int, list[float]] = defaultdict(list)
+    for row in captures:
+        observed = row.get("best_effort_exposure_start_elapsed_s")
+        if observed is not None:
+            observed_by_slot[int(row["plan_step"]["requested_elapsed_s"])].append(float(observed))
     groups = {
         f"cycle-{cycle}": [features for point in sorted(points) for features in points[point]]
         for cycle, points in cycles.items()
@@ -361,6 +426,18 @@ def analyze_td_a(
         "between_cycle_repeatability": audit,
         "state_specific_settle_time": {"A": settling["t_settle_s"]},
         "source_specific_settle_time": settling["t_settle_s"],
+        "source_specific_settle_observed_max_s": (
+            None if settling["t_settle_s"] is None else max(observed_by_slot[int(settling["t_settle_s"])])
+        ),
+        "timing_slot_summary": {
+            str(slot): {
+                "sample_count": len(values), "observed_elapsed_s": values,
+                "offset_s": [value - float(slot) for value in values],
+                "min_observed_elapsed_s": min(values), "median_observed_elapsed_s": float(np.median(values)),
+                "max_observed_elapsed_s": max(values),
+            }
+            for slot, values in sorted(observed_by_slot.items())
+        },
         "temperature_not_sufficient_proxy": False,
     }
 
@@ -618,6 +695,9 @@ def analyze_td_a_pair(
     strip_settle = _validated_td_a_settle(strip_report, source="strip")
     both_settled = ray_settle is not None and strip_settle is not None
     provisional = max(ray_settle, strip_settle) if both_settled else None
+    ray_observed = ray_report.get("source_specific_settle_observed_max_s") if both_settled else None
+    strip_observed = strip_report.get("source_specific_settle_observed_max_s") if both_settled else None
+    observed_provisional = max(ray_observed, strip_observed) if ray_observed is not None and strip_observed is not None else None
     status = "td_a_pass" if both_settled else "settling_not_demonstrated_by_600"
     combined = {
         "schema": TD_A_COMBINED_ANALYSIS_SCHEMA,
@@ -637,6 +717,13 @@ def analyze_td_a_pair(
         "t_settle_ray_s": ray_settle,
         "t_settle_strip_s": strip_settle,
         "t_formal_provisional_s": provisional,
+        "t_settle_ray_observed_max_s": ray_observed,
+        "t_settle_strip_observed_max_s": strip_observed,
+        "t_formal_provisional_observed_max_s": observed_provisional,
+        "source_observed_timing_summary": {
+            "ray": ray_report.get("timing_slot_summary", {}),
+            "strip": strip_report.get("timing_slot_summary", {}),
+        },
         "t_formal_s": None,
         "six_hundred_is_validation_only": True,
         "default_operating_envelope_modified": False,
@@ -906,6 +993,9 @@ def _render_td_a_summary(combined: Mapping[str, Any]) -> str:
         f"- Ray settle: `{combined['t_settle_ray_s']}` s\n"
         f"- strip settle: `{combined['t_settle_strip_s']}` s\n"
         f"- provisional formal settle: `{combined['t_formal_provisional_s']}` s\n"
+        f"- Ray observed settle max: `{combined.get('t_settle_ray_observed_max_s')}` s\n"
+        f"- strip observed settle max: `{combined.get('t_settle_strip_observed_max_s')}` s\n"
+        f"- provisional observed settle max: `{combined.get('t_formal_provisional_observed_max_s')}` s\n"
         f"- captures: `{combined['formal_capture_count']}` formal + "
         f"`{combined['ambient_capture_count']}` ambient / `{combined['physical_cr3_count']}` physical CR3\n"
         "- default operating envelope modified: `false`\n"
