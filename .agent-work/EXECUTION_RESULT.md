@@ -773,3 +773,114 @@ Ray isolation SHA-256 = 6391db7b3be69b3a4119a4773d644549fe6e50b318252f6fdc65db08
    Executor自行解释；
 4. 在 Planner 新决定前继续锁定 strip TD-A、paired finalizer、TD-B/C、sentinel、remaining、
    boundary、holdout、Gate-6、P8、firmware 和 remote deployment。
+
+## 15. P7 TD-A W0 wrapper runtime 离线纠偏
+
+**执行结果：** `W0-PASS / waiting_for_Planner_review`
+
+**实现提交：**
+`960484e1107cbcfb3304075a5ac54a0fbe6a382e fix(p7): close td-a wrapper evidence gaps`
+
+**PLAN 所有权：** Executor 未修改 `.agent-work/PLAN.md`；执行前后 SHA-256 均为
+`249774c7924b40d4dcc72d5b01b0ab84e14ae7a5a4d101117a969405fa4e4dea`。
+
+### 15.1 W0-001 production wrapper runtime
+
+- `write_json()` 的 zsh 只读特殊参数 `status` 已改为 `result_status`；
+- `finalize()` 的 `status` 已改为 `final_status`；
+- 同一 wrapper 的全部 `local` 名称已对 zsh readonly/special parameter 集合审计，无命中；
+- production wrapper SHA-256：
+  `4f776135b18df57897011d6c37f7683768d772cd5a9ee7f73c07f2ffae0d7dfb`；
+- 测试逐 case 复制 production wrapper exact bytes 到 fake project，再运行真实 `zsh`；runner 与
+  cleanup 每条路径均恰好调用一次，final state 均为 `finished`，没有临时文件或残留进程。
+
+| case | child | cleanup | wrapper | status | signal |
+| --- | ---: | ---: | ---: | --- | --- |
+| success | 0 | 0 | 0 | `complete` | `null` |
+| child failure | 7 | 0 | 7 | `child_failed` | `null` |
+| cleanup failure | 0 | 9 | 70 | `cleanup_failed` | `null` |
+| INT | 130 | 0 | 130 | `signaled` | `INT` |
+| TERM | 143 | 0 | 143 | `signaled` | `TERM` |
+| HUP | 129 | 0 | 129 | `signaled` | `HUP` |
+
+保留 fake runtime evidence：
+
+```text
+/Volumes/4T/temp/rgbww-optimizer/p7-td-a-w0-offline/
+  p7-td-a-w0-20260721-054106/runtime-cases
+```
+
+### 15.2 W0-002 paired input manifest
+
+- `analyze_td_a_pair()` 现在要求调用者显式提供 `code_checkpoint` 与实际 `feature_ids_path`；
+- paired CLI 新增必填 `--code-checkpoint`，成功时打印 combined analysis、summary、manifest 三个路径；
+- 新 schema 为 `p7_td_a_input_manifest_v1`，decision owner 固定为 `Planner`；
+- manifest 从 retained bytes 重算 Ray/strip plan/run、feature policy、combined analysis 与 summary hash；
+- feature file 必须同时是两源 plan 的 frozen policy input，不能用另一个有效 feature 文件替换；
+- 同一 analyzer module 的 `validate_td_a_input_manifest()` 独立重放 exact schema、source owner、绝对路径、
+  plan/run/hash、frozen inputs、timing、feature policy 与 output owner；finalizer 返回前重载验证；
+- 已覆盖未知/缺失 key、空/非法 checkpoint、hash 单字符漂移、source 颠倒/重复、plan/run/feature/output
+  byte tamper、existing output 与 manifest 写入失败；single-run CLI 不要求 checkpoint；
+- 成功和失败路径均保持默认 operating envelope byte-identical：
+  `d553a32fdb5ad0bba1fcfc1dbee4cc2e96cc8ffa151a289de810cd55c316fc25`。
+
+保留 fake pair：
+
+```text
+/Volumes/4T/temp/rgbww-optimizer/p7-td-a-w0-offline/
+  p7-td-a-w0-20260721-054106/manifest-fake-pair
+
+td-a-combined-analysis.json sha256 = 8c52890727f0b7bbb5108a0e0bcae8c474b57984610d00c2e419b08b8bdc6cd6
+EXPERIMENT_SUMMARY.md sha256 = 259c0faa95553103b719598e84c1d6e992b5042b9e78dd0d901d66cf8fd2c116
+input-manifest.json sha256 = 1b7bc3bf45e3d2a598aece551f0ccb243c9c057df9f0c1934e2611eb1ffdf16e
+```
+
+### 15.3 验证与副作用
+
+```text
+focused = 48/48 pass, 4.299 s
+focused log sha256 = a371201fc424ec44c6da3f9ef5b4c26a225f996304d85d15f717c6af65296ba8
+full suite = 493/493 pass, 111.405 s
+full log sha256 = 1da49246f4796e193faa4884250df50e626312076e839d892b242a1b0dbd0bbd
+compileall = pass
+all tmp/*.zsh syntax = pass
+git diff --check = pass
+CodeGraph sync = pass / already up to date
+residual fake process = 0
+```
+
+Validation summary：
+
+```text
+/Volumes/4T/temp/rgbww-optimizer/p7-td-a-w0-offline/
+  p7-td-a-w0-20260721-054106/validation-summary.json
+sha256 = 94ce883c689fed4dc43f1ce1db0396fe41f11846d167604fa9cc8a6c017647af
+```
+
+```text
+device = 0
+network = 0
+.env = 0
+remote API = 0
+camera = 0
+Ray = 0
+ESPHome = 0
+real all_off = 0
+real CR3 capture = 0
+real run directory = 0
+heartbeat = 0
+```
+
+Analyzer replay 使用 `30` 个仅含 `b"raw"` 的 3-byte synthetic `.CR3` fixture；它们位于上述 fake
+pair，未由相机产生，不属于实拍 CR3。零 `.npy` 被保留。
+
+### 15.4 授权与停止点
+
+```text
+p7_td_a_cold_settling_v1 authorization = not_consumed_but_suspended
+TD-A retry = not performed
+TD-B / TD-C / sentinel / remaining / boundary / holdout / Gate-6 / P8 = locked
+```
+
+已到达 active PLAN 唯一 Planner stop。下一步仅允许 Planner 验收；Executor 不执行 preflight、Ray、
+strip、capture、`all_off` probe 或 TD-A retry。
