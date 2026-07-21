@@ -166,7 +166,7 @@ def generate_validation_artifacts(
         local_readback_done_monotonic_s=9.0,
         monotonic_fn=iter((10.0, 12.0)).__next__,
     )
-    replayed = analyze_p7_thermal_diagnostics._replay_timing_evidence(
+    replayed, estimate_method = analyze_p7_thermal_diagnostics._replay_timing_evidence(
         {},
         {
             "remote_metadata_path": str(result.metadata_path),
@@ -175,12 +175,13 @@ def generate_validation_artifacts(
         result.saved_file,
         valid_dir,
     )
-    _write_json(root / "timing-reconstruction.json", replayed)
+    _write_json(root / "timing-reconstruction.json", {**replayed, "estimate_method": estimate_method})
     _write_json(root / "production-roundtrip-analysis.json", {
         "status": "pass",
         "client": "capture_remote_image_v2",
         "analyzer": "analyze_p7_thermal_diagnostics._replay_timing_evidence",
         "tier": replayed["tier"],
+        "estimate_method": estimate_method,
         "timing_absolute_truth": False,
         "cr3_sha256": _sha256(result.saved_file),
         "sidecar_sha256": _sha256(result.metadata_path),

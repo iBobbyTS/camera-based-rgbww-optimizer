@@ -91,7 +91,10 @@ def _retain_td_a_manifest_evidence_if_requested() -> None:
     })
 
 
-def _build_formal_td_a_run(root: Path, *, source: str = "ray", settle: bool = True) -> Path:
+def _build_formal_td_a_run(
+    root: Path, *, source: str = "ray", settle: bool = True, timing_version: int = 2,
+    estimate_method: str = "gphoto_capture_return_minus_recorded_exposure",
+) -> Path:
     plan = thermal.build_diagnostic_plan(
         thermal.TD_A, source=source, for_execution=True,
         human_authorization=thermal.TD_A, v2_capture_capability=True,
@@ -157,12 +160,16 @@ def _build_formal_td_a_run(root: Path, *, source: str = "ray", settle: bool = Tr
             "gphoto2": {
                 "driver_event_type": None, "event_sequence": [], "request_received_monotonic_ns": bridge_request,
                 "capture_call_started_monotonic_ns": bridge_request + 1, "capture_call_returned_monotonic_ns": estimate + 10_000_000,
-                "camera_event_observed_monotonic_ns": None, "file_added_observed_monotonic_ns": None,
+                "camera_event_observed_monotonic_ns": None,
+                "file_added_observed_monotonic_ns": (
+                    estimate + 10_000_000
+                    if estimate_method == "gphoto_event_minus_recorded_exposure" else None
+                ),
                 "download_started_monotonic_ns": estimate + 20_000_000, "download_completed_monotonic_ns": estimate + 30_000_000,
                 "cr3_saved_observed_monotonic_ns": estimate + 40_000_000, "clock_domain": "bridge_monotonic",
             },
             "recorded_exposure": {"seconds": 0.01, "source": "Canon:ExposureTime", "status": "recorded"},
-            "exposure_start_estimate": {"timestamp_monotonic_ns": estimate, "clock_domain": "bridge_monotonic", "method": "gphoto_capture_return_minus_recorded_exposure", "status": "weak_estimate", "uncertainty_ms": None, "uncertainty_basis": "unknown"},
+            "exposure_start_estimate": {"timestamp_monotonic_ns": estimate, "clock_domain": "bridge_monotonic", "method": estimate_method, "status": "weak_estimate", "uncertainty_ms": None, "uncertainty_basis": "unknown"},
             "network_observation": {"request_id": f"request-{sequence}", "response_or_event_round_trip_ms": None, "uncertainty_ms": None, "uncertainty_basis": "unknown"},
             "bridge_utc_observation": {"request_received": "2026-07-20T00:00:00+00:00", "source": "bridge_system_clock_utc"},
         }
@@ -226,10 +233,81 @@ def _build_formal_td_a_run(root: Path, *, source: str = "ray", settle: bool = Tr
         "signal": None,
         "started_at": "2026-07-20T00:00:00Z",
     })
+    if timing_version == 1:
+        plan = json.loads((root / "plan.json").read_text(encoding="utf-8"))
+        plan["schema"] = thermal.PLAN_SCHEMA_V1
+        plan["timing_contract"] = thermal.timing_contract(1)
+        for step in plan["captures"]:
+            step.pop("timing_acceptance", None)
+            step["timing_tolerance_s"] = None if not step["formal_measurement"] else 10_000.0
+        _write_json(root / "plan.json", plan)
+        run = json.loads((root / "run.json").read_text(encoding="utf-8"))
+        run["schema"] = "p7_thermal_diagnostic_run_v1"
+        _write_json(root / "run.json", run)
+        rows = [json.loads(line) for line in (root / "captures.jsonl").read_text(encoding="utf-8").splitlines()]
+        for row in rows:
+            row["plan_step"] = next(step for step in plan["captures"] if step["capture_id"] == row["capture_id"])
+            nominal = row.pop("nominal_slot_s", None)
+            observed = row.pop("best_effort_exposure_start_elapsed_s", None)
+            offset = row.pop("timing_offset_s", None)
+            row.pop("timing_evidence_status", None)
+            row.pop("timing_estimate_method", None)
+            row["requested_elapsed_s"] = nominal
+            row["actual_elapsed_s"] = observed
+            row["timing_error_s"] = offset
+            row["timing_valid"] = True
+        _write_jsonl(root / "captures.jsonl", rows)
+    elif timing_version != 2:
+        raise ValueError("unsupported synthetic timing version")
     return root
 
 
 class AnalyzeP7ThermalDiagnosticsTests(unittest.TestCase):
+    def test_legacy_v1_settled_single_and_pair_keep_exact_legacy_schemas(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            ray = _build_formal_td_a_run(root / "ray", source="ray", timing_version=1)
+            strip = _build_formal_td_a_run(root / "strip", source="strip", timing_version=1)
+            single = subject.analyze_thermal_run(
+                ray, feature_ids=FEATURE_IDS, compatibility_fn=lambda _left, _right: True,
+            )
+            self.assertEqual(single["schema"], "p7_thermal_diagnostic_analysis_v1")
+            self.assertEqual(single["status"], "td_a_pass")
+            self.assertNotIn("source_specific_settle_observed_max_s", single)
+            self.assertNotIn("timing_slot_summary", single)
+            output = root / "combined"
+            pair = _analyze_pair(ray, strip, output)
+            self.assertEqual(pair["schema"], subject.TD_A_COMBINED_ANALYSIS_SCHEMA_V1)
+            self.assertNotIn("source_observed_timing_summary", pair)
+            manifest = subject.validate_td_a_input_manifest(output / "input-manifest.json")
+            self.assertEqual(manifest["schema"], subject.TD_A_INPUT_MANIFEST_SCHEMA_V1)
+            self.assertEqual(manifest["generated_by"]["analysis_schema"], subject.TD_A_COMBINED_ANALYSIS_SCHEMA_V1)
+
+    def test_mixed_v1_v2_pair_rejects_before_output_creation(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            ray = _build_formal_td_a_run(root / "ray", source="ray", timing_version=1)
+            strip = _build_formal_td_a_run(root / "strip", source="strip", timing_version=2)
+            output = root / "combined"
+            with self.assertRaisesRegex(ValueError, "mixed timing plan versions"):
+                _analyze_pair(ray, strip, output)
+            self.assertFalse(output.exists())
+
+    def test_v2_event_and_capture_return_methods_round_trip_from_sidecar(self):
+        for method in (
+            "gphoto_event_minus_recorded_exposure",
+            "gphoto_capture_return_minus_recorded_exposure",
+        ):
+            with self.subTest(method=method), tempfile.TemporaryDirectory() as tempdir:
+                root = _build_formal_td_a_run(Path(tempdir) / "run", estimate_method=method)
+                report = subject.analyze_thermal_run(
+                    root, feature_ids=FEATURE_IDS, compatibility_fn=lambda _left, _right: True,
+                )
+                self.assertEqual(report["timing_slot_summary"]["60"]["method_distribution"], {method: 3})
+                rows = [json.loads(line) for line in (root / "captures.jsonl").read_text().splitlines()]
+                formal = next(row for row in rows if row["formal_measurement"])
+                self.assertEqual(formal["timing_estimate_method"], method)
+
     def test_public_analyzer_accepts_only_runner_round_trip_and_rejects_ledger_tampering(self):
         with tempfile.TemporaryDirectory() as tempdir:
             root = _build_formal_td_a_run(Path(tempdir) / "run")
@@ -303,6 +381,7 @@ class AnalyzeP7ThermalDiagnosticsTests(unittest.TestCase):
         mutate_sidecar("attempt index", lambda value: value["_local_receipt"].__setitem__("successful_attempt_index", 2))
         mutate_sidecar("successful start", lambda value: value["_local_receipt"].__setitem__("local_request_started_monotonic_s", -1.0))
         mutate_sidecar("unknown sensitive", lambda value: value.__setitem__("remote_camera_serial", "secret"))
+        mutate_sidecar("unknown method", lambda value: value["exposure_start_estimate"].__setitem__("method", "unknown"))
 
         with tempfile.TemporaryDirectory() as tempdir:
             root = _build_formal_td_a_run(Path(tempdir) / "run")
@@ -310,6 +389,14 @@ class AnalyzeP7ThermalDiagnosticsTests(unittest.TestCase):
             rows[1]["capture"]["remote_metadata_path"] = str(Path(tempdir) / "outside.metadata.json")
             _write_jsonl(root / "captures.jsonl", rows)
             with self.assertRaisesRegex(ValueError, "outside the current run"):
+                subject.analyze_thermal_run(root, feature_ids=FEATURE_IDS, compatibility_fn=lambda _left, _right: True)
+
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = _build_formal_td_a_run(Path(tempdir) / "run")
+            rows = [json.loads(line) for line in (root / "captures.jsonl").read_text().splitlines()]
+            rows[1]["timing_estimate_method"] = "gphoto_event_minus_recorded_exposure"
+            _write_jsonl(root / "captures.jsonl", rows)
+            with self.assertRaisesRegex(ValueError, "observed timing"):
                 subject.analyze_thermal_run(root, feature_ids=FEATURE_IDS, compatibility_fn=lambda _left, _right: True)
 
     def test_public_analyzer_rejects_missing_or_forged_both_off_ledger(self):

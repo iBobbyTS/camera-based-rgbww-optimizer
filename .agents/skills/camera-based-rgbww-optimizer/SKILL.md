@@ -85,3 +85,6 @@ of offset and feed chronology/settling summaries. Tier C, missing, non-finite,
 negative, or non-monotonic evidence fails closed. The estimate is never
 absolute exposure-start truth. Count a nonempty CR3 before later timing
 validation and retain rejected capture paths/hashes in failure evidence.
+Use the shared experiment-aware chronology identity (TD-A cycle, TD-B role,
+TD-C session), retain the recognized gphoto2 estimate method, and keep v1
+single/pair analysis under legacy schemas. Never mix v1 and v2 pair inputs.

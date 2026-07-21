@@ -176,7 +176,11 @@ a scheduler target. Finite Tier A/B observed elapsed estimates are retained,
 reported with their offsets, and used for chronology and settling summaries;
 there is no nominal-proximity acceptance gate. The estimate is best-effort,
 not absolute exposure-start truth, and a CR3 produced before a later timing
-validation failure remains in the physical ledger and failure evidence.
+validation failure remains in the physical ledger and failure evidence. The
+runner and analyzer group chronology by cycle for TD-A, switch/return role for
+TD-B, and session for TD-C. Each accepted v2 row also retains the recognized
+gphoto2 estimate method. Legacy v1 analysis and paired manifests remain
+read-only under their original schemas and cannot be mixed with v2.
 
 Decode a CR3 into linear 16-bit camera RGB:
 

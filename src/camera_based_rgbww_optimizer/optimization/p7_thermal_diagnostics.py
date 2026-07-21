@@ -3,10 +3,12 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
+from types import MappingProxyType
 
 import numpy as np
 
@@ -27,7 +29,16 @@ SELECTABLE_SETTLE_POINTS = (60, 120, 300)
 PLAN_SCHEMA_V1 = "p7_thermal_diagnostic_plan_v1"
 PLAN_SCHEMA_V2 = "p7_thermal_diagnostic_plan_v2"
 ANALYSIS_SCHEMA_V2 = "p7_thermal_diagnostic_analysis_v2"
-TIMING_CONTRACT_V2 = {
+_TIMING_CONTRACT_V1_TEMPLATE = {
+    "name": "best_effort_gphoto2_v1",
+    "decision_owner": "Developer/Human",
+    "network_assumption": "wired_lan_latency_negligible_developer_decision",
+    "accepted_tiers": ["tier_a", "tier_b"],
+    "absolute_exposure_start_required": False,
+    "absolute_exposure_start": False,
+    "provenance": "best_effort_gphoto2_exposure_start_estimate",
+}
+_TIMING_CONTRACT_V2_TEMPLATE = {
     "name": "best_effort_gphoto2_observed_elapsed_v2",
     "decision_owner": "Developer/Human",
     "network_assumption": "wired_lan_latency_negligible_developer_decision",
@@ -39,6 +50,23 @@ TIMING_CONTRACT_V2 = {
     "acceptance_basis": "evidence_integrity_not_nominal_proximity",
     "nominal_offset_gate": "none_developer_decision",
 }
+ACCEPTED_TIMING_TIERS = frozenset(("tier_a", "tier_b"))
+TIMING_CONTRACT_V1 = MappingProxyType({
+    **_TIMING_CONTRACT_V1_TEMPLATE,
+    "accepted_tiers": tuple(_TIMING_CONTRACT_V1_TEMPLATE["accepted_tiers"]),
+})
+TIMING_CONTRACT_V2 = MappingProxyType({
+    **_TIMING_CONTRACT_V2_TEMPLATE,
+    "accepted_tiers": tuple(_TIMING_CONTRACT_V2_TEMPLATE["accepted_tiers"]),
+})
+
+
+def timing_contract(version: int) -> dict[str, Any]:
+    if version == 1:
+        return deepcopy(_TIMING_CONTRACT_V1_TEMPLATE)
+    if version == 2:
+        return deepcopy(_TIMING_CONTRACT_V2_TEMPLATE)
+    raise ValueError(f"unsupported thermal timing contract version: {version}")
 ACTUAL_EXPOSURE_START_PROVENANCE = "camera_adapter_actual_exposure_start_monotonic"
 CHANNELS = ("cw", "ww", "r", "g", "b")
 R1_RUN = Path(
@@ -241,7 +269,7 @@ def build_diagnostic_plan(
             "human_authorization_verified": bool(for_execution and human_authorization == experiment_id),
             "remote_v2_capability": timing_capability,
         },
-        "timing_contract": dict(TIMING_CONTRACT_V2),
+        "timing_contract": timing_contract(2),
         "cold_proxy": envelope["cold_proxy"],
         "cleanup": {"python_finally": "required", "shell_trap": "EXIT_INT_TERM_HUP_required"},
         "offline_contract": {"env_calls": 0, "network_calls": 0, "device_calls": 0, "all_off_calls": 0},
@@ -442,7 +470,7 @@ def run_timed_schedule(
             raise ValueError("timed capture lacks best-effort timing evidence")
         observed = timing.get("best_effort_elapsed_s")
         if (
-            timing.get("tier") not in TIMING_CONTRACT_V2["accepted_tiers"]
+            timing.get("tier") not in ACCEPTED_TIMING_TIERS
             or timing.get("status") != "accepted_best_effort_anchor"
             or timing.get("provenance") != TIMING_CONTRACT_V2["provenance"]
             or isinstance(observed, bool)
@@ -456,6 +484,31 @@ def run_timed_schedule(
             float(requested), float(observed), offset, "accepted", capture,
         ))
     return output
+
+
+def timing_sequence_identity(experiment_id: str, step: Mapping[str, Any]) -> tuple[Any, ...]:
+    if not step.get("formal_measurement"):
+        raise ValueError("timing sequence identity requires a formal capture step")
+    source = step.get("source_id")
+    state = step.get("state_id")
+    if not isinstance(source, str) or not source or not isinstance(state, str) or not state:
+        raise ValueError("thermal timing sequence lacks source/state identity")
+    if experiment_id == TD_A:
+        cycle = step.get("cycle_index")
+        if type(cycle) is not int or cycle <= 0:
+            raise ValueError("TD-A timing sequence lacks cycle identity")
+        return (experiment_id, source, state, cycle)
+    if experiment_id == TD_B:
+        role = step.get("role")
+        if not isinstance(role, str) or not role:
+            raise ValueError("TD-B timing sequence lacks switch/return role identity")
+        return (experiment_id, source, state, role)
+    if experiment_id == TD_C:
+        session = step.get("session_index")
+        if type(session) is not int or session <= 0:
+            raise ValueError("TD-C timing sequence lacks session identity")
+        return (experiment_id, source, state, session)
+    raise ValueError(f"unsupported thermal experiment identity: {experiment_id}")
 
 
 def strip_duty(command: Mapping[str, int], curve: Mapping[str, Any]) -> dict[str, float]:

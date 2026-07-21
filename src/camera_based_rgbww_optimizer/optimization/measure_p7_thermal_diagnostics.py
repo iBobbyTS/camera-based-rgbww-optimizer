@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
 from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
+from camera_based_rgbww_optimizer.control import camera_remote_v2
 from camera_based_rgbww_optimizer.paths import PROJECT_TMP_DIR
 
 
@@ -77,7 +78,7 @@ def validate_authorized_execution_plan(
 ) -> None:
     if plan.get("schema") != thermal.PLAN_SCHEMA_V2:
         raise PermissionError("thermal diagnostic production execution requires plan schema v2")
-    if plan.get("timing_contract") != thermal.TIMING_CONTRACT_V2:
+    if plan.get("timing_contract") != thermal.timing_contract(2):
         raise PermissionError("thermal diagnostic execution timing contract differs from frozen v2")
     for step in plan.get("captures", []):
         if "timing_tolerance_s" in step or "actual_elapsed_s" in step:
@@ -156,7 +157,8 @@ def execute_plan(
     session_start = monotonic_fn()
     previous_state: str | None = None
     previous_dwell: float | None = None
-    last_observed_by_group: dict[tuple[str, str, Any, Any], float] = {}
+    last_observed_by_group: dict[tuple[Any, ...], float] = {}
+    owned_cr3_paths: set[Path] = set()
     rejected_capture: dict[str, Any] | None = None
 
     def record_gate(gate_id: str) -> None:
@@ -170,26 +172,76 @@ def execute_plan(
         *, owner_start: float | None,
     ) -> None:
         nonlocal rejected_capture
-        physical = int(capture.get("physical_capture_count", 1))
-        if physical != 1:
-            raise RuntimeError("thermal timed/ambient capture must consume exactly one physical CR3")
+        reported_physical = capture.get("physical_capture_count")
+        if type(reported_physical) is not int:
+            raise RuntimeError("capture adapter physical count must be a non-bool integer")
         raw_path_value = capture.get("saved_file") or (capture.get("capture") or {}).get("saved_file")
-        raw_path = Path(str(raw_path_value)) if raw_path_value else None
+        raw_candidate = Path(str(raw_path_value)) if raw_path_value else None
+        raw_path = raw_candidate.resolve() if raw_candidate is not None else None
         sidecar_value = capture.get("remote_metadata_path")
-        sidecar_path = Path(str(sidecar_value)) if sidecar_value else None
+        sidecar_candidate = Path(str(sidecar_value)) if sidecar_value else None
+        sidecar_path = sidecar_candidate.resolve() if sidecar_candidate is not None else None
         rejected_capture = {
             "capture_id": step["capture_id"],
-            "rejection_stage": "post_capture_timing_validation",
-            "physical_capture_count": physical,
-            "cr3_path": None if raw_path is None else str(raw_path.resolve()),
-            "cr3_sha256": None if raw_path is None or not raw_path.is_file() else hashlib.sha256(raw_path.read_bytes()).hexdigest(),
-            "sidecar_path": None if sidecar_path is None else str(sidecar_path.resolve()),
-            "sidecar_sha256": None if sidecar_path is None or not sidecar_path.is_file() else hashlib.sha256(sidecar_path.read_bytes()).hexdigest(),
+            "rejection_stage": "adapter_retained_cr3_validation",
+            "reported_physical_capture_count": reported_physical,
+            "cr3_path": None if raw_path is None else str(raw_path),
+            "cr3_sha256": None,
+            "sidecar_path": None if sidecar_path is None else str(sidecar_path),
+            "sidecar_sha256": None,
         }
-        run["physical_cr3_count"] += physical
+        run_root = root.resolve()
+        if (
+            raw_path is None
+            or not raw_path.is_relative_to(run_root)
+            or raw_candidate is None
+            or raw_candidate.is_symlink()
+            or not raw_path.is_file()
+            or raw_path.stat().st_size <= 0
+        ):
+            raise RuntimeError("capture adapter lacks a unique retained nonempty current-run CR3")
+        if raw_path in owned_cr3_paths:
+            raise RuntimeError("capture adapter reused a CR3 already owned by another capture")
+        owned_cr3_paths.add(raw_path)
+        rejected_capture["cr3_sha256"] = hashlib.sha256(raw_path.read_bytes()).hexdigest()
+        run["physical_cr3_count"] += 1
         if run["physical_cr3_count"] > int(plan["budgets"]["physical_cr3_cap"]):
             raise RuntimeError("thermal diagnostic physical CR3 cap exceeded")
         _write_json(root / "run.json", run)
+        if reported_physical != 1:
+            rejected_capture["rejection_stage"] = "reported_physical_count_mismatch"
+            raise RuntimeError("thermal capture reported physical count differs from one retained CR3")
+        rejected_capture["rejection_stage"] = "sidecar_and_timing_validation"
+        if (
+            sidecar_path is None
+            or not sidecar_path.is_relative_to(run_root)
+            or sidecar_candidate is None
+            or sidecar_candidate.is_symlink()
+            or not sidecar_path.is_file()
+            or sidecar_path.stat().st_size <= 0
+            or sidecar_path != raw_path.with_suffix(raw_path.suffix + ".metadata.json")
+        ):
+            raise RuntimeError("capture adapter lacks the retained CR3 sidecar owner")
+        rejected_capture["sidecar_sha256"] = hashlib.sha256(sidecar_path.read_bytes()).hexdigest()
+        try:
+            sidecar = json.loads(sidecar_path.read_text(encoding="utf-8"))
+            remote_metadata, receipt = camera_remote_v2.split_and_validate_sidecar(
+                sidecar, payload=raw_path.read_bytes(),
+            )
+        except (OSError, UnicodeError, json.JSONDecodeError, camera_remote_v2.RemoteCaptureV2Error) as exc:
+            raise RuntimeError("capture adapter retained invalid CR3 sidecar evidence") from exc
+        if capture.get("timing_metadata") != sidecar:
+            raise RuntimeError("capture adapter timing metadata differs from retained sidecar")
+        receipt_timing = receipt.get("timing_evidence")
+        if not isinstance(receipt_timing, Mapping) or capture.get("timing_evidence") != receipt_timing:
+            raise RuntimeError("capture adapter timing evidence differs from retained sidecar")
+        estimate = remote_metadata.get("exposure_start_estimate")
+        method = estimate.get("method") if isinstance(estimate, Mapping) else None
+        if receipt_timing.get("tier") in thermal.ACCEPTED_TIMING_TIERS and method not in {
+            "gphoto_event_minus_recorded_exposure",
+            "gphoto_capture_return_minus_recorded_exposure",
+        }:
+            raise RuntimeError("capture adapter timing estimate lacks a recognized method")
 
         timing = capture.get("timing_evidence")
         if not isinstance(timing, Mapping):
@@ -198,7 +250,7 @@ def execute_plan(
             raise RuntimeError("capture has unsupported timing provenance")
         observed = timing.get("best_effort_elapsed_s") if step["formal_measurement"] else None
         if step["formal_measurement"] and (
-            timing.get("tier") not in thermal.TIMING_CONTRACT_V2["accepted_tiers"]
+            timing.get("tier") not in thermal.ACCEPTED_TIMING_TIERS
             or timing.get("status") != "accepted_best_effort_anchor"
             or isinstance(observed, bool)
             or not isinstance(observed, (int, float))
@@ -210,7 +262,7 @@ def execute_plan(
         nominal = step.get("requested_elapsed_s")
         offset = None if nominal is None or observed is None else float(observed) - float(nominal)
         if step["formal_measurement"]:
-            group = (str(step["source_id"]), str(step["state_id"]), step.get("cycle_index"), step.get("role"))
+            group = thermal.timing_sequence_identity(str(plan["experiment_id"]), step)
             previous_observed = last_observed_by_group.get(group)
             if previous_observed is not None and float(observed) <= previous_observed:
                 rejected_capture["timing_evidence"] = dict(timing)
@@ -224,6 +276,7 @@ def execute_plan(
             "best_effort_exposure_start_elapsed_s": observed,
             "timing_offset_s": offset,
             "timing_evidence_status": "accepted" if step["formal_measurement"] else "diagnostic_not_timed",
+            "timing_estimate_method": method if step["formal_measurement"] else None,
             "capture": dict(capture),
             "timing_evidence": dict(timing),
         }
@@ -247,7 +300,7 @@ def execute_plan(
 
     try:
         record_gate("run_start")
-        for item in _ledger_groups(plan["captures"]):
+        for item in _ledger_groups(str(plan["experiment_id"]), plan["captures"]):
             if len(item) == 1 and item[0]["capture_role"] == "ambient":
                 step = item[0]
                 record_gate(str(step["isolation_gate_before"]))
@@ -313,16 +366,19 @@ def execute_plan(
     return root
 
 
-def _ledger_groups(captures: Sequence[Mapping[str, Any]]) -> list[list[Mapping[str, Any]]]:
+def _ledger_groups(
+    experiment_id: str, captures: Sequence[Mapping[str, Any]],
+) -> list[list[Mapping[str, Any]]]:
     groups: list[list[Mapping[str, Any]]] = []
     for step in captures:
         if step["capture_role"] == "ambient":
             groups.append([step])
             continue
-        key = (step.get("source_id"), step.get("state_id"), step.get("cycle_index"), step.get("role"))
+        key = thermal.timing_sequence_identity(experiment_id, step)
         previous = groups[-1][0] if groups and groups[-1][0]["capture_role"] == "formal" else None
-        previous_key = None if previous is None else (
-            previous.get("source_id"), previous.get("state_id"), previous.get("cycle_index"), previous.get("role")
+        previous_key = (
+            None if previous is None
+            else thermal.timing_sequence_identity(experiment_id, previous)
         )
         if groups and previous is not None and key == previous_key and float(step["requested_elapsed_s"]) > float(groups[-1][-1]["requested_elapsed_s"]):
             groups[-1].append(step)

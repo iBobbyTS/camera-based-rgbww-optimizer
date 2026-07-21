@@ -1072,3 +1072,54 @@ ESPHome、真实 `all_off`，未创建新 CR3，未启动 heartbeat；`PLAN.md` 
 离线 artifact 根目录：`/Volumes/4T/temp/rgbww-optimizer/p7-td-a-timing-v2-offline/p7-td-a-t0-20260721-114338`。`retained-t60-forensic-replay.json` 独立重放得到 `64.40580299403518s`、offset `+4.40580299403518s`、Tier B，decision 为 `timing_evidence_would_be_accepted_under_v2`，旧 run 未修改且未作为 settling evidence。fake single/paired analyzer、summary、manifest 和 `validation-summary.json` 均已生成；设备/网络/`.env`/remote/camera/Ray/ESPHome/all_off/new CR3/heartbeat 副作用均为 0。
 
 代码与测试已完成 focused commit，等待 Planner 按 T0-PASS/T0-CONTRACT-FAIL 门验收；本轮不申请或消费新的实拍授权，不解锁 TD-A 实机、TD-B、TD-C 或后续阶段。
+
+## 18. P7-TD-A-T0-R1 timing v2 review gaps 离线闭环
+
+执行日期：2026-07-21。仅执行新 `PLAN.md` 冻结的 `T0-REV-001..005`；未修改 Planner-owned
+`PLAN.md`。第 17 节写入的 `focused=50/50` 是旧交接误写，保留的 T0 log/summary 实际为
+`51/51`；本轮 R1 新 focused log 的真实计数为 `58/58`。
+
+五个 finding 闭环：
+
+- `T0-REV-001`：v1/v2 contract、single analysis、paired combined/manifest 均显式分派。v1 settled
+  与 non-settled 保持 legacy schema，不输出 observed claims；mixed pair 在创建 output 前拒绝。
+- `T0-REV-002`：`p7_thermal_diagnostics.timing_sequence_identity()` 成为 runner/analyzer/_formal_groups
+  共用 owner；TD-A 按 cycle、TD-B 按 switch/return role、TD-C 按 session 分组。两个 TD-C session
+  使用相同 `64.4s` observed elapsed 合法。
+- `T0-REV-003`：runner 在计数前验证 exact current-run unique nonempty CR3；missing/empty/outside/
+  symlink escape 均为 physical 0；有效 CR3 后 sidecar 失败保持 physical 1；重复 path 不重复计数。
+- `T0-REV-004`：v2 row、analyzer slot summary 和 paired source report保留 recognized estimate method；
+  retained t60 replay 为 exact `gphoto_capture_return_minus_recorded_exposure`。
+- `T0-REV-005`：v1/v2 JSON contract 由 deep-copy factory生成，internal accepted tiers为 frozenset，
+  module public owner为 nested-immutable mapping；修改 plan A 的 accepted tier list不影响 plan B或validation。
+
+验证：
+
+```text
+focused = 58/58 (5.328s unittest; wrapper duration 5.613s)
+full suite = 502/502 (116.709s unittest; wrapper duration 116.960s)
+compileall = pass
+all tmp/*.zsh syntax = pass
+git diff --check = pass
+codegraph sync = pass
+```
+
+最终离线 evidence root：
+`/Volumes/4T/temp/rgbww-optimizer/p7-td-a-timing-v2-offline/p7-td-a-t0-r1-20260721-124200`
+
+`validation-summary.json` SHA-256：
+`3c38698ded093a734c708b27f0cbf13080ae3439382a5505055c1c2ef9918048`。该目录同时保留
+legacy v1 single/pair、v2 pair/manifest、TD-C session chronology、physical negative cases 和带 exact method
+的 retained t60 forensic replay。旧 failed run、default operating envelope 与活动 PLAN 的 before/after hash
+均一致。
+
+副作用审计：
+
+```text
+device/network/.env/remote_api/camera/ray/esphome/all_off/new_real_cr3/heartbeat = 0
+remote subproject modified = false
+remote subproject tests claimed = false
+```
+
+状态：`timing_v2_r1_complete_waiting_for_planner`。未申请或消费新的实拍授权，TD-A 实机及后续阶段
+继续锁定。

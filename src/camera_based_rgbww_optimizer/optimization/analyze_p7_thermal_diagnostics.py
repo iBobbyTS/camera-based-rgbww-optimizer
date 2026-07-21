@@ -5,7 +5,7 @@ import hashlib
 import json
 import os
 import re
-from collections import defaultdict
+from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
@@ -29,8 +29,13 @@ from camera_based_rgbww_optimizer.optimization.analyze_hsi_reference_repeatabili
 )
 
 
-TD_A_COMBINED_ANALYSIS_SCHEMA = "p7_td_a_combined_analysis_v2"
-TD_A_INPUT_MANIFEST_SCHEMA = "p7_td_a_input_manifest_v2"
+TD_A_COMBINED_ANALYSIS_SCHEMA_V1 = "p7_td_a_combined_analysis_v1"
+TD_A_COMBINED_ANALYSIS_SCHEMA_V2 = "p7_td_a_combined_analysis_v2"
+TD_A_INPUT_MANIFEST_SCHEMA_V1 = "p7_td_a_input_manifest_v1"
+TD_A_INPUT_MANIFEST_SCHEMA_V2 = "p7_td_a_input_manifest_v2"
+# Public aliases retain the current production v2 names.
+TD_A_COMBINED_ANALYSIS_SCHEMA = TD_A_COMBINED_ANALYSIS_SCHEMA_V2
+TD_A_INPUT_MANIFEST_SCHEMA = TD_A_INPUT_MANIFEST_SCHEMA_V2
 TD_A_DECISION_OWNER = "Planner"
 TD_A_ANALYZER_MODULE = (
     "camera_based_rgbww_optimizer.optimization.analyze_p7_thermal_diagnostics"
@@ -58,21 +63,12 @@ def analyze_thermal_run(
         raise ValueError("thermal analyzer requires a completed exact experiment")
     _verify_frozen_inputs(plan["inputs"])
     schema = plan.get("schema")
-    legacy_contract = {
-        "name": "best_effort_gphoto2_v1",
-        "decision_owner": "Developer/Human",
-        "network_assumption": "wired_lan_latency_negligible_developer_decision",
-        "accepted_tiers": ["tier_a", "tier_b"],
-        "absolute_exposure_start_required": False,
-        "absolute_exposure_start": False,
-        "provenance": "best_effort_gphoto2_exposure_start_estimate",
-    }
     if schema == thermal.PLAN_SCHEMA_V1:
         timing_version = 1
-        expected_contract = legacy_contract
+        expected_contract = thermal.timing_contract(1)
     elif schema == thermal.PLAN_SCHEMA_V2:
         timing_version = 2
-        expected_contract = thermal.TIMING_CONTRACT_V2
+        expected_contract = thermal.timing_contract(2)
     else:
         raise ValueError("thermal analyzer requires an explicit supported plan schema")
     if plan.get("timing_contract") != expected_contract:
@@ -115,7 +111,9 @@ def analyze_thermal_run(
         validate_both_off(
             evidence.get("strip_device_evidence", {}), evidence.get("ray_readback", {}), curve,
         )
-    expected_commands = [group[0] for group in _formal_groups(plan["captures"])]
+    expected_commands = [
+        group[0] for group in _formal_groups(str(plan["experiment_id"]), plan["captures"])
+    ]
     if len(commands) != len(expected_commands):
         raise ValueError("thermal command/readback ledger count differs from frozen plan")
     for expected, item in zip(expected_commands, commands, strict=True):
@@ -139,8 +137,9 @@ def analyze_thermal_run(
     ambient_captures = []
     timing_tiers: dict[str, int] = defaultdict(int)
     timing_unknown = 0
-    observed_by_cycle: dict[tuple[str, str, Any, Any], float] = {}
-    slot_observed: dict[int, list[float]] = defaultdict(list)
+    owned_raw_paths: set[Path] = set()
+    observed_by_cycle: dict[tuple[Any, ...], float] = {}
+    slot_observed: dict[int, list[tuple[float, str]]] = defaultdict(list)
     for step, capture, covariate in zip(plan["captures"], captures, covariates, strict=True):
         if capture.get("plan_step") != step or capture.get("source_id") != step.get("source_id"):
             raise ValueError("thermal capture owner or frozen step mismatch")
@@ -179,9 +178,20 @@ def analyze_thermal_run(
         if covariate["source_id"] != step["source_id"] or covariate["state_id"] != step["state_id"]:
             raise ValueError("thermal covariate source/state owner mismatch")
         raw_path = payload.get("saved_file") or (payload.get("capture") or {}).get("saved_file")
-        if not raw_path or not Path(raw_path).is_file() or Path(raw_path).stat().st_size <= 0:
+        raw_candidate = Path(str(raw_path)) if raw_path else None
+        resolved_raw = raw_candidate.resolve() if raw_candidate is not None else None
+        if (
+            resolved_raw is None
+            or not resolved_raw.is_relative_to(root.resolve())
+            or raw_candidate is None
+            or raw_candidate.is_symlink()
+            or not resolved_raw.is_file()
+            or resolved_raw.stat().st_size <= 0
+            or resolved_raw in owned_raw_paths
+        ):
             raise ValueError("thermal capture lacks retained nonempty CR3 provenance")
-        timing = _replay_timing_evidence(capture, payload, Path(raw_path), root)
+        owned_raw_paths.add(resolved_raw)
+        timing, estimate_method = _replay_timing_evidence(capture, payload, resolved_raw, root)
         timing_tiers[str(timing["tier"])] += 1
         if timing["tier"] == "tier_c":
             timing_unknown += 1
@@ -196,30 +206,31 @@ def analyze_thermal_run(
                     raise ValueError("thermal timing elapsed or error was self-reported inconsistently")
             else:
                 if (
-                    timing.get("tier") not in thermal.TIMING_CONTRACT_V2["accepted_tiers"]
+                    timing.get("tier") not in thermal.ACCEPTED_TIMING_TIERS
                     or timing.get("status") != "accepted_best_effort_anchor"
                     or capture.get("nominal_slot_s") != step.get("requested_elapsed_s")
                     or capture.get("best_effort_exposure_start_elapsed_s") != capture_actual
                     or capture.get("timing_offset_s") != expected_error
                     or capture.get("timing_evidence_status") != "accepted"
+                    or capture.get("timing_estimate_method") != estimate_method
                 ):
                     raise ValueError("thermal v2 observed timing was self-reported inconsistently")
                 observed = float(capture_actual)
                 if not np.isfinite(observed) or observed < 0:
                     raise ValueError("thermal v2 observed elapsed is invalid")
-                group = (str(step["source_id"]), str(step["state_id"]), step.get("cycle_index"), step.get("role"))
+                group = thermal.timing_sequence_identity(str(plan["experiment_id"]), step)
                 previous_observed = observed_by_cycle.get(group)
                 if previous_observed is not None and observed <= previous_observed:
                     raise ValueError("thermal v2 observed chronology is not strictly increasing")
                 observed_by_cycle[group] = observed
-                slot_observed[int(step["requested_elapsed_s"])].append(observed)
+                slot_observed[int(step["requested_elapsed_s"])].append((observed, str(estimate_method)))
         exposure = payload.get("recorded_exposure") or payload.get("exposure_metadata") or {}
         if exposure.get("status") != "recorded":
             raise ValueError("thermal capture lacks recorded exposure provenance")
-        physical = int(payload.get("physical_capture_count", 1))
-        if physical != 1:
+        physical_value = payload.get("physical_capture_count")
+        if type(physical_value) is not int or physical_value != 1:
             raise ValueError("thermal fixed capture physical count must equal one")
-        recomputed_physical += physical
+        recomputed_physical += physical_value
     if recomputed_formal != int(plan["budgets"]["formal_cap"]) or int(run.get("completed_formal", -1)) != recomputed_formal:
         raise ValueError("thermal formal ledger count mismatch")
     if recomputed_ambient != int(plan["budgets"]["ambient_cap"]) or int(run.get("ambient_capture_count", -1)) != recomputed_ambient:
@@ -234,7 +245,10 @@ def analyze_thermal_run(
         source=str(plan.get("source") or "ray"), feature_ids=feature_ids,
     )
     if experiment == thermal.TD_A:
-        result = analyze_td_a(formal_captures, feature_ids=feature_ids, compatibility_fn=compatibility)
+        result = analyze_td_a(
+            formal_captures, feature_ids=feature_ids,
+            compatibility_fn=compatibility, timing_version=timing_version,
+        )
     elif experiment == thermal.TD_B:
         result = analyze_td_b(formal_captures, feature_ids=feature_ids, compatibility_fn=compatibility_fn)
     else:
@@ -245,15 +259,19 @@ def analyze_thermal_run(
     timing_slot_summary = {
         str(slot): {
             "sample_count": len(values),
-            "observed_elapsed_s": list(values),
-            "offset_s": [value - float(slot) for value in values],
-            "min_observed_elapsed_s": min(values),
-            "median_observed_elapsed_s": float(np.median(values)),
-            "max_observed_elapsed_s": max(values),
+            "observed_elapsed_s": [value for value, _method in values],
+            "offset_s": [value - float(slot) for value, _method in values],
+            "estimate_method": [method for _value, method in values],
+            "method_distribution": dict(Counter(
+                method for _value, method in values
+            )),
+            "min_observed_elapsed_s": min(value for value, _method in values),
+            "median_observed_elapsed_s": float(np.median([value for value, _method in values])),
+            "max_observed_elapsed_s": max(value for value, _method in values),
         }
         for slot, values in sorted(slot_observed.items())
     }
-    return {
+    report = {
         "schema": thermal.ANALYSIS_SCHEMA_V2 if timing_version == 2 else "p7_thermal_diagnostic_analysis_v1",
         "experiment_id": experiment,
         "source_id": str(plan.get("source")),
@@ -266,11 +284,13 @@ def analyze_thermal_run(
         "timing_absolute_truth": False,
         "timing_source": "best_effort_gphoto2_observed_elapsed" if timing_version == 2 else "best_effort_gphoto2",
         "timing_contract_evidence": dict(expected_contract),
-        "timing_slot_summary": timing_slot_summary,
         "tier_distribution": dict(timing_tiers),
         "unknown_uncertainty_count": timing_unknown,
-        **result,
     }
+    if timing_version == 2:
+        report["timing_slot_summary"] = timing_slot_summary
+    report.update(result)
+    return report
 
 
 def _validate_completion_evidence(root: Path, run: Mapping[str, Any]) -> dict[str, str]:
@@ -363,7 +383,7 @@ def _validate_capture_settings_provenance(
 
 def _replay_timing_evidence(
     capture: Mapping[str, Any], payload: Mapping[str, Any], raw_path: Path, run_root: Path,
-) -> dict[str, Any]:
+) -> tuple[dict[str, Any], str | None]:
     metadata_path = payload.get("remote_metadata_path")
     if not isinstance(metadata_path, str):
         raise ValueError("thermal capture lacks retained remote v2 metadata path")
@@ -395,12 +415,20 @@ def _replay_timing_evidence(
     )
     if dict(timing) != replayed:
         raise ValueError("thermal local timing receipt was tampered")
-    return replayed
+    estimate = remote_metadata.get("exposure_start_estimate")
+    method = estimate.get("method") if isinstance(estimate, Mapping) else None
+    if replayed.get("tier") in thermal.ACCEPTED_TIMING_TIERS and method not in {
+        "gphoto_event_minus_recorded_exposure",
+        "gphoto_capture_return_minus_recorded_exposure",
+    }:
+        raise ValueError("thermal available timing estimate lacks a recognized method")
+    return replayed, method
 
 
 def analyze_td_a(
     captures: Sequence[Mapping[str, Any]], *, feature_ids: Sequence[str],
     compatibility_fn: Callable[[Sequence[float], Sequence[float]], bool] | None = None,
+    timing_version: int = 2,
 ) -> dict[str, Any]:
     cycles: dict[str, dict[int, list[Mapping[str, float]]]] = defaultdict(lambda: defaultdict(list))
     for row in captures:
@@ -420,26 +448,27 @@ def analyze_td_a(
     audit = thermal.summarize_group_audit(groups, feature_ids)
     if audit["trend_failed"] or audit["dominance_failed"]:
         settling = {"status": "settling_not_demonstrated_by_600", "t_settle_s": None, "six_hundred_is_validation_only": True}
-    return {
+    result = {
         "status": "td_a_pass" if settling["t_settle_s"] is not None else settling["status"],
         "within_cycle_settling": settling,
         "between_cycle_repeatability": audit,
         "state_specific_settle_time": {"A": settling["t_settle_s"]},
         "source_specific_settle_time": settling["t_settle_s"],
-        "source_specific_settle_observed_max_s": (
-            None if settling["t_settle_s"] is None else max(observed_by_slot[int(settling["t_settle_s"])])
-        ),
-        "timing_slot_summary": {
-            str(slot): {
-                "sample_count": len(values), "observed_elapsed_s": values,
-                "offset_s": [value - float(slot) for value in values],
-                "min_observed_elapsed_s": min(values), "median_observed_elapsed_s": float(np.median(values)),
-                "max_observed_elapsed_s": max(values),
-            }
-            for slot, values in sorted(observed_by_slot.items())
-        },
         "temperature_not_sufficient_proxy": False,
     }
+    if timing_version == 1:
+        return result
+    if timing_version != 2:
+        raise ValueError("unsupported TD-A timing analysis version")
+    selected = settling["t_settle_s"]
+    if selected is not None and not observed_by_slot.get(int(selected)):
+        raise ValueError("TD-A v2 settled result lacks observed timing evidence")
+    result.update({
+        "source_specific_settle_observed_max_s": (
+            None if selected is None else max(observed_by_slot[int(selected)])
+        ),
+    })
+    return result
 
 
 def analyze_td_b(
@@ -635,10 +664,24 @@ def analyze_td_a_pair(
         raise ValueError("TD-A paired finalizer requires distinct Ray and strip runs")
     if _feature_ids_from_artifact(feature_path) != list(feature_ids):
         raise ValueError("TD-A paired finalizer feature IDs differ from the retained feature file")
-    ray_report = analyze_thermal_run(ray_root, feature_ids=feature_ids)
-    strip_report = analyze_thermal_run(strip_root, feature_ids=feature_ids)
     ray_plan = _load_json(ray_root / "plan.json")
     strip_plan = _load_json(strip_root / "plan.json")
+    plan_schemas = {ray_plan.get("schema"), strip_plan.get("schema")}
+    if len(plan_schemas) != 1 or next(iter(plan_schemas)) not in {
+        thermal.PLAN_SCHEMA_V1, thermal.PLAN_SCHEMA_V2,
+    }:
+        raise ValueError("TD-A paired finalizer rejects mixed timing plan versions")
+    timing_version = 1 if ray_plan.get("schema") == thermal.PLAN_SCHEMA_V1 else 2
+    combined_schema = (
+        TD_A_COMBINED_ANALYSIS_SCHEMA_V1 if timing_version == 1
+        else TD_A_COMBINED_ANALYSIS_SCHEMA_V2
+    )
+    manifest_schema = (
+        TD_A_INPUT_MANIFEST_SCHEMA_V1 if timing_version == 1
+        else TD_A_INPUT_MANIFEST_SCHEMA_V2
+    )
+    ray_report = analyze_thermal_run(ray_root, feature_ids=feature_ids)
+    strip_report = analyze_thermal_run(strip_root, feature_ids=feature_ids)
 
     if ray_plan.get("experiment_id") != thermal.TD_A or strip_plan.get("experiment_id") != thermal.TD_A:
         raise ValueError("TD-A paired finalizer requires two exact TD-A runs")
@@ -695,12 +738,9 @@ def analyze_td_a_pair(
     strip_settle = _validated_td_a_settle(strip_report, source="strip")
     both_settled = ray_settle is not None and strip_settle is not None
     provisional = max(ray_settle, strip_settle) if both_settled else None
-    ray_observed = ray_report.get("source_specific_settle_observed_max_s") if both_settled else None
-    strip_observed = strip_report.get("source_specific_settle_observed_max_s") if both_settled else None
-    observed_provisional = max(ray_observed, strip_observed) if ray_observed is not None and strip_observed is not None else None
     status = "td_a_pass" if both_settled else "settling_not_demonstrated_by_600"
     combined = {
-        "schema": TD_A_COMBINED_ANALYSIS_SCHEMA,
+        "schema": combined_schema,
         "experiment_id": thermal.TD_A,
         "status": status,
         "ray_run": str(ray_root.resolve()),
@@ -717,18 +757,27 @@ def analyze_td_a_pair(
         "t_settle_ray_s": ray_settle,
         "t_settle_strip_s": strip_settle,
         "t_formal_provisional_s": provisional,
-        "t_settle_ray_observed_max_s": ray_observed,
-        "t_settle_strip_observed_max_s": strip_observed,
-        "t_formal_provisional_observed_max_s": observed_provisional,
-        "source_observed_timing_summary": {
-            "ray": ray_report.get("timing_slot_summary", {}),
-            "strip": strip_report.get("timing_slot_summary", {}),
-        },
         "t_formal_s": None,
         "six_hundred_is_validation_only": True,
         "default_operating_envelope_modified": False,
         "source_results": {"ray": ray_report, "strip": strip_report},
     }
+    if timing_version == 2:
+        ray_observed = ray_report.get("source_specific_settle_observed_max_s") if both_settled else None
+        strip_observed = strip_report.get("source_specific_settle_observed_max_s") if both_settled else None
+        observed_provisional = (
+            max(ray_observed, strip_observed)
+            if ray_observed is not None and strip_observed is not None else None
+        )
+        combined.update({
+            "t_settle_ray_observed_max_s": ray_observed,
+            "t_settle_strip_observed_max_s": strip_observed,
+            "t_formal_provisional_observed_max_s": observed_provisional,
+            "source_observed_timing_summary": {
+                "ray": ray_report.get("timing_slot_summary", {}),
+                "strip": strip_report.get("timing_slot_summary", {}),
+            },
+        })
 
     output = Path(output_dir)
     output.mkdir(parents=True, exist_ok=False)
@@ -750,6 +799,8 @@ def analyze_td_a_pair(
             frozen_inputs=ray_plan["inputs"],
             timing_contract=ray_plan["timing_contract"],
             code_checkpoint=checkpoint,
+            manifest_schema=manifest_schema,
+            analysis_schema=combined_schema,
         )
         _write_text_atomic(
             manifest_path,
@@ -777,6 +828,8 @@ def _build_td_a_input_manifest(
     frozen_inputs: Mapping[str, Any],
     timing_contract: Mapping[str, Any],
     code_checkpoint: str,
+    manifest_schema: str,
+    analysis_schema: str,
 ) -> dict[str, Any]:
     def source_entry(root: Path) -> dict[str, str]:
         plan_path = (root / "plan.json").resolve()
@@ -790,12 +843,12 @@ def _build_td_a_input_manifest(
         }
 
     return {
-        "schema": TD_A_INPUT_MANIFEST_SCHEMA,
+        "schema": manifest_schema,
         "experiment_id": thermal.TD_A,
         "decision_owner": TD_A_DECISION_OWNER,
         "generated_by": {
             "module": TD_A_ANALYZER_MODULE,
-            "analysis_schema": TD_A_COMBINED_ANALYSIS_SCHEMA,
+            "analysis_schema": analysis_schema,
             "code_checkpoint": code_checkpoint,
             "command_contract": dict(TD_A_COMMAND_CONTRACT),
         },
@@ -830,9 +883,17 @@ def validate_td_a_input_manifest(manifest_path: str | Path) -> dict[str, Any]:
         "feature_ids", "frozen_inputs", "timing_contract", "outputs",
     }:
         raise ValueError("TD-A input manifest top-level schema drift")
+    manifest_schema = manifest.get("schema")
+    if manifest_schema == TD_A_INPUT_MANIFEST_SCHEMA_V1:
+        expected_plan_schema = thermal.PLAN_SCHEMA_V1
+        expected_analysis_schema = TD_A_COMBINED_ANALYSIS_SCHEMA_V1
+    elif manifest_schema == TD_A_INPUT_MANIFEST_SCHEMA_V2:
+        expected_plan_schema = thermal.PLAN_SCHEMA_V2
+        expected_analysis_schema = TD_A_COMBINED_ANALYSIS_SCHEMA_V2
+    else:
+        raise ValueError("TD-A input manifest owner or schema mismatch")
     if (
-        manifest.get("schema") != TD_A_INPUT_MANIFEST_SCHEMA
-        or manifest.get("experiment_id") != thermal.TD_A
+        manifest.get("experiment_id") != thermal.TD_A
         or manifest.get("decision_owner") != TD_A_DECISION_OWNER
     ):
         raise ValueError("TD-A input manifest owner or schema mismatch")
@@ -844,7 +905,7 @@ def validate_td_a_input_manifest(manifest_path: str | Path) -> dict[str, Any]:
         raise ValueError("TD-A input manifest generated_by schema drift")
     if (
         generated.get("module") != TD_A_ANALYZER_MODULE
-        or generated.get("analysis_schema") != TD_A_COMBINED_ANALYSIS_SCHEMA
+        or generated.get("analysis_schema") != expected_analysis_schema
         or generated.get("command_contract") != TD_A_COMMAND_CONTRACT
     ):
         raise ValueError("TD-A input manifest generator contract mismatch")
@@ -874,6 +935,7 @@ def validate_td_a_input_manifest(manifest_path: str | Path) -> dict[str, Any]:
         run = _load_json(run_path)
         if (
             plan.get("experiment_id") != thermal.TD_A
+            or plan.get("schema") != expected_plan_schema
             or plan.get("source") != source
             or run.get("experiment_id") != thermal.TD_A
             or run.get("status") != "complete"
@@ -914,6 +976,9 @@ def validate_td_a_input_manifest(manifest_path: str | Path) -> dict[str, Any]:
         source_plans["ray"].get("timing_contract")
         != source_plans["strip"].get("timing_contract")
         or timing_contract != source_plans["ray"].get("timing_contract")
+        or timing_contract != thermal.timing_contract(
+            1 if expected_plan_schema == thermal.PLAN_SCHEMA_V1 else 2
+        )
     ):
         raise ValueError("TD-A input manifest timing contract replay mismatch")
 
@@ -934,7 +999,7 @@ def validate_td_a_input_manifest(manifest_path: str | Path) -> dict[str, Any]:
         output_paths[name] = output_path
     analysis = _load_json(output_paths["td-a-combined-analysis.json"])
     if (
-        analysis.get("schema") != TD_A_COMBINED_ANALYSIS_SCHEMA
+        analysis.get("schema") != expected_analysis_schema
         or analysis.get("experiment_id") != thermal.TD_A
         or Path(str(analysis.get("ray_run"))).resolve() != Path(sources["ray"]["run_dir"])
         or Path(str(analysis.get("strip_run"))).resolve() != Path(sources["strip"]["run_dir"])
@@ -987,15 +1052,20 @@ def _validated_td_a_settle(report: Mapping[str, Any], *, source: str) -> int | N
 
 
 def _render_td_a_summary(combined: Mapping[str, Any]) -> str:
-    return (
+    lines = (
         "# P7 TD-A Combined Analysis\n\n"
         f"- status: `{combined['status']}`\n"
         f"- Ray settle: `{combined['t_settle_ray_s']}` s\n"
         f"- strip settle: `{combined['t_settle_strip_s']}` s\n"
         f"- provisional formal settle: `{combined['t_formal_provisional_s']}` s\n"
-        f"- Ray observed settle max: `{combined.get('t_settle_ray_observed_max_s')}` s\n"
-        f"- strip observed settle max: `{combined.get('t_settle_strip_observed_max_s')}` s\n"
-        f"- provisional observed settle max: `{combined.get('t_formal_provisional_observed_max_s')}` s\n"
+    )
+    if combined.get("schema") == TD_A_COMBINED_ANALYSIS_SCHEMA_V2:
+        lines += (
+            f"- Ray observed settle max: `{combined.get('t_settle_ray_observed_max_s')}` s\n"
+            f"- strip observed settle max: `{combined.get('t_settle_strip_observed_max_s')}` s\n"
+            f"- provisional observed settle max: `{combined.get('t_formal_provisional_observed_max_s')}` s\n"
+        )
+    return lines + (
         f"- captures: `{combined['formal_capture_count']}` formal + "
         f"`{combined['ambient_capture_count']}` ambient / `{combined['physical_cr3_count']}` physical CR3\n"
         "- default operating envelope modified: `false`\n"
@@ -1035,18 +1105,17 @@ def _load_jsonl(path: Path) -> list[dict[str, Any]]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
-def _formal_groups(captures: Sequence[Mapping[str, Any]]) -> list[list[Mapping[str, Any]]]:
+def _formal_groups(
+    experiment_id: str, captures: Sequence[Mapping[str, Any]],
+) -> list[list[Mapping[str, Any]]]:
     groups: list[list[Mapping[str, Any]]] = []
     for step in captures:
         if not step.get("formal_measurement"):
             continue
-        key = (step.get("source_id"), step.get("state_id"), step.get("cycle_index"), step.get("role"))
+        key = thermal.timing_sequence_identity(experiment_id, step)
         if groups:
             previous = groups[-1][0]
-            previous_key = (
-                previous.get("source_id"), previous.get("state_id"),
-                previous.get("cycle_index"), previous.get("role"),
-            )
+            previous_key = thermal.timing_sequence_identity(experiment_id, previous)
         else:
             previous_key = None
         if groups and key == previous_key and float(step["requested_elapsed_s"]) > float(groups[-1][-1]["requested_elapsed_s"]):

@@ -45,6 +45,65 @@ def _minimal_covariate(step):
     )
 
 
+def _attach_v2_capture_evidence(root, step, result, *, observed=None, tier="tier_b", method=None):
+    sequence = int(step["capture_id"].split("-", 1)[0])
+    raw = Path(root) / f"{step['capture_id']}.CR3"
+    raw.parent.mkdir(parents=True, exist_ok=True)
+    raw.write_bytes(f"raw-{step['capture_id']}".encode())
+    request_ns = 1_000_000_000
+    if observed is None:
+        observed = float(step.get("requested_elapsed_s") or 1.0)
+    status = {"tier_a": "estimated_not_absolute", "tier_b": "weak_estimate", "tier_c": "unavailable"}[tier]
+    if method is None and tier != "tier_c":
+        method = "gphoto_capture_return_minus_recorded_exposure"
+    estimate_ns = None if tier == "tier_c" else request_ns + int(float(observed) * 1_000_000_000)
+    capture_done_ns = request_ns + 10_000_000 if estimate_ns is None else estimate_ns + 10_000_000
+    metadata = {
+        "schema": "remote_capture_result_v2", "capture_id": step["capture_id"],
+        "request_id": f"request-{sequence}", "timing_quality": "best_effort_gphoto2",
+        "formal_p7_eligibility": "unchanged_requires_later_planner_advisor_decision",
+        "cr3": {"sha256": hashlib.sha256(raw.read_bytes()).hexdigest(), "byte_count": raw.stat().st_size, "content_type": "image/x-canon-cr3"},
+        "gphoto2": {"driver_event_type": None, "event_sequence": [], "request_received_monotonic_ns": request_ns,
+            "capture_call_started_monotonic_ns": request_ns, "capture_call_returned_monotonic_ns": capture_done_ns,
+            "camera_event_observed_monotonic_ns": None, "file_added_observed_monotonic_ns": None,
+            "download_started_monotonic_ns": capture_done_ns + 10_000_000, "download_completed_monotonic_ns": capture_done_ns + 20_000_000,
+            "cr3_saved_observed_monotonic_ns": capture_done_ns + 30_000_000, "clock_domain": "bridge_monotonic"},
+        "recorded_exposure": {"seconds": 0.01, "source": "Canon:ExposureTime", "status": "recorded"},
+        "exposure_start_estimate": {"timestamp_monotonic_ns": estimate_ns, "clock_domain": "bridge_monotonic", "method": method,
+            "status": status, "uncertainty_ms": None, "uncertainty_basis": "unknown"},
+        "network_observation": {"request_id": f"request-{sequence}", "response_or_event_round_trip_ms": None, "uncertainty_ms": None, "uncertainty_basis": "unknown"},
+        "bridge_utc_observation": {"request_received": "2026-07-21T00:00:00+00:00", "source": "bridge_system_clock_utc"},
+    }
+    # Keep capture-return arithmetic exact for the recognized Tier B method.
+    if method == "gphoto_capture_return_minus_recorded_exposure" and estimate_ns is not None:
+        metadata["gphoto2"]["capture_call_returned_monotonic_ns"] = estimate_ns + 10_000_000
+    elif method == "gphoto_event_minus_recorded_exposure" and estimate_ns is not None:
+        metadata["gphoto2"]["file_added_observed_monotonic_ns"] = estimate_ns + 10_000_000
+    timing = camera_remote_v2.reconstruct_best_effort_timing(
+        metadata, local_request_started_monotonic_s=0.0,
+        local_response_received_monotonic_s=max(1.0, float(observed) + 1.0),
+        local_readback_done_monotonic_s=0.0,
+    )
+    metadata["_local_receipt"] = {
+        "parser_version": camera_remote_v2.PARSER_VERSION,
+        "response_headers": {"content-type": "multipart/mixed; boundary=fake", "content-length": "1000",
+            "x-capture-id": step["capture_id"], "x-request-id": f"request-{sequence}",
+            "x-capture-metadata-schema": camera_remote_v2.SCHEMA},
+        "multipart_body_byte_count": 1000, "multipart_body_sha256": "a" * 64,
+        "http_attempts": 1, "successful_attempt_index": 1,
+        "local_request_started_monotonic_s": 0.0,
+        "local_response_received_monotonic_s": max(1.0, float(observed) + 1.0),
+        "received_monotonic_s": max(1.0, float(observed) + 1.0),
+        "timing_evidence": timing,
+    }
+    sidecar = raw.with_suffix(raw.suffix + ".metadata.json")
+    sidecar.write_text(json.dumps(metadata), encoding="utf-8")
+    result.update({"saved_file": str(raw), "remote_metadata_path": str(sidecar),
+                   "timing_metadata": metadata, "timing_evidence": timing,
+                   "physical_capture_count": 1})
+    return result
+
+
 class P7ThermalDiagnosticsTests(unittest.TestCase):
     def test_td_a_plan_freezes_exact_command_schedule_and_caps(self):
         plan = subject.build_diagnostic_plan(subject.TD_A, source="strip")
@@ -61,6 +120,66 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
         self.assertEqual(plan["schema"], subject.PLAN_SCHEMA_V2)
         self.assertEqual(plan["timing_contract"]["name"], "best_effort_gphoto2_observed_elapsed_v2")
         self.assertFalse(plan["timing_contract"]["absolute_exposure_start"])
+
+    def test_timing_contract_plan_mutation_cannot_pollute_shared_owner(self):
+        first = subject.build_diagnostic_plan(subject.TD_A, source="ray")
+        first["timing_contract"]["accepted_tiers"].append("tier_c")
+        second = subject.build_diagnostic_plan(subject.TD_A, source="ray")
+        self.assertEqual(second["timing_contract"], subject.timing_contract(2))
+        self.assertEqual(subject.TIMING_CONTRACT_V2["accepted_tiers"], ("tier_a", "tier_b"))
+        self.assertEqual(subject.ACCEPTED_TIMING_TIERS, frozenset({"tier_a", "tier_b"}))
+
+    def test_experiment_aware_timing_sequence_identity(self):
+        self.assertNotEqual(
+            subject.timing_sequence_identity(subject.TD_A, {"formal_measurement": True, "source_id": "ray", "state_id": "A", "cycle_index": 1}),
+            subject.timing_sequence_identity(subject.TD_A, {"formal_measurement": True, "source_id": "ray", "state_id": "A", "cycle_index": 2}),
+        )
+        self.assertNotEqual(
+            subject.timing_sequence_identity(subject.TD_B, {"formal_measurement": True, "source_id": "ray", "state_id": "A", "role": "initial_anchor"}),
+            subject.timing_sequence_identity(subject.TD_B, {"formal_measurement": True, "source_id": "ray", "state_id": "A", "role": "return_after_D"}),
+        )
+        self.assertNotEqual(
+            subject.timing_sequence_identity(subject.TD_C, {"formal_measurement": True, "source_id": "ray", "state_id": "A", "session_index": 1}),
+            subject.timing_sequence_identity(subject.TD_C, {"formal_measurement": True, "source_id": "ray", "state_id": "A", "session_index": 2}),
+        )
+        with self.assertRaisesRegex(ValueError, "session identity"):
+            subject.timing_sequence_identity(subject.TD_C, {"formal_measurement": True, "source_id": "ray", "state_id": "A"})
+
+    def test_td_c_runner_accepts_observed_elapsed_reset_across_sessions(self):
+        plan = subject.build_diagnostic_plan(subject.TD_C)
+        ray_steps = [step for step in plan["captures"] if step["formal_measurement"] and step["source_id"] == "ray"][:2]
+        for step in ray_steps:
+            step["requested_elapsed_s"] = 60
+            step["timing_status"] = "resolved"
+            step["timing_acceptance"] = "observed_elapsed_record_only"
+        shutter = {"ray-h120-s100": "1/5000"}
+        plan.update({
+            "status": "execute_authorized",
+            "captures": ray_steps,
+            "budgets": {"formal_cap": 2, "ambient_cap": 0, "physical_cr3_cap": 2},
+            "frozen_shutters": shutter, "exposure_setup_required": [],
+            "execution_authorization": {"human_authorization_experiment_id": subject.TD_C,
+                "human_authorization_verified": True, "remote_v2_capability": True},
+            "camera": {**plan["camera"], "v2_capture_timing_capability_available": True},
+            "shutter_ledger_provenance": {"owner": "experiment_capture_steps",
+                "required_cache_keys": ["ray-h120-s100"],
+                "frozen_shutters_sha256": subject.canonical_sha256(shutter)},
+        })
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir) / "run"
+            def capture(step):
+                return _attach_v2_capture_evidence(
+                    root, step, {"thermal_covariates": _minimal_covariate(step)}, observed=64.4,
+                )
+            measure.execute_plan(
+                plan, run_dir=root, apply_command_fn=lambda _step: {}, readback_fn=lambda _step: {},
+                capture_fn=capture,
+                both_off_gate_fn=lambda _gate: {"status": "pass", "strip_verified_off": True, "ray_verified_off": True},
+                cleanup_fn=lambda: {"status": "pass"}, monotonic_fn=lambda: 0, sleep_fn=lambda _seconds: None,
+            )
+            run = json.loads((root / "run.json").read_text())
+            self.assertEqual(run["status"], "complete")
+            self.assertEqual(run["physical_cr3_count"], 2)
 
     def test_shutter_ledgers_are_scoped_to_exact_experiment_and_source(self):
         expected = {
@@ -207,26 +326,11 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                 raw_black_levels=[512] * 4, raw_white_level=16383,
                 load_history={60: 0, 300: 0, 900: 0}, readback={},
             )
-            result = {
-                "physical_capture_count": 1, "thermal_covariates": covariate,
-            }
+            result = {"thermal_covariates": covariate}
             requested = float(step["requested_elapsed_s"] or 1.0)
-            result["timing_evidence"] = {
-                "provenance": camera_remote_v2.TIMING_PROVENANCE,
-                "timing_contract": camera_remote_v2.TIMING_CONTRACT,
-                "tier": "tier_b", "status": "accepted_best_effort_anchor",
-                "local_request_started_monotonic_s": 0.0,
-                "local_response_received_monotonic_s": requested + 0.2,
-                "local_round_trip_s": requested + 0.2,
-                "local_readback_done_monotonic_s": 0.0,
-                "bridge_relative_delay_s": requested,
-                "best_effort_elapsed_s": requested,
-                "network_assumption": "wired_lan_latency_negligible_developer_decision",
-                "absolute_exposure_start": False,
-            }
             if step["capture_role"] == "ambient":
                 result["ambient_diagnostic"] = {"geometry_hash": "g", "black_levels": [512] * 4}
-            return result
+            return _attach_v2_capture_evidence(root, step, result, observed=requested)
 
         with tempfile.TemporaryDirectory() as tempdir:
             root = Path(tempdir) / "run"
@@ -270,6 +374,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
         )
         def tier_c_capture(step):
             result = {
+                "physical_capture_count": 1,
                 "thermal_covariates": {
                     "monotonic_timestamp_ns": 1, "wall_clock_timestamp": "x", "session_elapsed_s": 0,
                     "source_id": step["source_id"], "state_id": step["state_id"],
@@ -281,15 +386,10 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                     "shutter_seconds": 0.01, "raw_black_levels": [512] * 4, "raw_white_level": 16383,
                     "load_history_proxy_60s": 0, "load_history_proxy_300s": 0, "load_history_proxy_900s": 0,
                 },
-                "timing_evidence": {
-                    "provenance": "best_effort_gphoto2_exposure_start_estimate",
-                    "tier": "tier_c", "status": "timing_evidence_unavailable",
-                    "best_effort_elapsed_s": None,
-                },
             }
             if step["capture_role"] == "ambient":
                 result["ambient_diagnostic"] = {"geometry_hash": "g", "black_levels": [512] * 4}
-            return result
+            return _attach_v2_capture_evidence(root, step, result, tier="tier_c")
         with tempfile.TemporaryDirectory() as tempdir, self.assertRaisesRegex(RuntimeError, "Tier A/B"):
             root = Path(tempdir) / "run"
             measure.execute_plan(
@@ -339,16 +439,8 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
         )
         def capture(step):
             root = current_root[0]
-            raw = root / "rejected.CR3"
-            raw.write_bytes(b"cr3")
-            result = {"saved_file": str(raw), "physical_capture_count": 1,
-                      "thermal_covariates": _minimal_covariate(step),
-                      "timing_evidence": {
-                          "provenance": subject.TIMING_CONTRACT_V2["provenance"],
-                          "tier": "tier_b", "status": "accepted_best_effort_anchor",
-                          "best_effort_elapsed_s": 64.4,
-                      }}
-            return result
+            result = {"thermal_covariates": _minimal_covariate(step)}
+            return _attach_v2_capture_evidence(root, step, result, observed=64.4)
         current_root = [None]
         with tempfile.TemporaryDirectory() as tempdir, self.assertRaisesRegex(RuntimeError, "non-increasing"):
             root = Path(tempdir) / "run"
@@ -370,6 +462,90 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
             failure = json.loads((root / "failure.json").read_text(encoding="utf-8"))
             self.assertEqual(run["physical_cr3_count"], 2)
             self.assertEqual(failure["rejected_capture"]["current_physical_cr3_count"], 2)
+            self.assertNotEqual(
+                Path(json.loads((root / "captures.jsonl").read_text().splitlines()[0])["capture"]["saved_file"]),
+                Path(failure["rejected_capture"]["cr3_path"]),
+            )
+
+    def test_physical_ledger_requires_unique_nonempty_owned_cr3_before_counting(self):
+        def minimal_plan(count=1):
+            plan = subject.build_diagnostic_plan(
+                subject.TD_A, source="ray", for_execution=True,
+                human_authorization=subject.TD_A, v2_capture_capability=True,
+            )
+            steps = plan["captures"][1:1 + count]
+            return {**plan, "captures": steps,
+                    "budgets": {"formal_cap": count, "ambient_cap": 0, "physical_cr3_cap": 22},
+                    "frozen_shutters": {"ray-h120-s100": "1/5000"}, "exposure_setup_required": [],
+                    "shutter_ledger_provenance": {"owner": "experiment_capture_steps",
+                        "required_cache_keys": ["ray-h120-s100"],
+                        "frozen_shutters_sha256": subject.canonical_sha256({"ray-h120-s100": "1/5000"})}}
+
+        def execute(root, plan, capture):
+            return measure.execute_plan(
+                plan, run_dir=root, apply_command_fn=lambda _step: {}, readback_fn=lambda _step: {},
+                capture_fn=capture,
+                both_off_gate_fn=lambda _gate: {"status": "pass", "strip_verified_off": True, "ray_verified_off": True},
+                cleanup_fn=lambda: {"status": "pass"}, monotonic_fn=lambda: 0, sleep_fn=lambda _seconds: None,
+            )
+
+        cases = ("missing", "empty", "outside", "symlink_escape")
+        for case in cases:
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as tempdir:
+                root = Path(tempdir) / "run"
+                def capture(step, case=case):
+                    result = {"physical_capture_count": 1, "thermal_covariates": _minimal_covariate(step)}
+                    if case != "missing":
+                        raw = (root / "empty.CR3") if case == "empty" else (root.parent / "outside.CR3")
+                        raw.parent.mkdir(parents=True, exist_ok=True)
+                        raw.write_bytes(b"" if case == "empty" else b"raw")
+                        if case == "symlink_escape":
+                            link = root / "escape.CR3"
+                            link.symlink_to(raw)
+                            raw = link
+                        result["saved_file"] = str(raw)
+                    return result
+                with self.assertRaisesRegex(RuntimeError, "retained nonempty current-run CR3"):
+                    execute(root, minimal_plan(), capture)
+                run = json.loads((root / "run.json").read_text())
+                failure = json.loads((root / "failure.json").read_text())
+                self.assertEqual(run["physical_cr3_count"], 0)
+                self.assertIsNone(failure["rejected_capture"]["cr3_sha256"])
+
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir) / "run"
+            def missing_sidecar(step):
+                result = _attach_v2_capture_evidence(
+                    root, step, {"thermal_covariates": _minimal_covariate(step)},
+                    observed=float(step["requested_elapsed_s"]),
+                )
+                Path(result["remote_metadata_path"]).unlink()
+                return result
+            with self.assertRaisesRegex(RuntimeError, "sidecar owner"):
+                execute(root, minimal_plan(), missing_sidecar)
+            run = json.loads((root / "run.json").read_text())
+            failure = json.loads((root / "failure.json").read_text())
+            self.assertEqual(run["physical_cr3_count"], 1)
+            self.assertIsNotNone(failure["rejected_capture"]["cr3_sha256"])
+            self.assertIsNone(failure["rejected_capture"]["sidecar_sha256"])
+
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir) / "run"
+            first_result = {}
+            def duplicate(step):
+                if not first_result:
+                    first_result.update(_attach_v2_capture_evidence(
+                        root, step, {"thermal_covariates": _minimal_covariate(step)}, observed=64.4,
+                    ))
+                    return dict(first_result)
+                reused = dict(first_result)
+                reused["thermal_covariates"] = _minimal_covariate(step)
+                return reused
+            with self.assertRaisesRegex(RuntimeError, "reused a CR3"):
+                execute(root, minimal_plan(2), duplicate)
+            run = json.loads((root / "run.json").read_text())
+            self.assertEqual(run["physical_cr3_count"], 1)
+            self.assertEqual(len(list(root.glob("*.CR3"))), 1)
 
     def test_v1_production_plan_is_rejected_before_backend_connect(self):
         plan = subject.build_diagnostic_plan(subject.TD_A, source="ray")
