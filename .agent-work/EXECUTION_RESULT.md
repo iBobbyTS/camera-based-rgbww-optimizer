@@ -1350,3 +1350,110 @@ device/network/.env/remote/camera/Ray/ESPHome/all_off calls: 0
 状态：`p7_td_b_r0s_offline_complete_waiting_for_planner_review`。没有未解决的 Executor 分支。TD-B setup
 实拍、Ray/strip TD-B、TD-C、sentinel、remaining、boundary、holdout、Gate-6、P8、firmware、remote
 deployment 和默认安装继续锁定；Planner 必须另写 exact execution PLAN 后才可进入任何实机步骤。
+
+---
+
+## 25. P7-TD-B-E0X：生产回环、精确 checkpoint 与 release gate
+
+执行日期：2026-07-22。严格消费当前 `PLAN.md` 的 E0X 离线门；未修改 `PLAN.md`。离线阶段没有访问
+设备、网络、`.env`、remote API、相机、Ray 或 ESPHome，也没有调用 `all_off`。
+
+### 25.1 实现结果
+
+- 正式 TD-B CLI 必须显式选择 `--phase setup|formal`；缺失 phase、授权或 remote-v2 capability 时在
+  backend 构造前 fail closed。
+- 复用 `camera_gphoto2.auto_expose_capture` 的单一搜索算法，通过 attempt observer 保留 setup 的每张
+  remote-v2 CR3/sidecar、ID、hash、byte count、recorded exposure、timing 和 disposition；上限 8 张，
+  第 9 张在 capture 前拒绝，retained NPY 为 0。
+- setup 在第一张 CR3 前重放 checkpoint/tree、冻结 inputs/budgets、历史 seed、run-start 双零、remote
+  health/config/RAW settings、Ray H120/S50/INT100 和 generation-bearing strip zero。
+- child 只产生 provisional。生产 wrapper 完成 Python/shell cleanup 并真正退出后，显式外层 orchestrator
+  才写 `wrapper-observed-exit.json`、执行独立双零并原子生成 canonical setup、resolved formal plan 和
+  release；child/shell/signal/actual wrapper exit 任一失败均不产生 formal release。
+- Ray formal 只从相同 checkpoint 的 on-disk release 恢复；paired TD-B finalizer重放两个 public source
+  analysis、`32 formal + 1..8 setup = 33..40 physical`、input manifest 和 independent final zero，且保留
+  `scientifically_settled=false`。
+
+### 25.2 验证与 checkpoint
+
+```text
+focused: 159/159 pass, 8.879s
+full suite: 529/529 pass, 148.356s
+post-checkpoint production round-trip: 4/4 pass
+compileall: pass
+all tmp/*.zsh syntax: pass
+git diff --check: pass
+CodeGraph sync: pass
+frozen experiment inputs: 5/5 exact hash match
+production src/tests/config/docs/skill/tmp relative to HEAD: clean
+offline device/network/.env/remote/camera/Ray/ESPHome/all_off calls: 0
+```
+
+实现 checkpoint：`87f1e3244fa0f2a597780a7b0bacb98632c76774`
+
+### 25.3 离线 artifacts
+
+Root：
+
+```text
+/Volumes/4T/temp/rgbww-optimizer/p7-td-b-production-offline/20260722-090000
+```
+
+| Artifact | SHA-256 |
+| --- | --- |
+| `negative-case-matrix.json` | `8d306882b8e288bf648067f3f843ce581a5e5cafa478a0abcfaff9f86d2f6c8a` |
+| `validation-summary.json` | `381387f6430cd811fef186662799079f6785dd67b14c31adf7b76f477dd679c2` |
+| `production-fake-manifest.sha256` | `7449fd6813fca64e22645bfaaf300c7ac42b669b1b7bb1708391e63d1493ecb7` |
+| `readiness.json` | `8b853f38a09d6a87c235d137e4106f8860e6c15d59b19b9969ccbf5cd3048655` |
+
+状态：`p7_td_b_e0x_release_gate_pass_ready_for_authorized_setup`。根据活动计划，这里没有普通 Planner 停点；
+下一动作是启动唯一的 setup outer orchestrator，完成 1..8 张 setup 后双关灯并等待完整 1800 秒 cold proxy。
+
+### 25.4 实机 setup 启动结果：preflight 前 fail closed，停止并请求 Planner 决策
+
+Run owner：
+
+```text
+/Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/p7-td-b-setup-20260722-073500
+```
+
+首次 `nohup` launcher 被 Codex 命令宿主在进入 Python main 前回收，launcher log 为 0 bytes、没有 run
+directory、command、capture 或 CR3。随后按 PLAN 的 launcher-only分支用 Terminal-owned 方式消费同一 run
+identity；生产 wrapper 成功启动，但 child 在任何 setup preflight device/camera action 前被 frozen-input gate
+拒绝：
+
+```text
+PermissionError: TD-B setup frozen input references differ before device access
+child_exit_code = 1
+shell_cleanup_exit_code = 0
+wrapper_exit_code = 1
+CR3 = 0
+NPY = 0
+```
+
+离线重建确认唯一差异是 CLI 传入相对 prerequisite path：plan 保存
+`config/hsi/p7-operating-envelope-v2.json`，production gate 则与同一文件的绝对 path reference 比较。两者
+SHA-256 都是 `7012f254...cfc16`，但 path string 不同。其余 location/policy/uncertainty/manifold/curve refs
+逐字段一致。这是 producer/validator path canonicalization 缺口，不是实验输入漂移。
+
+Wrapper 的 shell trap随后执行了 `all_off`，且另执行一次 independent recovery：strip
+`rgbww_commanded_state` generation `2 -> 3`、五通道全零、device `bedroom-rgbww-strip`、MAC
+`E0:8C:FE:63:C9:40`；Ray independent readback intensity `0`。当前无 residual thermal/wrapper process。
+
+| Evidence | SHA-256 |
+| --- | --- |
+| `wrapper-result.json` | `aa5eff6ebe4b39857295a701fce2c35f7760de02f159eab09c7c278e8e57ddc0` |
+| `wrapper-observed-exit.json` | `619f3474175013d83ad888cd36fc1908891d80603326ba16371da8af17cb610c` |
+| `all-off-shell.json` | `388736d378cfa69da8846d8b48f75d476055f9af1a2b95fffd18fa8ac85e8de1` |
+| `independent-recovery-zero.json` | `29b08bd449b80ad8392f280253a7098fa15b5a0ae9ff5689bec68f023965683e` |
+| adjacent runner log | `796c114303b7a3bf7dffb3eb6e0c2261993bdd45f959901ed93e72b77eb81306` |
+| Terminal launcher log | `06a496574bd56dcf5deaf4b2bd93a0956b891d3ef849df0f176e336a9b411664` |
+
+PLAN 的 launcher-only 自动重试例外要求“任何 device command 前失败”。本次虽然没有非零 source command、
+camera request 或 CR3，但 wrapper recovery 已发送全零 device commands，因此 Executer不自行把它解释为
+可自动重试。状态：`blocked_for_planner_relative_path_gate_and_retry_decision`。请求 Planner 冻结：
+
+1. 是否批准离线规范化 prerequisite artifact path 并增加 relative/absolute production CLI round-trip；
+2. 独立双零已证实且非零 command/capture 均为 0 的本次失败，是否允许在新目录重试唯一 setup。
+
+Ray formal、strip formal、paired finalizer、TD-C 及后续阶段均未启动。
