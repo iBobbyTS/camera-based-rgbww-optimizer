@@ -137,10 +137,27 @@ def analyze_thermal_run(
     if not (root / "commands-audit.json").is_file() or _load_json(root / "commands-audit.json").get("status") != "pass":
         raise ValueError("thermal command audit artifact is missing")
     completion_audit = _validate_completion_evidence(root, run)
+    setup_physical = 0
+    setup_ref = plan.get("exposure_setup_artifact")
+    if setup_ref is not None:
+        if plan.get("experiment_id") != thermal.TD_B or plan.get("source") != "ray" or not isinstance(setup_ref, Mapping):
+            raise ValueError("thermal setup artifact has an invalid experiment owner")
+        setup_path = Path(str(setup_ref.get("path"))).resolve()
+        if not setup_path.is_file() or _sha256_file(setup_path) != setup_ref.get("sha256"):
+            raise ValueError("thermal setup artifact hash differs from plan")
+        setup_artifact = _load_json(setup_path)
+        validated_setup = thermal.validate_td_b_exposure_setup(setup_artifact, artifact_path=setup_path)
+        if setup_artifact.get("fake_only") is True:
+            raise ValueError("public thermal analyzer rejects fake setup evidence")
+        setup_physical = int(validated_setup["physical_count"])
+        if int(plan.get("setup_physical_cr3_count", -1)) != setup_physical:
+            raise ValueError("thermal setup physical count differs from resolved plan")
+    elif plan.get("experiment_id") == thermal.TD_B and plan.get("source") == "ray":
+        raise ValueError("Ray TD-B analysis requires retained setup artifact")
     thermal.audit_chronology(covariates)
     recomputed_formal = 0
     recomputed_ambient = 0
-    recomputed_physical = 0
+    recomputed_physical = setup_physical
     formal_captures = []
     ambient_captures = []
     timing_tiers: dict[str, int] = defaultdict(int)
@@ -243,6 +260,8 @@ def analyze_thermal_run(
         raise ValueError("thermal formal ledger count mismatch")
     if recomputed_ambient != int(plan["budgets"]["ambient_cap"]) or int(run.get("ambient_capture_count", -1)) != recomputed_ambient:
         raise ValueError("thermal ambient ledger count mismatch")
+    if int(run.get("setup_physical_cr3_count", 0)) != setup_physical:
+        raise ValueError("thermal run setup physical ledger mismatch")
     if recomputed_physical != int(run.get("physical_cr3_count", -1)) or recomputed_physical > int(plan["budgets"]["physical_cr3_cap"]):
         raise ValueError("thermal physical CR3 ledger mismatch")
     if list(root.rglob("*.npy")):
@@ -295,7 +314,8 @@ def analyze_thermal_run(
         "cleanup_contract": completion_audit["cleanup_contract"],
         "wrapper_contract": completion_audit["wrapper_contract"],
         "formal_capture_count": recomputed_formal, "ambient_capture_count": recomputed_ambient,
-        "physical_cr3_count": recomputed_physical, "retained_npy_count": 0,
+        "physical_cr3_count": recomputed_physical, "setup_physical_cr3_count": setup_physical,
+        "retained_npy_count": 0,
         "timing_absolute_truth": False,
         "timing_source": "best_effort_gphoto2_observed_elapsed" if timing_version == 2 else "best_effort_gphoto2",
         "timing_contract_evidence": dict(expected_contract),
@@ -306,6 +326,15 @@ def analyze_thermal_run(
         report["timing_slot_summary"] = timing_slot_summary
     report.update(result)
     return report
+
+
+def analyze_td_b_setup_resolution(
+    plan: Mapping[str, Any], *, setup_artifact_path: str | Path,
+) -> dict[str, Any]:
+    """Public offline analyzer for the setup-to-resolved-plan boundary."""
+    return thermal.replay_td_b_setup_resolution(
+        plan, setup_artifact_path=setup_artifact_path,
+    )
 
 
 def _validate_completion_evidence(root: Path, run: Mapping[str, Any]) -> dict[str, str]:

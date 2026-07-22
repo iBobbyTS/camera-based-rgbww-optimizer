@@ -101,3 +101,13 @@ return anchors, and the 60/120/300/600 switch chronology. Its analyzer status is
 `dwell_is_scientifically_settled=false` and a structured nonstationarity warning.
 The v1 envelope remains the legacy deferred path; v2 is still offline/dry-run
 until a new bounded Planner execution plan exists.
+
+TD-B Ray H120/S50 exposure setup is a distinct non-formal physical ledger.
+Audit P6 `0047-ray-hsi_coarse` only as a legacy `1/6400` initial seed; never
+write it directly to `frozen_shutters`. A valid `p7_td_b_exposure_setup_v1`
+artifact replays 1..8 unique remote-v2 CR3/sidecar attempts, recorded exposure,
+Ray HSI set/readback, independent strip-zero generation evidence, Python/shell
+cleanup, and a complete 1800-second cold-proxy wait. Resolve
+`ray-h120-s50` only through that artifact. Count setup captures inside TD-B's
+unchanged physical cap 24, while excluding them from 16 formal captures,
+58-feature fitting, repeatability covariance, and history aggregates.

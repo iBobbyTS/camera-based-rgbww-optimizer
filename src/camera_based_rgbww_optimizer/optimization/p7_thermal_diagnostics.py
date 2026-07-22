@@ -85,6 +85,16 @@ OPERATING_ENVELOPE_V2_SCHEMA = "p7_operating_envelope_v2"
 DEVELOPER_OPERATIONAL_DWELL_S = 600
 DEVELOPER_DWELL_DECISION_AUDIT = PROJECT_ROOT / "advisor/4/0.AUDIT/03-human-decision-no-extension.md"
 DEVELOPER_DWELL_DECISION_AUDIT_SHA256 = "c917c54473aa3c5cc4da9098ddeb81fb109fe9a4186fb71e994c447c63d0454a"
+TD_B_SETUP_SCHEMA = "p7_td_b_exposure_setup_v1"
+TD_B_SETUP_STATE = "H120_S50_INT100"
+TD_B_SETUP_CACHE_KEY = "ray-h120-s50"
+TD_B_SETUP_COMMAND = MappingProxyType({"hue": 120, "sat": 50, "intensity_percent": 100.0})
+TD_B_SETUP_PHYSICAL_CAP = 8
+P6_SETUP_SEED_RUN = Path(
+    "/Volumes/4T/temp/rgbww-optimizer/ray-hsi-manifold/"
+    "p6-ray-hsi-remote-20260717-0403-retry1"
+)
+P6_SETUP_SEED_CAPTURE_ID = "0047-ray-hsi_coarse"
 
 RAY_STATES = {
     "A": {"hue": 120, "sat": 100, "intensity_percent": 100.0},
@@ -274,6 +284,420 @@ def required_shutter_cache_keys(captures: Sequence[Mapping[str, Any]]) -> tuple[
         for step in captures
         if (key := shutter_cache_key_for_step(step)) is not None
     }))
+
+
+def audit_td_b_historical_seed(
+    run_dir: str | Path = P6_SETUP_SEED_RUN,
+    *, capture_id: str = P6_SETUP_SEED_CAPTURE_ID,
+) -> dict[str, Any]:
+    """Rebuild the legacy P6 shutter seed decision from retained evidence."""
+    root = Path(run_dir).resolve()
+    reasons: list[str] = []
+    evidence: dict[str, Any] = {}
+    try:
+        captures = [
+            json.loads(line) for line in (root / "captures.jsonl").read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+        commands = [
+            json.loads(line) for line in (root / "commands.jsonl").read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+        rows = [row for row in captures if row.get("capture_id") == capture_id]
+        command_rows = [
+            row for row in commands
+            if row.get("capture_id") == capture_id and row.get("event") == "ray_on_readback_verified"
+        ]
+        if len(rows) != 1 or len(command_rows) != 1:
+            raise ValueError("P6 seed capture/command owner is missing or duplicated")
+        row, command_row = rows[0], command_rows[0]
+        expected_raw = {"hue": 120, "sat": 50, "intensity": 1000}
+        if command_row.get("expected") != expected_raw:
+            reasons.append("command_mismatch")
+        for owner in ("set_response", "readback"):
+            if (command_row.get(owner) or {}).get("data") != expected_raw:
+                reasons.append(f"{owner}_mismatch")
+        ray_state = row.get("ray_state")
+        if ray_state != dict(TD_B_SETUP_COMMAND):
+            reasons.append("capture_state_mismatch")
+        capture = (row.get("capture") or {}).get("capture") or {}
+        raw_value = capture.get("saved_file")
+        raw = Path(str(raw_value)).resolve() if raw_value else None
+        if raw is None or not raw.is_relative_to(root) or not raw.is_file() or raw.stat().st_size <= 0:
+            reasons.append("cr3_missing_or_outside_run")
+            raw_sha = None
+            raw_bytes = None
+        else:
+            raw_sha = hashlib.sha256(raw.read_bytes()).hexdigest()
+            raw_bytes = raw.stat().st_size
+            if capture.get("sha256") != raw_sha or capture.get("byte_count") != raw_bytes:
+                reasons.append("cr3_hash_or_byte_count_mismatch")
+        report_value = (row.get("capture") or {}).get("patch_statistics")
+        report_path = Path(str(report_value)).resolve() if report_value else None
+        if report_path is None or not report_path.is_relative_to(root) or not report_path.is_file():
+            reasons.append("patch_statistics_missing_or_outside_run")
+            report = {}
+        else:
+            report = json.loads(report_path.read_text(encoding="utf-8"))
+        exposure = report.get("exposure_metadata") or {}
+        if exposure.get("status") != "recorded" or not exposure.get("seconds"):
+            reasons.append("recorded_exposure_missing")
+        if raw is not None and Path(str(exposure.get("raw_file"))).resolve() != raw:
+            reasons.append("recorded_exposure_raw_owner_mismatch")
+        if capture.get("shutter_speed") != "1/6400" or exposure.get("nominal_shutter_speed") != "1/6400":
+            reasons.append("shutter_mismatch")
+        if capture.get("iso") != "100" or capture.get("aperture") != "implicit auto" or capture.get("image_format") != "RAW":
+            reasons.append("capture_settings_mismatch")
+        expected_location = file_reference(LOCATION_PATH)["sha256"]
+        if (report.get("location_config") or {}).get("sha256") != expected_location:
+            reasons.append("location_mismatch")
+        feature_ids = json.loads(POLICY_PATH.read_text(encoding="utf-8"))["feature_set"]["ids"]
+        from camera_based_rgbww_optimizer.optimization.hsi_objective import required_hsi_features_from_report
+        features = required_hsi_features_from_report(report, feature_ids) if report else {}
+        if set(features) != set(feature_ids):
+            reasons.append("required_58_features_missing")
+        if capture.get("remote_endpoint") != "/v1/capture":
+            reasons.append("legacy_endpoint_mismatch")
+        evidence = {
+            "capture_path": None if raw is None else str(raw),
+            "capture_sha256": raw_sha,
+            "capture_byte_count": raw_bytes,
+            "patch_statistics_path": None if report_path is None else str(report_path),
+            "recorded_exposure": exposure,
+            "location_sha256": (report.get("location_config") or {}).get("sha256"),
+            "feature_count": len(features),
+            "quality": (row.get("capture") or {}).get("quality"),
+            "remote_endpoint": capture.get("remote_endpoint"),
+            "command_scale_mapping": "ray_raw_intensity_1000_equals_intensity_percent_100",
+            "v2_sidecar_present": False,
+        }
+    except (OSError, UnicodeError, json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
+        reasons.append(f"audit_error:{type(exc).__name__}:{exc}")
+    return {
+        "schema": "p7_td_b_historical_seed_audit_v1",
+        "run_dir": str(root),
+        "capture_id": capture_id,
+        "historical_seed_usable": not reasons,
+        "seed_only": True,
+        "formal_capture_eligible": False,
+        "initial_shutter_seed": "1/6400" if not reasons else None,
+        "reasons": reasons,
+        "evidence": evidence,
+    }
+
+
+def validate_td_b_exposure_setup(
+    artifact: Mapping[str, Any], *, artifact_path: str | Path | None = None,
+) -> dict[str, Any]:
+    """Validate one retained non-formal Ray exposure setup and its physical ledger."""
+    from camera_based_rgbww_optimizer.control import camera_remote_v2
+
+    required_keys = {
+        "schema", "experiment_id", "source", "state_id", "command", "command_sha256",
+        "capture_role", "formal_measurement", "counts_as_physical", "enters_58_feature_fit",
+        "enters_repeatability_covariance", "enters_td_b_history_aggregate", "setup_method",
+        "historical_seed", "camera", "attempts", "final_capture_id", "resolved_shutter_speed",
+        "setup_physical_cr3_count", "setup_physical_cr3_cap", "input_hashes", "code_checkpoint",
+        "isolation", "cold_proxy", "cleanup", "failure", "fake_only",
+    }
+    if set(artifact) != required_keys:
+        raise ValueError("TD-B setup artifact schema keys differ from frozen contract")
+    expected_command = dict(TD_B_SETUP_COMMAND)
+    if (
+        artifact.get("schema") != TD_B_SETUP_SCHEMA
+        or artifact.get("experiment_id") != TD_B
+        or artifact.get("source") != "ray"
+        or artifact.get("state_id") != TD_B_SETUP_STATE
+        or artifact.get("command") != expected_command
+        or artifact.get("command_sha256") != canonical_sha256(expected_command)
+        or artifact.get("capture_role") != "exposure_setup"
+        or artifact.get("formal_measurement") is not False
+        or artifact.get("counts_as_physical") is not True
+        or artifact.get("enters_58_feature_fit") is not False
+        or artifact.get("enters_repeatability_covariance") is not False
+        or artifact.get("enters_td_b_history_aggregate") is not False
+        or artifact.get("setup_method") != "bounded_remote_v2_auto_exposure"
+        or artifact.get("failure") is not None
+    ):
+        raise ValueError("TD-B setup artifact identity or role is invalid")
+    seed = artifact.get("historical_seed")
+    if (
+        not isinstance(seed, Mapping)
+        or set(seed) != {
+            "schema", "run_dir", "capture_id", "historical_seed_usable", "seed_only",
+            "formal_capture_eligible", "initial_shutter_seed", "reasons", "evidence",
+        }
+        or seed.get("schema") != "p7_td_b_historical_seed_audit_v1"
+        or seed.get("seed_only") is not True
+        or seed.get("formal_capture_eligible") is not False
+        or not isinstance(seed.get("reasons"), list)
+        or not isinstance(seed.get("evidence"), Mapping)
+    ):
+        raise ValueError("TD-B setup historical seed contract is invalid")
+    if seed.get("historical_seed_usable") is True:
+        if (
+            Path(str(seed.get("run_dir"))).resolve() != P6_SETUP_SEED_RUN.resolve()
+            or seed.get("capture_id") != P6_SETUP_SEED_CAPTURE_ID
+            or seed.get("initial_shutter_seed") != "1/6400"
+            or seed.get("reasons") != []
+            or not seed["evidence"].get("capture_sha256")
+            or seed["evidence"].get("remote_endpoint") != "/v1/capture"
+            or seed["evidence"].get("feature_count") != 58
+        ):
+            raise ValueError("TD-B setup historical seed is stale or differs from frozen P6 evidence")
+    elif seed.get("historical_seed_usable") is not False or seed.get("initial_shutter_seed") is not None or not seed.get("reasons"):
+        raise ValueError("TD-B setup no-seed fallback is not deterministic")
+    camera = artifact.get("camera")
+    if (
+        not isinstance(camera, Mapping)
+        or camera.get("backend") != "remote"
+        or camera.get("v2_capture_capability") != "remote_v2_capture_timing_v1"
+        or camera.get("capture_settings_owner") != "remote_backend.resolve_capture_settings"
+        or any(not isinstance(camera.get(key), str) or not camera[key].strip() for key in ("iso", "aperture", "image_format"))
+        or camera.get("image_format") != "RAW"
+    ):
+        raise ValueError("TD-B setup camera capability/settings provenance is invalid")
+    attempts = artifact.get("attempts")
+    count = artifact.get("setup_physical_cr3_count")
+    if (
+        not isinstance(attempts, list) or not attempts
+        or type(count) is not int or count != len(attempts)
+        or not 1 <= count <= TD_B_SETUP_PHYSICAL_CAP
+        or artifact.get("setup_physical_cr3_cap") != TD_B_SETUP_PHYSICAL_CAP
+    ):
+        raise ValueError("TD-B setup physical ledger is outside the frozen 1..8 budget")
+    artifact_root = None if artifact_path is None else Path(artifact_path).resolve().parent
+    owned_ids: set[str] = set()
+    owned_paths: set[Path] = set()
+    final_rows: list[Mapping[str, Any]] = []
+    for index, attempt in enumerate(attempts, start=1):
+        if not isinstance(attempt, Mapping) or set(attempt) != {
+            "attempt_index", "capture_id", "disposition", "cr3_path", "cr3_sha256", "cr3_byte_count",
+            "sidecar_path", "sidecar_sha256", "request_id", "timing_tier", "timing_method",
+            "recorded_exposure", "shutter_speed", "npy_paths", "npy_deleted",
+        }:
+            raise ValueError("TD-B setup attempt schema differs from frozen contract")
+        capture_id = attempt.get("capture_id")
+        if attempt.get("attempt_index") != index or not isinstance(capture_id, str) or not capture_id or capture_id in owned_ids:
+            raise ValueError("TD-B setup attempt owner is duplicated or reordered")
+        owned_ids.add(capture_id)
+        raw_candidate = Path(str(attempt.get("cr3_path")))
+        raw = raw_candidate.resolve()
+        sidecar_candidate = Path(str(attempt.get("sidecar_path")))
+        sidecar = sidecar_candidate.resolve()
+        if (
+            artifact_root is not None and (not raw.is_relative_to(artifact_root) or not sidecar.is_relative_to(artifact_root))
+        ) or raw_candidate.is_symlink() or sidecar_candidate.is_symlink() or raw in owned_paths or sidecar in owned_paths:
+            raise ValueError("TD-B setup evidence owner is outside artifact root or duplicated")
+        owned_paths.update((raw, sidecar))
+        if not raw.is_file() or raw.stat().st_size <= 0 or not sidecar.is_file() or sidecar.stat().st_size <= 0:
+            raise ValueError("TD-B setup evidence file is missing or empty")
+        payload = raw.read_bytes()
+        if hashlib.sha256(payload).hexdigest() != attempt.get("cr3_sha256") or len(payload) != attempt.get("cr3_byte_count"):
+            raise ValueError("TD-B setup CR3 hash or byte count mismatch")
+        if hashlib.sha256(sidecar.read_bytes()).hexdigest() != attempt.get("sidecar_sha256"):
+            raise ValueError("TD-B setup sidecar hash mismatch")
+        try:
+            metadata = json.loads(sidecar.read_text(encoding="utf-8"))
+            remote, receipt = camera_remote_v2.split_and_validate_sidecar(metadata, payload=payload)
+        except (OSError, UnicodeError, json.JSONDecodeError, camera_remote_v2.RemoteCaptureV2Error) as exc:
+            raise ValueError("TD-B setup sidecar replay failed") from exc
+        if (
+            remote.get("capture_id") != capture_id
+            or remote.get("request_id") != attempt.get("request_id")
+            or (remote.get("recorded_exposure") or {}) != attempt.get("recorded_exposure")
+            or (remote.get("recorded_exposure") or {}).get("status") != "recorded"
+            or (receipt.get("timing_evidence") or {}).get("tier") != attempt.get("timing_tier")
+            or (remote.get("exposure_start_estimate") or {}).get("method") != attempt.get("timing_method")
+            or attempt.get("timing_tier") not in ACCEPTED_TIMING_TIERS
+        ):
+            raise ValueError("TD-B setup metadata ID/exposure/timing association mismatch")
+        from camera_based_rgbww_optimizer.measurement.recorded_exposure import parse_nominal_exposure
+        try:
+            nominal_seconds = parse_nominal_exposure(str(attempt.get("shutter_speed")))
+        except (TypeError, ValueError, ZeroDivisionError) as exc:
+            raise ValueError("TD-B setup shutter speed is invalid") from exc
+        recorded_seconds = float((remote.get("recorded_exposure") or {}).get("seconds", 0.0))
+        if recorded_seconds <= 0 or not 0.8 <= recorded_seconds / nominal_seconds <= 1.2:
+            raise ValueError("TD-B setup shutter differs materially from recorded exposure")
+        if attempt.get("npy_paths") != [] or attempt.get("npy_deleted") is not True:
+            raise ValueError("TD-B setup attempt retained NPY evidence")
+        if attempt.get("disposition") == "final":
+            final_rows.append(attempt)
+        elif attempt.get("disposition") not in {"trial", "rejected_final"}:
+            raise ValueError("TD-B setup attempt disposition is invalid")
+    if len(final_rows) != 1 or artifact.get("final_capture_id") != final_rows[0].get("capture_id"):
+        raise ValueError("TD-B setup final capture owner is missing or ambiguous")
+    final = final_rows[0]
+    if not isinstance(artifact.get("resolved_shutter_speed"), str) or not artifact["resolved_shutter_speed"].strip() or artifact["resolved_shutter_speed"] != final.get("shutter_speed"):
+        raise ValueError("TD-B setup resolved shutter is empty or differs from final capture")
+    isolation = artifact.get("isolation")
+    if not isinstance(isolation, Mapping) or set(isolation) != {
+        "ray_set_response", "ray_readback", "strip_device_evidence",
+    }:
+        raise ValueError("TD-B setup source isolation evidence is invalid")
+    from camera_based_rgbww_optimizer.optimization.hsi_source_evidence import (
+        validate_ray_readback,
+        validate_strip_device_evidence,
+    )
+    expected_ray = {"hue": 120, "sat": 50, "intensity": 1000}
+    validate_ray_readback(isolation["ray_set_response"], expected_ray)
+    validate_ray_readback(isolation["ray_readback"], expected_ray)
+    curve = json.loads(CURVE_PATH.read_text(encoding="utf-8"))
+    validate_strip_device_evidence(
+        isolation["strip_device_evidence"], {channel: 0 for channel in CHANNELS}, curve,
+    )
+    cold = artifact.get("cold_proxy")
+    if not isinstance(cold, Mapping) or cold.get("required_wait_s") != 1800:
+        raise ValueError("TD-B setup cold proxy contract is missing")
+    start, end = cold.get("start_monotonic_s"), cold.get("end_monotonic_s")
+    if any(isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(float(value)) for value in (start, end)) or float(end) - float(start) < 1800:
+        raise ValueError("TD-B setup cold proxy wait is shortened or clock-reversed")
+    validate_td_b_setup_cleanup(artifact.get("cleanup"))
+    inputs = artifact.get("input_hashes")
+    if not isinstance(inputs, Mapping) or any(
+        key not in inputs or inputs[key] != file_reference(path)["sha256"]
+        for key, path in {"location": LOCATION_PATH, "policy": POLICY_PATH, "operating_envelope": OPERATING_ENVELOPE_V2_PATH}.items()
+    ):
+        raise ValueError("TD-B setup frozen input hashes differ")
+    return {"physical_count": count, "resolved_shutter_speed": artifact["resolved_shutter_speed"], "final_capture_id": final["capture_id"]}
+
+
+def validate_td_b_setup_cleanup(value: Any) -> None:
+    if not isinstance(value, Mapping) or set(value) != {"python", "shell", "wrapper", "final_both_off"}:
+        raise ValueError("TD-B setup cleanup evidence is incomplete")
+    for owner in ("python", "shell"):
+        row = value.get(owner)
+        if not isinstance(row, Mapping) or set(row) != {"status", "steps", "exit_code"}:
+            raise ValueError(f"TD-B setup {owner} cleanup schema differs")
+        if row.get("status") != "pass" or row.get("exit_code") != 0:
+            raise ValueError(f"TD-B setup {owner} cleanup failed")
+        steps = row.get("steps")
+        if not isinstance(steps, list) or len(steps) != 2:
+            raise ValueError(f"TD-B setup {owner} cleanup lacks two shutdown owners")
+        by_name = {step.get("name"): step for step in steps if isinstance(step, Mapping)}
+        if set(by_name) != {"esphome", "ray120c"} or any(
+            set(step) != {"name", "ok", "detail", "error"} or step.get("ok") is not True or step.get("error") is not None
+            for step in by_name.values()
+        ):
+            raise ValueError(f"TD-B setup {owner} cleanup step evidence is invalid")
+    wrapper = value.get("wrapper")
+    if not isinstance(wrapper, Mapping) or set(wrapper) != {
+        "status", "child_exit_code", "shell_cleanup_exit_code", "wrapper_exit_code", "signal",
+    }:
+        raise ValueError("TD-B setup wrapper cleanup schema differs")
+    if (
+        wrapper.get("status") != "complete"
+        or wrapper.get("child_exit_code") != 0
+        or wrapper.get("shell_cleanup_exit_code") != 0
+        or wrapper.get("wrapper_exit_code") != 0
+        or wrapper.get("signal") is not None
+    ):
+        raise ValueError("TD-B setup wrapper child/signal/cleanup evidence failed")
+    final = value.get("final_both_off")
+    if not isinstance(final, Mapping) or set(final) != {"strip_device_evidence", "ray_readback"}:
+        raise ValueError("TD-B setup final both-off evidence is incomplete")
+    from camera_based_rgbww_optimizer.optimization.hsi_source_evidence import validate_both_off
+    curve = json.loads(CURVE_PATH.read_text(encoding="utf-8"))
+    validate_both_off(final["strip_device_evidence"], final["ray_readback"], curve)
+
+
+def build_td_b_exposure_setup_artifact(
+    *, attempts: Sequence[Mapping[str, Any]], camera: Mapping[str, Any],
+    historical_seed: Mapping[str, Any], isolation: Mapping[str, Any],
+    cold_proxy: Mapping[str, Any], cleanup: Mapping[str, Any],
+    code_checkpoint: str, fake_only: bool,
+) -> dict[str, Any]:
+    """Produce the canonical setup artifact from adapter-owned attempt evidence."""
+    rows = [deepcopy(dict(row)) for row in attempts]
+    final = [row for row in rows if row.get("disposition") == "final"]
+    artifact = {
+        "schema": TD_B_SETUP_SCHEMA,
+        "experiment_id": TD_B,
+        "source": "ray",
+        "state_id": TD_B_SETUP_STATE,
+        "command": dict(TD_B_SETUP_COMMAND),
+        "command_sha256": canonical_sha256(dict(TD_B_SETUP_COMMAND)),
+        "capture_role": "exposure_setup",
+        "formal_measurement": False,
+        "counts_as_physical": True,
+        "enters_58_feature_fit": False,
+        "enters_repeatability_covariance": False,
+        "enters_td_b_history_aggregate": False,
+        "setup_method": "bounded_remote_v2_auto_exposure",
+        "historical_seed": deepcopy(dict(historical_seed)),
+        "camera": deepcopy(dict(camera)),
+        "attempts": rows,
+        "final_capture_id": final[0].get("capture_id") if len(final) == 1 else None,
+        "resolved_shutter_speed": final[0].get("shutter_speed") if len(final) == 1 else None,
+        "setup_physical_cr3_count": len(rows),
+        "setup_physical_cr3_cap": TD_B_SETUP_PHYSICAL_CAP,
+        "input_hashes": {
+            "location": file_reference(LOCATION_PATH)["sha256"],
+            "policy": file_reference(POLICY_PATH)["sha256"],
+            "operating_envelope": file_reference(OPERATING_ENVELOPE_V2_PATH)["sha256"],
+        },
+        "code_checkpoint": code_checkpoint,
+        "isolation": deepcopy(dict(isolation)),
+        "cold_proxy": deepcopy(dict(cold_proxy)),
+        "cleanup": deepcopy(dict(cleanup)),
+        "failure": None,
+        "fake_only": bool(fake_only),
+    }
+    validate_td_b_exposure_setup(artifact)
+    return artifact
+
+
+def resolve_td_b_plan_with_setup(
+    plan: Mapping[str, Any], *, setup_artifact_path: str | Path,
+) -> dict[str, Any]:
+    if plan.get("experiment_id") != TD_B or plan.get("source") != "ray":
+        raise ValueError("TD-B exposure setup can only resolve the Ray TD-B plan")
+    path = Path(setup_artifact_path).resolve()
+    artifact = json.loads(path.read_text(encoding="utf-8"))
+    validated = validate_td_b_exposure_setup(artifact, artifact_path=path)
+    if artifact.get("fake_only") is not True:
+        checkpoint = artifact.get("code_checkpoint")
+        if not isinstance(checkpoint, str) or len(checkpoint) != 40 or any(ch not in "0123456789abcdef" for ch in checkpoint):
+            raise ValueError("TD-B retained setup lacks a full lowercase Git checkpoint")
+    resolved = deepcopy(dict(plan))
+    if resolved.get("frozen_shutters", {}).get(TD_B_SETUP_CACHE_KEY) is not None or TD_B_SETUP_CACHE_KEY not in resolved.get("exposure_setup_required", []):
+        raise ValueError("TD-B Ray plan does not own the unresolved setup shutter")
+    resolved["frozen_shutters"][TD_B_SETUP_CACHE_KEY] = validated["resolved_shutter_speed"]
+    resolved["exposure_setup_required"] = []
+    resolved["shutter_ledger_provenance"]["frozen_shutters_sha256"] = canonical_sha256(resolved["frozen_shutters"])
+    resolved["exposure_setup_artifact"] = file_reference(path)
+    resolved["setup_physical_cr3_count"] = validated["physical_count"]
+    resolved["formal_capture_eligible"] = not bool(artifact.get("fake_only"))
+    resolved["status"] = "fake_resolved_device_locked" if artifact.get("fake_only") else resolved["status"]
+    return resolved
+
+
+def replay_td_b_setup_resolution(
+    plan: Mapping[str, Any], *, setup_artifact_path: str | Path,
+) -> dict[str, Any]:
+    """Public offline replay for both fake fixtures and future retained setup evidence."""
+    resolved = resolve_td_b_plan_with_setup(plan, setup_artifact_path=setup_artifact_path)
+    path = Path(setup_artifact_path).resolve()
+    artifact = json.loads(path.read_text(encoding="utf-8"))
+    validated = validate_td_b_exposure_setup(artifact, artifact_path=path)
+    if resolved.get("exposure_setup_required") or not resolved["frozen_shutters"].get(TD_B_SETUP_CACHE_KEY):
+        raise ValueError("TD-B setup replay did not resolve the formal shutter ledger")
+    return {
+        "schema": "p7_td_b_exposure_setup_replay_v1",
+        "status": "offline_fake_replay_pass" if artifact.get("fake_only") else "retained_setup_replay_pass",
+        "formal_capture_eligible": bool(resolved.get("formal_capture_eligible")),
+        "fake_only": bool(artifact.get("fake_only")),
+        "setup_artifact": file_reference(path),
+        "resolved_plan_sha256": canonical_sha256(resolved),
+        "setup_physical_cr3_count": validated["physical_count"],
+        "formal_capture_count": int(resolved["budgets"]["formal_cap"]),
+        "physical_cr3_cap": int(resolved["budgets"]["physical_cr3_cap"]),
+        "setup_excluded_from_formal_statistics": True,
+        "setup_excluded_from_58_feature_fit": True,
+        "setup_excluded_from_repeatability_covariance": True,
+        "setup_excluded_from_td_b_history_aggregate": True,
+    }
 
 
 def build_diagnostic_plan(
@@ -477,7 +901,7 @@ def _td_b_plan(source: str, commands: Mapping[str, Mapping[str, int]], envelope:
         ))
     return {
         "stage": "TD-B", "captures": steps,
-        "budgets": {"formal_cap": 16, "ambient_cap": 0, "physical_cr3_cap": 24},
+        "budgets": {"formal_cap": 16, "ambient_cap": 0, "setup_physical_cr3_cap": 8, "physical_cr3_cap": 24},
         "timing_resolution": "developer_override_resolved" if override else ("deferred_until_td_a" if provisional is None else "resolved"),
         "continuous_command_between_timed_points": True,
         "analysis_contract": {"return_anchor_states": ["A0", "A_after_D", "A_after_B", "A_after_C"]},

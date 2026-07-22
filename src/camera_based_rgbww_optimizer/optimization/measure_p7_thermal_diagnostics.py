@@ -48,6 +48,22 @@ def _validate_execution_shutter_ledger(plan: Mapping[str, Any]) -> None:
         raise PermissionError("thermal diagnostic shutter provenance is inconsistent")
     if unresolved:
         raise PermissionError(f"thermal diagnostic execution has unresolved shutter setup: {unresolved}")
+    if plan.get("experiment_id") == thermal.TD_B and plan.get("source") == "ray":
+        setup_ref = plan.get("exposure_setup_artifact")
+        if not isinstance(setup_ref, Mapping):
+            raise PermissionError("Ray TD-B execution lacks retained exposure setup evidence")
+        setup_path = Path(str(setup_ref.get("path"))).resolve()
+        if not setup_path.is_file() or hashlib.sha256(setup_path.read_bytes()).hexdigest() != setup_ref.get("sha256"):
+            raise PermissionError("Ray TD-B exposure setup artifact hash differs")
+        try:
+            setup = json.loads(setup_path.read_text(encoding="utf-8"))
+            validated = thermal.validate_td_b_exposure_setup(setup, artifact_path=setup_path)
+        except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
+            raise PermissionError("Ray TD-B exposure setup replay failed") from exc
+        if setup.get("fake_only") is True or plan.get("formal_capture_eligible") is not True:
+            raise PermissionError("Ray TD-B execution rejects fake or formal-ineligible setup evidence")
+        if plan.get("setup_physical_cr3_count") != validated["physical_count"]:
+            raise PermissionError("Ray TD-B setup physical ledger differs from resolved plan")
 
 
 def _resolve_remote_capture_settings(camera_backend: Any) -> tuple[Any, dict[str, str]]:
@@ -132,6 +148,142 @@ def write_dry_run(
     return root / "plan.json"
 
 
+def execute_td_b_exposure_setup(
+    plan: Mapping[str, Any], *, run_dir: str | Path,
+    capture_setup_fn: Callable[[Mapping[str, Any]], Sequence[Mapping[str, Any]]],
+    both_off_gate_fn: Callable[[str], Mapping[str, Any]],
+    apply_ray_fn: Callable[[Mapping[str, Any]], Mapping[str, Any]],
+    ray_readback_fn: Callable[[], Mapping[str, Any]],
+    strip_off_evidence_fn: Callable[[], Mapping[str, Any]],
+    cleanup_fn: Callable[[], Mapping[str, Any]],
+    shell_cleanup_evidence: Mapping[str, Any],
+    historical_seed: Mapping[str, Any],
+    camera_settings: Mapping[str, Any],
+    code_checkpoint: str,
+    execution_authorized: bool,
+    fake_only: bool,
+    monotonic_fn: Callable[[], float] = time.monotonic,
+    sleep_fn: Callable[[float], None] = time.sleep,
+) -> Path:
+    """Execute the bounded setup state machine through injected device/camera owners."""
+    if (
+        plan.get("experiment_id") != thermal.TD_B
+        or plan.get("source") != "ray"
+        or plan.get("exposure_setup_required") != [thermal.TD_B_SETUP_CACHE_KEY]
+        or plan.get("budgets", {}).get("setup_physical_cr3_cap") != thermal.TD_B_SETUP_PHYSICAL_CAP
+        or plan.get("budgets", {}).get("formal_cap") != 16
+        or plan.get("budgets", {}).get("physical_cr3_cap") != 24
+    ):
+        raise PermissionError("TD-B setup requires the exact unresolved Ray plan and frozen budgets")
+    authorization = plan.get("execution_authorization")
+    if not fake_only and (
+        not execution_authorized
+        or plan.get("status") != "execute_authorized"
+        or not isinstance(authorization, Mapping)
+        or authorization.get("human_authorization_verified") is not True
+        or authorization.get("human_authorization_experiment_id") != thermal.TD_B
+        or authorization.get("remote_v2_capability") is not True
+    ):
+        raise PermissionError("TD-B real exposure setup requires the exact plan execution gate")
+    if camera_settings.get("v2_capture_capability") != REMOTE_V2_CAPABILITY:
+        raise PermissionError("TD-B setup requires the formal remote v2 capability owner")
+    if historical_seed.get("seed_only") is not True or historical_seed.get("formal_capture_eligible") is not False:
+        raise PermissionError("TD-B setup rejects a historical seed with formal authority")
+
+    root = Path(run_dir)
+    root.mkdir(parents=True, exist_ok=False)
+    failure: BaseException | None = None
+    artifact_path = root / "setup.json"
+    cleanup_done = False
+    retained_attempts: list[Mapping[str, Any]] = []
+
+    def validate_off_gate(evidence: Mapping[str, Any], gate_id: str) -> None:
+        from camera_based_rgbww_optimizer.optimization.hsi_source_evidence import validate_both_off
+
+        if (
+            evidence.get("status") != "pass"
+            or evidence.get("gate_id") != gate_id
+            or evidence.get("strip_verified_off") is not True
+            or evidence.get("ray_verified_off") is not True
+        ):
+            raise RuntimeError(f"TD-B setup both-off gate failed: {gate_id}")
+        curve = json.loads(thermal.CURVE_PATH.read_text(encoding="utf-8"))
+        validate_both_off(
+            evidence.get("strip_device_evidence", {}), evidence.get("ray_readback", {}), curve,
+        )
+
+    try:
+        start_gate = dict(both_off_gate_fn("setup_start"))
+        validate_off_gate(start_gate, "setup_start")
+        ray_set = dict(apply_ray_fn(dict(thermal.TD_B_SETUP_COMMAND)))
+        ray_readback = dict(ray_readback_fn())
+        strip_off = dict(strip_off_evidence_fn())
+        setup_request = {
+            "schema": thermal.TD_B_SETUP_SCHEMA,
+            "capture_role": "exposure_setup",
+            "formal_measurement": False,
+            "source": "ray",
+            "state_id": thermal.TD_B_SETUP_STATE,
+            "command": dict(thermal.TD_B_SETUP_COMMAND),
+            "auto_exposure": True,
+            "max_captures": thermal.TD_B_SETUP_PHYSICAL_CAP,
+            "physical_capture_budget_remaining": thermal.TD_B_SETUP_PHYSICAL_CAP,
+            "initial_shutter_seed": historical_seed.get("initial_shutter_seed") if historical_seed.get("historical_seed_usable") else None,
+        }
+        attempts = [dict(row) for row in capture_setup_fn(setup_request)]
+        retained_attempts = attempts
+        _write_json(root / "setup-attempts.json", {
+            "schema": "p7_td_b_exposure_setup_attempts_v1",
+            "attempt_count": len(attempts),
+            "attempts": attempts,
+        })
+        if not 1 <= len(attempts) <= thermal.TD_B_SETUP_PHYSICAL_CAP:
+            raise RuntimeError("physical_budget_accounting_violation")
+        off_gate = dict(both_off_gate_fn("setup_complete"))
+        validate_off_gate(off_gate, "setup_complete")
+        cold_start = monotonic_fn()
+        sleep_fn(1800.0)
+        cold_end = monotonic_fn()
+        python_cleanup = dict(cleanup_fn())
+        cleanup_done = True
+        artifact = thermal.build_td_b_exposure_setup_artifact(
+            attempts=attempts,
+            camera=camera_settings,
+            historical_seed=historical_seed,
+            isolation={"ray_set_response": ray_set, "ray_readback": ray_readback, "strip_device_evidence": strip_off},
+            cold_proxy={"required_wait_s": 1800, "start_monotonic_s": cold_start, "end_monotonic_s": cold_end},
+            cleanup={
+                "python": python_cleanup,
+                "shell": dict(shell_cleanup_evidence.get("shell", {})),
+                "wrapper": dict(shell_cleanup_evidence.get("wrapper", {})),
+                "final_both_off": dict(shell_cleanup_evidence.get("final_both_off", {})),
+            },
+            code_checkpoint=code_checkpoint,
+            fake_only=fake_only,
+        )
+        _write_json(artifact_path, artifact)
+    except BaseException as exc:
+        failure = exc
+        failure_attempts = getattr(exc, "attempts", retained_attempts)
+        if not isinstance(failure_attempts, Sequence) or isinstance(failure_attempts, (str, bytes)):
+            failure_attempts = retained_attempts
+        _write_json(root / "failure.json", {
+            "type": type(exc).__name__, "message": str(exc), "at": _utc_now(),
+            "capture_attempted": bool(failure_attempts),
+            "retained_attempt_count": len(failure_attempts),
+            "retained_attempts": [dict(row) for row in failure_attempts if isinstance(row, Mapping)],
+        })
+        if not cleanup_done:
+            try:
+                cleanup_fn()
+                cleanup_done = True
+            except BaseException as cleanup_exc:
+                _write_json(root / "cleanup-failure.json", {"type": type(cleanup_exc).__name__, "message": str(cleanup_exc)})
+    if failure is not None:
+        raise failure
+    return artifact_path
+
+
 def execute_plan(
     plan: Mapping[str, Any], *, run_dir: str | Path,
     apply_command_fn: Callable[[Mapping[str, Any]], Mapping[str, Any]],
@@ -153,7 +305,9 @@ def execute_plan(
     run = {
         "schema": "p7_thermal_diagnostic_run_v2", "experiment_id": plan["experiment_id"],
         "status": "running", "started_at": _utc_now(), "completed_formal": 0,
-        "ambient_capture_count": 0, "physical_cr3_count": 0, "cleanup": "pending",
+        "ambient_capture_count": 0,
+        "setup_physical_cr3_count": int(plan.get("setup_physical_cr3_count", 0)),
+        "physical_cr3_count": int(plan.get("setup_physical_cr3_count", 0)), "cleanup": "pending",
         "capture_settings_provenance": copy.deepcopy(plan["camera"].get("resolved_capture_settings")),
     }
     _write_json(root / "run.json", run)

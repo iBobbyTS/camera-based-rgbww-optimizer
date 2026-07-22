@@ -846,6 +846,18 @@ switch chronology, while retaining `t_formal_provisional_s=null` and emitting
 `history_dependent_at_operational_dwell_600`. The v1 envelope and its deferred
 TD-B behavior remain immutable for legacy replay.
 
+Ray TD-B owns one separate non-formal `ray-h120-s50` exposure setup before its
+timed cycle. The retained P6 `0047-ray-hsi_coarse` shutter (`1/6400`) is usable
+only as an auto-exposure seed: it came from legacy `/v1/capture`, has rejected
+quality, and has no v2 timing sidecar. The setup must use remote v2, retain and
+replay every trial/final CR3 plus sidecar, and consume 1..8 physical captures
+inside the existing TD-B cap of 24 (16 formal plus at most 8 setup). Its
+`p7_td_b_exposure_setup_v1` artifact is the only owner allowed to resolve the
+formal shutter ledger. Setup captures never enter the 58-feature fit,
+repeatability covariance, TD-B history aggregates, or formal capture count.
+After setup, independently verify both sources off, wait the full 1800-second
+cold proxy, and keep timed-cycle auto exposure disabled.
+
 ## Location Picker
 
 Use the local Web UI to capture a preview and mark color-chart patches:

@@ -1283,3 +1283,70 @@ real CR3: 0; NPY: 0; PID/heartbeat/cleanup side effects: 0
 
 状态：`p7_td_b_r0_offline_complete_waiting_for_planner_review`。TD-B 实拍、900/1200 扩展、TD-C、sentinel、
 remaining、boundary、holdout、Gate-6、P8、firmware、remote deployment 和默认安装均保持锁定。
+
+---
+
+## 24. P7-TD-B-R0S：Ray H120/S50 非正式曝光 setup 离线合同
+
+执行日期：2026-07-21。严格消费当前 `PLAN.md` 的纯离线工作包；未修改 `PLAN.md`，未访问设备、网络、
+`.env`、remote API、相机、Ray 或 ESPHome，也未调用 `all_off`。所有临时证据位于：
+
+```text
+/Volumes/4T/temp/rgbww-optimizer/p7-td-b-setup-offline/20260721-231909
+```
+
+### 24.1 实现结果
+
+- 在现有 `p7_thermal_diagnostics.py` owner 内实现 `p7_td_b_exposure_setup_v1` schema、producer、严格
+  validator、历史 seed audit、resolved-plan builder 和 public offline replay；未建立平行采集框架。
+- P6 `0047-ray-hsi_coarse` 证据可独立重建：Ray set/readback 为 H120/S50/raw INT1000（对应
+  `intensity_percent=100`），CR3 hash/byte count、recorded exposure `1/6400`、location、ISO 100、
+  implicit-auto aperture、RAW 和当前 58/58 feature 均通过。该 capture 使用 legacy `/v1/capture`、
+  quality rejected、无 v2 sidecar，因此固定为 `historical_seed_usable=true`、`seed_only=true`、
+  `formal_capture_eligible=false`；`1/6400` 未写入 formal shutter ledger。
+- Setup 使用 1..8 张 remote-v2 physical CR3 的独立账本，逐张重放 CR3/sidecar path、hash、byte count、
+  capture/request ID、parser receipt、Tier A/B timing、recorded exposure、trial/final disposition、唯一 owner
+  和 zero NPY。第 9 张或 ledger drift 为 `physical_budget_accounting_violation`，失败证据保留 attempts。
+- Setup source isolation 不信任自报布尔值：Ray set/readback 必须逐字段匹配 H120/S50/INT100；strip
+  必须通过 generation-bearing independent zero device-state schema。Cleanup 独立重放 Python、shell、
+  child exit、signal、cleanup exit 和最终双源 zero evidence；冷代理必须 monotonic 满 1800 秒。
+- Setup artifact 是 `ray-h120-s50` 唯一 resolver。fake resolved plan 仍为
+  `fake_resolved_device_locked` / `formal_capture_eligible=false`；production runner 在 backend connect 前
+  拒绝 unresolved、fake、hash drift 或 formal-ineligible setup。
+- 正式 synthetic round-trip 证明原预算未扩大：setup 8 + formal 16 = physical 24；public analyzer 从
+  retained setup/plan/run 独立重算，setup 不进入 formal 16、58-feature fit、repeatability covariance 或
+  TD-B history aggregates。Legacy TD-A v1/v2 和 strip TD-B replay 保持通过。
+
+### 24.2 Artifact 和哈希
+
+| Artifact | SHA-256 |
+| --- | --- |
+| `historical-seed-audit.json` | `66a7b5af31874e4626fc1927080fcdac55dd5f85f438040aaf117bc3b5192ec7` |
+| `setup-schema-fake-success.json` | `b64c46bcc74e3c3c721addb9860715505b1a7bf47f2d9d4a1d40745fa8fc67f8` |
+| `setup-schema-negative-cases.json` | `3efda7df1c1380e858ac28d9a49fee841c295fe4c9d641317272229aa88ecdb5` |
+| `resolved-plan-fake.json` | `e77d8d63211091f81348c3ba68a4dd9db4ef45ac21e2d59f0e1ae210a4442e04` |
+| `fake-analyzer-replay.json` | `78d74f57003392cf1d6fc1e51dd3605dabdcdee56f08c1a53429c932fc08b0c7` |
+| `readiness.json` | `9144122523d2ebd203bbf07fdf43239445ebd7ce0e41959bc55ee8d5eb2908ed` |
+| `focused-tests.log` | `c9dc91d95cd046be8384c8a09547e09d991e3bf30f9ea1cea223a2ecca0b8bd2` |
+| `full-tests.log` | `c02ce76d05cac196e869253f1b4e8f0131fd9d104dfff2ba2b53ce4544c0d886` |
+| `validation-summary.json` | `7ef454eed34c4de43f7cb065102b2e09dbc24c7567aad0349b33b824838edbfb` |
+
+Fake artifact 目录包含 8 个极小的离线 CR3 byte fixtures 及对应 v2 sidecar，仅用于 parser/ledger
+重放，均标记 `fake_only=true`；真实 CR3 数为 0，retained NPY 数为 0。
+
+### 24.3 Validation
+
+```text
+focused: 97/97 pass, 5.060s
+full suite: 521/521 pass, 112.375s
+compileall: pass
+tmp/run-p7-thermal-diagnostics.zsh zsh -n: pass
+git diff --check: pass
+CodeGraph sync: pass
+frozen input hashes: 6/6 match PLAN
+device/network/.env/remote/camera/Ray/ESPHome/all_off calls: 0
+```
+
+状态：`p7_td_b_r0s_offline_complete_waiting_for_planner_review`。没有未解决的 Executor 分支。TD-B setup
+实拍、Ray/strip TD-B、TD-C、sentinel、remaining、boundary、holdout、Gate-6、P8、firmware、remote
+deployment 和默认安装继续锁定；Planner 必须另写 exact execution PLAN 后才可进入任何实机步骤。

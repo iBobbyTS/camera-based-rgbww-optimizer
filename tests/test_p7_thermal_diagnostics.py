@@ -14,6 +14,7 @@ from unittest import mock
 
 from camera_based_rgbww_optimizer.optimization import measure_p7_thermal_diagnostics as measure
 from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as subject
+from camera_based_rgbww_optimizer.optimization import analyze_p7_thermal_diagnostics as thermal_analyzer
 from camera_based_rgbww_optimizer.control import camera_gphoto2, camera_remote_v2
 
 
@@ -104,7 +105,317 @@ def _attach_v2_capture_evidence(root, step, result, *, observed=None, tier="tier
     return result
 
 
+def _fake_td_b_setup(root: Path, *, count: int = 1, fake_only: bool = True):
+    root.mkdir(parents=True, exist_ok=True)
+    attempts = []
+    for index in range(1, count + 1):
+        step = {"capture_id": f"{index:04d}-td-b-exposure-setup", "requested_elapsed_s": 1}
+        result = _attach_v2_capture_evidence(root, step, {}, observed=1.0)
+        raw = Path(result["saved_file"])
+        sidecar = Path(result["remote_metadata_path"])
+        metadata = json.loads(sidecar.read_text(encoding="utf-8"))
+        attempts.append({
+            "attempt_index": index,
+            "capture_id": step["capture_id"],
+            "disposition": "final" if index == count else "trial",
+            "cr3_path": str(raw.resolve()),
+            "cr3_sha256": hashlib.sha256(raw.read_bytes()).hexdigest(),
+            "cr3_byte_count": raw.stat().st_size,
+            "sidecar_path": str(sidecar.resolve()),
+            "sidecar_sha256": hashlib.sha256(sidecar.read_bytes()).hexdigest(),
+            "request_id": metadata["request_id"],
+            "timing_tier": result["timing_evidence"]["tier"],
+            "timing_method": metadata["exposure_start_estimate"]["method"],
+            "recorded_exposure": metadata["recorded_exposure"],
+            "shutter_speed": "1/100",
+            "npy_paths": [],
+            "npy_deleted": True,
+        })
+    curve = json.loads(subject.CURVE_PATH.read_text(encoding="utf-8"))
+    from camera_based_rgbww_optimizer.optimization.hsi_source_evidence import expected_strip_payloads
+    _raw, off_payload = expected_strip_payloads({channel: 0 for channel in subject.CHANNELS}, curve)
+    return {
+        "schema": subject.TD_B_SETUP_SCHEMA,
+        "experiment_id": subject.TD_B,
+        "source": "ray",
+        "state_id": subject.TD_B_SETUP_STATE,
+        "command": dict(subject.TD_B_SETUP_COMMAND),
+        "command_sha256": subject.canonical_sha256(dict(subject.TD_B_SETUP_COMMAND)),
+        "capture_role": "exposure_setup",
+        "formal_measurement": False,
+        "counts_as_physical": True,
+        "enters_58_feature_fit": False,
+        "enters_repeatability_covariance": False,
+        "enters_td_b_history_aggregate": False,
+        "setup_method": "bounded_remote_v2_auto_exposure",
+        "historical_seed": subject.audit_td_b_historical_seed(),
+        "camera": {"backend": "remote", "v2_capture_capability": measure.REMOTE_V2_CAPABILITY,
+            "capture_settings_owner": "remote_backend.resolve_capture_settings", "iso": "100",
+            "aperture": "implicit auto", "image_format": "RAW"},
+        "attempts": attempts,
+        "final_capture_id": attempts[-1]["capture_id"],
+        "resolved_shutter_speed": "1/100",
+        "setup_physical_cr3_count": count,
+        "setup_physical_cr3_cap": subject.TD_B_SETUP_PHYSICAL_CAP,
+        "input_hashes": {"location": subject.file_reference(subject.LOCATION_PATH)["sha256"],
+            "policy": subject.file_reference(subject.POLICY_PATH)["sha256"],
+            "operating_envelope": subject.file_reference(subject.OPERATING_ENVELOPE_V2_PATH)["sha256"]},
+        "code_checkpoint": "fake-offline",
+        "isolation": {"ray_set_response": {"data": {"hue": 120, "sat": 50, "intensity": 1000}},
+            "ray_readback": {"data": {"hue": 120, "sat": 50, "intensity": 1000}},
+            "strip_device_evidence": {"schema_version": 1, "requested_payload": off_payload,
+                "baseline_snapshot": {"schema_version": 1, "generation": 1, **off_payload},
+                "device_snapshot": {"schema_version": 1, "generation": 2, **off_payload},
+                "device_state_entity": {"object_id": "rgbww_commanded_state", "key": 1},
+                "device_identity": {"name": "bedroom-rgbww-strip", "mac_address": "00:11:22:33:44:55"}}},
+        "cold_proxy": {"required_wait_s": 1800, "start_monotonic_s": 10.0, "end_monotonic_s": 1810.0},
+        "cleanup": _fake_td_b_setup_cleanup(off_payload),
+        "failure": None,
+        "fake_only": fake_only,
+    }
+
+
+def _fake_td_b_setup_cleanup(off_payload):
+    steps = [
+        {"name": "esphome", "ok": True, "detail": {"payload": off_payload}, "error": None},
+        {"name": "ray120c", "ok": True, "detail": {"response": {"data": {"intensity": 0}}}, "error": None},
+    ]
+    strip = {"schema_version": 1, "requested_payload": off_payload,
+        "baseline_snapshot": {"schema_version": 1, "generation": 2, **off_payload},
+        "device_snapshot": {"schema_version": 1, "generation": 3, **off_payload},
+        "device_state_entity": {"object_id": "rgbww_commanded_state", "key": 1},
+        "device_identity": {"name": "bedroom-rgbww-strip", "mac_address": "00:11:22:33:44:55"}}
+    return {
+        "python": {"status": "pass", "steps": steps, "exit_code": 0},
+        "shell": {"status": "pass", "steps": steps, "exit_code": 0},
+        "wrapper": {"status": "complete", "child_exit_code": 0, "shell_cleanup_exit_code": 0,
+            "wrapper_exit_code": 0, "signal": None},
+        "final_both_off": {"strip_device_evidence": strip, "ray_readback": {"data": {"intensity": 0}}},
+    }
+
+
+def _build_p6_seed_fixture(root: Path):
+    source = subject.P6_SETUP_SEED_RUN
+    captures = [json.loads(line) for line in (source / "captures.jsonl").read_text().splitlines()]
+    row = next(item for item in captures if item.get("capture_id") == subject.P6_SETUP_SEED_CAPTURE_ID)
+    commands = [json.loads(line) for line in (source / "commands.jsonl").read_text().splitlines()]
+    command = next(item for item in commands if item.get("capture_id") == subject.P6_SETUP_SEED_CAPTURE_ID and item.get("event") == "ray_on_readback_verified")
+    root.mkdir(parents=True, exist_ok=True)
+    raw_source = Path(row["capture"]["capture"]["saved_file"])
+    raw = root / raw_source.name
+    try:
+        os.link(raw_source, raw)
+    except OSError:
+        shutil.copyfile(raw_source, raw)
+    report_source = Path(row["capture"]["patch_statistics"])
+    report = json.loads(report_source.read_text(encoding="utf-8"))
+    report["exposure_metadata"]["raw_file"] = str(raw.resolve())
+    report_path = root / report_source.name
+    report_path.write_text(json.dumps(report), encoding="utf-8")
+    row["capture"]["capture"]["saved_file"] = str(raw.resolve())
+    row["capture"]["patch_statistics"] = str(report_path.resolve())
+    (root / "captures.jsonl").write_text(json.dumps(row) + "\n", encoding="utf-8")
+    (root / "commands.jsonl").write_text(json.dumps(command) + "\n", encoding="utf-8")
+    return row, command, report, report_path
+
+
 class P7ThermalDiagnosticsTests(unittest.TestCase):
+    def test_p6_historical_seed_is_rebuilt_as_seed_only(self):
+        audit = subject.audit_td_b_historical_seed()
+        self.assertTrue(audit["historical_seed_usable"])
+        self.assertTrue(audit["seed_only"])
+        self.assertFalse(audit["formal_capture_eligible"])
+        self.assertEqual(audit["initial_shutter_seed"], "1/6400")
+        self.assertEqual(audit["evidence"]["feature_count"], 58)
+        self.assertEqual(audit["evidence"]["remote_endpoint"], "/v1/capture")
+        self.assertEqual(audit["evidence"]["quality"]["status"], "rejected")
+
+    def test_p6_historical_seed_tampering_falls_back_without_seed(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            row, command, report, report_path = _build_p6_seed_fixture(root)
+            self.assertTrue(subject.audit_td_b_historical_seed(root)["historical_seed_usable"])
+            mutations = {
+                "command": lambda: command["expected"].update(sat=49),
+                "capture_hash": lambda: row["capture"]["capture"].update(sha256="0" * 64),
+                "location": lambda: report["location_config"].update(sha256="0" * 64),
+                "recorded_exposure": lambda: report["exposure_metadata"].update(status="fallback_nominal"),
+                "raw_owner": lambda: report["exposure_metadata"].update(raw_file=str(root / "other.CR3")),
+            }
+            for name, mutate in mutations.items():
+                with self.subTest(name=name):
+                    clean_row, clean_command, clean_report, clean_report_path = _build_p6_seed_fixture(root / name)
+                    row, command, report, report_path = clean_row, clean_command, clean_report, clean_report_path
+                    mutate()
+                    (root / name / "captures.jsonl").write_text(json.dumps(row) + "\n", encoding="utf-8")
+                    (root / name / "commands.jsonl").write_text(json.dumps(command) + "\n", encoding="utf-8")
+                    report_path.write_text(json.dumps(report), encoding="utf-8")
+                    audit = subject.audit_td_b_historical_seed(root / name)
+                    self.assertFalse(audit["historical_seed_usable"])
+                    self.assertIsNone(audit["initial_shutter_seed"])
+                    self.assertTrue(audit["seed_only"])
+
+    def test_td_b_setup_round_trip_resolves_only_ray_shutter(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            artifact = _fake_td_b_setup(root / "setup", count=8)
+            artifact_path = root / "setup" / "setup.json"
+            artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
+            validated = subject.validate_td_b_exposure_setup(artifact, artifact_path=artifact_path)
+            self.assertEqual(validated["physical_count"], 8)
+            plan = subject.build_diagnostic_plan(
+                subject.TD_B, source="ray", prerequisite_artifact=subject.OPERATING_ENVELOPE_V2_PATH,
+            )
+            resolved = subject.resolve_td_b_plan_with_setup(plan, setup_artifact_path=artifact_path)
+            self.assertEqual(resolved["frozen_shutters"]["ray-h120-s50"], "1/100")
+            self.assertEqual(resolved["exposure_setup_required"], [])
+            self.assertEqual(resolved["setup_physical_cr3_count"], 8)
+            self.assertFalse(resolved["formal_capture_eligible"])
+            self.assertEqual(resolved["status"], "fake_resolved_device_locked")
+            replay = subject.replay_td_b_setup_resolution(plan, setup_artifact_path=artifact_path)
+            self.assertEqual(replay["status"], "offline_fake_replay_pass")
+            self.assertEqual(replay["formal_capture_count"], 16)
+            self.assertEqual(replay["setup_physical_cr3_count"], 8)
+            self.assertTrue(replay["setup_excluded_from_58_feature_fit"])
+            self.assertEqual(
+                thermal_analyzer.analyze_td_b_setup_resolution(plan, setup_artifact_path=artifact_path),
+                replay,
+            )
+
+    def test_td_b_setup_injected_state_machine_accounts_attempts_and_cold_wait(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            plan = subject.build_diagnostic_plan(
+                subject.TD_B, source="ray", prerequisite_artifact=subject.OPERATING_ENVELOPE_V2_PATH,
+            )
+            fake = _fake_td_b_setup(root / "evidence", count=2)
+            clock = _Clock()
+            cleanup_calls = []
+            final_off = fake["cleanup"]["final_both_off"]
+            artifact_path = measure.execute_td_b_exposure_setup(
+                plan, run_dir=root / "run",
+                capture_setup_fn=lambda request: (
+                    self.assertEqual(request["max_captures"], 8) or fake["attempts"]
+                ),
+                both_off_gate_fn=lambda gate: {"status": "pass", "gate_id": gate,
+                    "strip_verified_off": True, "ray_verified_off": True,
+                    "strip_device_evidence": final_off["strip_device_evidence"],
+                    "ray_readback": final_off["ray_readback"]},
+                apply_ray_fn=lambda _command: fake["isolation"]["ray_set_response"],
+                ray_readback_fn=lambda: fake["isolation"]["ray_readback"],
+                strip_off_evidence_fn=lambda: fake["isolation"]["strip_device_evidence"],
+                cleanup_fn=lambda: cleanup_calls.append("cleanup") or fake["cleanup"]["python"],
+                shell_cleanup_evidence={key: fake["cleanup"][key] for key in ("shell", "wrapper", "final_both_off")},
+                historical_seed=fake["historical_seed"], camera_settings=fake["camera"],
+                code_checkpoint="fake-offline", execution_authorized=False, fake_only=True,
+                monotonic_fn=clock.monotonic, sleep_fn=clock.sleep,
+            )
+            artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
+            self.assertEqual(artifact["setup_physical_cr3_count"], 2)
+            self.assertEqual(artifact["cold_proxy"]["end_monotonic_s"], 1800.0)
+            self.assertEqual(cleanup_calls, ["cleanup"])
+
+    def test_td_b_setup_state_machine_rejects_ninth_attempt_and_cleans_up(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            plan = subject.build_diagnostic_plan(
+                subject.TD_B, source="ray", prerequisite_artifact=subject.OPERATING_ENVELOPE_V2_PATH,
+            )
+            fake = _fake_td_b_setup(root / "evidence", count=9)
+            cleanup_calls = []
+            final_off = fake["cleanup"]["final_both_off"]
+            with self.assertRaisesRegex(RuntimeError, "physical_budget_accounting_violation"):
+                measure.execute_td_b_exposure_setup(
+                    plan, run_dir=root / "run", capture_setup_fn=lambda _request: fake["attempts"],
+                    both_off_gate_fn=lambda gate: {"status": "pass", "gate_id": gate,
+                        "strip_verified_off": True, "ray_verified_off": True,
+                        "strip_device_evidence": final_off["strip_device_evidence"],
+                        "ray_readback": final_off["ray_readback"]},
+                    apply_ray_fn=lambda _command: fake["isolation"]["ray_set_response"],
+                    ray_readback_fn=lambda: fake["isolation"]["ray_readback"],
+                    strip_off_evidence_fn=lambda: fake["isolation"]["strip_device_evidence"],
+                    cleanup_fn=lambda: cleanup_calls.append("cleanup") or fake["cleanup"]["python"],
+                    shell_cleanup_evidence={key: fake["cleanup"][key] for key in ("shell", "wrapper", "final_both_off")},
+                    historical_seed=fake["historical_seed"],
+                    camera_settings=fake["camera"], code_checkpoint="fake", execution_authorized=False,
+                    fake_only=True, sleep_fn=lambda _seconds: None,
+                )
+            self.assertEqual(cleanup_calls, ["cleanup"])
+            self.assertTrue((root / "run" / "failure.json").is_file())
+            failure = json.loads((root / "run" / "failure.json").read_text(encoding="utf-8"))
+            self.assertTrue(failure["capture_attempted"])
+            self.assertEqual(failure["retained_attempt_count"], 9)
+            self.assertEqual(len(failure["retained_attempts"]), 9)
+
+    def test_td_b_real_setup_rejects_caller_boolean_without_exact_plan_gate_before_calls(self):
+        plan = subject.build_diagnostic_plan(
+            subject.TD_B, source="ray", prerequisite_artifact=subject.OPERATING_ENVELOPE_V2_PATH,
+        )
+        calls = []
+        with tempfile.TemporaryDirectory() as tempdir, self.assertRaisesRegex(PermissionError, "exact plan"):
+            measure.execute_td_b_exposure_setup(
+                plan, run_dir=Path(tempdir) / "run",
+                capture_setup_fn=lambda _request: calls.append("capture") or [],
+                both_off_gate_fn=lambda _gate: calls.append("off") or {},
+                apply_ray_fn=lambda _command: calls.append("ray") or {}, ray_readback_fn=lambda: {},
+                strip_off_evidence_fn=lambda: {}, cleanup_fn=lambda: calls.append("cleanup") or {},
+                shell_cleanup_evidence={}, historical_seed=subject.audit_td_b_historical_seed(),
+                camera_settings={"v2_capture_capability": measure.REMOTE_V2_CAPABILITY},
+                code_checkpoint="a" * 40, execution_authorized=True, fake_only=False,
+            )
+        self.assertEqual(calls, [])
+
+    def test_td_b_setup_replays_both_off_before_ray_command(self):
+        plan = subject.build_diagnostic_plan(
+            subject.TD_B, source="ray", prerequisite_artifact=subject.OPERATING_ENVELOPE_V2_PATH,
+        )
+        calls = []
+        with tempfile.TemporaryDirectory() as tempdir, self.assertRaises(ValueError):
+            measure.execute_td_b_exposure_setup(
+                plan, run_dir=Path(tempdir) / "run", capture_setup_fn=lambda _request: [],
+                both_off_gate_fn=lambda gate: {"status": "pass", "gate_id": gate,
+                    "strip_verified_off": True, "ray_verified_off": True,
+                    "strip_device_evidence": {}, "ray_readback": {}},
+                apply_ray_fn=lambda _command: calls.append("ray") or {}, ray_readback_fn=lambda: {},
+                strip_off_evidence_fn=lambda: {}, cleanup_fn=lambda: calls.append("cleanup") or {"status": "pass"},
+                shell_cleanup_evidence={}, historical_seed=subject.audit_td_b_historical_seed(),
+                camera_settings={"v2_capture_capability": measure.REMOTE_V2_CAPABILITY},
+                code_checkpoint="fake", execution_authorized=False, fake_only=True,
+            )
+        self.assertEqual(calls, ["cleanup"])
+
+    def test_td_b_setup_rejects_budget_hash_owner_and_cold_proxy_tampering(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir) / "setup"
+            clean = _fake_td_b_setup(root, count=1)
+            path = root / "setup.json"
+            path.write_text(json.dumps(clean), encoding="utf-8")
+            mutations = []
+            changed = json.loads(json.dumps(clean)); changed["setup_physical_cr3_count"] = 9; mutations.append(changed)
+            changed = json.loads(json.dumps(clean)); changed["attempts"][0]["cr3_sha256"] = "0" * 64; mutations.append(changed)
+            changed = json.loads(json.dumps(clean)); changed["attempts"][0]["request_id"] = "wrong"; mutations.append(changed)
+            changed = json.loads(json.dumps(clean)); changed["cold_proxy"]["end_monotonic_s"] = 1809.0; mutations.append(changed)
+            changed = json.loads(json.dumps(clean)); changed["attempts"][0]["npy_paths"] = ["trial.npy"]; mutations.append(changed)
+            changed = json.loads(json.dumps(clean)); changed["historical_seed"]["capture_id"] = "stale"; mutations.append(changed)
+            changed = json.loads(json.dumps(clean)); changed["command"]["sat"] = 49; mutations.append(changed)
+            changed = json.loads(json.dumps(clean)); changed["source"] = "strip"; mutations.append(changed)
+            changed = json.loads(json.dumps(clean)); changed["isolation"]["ray_readback"]["data"]["sat"] = 49; mutations.append(changed)
+            changed = json.loads(json.dumps(clean)); changed["isolation"]["strip_device_evidence"]["device_snapshot"]["generation"] = 1; mutations.append(changed)
+            changed = json.loads(json.dumps(clean)); changed["cleanup"]["wrapper"]["child_exit_code"] = 1; mutations.append(changed)
+            changed = json.loads(json.dumps(clean)); changed["cleanup"]["wrapper"]["signal"] = "TERM"; mutations.append(changed)
+            changed = json.loads(json.dumps(clean)); changed["cleanup"]["shell"]["exit_code"] = 70; mutations.append(changed)
+            changed = json.loads(json.dumps(clean)); changed["cleanup"]["python"]["steps"][0]["ok"] = False; mutations.append(changed)
+            for artifact in mutations:
+                with self.subTest(artifact=artifact):
+                    with self.assertRaises(ValueError):
+                        subject.validate_td_b_exposure_setup(artifact, artifact_path=path)
+
+    def test_td_b_setup_ninth_physical_capture_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            artifact = _fake_td_b_setup(Path(tempdir) / "setup", count=9)
+            with self.assertRaisesRegex(ValueError, "1..8"):
+                subject.validate_td_b_exposure_setup(artifact)
+
     def test_td_a_plan_freezes_exact_command_schedule_and_caps(self):
         plan = subject.build_diagnostic_plan(subject.TD_A, source="strip")
         self.assertEqual(plan["experiment_id"], subject.TD_A)

@@ -96,12 +96,18 @@ def _build_formal_td_a_run(
     estimate_method: str = "gphoto_capture_return_minus_recorded_exposure",
     experiment_id: str = thermal.TD_A,
     prerequisite_artifact: Path = thermal.OPERATING_ENVELOPE_PATH,
+    setup_artifact_path: Path | None = None,
 ) -> Path:
     plan = thermal.build_diagnostic_plan(
         experiment_id, source=source, for_execution=True,
         human_authorization=experiment_id, v2_capture_capability=True,
         prerequisite_artifact=prerequisite_artifact,
     )
+    if setup_artifact_path is not None:
+        plan = thermal.resolve_td_b_plan_with_setup(
+            plan, setup_artifact_path=setup_artifact_path,
+        )
+        plan["status"] = "execute_authorized"
     plan["camera"]["resolved_capture_settings"] = {
         "owner": "remote_backend.resolve_capture_settings",
         "iso": "125",
@@ -843,6 +849,29 @@ class AnalyzeP7ThermalDiagnosticsTests(unittest.TestCase):
             _write_json(root / "plan.json", plan)
             with self.assertRaisesRegex(ValueError, "provenance"):
                 subject.analyze_thermal_run(root, feature_ids=FEATURE_IDS)
+
+    def test_td_b_ray_setup_and_formal_physical_ledgers_round_trip_to_24(self):
+        from tests.test_p7_thermal_diagnostics import _fake_td_b_setup
+
+        with tempfile.TemporaryDirectory() as tempdir:
+            base = Path(tempdir)
+            setup = _fake_td_b_setup(base / "setup", count=8, fake_only=False)
+            setup["code_checkpoint"] = "a" * 40
+            setup_path = base / "setup" / "setup.json"
+            _write_json(setup_path, setup)
+            root = _build_formal_td_a_run(
+                base / "td-b-ray", source="ray",
+                experiment_id=thermal.TD_B,
+                prerequisite_artifact=thermal.OPERATING_ENVELOPE_V2_PATH,
+                setup_artifact_path=setup_path,
+            )
+            report = subject.analyze_thermal_run(root, feature_ids=FEATURE_IDS)
+            self.assertEqual(report["formal_capture_count"], 16)
+            self.assertEqual(report["setup_physical_cr3_count"], 8)
+            self.assertEqual(report["physical_cr3_count"], 24)
+            run = json.loads((root / "run.json").read_text(encoding="utf-8"))
+            self.assertEqual(run["setup_physical_cr3_count"], 8)
+            self.assertEqual(run["physical_cr3_count"], 24)
 
     def test_td_c_reports_order_balanced_not_abba(self):
         plan = thermal.build_diagnostic_plan(thermal.TD_C, variant="core")
