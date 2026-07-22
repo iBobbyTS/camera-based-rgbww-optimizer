@@ -371,14 +371,8 @@ def _setup_attempt_from_capture(
     return row, raw_source
 
 
-def run_td_b_setup_provisional(
-    plan: Mapping[str, Any], *, output_dir: str | Path, run_name: str,
-    camera_backend: Any, code_checkpoint: str,
-    sleep_fn: Callable[[float], None] = time.sleep,
-    monotonic_fn: Callable[[], float] = time.monotonic,
-) -> Path:
-    """Run the real setup child; shell/wrapper evidence is finalized later."""
-    _validate_checkpoint_and_tree(code_checkpoint)
+def _validate_td_b_setup_frozen_plan(plan: Mapping[str, Any]) -> Mapping[str, Any]:
+    """Validate the setup plan before backend inspection or output ownership."""
     if (
         plan.get("experiment_id") != thermal.TD_B or plan.get("source") != "ray"
         or plan.get("status") != "execute_authorized"
@@ -393,13 +387,30 @@ def run_td_b_setup_provisional(
         "uncertainty": thermal.UNCERTAINTY_PATH,
         "manifold": thermal.MANIFOLD_PATH,
         "code_duty_curve": thermal.CURVE_PATH,
-        "operating_envelope": thermal.OPERATING_ENVELOPE_V2_PATH,
     }
     inputs = plan.get("inputs")
     if not isinstance(inputs, Mapping) or any(
         inputs.get(name) != thermal.file_reference(path) for name, path in expected_inputs.items()
     ):
         raise PermissionError("TD-B setup frozen input references differ before device access")
+    try:
+        thermal.validate_trusted_operating_envelope_reference(
+            inputs.get("operating_envelope", {}), require_v2=True,
+        )
+    except ValueError as exc:
+        raise PermissionError("TD-B setup operating-envelope identity differs before device access") from exc
+    return inputs
+
+
+def run_td_b_setup_provisional(
+    plan: Mapping[str, Any], *, output_dir: str | Path, run_name: str,
+    camera_backend: Any, code_checkpoint: str,
+    sleep_fn: Callable[[float], None] = time.sleep,
+    monotonic_fn: Callable[[], float] = time.monotonic,
+) -> Path:
+    """Run the real setup child; shell/wrapper evidence is finalized later."""
+    _validate_checkpoint_and_tree(code_checkpoint)
+    inputs = _validate_td_b_setup_frozen_plan(plan)
     if getattr(camera_backend, "v2_capture_capability", None) != REMOTE_V2_CAPABILITY:
         raise PermissionError("TD-B setup phase requires the remote-v2 capability owner")
     root = (Path(output_dir) / run_name).resolve()

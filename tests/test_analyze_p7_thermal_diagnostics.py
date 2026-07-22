@@ -850,6 +850,40 @@ class AnalyzeP7ThermalDiagnosticsTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "provenance"):
                 subject.analyze_thermal_run(root, feature_ids=FEATURE_IDS)
 
+    def test_td_b_public_analyzer_replays_trusted_envelope_path_and_hash(self):
+        scratch_root = Path("/Volumes/4T/temp/rgbww-optimizer/p7-td-b-path-r1-offline/test-runtime")
+        scratch_root.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=scratch_root) as tempdir:
+            base = Path(tempdir)
+            root = _build_formal_td_a_run(
+                base / "td-b-strip", source="strip",
+                experiment_id=thermal.TD_B,
+                prerequisite_artifact="config/hsi/p7-operating-envelope-v2.json",
+            )
+            plan_path = root / "plan.json"
+            pristine = json.loads(plan_path.read_text(encoding="utf-8"))
+            self.assertEqual(
+                pristine["inputs"]["operating_envelope"],
+                {"path": str(thermal.OPERATING_ENVELOPE_V2_PATH.resolve()),
+                 "sha256": thermal.OPERATING_ENVELOPE_V2_SHA256},
+            )
+            self.assertEqual(
+                subject.analyze_thermal_run(root, feature_ids=FEATURE_IDS)["status"],
+                "td_b_operational_600_complete_waiting_for_planner",
+            )
+
+            same_hash_copy = base / "same-hash-envelope.json"
+            shutil.copyfile(thermal.OPERATING_ENVELOPE_V2_PATH, same_hash_copy)
+            for label, reference in (
+                ("path", {**pristine["inputs"]["operating_envelope"], "path": str(same_hash_copy)}),
+                ("hash", {**pristine["inputs"]["operating_envelope"], "sha256": "0" * 64}),
+            ):
+                tampered = json.loads(json.dumps(pristine))
+                tampered["inputs"]["operating_envelope"] = reference
+                _write_json(plan_path, tampered)
+                with self.subTest(label=label), self.assertRaises(ValueError):
+                    subject.analyze_thermal_run(root, feature_ids=FEATURE_IDS)
+
     def test_td_b_ray_setup_and_formal_physical_ledgers_round_trip_to_24(self):
         from tests.test_p7_thermal_diagnostics import _fake_td_b_setup
 

@@ -64,12 +64,11 @@ def analyze_thermal_run(
     if plan.get("experiment_id") not in thermal.EXPERIMENT_IDS or run.get("status") != "complete":
         raise ValueError("thermal analyzer requires a completed exact experiment")
     _verify_frozen_inputs(plan["inputs"])
-    envelope_path = Path(plan["inputs"]["operating_envelope"]["path"])
-    envelope = _load_json(envelope_path)
-    envelope_mode = thermal.validate_operating_envelope(
-        envelope, artifact_path=envelope_path,
-        require_v2=(plan.get("experiment_id") == thermal.TD_B and envelope.get("schema") == thermal.OPERATING_ENVELOPE_V2_SCHEMA),
+    envelope_resolution = thermal.validate_trusted_operating_envelope_reference(
+        plan["inputs"]["operating_envelope"],
     )
+    envelope = envelope_resolution["envelope"]
+    envelope_mode = envelope_resolution["mode"]
     if plan.get("experiment_id") == thermal.TD_B and envelope_mode["mode"] == "developer_human_override":
         thermal.validate_td_b_operational_dwell_plan(plan, envelope)
     schema = plan.get("schema")
@@ -711,6 +710,9 @@ def compare_current_ray_center_to_p6(
 
 def _verify_frozen_inputs(inputs: Mapping[str, Any]) -> None:
     for name, reference in inputs.items():
+        if name == "operating_envelope":
+            thermal.validate_trusted_operating_envelope_reference(reference)
+            continue
         path = Path(reference["path"])
         if hashlib.sha256(path.read_bytes()).hexdigest() != reference["sha256"]:
             raise ValueError(f"thermal frozen input hash drift: {name}")

@@ -220,6 +220,151 @@ def _build_p6_seed_fixture(root: Path):
 
 
 class P7ThermalDiagnosticsTests(unittest.TestCase):
+    def test_td_b_trusted_prerequisite_spellings_are_canonical_and_cwd_independent(self):
+        scratch_root = Path("/Volumes/4T/temp/rgbww-optimizer/p7-td-b-path-r1-offline/test-runtime")
+        scratch_root.mkdir(parents=True, exist_ok=True)
+        previous_cwd = Path.cwd()
+        try:
+            os.chdir(scratch_root)
+            plans = [
+                subject.build_diagnostic_plan(
+                    subject.TD_B, source="ray", prerequisite_artifact=spelling,
+                )
+                for spelling in (
+                    "config/hsi/p7-operating-envelope-v2.json",
+                    "./config/hsi/p7-operating-envelope-v2.json",
+                    subject.OPERATING_ENVELOPE_V2_PATH,
+                )
+            ]
+        finally:
+            os.chdir(previous_cwd)
+
+        references = [plan["inputs"]["operating_envelope"] for plan in plans]
+        self.assertEqual(references[0], references[1])
+        self.assertEqual(references[1], references[2])
+        self.assertEqual(references[0], {
+            "path": str(subject.OPERATING_ENVELOPE_V2_PATH.resolve()),
+            "sha256": subject.OPERATING_ENVELOPE_V2_SHA256,
+        })
+
+    def test_td_b_trusted_prerequisite_rejects_non_owner_paths_before_json_read(self):
+        scratch_root = Path("/Volumes/4T/temp/rgbww-optimizer/p7-td-b-path-r1-offline/test-runtime")
+        scratch_root.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=scratch_root) as tempdir:
+            root = Path(tempdir)
+            same_hash_copy = root / "same-hash.json"
+            shutil.copyfile(subject.OPERATING_ENVELOPE_V2_PATH, same_hash_copy)
+            symlink = root / "trusted-link.json"
+            symlink.symlink_to(subject.OPERATING_ENVELOPE_V2_PATH)
+            cases = {
+                "traversal": "config/hsi/../hsi/p7-operating-envelope-v2.json",
+                "outside": same_hash_copy,
+                "missing": root / "missing.json",
+                "directory": root,
+                "symlink": symlink,
+            }
+            for label, path in cases.items():
+                with self.subTest(label=label), self.assertRaises(ValueError):
+                    subject.build_diagnostic_plan(
+                        subject.TD_B, source="ray", prerequisite_artifact=path,
+                    )
+
+        reference = subject.file_reference(subject.OPERATING_ENVELOPE_V2_PATH)
+        with self.assertRaisesRegex(ValueError, "hash"):
+            subject.validate_trusted_operating_envelope_reference(
+                {**reference, "sha256": "0" * 64}, require_v2=True,
+            )
+        with self.assertRaisesRegex(ValueError, "trusted repository owner"):
+            subject.validate_trusted_operating_envelope_reference(
+                subject.file_reference(subject.OPERATING_ENVELOPE_PATH), require_v2=True,
+            )
+
+    def test_td_b_relative_cli_plan_reaches_setup_fake_backend_boundary(self):
+        scratch_root = Path("/Volumes/4T/temp/rgbww-optimizer/p7-td-b-path-r1-offline/test-runtime")
+        scratch_root.mkdir(parents=True, exist_ok=True)
+        observed = {"factory": 0, "setup": 0, "replay": None}
+
+        class FakeBackend:
+            v2_capture_capability = measure.REMOTE_V2_CAPABILITY
+
+        def factory(*_args, **_kwargs):
+            observed["factory"] += 1
+            return FakeBackend()
+
+        def setup(plan, **kwargs):
+            observed["setup"] += 1
+            self.assertEqual(plan["inputs"]["operating_envelope"], {
+                "path": str(subject.OPERATING_ENVELOPE_V2_PATH.resolve()),
+                "sha256": subject.OPERATING_ENVELOPE_V2_SHA256,
+            })
+            measure._validate_td_b_setup_frozen_plan(plan)
+            root = Path(kwargs["output_dir"]) / kwargs["run_name"]
+            artifact = _fake_td_b_setup(root, count=2)
+            artifact_path = root / "setup.json"
+            artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
+            observed["replay"] = thermal_analyzer.analyze_td_b_setup_resolution(
+                plan, setup_artifact_path=artifact_path,
+            )
+            (root / "plan.json").write_text(json.dumps(plan, indent=2) + "\n", encoding="utf-8")
+            (root / "public-replay.json").write_text(
+                json.dumps(observed["replay"], indent=2) + "\n", encoding="utf-8",
+            )
+            evidence_root = os.environ.get("P7_PATH_R1_EVIDENCE_DIR")
+            if evidence_root:
+                shutil.copytree(root, Path(evidence_root) / "fake-production-roundtrip")
+            return artifact_path
+
+        with tempfile.TemporaryDirectory(dir=scratch_root) as tempdir:
+            output = Path(tempdir) / "relative-cli"
+            self.assertEqual(measure.main([
+                    "--experiment-id", subject.TD_B, "--source", "ray",
+                    "--run-name", output.name, "--output-dir", str(output.parent),
+                    "--prerequisite-artifact", "config/hsi/p7-operating-envelope-v2.json",
+                    "--execute", "--allow-device-control", "--human-authorization", subject.TD_B,
+                    "--phase", "setup", "--code-checkpoint", "a" * 40,
+                ], backend_factory=factory, setup_fn=setup), 0)
+        self.assertEqual(observed["factory"], 1)
+        self.assertEqual(observed["setup"], 1)
+        self.assertEqual(observed["replay"]["status"], "offline_fake_replay_pass")
+        self.assertEqual(observed["replay"]["setup_physical_cr3_count"], 2)
+
+    def test_td_b_setup_tampered_envelope_rejects_before_backend_or_output_owner(self):
+        scratch_root = Path("/Volumes/4T/temp/rgbww-optimizer/p7-td-b-path-r1-offline/test-runtime")
+        scratch_root.mkdir(parents=True, exist_ok=True)
+        plan = subject.build_diagnostic_plan(
+            subject.TD_B, source="ray",
+            prerequisite_artifact="config/hsi/p7-operating-envelope-v2.json",
+            for_execution=True, human_authorization=subject.TD_B, v2_capture_capability=True,
+        )
+
+        class UntouchableBackend:
+            @property
+            def v2_capture_capability(self):
+                raise AssertionError("tampered plan touched backend capability")
+
+        cases = {
+            "path": {**plan["inputs"]["operating_envelope"],
+                     "path": str(scratch_root / "same-hash-copy.json")},
+            "hash": {**plan["inputs"]["operating_envelope"], "sha256": "0" * 64},
+        }
+        shutil.copyfile(
+            subject.OPERATING_ENVELOPE_V2_PATH, scratch_root / "same-hash-copy.json",
+        )
+        for label, reference in cases.items():
+            tampered = json.loads(json.dumps(plan))
+            tampered["inputs"]["operating_envelope"] = reference
+            output = scratch_root / f"tampered-{label}-must-not-exist"
+            if output.exists():
+                self.fail(f"test output owner unexpectedly exists: {output}")
+            with self.subTest(label=label), mock.patch.object(
+                measure, "_validate_checkpoint_and_tree",
+            ), self.assertRaisesRegex(PermissionError, "identity"):
+                measure.run_td_b_setup_provisional(
+                    tampered, output_dir=output.parent, run_name=output.name,
+                    camera_backend=UntouchableBackend(), code_checkpoint="a" * 40,
+                )
+            self.assertFalse(output.exists())
+
     def test_p6_historical_seed_is_rebuilt_as_seed_only(self):
         audit = subject.audit_td_b_historical_seed()
         self.assertTrue(audit["historical_seed_usable"])

@@ -126,3 +126,11 @@ the v2 canonical `setup.json`, `resolved-formal-plan.json`, and
 same checkpoint. Paired TD-B finalization requires two public source analyses
 plus independent final zero; it may summarize the exact `33..40` physical
 ledger but must not call 600 seconds settled or change either source result.
+
+Resolve the TD-B v2 operating-envelope prerequisite through the shared thermal
+trusted-prerequisite owner. Accept project-relative, `./`-relative, or exact
+absolute caller spelling, but persist the canonical repository path and frozen
+hash. Reject traversal, outside-root paths, missing files, directories,
+symlinks, hash drift, and same-content copies before backend or output access.
+Use the same resolver in plan production, setup frozen-input validation, and
+public analyzer replay; do not change generic `file_reference()` semantics.

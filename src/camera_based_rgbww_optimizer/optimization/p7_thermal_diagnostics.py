@@ -81,6 +81,7 @@ LOCATION_PATH = PROJECT_ROOT / "config/location/locations-20260714-211759.json"
 CURVE_PATH = PROJECT_ROOT / "config/channel/code-duty-curve.json"
 OPERATING_ENVELOPE_PATH = PROJECT_ROOT / "config/hsi/p7-operating-envelope-v1.json"
 OPERATING_ENVELOPE_V2_PATH = PROJECT_ROOT / "config/hsi/p7-operating-envelope-v2.json"
+OPERATING_ENVELOPE_V2_SHA256 = "7012f254e5fa5182dd51b72624f64ce03645fd3d8b7227ab9144f5c7767cfc16"
 OPERATING_ENVELOPE_V2_SCHEMA = "p7_operating_envelope_v2"
 DEVELOPER_OPERATIONAL_DWELL_S = 600
 DEVELOPER_DWELL_DECISION_AUDIT = PROJECT_ROOT / "advisor/4/0.AUDIT/03-human-decision-no-extension.md"
@@ -131,6 +132,70 @@ def canonical_sha256(value: Any) -> str:
 def file_reference(path: str | Path) -> dict[str, str]:
     target = Path(path)
     return {"path": str(target), "sha256": hashlib.sha256(target.read_bytes()).hexdigest()}
+
+
+def resolve_trusted_operating_envelope(
+    path: str | Path, *, require_v2: bool = False,
+) -> dict[str, Any]:
+    """Resolve the repo-owned operating envelope without trusting caller path spelling."""
+    requested = Path(path)
+    if ".." in requested.parts:
+        raise ValueError("operating envelope path traversal is prohibited")
+
+    project_root = PROJECT_ROOT.resolve()
+    candidate = requested if requested.is_absolute() else PROJECT_ROOT / requested
+    if not candidate.is_relative_to(project_root):
+        raise ValueError("operating envelope path is outside the project")
+
+    current = project_root
+    for part in candidate.relative_to(project_root).parts:
+        current = current / part
+        if current.is_symlink():
+            raise ValueError("operating envelope path cannot contain a symlink")
+    if not candidate.exists():
+        raise ValueError("operating envelope artifact is missing")
+    if not candidate.is_file():
+        raise ValueError("operating envelope artifact is not a regular file")
+
+    canonical = candidate.resolve(strict=True)
+    expected_v1 = OPERATING_ENVELOPE_PATH.resolve(strict=True)
+    expected_v2 = OPERATING_ENVELOPE_V2_PATH.resolve(strict=True)
+    allowed = {expected_v2} if require_v2 else {expected_v1, expected_v2}
+    if canonical not in allowed:
+        raise ValueError("operating envelope path differs from the trusted repository owner")
+
+    sha256 = hashlib.sha256(canonical.read_bytes()).hexdigest()
+    if canonical == expected_v2 and sha256 != OPERATING_ENVELOPE_V2_SHA256:
+        raise ValueError("operating envelope frozen hash drift")
+    try:
+        envelope = json.loads(canonical.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise ValueError("operating envelope artifact is not valid JSON") from exc
+    if not isinstance(envelope, dict):
+        raise ValueError("operating envelope artifact must be a JSON object")
+    mode = validate_operating_envelope(
+        envelope, artifact_path=canonical, require_v2=require_v2,
+    )
+    return {
+        "path": canonical,
+        "reference": {"path": str(canonical), "sha256": sha256},
+        "envelope": envelope,
+        "mode": mode,
+    }
+
+
+def validate_trusted_operating_envelope_reference(
+    reference: Mapping[str, Any], *, require_v2: bool = False,
+) -> dict[str, Any]:
+    """Replay a plan reference against the trusted path owner and retained hash."""
+    if not isinstance(reference, Mapping) or set(reference) != {"path", "sha256"}:
+        raise ValueError("operating envelope reference schema differs")
+    resolved = resolve_trusted_operating_envelope(
+        str(reference["path"]), require_v2=require_v2,
+    )
+    if reference.get("sha256") != resolved["reference"]["sha256"]:
+        raise ValueError("operating envelope reference hash differs")
+    return resolved
 
 
 def validate_operating_envelope(
@@ -751,6 +816,12 @@ def replay_td_b_setup_resolution(
     plan: Mapping[str, Any], *, setup_artifact_path: str | Path,
 ) -> dict[str, Any]:
     """Public offline replay for both fake fixtures and future retained setup evidence."""
+    inputs = plan.get("inputs")
+    if not isinstance(inputs, Mapping):
+        raise ValueError("TD-B setup replay lacks frozen inputs")
+    validate_trusted_operating_envelope_reference(
+        inputs.get("operating_envelope", {}), require_v2=True,
+    )
     resolved = resolve_td_b_plan_with_setup(plan, setup_artifact_path=setup_artifact_path)
     path = Path(setup_artifact_path).resolve()
     artifact = json.loads(path.read_text(encoding="utf-8"))
@@ -797,9 +868,8 @@ def build_diagnostic_plan(
     if experiment_id == TD_C and variant not in {"core", "expansion"}:
         raise ValueError("TD-C variant must be core or expansion")
 
-    envelope_path = Path(prerequisite_artifact)
-    envelope = json.loads(envelope_path.read_text(encoding="utf-8"))
-    validate_operating_envelope(envelope, artifact_path=envelope_path)
+    prerequisite = resolve_trusted_operating_envelope(prerequisite_artifact)
+    envelope = prerequisite["envelope"]
     _enforce_prerequisites(experiment_id, variant, envelope, for_execution=for_execution)
     if for_execution and human_authorization != experiment_id:
         raise PermissionError(f"execution requires exact Human authorization for {experiment_id}")
@@ -826,7 +896,7 @@ def build_diagnostic_plan(
         "manifold": file_reference(MANIFOLD_PATH),
         "location": file_reference(LOCATION_PATH),
         "code_duty_curve": file_reference(CURVE_PATH),
-        "operating_envelope": file_reference(prerequisite_artifact),
+        "operating_envelope": prerequisite["reference"],
     }
     plan = {
         "schema": PLAN_SCHEMA_V2,

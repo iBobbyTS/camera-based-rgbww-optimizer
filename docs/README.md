@@ -868,6 +868,16 @@ retains every trial, rejected final, and selected final CR3/sidecar before the
 shared search performs normal temporary deletion; candidate ordering, metering,
 bracketing, and final selection remain shared.
 
+The TD-B v2 operating-envelope prerequisite has one repository-owned identity.
+CLI callers may spell it as `config/hsi/p7-operating-envelope-v2.json`, with a
+leading `./`, or by its exact absolute path; the plan always stores the canonical
+absolute path and frozen SHA-256. The shared thermal resolver anchors relative
+spelling to the project root, not the process cwd, and rejects traversal,
+outside-root paths, directories, symlinks, missing files, hash drift, and
+same-content copies before backend inspection or output ownership. Setup and
+the public analyzer independently replay this same identity. The generic
+`file_reference()` behavior remains unchanged for retained artifacts.
+
 The child writes `setup-provisional.json`; it cannot predict shell cleanup or
 wrapper exit. The explicit setup orchestrator waits for the wrapper process to
 exit, records `wrapper-observed-exit.json`, and only then invokes the narrow
