@@ -1165,3 +1165,63 @@ started_at = 2026-07-21T21:21:36Z
 持续落盘，当前 `ambient=1 / formal=0 / physical_cr3=1`，CR3 非空且 capture settings provenance 完整。
 按长任务规则已为当前 thread 创建一次性 10 分钟 heartbeat，恢复提示包含上述目录、PID、日志与失败/cleanup
 检查规则。当前 goal 状态为等待后台 Ray run 完成，未启动 strip。
+
+## 21. TD-A Ray complete; strip run started
+
+Ray run `/Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/p7-td-a-ray-debug` 已于
+`2026-07-21T23:24:42Z` 正常完成：`12 formal + 3 ambient = 15 physical CR3`，低于 cap `22`，零 NPY，
+无 `failure.json`。child/wrapper/Python cleanup/shell cleanup exit 均为 `0`，ESPHome generation-bearing
+zero 与 Ray intensity `0` 均有独立证据。
+
+正式单源 analyzer 使用冻结 feature artifact `config/hsi/strip-hsi-policy-v2-waiting.json` 成功生成
+`analysis.json`，SHA-256 `13fac6336e95e6900003ff5ced50051b1b9ce2102af9d95729117eab3f46f69d`。
+capture、timing、source isolation、covariate、cleanup、wrapper 合同均 pass，15 张均为 Tier B；科学结果为
+`settling_not_demonstrated_by_600`，三个 cycle trend score 为 `17.7369 / 16.8013 / 16.7317`，高于冻结
+阈值 `4.0`。按 PLAN 的结构合法未稳定分支继续完成 strip 诊断，不把该结果解释为 steady 或进入 TD-B。
+
+唯一 strip run 已启动：
+
+```text
+run_dir = /Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/p7-td-a-strip-20260722-001426
+terminal_tty = ttys003
+wrapper_pid = 27283
+child_pid = 27363
+started_at = 2026-07-22T00:14:27Z
+```
+
+三分钟健康检查通过：`ambient=1 / formal=0 / physical_cr3=1`，无 failure，remote settings、isolation、
+CR3 和 wrapper state 持续落盘；正在 cycle 1 cold wait。已为当前 thread 创建一次性 10 分钟 heartbeat。
+未启动 TD-B/C、sentinel、remaining、boundary、holdout、Gate-6 或 P8。
+
+## 22. TD-A acquisition and paired analysis complete
+
+Strip run `/Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/p7-td-a-strip-20260722-001426`
+已于 `2026-07-22T02:17:49Z` 正常完成：`12 formal + 3 ambient = 15 physical CR3`，低于 cap `22`，
+零 NPY、无 `failure.json`。child/wrapper/Python cleanup/shell cleanup exit 均为 `0`；ESPHome
+generation-bearing zero 与 Ray intensity `0` 均有独立证据。
+
+Strip 单源 analyzer 生成 `analysis.json`，SHA-256
+`3d265f9e57e92552f7dfb2b28c455373eb655911dec2e4e4bb8c59c013302155`。capture、timing、source
+isolation、cleanup 和 wrapper 合同均 pass；15 张均为 Tier B。科学结果为
+`settling_not_demonstrated_by_600`，cycle trend score 为 `16.8865 / 10.3106 / 11.8856`，均高于
+冻结阈值 `4.0`。
+
+Paired finalizer 输出目录：
+`/Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/p7-td-a-paired-20260722-022200`。
+
+```text
+td-a-combined-analysis.json = 99550214c619160b39cbf7f393e6b8dc3a5b3feae8f91d0a1765c272283c3160
+EXPERIMENT_SUMMARY.md = 21470015f92eb3981753ad398abfdb9f73444e93bc303272cdde9ed717453ee3
+input-manifest.json = a938e6f1bc84fee96635a11fcacc8cd2707a322c6b8f18ceedfb2dc8e97f710c
+independent-final-zero.json = b83d96e000293f7413372b297b97a49fc676f437e099f8ad6d52f2b401824dc2
+```
+
+Paired contract 为 `24 formal + 6 ambient / 30 physical CR3 <= 44`，input/capture/timing/cleanup/wrapper
+全部 pass，default operating envelope 未修改。Ray 与 strip 都是 `settling_not_demonstrated_by_600`，
+因此 combined status 同名，`t_settle_ray_s`、`t_settle_strip_s`、`t_formal_provisional_s`、`t_formal_s`
+全部为 null。最终独立零读回确认 strip generation `7 -> 8` 且五通道全零，Ray intensity `0`；相关采集
+进程均不存在。
+
+状态：`td_a_complete_not_settled_by_600_waiting_for_planner_advisor`。停止在 Planner 门，不启动 TD-B、
+TD-C、sentinel、remaining 9、boundary、holdout、Gate-6 或 P8。按 PLAN，需要 Planner/Advisor 决定是否
+另行设计并授权 `900/1200s` 扩展；本轮不自动扩展或重拍。
