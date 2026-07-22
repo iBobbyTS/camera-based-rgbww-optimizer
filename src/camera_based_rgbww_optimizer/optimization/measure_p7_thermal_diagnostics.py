@@ -5,6 +5,8 @@ import copy
 import hashlib
 import json
 import math
+import shutil
+import subprocess
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -17,6 +19,8 @@ from camera_based_rgbww_optimizer.paths import PROJECT_TMP_DIR
 
 DEFAULT_OUTPUT = PROJECT_TMP_DIR / "p7-thermal-diagnostics-offline"
 REMOTE_V2_CAPABILITY = "remote_v2_capture_timing_v1"
+PRODUCTION_WRAPPER = Path(__file__).parents[3] / "tmp/run-p7-thermal-diagnostics.zsh"
+WRAPPER_OBSERVED_EXIT_SCHEMA = "p7_td_b_wrapper_observed_exit_v1"
 
 
 def _validate_execution_shutter_ledger(plan: Mapping[str, Any]) -> None:
@@ -138,7 +142,7 @@ def write_dry_run(
     run_name: str, source: str | None = None, variant: str = "core",
     prerequisite_artifact: str | Path = thermal.OPERATING_ENVELOPE_PATH,
 ) -> Path:
-    root = Path(output_dir) / run_name
+    root = (Path(output_dir) / run_name).resolve()
     root.mkdir(parents=True, exist_ok=False)
     plan = thermal.build_diagnostic_plan(
         experiment_id, source=source, variant=variant,
@@ -282,6 +286,416 @@ def execute_td_b_exposure_setup(
     if failure is not None:
         raise failure
     return artifact_path
+
+
+class _TimedSetupBackend:
+    """Expose the shared auto-exposure interface through remote v2 only."""
+
+    def __init__(self, backend: Any, *, connection: Any, readback_done: float):
+        self.backend = backend
+        self.connection = connection
+        self.readback_done = readback_done
+
+    def connect(self) -> Any:
+        return self.connection
+
+    def resolve_capture_settings(self, **kwargs: Any) -> Any:
+        return self.backend.resolve_capture_settings(**kwargs)
+
+    def read_shutter_current_and_choices(self, connection: Any) -> tuple[str, list[str]]:
+        return self.backend.read_shutter_current_and_choices(connection)
+
+    def read_current_shutter(self, connection: Any) -> str:
+        return self.backend.read_current_shutter(connection)
+
+    def capture(self, **kwargs: Any) -> Any:
+        kwargs.pop("allow_bulb", None)
+        return self.backend.capture_with_timing(
+            **kwargs, local_readback_done_monotonic_s=self.readback_done,
+        )
+
+
+def _validate_checkpoint_and_tree(code_checkpoint: str) -> None:
+    if len(code_checkpoint) != 40 or any(ch not in "0123456789abcdef" for ch in code_checkpoint):
+        raise PermissionError("E0X requires a full lowercase Git checkpoint")
+    root = Path(__file__).parents[3]
+    head = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=root, check=True, capture_output=True, text=True,
+    ).stdout.strip()
+    if head != code_checkpoint:
+        raise PermissionError("E0X checkpoint differs from current HEAD")
+    scoped = ("src", "tests", "docs", ".agents/skills", "tmp/run-p7-thermal-diagnostics.zsh")
+    dirty = subprocess.run(
+        ["git", "diff", "--quiet", "HEAD", "--", *scoped], cwd=root,
+    ).returncode
+    if dirty != 0:
+        raise PermissionError("E0X production code, tests, docs, skill, or wrapper is dirty")
+
+
+def _setup_attempt_from_capture(
+    capture: Any, *, attempt_index: int, disposition: str, destination: Path,
+) -> tuple[dict[str, Any], Path]:
+    raw_source = Path(capture.saved_file).resolve()
+    sidecar_source = Path(capture.remote_metadata_path).resolve() if capture.remote_metadata_path else None
+    if (
+        capture.endpoint != "/v2/capture" or sidecar_source is None
+        or not raw_source.is_file() or raw_source.stat().st_size <= 0 or not sidecar_source.is_file()
+    ):
+        raise RuntimeError("TD-B setup attempt lacks retained remote-v2 CR3/sidecar evidence")
+    destination.mkdir(parents=True, exist_ok=True)
+    raw = destination / f"{attempt_index:04d}-td-b-exposure-setup.CR3"
+    sidecar = raw.with_suffix(raw.suffix + ".metadata.json")
+    shutil.copy2(raw_source, raw)
+    shutil.copy2(sidecar_source, sidecar)
+    metadata = json.loads(sidecar.read_text(encoding="utf-8"))
+    remote, receipt = camera_remote_v2.split_and_validate_sidecar(metadata, payload=raw.read_bytes())
+    timing = receipt.get("timing_evidence") or {}
+    estimate = remote.get("exposure_start_estimate") or {}
+    row = {
+        "attempt_index": attempt_index,
+        "capture_id": remote.get("capture_id"),
+        "disposition": disposition,
+        "cr3_path": str(raw.resolve()),
+        "cr3_sha256": hashlib.sha256(raw.read_bytes()).hexdigest(),
+        "cr3_byte_count": raw.stat().st_size,
+        "sidecar_path": str(sidecar.resolve()),
+        "sidecar_sha256": hashlib.sha256(sidecar.read_bytes()).hexdigest(),
+        "request_id": remote.get("request_id"),
+        "timing_tier": timing.get("tier"),
+        "timing_method": estimate.get("method"),
+        "recorded_exposure": remote.get("recorded_exposure"),
+        "shutter_speed": capture.settings.shutter_speed,
+        "npy_paths": [],
+        "npy_deleted": True,
+    }
+    return row, raw_source
+
+
+def run_td_b_setup_provisional(
+    plan: Mapping[str, Any], *, output_dir: str | Path, run_name: str,
+    camera_backend: Any, code_checkpoint: str,
+    sleep_fn: Callable[[float], None] = time.sleep,
+    monotonic_fn: Callable[[], float] = time.monotonic,
+) -> Path:
+    """Run the real setup child; shell/wrapper evidence is finalized later."""
+    _validate_checkpoint_and_tree(code_checkpoint)
+    if (
+        plan.get("experiment_id") != thermal.TD_B or plan.get("source") != "ray"
+        or plan.get("status") != "execute_authorized"
+        or plan.get("exposure_setup_required") != [thermal.TD_B_SETUP_CACHE_KEY]
+        or plan.get("budgets") != {"formal_cap": 16, "ambient_cap": 0,
+            "physical_cr3_cap": 24, "setup_physical_cr3_cap": 8}
+    ):
+        raise PermissionError("TD-B setup phase requires the exact unresolved authorized Ray plan")
+    expected_inputs = {
+        "location": thermal.LOCATION_PATH,
+        "policy": thermal.POLICY_PATH,
+        "uncertainty": thermal.UNCERTAINTY_PATH,
+        "manifold": thermal.MANIFOLD_PATH,
+        "code_duty_curve": thermal.CURVE_PATH,
+        "operating_envelope": thermal.OPERATING_ENVELOPE_V2_PATH,
+    }
+    inputs = plan.get("inputs")
+    if not isinstance(inputs, Mapping) or any(
+        inputs.get(name) != thermal.file_reference(path) for name, path in expected_inputs.items()
+    ):
+        raise PermissionError("TD-B setup frozen input references differ before device access")
+    if getattr(camera_backend, "v2_capture_capability", None) != REMOTE_V2_CAPABILITY:
+        raise PermissionError("TD-B setup phase requires the remote-v2 capability owner")
+    root = (Path(output_dir) / run_name).resolve()
+    if root.is_symlink():
+        raise PermissionError("TD-B setup run directory cannot be a symlink")
+    root.parent.mkdir(parents=True, exist_ok=True)
+    if root.parent.is_symlink():
+        raise PermissionError("TD-B setup output parent cannot be a symlink")
+    if root.exists():
+        if not root.is_dir() or any(root.iterdir()):
+            raise FileExistsError(f"TD-B setup run directory must be new or shell-created empty: {root}")
+    else:
+        root.mkdir()
+    unresolved_path = root / "unresolved-plan.json"
+    _write_json(unresolved_path, dict(plan))
+    from camera_based_rgbww_optimizer.control import all_off, esphome, ray120c
+    from camera_based_rgbww_optimizer.measurement import raw_mosaic_patches
+    from camera_based_rgbww_optimizer.optimization.hsi_source_evidence import (
+        validate_both_off, validate_ray_readback, validate_strip_device_evidence,
+    )
+    curve = json.loads(thermal.CURVE_PATH.read_text(encoding="utf-8"))
+    retained: list[dict[str, Any]] = []
+    original_paths: list[Path] = []
+    cleanup_done = False
+
+    def strip_off() -> Mapping[str, Any]:
+        return esphome.verified_light(0, 0, 0, 0, 0, curve_path=thermal.CURVE_PATH)
+
+    def both_off() -> dict[str, Any]:
+        strip = dict(strip_off())
+        ray120c.set_cct(5600, intensity=0, gm=100)
+        ray = dict(ray120c.get_cct())
+        validate_both_off(strip, ray, curve)
+        return {"strip_device_evidence": strip, "ray_readback": ray}
+
+    try:
+        seed = thermal.audit_td_b_historical_seed()
+        if seed.get("seed_only") is not True or seed.get("formal_capture_eligible") is not False:
+            raise PermissionError("TD-B setup historical seed audit is invalid")
+        start_zero = both_off()
+        from camera_based_rgbww_optimizer.control import camera_remote
+        config = getattr(camera_backend, "config", None)
+        if config is None or not getattr(config, "base_url", None):
+            raise PermissionError("TD-B setup remote backend lacks health owner")
+        health = camera_remote.read_remote_health(
+            base_url=config.base_url, timeout=float(getattr(camera_backend, "timeout", 30.0)),
+            opener=getattr(camera_backend, "opener", camera_remote.request.urlopen),
+        )
+        if health.get("status") != "ok":
+            raise PermissionError("TD-B setup remote health did not report ok")
+        connection = camera_backend.connect()
+        settings, settings_provenance = _resolve_remote_capture_settings(camera_backend)
+        ray_set = dict(ray120c.set_hsi(120, 50, intensity_percent=100.0))
+        ray_readback = dict(ray120c.get_hsi())
+        strip_zero = dict(strip_off())
+        expected = {"hue": 120, "sat": 50, "intensity": 1000}
+        validate_ray_readback(ray_set, expected)
+        validate_ray_readback(ray_readback, expected)
+        validate_strip_device_evidence(strip_zero, {channel: 0 for channel in thermal.CHANNELS}, curve)
+        readback_done = monotonic_fn()
+        _write_json(root / "setup-preflight.json", {
+            "status": "pass", "experiment_id": thermal.TD_B, "phase": "setup",
+            "code_checkpoint": code_checkpoint, "input_hashes": {
+                name: reference["sha256"] for name, reference in inputs.items()
+            }, "budgets": dict(plan["budgets"]), "remote_health": dict(health),
+            "camera_settings": settings_provenance, "run_start_zero": start_zero,
+            "ray_readback": ray_readback, "strip_zero": strip_zero,
+        })
+
+        def observe(kind: str, capture: Any) -> None:
+            if len(retained) >= thermal.TD_B_SETUP_PHYSICAL_CAP:
+                error = RuntimeError("physical_budget_accounting_violation")
+                setattr(error, "attempts", retained)
+                raise error
+            row, original = _setup_attempt_from_capture(
+                capture, attempt_index=len(retained) + 1,
+                disposition="trial" if kind == "trial" else "rejected_final",
+                destination=root / "attempts",
+            )
+            retained.append(row)
+            original_paths.append(original)
+
+        timed = _TimedSetupBackend(camera_backend, connection=connection, readback_done=readback_done)
+        auto = __import__(
+            "camera_based_rgbww_optimizer.control.camera_gphoto2", fromlist=["auto_expose_capture"]
+        ).auto_expose_capture(
+            output_dir=root / "camera", filename_template="td-b-setup-final.CR3",
+            target_max=19661, iso=settings.iso, aperture=settings.aperture, image_format=settings.image_format,
+            min_shutter_speed="1/16000", max_shutter_speed="25", max_trials=7, max_captures=8,
+            initial_shutter_speed=seed.get("initial_shutter_seed"), scratch_dir=root / "scratch",
+            camera_backend=timed,
+            meter_fn=lambda raw: _raw_meter(raw_mosaic_patches.meter_raw_exposure(
+                raw, location_config_path=thermal.LOCATION_PATH, observer_config_path=thermal.OBSERVER_PATH,
+            )),
+            attempt_observer=observe,
+        )
+        final_original = auto.final_capture.saved_file.resolve()
+        final_rows = [row for row, original in zip(retained, original_paths, strict=True) if original == final_original]
+        if len(final_rows) != 1:
+            raise RuntimeError("TD-B setup final capture owner is missing from retained attempts")
+        final_rows[0]["disposition"] = "final"
+        for original in original_paths:
+            original.unlink(missing_ok=True)
+            original.with_suffix(original.suffix + ".metadata.json").unlink(missing_ok=True)
+        _write_json(root / "setup-attempts.json", {
+            "schema": "p7_td_b_exposure_setup_attempts_v1", "attempt_count": len(retained), "attempts": retained,
+        })
+        setup_zero = both_off()
+        cold_start = monotonic_fn()
+        sleep_fn(1800.0)
+        cold_end = monotonic_fn()
+        steps = all_off.turn_everything_off(
+            strip_off_fn=lambda: esphome.verified_light(0, 0, 0, 0, 0, curve_path=thermal.CURVE_PATH),
+            ray_set_cct_fn=ray120c.set_cct, ray_cct=5600, ray_gm=100,
+        )
+        python_cleanup = {
+            "status": "pass" if all(step.ok for step in steps) else "fail",
+            "steps": [step.to_jsonable() for step in steps], "exit_code": 0 if all(step.ok for step in steps) else 1,
+        }
+        _write_json(root / "all-off-python.json", python_cleanup)
+        cleanup_done = True
+        provisional = {
+            "schema": thermal.TD_B_SETUP_PROVISIONAL_SCHEMA,
+            "status": "setup_capture_complete_waiting_for_wrapper_finalize",
+            "code_checkpoint": code_checkpoint,
+            "unresolved_plan": thermal.file_reference(unresolved_path),
+            "wrapper_source": thermal.file_reference(PRODUCTION_WRAPPER),
+            "attempts": retained,
+            "historical_seed": seed,
+            "camera": {"backend": "remote", "v2_capture_capability": REMOTE_V2_CAPABILITY,
+                "capture_settings_owner": "remote_backend.resolve_capture_settings", **settings_provenance},
+            "isolation": {"run_start_zero": start_zero, "ray_set_response": ray_set,
+                "ray_readback": ray_readback, "strip_device_evidence": strip_zero,
+                "setup_complete_zero": setup_zero},
+            "cold_proxy": {"required_wait_s": 1800, "start_monotonic_s": cold_start, "end_monotonic_s": cold_end},
+            "python_cleanup": thermal.file_reference(root / "all-off-python.json"),
+        }
+        path = root / "setup-provisional.json"
+        _write_json(path, provisional)
+        return path
+    except BaseException as exc:
+        _write_json(root / "failure.json", {"type": type(exc).__name__, "message": str(exc),
+            "at": _utc_now(), "retained_attempt_count": len(retained), "retained_attempts": retained})
+        if not cleanup_done:
+            steps = all_off.turn_everything_off()
+            _write_json(root / "all-off-python.json", {"status": "pass" if all(step.ok for step in steps) else "fail",
+                "steps": [step.to_jsonable() for step in steps], "exit_code": 0 if all(step.ok for step in steps) else 1})
+        raise
+
+
+def _raw_meter(result: Any) -> Any:
+    from camera_based_rgbww_optimizer.control.camera_gphoto2 import ExposureMeasurement
+    from camera_based_rgbww_optimizer.measurement.raw_mosaic_patches import PLANE_ORDER
+    channel_max = tuple(int(round(max(0.0, min(1.0, float(result.plane_max.get(label) or 0.0))) * 65535.0)) for label in PLANE_ORDER)
+    return ExposureMeasurement(maximum=int(result.exposure_metric), raw_visible_max=result.raw_visible_max,
+        channel_max=channel_max, exposure_metric=float(result.exposure_metric), details=result.to_jsonable())
+
+
+def finalize_td_b_setup_after_wrapper(
+    run_dir: str | Path, *, code_checkpoint: str,
+    final_zero_fn: Callable[[], Mapping[str, Any]] | None = None,
+) -> tuple[Path, Path, Path]:
+    """Create canonical setup, resolved plan, and release after wrapper exit."""
+    _validate_checkpoint_and_tree(code_checkpoint)
+    root = Path(run_dir).resolve()
+    provisional_path = root / "setup-provisional.json"
+    provisional = json.loads(provisional_path.read_text(encoding="utf-8"))
+    expected = {
+        "schema": thermal.TD_B_SETUP_PROVISIONAL_SCHEMA,
+        "status": "setup_capture_complete_waiting_for_wrapper_finalize",
+        "code_checkpoint": code_checkpoint,
+        "unresolved_plan": thermal.file_reference(root / "unresolved-plan.json"),
+        "wrapper_source": thermal.file_reference(PRODUCTION_WRAPPER),
+        "python_cleanup": thermal.file_reference(root / "all-off-python.json"),
+    }
+    for name, value in expected.items():
+        if provisional.get(name) != value:
+            raise ValueError(f"TD-B setup provisional {name} binding differs")
+    wrapper_path = root / "wrapper-result.json"
+    observed_exit_path = root / "wrapper-observed-exit.json"
+    shell_path = root / "all-off-shell.json"
+    wrapper = json.loads(wrapper_path.read_text(encoding="utf-8"))
+    observed_exit = json.loads(observed_exit_path.read_text(encoding="utf-8"))
+    shell_rows = json.loads(shell_path.read_text(encoding="utf-8"))
+    child_exit = int((root / "child-exit-status.txt").read_text(encoding="utf-8").strip())
+    shell_exit = int((root / "all-off-shell.exit-status.txt").read_text(encoding="utf-8").strip())
+    if (
+        wrapper.get("status") != "complete" or wrapper.get("child_exit_code") != 0
+        or wrapper.get("shell_cleanup_exit_code") != 0 or wrapper.get("wrapper_exit_code") != 0
+        or wrapper.get("signal") is not None or child_exit != 0 or shell_exit != 0
+    ):
+        raise ValueError("TD-B setup wrapper child/signal/cleanup evidence failed")
+    if (
+        set(observed_exit) != {"schema", "status", "return_code", "observed_at", "wrapper_result"}
+        or observed_exit.get("schema") != WRAPPER_OBSERVED_EXIT_SCHEMA
+        or observed_exit.get("status") != "exited"
+        or observed_exit.get("return_code") != 0
+        or observed_exit.get("wrapper_result") != thermal.file_reference(wrapper_path)
+    ):
+        raise ValueError("TD-B setup outer orchestrator did not observe a successful wrapper exit")
+    if not isinstance(shell_rows, list):
+        raise ValueError("TD-B setup shell cleanup output is malformed")
+    shell = {"status": "pass" if shell_rows and all(row.get("ok") for row in shell_rows) else "fail",
+        "steps": shell_rows, "exit_code": shell_exit}
+    python_cleanup = json.loads((root / "all-off-python.json").read_text(encoding="utf-8"))
+    wrapper_summary = {key: wrapper.get(key) for key in (
+        "status", "child_exit_code", "shell_cleanup_exit_code", "wrapper_exit_code", "signal",
+    )}
+    if final_zero_fn is None:
+        from camera_based_rgbww_optimizer.control import esphome, ray120c
+        curve = json.loads(thermal.CURVE_PATH.read_text(encoding="utf-8"))
+        strip = esphome.verified_light(0, 0, 0, 0, 0, curve_path=thermal.CURVE_PATH)
+        ray120c.set_cct(5600, intensity=0, gm=100)
+        ray = ray120c.get_cct()
+        final_zero = {"strip_device_evidence": dict(strip), "ray_readback": dict(ray)}
+        from camera_based_rgbww_optimizer.optimization.hsi_source_evidence import validate_both_off
+        validate_both_off(final_zero["strip_device_evidence"], final_zero["ray_readback"], curve)
+    else:
+        final_zero = dict(final_zero_fn())
+    final_zero_path = root / "independent-final-zero.json"
+    _write_json(final_zero_path, final_zero)
+    base = thermal.build_td_b_exposure_setup_artifact(
+        attempts=provisional["attempts"], camera=provisional["camera"],
+        historical_seed=provisional["historical_seed"],
+        isolation={key: provisional["isolation"][key] for key in (
+            "ray_set_response", "ray_readback", "strip_device_evidence",
+        )},
+        cold_proxy=provisional["cold_proxy"],
+        cleanup={"python": python_cleanup, "shell": shell, "wrapper": wrapper_summary,
+            "final_both_off": final_zero},
+        code_checkpoint=code_checkpoint, fake_only=False,
+    )
+    canonical = {
+        "schema": thermal.TD_B_SETUP_SCHEMA_V2,
+        "status": "setup_canonical_complete",
+        "base": base,
+        "bindings": {
+            "code_checkpoint": code_checkpoint,
+            "unresolved_plan": thermal.file_reference(root / "unresolved-plan.json"),
+            "provisional": thermal.file_reference(provisional_path),
+            "wrapper_source": thermal.file_reference(PRODUCTION_WRAPPER),
+            "wrapper_result": thermal.file_reference(wrapper_path),
+            "wrapper_observed_exit": thermal.file_reference(observed_exit_path),
+            "all_off_python": thermal.file_reference(root / "all-off-python.json"),
+            "all_off_shell": thermal.file_reference(shell_path),
+            "final_zero": thermal.file_reference(final_zero_path),
+        },
+    }
+    canonical_path = root / "setup.json"
+    _write_json(canonical_path, canonical)
+    thermal.validate_td_b_exposure_setup(canonical, artifact_path=canonical_path)
+    unresolved = json.loads((root / "unresolved-plan.json").read_text(encoding="utf-8"))
+    resolved = thermal.resolve_td_b_plan_with_setup(unresolved, setup_artifact_path=canonical_path)
+    resolved_path = root / "resolved-formal-plan.json"
+    _write_json(resolved_path, resolved)
+    release = {
+        "schema": thermal.TD_B_SETUP_RELEASE_SCHEMA,
+        "status": "formal_plan_resolved",
+        "code_checkpoint": code_checkpoint,
+        "canonical_setup": thermal.file_reference(canonical_path),
+        "resolved_formal_plan": thermal.file_reference(resolved_path),
+    }
+    release_path = root / "setup-release.json"
+    _write_json(release_path, release)
+    thermal.validate_td_b_setup_release(release, release_path=release_path)
+    return canonical_path, resolved_path, release_path
+
+
+def orchestrate_td_b_setup(
+    *, run_dir: str | Path, code_checkpoint: str, wrapper_args: Sequence[str],
+    wrapper_path: str | Path = PRODUCTION_WRAPPER,
+    run_fn: Callable[..., subprocess.CompletedProcess[Any]] = subprocess.run,
+    setup_finalize_fn: Callable[..., tuple[Path, Path, Path]] = finalize_td_b_setup_after_wrapper,
+    validate_checkpoint_fn: Callable[[str], None] = _validate_checkpoint_and_tree,
+) -> tuple[Path, Path, Path]:
+    """Wait for the production wrapper to exit before canonical setup finalization."""
+    validate_checkpoint_fn(code_checkpoint)
+    root = Path(run_dir).resolve()
+    completed = run_fn(
+        ["zsh", str(Path(wrapper_path).resolve()), str(root), *wrapper_args],
+        check=False,
+    )
+    wrapper_result_path = root / "wrapper-result.json"
+    if not wrapper_result_path.is_file():
+        raise RuntimeError("TD-B setup wrapper exited without wrapper-result evidence")
+    observed = {
+        "schema": WRAPPER_OBSERVED_EXIT_SCHEMA,
+        "status": "exited",
+        "return_code": int(completed.returncode),
+        "observed_at": _utc_now(),
+        "wrapper_result": thermal.file_reference(wrapper_result_path),
+    }
+    _write_json(root / "wrapper-observed-exit.json", observed)
+    if completed.returncode != 0:
+        raise RuntimeError(f"TD-B setup wrapper failed with exit code {completed.returncode}")
+    return setup_finalize_fn(root, code_checkpoint=code_checkpoint)
 
 
 def execute_plan(
@@ -729,6 +1143,23 @@ def run_authorized_plan(
     )
 
 
+def run_resolved_td_b_formal(
+    release_path: str | Path, *, output_dir: str | Path, run_name: str,
+    camera_backend: Any, code_checkpoint: str,
+) -> Path:
+    _validate_checkpoint_and_tree(code_checkpoint)
+    path = Path(release_path).resolve()
+    release = json.loads(path.read_text(encoding="utf-8"))
+    validated = thermal.validate_td_b_setup_release(release, release_path=path)
+    if validated.get("code_checkpoint") != code_checkpoint:
+        raise PermissionError("TD-B formal release checkpoint differs from current HEAD")
+    plan = validated["resolved_plan"]
+    validate_authorized_execution_plan(plan, camera_backend=camera_backend)
+    return run_authorized_plan(
+        plan, output_dir=output_dir, run_name=run_name, camera_backend=camera_backend,
+    )
+
+
 def _write_json(path: Path, value: Mapping[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(path.suffix + ".tmp")
@@ -756,6 +1187,11 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--run-name", required=True)
     parser.add_argument("--prerequisite-artifact", type=Path, default=thermal.OPERATING_ENVELOPE_PATH)
+    parser.add_argument("--phase", choices=("setup", "formal"))
+    parser.add_argument("--setup-release", type=Path)
+    parser.add_argument("--finalize-setup-run", type=Path)
+    parser.add_argument("--orchestrate-setup", action="store_true")
+    parser.add_argument("--code-checkpoint")
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--dry-run", action="store_true")
     mode.add_argument("--execute", action="store_true")
@@ -769,9 +1205,24 @@ def main(
     argv: Sequence[str] | None = None, *,
     backend_factory: Callable[..., Any] | None = None,
     run_fn: Callable[..., Path] = run_authorized_plan,
+    setup_fn: Callable[..., Path] = run_td_b_setup_provisional,
+    setup_finalize_fn: Callable[..., tuple[Path, Path, Path]] = finalize_td_b_setup_after_wrapper,
+    setup_orchestrate_fn: Callable[..., tuple[Path, Path, Path]] = orchestrate_td_b_setup,
+    resolved_run_fn: Callable[..., Path] = run_resolved_td_b_formal,
 ) -> int:
     args = parse_args(argv)
     if args.dry_run:
+        if args.phase == "setup":
+            plan = thermal.build_diagnostic_plan(
+                args.experiment_id, source=args.source, variant=args.variant,
+                prerequisite_artifact=args.prerequisite_artifact,
+            )
+            preview = {"phase": "setup", "experiment_id": args.experiment_id,
+                "source": args.source, "setup_requirement": plan.get("exposure_setup_required"),
+                "budgets": plan.get("budgets"), "device_locked": True,
+                "output_owner": str((args.output_dir / args.run_name).resolve())}
+            print(json.dumps(preview, sort_keys=True))
+            return 0
         print(write_dry_run(
             experiment_id=args.experiment_id, output_dir=args.output_dir,
             run_name=args.run_name, source=args.source, variant=args.variant,
@@ -782,6 +1233,38 @@ def main(
         raise PermissionError("--execute requires --allow-device-control and exact --human-authorization")
     if args.camera_backend != "remote":
         raise PermissionError("thermal diagnostics require the formal remote v2 camera backend")
+    if args.experiment_id == thermal.TD_B and args.phase is None:
+        raise PermissionError("TD-B execution requires explicit --phase setup or --phase formal")
+    if args.orchestrate_setup:
+        if args.phase != "setup" or args.experiment_id != thermal.TD_B or args.source != "ray" or not args.code_checkpoint:
+            raise PermissionError("setup orchestration requires exact Ray TD-B setup and --code-checkpoint")
+        wrapper_args = [
+            "--phase", "setup", "--experiment-id", args.experiment_id,
+            "--source", args.source, "--variant", args.variant,
+            "--prerequisite-artifact", str(args.prerequisite_artifact),
+            "--human-authorization", str(args.human_authorization),
+            "--code-checkpoint", args.code_checkpoint,
+            "--camera-backend", args.camera_backend,
+            "--remote-env-file", str(args.remote_env_file),
+            "--remote-timeout", str(args.remote_timeout),
+        ]
+        if args.remote_base_url is not None:
+            wrapper_args.extend(("--remote-base-url", args.remote_base_url))
+        for path in setup_orchestrate_fn(
+            run_dir=args.output_dir / args.run_name,
+            code_checkpoint=args.code_checkpoint,
+            wrapper_args=wrapper_args,
+        ):
+            print(path)
+        return 0
+    if args.finalize_setup_run is not None:
+        if args.phase != "setup" or not args.code_checkpoint:
+            raise PermissionError("setup finalization requires --phase setup and --code-checkpoint")
+        for path in setup_finalize_fn(
+            args.finalize_setup_run, code_checkpoint=args.code_checkpoint,
+        ):
+            print(path)
+        return 0
 
     plan = thermal.build_diagnostic_plan(
         args.experiment_id, source=args.source, variant=args.variant,
@@ -789,7 +1272,8 @@ def main(
         for_execution=True, human_authorization=args.human_authorization,
         v2_capture_capability=True,
     )
-    validate_authorized_execution_plan(plan)
+    if args.phase in (None, "formal") and args.setup_release is None:
+        validate_authorized_execution_plan(plan)
     if backend_factory is None:
         from camera_based_rgbww_optimizer.control import camera_remote
         backend_factory = camera_remote.create_camera_backend
@@ -797,6 +1281,22 @@ def main(
         args.camera_backend, env_file=args.remote_env_file,
         base_url=args.remote_base_url, timeout=args.remote_timeout,
     )
+    if args.phase == "setup":
+        if args.experiment_id != thermal.TD_B or args.source != "ray" or not args.code_checkpoint:
+            raise PermissionError("setup phase requires exact Ray TD-B and --code-checkpoint")
+        print(setup_fn(
+            plan, output_dir=args.output_dir, run_name=args.run_name,
+            camera_backend=backend, code_checkpoint=args.code_checkpoint,
+        ))
+        return 0
+    if args.setup_release is not None:
+        if args.experiment_id != thermal.TD_B or args.source != "ray" or not args.code_checkpoint:
+            raise PermissionError("setup release is only valid for exact Ray TD-B formal phase")
+        print(resolved_run_fn(
+            args.setup_release, output_dir=args.output_dir, run_name=args.run_name,
+            camera_backend=backend, code_checkpoint=args.code_checkpoint,
+        ))
+        return 0
     print(run_fn(plan, output_dir=args.output_dir, run_name=args.run_name, camera_backend=backend))
     return 0
 

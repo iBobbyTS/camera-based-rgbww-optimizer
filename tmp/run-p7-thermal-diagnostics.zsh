@@ -6,6 +6,7 @@ PYTHON="$PROJECT_ROOT/.venv/bin/python"
 RUN_DIR_INPUT="${1:?run directory required}"
 RUN_DIR="${RUN_DIR_INPUT:A}"
 shift
+RUNNER_ARGS=("$@")
 RUN_PARENT="${RUN_DIR:h}"
 RUN_NAME="${RUN_DIR:t}"
 RUNNER_LOG="$RUN_PARENT/${RUN_NAME}.runner.log"
@@ -116,7 +117,7 @@ trap 'on_signal TERM 15' TERM
 trap 'on_signal HUP 1' HUP
 
 "$PYTHON" -m camera_based_rgbww_optimizer.optimization.measure_p7_thermal_diagnostics \
-  --execute --allow-device-control --output-dir "$RUN_PARENT" --run-name "$RUN_NAME" "$@" \
+  --execute --allow-device-control --output-dir "$RUN_PARENT" --run-name "$RUN_NAME" "${RUNNER_ARGS[@]}" \
   >"$RUNNER_LOG" 2>&1 &
 child_pid="$!"
 write_json "$WRAPPER_STATE" "running"

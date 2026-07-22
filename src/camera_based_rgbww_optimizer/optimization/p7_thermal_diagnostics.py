@@ -86,6 +86,9 @@ DEVELOPER_OPERATIONAL_DWELL_S = 600
 DEVELOPER_DWELL_DECISION_AUDIT = PROJECT_ROOT / "advisor/4/0.AUDIT/03-human-decision-no-extension.md"
 DEVELOPER_DWELL_DECISION_AUDIT_SHA256 = "c917c54473aa3c5cc4da9098ddeb81fb109fe9a4186fb71e994c447c63d0454a"
 TD_B_SETUP_SCHEMA = "p7_td_b_exposure_setup_v1"
+TD_B_SETUP_SCHEMA_V2 = "p7_td_b_exposure_setup_v2"
+TD_B_SETUP_PROVISIONAL_SCHEMA = "p7_td_b_exposure_setup_provisional_v1"
+TD_B_SETUP_RELEASE_SCHEMA = "p7_td_b_exposure_setup_release_v1"
 TD_B_SETUP_STATE = "H120_S50_INT100"
 TD_B_SETUP_CACHE_KEY = "ray-h120-s50"
 TD_B_SETUP_COMMAND = MappingProxyType({"hue": 120, "sat": 50, "intensity_percent": 100.0})
@@ -390,6 +393,8 @@ def validate_td_b_exposure_setup(
     artifact: Mapping[str, Any], *, artifact_path: str | Path | None = None,
 ) -> dict[str, Any]:
     """Validate one retained non-formal Ray exposure setup and its physical ledger."""
+    if artifact.get("schema") == TD_B_SETUP_SCHEMA_V2:
+        return validate_td_b_exposure_setup_v2(artifact, artifact_path=artifact_path)
     from camera_based_rgbww_optimizer.control import camera_remote_v2
 
     required_keys = {
@@ -563,6 +568,72 @@ def validate_td_b_exposure_setup(
     return {"physical_count": count, "resolved_shutter_speed": artifact["resolved_shutter_speed"], "final_capture_id": final["capture_id"]}
 
 
+def validate_td_b_exposure_setup_v2(
+    artifact: Mapping[str, Any], *, artifact_path: str | Path | None = None,
+) -> dict[str, Any]:
+    required = {"schema", "status", "base", "bindings"}
+    if set(artifact) != required or artifact.get("status") != "setup_canonical_complete":
+        raise ValueError("TD-B setup v2 canonical schema or status differs")
+    base = artifact.get("base")
+    bindings = artifact.get("bindings")
+    if not isinstance(base, Mapping) or not isinstance(bindings, Mapping):
+        raise ValueError("TD-B setup v2 canonical payload is incomplete")
+    if base.get("schema") != TD_B_SETUP_SCHEMA or base.get("fake_only") is not False:
+        raise ValueError("TD-B setup v2 requires a non-fake v1 measurement ledger")
+    expected_binding_keys = {
+        "code_checkpoint", "unresolved_plan", "provisional", "wrapper_source",
+        "wrapper_result", "wrapper_observed_exit", "all_off_python", "all_off_shell", "final_zero",
+    }
+    if set(bindings) != expected_binding_keys:
+        raise ValueError("TD-B setup v2 binding schema differs")
+    checkpoint = bindings.get("code_checkpoint")
+    if (
+        not isinstance(checkpoint, str) or len(checkpoint) != 40
+        or any(ch not in "0123456789abcdef" for ch in checkpoint)
+        or base.get("code_checkpoint") != checkpoint
+    ):
+        raise ValueError("TD-B setup v2 checkpoint binding differs")
+    root = None if artifact_path is None else Path(artifact_path).resolve().parent
+    for name in expected_binding_keys - {"code_checkpoint"}:
+        reference = bindings.get(name)
+        if not isinstance(reference, Mapping) or set(reference) != {"path", "sha256"}:
+            raise ValueError(f"TD-B setup v2 {name} reference schema differs")
+        path = Path(str(reference.get("path"))).resolve()
+        if root is not None and name != "wrapper_source" and not path.is_relative_to(root):
+            raise ValueError(f"TD-B setup v2 {name} path owner differs")
+        if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != reference.get("sha256"):
+            raise ValueError(f"TD-B setup v2 {name} hash differs")
+    result = validate_td_b_exposure_setup(base, artifact_path=artifact_path)
+    return {**result, "schema": TD_B_SETUP_SCHEMA_V2, "code_checkpoint": checkpoint}
+
+
+def validate_td_b_setup_release(
+    release: Mapping[str, Any], *, release_path: str | Path,
+) -> dict[str, Any]:
+    path = Path(release_path).resolve()
+    required = {"schema", "status", "code_checkpoint", "canonical_setup", "resolved_formal_plan"}
+    if set(release) != required or release.get("schema") != TD_B_SETUP_RELEASE_SCHEMA or release.get("status") != "formal_plan_resolved":
+        raise ValueError("TD-B setup release schema or status differs")
+    checkpoint = release.get("code_checkpoint")
+    for name in ("canonical_setup", "resolved_formal_plan"):
+        reference = release.get(name)
+        if not isinstance(reference, Mapping) or set(reference) != {"path", "sha256"}:
+            raise ValueError("TD-B setup release reference schema differs")
+        target = Path(str(reference.get("path"))).resolve()
+        if target.parent != path.parent or not target.is_file() or hashlib.sha256(target.read_bytes()).hexdigest() != reference.get("sha256"):
+            raise ValueError(f"TD-B setup release {name} owner or hash differs")
+    canonical_path = Path(str(release["canonical_setup"]["path"])).resolve()
+    canonical = json.loads(canonical_path.read_text(encoding="utf-8"))
+    validated = validate_td_b_exposure_setup(canonical, artifact_path=canonical_path)
+    if checkpoint != validated.get("code_checkpoint"):
+        raise ValueError("TD-B setup release checkpoint differs from canonical")
+    resolved_path = Path(str(release["resolved_formal_plan"]["path"])).resolve()
+    resolved = json.loads(resolved_path.read_text(encoding="utf-8"))
+    if resolved.get("exposure_setup_artifact") != file_reference(canonical_path):
+        raise ValueError("TD-B setup release resolved plan differs from canonical")
+    return {**validated, "resolved_plan": resolved, "canonical_path": str(canonical_path)}
+
+
 def validate_td_b_setup_cleanup(value: Any) -> None:
     if not isinstance(value, Mapping) or set(value) != {"python", "shell", "wrapper", "final_both_off"}:
         raise ValueError("TD-B setup cleanup evidence is incomplete")
@@ -656,8 +727,11 @@ def resolve_td_b_plan_with_setup(
     path = Path(setup_artifact_path).resolve()
     artifact = json.loads(path.read_text(encoding="utf-8"))
     validated = validate_td_b_exposure_setup(artifact, artifact_path=path)
-    if artifact.get("fake_only") is not True:
-        checkpoint = artifact.get("code_checkpoint")
+    fake_only = artifact.get("fake_only") is True
+    if artifact.get("schema") == TD_B_SETUP_SCHEMA_V2:
+        fake_only = False
+    if not fake_only:
+        checkpoint = validated.get("code_checkpoint", artifact.get("code_checkpoint"))
         if not isinstance(checkpoint, str) or len(checkpoint) != 40 or any(ch not in "0123456789abcdef" for ch in checkpoint):
             raise ValueError("TD-B retained setup lacks a full lowercase Git checkpoint")
     resolved = deepcopy(dict(plan))
@@ -668,8 +742,8 @@ def resolve_td_b_plan_with_setup(
     resolved["shutter_ledger_provenance"]["frozen_shutters_sha256"] = canonical_sha256(resolved["frozen_shutters"])
     resolved["exposure_setup_artifact"] = file_reference(path)
     resolved["setup_physical_cr3_count"] = validated["physical_count"]
-    resolved["formal_capture_eligible"] = not bool(artifact.get("fake_only"))
-    resolved["status"] = "fake_resolved_device_locked" if artifact.get("fake_only") else resolved["status"]
+    resolved["formal_capture_eligible"] = not fake_only
+    resolved["status"] = "fake_resolved_device_locked" if fake_only else resolved["status"]
     return resolved
 
 

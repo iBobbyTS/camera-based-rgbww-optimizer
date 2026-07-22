@@ -873,6 +873,48 @@ class AnalyzeP7ThermalDiagnosticsTests(unittest.TestCase):
             self.assertEqual(run["setup_physical_cr3_count"], 8)
             self.assertEqual(run["physical_cr3_count"], 24)
 
+    def test_td_b_paired_finalizer_replays_public_reports_budget_and_final_zero(self):
+        from tests.test_p7_thermal_diagnostics import _fake_td_b_setup
+
+        with tempfile.TemporaryDirectory() as tempdir:
+            base = Path(tempdir)
+            setup = _fake_td_b_setup(base / "setup", count=3, fake_only=False)
+            setup["code_checkpoint"] = "a" * 40
+            setup_path = base / "setup" / "setup.json"
+            _write_json(setup_path, setup)
+            ray = _build_formal_td_a_run(
+                base / "ray", source="ray", experiment_id=thermal.TD_B,
+                prerequisite_artifact=thermal.OPERATING_ENVELOPE_V2_PATH,
+                setup_artifact_path=setup_path,
+            )
+            strip = _build_formal_td_a_run(
+                base / "strip", source="strip", experiment_id=thermal.TD_B,
+                prerequisite_artifact=thermal.OPERATING_ENVELOPE_V2_PATH,
+            )
+            for run in (ray, strip):
+                _write_json(run / "analysis.json", subject.analyze_thermal_run(run, feature_ids=FEATURE_IDS))
+            zero = base / "independent-final-zero.json"
+            _write_json(zero, setup["cleanup"]["final_both_off"])
+            output = base / "combined"
+            report = subject.analyze_td_b_pair(
+                ray, strip, output, feature_ids=FEATURE_IDS,
+                feature_ids_path=thermal.POLICY_PATH, code_checkpoint="a" * 40,
+                final_zero_path=zero,
+            )
+            self.assertEqual(report["formal_capture_count"], 32)
+            self.assertEqual(report["setup_physical_cr3_count"], 3)
+            self.assertEqual(report["physical_cr3_count"], 35)
+            self.assertFalse(report["scientifically_settled"])
+            manifest = subject.validate_td_b_input_manifest(output / "input-manifest.json")
+            self.assertEqual(manifest["schema"], subject.TD_B_INPUT_MANIFEST_SCHEMA)
+            evidence_root = os.environ.get("P7_TD_B_E0X_EVIDENCE_DIR")
+            if evidence_root:
+                shutil.copytree(base, Path(evidence_root) / "paired-roundtrip")
+            with (ray / "analysis.json").open("a", encoding="utf-8") as handle:
+                handle.write(" ")
+            with self.assertRaisesRegex(ValueError, "retained source hash"):
+                subject.validate_td_b_input_manifest(output / "input-manifest.json")
+
     def test_td_c_reports_order_balanced_not_abba(self):
         plan = thermal.build_diagnostic_plan(thermal.TD_C, variant="core")
         captures = [

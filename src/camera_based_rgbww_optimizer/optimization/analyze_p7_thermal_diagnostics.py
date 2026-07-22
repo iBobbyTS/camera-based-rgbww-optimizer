@@ -33,6 +33,8 @@ TD_A_COMBINED_ANALYSIS_SCHEMA_V1 = "p7_td_a_combined_analysis_v1"
 TD_A_COMBINED_ANALYSIS_SCHEMA_V2 = "p7_td_a_combined_analysis_v2"
 TD_A_INPUT_MANIFEST_SCHEMA_V1 = "p7_td_a_input_manifest_v1"
 TD_A_INPUT_MANIFEST_SCHEMA_V2 = "p7_td_a_input_manifest_v2"
+TD_B_COMBINED_ANALYSIS_SCHEMA = "p7_td_b_combined_analysis_v1"
+TD_B_INPUT_MANIFEST_SCHEMA = "p7_td_b_input_manifest_v1"
 # Public aliases retain the current production v2 names.
 TD_A_COMBINED_ANALYSIS_SCHEMA = TD_A_COMBINED_ANALYSIS_SCHEMA_V2
 TD_A_INPUT_MANIFEST_SCHEMA = TD_A_INPUT_MANIFEST_SCHEMA_V2
@@ -885,6 +887,154 @@ def analyze_td_a_pair(
     return combined
 
 
+def analyze_td_b_pair(
+    ray_run: str | Path, strip_run: str | Path, output_dir: str | Path,
+    *, feature_ids: Sequence[str], feature_ids_path: str | Path,
+    code_checkpoint: str, final_zero_path: str | Path,
+) -> dict[str, Any]:
+    checkpoint = _validate_code_checkpoint(code_checkpoint)
+    ray_root = Path(ray_run).resolve()
+    strip_root = Path(strip_run).resolve()
+    output = Path(output_dir).resolve()
+    zero_path = Path(final_zero_path).resolve()
+    if ray_root == strip_root or output.exists():
+        raise ValueError("TD-B paired finalizer requires distinct runs and a new output directory")
+    ray_plan = _load_json(ray_root / "plan.json")
+    strip_plan = _load_json(strip_root / "plan.json")
+    if (
+        ray_plan.get("experiment_id") != thermal.TD_B
+        or strip_plan.get("experiment_id") != thermal.TD_B
+        or ray_plan.get("source") != "ray" or strip_plan.get("source") != "strip"
+        or ray_plan.get("schema") != thermal.PLAN_SCHEMA_V2
+        or strip_plan.get("schema") != thermal.PLAN_SCHEMA_V2
+        or ray_plan.get("inputs") != strip_plan.get("inputs")
+    ):
+        raise ValueError("TD-B paired finalizer source, schema, or frozen input owner differs")
+    feature_path = Path(feature_ids_path).resolve()
+    if _feature_ids_from_artifact(feature_path) != list(feature_ids):
+        raise ValueError("TD-B paired finalizer feature IDs differ")
+    ray_report = analyze_thermal_run(ray_root, feature_ids=feature_ids)
+    strip_report = analyze_thermal_run(strip_root, feature_ids=feature_ids)
+    allowed_statuses = {
+        "td_b_operational_600_complete_waiting_for_planner",
+        "history_dependent_at_operational_dwell_600",
+    }
+    for source, report in (("ray", ray_report), ("strip", strip_report)):
+        if (
+            report.get("experiment_id") != thermal.TD_B or report.get("source_id") != source
+            or report.get("status") not in allowed_statuses
+            or report.get("formal_capture_count") != 16 or report.get("ambient_capture_count") != 0
+            or report.get("capture_contract") != "pass" or report.get("timing_contract") != "pass"
+            or report.get("source_isolation_contract") != "pass" or report.get("cleanup_contract") != "pass"
+            or report.get("wrapper_contract") != "pass" or report.get("retained_npy_count") != 0
+            or report.get("dwell_is_scientifically_settled") is not False
+        ):
+            raise ValueError(f"TD-B paired finalizer {source} contract did not pass")
+    setup_count = int(ray_report.get("setup_physical_cr3_count", -1))
+    ray_physical = int(ray_report.get("physical_cr3_count", -1))
+    strip_physical = int(strip_report.get("physical_cr3_count", -1))
+    if not 1 <= setup_count <= 8 or ray_physical != setup_count + 16 or strip_physical != 16:
+        raise ValueError("TD-B paired finalizer source physical accounting differs")
+    total = ray_physical + strip_physical
+    if total != setup_count + 32 or not 33 <= total <= 40:
+        raise ValueError("TD-B paired finalizer combined physical accounting differs")
+    final_zero = _load_json(zero_path)
+    if set(final_zero) != {"strip_device_evidence", "ray_readback"}:
+        raise ValueError("TD-B paired finalizer independent final zero schema differs")
+    from camera_based_rgbww_optimizer.optimization.hsi_source_evidence import validate_both_off
+    validate_both_off(
+        final_zero["strip_device_evidence"], final_zero["ray_readback"],
+        _load_json(thermal.CURVE_PATH),
+    )
+    combined = {
+        "schema": TD_B_COMBINED_ANALYSIS_SCHEMA,
+        "experiment_id": thermal.TD_B,
+        "status": "td_b_paired_complete_waiting_for_planner",
+        "scientifically_settled": False,
+        "developer_selected_operational_dwell_s": 600,
+        "ray_run": str(ray_root), "strip_run": str(strip_root),
+        "source_results": {"ray": ray_report, "strip": strip_report},
+        "formal_capture_count": 32, "setup_physical_cr3_count": setup_count,
+        "physical_cr3_count": total, "physical_cr3_cap": 40,
+        "independent_final_zero": {"path": str(zero_path), "sha256": _sha256_file(zero_path)},
+        "default_operating_envelope_modified": False,
+    }
+    output.mkdir(parents=True, exist_ok=False)
+    analysis_path = output / "td-b-combined-analysis.json"
+    summary_path = output / "EXPERIMENT_SUMMARY.md"
+    manifest_path = output / "input-manifest.json"
+    try:
+        _write_text_atomic(analysis_path, json.dumps(combined, indent=2, sort_keys=True, allow_nan=False) + "\n")
+        _write_text_atomic(summary_path, (
+            "# P7 TD-B Combined Analysis\n\n"
+            f"- status: `{combined['status']}`\n"
+            "- scientifically settled: `false`\n"
+            f"- captures: `32` formal + `{setup_count}` setup = `{total}` physical CR3\n"
+        ))
+        manifest = {
+            "schema": TD_B_INPUT_MANIFEST_SCHEMA,
+            "decision_owner": "Planner",
+            "generated_by": {"module": TD_A_ANALYZER_MODULE, "code_checkpoint": checkpoint},
+            "sources": {
+                "ray": {"run_dir": str(ray_root), "plan": thermal.file_reference(ray_root / "plan.json"),
+                    "analysis": thermal.file_reference(ray_root / "analysis.json")},
+                "strip": {"run_dir": str(strip_root), "plan": thermal.file_reference(strip_root / "plan.json"),
+                    "analysis": thermal.file_reference(strip_root / "analysis.json")},
+            },
+            "final_zero": thermal.file_reference(zero_path),
+            "outputs": {
+                "td-b-combined-analysis.json": thermal.file_reference(analysis_path),
+                "EXPERIMENT_SUMMARY.md": thermal.file_reference(summary_path),
+            },
+        }
+        _write_text_atomic(manifest_path, json.dumps(manifest, indent=2, sort_keys=True, allow_nan=False) + "\n")
+        validate_td_b_input_manifest(manifest_path)
+    except BaseException:
+        for path in (analysis_path, summary_path, manifest_path):
+            path.unlink(missing_ok=True)
+        try:
+            output.rmdir()
+        except OSError:
+            pass
+        raise
+    return combined
+
+
+def validate_td_b_input_manifest(path: str | Path) -> dict[str, Any]:
+    manifest_path = Path(path).resolve()
+    manifest = _load_json(manifest_path)
+    if set(manifest) != {"schema", "decision_owner", "generated_by", "sources", "final_zero", "outputs"}:
+        raise ValueError("TD-B input manifest schema keys differ")
+    if manifest.get("schema") != TD_B_INPUT_MANIFEST_SCHEMA or manifest.get("decision_owner") != "Planner":
+        raise ValueError("TD-B input manifest identity differs")
+    generated = manifest.get("generated_by")
+    if not isinstance(generated, Mapping) or set(generated) != {"module", "code_checkpoint"} or generated.get("module") != TD_A_ANALYZER_MODULE:
+        raise ValueError("TD-B input manifest generator differs")
+    _validate_code_checkpoint(generated.get("code_checkpoint"))
+    sources = manifest.get("sources")
+    if not isinstance(sources, Mapping) or set(sources) != {"ray", "strip"}:
+        raise ValueError("TD-B input manifest source owners differ")
+    for source in ("ray", "strip"):
+        entry = sources[source]
+        if not isinstance(entry, Mapping) or set(entry) != {"run_dir", "plan", "analysis"}:
+            raise ValueError("TD-B input manifest source schema differs")
+        root = Path(str(entry["run_dir"])).resolve()
+        for name in ("plan", "analysis"):
+            if entry[name] != thermal.file_reference(root / f"{name}.json"):
+                raise ValueError("TD-B input manifest retained source hash differs")
+    for name in ("final_zero",):
+        reference = manifest.get(name)
+        if not isinstance(reference, Mapping) or reference != thermal.file_reference(reference.get("path", "")):
+            raise ValueError("TD-B input manifest final zero hash differs")
+    outputs = manifest.get("outputs")
+    if not isinstance(outputs, Mapping) or set(outputs) != {"td-b-combined-analysis.json", "EXPERIMENT_SUMMARY.md"}:
+        raise ValueError("TD-B input manifest output schema differs")
+    for name, reference in outputs.items():
+        if not isinstance(reference, Mapping) or Path(str(reference.get("path"))).resolve() != manifest_path.parent / name or reference != thermal.file_reference(reference["path"]):
+            raise ValueError("TD-B input manifest output owner or hash differs")
+    return manifest
+
+
 def _build_td_a_input_manifest(
     *,
     ray_root: Path,
@@ -1200,13 +1350,15 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--paired-run", type=Path, help="Strip TD-A run paired with positional Ray TD-A run.")
     parser.add_argument("--combined-output", type=Path, help="New output directory for paired TD-A finalization.")
     parser.add_argument("--code-checkpoint", help="Explicit Git checkpoint owning paired TD-A finalization.")
+    parser.add_argument("--final-zero", type=Path, help="Independent final both-off evidence for paired TD-B.")
     return parser.parse_args(argv)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(argv)
     if args.derive_r1_output is not None and (
-        args.paired_run is not None or args.combined_output is not None or args.code_checkpoint is not None
+        args.paired_run is not None or args.combined_output is not None
+        or args.code_checkpoint is not None or args.final_zero is not None
     ):
         raise ValueError("R1 derivation cannot be combined with TD-A paired finalization")
     if args.derive_r1_output is not None:
@@ -1221,16 +1373,29 @@ def main(argv: Sequence[str] | None = None) -> int:
             raise ValueError("--combined-output is required with --paired-run")
         if args.code_checkpoint is None:
             raise ValueError("--code-checkpoint is required with --paired-run")
-        analyze_td_a_pair(
-            args.run_dir, args.paired_run, args.combined_output,
-            feature_ids=feature_ids, feature_ids_path=args.feature_ids,
-            code_checkpoint=args.code_checkpoint,
-        )
-        print(args.combined_output / "td-a-combined-analysis.json")
+        plan = _load_json(args.run_dir / "plan.json")
+        if plan.get("experiment_id") == thermal.TD_B:
+            if args.final_zero is None:
+                raise ValueError("--final-zero is required for paired TD-B finalization")
+            analyze_td_b_pair(
+                args.run_dir, args.paired_run, args.combined_output,
+                feature_ids=feature_ids, feature_ids_path=args.feature_ids,
+                code_checkpoint=args.code_checkpoint, final_zero_path=args.final_zero,
+            )
+            print(args.combined_output / "td-b-combined-analysis.json")
+        else:
+            if args.final_zero is not None:
+                raise ValueError("--final-zero is only valid for paired TD-B finalization")
+            analyze_td_a_pair(
+                args.run_dir, args.paired_run, args.combined_output,
+                feature_ids=feature_ids, feature_ids_path=args.feature_ids,
+                code_checkpoint=args.code_checkpoint,
+            )
+            print(args.combined_output / "td-a-combined-analysis.json")
         print(args.combined_output / "EXPERIMENT_SUMMARY.md")
         print(args.combined_output / "input-manifest.json")
         return 0
-    if args.combined_output is not None or args.code_checkpoint is not None:
+    if args.combined_output is not None or args.code_checkpoint is not None or args.final_zero is not None:
         raise ValueError("--combined-output/--code-checkpoint require --paired-run")
     report = analyze_thermal_run(args.run_dir, feature_ids=feature_ids)
     output = args.run_dir / "analysis.json"

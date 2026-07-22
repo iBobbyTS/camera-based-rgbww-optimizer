@@ -858,6 +858,36 @@ repeatability covariance, TD-B history aggregates, or formal capture count.
 After setup, independently verify both sources off, wait the full 1800-second
 cold proxy, and keep timed-cycle auto exposure disabled.
 
+Production TD-B uses explicit phases; `--execute` never decides whether an
+unresolved Ray plan means setup or formal acquisition. Run Ray setup through
+`tmp/run-p7-thermal-diagnostics.zsh` with `--phase setup` and the exact clean
+checkpoint. The child replays frozen inputs and the P6 seed before device
+access, checks remote health/config and both-source isolation, then uses the
+shared auto-exposure search through `/v2/capture`. Its optional attempt observer
+retains every trial, rejected final, and selected final CR3/sidecar before the
+shared search performs normal temporary deletion; candidate ordering, metering,
+bracketing, and final selection remain shared.
+
+The child writes `setup-provisional.json`; it cannot predict shell cleanup or
+wrapper exit. The explicit setup orchestrator waits for the wrapper process to
+exit, records `wrapper-observed-exit.json`, and only then invokes the narrow
+post-wrapper finalizer after successful child and shell cleanup. That finalizer performs another independent zero
+readback and writes `setup.json`, `resolved-formal-plan.json`, and
+`setup-release.json`. The v2 canonical setup binds checkpoint, unresolved plan,
+provisional evidence, wrapper source/result/observed exit, Python/shell cleanup, and final
+zero. The release binds canonical setup and resolved formal plan without a
+circular self-hash. Ray formal resume uses `--phase formal --setup-release PATH
+--code-checkpoint HEAD`; it reloads the release from disk. Strip TD-B remains a
+fixed 16-capture formal phase with no setup artifact.
+
+After both public single-source analyses complete, invoke the same analyzer
+with `--paired-run`, `--combined-output`, `--code-checkpoint`, and
+`--final-zero`. For TD-B it writes `td-b-combined-analysis.json`,
+`EXPERIMENT_SUMMARY.md`, and `input-manifest.json`. This finalizer only replays
+single-source results, setup/formal/physical counts, hashes, cleanup, and final
+zero. It does not refit, change source status, call 600 seconds steady, or
+unlock TD-C.
+
 ## Location Picker
 
 Use the local Web UI to capture a preview and mark color-chart patches:

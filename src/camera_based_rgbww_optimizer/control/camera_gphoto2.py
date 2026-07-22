@@ -232,6 +232,7 @@ class AutoExposureResult:
 Runner = Callable[[Sequence[str]], CommandOutput]
 Decoder = Callable[..., DecodeResult]
 ExposureMeter = Callable[[Path], ExposureMeasurement]
+AutoExposureAttemptObserver = Callable[[str, CaptureResult], None]
 
 
 class CameraBackend(Protocol):
@@ -725,6 +726,7 @@ def auto_expose_capture(
     decoder: Decoder = decode_raw_image,
     meter_fn: ExposureMeter | None = None,
     preserve_failed_trial_dir: str | Path | None = None,
+    attempt_observer: AutoExposureAttemptObserver | None = None,
 ) -> AutoExposureResult:
     if target_max <= 0:
         raise GPhoto2Error("target_max must be positive")
@@ -808,6 +810,7 @@ def auto_expose_capture(
                 preserve_failed_trial_dir=(
                     None if preserve_failed_trial_dir is None else Path(preserve_failed_trial_dir)
                 ),
+                attempt_observer=attempt_observer,
             )
             trials.append(trial)
             tested_indices.add(current_index)
@@ -861,6 +864,8 @@ def auto_expose_capture(
             connection=connection,
             allow_bulb=allow_bulb,
         )
+        if attempt_observer is not None:
+            attempt_observer("final_candidate", final_result)
         decoded: DecodeResult | None = None
         measurement: ExposureMeasurement | None = None
         if meter_fn is None:
@@ -891,6 +896,9 @@ def auto_expose_capture(
             backend=final_result.backend,
             endpoint=final_result.endpoint,
             http_attempts=final_result.http_attempts,
+            remote_metadata_path=final_result.remote_metadata_path,
+            timing_metadata=final_result.timing_metadata,
+            timing_evidence=final_result.timing_evidence,
         )
         if decoded_max <= target_max:
             if decoded_max > safe_final_max:
@@ -1222,6 +1230,7 @@ def _capture_decode_trial(
     meter_fn: ExposureMeter | None,
     delete_after: bool,
     preserve_failed_trial_dir: Path | None,
+    attempt_observer: AutoExposureAttemptObserver | None,
 ) -> AutoExposureTrial:
     capture: CaptureResult | None = None
     decoded: DecodeResult | None = None
@@ -1233,6 +1242,8 @@ def _capture_decode_trial(
             connection=connection,
             allow_bulb=allow_bulb,
         )
+        if attempt_observer is not None:
+            attempt_observer("trial", capture)
         measurement: ExposureMeasurement | None = None
         if meter_fn is None:
             decoded = _decode_with_metering(
@@ -1252,7 +1263,7 @@ def _capture_decode_trial(
             exposure_metric = measurement.exposure_metric
             raw_visible_max = measurement.raw_visible_max
             image_channel_max = measurement.channel_max
-        return AutoExposureTrial(
+        trial = AutoExposureTrial(
             index=index,
             shutter_speed=settings.shutter_speed,
             decoded_max=decoded_max,
@@ -1267,6 +1278,7 @@ def _capture_decode_trial(
             accepted=decoded_max <= target_max,
             metering=None if measurement is None else measurement.to_jsonable(),
         )
+        return trial
     except BaseException as exc:
         if capture is not None and preserve_failed_trial_dir is not None:
             _preserve_failed_trial(capture.saved_file, preserve_failed_trial_dir, index=index, error=exc)

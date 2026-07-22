@@ -426,6 +426,58 @@ class CameraGPhoto2DecodeTests(unittest.TestCase):
 
 
 class CameraGPhoto2AutoExposureTests(unittest.TestCase):
+    def test_auto_expose_attempt_observer_sees_each_capture_before_default_deletion(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            observed = []
+            maxima = iter((12000, 18000))
+
+            class Backend:
+                def connect(self):
+                    return camera_gphoto2.CameraConnection("fake", "fake://camera")
+
+                def resolve_capture_settings(self, **_kwargs):
+                    return camera_gphoto2.CaptureSettings("100", "f/8", "1/100", "RAW")
+
+                def read_shutter_current_and_choices(self, _connection):
+                    return "1/100", ["1/100"]
+
+                def read_current_shutter(self, _connection):
+                    return "1/100"
+
+                def capture(self, *, output_dir, filename_template, settings, connection, **_kwargs):
+                    raw = Path(output_dir) / filename_template
+                    raw.parent.mkdir(parents=True, exist_ok=True)
+                    raw.write_bytes(b"raw")
+                    sidecar = raw.with_suffix(raw.suffix + ".metadata.json")
+                    sidecar.write_text("{}", encoding="utf-8")
+                    return camera_gphoto2.CaptureResult(
+                        connection, settings, raw, "", remote_metadata_path=sidecar,
+                        endpoint="/v2/capture", timing_metadata={"owner": "v2"},
+                        timing_evidence={"tier": "tier_b"},
+                    )
+
+            def observer(kind, capture):
+                self.assertTrue(capture.saved_file.is_file())
+                self.assertTrue(capture.remote_metadata_path.is_file())
+                observed.append((kind, capture.endpoint, capture.timing_evidence["tier"]))
+
+            result = camera_gphoto2.auto_expose_capture(
+                output_dir=root / "final", target_max=19661, max_trials=1, max_captures=2,
+                camera_backend=Backend(), scratch_dir=root / "scratch",
+                meter_fn=lambda _raw: camera_gphoto2.ExposureMeasurement(maximum=next(maxima)),
+                attempt_observer=observer,
+            )
+            self.assertEqual(observed, [
+                ("trial", "/v2/capture", "tier_b"),
+                ("final_candidate", "/v2/capture", "tier_b"),
+            ])
+            self.assertTrue(result.final_capture.saved_file.is_file())
+            self.assertEqual(result.final_capture.endpoint, "/v2/capture")
+            self.assertEqual(result.final_capture.timing_metadata, {"owner": "v2"})
+            self.assertEqual(result.final_capture.timing_evidence, {"tier": "tier_b"})
+            self.assertFalse(any((root / "scratch").rglob("trial-*.cr3")))
+
     def test_auto_expose_accepts_optional_meter_without_decoding_trials_or_final(self):
         current_shutter = {"value": "1/100"}
         trial_paths = []

@@ -111,3 +111,18 @@ cleanup, and a complete 1800-second cold-proxy wait. Resolve
 `ray-h120-s50` only through that artifact. Count setup captures inside TD-B's
 unchanged physical cap 24, while excluding them from 16 formal captures,
 58-feature fitting, repeatability covariance, and history aggregates.
+
+For production TD-B, require explicit `--phase setup` or `--phase formal` at
+an exact clean Git checkpoint. Setup runs through
+`tmp/run-p7-thermal-diagnostics.zsh`; the shared auto-exposure algorithm remains
+the only search owner, while its optional observer retains every remote-v2
+attempt before normal temporary deletion. The child writes only
+`setup-provisional.json`. The explicit setup orchestrator must wait for the
+production wrapper process to exit and retain `wrapper-observed-exit.json`;
+only after successful child and shell cleanup may post-wrapper finalization
+perform an independent both-zero readback and create
+the v2 canonical `setup.json`, `resolved-formal-plan.json`, and
+`setup-release.json`. Resume Ray formal only from that on-disk release and the
+same checkpoint. Paired TD-B finalization requires two public source analyses
+plus independent final zero; it may summarize the exact `33..40` physical
+ledger but must not call 600 seconds settled or change either source result.

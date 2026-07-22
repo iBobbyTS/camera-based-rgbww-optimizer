@@ -1001,6 +1001,126 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
         self.assertEqual(len(calls), 1)
         self.assertTrue(calls[0][0]["camera"]["v2_capture_timing_capability_available"])
 
+    def test_td_b_phase_cli_dispatches_setup_and_disk_release_explicitly(self):
+        calls = []
+
+        class FakeBackend:
+            backend_name = "remote"
+            v2_capture_capability = measure.REMOTE_V2_CAPABILITY
+
+        common = [
+            "--experiment-id", subject.TD_B, "--source", "ray", "--run-name", "x",
+            "--prerequisite-artifact", str(subject.OPERATING_ENVELOPE_V2_PATH),
+            "--execute", "--allow-device-control", "--human-authorization", subject.TD_B,
+            "--code-checkpoint", "a" * 40,
+        ]
+        self.assertEqual(measure.main(
+            [*common, "--phase", "setup"],
+            backend_factory=lambda *_args, **_kwargs: FakeBackend(),
+            setup_fn=lambda plan, **kwargs: calls.append(("setup", plan, kwargs)) or Path("provisional"),
+        ), 0)
+        release = Path("/Volumes/4T/temp/rgbww-optimizer/fake-release.json")
+        self.assertEqual(measure.main(
+            [*common, "--phase", "formal", "--setup-release", str(release)],
+            backend_factory=lambda *_args, **_kwargs: FakeBackend(),
+            resolved_run_fn=lambda path, **kwargs: calls.append(("formal", path, kwargs)) or Path("formal"),
+        ), 0)
+        self.assertEqual([row[0] for row in calls], ["setup", "formal"])
+        self.assertEqual(calls[1][1], release)
+
+    def test_td_b_execute_requires_explicit_phase_before_backend_construction(self):
+        constructs = []
+        with self.assertRaisesRegex(PermissionError, "explicit --phase"):
+            measure.main([
+                "--experiment-id", subject.TD_B, "--source", "ray", "--run-name", "x",
+                "--prerequisite-artifact", str(subject.OPERATING_ENVELOPE_V2_PATH),
+                "--execute", "--allow-device-control", "--human-authorization", subject.TD_B,
+                "--code-checkpoint", "a" * 40,
+            ], backend_factory=lambda *args, **kwargs: constructs.append((args, kwargs)))
+        self.assertEqual(constructs, [])
+
+    def test_td_b_setup_orchestration_dispatches_before_backend_construction(self):
+        constructs = []
+        calls = []
+        result = measure.main([
+            "--experiment-id", subject.TD_B, "--source", "ray", "--run-name", "setup",
+            "--prerequisite-artifact", str(subject.OPERATING_ENVELOPE_V2_PATH),
+            "--execute", "--allow-device-control", "--human-authorization", subject.TD_B,
+            "--phase", "setup", "--orchestrate-setup", "--code-checkpoint", "a" * 40,
+        ], backend_factory=lambda *args, **kwargs: constructs.append((args, kwargs)),
+            setup_orchestrate_fn=lambda **kwargs: calls.append(kwargs) or (
+                Path("canonical"), Path("resolved"), Path("release"),
+            ))
+        self.assertEqual(result, 0)
+        self.assertEqual(constructs, [])
+        self.assertEqual(len(calls), 1)
+        self.assertIn("--phase", calls[0]["wrapper_args"])
+        self.assertIn("setup", calls[0]["wrapper_args"])
+
+    def test_td_b_setup_post_wrapper_finalizer_binds_release_and_rejects_tamper(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = (Path(tempdir) / "setup-run").resolve()
+            root.mkdir()
+            plan = subject.build_diagnostic_plan(
+                subject.TD_B, source="ray", prerequisite_artifact=subject.OPERATING_ENVELOPE_V2_PATH,
+                for_execution=True, human_authorization=subject.TD_B, v2_capture_capability=True,
+            )
+            fake = _fake_td_b_setup(root / "evidence", count=2, fake_only=False)
+            fake["code_checkpoint"] = "a" * 40
+            (root / "unresolved-plan.json").write_text(json.dumps(plan), encoding="utf-8")
+            (root / "all-off-python.json").write_text(json.dumps(fake["cleanup"]["python"]), encoding="utf-8")
+            (root / "all-off-shell.json").write_text(json.dumps(fake["cleanup"]["shell"]["steps"]), encoding="utf-8")
+            (root / "child-exit-status.txt").write_text("0\n", encoding="utf-8")
+            (root / "all-off-shell.exit-status.txt").write_text("0\n", encoding="utf-8")
+            wrapper = {
+                "schema_version": 1, "experiment": "p7_thermal_diagnostics_v1", "status": "complete",
+                "run_dir": str(root), "wrapper_pid": 1, "child_pid": 2, "child_exit_code": 0,
+                "shell_cleanup_exit_code": 0, "wrapper_exit_code": 0, "signal": None,
+                "started_at": "2026-07-22T00:00:00Z",
+            }
+            (root / "wrapper-result.json").write_text(json.dumps(wrapper), encoding="utf-8")
+            (root / "wrapper-observed-exit.json").write_text(json.dumps({
+                "schema": measure.WRAPPER_OBSERVED_EXIT_SCHEMA,
+                "status": "exited", "return_code": 0, "observed_at": "2026-07-22T00:00:00Z",
+                "wrapper_result": subject.file_reference(root / "wrapper-result.json"),
+            }), encoding="utf-8")
+            provisional = {
+                "schema": subject.TD_B_SETUP_PROVISIONAL_SCHEMA,
+                "status": "setup_capture_complete_waiting_for_wrapper_finalize",
+                "code_checkpoint": "a" * 40,
+                "unresolved_plan": subject.file_reference(root / "unresolved-plan.json"),
+                "wrapper_source": subject.file_reference(measure.PRODUCTION_WRAPPER),
+                "attempts": fake["attempts"], "historical_seed": fake["historical_seed"],
+                "camera": fake["camera"],
+                "isolation": {"run_start_zero": fake["cleanup"]["final_both_off"],
+                    **fake["isolation"], "setup_complete_zero": fake["cleanup"]["final_both_off"]},
+                "cold_proxy": fake["cold_proxy"],
+                "python_cleanup": subject.file_reference(root / "all-off-python.json"),
+            }
+            (root / "setup-provisional.json").write_text(json.dumps(provisional), encoding="utf-8")
+            with mock.patch.object(measure, "_validate_checkpoint_and_tree"):
+                canonical, resolved, release = measure.finalize_td_b_setup_after_wrapper(
+                    root, code_checkpoint="a" * 40,
+                    final_zero_fn=lambda: fake["cleanup"]["final_both_off"],
+                )
+            validated = subject.validate_td_b_setup_release(
+                json.loads(release.read_text(encoding="utf-8")), release_path=release,
+            )
+            self.assertEqual(validated["physical_count"], 2)
+            self.assertTrue(validated["resolved_plan"]["formal_capture_eligible"])
+            self.assertEqual(validated["resolved_plan"]["setup_physical_cr3_count"], 2)
+            self.assertTrue(canonical.is_file())
+            self.assertTrue(resolved.is_file())
+            evidence_root = os.environ.get("P7_TD_B_E0X_EVIDENCE_DIR")
+            if evidence_root:
+                shutil.copytree(root, Path(evidence_root) / "setup-roundtrip")
+            with (root / "wrapper-result.json").open("a", encoding="utf-8") as handle:
+                handle.write(" ")
+            with self.assertRaisesRegex(ValueError, "wrapper_result hash"):
+                subject.validate_td_b_exposure_setup(
+                    json.loads(canonical.read_text(encoding="utf-8")), artifact_path=canonical,
+                )
+
     def test_run_authorized_plan_rejects_before_connect_filesystem_or_cleanup(self):
         class FakeBackend:
             backend_name = "remote"
@@ -1394,6 +1514,68 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                         }, indent=2, sort_keys=True) + "\n",
                         encoding="utf-8",
                     )
+
+    def test_setup_wrapper_records_exit_without_predicting_post_exit_finalization(self):
+        for mode, expected_exit in (("success", 0), ("child_failure", 7), ("cleanup_failure", 70)):
+            with self.subTest(mode=mode), _w0_temporary_directory() as tempdir:
+                root, wrapper, call_log, _source_hash = _make_fake_thermal_wrapper_project(Path(tempdir))
+                run_dir = root / "runs" / mode
+                env = os.environ.copy()
+                env.update({"FAKE_RUNNER_MODE": mode, "FAKE_CALL_LOG": str(call_log),
+                    "FAKE_READY_FILE": str(Path(tempdir) / "ready")})
+                process = subprocess.run(
+                    ["zsh", str(wrapper), str(run_dir), "--phase", "setup",
+                        "--experiment-id", subject.TD_B, "--source", "ray", "--code-checkpoint", "a" * 40],
+                    env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=15,
+                )
+                calls = call_log.read_text(encoding="utf-8").splitlines()
+                runner_calls = [line for line in calls if "measure_p7_thermal_diagnostics" in line]
+                cleanup_calls = [line for line in calls if "camera_based_rgbww_optimizer.control.all_off" in line]
+                self.assertEqual(len(runner_calls), 1)
+                self.assertEqual(len(cleanup_calls), 1)
+                finalize_calls = [line for line in calls if "--finalize-setup-run" in line]
+                self.assertEqual(finalize_calls, [])
+                self.assertEqual(process.returncode, expected_exit)
+
+    def test_setup_outer_orchestrator_finalizes_only_after_real_wrapper_exit(self):
+        for mode, expected_exit in (("success", 0), ("child_failure", 7), ("cleanup_failure", 70)):
+            with self.subTest(mode=mode), _w0_temporary_directory() as tempdir:
+                root, wrapper, call_log, _source_hash = _make_fake_thermal_wrapper_project(Path(tempdir))
+                run_dir = root / "runs" / mode
+                env = os.environ.copy()
+                env.update({"FAKE_RUNNER_MODE": mode, "FAKE_CALL_LOG": str(call_log),
+                    "FAKE_READY_FILE": str(Path(tempdir) / "ready")})
+                finalized = []
+
+                def fake_finalize(observed_root, *, code_checkpoint):
+                    wrapper_result = _read_json(Path(observed_root) / "wrapper-result.json")
+                    with self.assertRaises(ProcessLookupError):
+                        os.kill(wrapper_result["wrapper_pid"], 0)
+                    observed = _read_json(Path(observed_root) / "wrapper-observed-exit.json")
+                    self.assertEqual(observed["return_code"], 0)
+                    finalized.append((Path(observed_root), code_checkpoint))
+                    return tuple(Path(observed_root) / name for name in ("setup.json", "resolved.json", "release.json"))
+
+                with mock.patch.dict(os.environ, env, clear=False):
+                    kwargs = {
+                        "run_dir": run_dir, "code_checkpoint": "a" * 40,
+                        "wrapper_args": ["--phase", "setup", "--experiment-id", subject.TD_B,
+                            "--source", "ray", "--code-checkpoint", "a" * 40],
+                        "wrapper_path": wrapper, "setup_finalize_fn": fake_finalize,
+                        "validate_checkpoint_fn": lambda _checkpoint: None,
+                    }
+                    if mode == "success":
+                        result = measure.orchestrate_td_b_setup(**kwargs)
+                        self.assertEqual(result[-1], run_dir.resolve() / "release.json")
+                    else:
+                        with self.assertRaisesRegex(RuntimeError, f"exit code {expected_exit}"):
+                            measure.orchestrate_td_b_setup(**kwargs)
+                self.assertEqual(len(finalized), 1 if mode == "success" else 0)
+                self.assertEqual(_read_json(run_dir / "wrapper-observed-exit.json")["return_code"], expected_exit)
+                evidence_root = os.environ.get("P7_TD_B_E0X_EVIDENCE_DIR")
+                if evidence_root and mode == "success":
+                    shutil.copytree(root, Path(evidence_root) / "wrapper-roundtrip")
+                    shutil.copy2(call_log, Path(evidence_root) / "wrapper-calls.log")
 
     def test_thermal_wrapper_locals_avoid_zsh_readonly_special_parameters(self):
         wrapper = (Path(__file__).parents[1] / "tmp/run-p7-thermal-diagnostics.zsh").read_text(encoding="utf-8")
