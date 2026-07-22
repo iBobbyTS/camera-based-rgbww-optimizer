@@ -6,11 +6,11 @@
 
 **输入计划：** `.agent-work/PLAN.md`
 
-**结果状态：** `p7_td_b_r0_offline_complete_waiting_for_planner_review`
+**结果状态：** `p7_td_b_setup_finalization_failed_closed_waiting_for_planner`
 
-**设备授权消费：** 无
+**设备授权消费：** 已消费本计划唯一 fresh setup；不得自行进行第二次 setup
 
-**设备访问：** 无；本轮未访问相机、ESPHome、Ray120c、`.env` 或 remote camera API，未调用 `all_off`
+**设备访问：** 已按 PLAN 执行唯一 Ray setup、2 次 remote v2 RAW capture、双层 cleanup 和独立双源 zero；未启动 Ray/strip formal
 
 ---
 
@@ -1457,3 +1457,182 @@ camera request 或 CR3，但 wrapper recovery 已发送全零 device commands，
 2. 独立双零已证实且非零 command/capture 均为 0 的本次失败，是否允许在新目录重试唯一 setup。
 
 Ray formal、strip formal、paired finalizer、TD-C 及后续阶段均未启动。
+
+---
+
+## 26. P7-TD-B-PATH-R1：受信 prerequisite 身份纠偏
+
+执行日期：2026-07-22。严格执行 active `PLAN.md` 的 PATH-R1 离线包，未修改 `PLAN.md`。本阶段未读取
+`.env`，未访问设备、网络、remote API、相机、Ray 或 ESPHome，未调用 `all_off`，真实 CR3 为 0。
+
+### 26.1 实现与证据边界
+
+- 在 `optimization.p7_thermal_diagnostics` 增加单一 trusted operating-envelope resolver；相对路径固定
+  相对于 `PROJECT_ROOT`，新 plan 始终保存 exact canonical absolute path 和冻结 SHA-256。
+- Resolver 在读取 JSON 前拒绝 traversal、项目根外路径、missing、directory、symlink 和同内容 copy；
+  v2 再逐字节校验冻结 hash `7012f254...cfc16`。
+- plan producer、production setup frozen gate 和 public analyzer/replay 共用该 owner；通用
+  `file_reference()` 未修改，既有 v1/retained artifact path schema 未全局迁移。
+- Production fake round-trip 覆盖 relative CLI plan build、setup frozen gate、fake backend、2 张
+  `fake_only` CR3/sidecar retained ledger 和 public replay；path/hash tamper 在 backend inspection/output
+  owner 前拒绝。
+
+### 26.2 验证与 checkpoint
+
+```text
+focused: 164/164 pass, 11.884s
+full suite: 534/534 pass, 187.852s
+compileall: pass
+all tmp/*.zsh syntax: pass
+git diff --check: pass
+CodeGraph sync: pass
+relative/absolute canonical reference: equal
+negative path/hash/owner matrix: pass
+post-checkpoint real frozen gate: pass, deliberate fake-capability stop, output not created
+post-checkpoint fake retained/public replay: 1/1 pass
+frozen experiment inputs: 5/5 exact hash match
+device/network/.env/camera/Ray/ESPHome/all_off calls: 0
+```
+
+Focused commit/checkpoint：
+
+```text
+0deac80b0a2c794bfbfdd798de428e5d9cf77728
+fix(p7): canonicalize TD-B prerequisite identity
+```
+
+### 26.3 离线 artifacts
+
+Root：
+
+```text
+/Volumes/4T/temp/rgbww-optimizer/p7-td-b-path-r1-offline/20260722-112452
+```
+
+| Artifact | SHA-256 |
+| --- | --- |
+| `validation-summary.json` | `3007ad1958d67b0d819b8f87608a9e1e5db329476cbd1b44d780c24270007255` |
+| `artifact-sha256.txt` | `1949c6c83a598fd9c912c918a0f62c5713a35852dd0b412a78859e5bea131930` |
+| `negative-case-matrix.json` | `6ce0dbe5c7598b470a05fe4d1586d9139c8dfeb0305b4016f183c7d735aa14de` |
+| `canonical-reference-comparison.json` | `684feb9b5a97adbeb5a52284df0a2404824dca3fd7bc52c684b2d38e8e412d45` |
+
+状态：`path_r1_offline_pass_single_fresh_setup_retry_authorized`。下一动作严格按 PLAN 使用新目录和项目相对
+prerequisite 启动唯一 setup outer orchestrator；setup失败不得第二次重试，成功则连续 Ray formal、strip
+formal、两份 public analysis、paired finalizer和独立双源 zero。
+
+### 26.4 唯一 fresh setup 启动与 3 分钟健康检查
+
+Run owner：
+
+```text
+/Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/p7-td-b-setup-20260722-173504
+```
+
+```text
+started_at = 2026-07-22T17:35:04Z
+outer PID = 76855
+wrapper PID = 76938
+child PID = 76942
+PGID = 76855
+TTY = ttys004
+code checkpoint = 0deac80b0a2c794bfbfdd798de428e5d9cf77728
+terminal owner = p7-td-b-setup-20260722-173504.terminal-owner.json
+wrapper state = p7-td-b-setup-20260722-173504.wrapper-state.json
+runner log = p7-td-b-setup-20260722-173504.runner.log
+wrapper log = p7-td-b-setup-20260722-173504.wrapper.log
+terminal log = p7-td-b-setup-20260722-173504.terminal-launch.log
+```
+
+启动时 AppleScript 只在把 Terminal window id格式化为 text时返回 `-1700`；实际命令已唯一启动，owner、
+PID、TTY和进程树均存在，因此未做第二次启动。
+
+3 分钟健康点：
+
+```text
+process ownership = pass, Terminal ttys004, independent from Codex PTY
+canonical operating envelope = exact absolute owner + 7012f254...cfc16
+setup preflight = pass
+remote health = ok
+camera settings = ISO 100 / implicit auto aperture / RAW
+setup physical = 2 CR3 + 2 sidecar, both nonempty
+final shutter = 1/6400
+timing = Tier B / gphoto_capture_return_minus_recorded_exposure
+NPY = 0
+failure.json = absent
+setup-attempts.json landed = 2026-07-22T11:36:33-0600
+phase = setup captures complete, 1800-second cold proxy running
+independent safety readback = strip generation 4 -> 5 all zero; Ray intensity 0
+```
+
+健康证据：
+
+```text
+/Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/p7-td-b-setup-20260722-173504.health-3m.json
+```
+
+同一 task heartbeat 已创建并核对：
+
+```text
+Automation ID = p7-td-b-setup
+target thread = 019f71b5-53fa-7f41-a15c-7335051aa944
+expected next run = 2026-07-22T18:09:50Z / 12:09:50-0600
+```
+
+当前状态：`blocked_waiting_for_setup_cold_proxy_and_post_wrapper_finalize`。预计 cold proxy约
+`2026-07-22T18:06:33Z`结束；不短间隔轮询。唤醒后按 PLAN 审计 canonical setup/release和双 cleanup，成功
+则连续进入 Ray formal，失败则 recovery并停止，且不得再次 setup。
+
+### 26.5 Setup post-wrapper finalization fail closed
+
+Heartbeat 于 `2026-07-22T18:09:03Z` 恢复同一 task 后已删除。Setup wrapper、child 和 outer process 均已
+退出；wrapper 本身为完整成功退出：
+
+```text
+child_exit_code = 0
+shell_cleanup_exit_code = 0
+wrapper_exit_code = 0
+physical setup CR3 = 2
+sidecar = 2
+NPY = 0
+failure.json = absent
+cold proxy elapsed = 1800.003s
+```
+
+但是 outer orchestrator 在读取 `setup-provisional.json` 并构造 canonical setup artifact 时由冻结 validator
+拒绝：两次 remote v2 capture均请求 `1/6400`，CR3记录曝光均为 `0.0011548225103294601s`，约
+`1/865.934`，recorded/nominal ratio为 `7.390864`，超出冻结 `0.8..1.2`。Production exception：
+
+```text
+ValueError: TD-B setup shutter differs materially from recorded exposure
+```
+
+因此 `setup.json`、`setup-release.json`、`resolved-plan.json` 均未生成，public setup replay没有合法输入，
+Ray formal和strip formal均未启动。这是计划内 setup hard failure；本计划唯一 fresh setup权限已消费，
+Executer不会重试或绕过 recorded exposure gate。
+
+Cleanup与停止证据完整：Python cleanup、shell trap均 exit 0；orchestrator随后生成独立 final zero，strip
+device `bedroom-rgbww-strip` / MAC `E0:8C:FE:63:C9:40` generation `3 -> 4` 且五通道全零，Ray
+independent readback intensity `0`。检查时无 residual thermal/wrapper进程，原 heartbeat已删除。
+
+| Evidence | SHA-256 |
+| --- | --- |
+| `setup-provisional.json` | `095d0a1a1412217bbfb993f44fa325fd132799ea1e721e6b20b64caecd496291` |
+| `setup-attempts.json` | `7267322c8f6a4fa82f9d8d1aa400a28b2e9a37b5d72b3fc02e2abc7f114113d1` |
+| `wrapper-result.json` | `a969b9d815827b21d25f285672d21b7510e1851edf4e6f658fe1cda3e18b09da` |
+| `wrapper-observed-exit.json` | `8d6015cf3d7c8d12bd039e97380c90561a0ab4791b7232e28f18e792a0d2aaaa` |
+| `all-off-python.json` | `22e0d86c2dd28c72348748b13181ac6ceb61ecdc2687644821543af3d1fa2337` |
+| `all-off-shell.json` | `eab9df5e56830906dcd0555885c1a4057faa84b49ee09c76a2904bcf1a0ab0e0` |
+| `independent-final-zero.json` | `b2112547d5782d17f53c40c8a976f51253da2ced22f04be16efd863dbd4204dd` |
+| `orchestration-failure.json` | `256e91ece94fe4b639144a00ec8e62ca011b9063342d696de9ebf34c3b3cce45` |
+| Terminal launcher log | `91854e8fd77223d600d0e3abb6855d5601b91776846cf7d3734b671d208d289c` |
+| adjacent wrapper state | `43de195313e6b6fe00d0a90e5088bae142036eb9fb541e9522661c17a917b86d` |
+
+新增机器可读失败摘要：
+
+```text
+/Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/
+  p7-td-b-setup-20260722-173504/orchestration-failure.json
+```
+
+Planner 决策请求：审查请求 shutter与recorded exposure不一致的相机/adapter证据，冻结后续纠偏分支。
+在新 active PLAN前，TD-B formal、TD-C、sentinel、remaining、boundary、holdout和P8全部停止。
