@@ -836,6 +836,16 @@ reference-epoch v2 artifacts without modifying immutable R1 evidence. The
 retained R1 class is `not_identifiable`: legacy false means only that the old
 detector did not classify a shift, not that no shift occurred.
 
+After TD-A reported `settling_not_demonstrated_by_600`, Developer/Human selected
+600 seconds as the operational dwell and rejected a 900/1200-second extension.
+This choice is recorded only in `config/hsi/p7-operating-envelope-v2.json` as a
+`developer_human_override`; it is not a measured settle time. The v2 TD-B dry
+plan therefore uses 600 seconds for A0, each return anchor, and the 60/120/300/600
+switch chronology, while retaining `t_formal_provisional_s=null` and emitting
+`td_b_operational_600_complete_waiting_for_planner` or
+`history_dependent_at_operational_dwell_600`. The v1 envelope and its deferred
+TD-B behavior remain immutable for legacy replay.
+
 ## Location Picker
 
 Use the local Web UI to capture a preview and mark color-chart patches:

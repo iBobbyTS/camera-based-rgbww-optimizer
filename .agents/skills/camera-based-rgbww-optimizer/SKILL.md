@@ -88,3 +88,16 @@ validation and retain rejected capture paths/hashes in failure evidence.
 Use the shared experiment-aware chronology identity (TD-A cycle, TD-B role,
 TD-C session), retain the recognized gphoto2 estimate method, and keep v1
 single/pair analysis under legacy schemas. Never mix v1 and v2 pair inputs.
+
+The retained TD-A result is `settling_not_demonstrated_by_600`. A separate
+Developer/Human decision may select 600 seconds as an operational dwell while
+rejecting a 900/1200-second extension. Keep this decision in
+`config/hsi/p7-operating-envelope-v2.json`; never fill
+`t_formal_provisional_s` or `t_formal_s`, and never rewrite the result as
+`steady` or `settled`. TD-B v2 uses the explicit developer override for A0,
+return anchors, and the 60/120/300/600 switch chronology. Its analyzer status is
+`td_b_operational_600_complete_waiting_for_planner` or
+`history_dependent_at_operational_dwell_600`, with
+`dwell_is_scientifically_settled=false` and a structured nonstationarity warning.
+The v1 envelope remains the legacy deferred path; v2 is still offline/dry-run
+until a new bounded Planner execution plan exists.

@@ -94,10 +94,13 @@ def _retain_td_a_manifest_evidence_if_requested() -> None:
 def _build_formal_td_a_run(
     root: Path, *, source: str = "ray", settle: bool = True, timing_version: int = 2,
     estimate_method: str = "gphoto_capture_return_minus_recorded_exposure",
+    experiment_id: str = thermal.TD_A,
+    prerequisite_artifact: Path = thermal.OPERATING_ENVELOPE_PATH,
 ) -> Path:
     plan = thermal.build_diagnostic_plan(
-        thermal.TD_A, source=source, for_execution=True,
-        human_authorization=thermal.TD_A, v2_capture_capability=True,
+        experiment_id, source=source, for_execution=True,
+        human_authorization=experiment_id, v2_capture_capability=True,
+        prerequisite_artifact=prerequisite_artifact,
     )
     plan["camera"]["resolved_capture_settings"] = {
         "owner": "remote_backend.resolve_capture_settings",
@@ -768,6 +771,78 @@ class AnalyzeP7ThermalDiagnosticsTests(unittest.TestCase):
                 captures.append({"plan_step": {"role": "switch_curve", "state_id": state, "requested_elapsed_s": point}, "feature_values": _feature(1)})
         report = subject.analyze_td_b(captures, feature_ids=FEATURE_IDS)
         self.assertEqual(report["status"], "history_dependent_at_current_protocol")
+
+    def test_td_b_developer_dwell_reports_protocol_completion_without_steady_claim(self):
+        plan = thermal.build_diagnostic_plan(
+            thermal.TD_B, source="strip",
+            prerequisite_artifact=thermal.OPERATING_ENVELOPE_V2_PATH,
+        )
+        captures = [
+            {"plan_step": step, "feature_values": _feature(1.0)}
+            for step in plan["captures"]
+        ]
+        report = subject.analyze_td_b(
+            captures, feature_ids=FEATURE_IDS,
+            compatibility_fn=lambda left, right: list(left) == list(right),
+            operational_override=True, operational_dwell_s=600,
+        )
+        self.assertEqual(report["status"], "td_b_operational_600_complete_waiting_for_planner")
+        self.assertEqual(report["operational_dwell_s"], 600)
+        self.assertEqual(report["dwell_source"], "developer_human_override")
+        self.assertFalse(report["dwell_is_scientifically_settled"])
+        self.assertFalse(report["operational_nonstationarity_observed"])
+        self.assertNotIn("td_b_pass", json.dumps(report))
+
+    def test_td_b_developer_dwell_separates_history_and_nonstationarity_branches(self):
+        plan = thermal.build_diagnostic_plan(
+            thermal.TD_B, source="strip",
+            prerequisite_artifact=thermal.OPERATING_ENVELOPE_V2_PATH,
+        )
+        captures = []
+        for step in plan["captures"]:
+            if step["role"] == "return_after_C":
+                seed = 9.0
+            elif step["role"] == "switch_curve":
+                seed = float(step["requested_elapsed_s"])
+            else:
+                seed = 1.0
+            captures.append({"plan_step": step, "feature_values": _feature(seed)})
+        report = subject.analyze_td_b(
+            captures, feature_ids=FEATURE_IDS,
+            compatibility_fn=lambda left, right: list(left) == list(right),
+            operational_override=True, operational_dwell_s=600,
+        )
+        self.assertEqual(report["status"], "history_dependent_at_operational_dwell_600")
+        self.assertTrue(report["operational_nonstationarity_observed"])
+        self.assertEqual(report["nonstationary_states"], ["B", "C", "D"])
+
+    def test_td_b_developer_dwell_rejects_nonfrozen_override(self):
+        with self.assertRaisesRegex(ValueError, "600 second"):
+            subject.analyze_td_b(
+                [], feature_ids=FEATURE_IDS,
+                compatibility_fn=lambda _left, _right: True,
+                operational_override=True, operational_dwell_s=300,
+            )
+
+    def test_td_b_v2_production_round_trip_and_plan_provenance_replay(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = _build_formal_td_a_run(
+                Path(tempdir) / "td-b-strip", source="strip",
+                experiment_id=thermal.TD_B,
+                prerequisite_artifact=thermal.OPERATING_ENVELOPE_V2_PATH,
+            )
+            report = subject.analyze_thermal_run(root, feature_ids=FEATURE_IDS)
+            self.assertEqual(report["status"], "td_b_operational_600_complete_waiting_for_planner")
+            self.assertEqual(report["formal_capture_count"], 16)
+            self.assertEqual(report["ambient_capture_count"], 0)
+            self.assertEqual(report["physical_cr3_count"], 16)
+            self.assertFalse(report["dwell_is_scientifically_settled"])
+
+            plan = json.loads((root / "plan.json").read_text(encoding="utf-8"))
+            plan["operational_dwell"]["seconds"] = 300
+            _write_json(root / "plan.json", plan)
+            with self.assertRaisesRegex(ValueError, "provenance"):
+                subject.analyze_thermal_run(root, feature_ids=FEATURE_IDS)
 
     def test_td_c_reports_order_balanced_not_abba(self):
         plan = thermal.build_diagnostic_plan(thermal.TD_C, variant="core")

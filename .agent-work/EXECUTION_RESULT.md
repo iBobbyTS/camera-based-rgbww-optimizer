@@ -1,16 +1,16 @@
 # Executor 执行结果
 
-**记录日期：** 2026-07-20
+**记录日期：** 2026-07-22
 
 **执行角色：** Executer
 
 **输入计划：** `.agent-work/PLAN.md`
 
-**结果状态：** `p7_td_a_r0d_complete_waiting_for_planner_review`
+**结果状态：** `p7_td_b_r0_offline_complete_waiting_for_planner_review`
 
 **设备授权消费：** 无
 
-**设备访问：** 无；未访问相机、ESPHome、Ray120c、`.env` 或 remote camera API，未调用 `all_off`
+**设备访问：** 无；本轮未访问相机、ESPHome、Ray120c、`.env` 或 remote camera API，未调用 `all_off`
 
 ---
 
@@ -1225,3 +1225,61 @@ Paired contract 为 `24 formal + 6 ambient / 30 physical CR3 <= 44`，input/capt
 状态：`td_a_complete_not_settled_by_600_waiting_for_planner_advisor`。停止在 Planner 门，不启动 TD-B、
 TD-C、sentinel、remaining 9、boundary、holdout、Gate-6 或 P8。按 PLAN，需要 Planner/Advisor 决定是否
 另行设计并授权 `900/1200s` 扩展；本轮不自动扩展或重拍。
+
+---
+
+## 23. P7-TD-B-R0：Developer operational dwell 离线交付
+
+本轮严格消费当前 `PLAN.md` 的离线授权，没有访问设备、网络、`.env`、remote API、相机、Ray、ESPHome，
+也没有调用 `all_off`。`PLAN.md` 未被修改。
+
+### 23.1 实现
+
+- 新增 `config/hsi/p7-operating-envelope-v2.json`，保留 Ray/strip 的
+  `settling_not_demonstrated_by_600` 与全部 measured settle 字段 `null`；600 仅标记为
+  `developer_human_override` / `selected_time_limit_not_proven_steady`。
+- 在 `p7_thermal_diagnostics.py` 建立共享 v1/v2 envelope validator 和 TD-B operational-dwell
+  provenance validator。旧 v1 仍走 deferred/TD-A prerequisite 路径；v2 只有显式 decision owner、审计
+  artifact hash、600 dwell 和 TD-A 未稳定状态全部一致时才可进入 TD-B plan。
+- TD-B v2 生成 16 formal、0 ambient、physical cap 24；A0、D/B/C return anchors 为 600，switch
+  chronology 为 `60/120/300/600`。Analyzer 输出只能是
+  `td_b_operational_600_complete_waiting_for_planner` 或
+  `history_dependent_at_operational_dwell_600`，并显式报告
+  `dwell_is_scientifically_settled=false` 与 nonstationarity states，不会输出 `td_b_pass` 或自动推进 TD-C。
+- `measure_p7_thermal_diagnostics` 新增 `--prerequisite-artifact`，dry-run 不构造设备 owner、不加载
+  `.env`、不启动 runner。
+- 更新 `docs/README.md` 与 `.agents/skills/camera-based-rgbww-optimizer/SKILL.md`，新增 regression tests。
+
+### 23.2 证据与哈希
+
+| Artifact | Path | SHA-256 |
+| --- | --- | --- |
+| v2 envelope | `config/hsi/p7-operating-envelope-v2.json` | `7012f254e5fa5182dd51b72624f64ce03645fd3d8b7227ab9144f5c7767cfc16` |
+| Ray dry-run | `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-operational-dwell-offline/td-b-ray-v2-dry/plan.json` | `c43e6e460d5ed00ac38ae96f9dd5ee11cf1a61670e2e4d471b6b4f7f57856e5d` |
+| strip dry-run | `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-operational-dwell-offline/td-b-strip-v2-dry/plan.json` | `fcf1041023cdc9468d8de0ec70951e284b02115135485486fede8dbea5aa9739` |
+| fake analyzer replay | `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-operational-dwell-offline/fake-replay/fake-analyzer-replay.json` | `60d21d716b96daf3d5909828807dc071ccd00b34fbd80fbf71ff9ca624626fa0` |
+| validation summary | `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-operational-dwell-offline/validation-summary.json` | `d5b97af6a0b4d4e72df14c57c1d6efe6b1988bc45ff6e5980931d41db3320f9d` |
+| readiness | `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-operational-dwell-offline/readiness/readiness.json` | `94298771314b03d8a74c54838f304e648d294af234c3118e93c55d6d43fec3c8` |
+
+The Ray dry-run retains `ray-h120-s50` as an explicit required shutter key with `null` value and
+`exposure_setup_required=["ray-h120-s50"]`; the key is present in the frozen ledger, but retained P7-R1 has
+no Ray H120/S50 capture from which to claim a shutter. Historical contract permits a separate non-formal setup
+before a cold cycle. No auto-exposure value was invented. Strip has `exposure_setup_required=[]`. Planner should
+decide whether the phrase “no missing shutter key” accepts this explicit setup-required state or requires a new
+bounded offline artifact; Executor will not choose or run that branch.
+
+### 23.3 Validation
+
+```text
+focused: 66/66 pass
+full suite: 511/511 pass, 110.390s
+compileall: pass
+all tmp/*.zsh syntax: pass
+git diff --check: pass
+CodeGraph sync: pass
+device/network/.env/remote/camera/Ray/ESPHome/all_off calls: 0
+real CR3: 0; NPY: 0; PID/heartbeat/cleanup side effects: 0
+```
+
+状态：`p7_td_b_r0_offline_complete_waiting_for_planner_review`。TD-B 实拍、900/1200 扩展、TD-C、sentinel、
+remaining、boundary、holdout、Gate-6、P8、firmware、remote deployment 和默认安装均保持锁定。

@@ -235,6 +235,53 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
         with self.assertRaisesRegex(PermissionError, "TD-C"):
             subject.build_diagnostic_plan(subject.TD_C, for_execution=True, human_authorization=subject.TD_C)
 
+    def test_td_b_v2_developer_dwell_plan_is_resolved_without_measured_settle(self):
+        plan = subject.build_diagnostic_plan(
+            subject.TD_B, source="strip",
+            prerequisite_artifact=subject.OPERATING_ENVELOPE_V2_PATH,
+        )
+        self.assertEqual(len(plan["captures"]), 16)
+        self.assertEqual(plan["timing_resolution"], "developer_override_resolved")
+        self.assertEqual(plan["operational_dwell"], {
+            "source": "developer_human_override", "seconds": 600,
+            "scientifically_settled": False, "measured_t_formal_provisional_s": None,
+        })
+        self.assertTrue(all(step["requested_elapsed_s"] is not None for step in plan["captures"]))
+        self.assertEqual(
+            [step["requested_elapsed_s"] for step in plan["captures"]],
+            [600, 60, 120, 300, 600, 600, 60, 120, 300, 600, 600, 60, 120, 300, 600, 600],
+        )
+
+    def test_developer_dwell_envelope_rejects_tampered_decision_contract(self):
+        envelope = json.loads(subject.OPERATING_ENVELOPE_V2_PATH.read_text(encoding="utf-8"))
+        cases = (
+            ("owner", {"decision_owner": "Planner"}),
+            ("dwell", {"developer_selected_operational_dwell_s": 300}),
+            ("measured", {"t_formal_provisional_s": 600}),
+            ("status", {"status": "td_a_pass"}),
+            ("audit", {"decision_audit": {"path": "advisor/4/0.AUDIT/03-human-decision-no-extension.md", "sha256": "0" * 64}}),
+        )
+        for label, changes in cases:
+            with self.subTest(label=label), self.assertRaises(ValueError):
+                subject.validate_operating_envelope({**envelope, **changes})
+
+    def test_legacy_v1_envelope_cannot_be_claimed_as_v2(self):
+        envelope = json.loads(subject.OPERATING_ENVELOPE_PATH.read_text(encoding="utf-8"))
+        self.assertEqual(subject.validate_operating_envelope(envelope)["mode"], "legacy_v1")
+        with self.assertRaisesRegex(ValueError, "explicit v2"):
+            subject.validate_operating_envelope(envelope, require_v2=True)
+
+    def test_td_b_plan_provenance_mismatch_is_rejected(self):
+        envelope = json.loads(subject.OPERATING_ENVELOPE_V2_PATH.read_text(encoding="utf-8"))
+        plan = subject.build_diagnostic_plan(
+            subject.TD_B, source="strip",
+            prerequisite_artifact=subject.OPERATING_ENVELOPE_V2_PATH,
+        )
+        subject.validate_td_b_operational_dwell_plan(plan, envelope)
+        plan["operational_dwell"]["seconds"] = 300
+        with self.assertRaisesRegex(ValueError, "provenance"):
+            subject.validate_td_b_operational_dwell_plan(plan, envelope)
+
     def test_scheduler_accepts_large_finite_best_effort_offset(self):
         clock = _Clock()
         results = subject.run_timed_schedule(
@@ -599,6 +646,18 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
         execute.assert_not_called()
         self.assertEqual(plan["status"], "dry_run_complete_device_locked")
         self.assertEqual(plan["offline_contract"]["device_calls"], 0)
+
+    def test_td_b_v2_dry_run_accepts_explicit_prerequisite_artifact(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            path = measure.write_dry_run(
+                experiment_id=subject.TD_B, source="strip", output_dir=tempdir,
+                run_name="td-b-strip-v2-dry", prerequisite_artifact=subject.OPERATING_ENVELOPE_V2_PATH,
+            )
+            plan = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(plan["inputs"]["operating_envelope"]["sha256"],
+                         subject.file_reference(subject.OPERATING_ENVELOPE_V2_PATH)["sha256"])
+        self.assertEqual(plan["timing_resolution"], "developer_override_resolved")
+        self.assertEqual(plan["exposure_setup_required"], [])
 
     def test_execute_cli_fails_before_adapter_binding_without_exact_authorization(self):
         constructs = []

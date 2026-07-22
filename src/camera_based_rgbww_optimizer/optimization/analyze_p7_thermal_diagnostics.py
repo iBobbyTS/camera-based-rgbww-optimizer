@@ -62,6 +62,14 @@ def analyze_thermal_run(
     if plan.get("experiment_id") not in thermal.EXPERIMENT_IDS or run.get("status") != "complete":
         raise ValueError("thermal analyzer requires a completed exact experiment")
     _verify_frozen_inputs(plan["inputs"])
+    envelope_path = Path(plan["inputs"]["operating_envelope"]["path"])
+    envelope = _load_json(envelope_path)
+    envelope_mode = thermal.validate_operating_envelope(
+        envelope, artifact_path=envelope_path,
+        require_v2=(plan.get("experiment_id") == thermal.TD_B and envelope.get("schema") == thermal.OPERATING_ENVELOPE_V2_SCHEMA),
+    )
+    if plan.get("experiment_id") == thermal.TD_B and envelope_mode["mode"] == "developer_human_override":
+        thermal.validate_td_b_operational_dwell_plan(plan, envelope)
     schema = plan.get("schema")
     if schema == thermal.PLAN_SCHEMA_V1:
         timing_version = 1
@@ -250,7 +258,14 @@ def analyze_thermal_run(
             compatibility_fn=compatibility, timing_version=timing_version,
         )
     elif experiment == thermal.TD_B:
-        result = analyze_td_b(formal_captures, feature_ids=feature_ids, compatibility_fn=compatibility_fn)
+        result = analyze_td_b(
+            formal_captures, feature_ids=feature_ids, compatibility_fn=compatibility_fn,
+            operational_override=(envelope_mode["mode"] == "developer_human_override"),
+            operational_dwell_s=(
+                thermal.DEVELOPER_OPERATIONAL_DWELL_S
+                if envelope_mode["mode"] == "developer_human_override" else None
+            ),
+        )
     else:
         result = analyze_td_c(
             formal_captures, ambients=ambient_captures, feature_ids=feature_ids,
@@ -474,6 +489,8 @@ def analyze_td_a(
 def analyze_td_b(
     captures: Sequence[Mapping[str, Any]], *, feature_ids: Sequence[str],
     compatibility_fn: Callable[[Sequence[float], Sequence[float]], bool] | None = None,
+    operational_override: bool = False,
+    operational_dwell_s: int | None = None,
 ) -> dict[str, Any]:
     source = str(captures[0]["plan_step"].get("source_id", "ray")) if captures else "ray"
     anchor_compatibility = compatibility_fn or frozen_same_state_compatibility(
@@ -488,7 +505,7 @@ def analyze_td_b(
             anchors.append(_unit(feature, feature_ids))
         else:
             state_points[str(step["state_id"])][int(step["requested_elapsed_s"])].append(feature)
-    history_pass = thermal._all_pairs(anchors, anchor_compatibility)
+    history_pass = len(anchors) == 4 and thermal._all_pairs(anchors, anchor_compatibility)
     state_results = {
         state: thermal.settle_from_cycles(
             {"switch": points}, feature_ids,
@@ -498,6 +515,27 @@ def analyze_td_b(
         )
         for state, points in state_points.items()
     }
+    if operational_override:
+        if operational_dwell_s != thermal.DEVELOPER_OPERATIONAL_DWELL_S:
+            raise ValueError("TD-B operational override requires the frozen 600 second dwell")
+        nonstationary_states = sorted(
+            state for state, result in state_results.items() if result.get("t_settle_s") is None
+        )
+        return {
+            "status": (
+                "td_b_operational_600_complete_waiting_for_planner"
+                if history_pass else "history_dependent_at_operational_dwell_600"
+            ),
+            "return_anchor_history_effect": "pass" if history_pass else "fail",
+            "operational_dwell_s": operational_dwell_s,
+            "dwell_source": "developer_human_override",
+            "dwell_is_scientifically_settled": False,
+            "operational_nonstationarity_observed": bool(nonstationary_states),
+            "nonstationary_states": nonstationary_states,
+            "state_specific_settle_time": {
+                state: result["t_settle_s"] for state, result in state_results.items()
+            },
+        }
     status = "td_b_pass"
     if not history_pass:
         status = "history_dependent_at_current_protocol"

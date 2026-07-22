@@ -120,10 +120,14 @@ def validate_authorized_execution_plan(
 def write_dry_run(
     *, experiment_id: str, output_dir: str | Path = DEFAULT_OUTPUT,
     run_name: str, source: str | None = None, variant: str = "core",
+    prerequisite_artifact: str | Path = thermal.OPERATING_ENVELOPE_PATH,
 ) -> Path:
     root = Path(output_dir) / run_name
     root.mkdir(parents=True, exist_ok=False)
-    plan = thermal.build_diagnostic_plan(experiment_id, source=source, variant=variant)
+    plan = thermal.build_diagnostic_plan(
+        experiment_id, source=source, variant=variant,
+        prerequisite_artifact=prerequisite_artifact,
+    )
     _write_json(root / "plan.json", plan)
     return root / "plan.json"
 
@@ -597,6 +601,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--variant", choices=("core", "expansion"), default="core")
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--run-name", required=True)
+    parser.add_argument("--prerequisite-artifact", type=Path, default=thermal.OPERATING_ENVELOPE_PATH)
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--dry-run", action="store_true")
     mode.add_argument("--execute", action="store_true")
@@ -616,6 +621,7 @@ def main(
         print(write_dry_run(
             experiment_id=args.experiment_id, output_dir=args.output_dir,
             run_name=args.run_name, source=args.source, variant=args.variant,
+            prerequisite_artifact=args.prerequisite_artifact,
         ))
         return 0
     if not args.allow_device_control or args.human_authorization != args.experiment_id:
@@ -625,6 +631,7 @@ def main(
 
     plan = thermal.build_diagnostic_plan(
         args.experiment_id, source=args.source, variant=args.variant,
+        prerequisite_artifact=args.prerequisite_artifact,
         for_execution=True, human_authorization=args.human_authorization,
         v2_capture_capability=True,
     )

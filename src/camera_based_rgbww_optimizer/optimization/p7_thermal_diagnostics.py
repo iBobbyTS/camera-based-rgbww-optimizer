@@ -80,6 +80,11 @@ MANIFOLD_PATH = PROJECT_ROOT / "config/hsi/ray-hsi-manifold.json"
 LOCATION_PATH = PROJECT_ROOT / "config/location/locations-20260714-211759.json"
 CURVE_PATH = PROJECT_ROOT / "config/channel/code-duty-curve.json"
 OPERATING_ENVELOPE_PATH = PROJECT_ROOT / "config/hsi/p7-operating-envelope-v1.json"
+OPERATING_ENVELOPE_V2_PATH = PROJECT_ROOT / "config/hsi/p7-operating-envelope-v2.json"
+OPERATING_ENVELOPE_V2_SCHEMA = "p7_operating_envelope_v2"
+DEVELOPER_OPERATIONAL_DWELL_S = 600
+DEVELOPER_DWELL_DECISION_AUDIT = PROJECT_ROOT / "advisor/4/0.AUDIT/03-human-decision-no-extension.md"
+DEVELOPER_DWELL_DECISION_AUDIT_SHA256 = "c917c54473aa3c5cc4da9098ddeb81fb109fe9a4186fb71e994c447c63d0454a"
 
 RAY_STATES = {
     "A": {"hue": 120, "sat": 100, "intensity_percent": 100.0},
@@ -113,6 +118,81 @@ def canonical_sha256(value: Any) -> str:
 def file_reference(path: str | Path) -> dict[str, str]:
     target = Path(path)
     return {"path": str(target), "sha256": hashlib.sha256(target.read_bytes()).hexdigest()}
+
+
+def validate_operating_envelope(
+    envelope: Mapping[str, Any], *, artifact_path: str | Path | None = None,
+    require_v2: bool = False,
+) -> dict[str, Any]:
+    """Validate the sole v1/v2 operating-envelope trust boundary."""
+    schema = envelope.get("schema")
+    if schema == "p7_operating_envelope_v1":
+        if require_v2:
+            raise ValueError("TD-B developer dwell requires the explicit v2 operating envelope")
+        return {"mode": "legacy_v1", "operational_dwell_s": None, "scientifically_settled": False}
+    if schema != OPERATING_ENVELOPE_V2_SCHEMA:
+        raise ValueError("unsupported P7 operating envelope schema")
+    required_nulls = ("t_settle_ray_s", "t_settle_strip_s", "t_formal_provisional_s", "t_formal_s")
+    if any(envelope.get(field) is not None for field in required_nulls):
+        raise ValueError("developer dwell envelope must keep all measured settle fields null")
+    if (
+        envelope.get("status") != "td_a_developer_dwell_override"
+        or envelope.get("decision_owner") != "Developer/Human"
+        or envelope.get("planner_inference") is not False
+        or envelope.get("thermal_extension_900_1200") != "rejected"
+        or envelope.get("developer_selected_operational_dwell_s") != DEVELOPER_OPERATIONAL_DWELL_S
+        or envelope.get("operational_dwell_claim") != "selected_time_limit_not_proven_steady"
+    ):
+        raise ValueError("developer dwell decision metadata is invalid")
+    if envelope.get("td_a_status") != {
+        "ray": "settling_not_demonstrated_by_600",
+        "strip": "settling_not_demonstrated_by_600",
+    }:
+        raise ValueError("developer dwell envelope rewrites the retained TD-A result")
+    audit = envelope.get("decision_audit")
+    if not isinstance(audit, Mapping) or set(audit) != {"path", "sha256"}:
+        raise ValueError("developer dwell decision audit reference is missing")
+    audit_path = Path(str(audit["path"]))
+    if not audit_path.is_absolute():
+        audit_path = PROJECT_ROOT / audit_path
+    audit_path = audit_path.resolve()
+    if not audit_path.is_relative_to(PROJECT_ROOT.resolve()) or not audit_path.is_file():
+        raise ValueError("developer dwell decision audit path is outside the project")
+    if audit_path != DEVELOPER_DWELL_DECISION_AUDIT.resolve():
+        raise ValueError("developer dwell decision audit path differs from the frozen artifact")
+    audit_sha256 = hashlib.sha256(audit_path.read_bytes()).hexdigest()
+    if audit_sha256 != DEVELOPER_DWELL_DECISION_AUDIT_SHA256 or audit.get("sha256") != audit_sha256:
+        raise ValueError("developer dwell decision audit hash drift")
+    if artifact_path is not None:
+        path = Path(artifact_path).resolve()
+        if not path.is_file():
+            raise ValueError("operating envelope artifact is missing")
+    return {
+        "mode": "developer_human_override",
+        "operational_dwell_s": DEVELOPER_OPERATIONAL_DWELL_S,
+        "scientifically_settled": False,
+        "decision_owner": "Developer/Human",
+        "decision_audit_sha256": audit_sha256,
+    }
+
+
+def td_b_operational_dwell_metadata(envelope: Mapping[str, Any]) -> dict[str, Any]:
+    mode = validate_operating_envelope(envelope)
+    return {
+        "source": mode["mode"],
+        "seconds": mode["operational_dwell_s"],
+        "scientifically_settled": mode["scientifically_settled"],
+        "measured_t_formal_provisional_s": envelope.get("t_formal_provisional_s"),
+    }
+
+
+def validate_td_b_operational_dwell_plan(
+    plan: Mapping[str, Any], envelope: Mapping[str, Any],
+) -> dict[str, Any]:
+    expected = td_b_operational_dwell_metadata(envelope)
+    if plan.get("operational_dwell") != expected:
+        raise ValueError("TD-B developer dwell provenance differs from frozen operating envelope")
+    return expected
 
 
 def load_r1_commands(run_dir: str | Path = R1_RUN) -> dict[str, dict[str, int]]:
@@ -219,7 +299,9 @@ def build_diagnostic_plan(
     if experiment_id == TD_C and variant not in {"core", "expansion"}:
         raise ValueError("TD-C variant must be core or expansion")
 
-    envelope = json.loads(Path(prerequisite_artifact).read_text(encoding="utf-8"))
+    envelope_path = Path(prerequisite_artifact)
+    envelope = json.loads(envelope_path.read_text(encoding="utf-8"))
+    validate_operating_envelope(envelope, artifact_path=envelope_path)
     _enforce_prerequisites(experiment_id, variant, envelope, for_execution=for_execution)
     if for_execution and human_authorization != experiment_id:
         raise PermissionError(f"execution requires exact Human authorization for {experiment_id}")
@@ -301,10 +383,14 @@ def _enforce_prerequisites(
 ) -> None:
     if not for_execution:
         return
-    if experiment_id == TD_B and envelope.get("status") != "td_a_pass":
-        raise PermissionError("TD-B execute plan is locked until TD-A passes")
-    if experiment_id == TD_B and envelope.get("t_formal_provisional_s") not in SELECTABLE_SETTLE_POINTS:
-        raise PermissionError("TD-B execute plan requires frozen t_formal_provisional_s in 60/120/300")
+    if experiment_id == TD_B:
+        mode = validate_operating_envelope(envelope, require_v2=False)
+        if mode["mode"] == "developer_human_override":
+            return
+        if envelope.get("status") != "td_a_pass":
+            raise PermissionError("TD-B execute plan is locked until TD-A passes")
+        if envelope.get("t_formal_provisional_s") not in SELECTABLE_SETTLE_POINTS:
+            raise PermissionError("TD-B execute plan requires frozen t_formal_provisional_s in 60/120/300")
     if experiment_id == TD_C and envelope.get("status") not in {"td_b_pass", "td_c_core_pass_waiting_for_planner"}:
         raise PermissionError("TD-C execute plan is locked until TD-B passes")
     if experiment_id == TD_C and envelope.get("t_formal_s") not in SELECTABLE_SETTLE_POINTS:
@@ -373,7 +459,9 @@ def _td_a_plan(source: str, commands: Mapping[str, Mapping[str, int]]) -> dict[s
 
 
 def _td_b_plan(source: str, commands: Mapping[str, Mapping[str, int]], envelope: Mapping[str, Any]) -> dict[str, Any]:
-    provisional = envelope.get("t_formal_provisional_s")
+    envelope_mode = validate_operating_envelope(envelope)
+    override = envelope_mode["mode"] == "developer_human_override"
+    provisional = envelope_mode["operational_dwell_s"] if override else envelope.get("t_formal_provisional_s")
     schedule: list[tuple[str, int | None, str]] = [("A", 600, "initial_anchor")]
     for state in ("D", "B", "C"):
         schedule.extend((state, elapsed, "switch_curve") for elapsed in TIMED_POINTS)
@@ -390,10 +478,11 @@ def _td_b_plan(source: str, commands: Mapping[str, Mapping[str, int]], envelope:
     return {
         "stage": "TD-B", "captures": steps,
         "budgets": {"formal_cap": 16, "ambient_cap": 0, "physical_cr3_cap": 24},
-        "timing_resolution": "deferred_until_td_a" if provisional is None else "resolved",
+        "timing_resolution": "developer_override_resolved" if override else ("deferred_until_td_a" if provisional is None else "resolved"),
         "continuous_command_between_timed_points": True,
         "analysis_contract": {"return_anchor_states": ["A0", "A_after_D", "A_after_B", "A_after_C"]},
-        "execute_lock": "td_a_pass_required",
+        "execute_lock": "developer_override_requires_new_bounded_plan" if override else "td_a_pass_required",
+        "operational_dwell": td_b_operational_dwell_metadata(envelope),
     }
 
 
