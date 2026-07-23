@@ -6,11 +6,11 @@
 
 **输入计划：** `.agent-work/PLAN.md`
 
-**结果状态：** `p7_td_b_setup_finalization_failed_closed_waiting_for_planner`
+**结果状态：** `p7_td_b_canon_r2_ray_hard_invalid_waiting_for_planner`
 
-**设备授权消费：** 已消费本计划唯一 fresh setup；不得自行进行第二次 setup
+**设备授权消费：** 正在消费 Planner 新授权的唯一 additional Canon-R2 setup；失败后不得第三次 setup
 
-**设备访问：** 已按 PLAN 执行唯一 Ray setup、2 次 remote v2 RAW capture、双层 cleanup 和独立双源 zero；未启动 Ray/strip formal
+**设备访问：** Canon-R2 setup 已完成；Ray formal 首张 capture 后 hard-invalid；strip formal 未启动；独立双零 recovery 通过
 
 ---
 
@@ -1636,3 +1636,284 @@ independent readback intensity `0`。检查时无 residual thermal/wrapper进程
 
 Planner 决策请求：审查请求 shutter与recorded exposure不一致的相机/adapter证据，冻结后续纠偏分支。
 在新 active PLAN前，TD-B formal、TD-C、sentinel、remaining、boundary、holdout和P8全部停止。
+
+---
+
+## 27. P7-TD-B-CANON-R2：E1 与唯一 additional setup
+
+执行日期：2026-07-22。严格消费 active `PLAN.md` 的 Canon-R2 授权，未修改 `PLAN.md`。
+
+### 27.1 E1 离线门
+
+```text
+PLAN SHA-256 = 855a019520462c3b6900c06ce126d4a53171142ab10f71a5e5e9562557b5778f
+archive SHA-256 = d9a3fa75ea44c971b037d1e5813d3631c512e1b3268ae66f92a50b53edd2bf61
+HEAD = 9c804abdeabbc5da18a66d0acf25a1f13128bc2d
+production scope relative to HEAD = clean
+five frozen experiment input hashes = exact
+four remote-controller source hashes = exact
+old failed setup evidence hashes = exact
+focused P7 thermal/analyzer/remote-client = 114/114 pass
+remote r6_timing local tests = 8/8 pass
+remote bridge local test import = Flask unavailable; per PLAN no dependency install
+compileall = pass
+all tmp/*.zsh syntax = pass
+git diff --check = pass
+device/network/.env/all_off calls during E1 = 0
+```
+
+E1 root：
+
+```text
+/Volumes/4T/temp/rgbww-optimizer/p7-td-b-canon-r2-preflight/20260723-041821
+```
+
+`e1-offline-preflight.json` SHA-256：
+
+```text
+ef2ee445e6c2e058fc76ea7c39b65a0e45d458dac82ad7f9f7079f6eb244c9cc
+```
+
+### 27.2 Terminal-owned setup 启动
+
+Run owner：
+
+```text
+/Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/
+  p7-td-b-canon-r2-setup-20260723-042002
+```
+
+```text
+Terminal window = 213571
+TTY = ttys003
+outer PID = 56749
+wrapper PID = 56772
+child PID = 56776
+PGID = 56749
+code checkpoint = 9c804abdeabbc5da18a66d0acf25a1f13128bc2d
+terminal owner = p7-td-b-canon-r2-setup-20260723-042002.terminal-owner.json
+wrapper state = p7-td-b-canon-r2-setup-20260723-042002.wrapper-state.json
+```
+
+启动时 `setup-preflight.json` 和 `unresolved-plan.json` 已落盘，进程树由 Terminal `ttys003` 独立持有。
+3 分钟健康检查 heartbeat：
+
+```text
+Automation ID = p7-td-b-canon-r2-setup-health
+target thread = 019f71b5-53fa-7f41-a15c-7335051aa944
+```
+
+当前不短间隔轮询。健康检查必须验证每张新 capture 的
+`Canon:ExposureTime/recorded`、ratio `0.8..1.2`、Tier A/B、ID/hash/byte count、零 NPY和双源隔离；
+失败则 cleanup/recovery并停止，禁止第三次 setup。
+
+### 27.3 Setup 3 分钟健康检查
+
+原健康检查 heartbeat 已先删除。检查结果：
+
+```text
+process tree = outer/wrapper/child 56749/56772/56776 active
+PGID/TTY = 56749 / ttys003
+wrapper state = running
+physical CR3 = 2 nonempty
+sidecar = 2 nonempty
+NPY = 0
+failure.json = absent
+attempt 1 = trial
+attempt 2 = final
+requested shutter = 1/6400
+recorded source/status = Canon:ExposureTime / recorded
+recorded seconds = 0.000153798956285995
+recorded/nominal ratio = 0.9843133202303679
+timing = Tier B / gphoto_capture_return_minus_recorded_exposure
+CR3/sidecar hash, bytes, capture ID, request ID = public parser replay pass
+strip independent zero = generation 5, five channels all zero
+Ray independent readback = intensity 0
+```
+
+健康 artifact：
+
+```text
+/Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/
+  p7-td-b-canon-r2-setup-20260723-042002.health-3m.json
+SHA-256 = bf1032d2ffa959b191f182b8ff7c14d8c5b67584c3bc25dd24c78ea8ff6f1be1
+```
+
+`setup-attempts.json` 于 `2026-07-23T04:21:24Z` 落盘，当前处于完整 1800 秒 cold proxy。已为当前
+thread 创建稀疏恢复 heartbeat：
+
+```text
+Automation ID = p7-td-b-canon-r2-setup-complete
+target thread = 019f71b5-53fa-7f41-a15c-7335051aa944
+estimated cold-proxy completion = approximately 2026-07-23T04:51:30Z
+```
+
+当前不进行固定频率轮询。Setup finalization通过后才会启动 Ray formal。
+
+### 27.4 Setup finalization 与 public replay
+
+```text
+child/shell/wrapper exit = 0/0/0
+failure.json = absent
+physical setup CR3 = 2
+Canon source = 2/2
+recorded/nominal ratio = 0.9843133202303679
+Tier B = 2/2
+NPY = 0
+cold proxy elapsed = 1800.0010467909742 s
+Python cleanup = pass
+shell cleanup = pass
+independent final zero = pass
+canonical setup = pass
+resolved formal plan = pass
+setup release = pass
+public retained setup replay = pass
+formal_capture_eligible = true
+```
+
+| Artifact | SHA-256 |
+| --- | --- |
+| `setup.json` | `2399b62cc310d525e88dcd1d6be81f08abf3c93daa35d54ca14d7023d9c1cd77` |
+| `resolved-formal-plan.json` | `215aa359c162b3d154749753394a96a0adb80559d913a1d84b9063ee70ad92e3` |
+| `setup-release.json` | `401926bbdefa1a359db03042319acbf9b95f12047cb60f55f7055ed8505c261d` |
+| `setup-public-replay.json` | `625ec24bc8c4c879c06f859b31185bb73f70cbf0fc0aa9fb61965e3824004ca7` |
+
+### 27.5 Ray formal 启动
+
+Run owner：
+
+```text
+/Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/
+  p7-td-b-canon-r2-ray-20260723-045514
+```
+
+```text
+Terminal window = 214088
+TTY = ttys002
+wrapper PID = 46018
+child PID = 46028
+PGID = 46018
+code checkpoint = 9c804abdeabbc5da18a66d0acf25a1f13128bc2d
+setup release = .../p7-td-b-canon-r2-setup-20260723-042002/setup-release.json
+```
+
+Ray formal 已通过 production wrapper 启动。初始 A 状态按计划持续到 600 秒，因此 3 分钟健康点可能尚无
+formal CR3。健康 heartbeat：
+
+```text
+Automation ID = p7-td-b-canon-r2-ray-health
+target thread = 019f71b5-53fa-7f41-a15c-7335051aa944
+```
+
+健康检查期间不得关闭正在按计划工作的 Ray；只核对 readback 与 strip zero。失败则 cleanup/recovery并
+停止，不启动 strip。
+
+### 27.6 Ray formal 3 分钟健康检查
+
+原健康 heartbeat 已先删除。检查结果：
+
+```text
+wrapper/child = 46018/46028 active
+PGID/TTY = 46018 / ttys002
+wrapper state = running
+run status = running
+failure.json = absent
+NPY = 0
+run-start isolation = pass
+command ledger = A / H120/S100/INT100 exact readback
+independent Ray readback = H120/S100/raw intensity 1000
+independent strip zero = generation 6, five channels all zero
+formal captures = 0, expected during initial A 600-second dwell
+```
+
+健康 artifact：
+
+```text
+/Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/
+  p7-td-b-canon-r2-ray-20260723-045514.health-3m.json
+SHA-256 = 9943219113250fe36d25fe3dd4eba3ad09847d3f1cdb820dfc127bfb71b59a74
+```
+
+已为当前 thread 创建按完整 chronology ETA 恢复的稀疏 heartbeat：
+
+```text
+Automation ID = p7-td-b-canon-r2-ray-complete
+target thread = 019f71b5-53fa-7f41-a15c-7335051aa944
+estimated completion = approximately 2026-07-23T06:09Z
+```
+
+当前不进行固定频率轮询，也不改变正在运行的 Ray command。
+
+### 27.7 Ray formal hard-invalid 与停止分支
+
+`p7-td-b-canon-r2-ray-complete` heartbeat 已先删除。恢复检查时 wrapper/child 均已退出，Ray
+formal 在首个 A/t600 capture 已生成非空 CR3 后失败：
+
+```text
+failure type = ValueError
+failure message = non-ambient capture requires the preceding ambient capture
+child / shell cleanup / wrapper exit = 1 / 0 / 1
+completed formal = 0
+ambient = 0
+strip run = not created
+paired finalizer = not run
+automatic formal retry = false
+```
+
+TD-B frozen plan 没有 ambient capture，但共享 native RAW report writer 要求每张 non-ambient capture
+前必须存在 ambient。该冲突发生在真实 `/v2/capture` 已成功返回之后，因此保留了 1 张首个
+Ray A/t600 CR3 与 sidecar：
+
+```text
+CR3 bytes = 15007444
+CR3 SHA-256 = 2cf5d680d694eb9c0d2e36bf8144dcf2f1fe02cd902bc4c202cf92ce1a699608
+sidecar SHA-256 = 9952bf79094d7d93b21a9864e841359d0195c423c3dc8464e0250231bc1721ee
+capture ID = bfc876fa-9a69-445d-bfc2-298f42baf3af
+request ID = 36d2a813-8d35-4f9a-b860-c58cc1ba12e9
+recorded exposure source = Canon:ExposureTime
+recorded exposure = 0.000193774542476587 s
+requested shutter = 1/5000
+recorded / requested ratio = 0.968872712382935
+timing = Tier B / gphoto_capture_return_minus_recorded_exposure
+best-effort observed elapsed = 604.7503857329721 s
+NPY = 0
+```
+
+这同时暴露 physical ledger 不一致：setup 已有 2 张，formal 又实际生成 1 张，因此可观察总数为
+3；但失败后的 `run.json` 仍为 `physical_cr3_count=2`，且未生成 `captures.jsonl`。该 capture
+不能被重新标成成功 formal observation，但必须作为 retained physical evidence 计数。
+
+Python cleanup 和 shell trap 均报告两源 off 成功。由于原 cleanup 没有形成两源独立最终读回闭环，
+Executor 另执行一次独立 recovery：
+
+```text
+recovery status = pass
+strip identity = bedroom-rgbww-strip / E0:8C:FE:63:C9:40
+strip generation = 2 -> 3
+strip five channels = all zero
+Ray readback = CCT 5600 / GM 100 / intensity 0
+residual wrapper/child process = 0
+```
+
+| Evidence | SHA-256 |
+| --- | --- |
+| `failure.json` | `c9933f6513ef260db920eea99ac85099e93b6c4ff9df71502027ede1a71a3303` |
+| `run.json` | `7e370a675160f70078a00a0962ea878e5ede6466b666331269963c052a17fc2b` |
+| `all-off-python.json` | `ef631348a4181ec92a793a7ff4e9eaee67bf4b76c97e28067ed5ea20657e3965` |
+| `all-off-shell.json` | `ff1951142132b7cb9d2a5203a7b565f081737138186ff296180ea57d3182c55e` |
+| `wrapper-result.json` | `da9a976c4e3bebc19d979c4f4e29bc296ef150d42e468c5e78b9f38740154c3f` |
+| `independent-recovery-zero.json` | `759a9a2768b72b9a559b764f9077caa647b81c0ec904b9e0b8834c09e6b870c0` |
+| adjacent runner log | `9260fdca0cae1dc01ddfa8607bbf3fd442a010704f57d7af8867dbbc8a68fb65` |
+| `ray-hard-invalid-summary.json` | `e4a0eeafbadebd4fc8307b2739c72dfa454c154115655cdeeb586467c02daa6e` |
+
+停止分支为 `td_b_formal_ambient_contract_conflict`。按 PLAN，Ray hard-invalid 后禁止启动 strip、
+禁止自动重跑 formal，也不运行 public analyzer 或 paired finalizer。请求 Planner 决定一个仅离线
+纠偏包：
+
+1. 冻结 TD-B 是否允许 non-ambient formal capture，或是否改变 capture/physical 协议；Executer 不自行
+   将 ambient 加入冻结计划。
+2. 修复 shared native RAW report owner 对 TD-B 的 experiment-aware ambient 语义。
+3. 确保真实 CR3 一旦非空落盘，即使后续 report/feature/timing 失败也先进入 physical ledger 与 retained
+   evidence。
+
+TD-C、sentinel、remaining 9、boundary、holdout、Gate-6 与 P8 继续锁定。
