@@ -2,6 +2,7 @@
 
 | file | summary |
 | --- | --- |
+| active/20260722-p7-td-b-prerequisite-path-identity.md | PATH-R1 owns the raw relative/absolute operating-envelope identity mismatch; canonical producer, setup gate, and analyzer replay must close it before the single authorized setup retry. |
 | active/20260719-p7-r1-reference-instability.md | Completed R1 passes acquisition/coverage evidence but fails all Ray A/B compatibility and measured Ray/strip trend gates; candidate remains formal-ineligible for Planner review. |
 | active/20260714-p1-exposure-response.md | CR3 recorded exposure fixes the large P1 shutter error; residual high-signal RAW shape still blocks thresholds and P2 pending a lower-exposure full P1. |
 | active/20260712-white-lut-repeatability-and-strict-anchors.md | Measure repeatability, validate strict anchors, and explain the cross-day regression of near-boundary 14x5 nodes. |
@@ -12,12 +13,16 @@
 | --- | --- |
 | unresolved/20260720-p7-td-a-runner-settings.md | TD-A is blocked before device access because dry plans leak a future TD-B shutter requirement and production timed captures serialize ISO/aperture as null. |
 | unresolved/20260720-p7-actual-exposure-start-adapter.md | Deployed bridge contract and local remote client expose no verifiable actual exposure-start field; Advisor must decide whether to change the bridge or timing contract. |
+| unresolved/20260721-p7-td-b-ray-h120-s50-setup.md | R0S closes the offline seed/schema/ledger contract, but production CLI/wrapper still lacks retained-v2 setup, post-wrapper canonical finalization and formal resume; E0X owns this final execution boundary. |
 | resolved/20260718-p7-r0d-evidence-reconstruction.md | P7-R0D now reconstructs formal target facts and P7-R1 source/physical evidence from retained artifacts against the frozen plan. |
 
 ## Resolved
 
 | file | summary |
 | --- | --- |
+| resolved/20260722-p7-td-a-not-settled-by-600.md | TD-A remains scientifically not settled by 600 seconds, but Developer/Human rejected longer extension and selected 600 seconds as an explicit operational dwell without changing the measurement claim. |
+| resolved/20260720-p7-td-a-wrapper-runtime.md | W0 replaced zsh readonly `status`, proved six production-wrapper runtime paths, and added paired manifest replay; the then-unconsumed TD-A authorization was later consumed by the Ray timing-failure run. |
+| resolved/20260721-p7-td-a-observed-elapsed-timing.md | R1 closed legacy v1/v2 dispatch, experiment-aware chronology, produced-CR3 accounting, timing-method provenance, and immutable contract gaps; Human later cleared the exact TD-A gate and the active plan is executable once. |
 | resolved/20260720-p7-local-v2-r0c.md | R0C closes authorization-before-connect, strict HTTP/schema ownership, per-attempt retry clocks, analyzer replay, and fake-only validation artifacts after cb9db30 partial acceptance. |
 | resolved/20260720-p7-thermal-reference-envelope.md | Planner accepted the ambient/formal ledger, deferred timing, isolation evidence, physical accounting, and TD-C gate production round-trip. |
 | resolved/20260719-p7-r1-background-detachment.md | macOS Terminal ownership plus shared remote ISO/aperture resolution closed the zero-capture launcher and camera-setting failures. |

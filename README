@@ -4,3 +4,9 @@ Camera-based calibration and optimization tooling for RGBWW lighting.
 
 Read `docs/README.md` for current setup, package commands, measurement workflow,
 and calibration strategy.
+
+## Remote camera controller
+
+`remote_camera_controller/` 保存 Canon EOS R6 Mark III Raspberry Pi bridge 的源码、离线测试和自包含文档。它提供同步 RAW capture 与 best-effort gphoto2 时序 metadata；不会把 estimate 宣称为绝对 exposure-start，也不改变 P7/TD-A 门禁。
+
+入口：[remote_camera_controller/README.md](remote_camera_controller/README.md)

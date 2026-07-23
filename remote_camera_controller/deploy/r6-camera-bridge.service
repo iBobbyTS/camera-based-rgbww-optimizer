@@ -1,0 +1,28 @@
+[Unit]
+Description=Canon EOS R6 Mark III synchronous capture bridge
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ibobby
+Group=ibobby
+WorkingDirectory=/home/ibobby/r6-camera-bridge
+RuntimeDirectory=r6-camera-bridge
+RuntimeDirectoryMode=0700
+Environment=CAPTURE_TEMP_DIR=/run/r6-camera-bridge
+Environment=CAMERA_TOKEN_FILE=/home/ibobby/.config/r6-camera-bridge.token
+Environment=GPHOTO2_BINARY=/usr/local/bin/gphoto2
+Environment=GPHOTO2_LD_LIBRARY_PATH=/usr/local/lib
+Environment=EXIFTOOL_BINARY=/home/ibobby/r6-camera-bridge/vendor/exiftool/exiftool
+ExecStart=/home/ibobby/r6-camera-bridge/.venv/bin/gunicorn --workers 1 --threads 1 --bind 0.0.0.0:8088 --timeout 180 --log-level critical --access-logfile /dev/null --error-logfile /dev/null r6_camera_bridge:app
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+StandardOutput=null
+StandardError=null
+LogLevelMax=emerg
+
+[Install]
+WantedBy=multi-user.target

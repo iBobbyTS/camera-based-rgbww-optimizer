@@ -36,6 +36,11 @@ This project has four explicit roles:
 - Converts the Advisor's `GUIDE.md` into the active `PLAN.md` for the Executer.
 - Defines executable steps, frozen inputs, safety boundaries, evidence requirements, branches, acceptance criteria, and stopping points.
 - Reviews and accepts or rejects the Executer's results against `PLAN.md`.
+- On every review result, whether the Executer is rejected for another corrective pass or accepted to advance, first archives every completed, superseded, or already-reviewed part of the active plan under `.agent-work/PLANS/` without overwriting earlier archives.
+- Each review archive must preserve the reviewed scope, implementation method, evidence paths and hashes, validation quality, Planner findings, decision, residual risks, and the exact next branch.
+- After archiving, rewrites `.agent-work/PLAN.md` so it contains only the single next executable work package. Completed history and detailed future-stage designs must not remain in the active plan; future work may appear only as concise hard locks or prerequisites.
+- If a result is rejected, the next active plan is the bounded corrective package. If it is accepted, the next active plan is the newly unlocked execution stage. In both cases, the active plan must name one current action and one Planner stop point.
+- Records every new archive path and SHA-256 in the active plan, validates Markdown structure and `git diff --check`, and leaves all earlier archives intact.
 - At the end of the stage, produces the stage AUDIT PACK for the Advisor.
 
 ### Executer
@@ -55,16 +60,19 @@ The normal stage flow is:
 3. The Planner writes `PLAN.md`, including execution and acceptance contracts.
 4. The Executer performs the authorized plan and returns evidence.
 5. The Executer records that evidence in `.agent-work/EXECUTION_RESULT.md` without modifying `PLAN.md`.
-6. The Planner reads `EXECUTION_RESULT.md`, accepts, rejects, or branches the result, updates `PLAN.md`, and, when the stage is complete, creates the AUDIT PACK for the Advisor.
+6. The Planner reads `EXECUTION_RESULT.md`, accepts, rejects, or branches the result, archives the reviewed/completed plan material, then rewrites `PLAN.md` to contain only the next executable work package.
+7. When the stage is complete, the Planner creates the AUDIT PACK for the Advisor.
 
 ### High-Risk Device Authorization
 
-- Both the Planner and the Executer must ensure that the Human has approved a high-risk device operation before it is performed.
+- Turning Ray120c or the RGBWW fixture on or off does not require a separate Human authorization. This exception applies to light output control itself, including starting a bounded light operation already selected by the active `PLAN.md`.
+- The active `PLAN.md` and the owning runner must still define or enforce the target, intensity, duration, source isolation, abort behavior, and Python/shell cleanup for any light operation. Removing the separate approval step does not permit widening those bounds.
+- Both the Planner and the Executer must ensure that the Human has approved any other high-risk device operation before it is performed, including firmware upload, remote deployment, destructive hardware changes, or operations outside the active plan's light-control bounds.
 - Computation and other work that does not access or control devices does not require Human approval.
-- If the Planner obtains Human approval, the Planner must record it explicitly in `PLAN.md`, including the authorized operation and its scope or bounds. `PLAN.md` must also state that the Executer may consume this authorization without asking again.
-- When `PLAN.md` contains a valid, explicit Human authorization covering the exact operation, the Executer must not ask the Human to approve the same operation again.
-- If authorization is absent, ambiguous, expired, or does not cover the requested target, range, intensity, duration, or recovery path, the Planner or Executer must stop and ask the Human before proceeding.
-- Authorization for one named experiment or device operation does not authorize another experiment, firmware upload, broader range, higher output, or later stage unless `PLAN.md` explicitly says so.
+- If the Planner obtains Human approval for an operation that is not covered by the light-control exception, the Planner must record it explicitly in `PLAN.md`, including the authorized operation and its scope or bounds. `PLAN.md` must also state that the Executer may consume this authorization without asking again.
+- When `PLAN.md` contains a valid, explicit Human authorization covering a non-exempt operation, the Executer must not ask the Human to approve the same operation again.
+- If authorization is absent, ambiguous, expired, or does not cover a non-exempt target, range, intensity, duration, or recovery path, the Planner or Executer must stop and ask the Human before proceeding.
+- Authorization for one named experiment or device operation does not authorize another experiment, firmware upload, broader range, higher output, or later stage unless `PLAN.md` explicitly says so. The light-control exception does not remove those scope and safety boundaries.
 
 ## Development Model
 

@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.pyc
+*.cr3
+*.CR3
+*.log
+vendor/

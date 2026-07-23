@@ -1,0 +1,4 @@
+#!/bin/sh
+PERL5LIB=/home/ibobby/r6-camera-bridge/vendor/exiftool/lib
+export PERL5LIB
+exec /usr/bin/perl /home/ibobby/r6-camera-bridge/vendor/exiftool/bin/exiftool "$@"

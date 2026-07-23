@@ -1,0 +1,66 @@
+{
+  "schema": "remote_capture_result_v2",
+  "capture_id": "offline-sample-capture",
+  "request_id": "offline-sample-request",
+  "timing_quality": "best_effort_gphoto2",
+  "formal_p7_eligibility": "unchanged_requires_later_planner_advisor_decision",
+  "cr3": {
+    "sha256": "e3c149d42d323568f0947543a86adef6ac04c700d0e072bc59b402b1570da7d7",
+    "byte_count": 16,
+    "content_type": "image/x-canon-cr3"
+  },
+  "gphoto2": {
+    "driver_event_type": null,
+    "event_sequence": [
+      {
+        "monotonic_ns": 1100000000,
+        "clock_domain": "bridge_monotonic",
+        "event_type": "capture_command_started",
+        "source": "fake_gphoto2",
+        "payload_summary": {}
+      },
+      {
+        "monotonic_ns": 1500000000,
+        "clock_domain": "bridge_monotonic",
+        "event_type": "capture_result_path_observed",
+        "source": "fake_gphoto2",
+        "payload_summary": {
+          "kind": "camera_file_reported",
+          "raw_payload_included": false
+        }
+      }
+    ],
+    "request_received_monotonic_ns": 1000000000,
+    "capture_call_started_monotonic_ns": 1100000000,
+    "capture_call_returned_monotonic_ns": 1500000000,
+    "camera_event_observed_monotonic_ns": null,
+    "file_added_observed_monotonic_ns": null,
+    "download_started_monotonic_ns": 1600000000,
+    "download_completed_monotonic_ns": 1800000000,
+    "cr3_saved_observed_monotonic_ns": 1810000000,
+    "clock_domain": "bridge_monotonic"
+  },
+  "recorded_exposure": {
+    "seconds": 0.1,
+    "source": "Canon:ExposureTime",
+    "status": "recorded"
+  },
+  "exposure_start_estimate": {
+    "timestamp_monotonic_ns": 1400000000,
+    "clock_domain": "bridge_monotonic",
+    "method": "gphoto_capture_return_minus_recorded_exposure",
+    "status": "weak_estimate",
+    "uncertainty_ms": null,
+    "uncertainty_basis": "unknown"
+  },
+  "network_observation": {
+    "request_id": "offline-sample-request",
+    "response_or_event_round_trip_ms": null,
+    "uncertainty_ms": null,
+    "uncertainty_basis": "unknown"
+  },
+  "bridge_utc_observation": {
+    "request_received": "2026-07-19T00:00:00+00:00",
+    "source": "bridge_system_clock_utc"
+  }
+}
