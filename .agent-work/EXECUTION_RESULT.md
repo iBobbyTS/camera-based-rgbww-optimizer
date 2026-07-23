@@ -1,16 +1,16 @@
 # Executor 执行结果
 
-**记录日期：** 2026-07-22
+**记录日期：** 2026-07-23
 
 **执行角色：** Executer
 
 **输入计划：** `.agent-work/PLAN.md`
 
-**结果状态：** `p7_td_b_canon_r2_ray_hard_invalid_waiting_for_planner`
+**结果状态：** `p7_td_b_f0a_offline_pass_waiting_for_planner`
 
-**设备授权消费：** 正在消费 Planner 新授权的唯一 additional Canon-R2 setup；失败后不得第三次 setup
+**设备授权消费：** F0A 为纯离线纠偏，不消费也不恢复任何设备授权
 
-**设备访问：** Canon-R2 setup 已完成；Ray formal 首张 capture 后 hard-invalid；strip formal 未启动；独立双零 recovery 通过
+**设备访问：** 本轮设备、网络、`.env`、相机、Ray、ESPHome、灯光与 `all_off` 调用均为 0
 
 ---
 
@@ -1917,3 +1917,128 @@ residual wrapper/child process = 0
    evidence。
 
 TD-C、sentinel、remaining 9、boundary、holdout、Gate-6 与 P8 继续锁定。
+
+## 28. P7-TD-B-F0A 离线纠偏交接
+
+### 28.1 结果
+
+按 active PLAN 的唯一工作包完成 F0A，未修改 `.agent-work/PLAN.md`。实现提交：
+
+```text
+commit = 8b80c87939ee9aed31ce0dfaa08a5a936bdc56cb
+message = fix(p7): close td-b ambient and physical ledgers
+```
+
+闭合内容：
+
+1. 共享 native RAW 默认继续要求 preceding ambient；唯一例外严格绑定
+   `p7_td_b_command_switch_history_v1 / formal / p7_thermal_diagnostic_plan_v2`。
+2. TD-B v2 每 source 固定 `16 formal / 0 ambient`，使用
+   `statistics.normalized_per_second.trimmed_mean`，plan、capture payload 与
+   patch-statistics policy 必须一致。
+3. 新增 `physical-returns.jsonl`：camera adapter 返回非空 CR3 后立即记录 path、hash、
+   bytes 和 capture owner；`captures.jsonl` 只记录通过全部后处理的 accepted measurement。
+4. 每次 camera request 前独立检查 physical cap；post-return 的 exposure、RAW、feature、
+   timing 或 covariate 失败保留 physical row，accepted counters 不增加。
+5. public analyzer 从两份 ledger 独立重算 physical/accepted 数量，并拒绝 duplicate owner、
+   hash、counter、policy/report 和 cross-ledger 篡改。
+6. 保留的首张 Ray CR3 只生成新的 forensic derived artifact，固定 CR3/sidecar hash、
+   capture/request ID、Ray A command/readback、`1/5000`、`Canon:ExposureTime`、Tier B；
+   结果显式为 `forensic_only=true / accepted_formal=false / reusable_capture=false`。
+7. setup checkpoint lineage 仅生成 Planner candidate；candidate 始终
+   `production_release_usable=false`，production runner 继续只接受原 release schema。
+
+### 28.2 Production round-trip 与反例
+
+TD-B strip synthetic production-ledger round-trip：
+
+```text
+native_raw_ambient_policy = unsubtracted_no_ambient
+physical_returned = 16
+accepted_formal = 16
+accepted_ambient = 0
+physical_total = 16
+retained NPY = 0
+public analyzer = pass
+```
+
+九个独立反例均 fail closed：
+
+```text
+cross-experiment no-ambient policy
+physical-return CR3 hash tamper
+accepted counter tamper
+native RAW report policy tamper
+prohibited lineage path
+empty lineage changed-path ledger
+retained CR3 hash tamper
+retained capture ID tamper
+lineage candidate used as production release
+```
+
+### 28.3 Setup lineage
+
+真实 checkpoint diff：
+
+```text
+old = 9c804abdeabbc5da18a66d0acf25a1f13128bc2d
+new = 8b80c87939ee9aed31ce0dfaa08a5a936bdc56cb
+changed paths = 13
+prohibited paths = 0
+candidate status = eligible_waiting_for_planner
+production_release_usable = false
+planner_acceptance_required = true
+```
+
+该结论只是候选证据，不授权 formal runner，不恢复旧 setup release，也不启动 Ray/strip。
+
+### 28.4 验证
+
+```text
+focused = 116/116 pass, 10.885 s
+post-commit focused = 116/116 pass, 10.876 s
+full suite = 541/541 pass, 155.946 s
+compileall = pass
+all tmp/*.zsh syntax = pass
+git diff --check = pass
+CodeGraph sync/explore = pass
+device/network/.env/real camera/Ray/ESPHome/light/all_off = 0
+new physical CR3 = 0
+synthetic validation CR3 = 16, all under external validation root
+```
+
+### 28.5 Artifact
+
+根目录：
+
+```text
+/Volumes/4T/temp/rgbww-optimizer/p7-td-b-f0a-offline/p7-td-b-f0a-20260723-100606
+```
+
+| Artifact | SHA-256 |
+| --- | --- |
+| `validation-summary.json` | `f017deef28e4b8a618525616addb351743b61e8eaa37b8fadbecc3fb11efc6b5` |
+| `focused.log` | `d4d44aeccd4a11808bcfadd57338a020f8c8270c47658ad5995b8c7ce6b5722f` |
+| `full-suite.log` | `b410322417dffa5247b1ca898b4fcd5bb710494704413d51c47fef6362ba5bd2` |
+| `negative-case-matrix.json` | `0a9c29cd1bd0026f74772e11b93e77de8585948954a3b7e9cdf92cf592782a3b` |
+| `retained-first-capture-replay.json` | `5e3acbf8efa732c5f27624ae7b9d0b71cdf18fd2b5c616b9829d1e37eebf278e` |
+| `physical-ledger-roundtrip.json` | `5ee75475ac1fe827a839b559f56dbb32414f0771e1501af23f4b1fc2440e5238` |
+| `setup-release-lineage-candidate.json` | `6d74f2b0fa563147bad00d8c9a89985d3b5de97034288cdd242f10b1d52dc2f1` |
+
+保留证据再次核对：
+
+```text
+PLAN SHA-256 = 40859665d742e1e0703ae0390f39169de20af71970214af0bdb0288e1e3f8456
+retained Ray CR3 = 2cf5d680d694eb9c0d2e36bf8144dcf2f1fe02cd902bc4c202cf92ce1a699608
+retained sidecar = 9952bf79094d7d93b21a9864e841359d0195c423c3dc8464e0250231bc1721ee
+setup-release.json = 401926bbdefa1a359db03042319acbf9b95f12047cb60f55f7055ed8505c261d
+```
+
+### 28.6 Planner stop
+
+F0A 已停在 Planner 门。请求 Planner：
+
+1. 验收 ambient policy、双 ledger、forensic replay 与负例矩阵。
+2. 独立复核 `setup-release-lineage-candidate.json`。
+3. 决定 lineage candidate 是否可形成新的 formal release；在 Planner 明确决定前，
+   Executor 不得消费 candidate、启动 Ray/strip、重跑 setup 或进入 TD-C/后续阶段。

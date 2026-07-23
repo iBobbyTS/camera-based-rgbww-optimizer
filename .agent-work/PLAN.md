@@ -1,268 +1,296 @@
-# P7-TD-B-F0A：Ambient 策略与物理返回账本离线纠偏
+# P7-TD-B-F0B+FORMAL：Lineage Release 后连续完成 Ray/Strip TD-B
 
-**计划状态：** `offline_correction_authorized`
+**计划状态：** `offline_lineage_fix_then_continuous_td_b_authorized`
 
 **Planner 日期：** `2026-07-23`
 
-**当前阶段：** `P7_TD_B_FORMAL_CAPTURE_CONTRACT_CORRECTION`
+**当前阶段：** `P7_TD_B_LINEAGE_RELEASE_AND_FORMAL_EXECUTION`
 
-**当前唯一动作：** Executor 只在离线环境中修复 TD-B formal capture 的 experiment-aware ambient
-策略、physical-return ledger 和 setup-release checkpoint lineage，并完成 retained first-capture replay、
-全套回归、文档和 focused commit。
+**当前唯一动作：** Executor 先离线实现、验证并提交 lineage-qualified setup release。只有新 release
+可从旧 setup、新 checkpoint和当前 TD-B v2 plan独立重放，且 production preflight全部通过时，才在全新
+目录依次完成 Ray formal 16张、Ray public analysis、strip formal 16张、strip public analysis、paired
+finalizer和独立最终双零。
 
-**唯一 Planner 停止点：** 上述离线包全部完成并提交后交回 Planner；或者任何合同、重放、测试、证据或
-checkpoint 门失败后保留证据并停止。本计划不授权设备、网络、`.env`、相机、灯光、`all_off` 或新 CR3。
+**唯一 Planner 停止点：** 整包完成后交回；或者任何离线、lineage、preflight、capture、analysis、ledger、
+source isolation、wrapper、cleanup或final-zero hard failure后保存证据、确认双灯关闭并立即停止。禁止自动
+重拍、重新setup或进入TD-C。
 
-## 1. 已审归档
-
-已完成、失败和已审内容均已归档，不得在 active PLAN 中重新展开：
+## 1. 已审归档与决定
 
 | 归档 | SHA-256 |
 | --- | --- |
-| `.agent-work/PLANS/20260723-0705-p7-td-b-ray-ambient-ledger-failure-review.md` | `64fbec36c286aafd1fb79f63a3620501fbe52b1649b80a67a3207b987f459bb9` |
+| `.agent-work/PLANS/20260723-1215-p7-td-b-f0a-review.md` | `4f66e2e5666dcdd8bccaa2568abe886bfdabb181530785909dc809025d95926a` |
 
-Planner 决定：
+冻结决定：
 
 ```text
-Canon-only setup = accepted and immutable
-Ray formal run = valid hard-invalid evidence
+F0A = accepted
+old Canon setup = accepted and immutable
+lineage candidate = accepted as eligible evidence
+candidate production_release_usable = false
+fresh setup = not required by current evidence
+Ray formal must be a fresh complete 16-capture run
+strip formal is conditional on structurally valid Ray
 TD-B formal protocol = 16 formal / 0 ambient per source
-TD-B native RAW policy = un-subtracted, ambient is forbidden
-old first Ray CR3 = forensic replay input only
-actual failed-package physical count = setup 2 + Ray returned 1 = 3
-accepted formal count = 0
-old run.json undercount = retained legacy evidence; do not rewrite
-old setup release direct reuse after code change = prohibited
-Advisor escalation = not required for this implementation defect
+native RAW policy = unsubtracted_no_ambient
+600 s = Developer/Human operational dwell, not settled
 ```
 
-旧 setup、Ray run、CR3、sidecar、failure、cleanup 和 recovery evidence 必须原样保留。不得把旧 Ray
-capture 改写为成功 formal observation，也不得把它计入未来正式 16 张预算。
+旧失败Ray capture只作forensic，不计入未来16张，也不得修改旧run。
 
 ## 2. 权限与硬边界
 
-本包是纯离线代码纠偏。允许：
+项目`AGENTS.md`已规定计划内开关Ray120c和RGBWW灯带不需要单独人工授权。本计划明确允许以下exact
+light/camera package，Executor不得再次询问相同授权：
 
-- 修改现有 P7 thermal plan/runner/analyzer 和共享 native RAW capture owner；
-- 修改相应测试、`docs/README.md` 和项目 skill；
-- 读取 retained JSON/CR3/sidecar 进行离线 replay；
-- 在 `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-f0a-offline/<timestamp>/` 写证据；
-- 创建一个 focused conventional commit。
+```text
+named experiment = p7_td_b_command_switch_history_v1
+Ray formal = exactly 16 new CR3
+strip formal = exactly 16 new CR3, only after structurally valid Ray
+new setup = 0
+new formal physical cap = 32 total
+source intensity = Ray INT100 or frozen strip raw command
+maximum operational dwell per command group = 600 s
+```
+
+允许脚本自行加载`.env`并访问remote health/config/v2 capture、Ray和ESPHome。禁止人工读取、打印、source
+或持久化secret。
 
 禁止：
 
-- 读取或加载 `.env`；
-- 构造真实 remote backend，访问网络或设备；
-- 调用相机、Ray120c、ESPHome 或 `all_off`；
-- 创建任何新真实 CR3；
-- 修改 firmware、remote controller、冻结实验输入、ratio/timing/feature/uncertainty 阈值；
-- 重新 finalizer、覆盖或修补旧 setup/release/run；
-- 重跑 Ray formal、启动 strip、TD-C、sentinel、remaining 9、boundary、holdout、Gate-6 或 P8。
+- firmware compile/upload、remote deployment、依赖安装或破坏性硬件操作；
+- 新setup、额外auto-exposure或旧capture复用；
+- ambient capture；
+- 修改600秒、recorded-exposure ratio、timing tier、58-feature、uncertainty、covariance或scientific门；
+- 覆盖默认LUT/runtime config；
+- TD-C、sentinel、remaining 9、boundary、holdout、Gate-6、P8或P6 requalification。
 
-## 3. 必读输入与冻结证据
+## 3. 冻结输入与旧证据
 
-Executor 开始前读取：
-
-1. 本文件；
-2. 上述归档第 9 节；
-3. `.agent-work/EXECUTION_RESULT.md` 第 27 节；
-4. `.agents/skills/camera-based-rgbww-optimizer/SKILL.md`；
-5. `docs/README.md` 的 P7 thermal/setup/capture ledger 章节；
-6. CodeGraph 中 production capture -> native report -> retained ledger 调用路径。
-
-冻结 checkpoint 与 evidence：
+基础 checkpoint：
 
 ```text
-base checkpoint = 9c804abdeabbc5da18a66d0acf25a1f13128bc2d
-setup run =
-  /Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/
+setup checkpoint = 9c804abdeabbc5da18a66d0acf25a1f13128bc2d
+F0A checkpoint = 8b80c87939ee9aed31ce0dfaa08a5a936bdc56cb
+```
+
+冻结实验输入：
+
+| 输入 | SHA-256 |
+| --- | --- |
+| `config/hsi/p7-operating-envelope-v2.json` | `7012f254e5fa5182dd51b72624f64ce03645fd3d8b7227ab9144f5c7767cfc16` |
+| `config/location/locations-20260714-211759.json` | `21f02328bff8b5ffcfc10c767e15cdefbf8bb883bc352eff6f0fb7ade38a8f80` |
+| `config/hsi/strip-hsi-policy-v2-waiting.json` | `db9ebef1503c5e54c989649c719c4a5f75445bbd5487edb14c274e1b2894f3b4` |
+| `config/hsi/ray-hsi-manifold.json` | `20baaa26679039590679a122a5b4d2e658eae867c63e98d0a5d0556a2dc3bc34` |
+| `config/channel/code-duty-curve.json` | `0b03ce50bda13112c95d64d1f5974991514067bbd9f48e920214654c122ff911` |
+
+旧setup目录：
+
+```text
+/Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/
   p7-td-b-canon-r2-setup-20260723-042002
-Ray failed run =
-  /Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/
-  p7-td-b-canon-r2-ray-20260723-045514
-Ray first CR3 SHA-256 =
-  2cf5d680d694eb9c0d2e36bf8144dcf2f1fe02cd902bc4c202cf92ce1a699608
-Ray first sidecar SHA-256 =
-  9952bf79094d7d93b21a9864e841359d0195c423c3dc8464e0250231bc1721ee
 ```
 
-五个实验输入 hash、Canon-only remote source hash及旧 evidence hash必须保持归档所列值。
+| Artifact | SHA-256 |
+| --- | --- |
+| `setup.json` | `2399b62cc310d525e88dcd1d6be81f08abf3c93daa35d54ca14d7023d9c1cd77` |
+| `resolved-formal-plan.json` | `215aa359c162b3d154749753394a96a0adb80559d913a1d84b9063ee70ad92e3` |
+| `setup-release.json` | `401926bbdefa1a359db03042319acbf9b95f12047cb60f55f7055ed8505c261d` |
 
-## 4. F0A 实现合同
-
-### 4.1 Experiment-aware ambient policy
-
-在现有 shared native RAW capture owner中增加显式、窄范围的 ambient policy，不建立平行 capture
-framework：
+F0A lineage candidate：
 
 ```text
-require_preceding_ambient
-unsubtracted_no_ambient
+/Volumes/4T/temp/rgbww-optimizer/p7-td-b-f0a-offline/
+  p7-td-b-f0a-20260723-100606/setup-release-lineage-candidate.json
+SHA-256 = 6d74f2b0fa563147bad00d8c9a89985d3b5de97034288cdd242f10b1d52dc2f1
 ```
 
-要求：
+旧setup和candidate均不可直接传给production formal runner。
 
-1. 默认值必须保持 `require_preceding_ambient`，确保 P1、TD-A、TD-C和历史调用不发生静默改变；
-2. 只有冻结的 TD-B v2 formal phase可选择 `unsubtracted_no_ambient`；
-3. TD-B plan、runner和public analyzer必须共同冻结、持久化并重放该 policy；
-4. `unsubtracted_no_ambient` 路径不得寻找、伪造或减去 ambient RAW；
-5. TD-B若出现 ambient step或ambient owner，必须 fail closed；
-6. 非 TD-B caller尝试选择该 policy必须 fail closed；
-7. policy缺失、未知、plan/run/report不一致必须在正式 accepted observation前拒绝；
-8. legacy v1 replay保持原有语义，不回写新 claim。
+## 4. F0B Lineage Release 离线实现
 
-### 4.2 Physical-return ledger 与 accepted-measurement ledger
+### 4.1 新schema与单一owner
 
-把物理副作用与正式测量接受拆成两个明确账本：
+在现有`p7_thermal_diagnostics`、formal runner和public analyzer边界实现：
 
 ```text
-physical_returned_cr3_count
-accepted_formal_count
-accepted_ambient_count
+p7_td_b_setup_lineage_release_v2
+status = formal_plan_lineage_qualified
+production_release_usable = true
 ```
 
-要求：
-
-1. remote backend返回且当前 run拥有唯一、非空 CR3后，立即原子记录 physical-return evidence；
-2. 此记录必须先于 sidecar association、recorded exposure、RAW report、feature、timing、covariate和
-   `captures.jsonl` accepted row；
-3. sidecar/report/feature/timing后续失败时，保留 CR3 path、size、SHA-256、capture/request ID（若已获得）、
-   failure stage和physical count；
-4. physical cap按已返回 CR3执行；不得因为 report失败而允许多拍；
-5. accepted formal/ambient只在完整验收后增加；
-6. 失败写 `run.json`/`failure.json` 时必须由 retained physical ledger重建当前 run的真实计数；
-7. 不得通过事后扫描任意目录或成功 `captures.jsonl` 行推断 physical count；
-8. setup ledger和formal ledger的 owner保持分离；lineage汇总可验证 cumulative `setup 2 + formal N`，
-   但不能让 setup图进入formal aggregate。
-
-### 4.3 Retained first-capture forensic replay
-
-使用旧 Ray 首张 CR3/sidecar做纯离线 replay：
-
-- hash、byte count、capture/request ID、Canon recorded exposure、Tier B timing和location/input owner必须匹配；
-- 使用 TD-B `unsubtracted_no_ambient` 路径成功生成 native RAW report和冻结58-feature；
-- replay结果必须明确 `forensic_only=true`、`accepted_formal=false`、`reusable_capture=false`；
-- 不修改旧run，不生成旧run的`captures.jsonl`，不把结果用于科学aggregate；
-- 篡改 CR3、sidecar、policy、source、state、command、shutter、input hash或owner时fail closed。
-
-### 4.4 Setup-release checkpoint lineage candidate
-
-实现只读、可审计的 lineage qualification candidate，不覆盖旧release：
-
-1. 输入旧 canonical setup/release、旧 checkpoint和新 F0A checkpoint；
-2. 验证旧 setup全部 retained evidence、hash、Canon exposure、ratio、timing、cleanup和cold proxy；
-3. 验证代码变化范围只包含 F0A允许的 formal report/ledger/tests/docs/skill owner；
-4. 验证 setup producer、auto-exposure选择、remote parser、Canon recorded exposure、camera settings、
-   setup预算和setup finalizer语义未改变；
-5. 输出新的独立 `setup-release-lineage-candidate.json`，状态只能是：
+不得建立平行runner/plan builder/analyzer。新release必须原子生成到：
 
 ```text
-eligible_waiting_for_planner
-ineligible
+/Volumes/4T/temp/rgbww-optimizer/p7-td-b-lineage-release/<timestamp>/
 ```
 
-6. candidate不得被production runner直接当成release使用，不得自动解锁实机；
-7. 无法证明精确变化范围或任一旧证据漂移时输出`ineligible`并交Planner，不得要求自动fresh setup。
+必须绑定并验证：
 
-## 5. 回归与对抗性测试
+1. 旧`setup.json`、旧`setup-release.json`和F0A candidate的exact path/hash；
+2. old checkpoint、F0A checkpoint和完成F0B后的current full checkpoint；
+3. `git diff --name-only old..current`完整changed-path ledger；
+4. 所有production diff只能属于F0A/F0B ambient、physical ledger、release validator或其tests/docs/skill；
+5. `.agent-work`只能归类为Planner/Executor audit，不得影响production hash；
+6. 五个冻结实验输入和remote-controller source hash未变；
+7. 旧setup的2张Canon exposure、ratio、timing、cold proxy、cleanup和final-zero完整重放；
+8. 从当前代码重新构建一个fresh unresolved Ray TD-B v2 plan，而不是修改旧resolved plan；
+9. fresh plan严格为`16 formal / 0 ambient`、`unsubtracted_no_ambient`、当前58-feature和原schedule；
+10. 只从旧canonical setup解析D shutter并生成fresh resolved plan；
+11. fresh resolved plan的A/D/B/C shutter、schedule、commands、inputs和budget均通过public replay；
+12. release绑定current checkpoint，旧release/candidate仍保持不可执行。
+
+任何不确定或prohibited path输出`ineligible`，不得创建production-usable release。
+
+### 4.2 Production trust boundary
+
+`run_resolved_td_b_formal`只允许：
+
+- legacy release在其原checkpoint运行；
+- 新lineage release在其exact current checkpoint运行。
+
+必须拒绝：
+
+- 直接传candidate；
+- 修改旧release/checkpoint；
+- lineage release引用旧resolved plan；
+- changed-path ledger缺项/重复/顺序或hash漂移；
+- current HEAD、working tree production范围、setup/input hash或release owner漂移；
+- release在Ray TD-B以外使用；
+- `production_release_usable`缺失或false；
+- release输出目录、引用路径或artifact为symlink。
+
+### 4.3 必须覆盖的离线测试
 
 至少覆盖：
 
-1. TD-B v2 `16 formal / 0 ambient` 生产fake round-trip可使用un-subtracted report；
-2. 默认caller仍要求preceding ambient；
-3. TD-A/TD-C ambient ledger和subtraction保持不变；
-4. TD-B出现ambient、unknown policy、policy drift或非TD-B选择no-ambient均拒绝；
-5. CR3成功返回后在sidecar、recorded exposure、report、feature、timing、covariate各阶段注入失败，physical
-   count均准确且accepted count不增加；
-6. 空/重复/跨run CR3、hash/size/ID冲突不增加合法physical ledger；
-7. physical cap one-under/at-limit/one-over在camera request前正确拒绝；
-8. exact旧首张capture forensic replay成功且不产生accepted observation；
-9. forensic篡改矩阵全部fail closed；
-10. setup 2 + formal returned 1 / accepted 0 的 synthetic regression重现正确；
-11. lineage candidate对允许diff为eligible，对setup/remote/parser/config/budget变化为ineligible；
-12. public analyzer从retained ledger独立重算，不信任自报counter；
-13. fake wrapper success/failure/signal仍保存双cleanup和真实exit；
-14. 所有负例的device/network/`.env`/`all_off`调用均为0。
+1. exact retained setup + F0A candidate + current plan生成lineage release；
+2. release public replay和fake production runner完整通过；
+3. old resolved plan不能被直接rebind；
+4. candidate不能冒充release；
+5. prohibited source/control/config/remote path、missing diff、hash drift、checkpoint drift均拒绝；
+6. fresh plan policy、ambient cap、formal cap、schedule、shutter、command或input篡改均拒绝；
+7. release one-copy、same-content copy、symlink、outside-owner均拒绝；
+8. TD-A/TD-C、legacy setup release和F0A forensic replay保持兼容；
+9. fake Ray 16张production round-trip重算physical `setup 2 + formal 16 = 18`、accepted formal 16、
+   ambient 0；
+10. device/network/`.env`/camera/light/`all_off`副作用为0。
 
-测试不能只调用helper；至少一组必须走：
+### 4.4 离线验证与checkpoint
+
+保存到：
 
 ```text
-production plan
--> fake backend physical return
--> native RAW report
--> runner persistence
--> public analyzer replay
+/Volumes/4T/temp/rgbww-optimizer/p7-td-b-f0b-offline/<timestamp>/
 ```
 
-## 6. 离线验证与证据
+执行focused、完整suite、compileall、所有wrapper `zsh -n`、`git diff --check`、CodeGraph sync。保存logs、
+negative matrix、fake production round-trip、release dry artifact和validation summary。
 
-证据根目录：
+更新docs/skill并创建focused conventional commit。提交后：
+
+- 取得current full 40-char checkpoint；
+- production范围相对HEAD干净；
+- 冻结input、remote source、旧setup/release/candidate hash不变；
+- 用current checkpoint重新生成最终lineage release；
+- public replay和fake production runner再次通过。
+
+任一离线项失败：设备调用0，写`EXECUTION_RESULT.md`后停止。
+
+## 5. 设备前E2门
+
+只有第4节全部通过才可进入设备。E2必须保存到新目录并验证：
+
+- current HEAD等于lineage release checkpoint；
+- production范围clean，active PLAN/EXECUTION_RESULT dirty只限审计文件；
+- 无无法证明ownership的camera/calibration/thermal/wrapper进程；
+- 新Ray/strip run、logs、wrapper-state路径不存在且非symlink；
+- `control.all_off`成功；
+- strip name/MAC稳定、generation-bearing五通道全零；
+- Ray independent readback intensity 0；
+- remote health、authenticated config、v2 capability、RAW、ISO100、非空aperture；
+- Ray node config、HSI/CCT set/readback可用；
+- location和全部冻结hash准确；
+- lineage release完整production replay；
+- 旧失败run与setup evidence仍原样存在。
+
+E2失败：保存evidence，执行Python/shell cleanup和独立双零后停止。
+
+## 6. Ray TD-B Formal
+
+使用全新run，production wrapper和lineage release。不得auto-expose或ambient：
 
 ```text
-/Volumes/4T/temp/rgbww-optimizer/p7-td-b-f0a-offline/<timestamp>/
+A = H120/S100/INT100, shutter 1/5000
+D = H120/S50/INT100, shutter from retained canonical setup
+B = H0/S0/INT100, shutter 1/8000
+C = H300/S100/INT100, shutter 1/2000
 ```
 
-至少保存：
-
-- `focused.log`
-- `full-suite.log`
-- `compileall.log`
-- `wrapper-syntax.log`
-- `negative-case-matrix.json`
-- `retained-first-capture-replay.json`
-- `physical-ledger-roundtrip.json`
-- `setup-release-lineage-candidate.json`
-- `validation-summary.json`
-- 每个artifact的SHA-256
-
-执行：
-
-```zsh
-PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m unittest \
-  tests.test_p7_thermal_diagnostics \
-  tests.test_analyze_p7_thermal_diagnostics \
-  tests.test_measure_raw_observer_validation \
-  tests.test_camera_remote -v
-
-PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m unittest discover -s tests -v
-.venv/bin/python -m compileall -q src tests
-for wrapper in tmp/*.zsh; do zsh -n "$wrapper"; done
-git diff --check
-codegraph sync
-```
-
-更新`docs/README.md`和项目skill，写明TD-B无ambient subtraction、physical-return早于measurement
-acceptance、旧capture仅forensic以及lineage candidate不等于设备授权。
-
-完成后创建一个focused conventional commit。提交后复核：
-
-- 新full checkpoint为40字符；
-- production范围相对新HEAD干净；
-- 五个冻结实验输入和remote-controller文件hash不变；
-- retained旧evidence hash不变；
-- offline artifact可从新checkpoint重放；
-- device/network/`.env`/camera/Ray/ESPHome/`all_off`/new CR3均为0。
-
-## 7. 交接与后续硬锁
-
-Executor只更新`.agent-work/EXECUTION_RESULT.md`，不得修改本文件。交接必须包含：
-
-- implementation commit；
--变更owner和关键合同；
-- focused/full/check结果；
-- evidence路径与hash；
-- forensic replay结论；
-- physical/accepted ledger结论；
-- lineage candidate状态和原因；
--零设备副作用声明；
--维护性判断。
-
-F0A即使全部通过也不自动授权设备。Planner必须先验收并归档本计划，再决定：
+恰好16张：
 
 ```text
-lineage eligible -> 是否放行全新Ray TD-B formal 16，再按结构结果决定strip
-lineage ineligible -> 是否需要fresh bounded setup
+A0 at 600
+D at 60/120/300/600
+A return at 600
+B at 60/120/300/600
+A return at 600
+C at 60/120/300/600
+A return at 600
 ```
 
-在新active PLAN前，Ray重跑、strip、TD-C、sentinel、remaining 9、boundary、holdout、Gate-6、P8、
-P6 requalification、firmware、remote deployment和默认LUT/runtime安装全部锁定。
+要求：
+
+- 每group命令一次并精确readback；transition先双关灯/读回；
+- Ray亮时strip持续verified zero；
+- 每张remote-v2、Canon:ExposureTime/recorded、ratio `0.8..1.2`、Tier A/B；
+- CR3/sidecar非空，ID/hash/bytes可重放，`.npy=0`；
+- `physical-returns.jsonl=16`，`captures.jsonl=16`，ambient=0；
+- run cumulative physical=`setup 2 + formal 16 = 18`，不超过Ray cap24；
+- Python/shell cleanup和独立双零通过。
+
+启动后约3分钟只做一次健康检查，之后按完整schedule ETA使用当前thread单次heartbeat，不短间隔轮询。
+
+若capture已返回后report/feature/timing失败，physical ledger必须保留；该run hard-invalid，停止且不启动strip。
+若结构合法，即使analysis显示history dependence或nonstationarity warning，也执行Ray public analyzer并继续strip。
+
+## 7. Strip TD-B Formal
+
+仅在Ray acquisition、wrapper、cleanup、public analyzer结构全部合法时启动。使用current fresh strip plan，
+不使用setup release、不auto-expose、不拍ambient：
+
+```text
+A: cw=518,  ww=0,    r=0,    g=4095, b=0;    shutter=1/320
+D: cw=4095, ww=0,    r=0,    g=3118, b=13;   shutter=1/400
+B: cw=4095, ww=4095, r=0,    g=1887, b=1535; shutter=1/500
+C: cw=406,  ww=0,    r=4095, g=0,    b=1541; shutter=1/125
+```
+
+Chronology同Ray，恰好16张。Strip亮时Ray intensity始终独立读回0。要求
+`physical-returns=16 / accepted formal=16 / ambient=0 / NPY=0`，并通过同样Canon、timing、owner、
+wrapper、cleanup和独立双零门。
+
+Strip hard-invalid时保存Ray合法analysis，但不生成paired scientific claim。
+
+## 8. Analysis、Finalizer 与交接
+
+两个source各自完成后运行public analyzer；它必须从plan、physical returns、accepted captures、
+patch reports、covariates、commands、isolation、wrapper和cleanup独立重算，不信任自报counter。
+
+两个source都结构合法时，paired finalizer原子生成：
+
+```text
+input-manifest.json
+td-b-combined-analysis.json
+EXPERIMENT_SUMMARY.md
+independent-final-zero.json
+```
+
+Finalizer只能汇总，不重新拟合、不改变单源状态、不生成新operating envelope。600秒只可称
+`operational_dwell_600`，不得称steady或settled。
+
+Executor只更新`.agent-work/EXECUTION_RESULT.md`，不得修改本PLAN。交接包含commit、release/hash、
+run/PID/TTY/logs、capture/ledger counts、analysis状态、wrapper exit、cleanup、final zero、artifact hash和
+维护性判断。
+
+完成后停止在Planner门。即使TD-B结构和科学分析均通过，也不自动解锁TD-C或后续阶段。
