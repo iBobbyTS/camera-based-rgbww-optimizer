@@ -942,6 +942,14 @@ hashes, capture/request IDs, Ray A command/readback, `1/5000` shutter,
 `accepted_formal=false`, and `reusable_capture=false`; it never appends to the
 old or a new formal capture ledger.
 
+Thermal remote-v2 acquisition binds sidecar evidence at physical return, before
+any report, feature, timing, or covariate post-processing can accept the frame.
+The physical ledger and post-return failure payload retain canonical same-run
+CR3/sidecar paths, byte counts, SHA-256 values, and remote IDs. A missing,
+empty, outside-run, symlinked, non-canonical, or tampered sidecar fails closed,
+but the already-returned CR3 remains counted and is never moved into the
+accepted capture ledger.
+
 After both public single-source analyses complete, invoke the same analyzer
 with `--paired-run`, `--combined-output`, `--code-checkpoint`, and
 `--final-zero`. For TD-B it writes `td-b-combined-analysis.json`,

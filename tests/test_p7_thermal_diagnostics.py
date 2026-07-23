@@ -15,10 +15,17 @@ from unittest import mock
 from camera_based_rgbww_optimizer.optimization import measure_p7_thermal_diagnostics as measure
 from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as subject
 from camera_based_rgbww_optimizer.optimization import analyze_p7_thermal_diagnostics as thermal_analyzer
+from camera_based_rgbww_optimizer.optimization.hsi_objective import HsiRejectedFeaturesError
 from camera_based_rgbww_optimizer.control import camera_gphoto2, camera_remote_v2
 
 
 W0_TEMP_ROOT = Path("/Volumes/4T/temp/rgbww-optimizer/p7-td-a-w0-offline/test-runtime")
+C1_TEMP_ROOT = Path("/Volumes/4T/temp/rgbww-optimizer/p7-td-b-r1-offline/test-runtime")
+C1_FAILED_RUN = Path(
+    "/Volumes/4T/temp/rgbww-optimizer/p7-td-b-formal-ray-r1-20260723-182500"
+)
+C1_CR3_SHA256 = "0778e98d46d05e6bf13e218b79ee644178629076e4d9e6d8a1545fcb54a03889"
+C1_SIDECAR_SHA256 = "93d0e64f612ab591da717d99af25dc5606a98148729e1988cc43f667375b4e68"
 
 
 class _Clock:
@@ -1889,23 +1896,22 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                 observer["callback"] = callback
 
             def capture(step):
-                raw = root / "returned.CR3"
-                raw.write_bytes(b"physical")
-                result = camera_gphoto2.CaptureResult(
-                    connection=camera_gphoto2.CameraConnection("fake", "offline"),
-                    settings=camera_gphoto2.CaptureSettings(
-                        iso="100",
-                        aperture="implicit auto",
-                        shutter_speed="1/5000",
-                        image_format="RAW",
-                    ),
-                    saved_file=raw,
-                    stdout="",
+                result = _attach_v2_capture_evidence(
+                    root,
+                    step,
+                    {},
+                    observed=float(step["requested_elapsed_s"]),
                 )
                 observer["callback"](step, result, 1)
-                raise ValueError("post-return analyzer failed")
+                raise HsiRejectedFeaturesError(
+                    [{"feature_id": "block_01::R", "status": "rejected"}],
+                    weak_signal_only=True,
+                )
 
-            with self.assertRaisesRegex(ValueError, "post-return analyzer failed"):
+            with self.assertRaisesRegex(
+                HsiRejectedFeaturesError,
+                "required HSI observer features were rejected",
+            ):
                 measure.execute_plan(
                     plan,
                     run_dir=root,
@@ -1941,6 +1947,204 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                 failure["rejected_capture"]["rejection_stage"],
                 "post_return_processing",
             )
+            sidecar = Path(failure["rejected_capture"]["sidecar_path"])
+            self.assertEqual(
+                failure["rejected_capture"]["sidecar_byte_count"],
+                sidecar.stat().st_size,
+            )
+            self.assertEqual(
+                failure["rejected_capture"]["sidecar_sha256"],
+                hashlib.sha256(sidecar.read_bytes()).hexdigest(),
+            )
+            self.assertEqual(
+                failure["rejected_capture"]["sidecar_validation_status"],
+                "pass",
+            )
+            self.assertEqual(physical[0]["sidecar_path"], str(sidecar.resolve()))
+            self.assertEqual(physical[0]["sidecar_validation_status"], "pass")
+            self.assertEqual(
+                failure["rejected_capture"]["remote_capture_id"],
+                physical[0]["remote_capture_id"],
+            )
+            self.assertEqual(
+                failure["rejected_capture"]["remote_request_id"],
+                physical[0]["remote_request_id"],
+            )
+
+    def test_physical_return_sidecar_association_fails_closed_after_counting_cr3(self):
+        def minimal_plan():
+            plan = subject.build_diagnostic_plan(
+                subject.TD_A,
+                source="ray",
+                for_execution=True,
+                human_authorization=subject.TD_A,
+                v2_capture_capability=True,
+            )
+            return {
+                **plan,
+                "captures": [plan["captures"][1]],
+                "budgets": {
+                    "formal_cap": 1,
+                    "ambient_cap": 0,
+                    "physical_cr3_cap": 22,
+                },
+                "frozen_shutters": {"ray-h120-s100": "1/5000"},
+                "exposure_setup_required": [],
+                "shutter_ledger_provenance": {
+                    "owner": "experiment_capture_steps",
+                    "required_cache_keys": ["ray-h120-s100"],
+                    "frozen_shutters_sha256": subject.canonical_sha256(
+                        {"ray-h120-s100": "1/5000"}
+                    ),
+                },
+            }
+
+        def mutate(case, root, result):
+            sidecar = Path(result["remote_metadata_path"])
+            if case == "missing":
+                sidecar.unlink()
+            elif case == "empty":
+                sidecar.write_bytes(b"")
+            elif case == "outside":
+                outside = root.parent / sidecar.name
+                sidecar.replace(outside)
+                result["remote_metadata_path"] = str(outside)
+            elif case == "symlink":
+                target = root / "retained-sidecar.json"
+                sidecar.replace(target)
+                sidecar.symlink_to(target)
+            elif case == "same_name_mismatch":
+                other = root / "other.metadata.json"
+                shutil.copy2(sidecar, other)
+                result["remote_metadata_path"] = str(other)
+            else:
+                metadata = json.loads(sidecar.read_text(encoding="utf-8"))
+                if case == "hash":
+                    metadata["cr3"]["sha256"] = "0" * 64
+                elif case == "id":
+                    metadata["capture_id"] = "forged"
+                elif case == "metadata":
+                    metadata["unexpected_secret"] = "forged"
+                sidecar.write_text(json.dumps(metadata), encoding="utf-8")
+
+        for case in (
+            "missing",
+            "empty",
+            "outside",
+            "symlink",
+            "same_name_mismatch",
+            "hash",
+            "id",
+            "metadata",
+        ):
+            with self.subTest(case=case), _w0_temporary_directory() as tempdir:
+                root = Path(tempdir) / "run"
+                observer = {}
+
+                def bind(callback):
+                    observer["callback"] = callback
+
+                def capture(step):
+                    result = _attach_v2_capture_evidence(
+                        root,
+                        step,
+                        {},
+                        observed=float(step["requested_elapsed_s"]),
+                    )
+                    mutate(case, root, result)
+                    observer["callback"](step, result, 1)
+                    self.fail("invalid sidecar association must fail in physical return")
+
+                with self.assertRaisesRegex(
+                    RuntimeError,
+                    "sidecar owner|invalid CR3 sidecar evidence|timing metadata",
+                ):
+                    measure.execute_plan(
+                        minimal_plan(),
+                        run_dir=root,
+                        apply_command_fn=lambda _step: {},
+                        readback_fn=lambda _step: {},
+                        capture_fn=capture,
+                        both_off_gate_fn=lambda _gate: {
+                            "status": "pass",
+                            "strip_verified_off": True,
+                            "ray_verified_off": True,
+                        },
+                        cleanup_fn=lambda: {"status": "pass"},
+                        bind_physical_return_observer_fn=bind,
+                        monotonic_fn=lambda: 0,
+                        sleep_fn=lambda _seconds: None,
+                    )
+                run = _read_json(root / "run.json")
+                failure = _read_json(root / "failure.json")
+                physical = [
+                    json.loads(line)
+                    for line in (root / "physical-returns.jsonl")
+                    .read_text(encoding="utf-8")
+                    .splitlines()
+                ]
+                self.assertEqual(run["physical_returned_cr3_count"], 1)
+                self.assertEqual(run["accepted_formal_count"], 0)
+                self.assertEqual(len(physical), 1)
+                self.assertTrue(Path(physical[0]["cr3_path"]).is_file())
+                self.assertEqual(
+                    failure["rejected_capture"]["rejection_stage"],
+                    "sidecar_association",
+                )
+                self.assertEqual(
+                    failure["rejected_capture"]["sidecar_validation_status"],
+                    "fail",
+                )
+
+    def test_failed_r1_run_replays_read_only_with_low_signal_and_cleanup_evidence(self):
+        C1_TEMP_ROOT.mkdir(parents=True, exist_ok=True)
+        frozen = (
+            "plan.json",
+            "run.json",
+            "failure.json",
+            "physical-returns.jsonl",
+            "all-off-python.json",
+            "all-off-shell.json",
+            "all-off-shell.exit-status.txt",
+            "independent-final-zero.json",
+        )
+        before = {
+            name: hashlib.sha256((C1_FAILED_RUN / name).read_bytes()).hexdigest()
+            for name in frozen
+        }
+        with tempfile.TemporaryDirectory(dir=C1_TEMP_ROOT) as tempdir:
+            output = Path(tempdir) / "audit"
+            artifact_path = measure.audit_post_return_failure(
+                C1_FAILED_RUN,
+                output,
+                expected_cr3_sha256=C1_CR3_SHA256,
+                expected_sidecar_sha256=C1_SIDECAR_SHA256,
+            )
+            artifact = _read_json(artifact_path)
+            self.assertEqual(artifact["status"], "pass")
+            self.assertTrue(artifact["forensic_only"])
+            self.assertFalse(artifact["accepted_formal"])
+            self.assertFalse(artifact["reusable_capture"])
+            self.assertEqual(artifact["physical"], {
+                "setup": 2,
+                "returned": 1,
+                "total": 3,
+                "accepted_formal": 0,
+            })
+            self.assertEqual(artifact["recorded_exposure"]["source"], "Canon:ExposureTime")
+            self.assertEqual(artifact["timing_evidence"]["tier"], "tier_b")
+            self.assertEqual(len(artifact["rejected_planes"]), 6)
+            self.assertTrue(all(
+                row["failures"] == ["near_noise_floor_fraction_exceeded"]
+                for row in artifact["rejected_planes"]
+            ))
+            self.assertEqual(artifact["cleanup"], "pass")
+            self.assertEqual(artifact["independent_final_zero"], "pass")
+        after = {
+            name: hashlib.sha256((C1_FAILED_RUN / name).read_bytes()).hexdigest()
+            for name in frozen
+        }
+        self.assertEqual(after, before)
 
     def test_setup_release_lineage_candidate_is_planner_only_and_fail_closed(self):
         release = Path(

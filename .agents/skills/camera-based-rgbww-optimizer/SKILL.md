@@ -154,6 +154,15 @@ forensic output with fixed CR3/sidecar hashes, IDs, command/readback, Canon
 exposure, Tier B timing, `forensic_only=true`, `accepted_formal=false`, and
 `reusable_capture=false`.
 
+For every thermal remote-v2 capture, the physical-return owner associates the
+returned CR3 with its canonical same-run `.metadata.json` sibling before report,
+feature, timing, or covariate processing can accept the measurement. The
+physical ledger and any post-return `failure.json.rejected_capture` retain the
+CR3 and sidecar canonical paths, byte counts, SHA-256 values, and remote
+capture/request IDs. Missing, empty, outside-run, symlinked, non-canonical, or
+tampered sidecars fail closed while preserving the already-returned CR3 in the
+physical count; they never enter the accepted capture ledger.
+
 Once Planner accepts that candidate, create a new
 `p7_td_b_setup_lineage_release_v2`; never edit or rebind the old release. The
 lineage release must recompute the full changed-path ledger, rebuild the current
