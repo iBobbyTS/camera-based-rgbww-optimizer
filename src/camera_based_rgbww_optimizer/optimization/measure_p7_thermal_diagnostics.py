@@ -1582,6 +1582,22 @@ def main(
             print(path)
         return 0
 
+    if args.setup_release is not None:
+        if args.experiment_id != thermal.TD_B or args.source != "ray" or not args.code_checkpoint:
+            raise PermissionError("setup release is only valid for exact Ray TD-B formal phase")
+        if backend_factory is None:
+            from camera_based_rgbww_optimizer.control import camera_remote
+            backend_factory = camera_remote.create_camera_backend
+        backend = backend_factory(
+            args.camera_backend, env_file=args.remote_env_file,
+            base_url=args.remote_base_url, timeout=args.remote_timeout,
+        )
+        print(resolved_run_fn(
+            args.setup_release, output_dir=args.output_dir, run_name=args.run_name,
+            camera_backend=backend, code_checkpoint=args.code_checkpoint,
+        ))
+        return 0
+
     plan = thermal.build_diagnostic_plan(
         args.experiment_id, source=args.source, variant=args.variant,
         prerequisite_artifact=args.prerequisite_artifact,
@@ -1602,14 +1618,6 @@ def main(
             raise PermissionError("setup phase requires exact Ray TD-B and --code-checkpoint")
         print(setup_fn(
             plan, output_dir=args.output_dir, run_name=args.run_name,
-            camera_backend=backend, code_checkpoint=args.code_checkpoint,
-        ))
-        return 0
-    if args.setup_release is not None:
-        if args.experiment_id != thermal.TD_B or args.source != "ray" or not args.code_checkpoint:
-            raise PermissionError("setup release is only valid for exact Ray TD-B formal phase")
-        print(resolved_run_fn(
-            args.setup_release, output_dir=args.output_dir, run_name=args.run_name,
             camera_backend=backend, code_checkpoint=args.code_checkpoint,
         ))
         return 0

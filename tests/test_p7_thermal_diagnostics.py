@@ -2146,6 +2146,43 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
         writer.assert_called_once()
         backend_factory.assert_not_called()
 
+    def test_lineage_formal_cli_dispatches_before_unresolved_td_b_plan_gate(self):
+        checkpoint = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=Path(__file__).parents[1],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        backend = mock.Mock()
+        backend_factory = mock.Mock(return_value=backend)
+        resolved_run = mock.Mock(return_value=Path("/offline/formal-run"))
+        with mock.patch.object(
+            measure.thermal,
+            "build_diagnostic_plan",
+            side_effect=AssertionError("formal lineage dispatch built an unresolved plan"),
+        ):
+            result = measure.main(
+                [
+                    "--experiment-id", subject.TD_B,
+                    "--source", "ray",
+                    "--phase", "formal",
+                    "--output-dir", "/offline",
+                    "--run-name", "ray",
+                    "--setup-release", "/offline/setup-lineage-release.json",
+                    "--code-checkpoint", checkpoint,
+                    "--human-authorization", subject.TD_B,
+                    "--camera-backend", "remote",
+                    "--allow-device-control",
+                    "--execute",
+                ],
+                backend_factory=backend_factory,
+                resolved_run_fn=resolved_run,
+            )
+        self.assertEqual(result, 0)
+        backend_factory.assert_called_once()
+        resolved_run.assert_called_once()
+
 
 def _w0_temporary_directory():
     W0_TEMP_ROOT.mkdir(parents=True, exist_ok=True)

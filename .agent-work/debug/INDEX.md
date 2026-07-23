@@ -2,6 +2,7 @@
 
 | file | summary |
 | --- | --- |
+| active/20260723-p7-td-b-lineage-cli-dispatch.md | Ray TD-B formal stopped before acquisition because the CLI enforced the unresolved TD-B prerequisite before dispatching the accepted lineage release; offline fix required, no automatic hardware retry. |
 | active/20260722-p7-td-b-prerequisite-path-identity.md | PATH-R1 owns the raw relative/absolute operating-envelope identity mismatch; canonical producer, setup gate, and analyzer replay must close it before the single authorized setup retry. |
 | active/20260719-p7-r1-reference-instability.md | Completed R1 passes acquisition/coverage evidence but fails all Ray A/B compatibility and measured Ray/strip trend gates; candidate remains formal-ineligible for Planner review. |
 | active/20260714-p1-exposure-response.md | CR3 recorded exposure fixes the large P1 shutter error; residual high-signal RAW shape still blocks thresholds and P2 pending a lower-exposure full P1. |
