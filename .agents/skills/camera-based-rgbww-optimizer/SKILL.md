@@ -154,6 +154,16 @@ forensic output with fixed CR3/sidecar hashes, IDs, command/readback, Canon
 exposure, Tier B timing, `forensic_only=true`, `accepted_formal=false`, and
 `reusable_capture=false`.
 
+Once Planner accepts that candidate, create a new
+`p7_td_b_setup_lineage_release_v2`; never edit or rebind the old release. The
+lineage release must recompute the full changed-path ledger, rebuild the current
+Ray TD-B v2 plan, resolve only the unchanged setup shutter, and bind the old
+release/setup, accepted candidate, current candidate, fresh resolved plan, and
+exact clean current checkpoint. Only this release may resume formal capture
+after the implementation checkpoint changes. Candidate files, old resolved
+plans, same-content copies, symlinks, or lineage releases from another
+checkpoint remain non-executable.
+
 Resolve the TD-B v2 operating-envelope prerequisite through the shared thermal
 trusted-prerequisite owner. Accept project-relative, `./`-relative, or exact
 absolute caller spelling, but persist the canonical repository path and frozen

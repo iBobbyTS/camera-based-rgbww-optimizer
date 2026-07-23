@@ -6,6 +6,7 @@ import json
 import os
 import re
 from collections import Counter, defaultdict
+from copy import deepcopy
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
@@ -87,6 +88,43 @@ def analyze_thermal_run(
     run = _load_json(root / "run.json")
     if plan.get("experiment_id") not in thermal.EXPERIMENT_IDS or run.get("status") != "complete":
         raise ValueError("thermal analyzer requires a completed exact experiment")
+    if (
+        plan.get("experiment_id") == thermal.TD_B
+        and plan.get("source") == "ray"
+        and int(plan.get("setup_physical_cr3_count", 0)) > 0
+        and plan.get("setup_lineage_release_required") is True
+    ):
+        lineage_reference = plan.get("setup_lineage_release")
+        if (
+            not isinstance(lineage_reference, Mapping)
+            or set(lineage_reference) != {"path", "sha256"}
+        ):
+            raise ValueError("Ray TD-B analysis lacks lineage release provenance")
+        lineage_path = Path(str(lineage_reference.get("path"))).resolve()
+        if (
+            not lineage_path.is_file()
+            or lineage_path.is_symlink()
+            or hashlib.sha256(lineage_path.read_bytes()).hexdigest()
+            != lineage_reference.get("sha256")
+        ):
+            raise ValueError("Ray TD-B lineage release owner or hash differs")
+        lineage = _load_json(lineage_path)
+        validated_lineage = thermal.validate_td_b_setup_lineage_release(
+            lineage,
+            release_path=lineage_path,
+        )
+        expected_plan = deepcopy(dict(validated_lineage["resolved_plan"]))
+        observed_plan = deepcopy(dict(plan))
+        observed_plan.pop("setup_lineage_release", None)
+        expected_plan.pop("created_at", None)
+        observed_plan.pop("created_at", None)
+        expected_camera = deepcopy(dict(expected_plan.get("camera", {})))
+        observed_camera = deepcopy(dict(observed_plan.get("camera", {})))
+        observed_camera.pop("resolved_capture_settings", None)
+        expected_plan["camera"] = expected_camera
+        observed_plan["camera"] = observed_camera
+        if observed_plan != expected_plan:
+            raise ValueError("Ray TD-B run plan differs from lineage-qualified release")
     _verify_frozen_inputs(plan["inputs"])
     envelope_resolution = thermal.validate_trusted_operating_envelope_reference(
         plan["inputs"]["operating_envelope"],

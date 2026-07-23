@@ -921,6 +921,19 @@ original release schema. Changes to camera/remote parsing, setup semantics,
 frozen inputs, budgets, commands, shutter resolution, or cleanup make the
 candidate ineligible and require a new setup.
 
+After Planner acceptance, the candidate still does not become executable.
+`measure_p7_thermal_diagnostics --qualify-lineage-release` creates a separate
+`p7_td_b_setup_lineage_release_v2` in a new external directory. It replays the
+immutable legacy release and accepted F0A candidate, recomputes the complete Git
+changed-path ledger, rebuilds the current Ray TD-B v2 plan, and resolves only
+the measured H120/S50 shutter from the unchanged canonical setup. The release
+binds the current full checkpoint, current lineage candidate, fresh resolved
+plan, old release, old setup, and accepted Planner candidate. Production formal
+resume accepts it only at that exact clean checkpoint. The old release, the
+candidate, and the old resolved plan remain non-executable after the code
+change; any control, camera, remote-parser, setup, input, budget, schedule, or
+shutter change makes lineage qualification fail closed.
+
 The first CR3 returned by the failed Ray TD-B run is retained only as immutable
 forensic evidence. Its replay is pinned to the original run path, CR3/sidecar
 hashes, capture/request IDs, Ray A command/readback, `1/5000` shutter,

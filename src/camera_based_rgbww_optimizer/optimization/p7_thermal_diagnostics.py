@@ -98,7 +98,20 @@ TD_B_SETUP_RELEASE_SCHEMA = "p7_td_b_exposure_setup_release_v1"
 TD_B_SETUP_RELEASE_LINEAGE_CANDIDATE_SCHEMA = (
     "p7_td_b_setup_release_lineage_candidate_v1"
 )
+TD_B_SETUP_LINEAGE_RELEASE_SCHEMA = "p7_td_b_setup_lineage_release_v2"
 TD_B_SETUP_CHECKPOINT = "9c804abdeabbc5da18a66d0acf25a1f13128bc2d"
+TD_B_F0A_CHECKPOINT = "8b80c87939ee9aed31ce0dfaa08a5a936bdc56cb"
+TD_B_SETUP_RELEASE_PATH = Path(
+    "/Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/"
+    "p7-td-b-canon-r2-setup-20260723-042002/setup-release.json"
+)
+TD_B_F0A_LINEAGE_CANDIDATE_PATH = Path(
+    "/Volumes/4T/temp/rgbww-optimizer/p7-td-b-f0a-offline/"
+    "p7-td-b-f0a-20260723-100606/setup-release-lineage-candidate.json"
+)
+TD_B_F0A_LINEAGE_CANDIDATE_SHA256 = (
+    "6d74f2b0fa563147bad00d8c9a89985d3b5de97034288cdd242f10b1d52dc2f1"
+)
 TD_B_LINEAGE_ALLOWED_PRODUCTION_PATHS = frozenset({
     "src/camera_based_rgbww_optimizer/optimization/measure_raw_observer_validation.py",
     "src/camera_based_rgbww_optimizer/optimization/p7_thermal_diagnostics.py",
@@ -827,6 +840,222 @@ def build_td_b_setup_release_lineage_candidate(
         "canonical_setup_replay": "pass",
         "production_release_usable": False,
         "planner_acceptance_required": True,
+    }
+
+
+def _validate_td_b_planner_lineage_candidate(
+    candidate: Mapping[str, Any],
+    *,
+    candidate_path: str | Path,
+    legacy_release_path: str | Path,
+) -> None:
+    path = Path(candidate_path).resolve()
+    legacy_path = Path(legacy_release_path).resolve()
+    if (
+        path != TD_B_F0A_LINEAGE_CANDIDATE_PATH.resolve()
+        or not path.is_file()
+        or hashlib.sha256(path.read_bytes()).hexdigest()
+        != TD_B_F0A_LINEAGE_CANDIDATE_SHA256
+    ):
+        raise ValueError("TD-B Planner lineage candidate owner or hash differs")
+    required = {
+        "schema", "status", "old_checkpoint", "new_checkpoint",
+        "release_reference", "canonical_setup_reference",
+        "resolved_formal_plan_reference", "changed_paths", "prohibited_paths",
+        "canonical_setup_replay", "production_release_usable",
+        "planner_acceptance_required",
+    }
+    if (
+        set(candidate) != required
+        or candidate.get("schema") != TD_B_SETUP_RELEASE_LINEAGE_CANDIDATE_SCHEMA
+        or candidate.get("status") != "eligible_waiting_for_planner"
+        or candidate.get("old_checkpoint") != TD_B_SETUP_CHECKPOINT
+        or candidate.get("new_checkpoint") != TD_B_F0A_CHECKPOINT
+        or candidate.get("release_reference") != file_reference(legacy_path)
+        or candidate.get("canonical_setup_replay") != "pass"
+        or candidate.get("production_release_usable") is not False
+        or candidate.get("planner_acceptance_required") is not True
+        or candidate.get("prohibited_paths") != []
+    ):
+        raise ValueError("TD-B Planner lineage candidate contract differs")
+    changed = candidate.get("changed_paths")
+    if (
+        not isinstance(changed, list)
+        or not changed
+        or any(
+            not isinstance(item, Mapping)
+            or set(item) != {"path", "classification"}
+            for item in changed
+        )
+    ):
+        raise ValueError("TD-B Planner lineage changed-path evidence differs")
+
+
+def _normalize_td_b_resolved_plan(plan: Mapping[str, Any]) -> dict[str, Any]:
+    normalized = deepcopy(dict(plan))
+    normalized.pop("created_at", None)
+    return normalized
+
+
+def validate_td_b_lineage_resolved_plan(
+    plan: Mapping[str, Any],
+    *,
+    canonical_setup_path: str | Path,
+) -> None:
+    setup_path = Path(canonical_setup_path).resolve()
+    expected = build_diagnostic_plan(
+        TD_B,
+        source="ray",
+        prerequisite_artifact=OPERATING_ENVELOPE_V2_PATH,
+        for_execution=True,
+        human_authorization=TD_B,
+        v2_capture_capability=True,
+    )
+    expected = resolve_td_b_plan_with_setup(
+        expected,
+        setup_artifact_path=setup_path,
+    )
+    expected["setup_lineage_release_required"] = True
+    if _normalize_td_b_resolved_plan(plan) != _normalize_td_b_resolved_plan(expected):
+        raise ValueError("TD-B lineage resolved plan differs from current frozen plan")
+    captures = plan.get("captures")
+    budgets = plan.get("budgets")
+    if (
+        not isinstance(captures, list)
+        or len(captures) != 16
+        or any(step.get("capture_role") != "formal" for step in captures)
+        or any(step.get("source_id") != "ray" for step in captures)
+        or plan.get("native_raw_ambient_policy")
+        != AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT
+        or not isinstance(budgets, Mapping)
+        or budgets.get("formal_cap") != 16
+        or budgets.get("ambient_cap") != 0
+        or budgets.get("physical_cr3_cap") != 24
+        or plan.get("setup_physical_cr3_count") != 2
+        or plan.get("formal_capture_eligible") is not True
+        or plan.get("setup_lineage_release_required") is not True
+    ):
+        raise ValueError("TD-B lineage resolved plan protocol differs")
+
+
+def validate_td_b_setup_lineage_release(
+    release: Mapping[str, Any],
+    *,
+    release_path: str | Path,
+    changed_paths_fn: Callable[[str, str], Sequence[str]] | None = None,
+) -> dict[str, Any]:
+    requested_path = Path(release_path)
+    if requested_path.is_symlink():
+        raise ValueError("TD-B setup lineage release cannot be a symlink")
+    path = requested_path.resolve()
+    required = {
+        "schema", "status", "production_release_usable",
+        "old_checkpoint", "code_checkpoint", "legacy_release",
+        "planner_lineage_candidate", "current_lineage_candidate",
+        "canonical_setup", "resolved_formal_plan",
+    }
+    if (
+        set(release) != required
+        or release.get("schema") != TD_B_SETUP_LINEAGE_RELEASE_SCHEMA
+        or release.get("status") != "formal_plan_lineage_qualified"
+        or release.get("production_release_usable") is not True
+        or release.get("old_checkpoint") != TD_B_SETUP_CHECKPOINT
+    ):
+        raise ValueError("TD-B setup lineage release schema or status differs")
+    checkpoint = release.get("code_checkpoint")
+    if (
+        not isinstance(checkpoint, str)
+        or len(checkpoint) != 40
+        or any(character not in "0123456789abcdef" for character in checkpoint)
+        or checkpoint in {TD_B_SETUP_CHECKPOINT, TD_B_F0A_CHECKPOINT}
+    ):
+        raise ValueError("TD-B setup lineage release checkpoint differs")
+
+    references: dict[str, Path] = {}
+    for name in (
+        "legacy_release", "planner_lineage_candidate",
+        "current_lineage_candidate", "canonical_setup", "resolved_formal_plan",
+    ):
+        reference = release.get(name)
+        if not isinstance(reference, Mapping) or set(reference) != {"path", "sha256"}:
+            raise ValueError(f"TD-B setup lineage release {name} reference differs")
+        target = Path(str(reference.get("path"))).resolve()
+        if (
+            not target.is_file()
+            or target.is_symlink()
+            or hashlib.sha256(target.read_bytes()).hexdigest()
+            != reference.get("sha256")
+        ):
+            raise ValueError(f"TD-B setup lineage release {name} owner or hash differs")
+        references[name] = target
+    if (
+        references["legacy_release"] != TD_B_SETUP_RELEASE_PATH.resolve()
+        or references["planner_lineage_candidate"]
+        != TD_B_F0A_LINEAGE_CANDIDATE_PATH.resolve()
+        or references["current_lineage_candidate"].parent != path.parent
+        or references["resolved_formal_plan"].parent != path.parent
+    ):
+        raise ValueError("TD-B setup lineage release path ownership differs")
+
+    legacy = json.loads(references["legacy_release"].read_text(encoding="utf-8"))
+    legacy_validated = validate_td_b_setup_release(
+        legacy,
+        release_path=references["legacy_release"],
+    )
+    if legacy_validated.get("code_checkpoint") != TD_B_SETUP_CHECKPOINT:
+        raise ValueError("TD-B setup lineage legacy checkpoint differs")
+    if references["canonical_setup"] != Path(
+        legacy_validated["canonical_path"]
+    ).resolve():
+        raise ValueError("TD-B setup lineage canonical setup differs")
+
+    planner_candidate = json.loads(
+        references["planner_lineage_candidate"].read_text(encoding="utf-8")
+    )
+    _validate_td_b_planner_lineage_candidate(
+        planner_candidate,
+        candidate_path=references["planner_lineage_candidate"],
+        legacy_release_path=references["legacy_release"],
+    )
+    current_candidate = json.loads(
+        references["current_lineage_candidate"].read_text(encoding="utf-8")
+    )
+    if changed_paths_fn is None:
+        changed_paths = changed_paths_between_checkpoints(
+            TD_B_SETUP_CHECKPOINT,
+            checkpoint,
+        )
+    else:
+        changed_paths = list(
+            changed_paths_fn(TD_B_SETUP_CHECKPOINT, checkpoint)
+        )
+    expected_candidate = build_td_b_setup_release_lineage_candidate(
+        references["legacy_release"],
+        old_checkpoint=TD_B_SETUP_CHECKPOINT,
+        new_checkpoint=checkpoint,
+        changed_paths=changed_paths,
+    )
+    if (
+        current_candidate != expected_candidate
+        or current_candidate.get("status") != "eligible_waiting_for_planner"
+        or current_candidate.get("production_release_usable") is not False
+        or current_candidate.get("prohibited_paths") != []
+    ):
+        raise ValueError("TD-B setup current lineage candidate differs")
+
+    resolved = json.loads(
+        references["resolved_formal_plan"].read_text(encoding="utf-8")
+    )
+    validate_td_b_lineage_resolved_plan(
+        resolved,
+        canonical_setup_path=references["canonical_setup"],
+    )
+    return {
+        **legacy_validated,
+        "schema": TD_B_SETUP_LINEAGE_RELEASE_SCHEMA,
+        "code_checkpoint": checkpoint,
+        "resolved_plan": resolved,
+        "lineage_release_path": str(path),
     }
 
 

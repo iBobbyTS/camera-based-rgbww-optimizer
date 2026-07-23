@@ -1989,6 +1989,163 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                     )
             backend.connect.assert_not_called()
 
+    def test_lineage_release_rebuilds_current_plan_and_reaches_formal_runner(self):
+        checkpoint = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=Path(__file__).parents[1],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        with _w0_temporary_directory() as tempdir:
+            release_path = measure.write_td_b_setup_lineage_release(
+                output_dir=tempdir,
+                run_name="lineage-release",
+                code_checkpoint=checkpoint,
+                validate_checkpoint_fn=lambda _checkpoint: None,
+            )
+            release = _read_json(release_path)
+            validated = subject.validate_td_b_setup_lineage_release(
+                release,
+                release_path=release_path,
+            )
+            resolved = validated["resolved_plan"]
+            self.assertTrue(release["production_release_usable"])
+            self.assertEqual(release["code_checkpoint"], checkpoint)
+            self.assertEqual(resolved["native_raw_ambient_policy"], "unsubtracted_no_ambient")
+            self.assertEqual(resolved["budgets"]["formal_cap"], 16)
+            self.assertEqual(resolved["budgets"]["ambient_cap"], 0)
+            self.assertEqual(resolved["setup_physical_cr3_count"], 2)
+            self.assertEqual(len(resolved["captures"]), 16)
+            self.assertTrue(all(row["capture_role"] == "formal" for row in resolved["captures"]))
+
+            sentinel = Path(tempdir) / "formal-run"
+            backend = mock.Mock()
+            backend.backend_name = "remote"
+            backend.v2_capture_capability = measure.REMOTE_V2_CAPABILITY
+            backend.connect = mock.Mock()
+            backend.resolve_capture_settings = mock.Mock()
+            backend.capture_with_timing = mock.Mock()
+            with mock.patch.object(measure, "_validate_checkpoint_and_tree"), mock.patch.object(
+                measure,
+                "run_authorized_plan",
+                return_value=sentinel,
+            ) as run_mock:
+                result = measure.run_resolved_td_b_formal(
+                    release_path,
+                    output_dir=Path(tempdir) / "runs",
+                    run_name="ray",
+                    camera_backend=backend,
+                    code_checkpoint=checkpoint,
+                )
+            self.assertEqual(result, sentinel)
+            run_mock.assert_called_once()
+            self.assertEqual(
+                run_mock.call_args.args[0]["native_raw_ambient_policy"],
+                "unsubtracted_no_ambient",
+            )
+
+    def test_lineage_release_rejects_candidate_and_resolved_plan_tampering(self):
+        checkpoint = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=Path(__file__).parents[1],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        with _w0_temporary_directory() as tempdir:
+            release_path = measure.write_td_b_setup_lineage_release(
+                output_dir=tempdir,
+                run_name="lineage-release",
+                code_checkpoint=checkpoint,
+                validate_checkpoint_fn=lambda _checkpoint: None,
+            )
+            release = _read_json(release_path)
+            candidate_path = Path(release["current_lineage_candidate"]["path"])
+            candidate = _read_json(candidate_path)
+            candidate["new_checkpoint"] = "f" * 40
+            candidate_path.write_text(json.dumps(candidate), encoding="utf-8")
+            release["current_lineage_candidate"] = subject.file_reference(candidate_path)
+            release_path.write_text(json.dumps(release), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "current lineage candidate"):
+                subject.validate_td_b_setup_lineage_release(
+                    release,
+                    release_path=release_path,
+                )
+
+        with _w0_temporary_directory() as tempdir:
+            release_path = measure.write_td_b_setup_lineage_release(
+                output_dir=tempdir,
+                run_name="lineage-release",
+                code_checkpoint=checkpoint,
+                validate_checkpoint_fn=lambda _checkpoint: None,
+            )
+            release = _read_json(release_path)
+            resolved_path = Path(release["resolved_formal_plan"]["path"])
+            resolved = _read_json(resolved_path)
+            resolved["budgets"]["ambient_cap"] = 1
+            resolved_path.write_text(json.dumps(resolved), encoding="utf-8")
+            release["resolved_formal_plan"] = subject.file_reference(resolved_path)
+            release_path.write_text(json.dumps(release), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "resolved plan"):
+                subject.validate_td_b_setup_lineage_release(
+                    release,
+                    release_path=release_path,
+                )
+
+        with _w0_temporary_directory() as tempdir:
+            release_path = measure.write_td_b_setup_lineage_release(
+                output_dir=tempdir,
+                run_name="lineage-release",
+                code_checkpoint=checkpoint,
+                validate_checkpoint_fn=lambda _checkpoint: None,
+            )
+            symlink = Path(tempdir) / "release-link.json"
+            symlink.symlink_to(release_path)
+            with self.assertRaisesRegex(ValueError, "symlink"):
+                subject.validate_td_b_setup_lineage_release(
+                    _read_json(release_path),
+                    release_path=symlink,
+                )
+
+        with _w0_temporary_directory() as tempdir:
+            with self.assertRaisesRegex(PermissionError, "prohibited"):
+                measure.write_td_b_setup_lineage_release(
+                    output_dir=tempdir,
+                    run_name="lineage-release",
+                    code_checkpoint=checkpoint,
+                    validate_checkpoint_fn=lambda _checkpoint: None,
+                    changed_paths_fn=lambda _old, _new: [
+                        "src/camera_based_rgbww_optimizer/control/camera_remote.py"
+                    ],
+                )
+
+    def test_lineage_qualification_cli_never_constructs_backend(self):
+        backend_factory = mock.Mock()
+        release = Path("/offline/setup-lineage-release.json")
+        with mock.patch.object(
+            measure,
+            "write_td_b_setup_lineage_release",
+            return_value=release,
+        ) as writer:
+            result = measure.main(
+                [
+                    "--experiment-id", subject.TD_B,
+                    "--source", "ray",
+                    "--phase", "formal",
+                    "--output-dir", "/offline",
+                    "--run-name", "lineage",
+                    "--setup-release", str(subject.TD_B_SETUP_RELEASE_PATH),
+                    "--lineage-candidate", str(subject.TD_B_F0A_LINEAGE_CANDIDATE_PATH),
+                    "--code-checkpoint", "a" * 40,
+                    "--qualify-lineage-release",
+                ],
+                backend_factory=backend_factory,
+            )
+        self.assertEqual(result, 0)
+        writer.assert_called_once()
+        backend_factory.assert_not_called()
+
 
 def _w0_temporary_directory():
     W0_TEMP_ROOT.mkdir(parents=True, exist_ok=True)

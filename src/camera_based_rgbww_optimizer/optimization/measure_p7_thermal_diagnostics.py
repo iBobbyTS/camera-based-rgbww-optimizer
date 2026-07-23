@@ -1319,14 +1319,139 @@ def run_resolved_td_b_formal(
     _validate_checkpoint_and_tree(code_checkpoint)
     path = Path(release_path).resolve()
     release = json.loads(path.read_text(encoding="utf-8"))
-    validated = thermal.validate_td_b_setup_release(release, release_path=path)
+    if release.get("schema") == thermal.TD_B_SETUP_LINEAGE_RELEASE_SCHEMA:
+        validated = thermal.validate_td_b_setup_lineage_release(
+            release,
+            release_path=path,
+        )
+    else:
+        validated = thermal.validate_td_b_setup_release(
+            release,
+            release_path=path,
+        )
     if validated.get("code_checkpoint") != code_checkpoint:
         raise PermissionError("TD-B formal release checkpoint differs from current HEAD")
-    plan = validated["resolved_plan"]
+    plan = copy.deepcopy(validated["resolved_plan"])
+    if release.get("schema") == thermal.TD_B_SETUP_LINEAGE_RELEASE_SCHEMA:
+        plan["setup_lineage_release"] = thermal.file_reference(path)
     validate_authorized_execution_plan(plan, camera_backend=camera_backend)
     return run_authorized_plan(
         plan, output_dir=output_dir, run_name=run_name, camera_backend=camera_backend,
     )
+
+
+def write_td_b_setup_lineage_release(
+    *,
+    output_dir: str | Path,
+    run_name: str,
+    code_checkpoint: str,
+    legacy_release_path: str | Path = thermal.TD_B_SETUP_RELEASE_PATH,
+    planner_candidate_path: str | Path = thermal.TD_B_F0A_LINEAGE_CANDIDATE_PATH,
+    changed_paths_fn: Callable[[str, str], Sequence[str]] | None = None,
+    validate_checkpoint_fn: Callable[[str], None] = _validate_checkpoint_and_tree,
+) -> Path:
+    """Create a production release without mutating retained setup evidence."""
+    validate_checkpoint_fn(code_checkpoint)
+    legacy_path = Path(legacy_release_path).resolve()
+    planner_path = Path(planner_candidate_path).resolve()
+    if legacy_path != thermal.TD_B_SETUP_RELEASE_PATH.resolve():
+        raise PermissionError("TD-B lineage release requires the frozen legacy release owner")
+    if planner_path != thermal.TD_B_F0A_LINEAGE_CANDIDATE_PATH.resolve():
+        raise PermissionError("TD-B lineage release requires the accepted Planner candidate owner")
+    if (
+        not planner_path.is_file()
+        or hashlib.sha256(planner_path.read_bytes()).hexdigest()
+        != thermal.TD_B_F0A_LINEAGE_CANDIDATE_SHA256
+    ):
+        raise PermissionError("TD-B lineage release Planner candidate hash differs")
+
+    root = (Path(output_dir) / run_name).resolve()
+    root.parent.mkdir(parents=True, exist_ok=True)
+    if root.is_symlink() or root.parent.is_symlink():
+        raise PermissionError("TD-B lineage release output owner cannot be a symlink")
+    if root.exists():
+        if not root.is_dir() or any(root.iterdir()):
+            raise FileExistsError(f"TD-B lineage release directory must be new: {root}")
+    else:
+        root.mkdir()
+
+    legacy = json.loads(legacy_path.read_text(encoding="utf-8"))
+    legacy_validated = thermal.validate_td_b_setup_release(
+        legacy,
+        release_path=legacy_path,
+    )
+    canonical_setup_path = Path(
+        legacy_validated["canonical_path"]
+    ).resolve()
+    if changed_paths_fn is None:
+        changed_paths = thermal.changed_paths_between_checkpoints(
+            thermal.TD_B_SETUP_CHECKPOINT,
+            code_checkpoint,
+        )
+    else:
+        changed_paths = list(
+            changed_paths_fn(thermal.TD_B_SETUP_CHECKPOINT, code_checkpoint)
+        )
+    current_candidate = thermal.build_td_b_setup_release_lineage_candidate(
+        legacy_path,
+        old_checkpoint=thermal.TD_B_SETUP_CHECKPOINT,
+        new_checkpoint=code_checkpoint,
+        changed_paths=changed_paths,
+    )
+    if (
+        current_candidate.get("status") != "eligible_waiting_for_planner"
+        or current_candidate.get("prohibited_paths") != []
+    ):
+        raise PermissionError("TD-B current lineage contains prohibited changes")
+    current_candidate_path = root / "current-lineage-candidate.json"
+    _write_json(current_candidate_path, current_candidate)
+
+    fresh = thermal.build_diagnostic_plan(
+        thermal.TD_B,
+        source="ray",
+        prerequisite_artifact=thermal.OPERATING_ENVELOPE_V2_PATH,
+        for_execution=True,
+        human_authorization=thermal.TD_B,
+        v2_capture_capability=True,
+    )
+    resolved = thermal.resolve_td_b_plan_with_setup(
+        fresh,
+        setup_artifact_path=canonical_setup_path,
+    )
+    resolved["setup_lineage_release_required"] = True
+    thermal.validate_td_b_lineage_resolved_plan(
+        resolved,
+        canonical_setup_path=canonical_setup_path,
+    )
+    resolved_path = root / "resolved-formal-plan.json"
+    _write_json(resolved_path, resolved)
+
+    release = {
+        "schema": thermal.TD_B_SETUP_LINEAGE_RELEASE_SCHEMA,
+        "status": "formal_plan_lineage_qualified",
+        "production_release_usable": True,
+        "old_checkpoint": thermal.TD_B_SETUP_CHECKPOINT,
+        "code_checkpoint": code_checkpoint,
+        "legacy_release": thermal.file_reference(legacy_path),
+        "planner_lineage_candidate": thermal.file_reference(planner_path),
+        "current_lineage_candidate": thermal.file_reference(
+            current_candidate_path
+        ),
+        "canonical_setup": thermal.file_reference(canonical_setup_path),
+        "resolved_formal_plan": thermal.file_reference(resolved_path),
+    }
+    release_path = root / "setup-lineage-release.json"
+    _write_json(release_path, release)
+    thermal.validate_td_b_setup_lineage_release(
+        release,
+        release_path=release_path,
+        changed_paths_fn=(
+            None
+            if changed_paths_fn is None
+            else lambda _old, _new: changed_paths
+        ),
+    )
+    return release_path
 
 
 def _write_json(path: Path, value: Mapping[str, Any]) -> None:
@@ -1358,12 +1483,14 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--prerequisite-artifact", type=Path, default=thermal.OPERATING_ENVELOPE_PATH)
     parser.add_argument("--phase", choices=("setup", "formal"))
     parser.add_argument("--setup-release", type=Path)
+    parser.add_argument("--lineage-candidate", type=Path)
     parser.add_argument("--finalize-setup-run", type=Path)
     parser.add_argument("--orchestrate-setup", action="store_true")
     parser.add_argument("--code-checkpoint")
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--dry-run", action="store_true")
     mode.add_argument("--execute", action="store_true")
+    mode.add_argument("--qualify-lineage-release", action="store_true")
     parser.add_argument("--allow-device-control", action="store_true")
     parser.add_argument("--human-authorization")
     camera_remote.add_camera_backend_arguments(parser, default="remote")
@@ -1380,6 +1507,26 @@ def main(
     resolved_run_fn: Callable[..., Path] = run_resolved_td_b_formal,
 ) -> int:
     args = parse_args(argv)
+    if args.qualify_lineage_release:
+        if (
+            args.experiment_id != thermal.TD_B
+            or args.source != "ray"
+            or args.phase != "formal"
+            or args.setup_release is None
+            or args.lineage_candidate is None
+            or not args.code_checkpoint
+        ):
+            raise PermissionError(
+                "lineage qualification requires exact Ray TD-B formal inputs"
+            )
+        print(write_td_b_setup_lineage_release(
+            output_dir=args.output_dir,
+            run_name=args.run_name,
+            code_checkpoint=args.code_checkpoint,
+            legacy_release_path=args.setup_release,
+            planner_candidate_path=args.lineage_candidate,
+        ))
+        return 0
     if args.dry_run:
         if args.phase == "setup":
             plan = thermal.build_diagnostic_plan(
