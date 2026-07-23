@@ -1457,6 +1457,89 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                 "iso": "125", "aperture": "implicit auto", "image_format": "RAW",
             })
 
+    def test_td_b_authorized_runner_binds_exact_no_ambient_owner(self):
+        observed = {}
+
+        class StopAfterBinding(Exception):
+            pass
+
+        class FakeBackend:
+            backend_name = "remote"
+            v2_capture_capability = measure.REMOTE_V2_CAPABILITY
+
+            def connect(self):
+                return camera_gphoto2.CameraConnection("fake-remote", "offline")
+
+            def resolve_capture_settings(self, **_kwargs):
+                return camera_gphoto2.CaptureSettings(
+                    iso="100",
+                    aperture="implicit auto",
+                    shutter_speed="1/100",
+                    image_format="RAW",
+                )
+
+            def capture_with_timing(self, **_kwargs):
+                raise AssertionError("offline binding test must not reach camera capture")
+
+        plan = subject.build_diagnostic_plan(
+            subject.TD_B,
+            source="strip",
+            prerequisite_artifact=subject.OPERATING_ENVELOPE_V2_PATH,
+            for_execution=True,
+            human_authorization=subject.TD_B,
+            v2_capture_capability=True,
+        )
+
+        def adapter_builder(**kwargs):
+            observed["builder"] = kwargs
+
+            def adapter(step):
+                observed["raw_step"] = dict(step)
+                raise StopAfterBinding
+
+            return adapter
+
+        def fake_execute(resolved_plan, **kwargs):
+            observed["resolved_plan"] = resolved_plan
+            self.assertFalse(any(
+                step["capture_role"] == "ambient"
+                for step in resolved_plan["captures"]
+            ))
+            try:
+                kwargs["capture_fn"](resolved_plan["captures"][0])
+            except StopAfterBinding:
+                pass
+            return Path("fake-td-b")
+
+        with mock.patch(
+            "camera_based_rgbww_optimizer.optimization."
+            "measure_raw_observer_validation.build_native_raw_capture_step_fn",
+            side_effect=adapter_builder,
+        ), mock.patch.object(measure, "execute_plan", side_effect=fake_execute):
+            result = measure.run_authorized_plan(
+                plan,
+                output_dir=Path(
+                    "/Volumes/4T/temp/rgbww-optimizer/p7-td-b-f0a-offline/"
+                    "fake-production-roundtrip"
+                ),
+                run_name="strip",
+                camera_backend=FakeBackend(),
+            )
+
+        self.assertEqual(result, Path("fake-td-b"))
+        self.assertEqual(
+            observed["builder"]["ambient_policy"],
+            subject.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+        )
+        self.assertEqual(
+            observed["builder"]["ambient_policy_owner"],
+            measure.raw_validation.TD_B_FORMAL_AMBIENT_POLICY_OWNER,
+        )
+        self.assertEqual(
+            observed["raw_step"]["analysis_context"]["native_raw_ambient_policy"],
+            subject.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+        )
+
     def test_authorized_runner_settings_failure_is_before_run_directory_and_lights(self):
         class FakeBackend:
             backend_name = "remote"
@@ -1739,6 +1822,172 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
         }
         self.assertTrue(local_names)
         self.assertEqual(local_names & readonly_special, set())
+
+    def test_td_b_v2_owns_the_only_no_ambient_plan_policy(self):
+        td_b_ray = subject.build_diagnostic_plan(subject.TD_B, source="ray")
+        td_b_strip = subject.build_diagnostic_plan(subject.TD_B, source="strip")
+        for plan in (td_b_ray, td_b_strip):
+            self.assertEqual(
+                plan["native_raw_ambient_policy"],
+                subject.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+            )
+            self.assertEqual(plan["budgets"]["ambient_cap"], 0)
+            self.assertFalse(any(
+                step["capture_role"] == "ambient" for step in plan["captures"]
+            ))
+        for experiment, source in ((subject.TD_A, "ray"), (subject.TD_C, None)):
+            plan = subject.build_diagnostic_plan(experiment, source=source)
+            self.assertEqual(
+                plan["native_raw_ambient_policy"],
+                subject.AMBIENT_POLICY_REQUIRE_PRECEDING,
+            )
+
+        authorized = subject.build_diagnostic_plan(
+            subject.TD_A,
+            source="ray",
+            for_execution=True,
+            human_authorization=subject.TD_A,
+            v2_capture_capability=True,
+        )
+        authorized["native_raw_ambient_policy"] = (
+            subject.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT
+        )
+        with self.assertRaisesRegex(PermissionError, "ambient policy"):
+            measure.validate_authorized_execution_plan(authorized)
+
+    def test_physical_return_is_persisted_before_post_return_processing_failure(self):
+        plan = subject.build_diagnostic_plan(
+            subject.TD_A,
+            source="ray",
+            for_execution=True,
+            human_authorization=subject.TD_A,
+            v2_capture_capability=True,
+        )
+        plan = {
+            **plan,
+            "captures": [plan["captures"][1]],
+            "budgets": {
+                "formal_cap": 1,
+                "ambient_cap": 0,
+                "physical_cr3_cap": 22,
+            },
+            "frozen_shutters": {"ray-h120-s100": "1/5000"},
+            "exposure_setup_required": [],
+            "shutter_ledger_provenance": {
+                "owner": "experiment_capture_steps",
+                "required_cache_keys": ["ray-h120-s100"],
+                "frozen_shutters_sha256": subject.canonical_sha256(
+                    {"ray-h120-s100": "1/5000"}
+                ),
+            },
+        }
+        with _w0_temporary_directory() as tempdir:
+            root = Path(tempdir) / "run"
+            observer = {}
+
+            def bind(callback):
+                observer["callback"] = callback
+
+            def capture(step):
+                raw = root / "returned.CR3"
+                raw.write_bytes(b"physical")
+                result = camera_gphoto2.CaptureResult(
+                    connection=camera_gphoto2.CameraConnection("fake", "offline"),
+                    settings=camera_gphoto2.CaptureSettings(
+                        iso="100",
+                        aperture="implicit auto",
+                        shutter_speed="1/5000",
+                        image_format="RAW",
+                    ),
+                    saved_file=raw,
+                    stdout="",
+                )
+                observer["callback"](step, result, 1)
+                raise ValueError("post-return analyzer failed")
+
+            with self.assertRaisesRegex(ValueError, "post-return analyzer failed"):
+                measure.execute_plan(
+                    plan,
+                    run_dir=root,
+                    apply_command_fn=lambda _step: {},
+                    readback_fn=lambda _step: {},
+                    capture_fn=capture,
+                    both_off_gate_fn=lambda _gate: {
+                        "status": "pass",
+                        "strip_verified_off": True,
+                        "ray_verified_off": True,
+                    },
+                    cleanup_fn=lambda: {"status": "pass"},
+                    bind_physical_return_observer_fn=bind,
+                    monotonic_fn=lambda: 0,
+                    sleep_fn=lambda _seconds: None,
+                )
+            run = _read_json(root / "run.json")
+            failure = _read_json(root / "failure.json")
+            physical = [
+                json.loads(line)
+                for line in (root / "physical-returns.jsonl").read_text().splitlines()
+            ]
+            captures = (
+                (root / "captures.jsonl").read_text().splitlines()
+                if (root / "captures.jsonl").exists()
+                else []
+            )
+            self.assertEqual(run["physical_returned_cr3_count"], 1)
+            self.assertEqual(run["accepted_formal_count"], 0)
+            self.assertEqual(len(physical), 1)
+            self.assertEqual(captures, [])
+            self.assertEqual(
+                failure["rejected_capture"]["rejection_stage"],
+                "post_return_processing",
+            )
+
+    def test_setup_release_lineage_candidate_is_planner_only_and_fail_closed(self):
+        release = Path(
+            "/Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/"
+            "p7-td-b-canon-r2-setup-20260723-042002/setup-release.json"
+        )
+        candidate = subject.build_td_b_setup_release_lineage_candidate(
+            release,
+            old_checkpoint=subject.TD_B_SETUP_CHECKPOINT,
+            new_checkpoint="b" * 40,
+            changed_paths=[
+                ".agent-work/PLAN.md",
+                "src/camera_based_rgbww_optimizer/optimization/"
+                "measure_raw_observer_validation.py",
+                "tests/test_p7_thermal_diagnostics.py",
+                "docs/README.md",
+            ],
+        )
+        self.assertEqual(candidate["status"], "eligible_waiting_for_planner")
+        self.assertFalse(candidate["production_release_usable"])
+        self.assertTrue(candidate["planner_acceptance_required"])
+
+        ineligible = subject.build_td_b_setup_release_lineage_candidate(
+            release,
+            old_checkpoint=subject.TD_B_SETUP_CHECKPOINT,
+            new_checkpoint="c" * 40,
+            changed_paths=["src/camera_based_rgbww_optimizer/control/camera_remote.py"],
+        )
+        self.assertEqual(ineligible["status"], "ineligible_requires_new_setup")
+        self.assertEqual(
+            ineligible["prohibited_paths"],
+            ["src/camera_based_rgbww_optimizer/control/camera_remote.py"],
+        )
+        with _w0_temporary_directory() as tempdir:
+            candidate_path = Path(tempdir) / "lineage-candidate.json"
+            candidate_path.write_text(json.dumps(candidate), encoding="utf-8")
+            backend = mock.Mock()
+            with mock.patch.object(measure, "_validate_checkpoint_and_tree"):
+                with self.assertRaisesRegex(ValueError, "release schema"):
+                    measure.run_resolved_td_b_formal(
+                        candidate_path,
+                        output_dir=Path(tempdir) / "runs",
+                        run_name="must-not-run",
+                        camera_backend=backend,
+                        code_checkpoint="b" * 40,
+                    )
+            backend.connect.assert_not_called()
 
 
 def _w0_temporary_directory():

@@ -825,6 +825,27 @@ TD-C unresolved dependency times remain null/deferred and are rejected by the
 runner until an accepted prerequisite artifact freezes a value in
 60/120/300 seconds.
 
+TD-B v2 is the single experiment-aware exception to the shared native RAW
+ambient requirement. Its exact formal owner uses
+`native_raw_ambient_policy=unsubtracted_no_ambient`, schedules 16 formal and
+zero ambient captures per source, and derives its 58-feature forensic vector
+from `statistics.normalized_per_second.trimmed_mean`; it does not silently
+substitute ambient-subtracted values. TD-A, TD-C, and every other shared RAW
+caller retain `require_preceding_ambient`. Unknown owners, an ambient step under
+the TD-B exception, or any plan/payload/report policy mismatch fail closed.
+
+Thermal v2 persists physical side effects and accepted measurements in
+different ledgers. The capture-return observer appends and hashes the nonempty
+current-run CR3 in `physical-returns.jsonl` immediately after the camera adapter
+returns, before exposure extraction, RAW analysis, feature extraction, timing,
+or covariate validation. Only a fully accepted measurement is appended to
+`captures.jsonl` and increments the accepted formal/ambient counters. A
+pre-request cap check prevents a known overrun; any post-return failure retains
+the physical row and failure stage without converting it into an accepted
+capture. The public analyzer independently rebuilds physical and accepted
+counts and rejects duplicate owners, hash drift, self-reported counter drift,
+or missing cross-ledger associations.
+
 TD-C analysis is a real gate: it reports structured decisions for paired
 compatibility, balanced order effect, stable centers, current Ray center versus
 P6 interpretability, and ambient trend. Any failed component returns
@@ -889,6 +910,24 @@ zero. The release binds canonical setup and resolved formal plan without a
 circular self-hash. Ray formal resume uses `--phase formal --setup-release PATH
 --code-checkpoint HEAD`; it reloads the release from disk. Strip TD-B remains a
 fixed 16-capture formal phase with no setup artifact.
+
+An implementation-only checkpoint change never upgrades that retained release
+automatically. Offline code may build
+`p7_td_b_setup_release_lineage_candidate_v1` after replaying the original
+canonical setup/release and classifying every changed repository path. The
+candidate always carries `production_release_usable=false` and requires an
+explicit Planner decision; the production formal runner accepts only the
+original release schema. Changes to camera/remote parsing, setup semantics,
+frozen inputs, budgets, commands, shutter resolution, or cleanup make the
+candidate ineligible and require a new setup.
+
+The first CR3 returned by the failed Ray TD-B run is retained only as immutable
+forensic evidence. Its replay is pinned to the original run path, CR3/sidecar
+hashes, capture/request IDs, Ray A command/readback, `1/5000` shutter,
+`Canon:ExposureTime`, and Tier B timing. Replay writes a new derived report and
+58-feature hash outside the failed run, with `forensic_only=true`,
+`accepted_formal=false`, and `reusable_capture=false`; it never appends to the
+old or a new formal capture ledger.
 
 After both public single-source analyses complete, invoke the same analyzer
 with `--paired-run`, `--combined-output`, `--code-checkpoint`, and

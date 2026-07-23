@@ -23,6 +23,7 @@ from camera_based_rgbww_optimizer.measurement.hsi_uncertainty import (
 from camera_based_rgbww_optimizer.measurement.ray_hsi_manifold import RayHsiManifold
 
 from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
+from camera_based_rgbww_optimizer.optimization import measure_raw_observer_validation as raw_validation
 from camera_based_rgbww_optimizer.control import camera_remote_v2
 from camera_based_rgbww_optimizer.optimization.analyze_hsi_reference_repeatability import (
     write_reference_epoch_v2_derived,
@@ -51,6 +52,29 @@ TD_A_COMMAND_CONTRACT = {
     "code_checkpoint_owner": "--code-checkpoint",
 }
 _GIT_CHECKPOINT_RE = re.compile(r"[0-9a-f]{7,64}")
+TD_B_RETAINED_FAILED_RAY_RUN = Path(
+    "/Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/"
+    "p7-td-b-canon-r2-ray-20260723-045514"
+)
+TD_B_RETAINED_FIRST_CAPTURE_PATH = (
+    TD_B_RETAINED_FAILED_RAY_RUN
+    / "camera"
+    / (
+        "000-ray-a-t600-source-ray-purpose-p7_thermal_td-b_ray_A-repeat-0-"
+        "exposure-auto-attempt-0.cr3"
+    )
+)
+TD_B_RETAINED_FIRST_SIDECAR_PATH = TD_B_RETAINED_FIRST_CAPTURE_PATH.with_suffix(
+    TD_B_RETAINED_FIRST_CAPTURE_PATH.suffix + ".metadata.json"
+)
+TD_B_RETAINED_FIRST_CAPTURE_SHA256 = (
+    "2cf5d680d694eb9c0d2e36bf8144dcf2f1fe02cd902bc4c202cf92ce1a699608"
+)
+TD_B_RETAINED_FIRST_SIDECAR_SHA256 = (
+    "9952bf79094d7d93b21a9864e841359d0195c423c3dc8464e0250231bc1721ee"
+)
+TD_B_RETAINED_FIRST_CAPTURE_ID = "bfc876fa-9a69-445d-bfc2-298f42baf3af"
+TD_B_RETAINED_FIRST_REQUEST_ID = "36d2a813-8d35-4f9a-b860-c58cc1ba12e9"
 
 
 def analyze_thermal_run(
@@ -82,6 +106,26 @@ def analyze_thermal_run(
         raise ValueError("thermal analyzer requires an explicit supported plan schema")
     if plan.get("timing_contract") != expected_contract:
         raise ValueError("thermal timing contract differs from frozen best-effort contract")
+    expected_ambient_policy = thermal.expected_native_raw_ambient_policy(
+        str(plan.get("experiment_id")),
+        plan_schema=str(plan.get("schema")),
+    )
+    stored_ambient_policy = plan.get(
+        "native_raw_ambient_policy",
+        raw_validation.AMBIENT_POLICY_REQUIRE_PRECEDING if timing_version == 1 else None,
+    )
+    if stored_ambient_policy != expected_ambient_policy:
+        raise ValueError("thermal native RAW ambient policy differs from frozen plan")
+    if expected_ambient_policy == raw_validation.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT:
+        if (
+            any(
+                step.get("capture_role") == "ambient"
+                or step.get("source_id") == "ambient"
+                for step in plan.get("captures", [])
+            )
+            or plan.get("budgets", {}).get("ambient_cap") != 0
+        ):
+            raise ValueError("TD-B unsubtracted_no_ambient plan contains ambient evidence")
     if timing_version == 2:
         for step in plan.get("captures", []):
             if "timing_tolerance_s" in step or "actual_elapsed_s" in step:
@@ -91,6 +135,14 @@ def analyze_thermal_run(
     capture_settings = _validate_capture_settings_provenance(plan, run)
     captures = _load_jsonl(root / "captures.jsonl")
     covariates = _load_jsonl(root / "thermal-covariates.jsonl")
+    physical_ledger_required = timing_version == 2
+    physical_returns = (
+        _load_jsonl(root / "physical-returns.jsonl")
+        if physical_ledger_required and (root / "physical-returns.jsonl").is_file()
+        else []
+    )
+    if physical_ledger_required and not (root / "physical-returns.jsonl").is_file():
+        raise ValueError("thermal v2 physical return ledger is missing")
     commands = _load_jsonl(root / "commands.jsonl")
     isolation = _load_jsonl(root / "isolation-gates.jsonl")
     if len(captures) != len(plan["captures"]) or len(covariates) != len(captures):
@@ -158,7 +210,35 @@ def analyze_thermal_run(
     thermal.audit_chronology(covariates)
     recomputed_formal = 0
     recomputed_ambient = 0
-    recomputed_physical = setup_physical
+    physical_by_capture: dict[str, Mapping[str, Any]] = {}
+    owned_physical_paths: set[Path] = set()
+    for index, row in enumerate(physical_returns, start=1):
+        if (
+            row.get("schema") != thermal.PHYSICAL_RETURN_LEDGER_SCHEMA
+            or row.get("physical_index") != index
+            or row.get("accepted_measurement") is not False
+        ):
+            raise ValueError("thermal physical return ledger schema or order differs")
+        capture_id = row.get("capture_id")
+        if not isinstance(capture_id, str) or capture_id in physical_by_capture:
+            raise ValueError("thermal physical return ledger owner is missing or duplicated")
+        raw_candidate = Path(str(row.get("cr3_path")))
+        raw_path = raw_candidate.resolve()
+        if (
+            raw_candidate.is_symlink()
+            or not raw_path.is_relative_to(root.resolve())
+            or not raw_path.is_file()
+            or raw_path.stat().st_size <= 0
+            or raw_path in owned_physical_paths
+            or row.get("cr3_byte_count") != raw_path.stat().st_size
+            or row.get("cr3_sha256") != _sha256_file(raw_path)
+        ):
+            raise ValueError("thermal physical return ledger CR3 evidence differs")
+        physical_by_capture[capture_id] = row
+        owned_physical_paths.add(raw_path)
+    if physical_ledger_required and len(physical_returns) != len(captures):
+        raise ValueError("thermal physical return and accepted capture ledgers differ")
+    recomputed_physical = setup_physical + len(physical_returns)
     formal_captures = []
     ambient_captures = []
     timing_tiers: dict[str, int] = defaultdict(int)
@@ -172,6 +252,35 @@ def analyze_thermal_run(
         if capture.get("capture_role") != step.get("capture_role") or bool(capture.get("formal_measurement")) != bool(step.get("formal_measurement")):
             raise ValueError("thermal capture formal/ambient role mismatch")
         payload = capture.get("capture") or {}
+        payload_ambient_policy = payload.get(
+            "native_raw_ambient_policy",
+            raw_validation.AMBIENT_POLICY_REQUIRE_PRECEDING
+            if timing_version == 1 else None,
+        )
+        if payload_ambient_policy != expected_ambient_policy:
+            raise ValueError("thermal accepted capture ambient policy drifted")
+        if timing_version == 2:
+            report_value = payload.get("patch_statistics")
+            report_path = Path(str(report_value)).resolve() if report_value else None
+            if (
+                report_path is None
+                or not report_path.is_relative_to(root.resolve())
+                or not report_path.is_file()
+            ):
+                raise ValueError("thermal accepted capture native RAW report is missing")
+            report = _load_json(report_path)
+            report_context = report.get("analysis_context")
+            if (
+                not isinstance(report_context, Mapping)
+                or report_context.get("native_raw_ambient_policy") != expected_ambient_policy
+                or bool(report_context.get("ambient_subtraction_applied"))
+                != (
+                    expected_ambient_policy
+                    == raw_validation.AMBIENT_POLICY_REQUIRE_PRECEDING
+                    and step.get("source_id") != "ambient"
+                )
+            ):
+                raise ValueError("thermal native RAW report ambient policy replay failed")
         camera_capture = payload.get("capture")
         if not isinstance(camera_capture, Mapping) or any(
             camera_capture.get(key) != capture_settings[key]
@@ -217,6 +326,13 @@ def analyze_thermal_run(
         ):
             raise ValueError("thermal capture lacks retained nonempty CR3 provenance")
         owned_raw_paths.add(resolved_raw)
+        if physical_ledger_required:
+            physical_row = physical_by_capture.get(str(step["capture_id"]))
+            if (
+                not isinstance(physical_row, Mapping)
+                or Path(str(physical_row.get("cr3_path"))).resolve() != resolved_raw
+            ):
+                raise ValueError("thermal accepted capture differs from physical return owner")
         timing, estimate_method = _replay_timing_evidence(capture, payload, resolved_raw, root)
         timing_tiers[str(timing["tier"])] += 1
         if timing["tier"] == "tier_c":
@@ -256,13 +372,24 @@ def analyze_thermal_run(
         physical_value = payload.get("physical_capture_count")
         if type(physical_value) is not int or physical_value != 1:
             raise ValueError("thermal fixed capture physical count must equal one")
-        recomputed_physical += physical_value
+        if not physical_ledger_required:
+            recomputed_physical += physical_value
     if recomputed_formal != int(plan["budgets"]["formal_cap"]) or int(run.get("completed_formal", -1)) != recomputed_formal:
         raise ValueError("thermal formal ledger count mismatch")
     if recomputed_ambient != int(plan["budgets"]["ambient_cap"]) or int(run.get("ambient_capture_count", -1)) != recomputed_ambient:
         raise ValueError("thermal ambient ledger count mismatch")
     if int(run.get("setup_physical_cr3_count", 0)) != setup_physical:
         raise ValueError("thermal run setup physical ledger mismatch")
+    if (
+        physical_ledger_required
+        and int(run.get("physical_returned_cr3_count", -1)) != len(physical_returns)
+    ):
+        raise ValueError("thermal run physical-return counter mismatch")
+    if physical_ledger_required and (
+        int(run.get("accepted_formal_count", -1)) != recomputed_formal
+        or int(run.get("accepted_ambient_count", -1)) != recomputed_ambient
+    ):
+        raise ValueError("thermal run accepted measurement counters mismatch")
     if recomputed_physical != int(run.get("physical_cr3_count", -1)) or recomputed_physical > int(plan["budgets"]["physical_cr3_cap"]):
         raise ValueError("thermal physical CR3 ledger mismatch")
     if list(root.rglob("*.npy")):
@@ -316,6 +443,7 @@ def analyze_thermal_run(
         "wrapper_contract": completion_audit["wrapper_contract"],
         "formal_capture_count": recomputed_formal, "ambient_capture_count": recomputed_ambient,
         "physical_cr3_count": recomputed_physical, "setup_physical_cr3_count": setup_physical,
+        "native_raw_ambient_policy": expected_ambient_policy,
         "retained_npy_count": 0,
         "timing_absolute_truth": False,
         "timing_source": "best_effort_gphoto2_observed_elapsed" if timing_version == 2 else "best_effort_gphoto2",
@@ -325,8 +453,286 @@ def analyze_thermal_run(
     }
     if timing_version == 2:
         report["timing_slot_summary"] = timing_slot_summary
+        report.update({
+            "physical_returned_cr3_count": len(physical_returns),
+            "accepted_formal_count": recomputed_formal,
+            "accepted_ambient_count": recomputed_ambient,
+        })
     report.update(result)
     return report
+
+
+def replay_retained_td_b_first_capture(
+    output_dir: str | Path,
+    *,
+    raw_analyze_fn: Callable[..., Mapping[str, Any]] | None = None,
+    raw_report_writer: Callable[[str | Path, Mapping[str, Any]], Path] | None = None,
+) -> dict[str, Any]:
+    """Replay the fixed failed-run CR3 as forensic-only, never formal evidence."""
+    return _replay_td_b_first_capture(
+        cr3_path=TD_B_RETAINED_FIRST_CAPTURE_PATH,
+        sidecar_path=TD_B_RETAINED_FIRST_SIDECAR_PATH,
+        failed_run_path=TD_B_RETAINED_FAILED_RAY_RUN,
+        expected_cr3_sha256=TD_B_RETAINED_FIRST_CAPTURE_SHA256,
+        expected_sidecar_sha256=TD_B_RETAINED_FIRST_SIDECAR_SHA256,
+        expected_capture_id=TD_B_RETAINED_FIRST_CAPTURE_ID,
+        expected_request_id=TD_B_RETAINED_FIRST_REQUEST_ID,
+        output_dir=output_dir,
+        raw_analyze_fn=raw_analyze_fn,
+        raw_report_writer=raw_report_writer,
+    )
+
+
+def _replay_td_b_first_capture(
+    *,
+    cr3_path: str | Path,
+    sidecar_path: str | Path,
+    failed_run_path: str | Path,
+    expected_cr3_sha256: str,
+    expected_sidecar_sha256: str,
+    expected_capture_id: str,
+    expected_request_id: str,
+    output_dir: str | Path,
+    raw_analyze_fn: Callable[..., Mapping[str, Any]] | None = None,
+    raw_report_writer: Callable[[str | Path, Mapping[str, Any]], Path] | None = None,
+) -> dict[str, Any]:
+    from camera_based_rgbww_optimizer.control import camera_gphoto2
+    from camera_based_rgbww_optimizer.measurement import raw_mosaic_patches
+    from camera_based_rgbww_optimizer.measurement.recorded_exposure import (
+        RecordedExposure,
+        parse_nominal_exposure,
+    )
+    from camera_based_rgbww_optimizer.measurement.raw_observer_analysis import (
+        collect_patch_plane_features,
+    )
+
+    root = Path(failed_run_path).resolve()
+    raw_candidate = Path(cr3_path)
+    sidecar_candidate = Path(sidecar_path)
+    raw = raw_candidate.resolve()
+    sidecar = sidecar_candidate.resolve()
+    if (
+        raw_candidate.is_symlink()
+        or sidecar_candidate.is_symlink()
+        or not raw.is_relative_to(root)
+        or not sidecar.is_relative_to(root)
+        or not raw.is_file()
+        or raw.stat().st_size <= 0
+        or not sidecar.is_file()
+        or sidecar.stat().st_size <= 0
+    ):
+        raise ValueError("retained TD-B first-capture owner is missing or outside failed run")
+    payload = raw.read_bytes()
+    if (
+        hashlib.sha256(payload).hexdigest() != expected_cr3_sha256
+        or hashlib.sha256(sidecar.read_bytes()).hexdigest()
+        != expected_sidecar_sha256
+    ):
+        raise ValueError("retained TD-B first-capture CR3 or sidecar hash differs")
+
+    plan = _load_json(root / "plan.json")
+    commands = _load_jsonl(root / "commands.jsonl")
+    expected_step = {
+        "capture_id": "000-ray-a-t600",
+        "capture_role": "formal",
+        "command": {"hue": 120, "intensity_percent": 100.0, "sat": 100},
+        "exact_command_hash": (
+            "88de37b2161c25b401d616a34c105199243afe21c15545fe5a27691adbdbc96c"
+        ),
+        "formal_measurement": True,
+        "isolation_gate_after": "after_initial_anchor",
+        "requested_elapsed_s": 600,
+        "role": "initial_anchor",
+        "source_id": "ray",
+        "state_id": "A",
+        "timing_acceptance": "observed_elapsed_record_only",
+        "timing_status": "resolved",
+    }
+    if (
+        plan.get("experiment_id") != thermal.TD_B
+        or plan.get("schema") != thermal.PLAN_SCHEMA_V2
+        or plan.get("source") != "ray"
+        or plan.get("frozen_shutters", {}).get("ray-h120-s100") != "1/5000"
+        or not isinstance(plan.get("captures"), list)
+        or not plan["captures"]
+        or plan["captures"][0] != expected_step
+    ):
+        raise ValueError("retained TD-B first-capture frozen plan identity differs")
+    first_command = commands[0] if commands else {}
+    if (
+        first_command.get("event") != "command_readback_verified"
+        or first_command.get("source_id") != "ray"
+        or first_command.get("state_id") != "A"
+        or first_command.get("exact_command_hash")
+        != expected_step["exact_command_hash"]
+        or (first_command.get("readback") or {}).get("data")
+        != {"hue": 120, "sat": 100, "intensity": 1000}
+    ):
+        raise ValueError("retained TD-B first-capture command/readback owner differs")
+
+    try:
+        metadata = json.loads(sidecar.read_text(encoding="utf-8"))
+        remote, receipt = camera_remote_v2.split_and_validate_sidecar(
+            metadata,
+            payload=payload,
+        )
+    except (
+        OSError,
+        UnicodeError,
+        json.JSONDecodeError,
+        camera_remote_v2.RemoteCaptureV2Error,
+    ) as exc:
+        raise ValueError("retained TD-B first-capture sidecar replay failed") from exc
+    recorded = remote.get("recorded_exposure") or {}
+    timing = receipt.get("timing_evidence") or {}
+    if (
+        remote.get("capture_id") != expected_capture_id
+        or remote.get("request_id") != expected_request_id
+        or recorded.get("status") != "recorded"
+        or recorded.get("source") != "Canon:ExposureTime"
+        or not isinstance(recorded.get("seconds"), (int, float))
+        or float(recorded["seconds"]) <= 0
+        or timing.get("tier") != "tier_b"
+        or timing.get("status") != "accepted_best_effort_anchor"
+    ):
+        raise ValueError("retained TD-B first-capture ID/exposure/timing association differs")
+
+    output = Path(output_dir).resolve()
+    output.mkdir(parents=True, exist_ok=False)
+    measurements = output / "measurements"
+    measurements.mkdir()
+    shutter = "1/5000"
+    nominal_seconds = parse_nominal_exposure(shutter)
+    exposure = RecordedExposure(
+        seconds=float(recorded["seconds"]),
+        source="Canon:ExposureTime",
+        nominal_seconds=nominal_seconds,
+        nominal_shutter_speed=shutter,
+        raw_file=raw,
+        status="recorded",
+        metadata_values={"Canon:ExposureTime": float(recorded["seconds"])},
+    )
+    capture = camera_gphoto2.CaptureResult(
+        connection=camera_gphoto2.CameraConnection(
+            model="Canon EOS R6 Mark III via retained remote-v2 evidence",
+            port="forensic-only",
+        ),
+        settings=camera_gphoto2.CaptureSettings(
+            iso="100",
+            aperture="implicit auto",
+            shutter_speed=shutter,
+            image_format="RAW",
+        ),
+        saved_file=raw,
+        stdout="",
+        backend="remote",
+        endpoint="/v2/capture",
+        http_attempts=int(receipt["http_attempts"]),
+        remote_metadata_path=sidecar,
+        timing_metadata=metadata,
+        timing_evidence=timing,
+    )
+    analyze_fn = raw_analyze_fn or raw_mosaic_patches.analyze_raw_file
+    writer = raw_report_writer or raw_mosaic_patches.write_report
+    report_path, quality = raw_validation._write_native_capture_report(
+        capture,
+        step={
+            "capture_id": expected_step["capture_id"],
+            "source": "ray",
+            "purpose": "p7_td_b_retained_first_capture_forensic",
+            "repeat_index": 0,
+            "analysis_context": {
+                "forensic_only": True,
+                "accepted_formal": False,
+                "reusable_capture": False,
+            },
+        },
+        ambient_capture=None,
+        capture_exposure=exposure,
+        location_config_path=thermal.LOCATION_PATH,
+        observer_config_path=thermal.OBSERVER_PATH,
+        measurements_dir=measurements,
+        raw_analyze_fn=analyze_fn,
+        raw_report_writer=writer,
+        ambient_policy=raw_validation.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+        ambient_policy_owner=raw_validation.TD_B_FORMAL_AMBIENT_POLICY_OWNER,
+    )
+    report = _load_json(report_path)
+    feature_ids = _load_json(thermal.POLICY_PATH)["feature_set"]["ids"]
+    forensic_statistic = "statistics.normalized_per_second.trimmed_mean"
+    collection = collect_patch_plane_features(
+        [report],
+        statistic=forensic_statistic,
+    )
+    observations = {
+        str(item["feature_id"]): item for item in collection["observations"]
+    }
+    features = {
+        feature_id: float(observations[feature_id]["value"])
+        for feature_id in feature_ids
+        if (
+            feature_id in observations
+            and observations[feature_id].get("status") == "included"
+            and observations[feature_id].get("quality_status") == "accepted"
+            and observations[feature_id].get("value") is not None
+        )
+    }
+    if len(features) != 58 or set(features) != set(feature_ids):
+        raise ValueError("retained TD-B first-capture replay lacks frozen 58 features")
+    feature_payload = json.dumps(
+        features,
+        sort_keys=True,
+        separators=(",", ":"),
+        allow_nan=False,
+    ).encode("utf-8")
+    artifact = {
+        "schema": "p7_td_b_retained_first_capture_forensic_replay_v1",
+        "status": "pass",
+        "forensic_only": True,
+        "accepted_formal": False,
+        "reusable_capture": False,
+        "failed_run": str(root),
+        "plan_reference": {
+            "path": str((root / "plan.json").resolve()),
+            "sha256": _sha256_file(root / "plan.json"),
+        },
+        "command_reference": {
+            "path": str((root / "commands.jsonl").resolve()),
+            "sha256": _sha256_file(root / "commands.jsonl"),
+        },
+        "cr3": {
+            "path": str(raw),
+            "sha256": expected_cr3_sha256,
+            "byte_count": raw.stat().st_size,
+        },
+        "sidecar": {
+            "path": str(sidecar),
+            "sha256": expected_sidecar_sha256,
+        },
+        "capture_id": expected_capture_id,
+        "request_id": expected_request_id,
+        "recorded_exposure": exposure.to_jsonable(),
+        "timing_evidence": dict(timing),
+        "native_raw_ambient_policy": (
+            raw_validation.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT
+        ),
+        "ambient_subtraction_applied": False,
+        "report_reference": {
+            "path": str(Path(report_path).resolve()),
+            "sha256": _sha256_file(Path(report_path)),
+        },
+        "quality": dict(quality),
+        "feature_count": len(features),
+        "feature_ids": list(feature_ids),
+        "feature_statistic": forensic_statistic,
+        "features_sha256": hashlib.sha256(feature_payload).hexdigest(),
+    }
+    artifact_path = output / "retained-first-capture-replay.json"
+    _write_text_atomic(
+        artifact_path,
+        json.dumps(artifact, indent=2, sort_keys=True, allow_nan=False) + "\n",
+    )
+    return artifact
 
 
 def analyze_td_b_setup_resolution(

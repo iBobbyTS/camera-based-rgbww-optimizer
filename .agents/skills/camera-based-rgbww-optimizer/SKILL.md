@@ -102,6 +102,22 @@ return anchors, and the 60/120/300/600 switch chronology. Its analyzer status is
 The v1 envelope remains the legacy deferred path; v2 is still offline/dry-run
 until a new bounded Planner execution plan exists.
 
+TD-B v2 formal acquisition is the only shared native-RAW caller allowed to use
+`unsubtracted_no_ambient`. It owns 16 formal and zero ambient captures per
+source and uses the explicit un-subtracted
+`statistics.normalized_per_second.trimmed_mean` feature statistic. TD-A, TD-C,
+and all other callers must retain `require_preceding_ambient`. Bind this policy
+to the exact experiment/schema/phase owner and replay the same value from plan
+through capture payload and patch-statistics report.
+
+Keep camera-return side effects separate from accepted measurements. Persist a
+unique nonempty current-run CR3, hash, byte count, and capture owner in
+`physical-returns.jsonl` immediately after the adapter returns; only append
+`captures.jsonl` after exposure, RAW, features, timing, and covariates all pass.
+Precheck the physical cap before every request. Public analysis must rebuild
+both ledgers and reject duplicate ownership, hash/counter drift, or missing
+cross-ledger association.
+
 TD-B Ray H120/S50 exposure setup is a distinct non-formal physical ledger.
 Audit P6 `0047-ray-hsi_coarse` only as a legacy `1/6400` initial seed; never
 write it directly to `frozen_shutters`. A valid `p7_td_b_exposure_setup_v1`
@@ -126,6 +142,17 @@ the v2 canonical `setup.json`, `resolved-formal-plan.json`, and
 same checkpoint. Paired TD-B finalization requires two public source analyses
 plus independent final zero; it may summarize the exact `33..40` physical
 ledger but must not call 600 seconds settled or change either source result.
+
+After an implementation-only checkpoint change, do not feed a lineage artifact
+to the formal runner. Replay the retained canonical setup/release, classify
+every changed path, and emit only a
+`p7_td_b_setup_release_lineage_candidate_v1` with
+`production_release_usable=false`. Planner acceptance is mandatory; any
+camera/parser/setup/input/budget/command/shutter/cleanup change requires a new
+setup. The retained failed Ray first CR3 may be replayed only into a new
+forensic output with fixed CR3/sidecar hashes, IDs, command/readback, Canon
+exposure, Tier B timing, `forensic_only=true`, `accepted_formal=false`, and
+`reusable_capture=false`.
 
 Resolve the TD-B v2 operating-envelope prerequisite through the shared thermal
 trusted-prerequisite owner. Accept project-relative, `./`-relative, or exact

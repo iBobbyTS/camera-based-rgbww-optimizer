@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import subprocess
 from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -16,6 +17,10 @@ from camera_based_rgbww_optimizer.measurement.hsi_policy_v2 import (
     AUDIT_THRESHOLDS,
     ordered_unit_shape,
     summarize_within_groups,
+)
+from camera_based_rgbww_optimizer.optimization.measure_raw_observer_validation import (
+    AMBIENT_POLICY_REQUIRE_PRECEDING,
+    AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
 )
 from camera_based_rgbww_optimizer.paths import PROJECT_ROOT
 
@@ -90,6 +95,23 @@ TD_B_SETUP_SCHEMA = "p7_td_b_exposure_setup_v1"
 TD_B_SETUP_SCHEMA_V2 = "p7_td_b_exposure_setup_v2"
 TD_B_SETUP_PROVISIONAL_SCHEMA = "p7_td_b_exposure_setup_provisional_v1"
 TD_B_SETUP_RELEASE_SCHEMA = "p7_td_b_exposure_setup_release_v1"
+TD_B_SETUP_RELEASE_LINEAGE_CANDIDATE_SCHEMA = (
+    "p7_td_b_setup_release_lineage_candidate_v1"
+)
+TD_B_SETUP_CHECKPOINT = "9c804abdeabbc5da18a66d0acf25a1f13128bc2d"
+TD_B_LINEAGE_ALLOWED_PRODUCTION_PATHS = frozenset({
+    "src/camera_based_rgbww_optimizer/optimization/measure_raw_observer_validation.py",
+    "src/camera_based_rgbww_optimizer/optimization/p7_thermal_diagnostics.py",
+    "src/camera_based_rgbww_optimizer/optimization/measure_p7_thermal_diagnostics.py",
+    "src/camera_based_rgbww_optimizer/optimization/analyze_p7_thermal_diagnostics.py",
+})
+TD_B_LINEAGE_ALLOWED_VALIDATION_PATHS = frozenset({
+    "tests/test_measure_raw_observer_validation.py",
+    "tests/test_p7_thermal_diagnostics.py",
+    "tests/test_analyze_p7_thermal_diagnostics.py",
+    "docs/README.md",
+    ".agents/skills/camera-based-rgbww-optimizer/SKILL.md",
+})
 TD_B_SETUP_STATE = "H120_S50_INT100"
 TD_B_SETUP_CACHE_KEY = "ray-h120-s50"
 TD_B_SETUP_COMMAND = MappingProxyType({"hue": 120, "sat": 50, "intensity_percent": 100.0})
@@ -99,6 +121,7 @@ P6_SETUP_SEED_RUN = Path(
     "p6-ray-hsi-remote-20260717-0403-retry1"
 )
 P6_SETUP_SEED_CAPTURE_ID = "0047-ray-hsi_coarse"
+PHYSICAL_RETURN_LEDGER_SCHEMA = "p7_thermal_physical_return_v1"
 
 RAY_STATES = {
     "A": {"hue": 120, "sat": 100, "intensity_percent": 100.0},
@@ -127,6 +150,21 @@ def canonical_sha256(value: Any) -> str:
     return hashlib.sha256(
         json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False).encode("utf-8")
     ).hexdigest()
+
+
+def expected_native_raw_ambient_policy(
+    experiment_id: str,
+    *,
+    plan_schema: str,
+    phase: str = "formal",
+) -> str:
+    if (
+        experiment_id == TD_B
+        and plan_schema == PLAN_SCHEMA_V2
+        and phase == "formal"
+    ):
+        return AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT
+    return AMBIENT_POLICY_REQUIRE_PRECEDING
 
 
 def file_reference(path: str | Path) -> dict[str, str]:
@@ -699,6 +737,99 @@ def validate_td_b_setup_release(
     return {**validated, "resolved_plan": resolved, "canonical_path": str(canonical_path)}
 
 
+def changed_paths_between_checkpoints(
+    old_checkpoint: str,
+    new_checkpoint: str,
+    *,
+    project_root: str | Path = PROJECT_ROOT,
+) -> list[str]:
+    """Return the exact repository paths changed between two full checkpoints."""
+    for value in (old_checkpoint, new_checkpoint):
+        if (
+            len(value) != 40
+            or any(character not in "0123456789abcdef" for character in value)
+        ):
+            raise ValueError("TD-B lineage requires full lowercase Git checkpoints")
+    completed = subprocess.run(
+        ["git", "diff", "--name-only", f"{old_checkpoint}..{new_checkpoint}"],
+        cwd=Path(project_root),
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    paths = [line.strip() for line in completed.stdout.splitlines() if line.strip()]
+    if len(paths) != len(set(paths)):
+        raise ValueError("TD-B lineage changed-path ledger contains duplicates")
+    return paths
+
+
+def build_td_b_setup_release_lineage_candidate(
+    release_path: str | Path,
+    *,
+    old_checkpoint: str,
+    new_checkpoint: str,
+    changed_paths: Sequence[str],
+) -> dict[str, Any]:
+    """Build a Planner-only candidate; this never upgrades a production release."""
+    if old_checkpoint != TD_B_SETUP_CHECKPOINT:
+        raise ValueError("TD-B lineage old checkpoint differs from frozen setup owner")
+    if (
+        len(new_checkpoint) != 40
+        or any(character not in "0123456789abcdef" for character in new_checkpoint)
+        or new_checkpoint == old_checkpoint
+    ):
+        raise ValueError("TD-B lineage new checkpoint is invalid")
+    path = Path(release_path).resolve()
+    release = json.loads(path.read_text(encoding="utf-8"))
+    validated = validate_td_b_setup_release(release, release_path=path)
+    if (
+        release.get("code_checkpoint") != old_checkpoint
+        or validated.get("code_checkpoint") != old_checkpoint
+    ):
+        raise ValueError("TD-B lineage release is not bound to the frozen setup checkpoint")
+
+    classifications: list[dict[str, str]] = []
+    prohibited: list[str] = []
+    if not changed_paths:
+        raise ValueError("TD-B lineage changed-path ledger must not be empty")
+    for raw_path in changed_paths:
+        changed_path = str(raw_path).strip()
+        if not changed_path or changed_path.startswith("/") or ".." in Path(changed_path).parts:
+            raise ValueError("TD-B lineage changed path is not repository-relative")
+        if changed_path in TD_B_LINEAGE_ALLOWED_PRODUCTION_PATHS:
+            classification = "ambient_and_physical_ledger_contract"
+        elif changed_path in TD_B_LINEAGE_ALLOWED_VALIDATION_PATHS:
+            classification = "bounded_validation_or_documentation"
+        elif changed_path.startswith(".agent-work/"):
+            classification = "planner_or_execution_audit_only"
+        else:
+            classification = "prohibited_or_unreviewed"
+            prohibited.append(changed_path)
+        classifications.append({"path": changed_path, "classification": classification})
+    if len(classifications) != len({item["path"] for item in classifications}):
+        raise ValueError("TD-B lineage changed-path ledger contains duplicates")
+
+    eligible = not prohibited
+    return {
+        "schema": TD_B_SETUP_RELEASE_LINEAGE_CANDIDATE_SCHEMA,
+        "status": (
+            "eligible_waiting_for_planner"
+            if eligible
+            else "ineligible_requires_new_setup"
+        ),
+        "old_checkpoint": old_checkpoint,
+        "new_checkpoint": new_checkpoint,
+        "release_reference": file_reference(path),
+        "canonical_setup_reference": dict(release["canonical_setup"]),
+        "resolved_formal_plan_reference": dict(release["resolved_formal_plan"]),
+        "changed_paths": classifications,
+        "prohibited_paths": prohibited,
+        "canonical_setup_replay": "pass",
+        "production_release_usable": False,
+        "planner_acceptance_required": True,
+    }
+
+
 def validate_td_b_setup_cleanup(value: Any) -> None:
     if not isinstance(value, Mapping) or set(value) != {"python", "shell", "wrapper", "final_both_off"}:
         raise ValueError("TD-B setup cleanup evidence is incomplete")
@@ -939,7 +1070,13 @@ def build_diagnostic_plan(
         "capture_ledger_contract": {
             "formal_measurement": "boolean", "capture_role": ["formal", "ambient"],
             "ambient_counts_as_physical_cr3": True,
+            "physical_return_ledger_schema": PHYSICAL_RETURN_LEDGER_SCHEMA,
+            "physical_return_precedes_measurement_acceptance": True,
         },
+        "native_raw_ambient_policy": expected_native_raw_ambient_policy(
+            experiment_id,
+            plan_schema=PLAN_SCHEMA_V2,
+        ),
         "source_isolation_contract": "independent_both_off_readback_at_run_ambient_and_transition_gates",
     }
     plan.update(stage_plan)

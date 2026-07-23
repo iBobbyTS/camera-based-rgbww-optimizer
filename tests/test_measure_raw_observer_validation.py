@@ -10,6 +10,11 @@ from camera_based_rgbww_optimizer.measurement import recorded_exposure
 from camera_based_rgbww_optimizer.optimization import measure_raw_observer_validation
 
 
+F0A_TEMP_ROOT = Path(
+    "/Volumes/4T/temp/rgbww-optimizer/p7-td-b-f0a-offline/test-runtime"
+)
+
+
 def write_lut(path: Path) -> None:
     targets = []
     for cct in (3200, 5600):
@@ -769,6 +774,144 @@ Focal Length: 50mm
             ["1/200", "1/100", "1/50"],
         )
         self.assertNotIn("do-not-record-this-token", json.dumps(provenance, sort_keys=True))
+
+    def test_native_raw_no_ambient_policy_is_restricted_to_exact_td_b_formal_owner(self):
+        F0A_TEMP_ROOT.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=F0A_TEMP_ROOT) as tempdir:
+            root = Path(tempdir)
+            analyze_calls = []
+            observer_calls = []
+
+            def capture(*, output_dir, filename_template, settings, **_kwargs):
+                saved = Path(output_dir) / filename_template.replace("%C", "cr3")
+                saved.parent.mkdir(parents=True, exist_ok=True)
+                saved.write_bytes(b"raw")
+                return measure_raw_observer_validation.camera_gphoto2.CaptureResult(
+                    connection=measure_raw_observer_validation.camera_gphoto2.CameraConnection(
+                        "fake", "offline"
+                    ),
+                    settings=settings,
+                    saved_file=saved,
+                    stdout="",
+                )
+
+            def exposure(path, shutter):
+                seconds = recorded_exposure.parse_nominal_exposure(shutter)
+                return recorded_exposure.RecordedExposure(
+                    seconds=seconds,
+                    source="Canon:ExposureTime",
+                    nominal_seconds=seconds,
+                    nominal_shutter_speed=shutter,
+                    raw_file=Path(path),
+                    status="recorded",
+                    metadata_values={"Canon:ExposureTime": seconds},
+                )
+
+            def analyze(*args, **kwargs):
+                analyze_calls.append((args, kwargs))
+                return {"quality": {"status": "accepted"}}
+
+            def write_report(path, report):
+                target = Path(path)
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text(json.dumps(report), encoding="utf-8")
+                return target
+
+            step = {
+                "capture_id": "td-b-formal",
+                "source": "ray",
+                "purpose": "p7_td_b_formal",
+                "repeat_index": 0,
+                "source_exposure_cache": "ray-h120-s100",
+                "auto_exposure": False,
+                "physical_capture_budget_remaining": 1,
+            }
+            adapter = measure_raw_observer_validation.build_native_raw_capture_step_fn(
+                camera_dir=root / "camera",
+                measurements_dir=root / "measurements",
+                scratch_dir=root / "scratch",
+                location_config_path=root / "locations.json",
+                observer_config_path=root / "observer.json",
+                capture_fn=capture,
+                raw_analyze_fn=analyze,
+                raw_report_writer=write_report,
+                recorded_exposure_fn=exposure,
+                frozen_shutter_by_cache={"ray-h120-s100": "1/5000"},
+                ambient_policy=(
+                    measure_raw_observer_validation
+                    .AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT
+                ),
+                ambient_policy_owner=(
+                    measure_raw_observer_validation
+                    .TD_B_FORMAL_AMBIENT_POLICY_OWNER
+                ),
+                physical_return_observer=lambda returned, raw_step, count: (
+                    observer_calls.append((returned.saved_file, raw_step["capture_id"], count))
+                    or {"physical_index": 1}
+                ),
+            )
+            result = adapter(step)
+            report = json.loads(Path(result["patch_statistics"]).read_text(encoding="utf-8"))
+            self.assertEqual(
+                result["native_raw_ambient_policy"],
+                measure_raw_observer_validation.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+            )
+            self.assertEqual(result["physical_return_receipt"], {"physical_index": 1})
+            self.assertEqual(observer_calls[0][1:], ("td-b-formal", 1))
+            self.assertNotIn("ambient_raw_file", analyze_calls[0][1])
+            self.assertFalse(report["analysis_context"]["ambient_subtraction_applied"])
+
+            default_adapter = (
+                measure_raw_observer_validation.build_native_raw_capture_step_fn(
+                    camera_dir=root / "default-camera",
+                    measurements_dir=root / "default-measurements",
+                    scratch_dir=root / "default-scratch",
+                    location_config_path=root / "locations.json",
+                    observer_config_path=root / "observer.json",
+                    capture_fn=capture,
+                    raw_analyze_fn=analyze,
+                    raw_report_writer=write_report,
+                    recorded_exposure_fn=exposure,
+                    frozen_shutter_by_cache={"ray-h120-s100": "1/5000"},
+                )
+            )
+            with self.assertRaisesRegex(ValueError, "preceding ambient"):
+                default_adapter({**step, "capture_id": "default-formal"})
+
+            for owner in (None, {"experiment_id": "other"}):
+                with self.subTest(owner=owner), self.assertRaisesRegex(
+                    PermissionError, "exact TD-B v2 formal"
+                ):
+                    measure_raw_observer_validation.build_native_raw_capture_step_fn(
+                        camera_dir=root / "invalid-camera",
+                        measurements_dir=root / "invalid-measurements",
+                        scratch_dir=root / "invalid-scratch",
+                        location_config_path=root / "locations.json",
+                        observer_config_path=root / "observer.json",
+                        ambient_policy=(
+                            measure_raw_observer_validation
+                            .AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT
+                        ),
+                        ambient_policy_owner=owner,
+                    )
+            with self.assertRaisesRegex(ValueError, "forbids ambient"):
+                adapter({
+                    **step,
+                    "capture_id": "invalid-ambient",
+                    "source": "ambient",
+                    "source_exposure_cache": None,
+                })
+            with self.assertRaisesRegex(ValueError, "overrides native_raw_ambient_policy"):
+                adapter({
+                    **step,
+                    "capture_id": "invalid-policy-context",
+                    "analysis_context": {
+                        "native_raw_ambient_policy": (
+                            measure_raw_observer_validation
+                            .AMBIENT_POLICY_REQUIRE_PRECEDING
+                        ),
+                    },
+                })
 
     def _plan(self, root: Path):
         lut = root / "lut.json"

@@ -19,6 +19,9 @@ from camera_based_rgbww_optimizer.control import camera_remote_v2
 
 FEATURE_IDS = json.loads(thermal.POLICY_PATH.read_text(encoding="utf-8"))["feature_set"]["ids"]
 CODE_CHECKPOINT = "a" * 40
+F0A_TEMP_ROOT = Path(
+    "/Volumes/4T/temp/rgbww-optimizer/p7-td-b-f0a-offline/test-runtime"
+)
 
 
 def _feature(seed: float = 1.0):
@@ -137,6 +140,21 @@ def _build_formal_td_a_run(
         saved = root / f"{step['capture_id']}.CR3"
         saved.parent.mkdir(parents=True, exist_ok=True)
         saved.write_bytes(b"raw")
+        ambient_policy = plan["native_raw_ambient_policy"]
+        report_path = root / f"{step['capture_id']}.patch-statistics.json"
+        _write_json(
+            report_path,
+            {
+                "analysis_context": {
+                    "native_raw_ambient_policy": ambient_policy,
+                    "ambient_subtraction_applied": (
+                        ambient_policy
+                        == thermal.AMBIENT_POLICY_REQUIRE_PRECEDING
+                        and step["source_id"] != "ambient"
+                    ),
+                },
+            },
+        )
         command = step["command"] or {"strip": "off", "ray": "off"}
         covariate = thermal.build_covariate_record(
             source_id=step["source_id"], state_id=step["state_id"], command=command,
@@ -152,6 +170,8 @@ def _build_formal_td_a_run(
         )
         output = {
             "saved_file": str(saved), "physical_capture_count": 1,
+            "native_raw_ambient_policy": ambient_policy,
+            "patch_statistics": str(report_path),
             "capture": {
                 "saved_file": str(saved), "iso": "125",
                 "aperture": "implicit auto", "image_format": "RAW",
@@ -369,6 +389,109 @@ class AnalyzeP7ThermalDiagnosticsTests(unittest.TestCase):
             metadata_path.write_text(json.dumps(metadata), encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "timing estimate"):
                 subject.analyze_thermal_run(root, feature_ids=FEATURE_IDS, compatibility_fn=lambda _left, _right: True)
+
+    def test_public_analyzer_rebuilds_physical_and_accepted_ledgers_independently(self):
+        F0A_TEMP_ROOT.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=F0A_TEMP_ROOT) as tempdir:
+            root = _build_formal_td_a_run(Path(tempdir) / "run")
+            report = subject.analyze_thermal_run(
+                root,
+                feature_ids=FEATURE_IDS,
+                compatibility_fn=lambda _left, _right: True,
+            )
+            self.assertEqual(report["physical_returned_cr3_count"], 15)
+            self.assertEqual(report["accepted_formal_count"], 12)
+            self.assertEqual(report["accepted_ambient_count"], 3)
+
+            physical_text = (root / "physical-returns.jsonl").read_text(
+                encoding="utf-8"
+            )
+            physical_rows = [
+                json.loads(line) for line in physical_text.splitlines()
+            ]
+            physical_rows[0]["cr3_sha256"] = "0" * 64
+            _write_jsonl(root / "physical-returns.jsonl", physical_rows)
+            with self.assertRaisesRegex(ValueError, "physical return ledger CR3"):
+                subject.analyze_thermal_run(root, feature_ids=FEATURE_IDS)
+            (root / "physical-returns.jsonl").write_text(
+                physical_text,
+                encoding="utf-8",
+            )
+
+            run = json.loads(
+                (root / "run.json").read_text(encoding="utf-8")
+            )
+            run["accepted_formal_count"] = 11
+            _write_json(root / "run.json", run)
+            with self.assertRaisesRegex(ValueError, "accepted measurement counters"):
+                subject.analyze_thermal_run(root, feature_ids=FEATURE_IDS)
+
+    def test_retained_td_b_first_capture_forensic_replay_is_fixed_and_nonreusable(self):
+        F0A_TEMP_ROOT.mkdir(parents=True, exist_ok=True)
+        before = {
+            name: hashlib.sha256(
+                (subject.TD_B_RETAINED_FAILED_RAY_RUN / name).read_bytes()
+            ).hexdigest()
+            for name in ("plan.json", "commands.jsonl", "failure.json")
+        }
+        with tempfile.TemporaryDirectory(dir=F0A_TEMP_ROOT) as tempdir:
+            output = Path(tempdir) / "forensic"
+            artifact = subject.replay_retained_td_b_first_capture(output)
+            self.assertEqual(artifact["status"], "pass")
+            self.assertTrue(artifact["forensic_only"])
+            self.assertFalse(artifact["accepted_formal"])
+            self.assertFalse(artifact["reusable_capture"])
+            self.assertEqual(artifact["feature_count"], 58)
+            self.assertEqual(
+                artifact["feature_statistic"],
+                "statistics.normalized_per_second.trimmed_mean",
+            )
+            self.assertEqual(
+                artifact["native_raw_ambient_policy"],
+                thermal.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+            )
+            self.assertFalse(artifact["ambient_subtraction_applied"])
+            self.assertEqual(
+                artifact["recorded_exposure"]["source"],
+                "Canon:ExposureTime",
+            )
+            self.assertEqual(artifact["timing_evidence"]["tier"], "tier_b")
+
+            with self.assertRaisesRegex(ValueError, "hash differs"):
+                subject._replay_td_b_first_capture(
+                    cr3_path=subject.TD_B_RETAINED_FIRST_CAPTURE_PATH,
+                    sidecar_path=subject.TD_B_RETAINED_FIRST_SIDECAR_PATH,
+                    failed_run_path=subject.TD_B_RETAINED_FAILED_RAY_RUN,
+                    expected_cr3_sha256="0" * 64,
+                    expected_sidecar_sha256=(
+                        subject.TD_B_RETAINED_FIRST_SIDECAR_SHA256
+                    ),
+                    expected_capture_id=subject.TD_B_RETAINED_FIRST_CAPTURE_ID,
+                    expected_request_id=subject.TD_B_RETAINED_FIRST_REQUEST_ID,
+                    output_dir=Path(tempdir) / "wrong-hash",
+                )
+            with self.assertRaisesRegex(ValueError, "ID/exposure/timing"):
+                subject._replay_td_b_first_capture(
+                    cr3_path=subject.TD_B_RETAINED_FIRST_CAPTURE_PATH,
+                    sidecar_path=subject.TD_B_RETAINED_FIRST_SIDECAR_PATH,
+                    failed_run_path=subject.TD_B_RETAINED_FAILED_RAY_RUN,
+                    expected_cr3_sha256=(
+                        subject.TD_B_RETAINED_FIRST_CAPTURE_SHA256
+                    ),
+                    expected_sidecar_sha256=(
+                        subject.TD_B_RETAINED_FIRST_SIDECAR_SHA256
+                    ),
+                    expected_capture_id="wrong-capture-id",
+                    expected_request_id=subject.TD_B_RETAINED_FIRST_REQUEST_ID,
+                    output_dir=Path(tempdir) / "wrong-id",
+                )
+        after = {
+            name: hashlib.sha256(
+                (subject.TD_B_RETAINED_FAILED_RAY_RUN / name).read_bytes()
+            ).hexdigest()
+            for name in ("plan.json", "commands.jsonl", "failure.json")
+        }
+        self.assertEqual(after, before)
 
     def test_public_analyzer_replays_v2_headers_parser_attempt_and_sidecar_owner(self):
         def mutate_sidecar(label, mutation):

@@ -41,6 +41,39 @@ RawReportWriter = Callable[[str | Path, Mapping[str, Any]], Path]
 ShutterChoicesFn = Callable[[str], Sequence[str]]
 ProvenanceFn = Callable[[], Mapping[str, Any]]
 RecordedExposureFn = Callable[[str | Path, str], recorded_exposure.RecordedExposure]
+PhysicalReturnObserver = Callable[
+    [camera_gphoto2.CaptureResult, Mapping[str, Any], int],
+    Mapping[str, Any],
+]
+
+AMBIENT_POLICY_REQUIRE_PRECEDING = "require_preceding_ambient"
+AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT = "unsubtracted_no_ambient"
+AMBIENT_POLICIES = frozenset((
+    AMBIENT_POLICY_REQUIRE_PRECEDING,
+    AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+))
+TD_B_FORMAL_AMBIENT_POLICY_OWNER = {
+    "experiment_id": "p7_td_b_command_switch_history_v1",
+    "phase": "formal",
+    "plan_schema": "p7_thermal_diagnostic_plan_v2",
+}
+
+
+def validate_native_raw_ambient_policy(
+    ambient_policy: str,
+    *,
+    policy_owner: Mapping[str, Any] | None = None,
+) -> str:
+    """Validate the shared RAW owner's sole no-ambient exception."""
+    if ambient_policy not in AMBIENT_POLICIES:
+        raise ValueError(f"unknown native RAW ambient policy: {ambient_policy}")
+    if ambient_policy == AMBIENT_POLICY_REQUIRE_PRECEDING:
+        return ambient_policy
+    if dict(policy_owner or {}) != TD_B_FORMAL_AMBIENT_POLICY_OWNER:
+        raise PermissionError(
+            "unsubtracted_no_ambient is restricted to the exact TD-B v2 formal owner"
+        )
+    return ambient_policy
 
 
 def build_raw_observer_validation_plan(
@@ -385,6 +418,9 @@ def build_native_raw_capture_step_fn(
     recorded_exposure_purpose: str = "P1",
     frozen_shutter_by_cache: Mapping[str, str | None] | None = None,
     timed_capture_fn: Callable[..., camera_gphoto2.CaptureResult] | None = None,
+    ambient_policy: str = AMBIENT_POLICY_REQUIRE_PRECEDING,
+    ambient_policy_owner: Mapping[str, Any] | None = None,
+    physical_return_observer: PhysicalReturnObserver | None = None,
 ) -> CaptureStepFn:
     """Build the production camera side of P1 while leaving device control injected.
 
@@ -401,6 +437,10 @@ def build_native_raw_capture_step_fn(
     ambient_capture: camera_gphoto2.CaptureResult | None = None
     shutter_choices_by_port: dict[str, tuple[str, ...]] = {}
     exposures_by_path: dict[Path, recorded_exposure.RecordedExposure] = {}
+    validated_ambient_policy = validate_native_raw_ambient_policy(
+        ambient_policy,
+        policy_owner=ambient_policy_owner,
+    )
 
     def fixed_capture(**kwargs: Any) -> camera_gphoto2.CaptureResult:
         if timed_capture_fn is not None:
@@ -444,6 +484,11 @@ def build_native_raw_capture_step_fn(
     def capture_step(step: Mapping[str, Any]) -> Mapping[str, Any]:
         nonlocal ambient_capture
         source = str(step["source"])
+        if (
+            validated_ambient_policy == AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT
+            and source == "ambient"
+        ):
+            raise ValueError("unsubtracted_no_ambient forbids ambient capture steps")
         filename = _capture_filename(step)
         if source == "ambient":
             capture = fixed_capture(
@@ -529,6 +574,12 @@ def build_native_raw_capture_step_fn(
         if source == "ambient":
             physical_capture_count = 1
 
+        physical_return_receipt = None
+        if physical_return_observer is not None:
+            physical_return_receipt = dict(
+                physical_return_observer(capture, step, physical_capture_count)
+            )
+
         report = _write_native_capture_report(
             capture,
             step=step,
@@ -540,6 +591,8 @@ def build_native_raw_capture_step_fn(
             measurements_dir=measurements_output,
             raw_analyze_fn=raw_analyze_fn,
             raw_report_writer=raw_report_writer,
+            ambient_policy=validated_ambient_policy,
+            ambient_policy_owner=ambient_policy_owner,
         )
         capture_json = capture.to_jsonable()
         output = {
@@ -549,7 +602,10 @@ def build_native_raw_capture_step_fn(
             "quality": report[1],
             "physical_capture_count": physical_capture_count,
             "auto_exposure_audit": auto.to_jsonable() if mode == "native_auto_exposure" else None,
+            "native_raw_ambient_policy": validated_ambient_policy,
         }
+        if physical_return_receipt is not None:
+            output["physical_return_receipt"] = physical_return_receipt
         if capture.timing_metadata is not None:
             output["timing_metadata"] = dict(capture.timing_metadata)
         if capture.timing_evidence is not None:
@@ -931,7 +987,13 @@ def _write_native_capture_report(
     measurements_dir: Path,
     raw_analyze_fn: RawAnalyzeFn,
     raw_report_writer: RawReportWriter,
+    ambient_policy: str = AMBIENT_POLICY_REQUIRE_PRECEDING,
+    ambient_policy_owner: Mapping[str, Any] | None = None,
 ) -> tuple[Path, Mapping[str, Any]]:
+    validated_ambient_policy = validate_native_raw_ambient_policy(
+        ambient_policy,
+        policy_owner=ambient_policy_owner,
+    )
     resolved_capture_exposure = capture_exposure or recorded_exposure.resolve_recorded_exposure(
         capture.saved_file,
         capture.settings.shutter_speed,
@@ -941,15 +1003,27 @@ def _write_native_capture_report(
         "location_config_path": location_config_path,
         "observer_config_path": observer_config_path,
     }
+    if (
+        validated_ambient_policy == AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT
+        and str(step["source"]) == "ambient"
+    ):
+        raise ValueError("unsubtracted_no_ambient forbids ambient capture reports")
     if str(step["source"]) != "ambient":
-        if ambient_capture is None:
+        if (
+            validated_ambient_policy == AMBIENT_POLICY_REQUIRE_PRECEDING
+            and ambient_capture is None
+        ):
             raise ValueError("non-ambient capture requires the preceding ambient capture")
-        resolved_ambient_exposure = ambient_exposure or recorded_exposure.resolve_recorded_exposure(
-            ambient_capture.saved_file,
-            ambient_capture.settings.shutter_speed,
-        )
-        kwargs["ambient_raw_file"] = ambient_capture.saved_file
-        kwargs["ambient_exposure_seconds"] = resolved_ambient_exposure.seconds
+        if validated_ambient_policy == AMBIENT_POLICY_REQUIRE_PRECEDING:
+            assert ambient_capture is not None
+            resolved_ambient_exposure = ambient_exposure or recorded_exposure.resolve_recorded_exposure(
+                ambient_capture.saved_file,
+                ambient_capture.settings.shutter_speed,
+            )
+            kwargs["ambient_raw_file"] = ambient_capture.saved_file
+            kwargs["ambient_exposure_seconds"] = resolved_ambient_exposure.seconds
+        else:
+            resolved_ambient_exposure = None
     else:
         resolved_ambient_exposure = None
     report = raw_analyze_fn(capture.saved_file, **kwargs)
@@ -969,11 +1043,21 @@ def _write_native_capture_report(
         "exposure_source": resolved_capture_exposure.source,
         "exposure_status": resolved_capture_exposure.status,
         "capture_path": str(capture.saved_file),
+        "native_raw_ambient_policy": validated_ambient_policy,
+        "ambient_subtraction_applied": resolved_ambient_exposure is not None,
     }
     extra_context = step.get("analysis_context")
     if extra_context is not None:
         if not isinstance(extra_context, Mapping):
             raise ValueError(f"capture {step['capture_id']} analysis_context must be an object")
+        for key in ("native_raw_ambient_policy", "ambient_subtraction_applied"):
+            if (
+                key in extra_context
+                and extra_context[key] != report["analysis_context"][key]
+            ):
+                raise ValueError(
+                    f"capture {step['capture_id']} analysis_context overrides {key}"
+                )
         report["analysis_context"].update(copy.deepcopy(dict(extra_context)))
     path = measurements_dir / f"{step['capture_id']}.patch-statistics.json"
     raw_report_writer(path, report)

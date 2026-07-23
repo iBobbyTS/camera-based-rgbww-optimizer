@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
 from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
+from camera_based_rgbww_optimizer.optimization import measure_raw_observer_validation as raw_validation
 from camera_based_rgbww_optimizer.control import camera_remote_v2
 from camera_based_rgbww_optimizer.paths import PROJECT_TMP_DIR
 
@@ -100,6 +101,19 @@ def validate_authorized_execution_plan(
         raise PermissionError("thermal diagnostic production execution requires plan schema v2")
     if plan.get("timing_contract") != thermal.timing_contract(2):
         raise PermissionError("thermal diagnostic execution timing contract differs from frozen v2")
+    expected_ambient_policy = thermal.expected_native_raw_ambient_policy(
+        str(plan.get("experiment_id")),
+        plan_schema=str(plan.get("schema")),
+    )
+    if plan.get("native_raw_ambient_policy") != expected_ambient_policy:
+        raise PermissionError("thermal diagnostic native RAW ambient policy differs")
+    ambient_steps = [
+        step for step in plan.get("captures", [])
+        if step.get("capture_role") == "ambient" or step.get("source_id") == "ambient"
+    ]
+    if expected_ambient_policy == raw_validation.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT:
+        if ambient_steps or plan.get("budgets", {}).get("ambient_cap") != 0:
+            raise PermissionError("TD-B unsubtracted_no_ambient plan contains ambient evidence")
     for step in plan.get("captures", []):
         if "timing_tolerance_s" in step or "actual_elapsed_s" in step:
             raise PermissionError("thermal diagnostic v2 plan contains legacy timing fields")
@@ -716,6 +730,10 @@ def execute_plan(
     capture_fn: Callable[[Mapping[str, Any]], Mapping[str, Any]],
     both_off_gate_fn: Callable[[str], Mapping[str, Any]],
     cleanup_fn: Callable[[], Mapping[str, Any]],
+    bind_physical_return_observer_fn: Callable[
+        [Callable[[Mapping[str, Any], Any, int], Mapping[str, Any]]],
+        None,
+    ] | None = None,
     set_capture_context_fn: Callable[[float], None] | None = None,
     monotonic_fn: Callable[[], float] = time.monotonic,
     monotonic_ns_fn: Callable[[], int] = time.monotonic_ns,
@@ -731,6 +749,8 @@ def execute_plan(
         "schema": "p7_thermal_diagnostic_run_v2", "experiment_id": plan["experiment_id"],
         "status": "running", "started_at": _utc_now(), "completed_formal": 0,
         "ambient_capture_count": 0,
+        "accepted_formal_count": 0, "accepted_ambient_count": 0,
+        "physical_returned_cr3_count": 0,
         "setup_physical_cr3_count": int(plan.get("setup_physical_cr3_count", 0)),
         "physical_cr3_count": int(plan.get("setup_physical_cr3_count", 0)), "cleanup": "pending",
         "capture_settings_provenance": copy.deepcopy(plan["camera"].get("resolved_capture_settings")),
@@ -742,6 +762,7 @@ def execute_plan(
     previous_dwell: float | None = None
     last_observed_by_group: dict[tuple[Any, ...], float] = {}
     owned_cr3_paths: set[Path] = set()
+    physical_returns_by_capture: dict[str, dict[str, Any]] = {}
     rejected_capture: dict[str, Any] | None = None
 
     def record_gate(gate_id: str) -> None:
@@ -749,6 +770,106 @@ def execute_plan(
         if evidence.get("status") != "pass" or evidence.get("strip_verified_off") is not True or evidence.get("ray_verified_off") is not True:
             raise RuntimeError(f"both-source off/readback gate failed: {gate_id}")
         _append_jsonl(root / "isolation-gates.jsonl", {"gate_id": gate_id, "evidence": evidence, "at": _utc_now()})
+
+    def ensure_physical_capacity() -> None:
+        if run["physical_cr3_count"] >= int(plan["budgets"]["physical_cr3_cap"]):
+            raise RuntimeError("thermal diagnostic physical CR3 cap exhausted before camera request")
+
+    def record_physical_return(
+        step: Mapping[str, Any],
+        returned: Any,
+        reported_physical: int,
+    ) -> Mapping[str, Any]:
+        nonlocal rejected_capture
+        if type(reported_physical) is not int:
+            raise RuntimeError("capture adapter physical count must be a non-bool integer")
+        capture_payload = (
+            returned.to_jsonable()
+            if hasattr(returned, "to_jsonable")
+            else dict(returned)
+            if isinstance(returned, Mapping)
+            else {}
+        )
+        raw_path_value = capture_payload.get("saved_file")
+        raw_candidate = Path(str(raw_path_value)) if raw_path_value else None
+        raw_path = raw_candidate.resolve() if raw_candidate is not None else None
+        rejected_capture = {
+            "capture_id": step["capture_id"],
+            "rejection_stage": "physical_return_validation",
+            "reported_physical_capture_count": reported_physical,
+            "cr3_path": None if raw_path is None else str(raw_path),
+            "cr3_sha256": None,
+            "cr3_byte_count": None,
+            "sidecar_path": None,
+            "sidecar_sha256": None,
+        }
+        run_root = root.resolve()
+        if (
+            raw_path is None
+            or not raw_path.is_relative_to(run_root)
+            or raw_candidate is None
+            or raw_candidate.is_symlink()
+            or not raw_path.is_file()
+            or raw_path.stat().st_size <= 0
+        ):
+            raise RuntimeError("capture adapter lacks a unique retained nonempty current-run CR3")
+        if raw_path in owned_cr3_paths:
+            raise RuntimeError("capture adapter reused a CR3 already owned by another capture")
+        if str(step["capture_id"]) in physical_returns_by_capture:
+            raise RuntimeError("capture adapter duplicated a physical return owner")
+        if reported_physical != 1:
+            raise RuntimeError("thermal capture reported physical count differs from one retained CR3")
+        ensure_physical_capacity()
+        sha256 = hashlib.sha256(raw_path.read_bytes()).hexdigest()
+        byte_count = raw_path.stat().st_size
+        timing_metadata = capture_payload.get("timing_metadata")
+        remote_capture_id = (
+            timing_metadata.get("capture_id")
+            if isinstance(timing_metadata, Mapping)
+            else None
+        )
+        remote_request_id = (
+            timing_metadata.get("request_id")
+            if isinstance(timing_metadata, Mapping)
+            else None
+        )
+        row = {
+            "schema": thermal.PHYSICAL_RETURN_LEDGER_SCHEMA,
+            "physical_index": run["physical_returned_cr3_count"] + 1,
+            "capture_id": str(step["capture_id"]),
+            "source_id": str(step["source_id"]),
+            "state_id": str(step["state_id"]),
+            "cr3_path": str(raw_path),
+            "cr3_byte_count": byte_count,
+            "cr3_sha256": sha256,
+            "remote_capture_id": remote_capture_id,
+            "remote_request_id": remote_request_id,
+            "returned_at": _utc_now(),
+            "accepted_measurement": False,
+        }
+        owned_cr3_paths.add(raw_path)
+        physical_returns_by_capture[str(step["capture_id"])] = row
+        _append_jsonl(root / "physical-returns.jsonl", row)
+        run["physical_returned_cr3_count"] += 1
+        run["physical_cr3_count"] = (
+            run["setup_physical_cr3_count"] + run["physical_returned_cr3_count"]
+        )
+        rejected_capture.update({
+            "rejection_stage": "post_return_processing",
+            "cr3_sha256": sha256,
+            "cr3_byte_count": byte_count,
+        })
+        _write_json(root / "run.json", run)
+        return {
+            "schema": thermal.PHYSICAL_RETURN_LEDGER_SCHEMA,
+            "physical_index": row["physical_index"],
+            "capture_id": row["capture_id"],
+            "cr3_sha256": sha256,
+            "cr3_byte_count": byte_count,
+        }
+
+    if bind_physical_return_observer_fn is not None:
+        bind_physical_return_observer_fn(record_physical_return)
 
     def retain_capture(
         step: Mapping[str, Any], capture: Mapping[str, Any],
@@ -764,37 +885,28 @@ def execute_plan(
         sidecar_value = capture.get("remote_metadata_path")
         sidecar_candidate = Path(str(sidecar_value)) if sidecar_value else None
         sidecar_path = sidecar_candidate.resolve() if sidecar_candidate is not None else None
-        rejected_capture = {
-            "capture_id": step["capture_id"],
-            "rejection_stage": "adapter_retained_cr3_validation",
-            "reported_physical_capture_count": reported_physical,
-            "cr3_path": None if raw_path is None else str(raw_path),
-            "cr3_sha256": None,
-            "sidecar_path": None if sidecar_path is None else str(sidecar_path),
-            "sidecar_sha256": None,
+        receipt = capture.get("physical_return_receipt")
+        retained = physical_returns_by_capture.get(str(step["capture_id"]))
+        if retained is None:
+            receipt = record_physical_return(step, capture, reported_physical)
+            retained = physical_returns_by_capture[str(step["capture_id"])]
+        expected_receipt = {
+            "schema": thermal.PHYSICAL_RETURN_LEDGER_SCHEMA,
+            "physical_index": retained["physical_index"],
+            "capture_id": retained["capture_id"],
+            "cr3_sha256": retained["cr3_sha256"],
+            "cr3_byte_count": retained["cr3_byte_count"],
         }
+        if receipt != expected_receipt:
+            raise RuntimeError("capture adapter physical return receipt differs from retained ledger")
         run_root = root.resolve()
-        if (
-            raw_path is None
-            or not raw_path.is_relative_to(run_root)
-            or raw_candidate is None
-            or raw_candidate.is_symlink()
-            or not raw_path.is_file()
-            or raw_path.stat().st_size <= 0
-        ):
-            raise RuntimeError("capture adapter lacks a unique retained nonempty current-run CR3")
-        if raw_path in owned_cr3_paths:
-            raise RuntimeError("capture adapter reused a CR3 already owned by another capture")
-        owned_cr3_paths.add(raw_path)
-        rejected_capture["cr3_sha256"] = hashlib.sha256(raw_path.read_bytes()).hexdigest()
-        run["physical_cr3_count"] += 1
-        if run["physical_cr3_count"] > int(plan["budgets"]["physical_cr3_cap"]):
-            raise RuntimeError("thermal diagnostic physical CR3 cap exceeded")
-        _write_json(root / "run.json", run)
-        if reported_physical != 1:
-            rejected_capture["rejection_stage"] = "reported_physical_count_mismatch"
-            raise RuntimeError("thermal capture reported physical count differs from one retained CR3")
-        rejected_capture["rejection_stage"] = "sidecar_and_timing_validation"
+        if raw_path != Path(retained["cr3_path"]).resolve():
+            raise RuntimeError("capture adapter CR3 owner differs from physical return ledger")
+        rejected_capture = {
+            **rejected_capture,
+            "rejection_stage": "sidecar_and_timing_validation",
+            "sidecar_path": None if sidecar_path is None else str(sidecar_path),
+        }
         if (
             sidecar_path is None
             or not sidecar_path.is_relative_to(run_root)
@@ -876,8 +988,10 @@ def execute_plan(
         _append_jsonl(root / "thermal-covariates.jsonl", covariate)
         if step["formal_measurement"]:
             run["completed_formal"] += 1
+            run["accepted_formal_count"] += 1
         else:
             run["ambient_capture_count"] += 1
+            run["accepted_ambient_count"] += 1
         rejected_capture = None
         _write_json(root / "run.json", run)
 
@@ -889,6 +1003,7 @@ def execute_plan(
                 record_gate(str(step["isolation_gate_before"]))
                 if set_capture_context_fn is not None:
                     set_capture_context_fn(monotonic_fn())
+                ensure_physical_capacity()
                 retain_capture(step, dict(capture_fn(step)), owner_start=None)
                 continue
             first = item[0]
@@ -909,6 +1024,7 @@ def execute_plan(
                 remaining = owner_start + float(step["requested_elapsed_s"]) - monotonic_fn()
                 if remaining > 0:
                     sleep_fn(remaining)
+                ensure_physical_capacity()
                 retain_capture(step, dict(capture_fn(step)), owner_start=owner_start)
             previous_state = str(first["state_id"])
             previous_dwell = monotonic_fn() - owner_start
@@ -919,6 +1035,11 @@ def execute_plan(
             raise RuntimeError("thermal diagnostic formal count differs from frozen cap")
         if run["ambient_capture_count"] != int(plan["budgets"]["ambient_cap"]):
             raise RuntimeError("thermal diagnostic ambient count differs from frozen cap")
+        if (
+            run["accepted_formal_count"] != run["completed_formal"]
+            or run["accepted_ambient_count"] != run["ambient_capture_count"]
+        ):
+            raise RuntimeError("thermal diagnostic accepted measurement ledger drifted")
         _write_json(root / "commands-audit.json", {
             "status": "pass", "formal_capture_count": run["completed_formal"],
             "ambient_capture_count": run["ambient_capture_count"],
@@ -992,6 +1113,13 @@ def run_authorized_plan(
     resolved_settings, settings_provenance = _resolve_remote_capture_settings(camera_backend)
     plan = copy.deepcopy(dict(plan))
     plan["camera"] = {**dict(plan["camera"]), "resolved_capture_settings": settings_provenance}
+    plan_steps_by_id = {
+        str(step["capture_id"]): step for step in plan["captures"]
+    }
+    physical_return_observer_slot: dict[
+        str,
+        Callable[[Mapping[str, Any], Any, int], Mapping[str, Any]] | None,
+    ] = {"callback": None}
     session_start = time.monotonic()
     load_segments: dict[str, list[tuple[float, float]]] = {"ray": [], "strip": []}
 
@@ -1050,6 +1178,26 @@ def run_authorized_plan(
             local_readback_done_monotonic_s=float(timing_context["local_readback_done_monotonic_s"]),
         )
 
+    ambient_policy_owner = (
+        dict(raw_validation.TD_B_FORMAL_AMBIENT_POLICY_OWNER)
+        if plan["native_raw_ambient_policy"]
+        == raw_validation.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT
+        else None
+    )
+
+    def observe_physical_return(
+        returned: camera_gphoto2.CaptureResult,
+        raw_step: Mapping[str, Any],
+        physical_count: int,
+    ) -> Mapping[str, Any]:
+        callback = physical_return_observer_slot["callback"]
+        if callback is None:
+            raise RuntimeError("thermal physical return ledger owner is not bound")
+        step = plan_steps_by_id.get(str(raw_step.get("capture_id")))
+        if step is None:
+            raise RuntimeError("thermal physical return lacks a frozen plan owner")
+        return callback(step, returned, physical_count)
+
     raw_capture = raw_validation.build_native_raw_capture_step_fn(
         camera_dir=root / "camera", measurements_dir=root / "measurements", scratch_dir=root / "scratch",
         location_config_path=thermal.LOCATION_PATH, observer_config_path=thermal.OBSERVER_PATH,
@@ -1057,6 +1205,9 @@ def run_authorized_plan(
         image_format=str(resolved_settings.image_format), camera_backend=camera_backend,
         recorded_exposure_purpose=str(plan["experiment_id"]),
         frozen_shutter_by_cache=plan["frozen_shutters"], timed_capture_fn=timed_capture,
+        ambient_policy=str(plan["native_raw_ambient_policy"]),
+        ambient_policy_owner=ambient_policy_owner,
+        physical_return_observer=observe_physical_return,
     )
 
     def capture(step: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -1075,7 +1226,11 @@ def run_authorized_plan(
             "repeat_index": step.get("cycle_index", step.get("session_index", 0)),
             "source_exposure_cache": cache_key, "auto_exposure": False,
             "physical_capture_budget_remaining": int(plan["budgets"]["physical_cr3_cap"]),
-            "analysis_context": {"phase": plan["stage"], "formal_measurement": bool(step["formal_measurement"])},
+            "analysis_context": {
+                "phase": plan["stage"],
+                "formal_measurement": bool(step["formal_measurement"]),
+                "native_raw_ambient_policy": plan["native_raw_ambient_policy"],
+            },
         }
         captured_result = raw_capture(raw_step)
         if not isinstance(captured_result, Mapping):
@@ -1150,6 +1305,9 @@ def run_authorized_plan(
     return execute_plan(
         plan, run_dir=root, apply_command_fn=apply, readback_fn=readback,
         capture_fn=capture, both_off_gate_fn=both_off_gate, cleanup_fn=cleanup,
+        bind_physical_return_observer_fn=lambda callback: physical_return_observer_slot.__setitem__(
+            "callback", callback
+        ),
         set_capture_context_fn=lambda value: timing_context.__setitem__("local_readback_done_monotonic_s", value),
     )
 
