@@ -20,7 +20,7 @@ from camera_based_rgbww_optimizer.control import camera_gphoto2, camera_remote_v
 
 
 W0_TEMP_ROOT = Path("/Volumes/4T/temp/rgbww-optimizer/p7-td-a-w0-offline/test-runtime")
-C1_TEMP_ROOT = Path("/Volumes/4T/temp/rgbww-optimizer/p7-td-b-r1-offline/test-runtime")
+C2_TEMP_ROOT = Path("/Volumes/4T/temp/rgbww-optimizer/p7-td-b-r1-c2-offline/test-runtime")
 C1_FAILED_RUN = Path(
     "/Volumes/4T/temp/rgbww-optimizer/p7-td-b-formal-ray-r1-20260723-182500"
 )
@@ -2096,23 +2096,249 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                     "fail",
                 )
 
-    def test_failed_r1_run_replays_read_only_with_low_signal_and_cleanup_evidence(self):
-        C1_TEMP_ROOT.mkdir(parents=True, exist_ok=True)
-        frozen = (
-            "plan.json",
-            "run.json",
-            "failure.json",
-            "physical-returns.jsonl",
-            "all-off-python.json",
-            "all-off-shell.json",
-            "all-off-shell.exit-status.txt",
-            "independent-final-zero.json",
+    def test_post_stat_sidecar_io_failures_preserve_one_physical_owner(self):
+        plan = subject.build_diagnostic_plan(
+            subject.TD_A,
+            source="ray",
+            for_execution=True,
+            human_authorization=subject.TD_A,
+            v2_capture_capability=True,
         )
-        before = {
-            name: hashlib.sha256((C1_FAILED_RUN / name).read_bytes()).hexdigest()
-            for name in frozen
+        plan = {
+            **plan,
+            "captures": [plan["captures"][1]],
+            "budgets": {
+                "formal_cap": 1,
+                "ambient_cap": 0,
+                "physical_cr3_cap": 22,
+            },
+            "frozen_shutters": {"ray-h120-s100": "1/5000"},
+            "exposure_setup_required": [],
+            "shutter_ledger_provenance": {
+                "owner": "experiment_capture_steps",
+                "required_cache_keys": ["ray-h120-s100"],
+                "frozen_shutters_sha256": subject.canonical_sha256(
+                    {"ray-h120-s100": "1/5000"}
+                ),
+            },
         }
-        with tempfile.TemporaryDirectory(dir=C1_TEMP_ROOT) as tempdir:
+        original_read_bytes = Path.read_bytes
+
+        for case in ("read_oserror", "removed_after_stat", "replaced_after_stat"):
+            with self.subTest(case=case), _w0_temporary_directory() as tempdir:
+                root = Path(tempdir) / "run"
+                observer = {}
+
+                def bind(callback):
+                    observer["callback"] = callback
+
+                def capture(step):
+                    result = _attach_v2_capture_evidence(
+                        root,
+                        step,
+                        {},
+                        observed=float(step["requested_elapsed_s"]),
+                    )
+                    sidecar = Path(result["remote_metadata_path"]).resolve()
+
+                    def fail_after_stat(path):
+                        if path.resolve() != sidecar:
+                            return original_read_bytes(path)
+                        if case == "removed_after_stat":
+                            path.unlink()
+                            return original_read_bytes(path)
+                        if case == "replaced_after_stat":
+                            path.unlink()
+                            path.mkdir()
+                            return original_read_bytes(path)
+                        raise OSError("synthetic post-stat sidecar read failure")
+
+                    with mock.patch.object(Path, "read_bytes", new=fail_after_stat):
+                        observer["callback"](step, result, 1)
+                    self.fail("post-stat sidecar I/O failure must reject the capture")
+
+                with self.assertRaisesRegex(
+                    RuntimeError,
+                    "sidecar owner|sidecar evidence",
+                ):
+                    measure.execute_plan(
+                        plan,
+                        run_dir=root,
+                        apply_command_fn=lambda _step: {},
+                        readback_fn=lambda _step: {},
+                        capture_fn=capture,
+                        both_off_gate_fn=lambda _gate: {
+                            "status": "pass",
+                            "strip_verified_off": True,
+                            "ray_verified_off": True,
+                        },
+                        cleanup_fn=lambda: {"status": "pass"},
+                        bind_physical_return_observer_fn=bind,
+                        monotonic_fn=lambda: 0,
+                        sleep_fn=lambda _seconds: None,
+                    )
+                run = _read_json(root / "run.json")
+                failure = _read_json(root / "failure.json")
+                physical = [
+                    json.loads(line)
+                    for line in (root / "physical-returns.jsonl")
+                    .read_text(encoding="utf-8")
+                    .splitlines()
+                ]
+                accepted = (
+                    (root / "captures.jsonl").read_text(encoding="utf-8").splitlines()
+                    if (root / "captures.jsonl").exists()
+                    else []
+                )
+                self.assertEqual(run["physical_returned_cr3_count"], 1)
+                self.assertEqual(run["physical_cr3_count"], 1)
+                self.assertEqual(run["accepted_formal_count"], 0)
+                self.assertEqual(len(physical), 1)
+                self.assertEqual(len({row["capture_id"] for row in physical}), 1)
+                self.assertTrue(Path(physical[0]["cr3_path"]).is_file())
+                self.assertIsNotNone(physical[0]["cr3_sha256"])
+                self.assertEqual(accepted, [])
+                self.assertEqual(
+                    failure["rejected_capture"]["rejection_stage"],
+                    "sidecar_association",
+                )
+                self.assertEqual(
+                    failure["rejected_capture"]["cr3_sha256"],
+                    physical[0]["cr3_sha256"],
+                )
+                self.assertEqual(_read_json(root / "all-off-python.json")["status"], "pass")
+
+    def test_adapter_drift_preserves_sidecar_verified_remote_ids(self):
+        plan = subject.build_diagnostic_plan(
+            subject.TD_A,
+            source="ray",
+            for_execution=True,
+            human_authorization=subject.TD_A,
+            v2_capture_capability=True,
+        )
+        plan = {
+            **plan,
+            "captures": [plan["captures"][1]],
+            "budgets": {
+                "formal_cap": 1,
+                "ambient_cap": 0,
+                "physical_cr3_cap": 22,
+            },
+            "frozen_shutters": {"ray-h120-s100": "1/5000"},
+            "exposure_setup_required": [],
+            "shutter_ledger_provenance": {
+                "owner": "experiment_capture_steps",
+                "required_cache_keys": ["ray-h120-s100"],
+                "frozen_shutters_sha256": subject.canonical_sha256(
+                    {"ray-h120-s100": "1/5000"}
+                ),
+            },
+        }
+
+        for case in ("timing_metadata", "timing_evidence"):
+            with self.subTest(case=case), _w0_temporary_directory() as tempdir:
+                root = Path(tempdir) / "run"
+                observer = {}
+                expected_ids = {}
+
+                def bind(callback):
+                    observer["callback"] = callback
+
+                def capture(step):
+                    result = _attach_v2_capture_evidence(
+                        root,
+                        step,
+                        {},
+                        observed=float(step["requested_elapsed_s"]),
+                    )
+                    sidecar = json.loads(
+                        Path(result["remote_metadata_path"]).read_text(encoding="utf-8")
+                    )
+                    expected_ids.update({
+                        "capture_id": sidecar["capture_id"],
+                        "request_id": sidecar["request_id"],
+                    })
+                    if case == "timing_metadata":
+                        result["timing_metadata"] = {
+                            **result["timing_metadata"],
+                            "capture_id": "adapter-forged",
+                        }
+                    else:
+                        result["timing_evidence"] = {
+                            **result["timing_evidence"],
+                            "best_effort_elapsed_s": 999.0,
+                        }
+                    observer["callback"](step, result, 1)
+                    self.fail("adapter drift must reject the physical return")
+
+                with self.assertRaisesRegex(
+                    RuntimeError,
+                    "timing metadata differs|timing evidence differs",
+                ):
+                    measure.execute_plan(
+                        plan,
+                        run_dir=root,
+                        apply_command_fn=lambda _step: {},
+                        readback_fn=lambda _step: {},
+                        capture_fn=capture,
+                        both_off_gate_fn=lambda _gate: {
+                            "status": "pass",
+                            "strip_verified_off": True,
+                            "ray_verified_off": True,
+                        },
+                        cleanup_fn=lambda: {"status": "pass"},
+                        bind_physical_return_observer_fn=bind,
+                        monotonic_fn=lambda: 0,
+                        sleep_fn=lambda _seconds: None,
+                    )
+                run = _read_json(root / "run.json")
+                failure = _read_json(root / "failure.json")
+                physical = [
+                    json.loads(line)
+                    for line in (root / "physical-returns.jsonl")
+                    .read_text(encoding="utf-8")
+                    .splitlines()
+                ]
+                accepted = (
+                    (root / "captures.jsonl").read_text(encoding="utf-8").splitlines()
+                    if (root / "captures.jsonl").exists()
+                    else []
+                )
+                self.assertEqual(run["physical_returned_cr3_count"], 1)
+                self.assertEqual(run["accepted_formal_count"], 0)
+                self.assertEqual(len(physical), 1)
+                self.assertEqual(len({row["capture_id"] for row in physical}), 1)
+                self.assertEqual(accepted, [])
+                self.assertEqual(
+                    physical[0]["remote_capture_id"], expected_ids["capture_id"]
+                )
+                self.assertEqual(
+                    physical[0]["remote_request_id"], expected_ids["request_id"]
+                )
+                self.assertEqual(
+                    failure["rejected_capture"]["remote_capture_id"],
+                    expected_ids["capture_id"],
+                )
+                self.assertEqual(
+                    failure["rejected_capture"]["remote_request_id"],
+                    expected_ids["request_id"],
+                )
+                self.assertIsNotNone(physical[0]["sidecar_sha256"])
+                self.assertEqual(physical[0]["sidecar_validation_status"], "pass")
+                self.assertEqual(
+                    failure["rejected_capture"]["sidecar_validation_status"],
+                    "pass",
+                )
+                self.assertEqual(_read_json(root / "all-off-python.json")["status"], "pass")
+
+    def test_failed_r1_run_replays_read_only_with_low_signal_and_cleanup_evidence(self):
+        C2_TEMP_ROOT.mkdir(parents=True, exist_ok=True)
+        before = {
+            str(path.relative_to(C1_FAILED_RUN)): hashlib.sha256(path.read_bytes()).hexdigest()
+            for path in sorted(C1_FAILED_RUN.rglob("*"))
+            if path.is_file()
+        }
+        with tempfile.TemporaryDirectory(dir=C2_TEMP_ROOT) as tempdir:
             output = Path(tempdir) / "audit"
             artifact_path = measure.audit_post_return_failure(
                 C1_FAILED_RUN,
@@ -2140,9 +2366,15 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
             ))
             self.assertEqual(artifact["cleanup"], "pass")
             self.assertEqual(artifact["independent_final_zero"], "pass")
+            self.assertEqual(artifact["immutable_input_file_count"], len(before))
+            self.assertEqual(artifact["immutable_input_sha256"], before)
+            self.assertTrue(any(name.endswith(".cr3") for name in before))
+            self.assertTrue(any(name.endswith(".cr3.metadata.json") for name in before))
+            self.assertTrue(any(name.endswith(".patch-statistics.json") for name in before))
         after = {
-            name: hashlib.sha256((C1_FAILED_RUN / name).read_bytes()).hexdigest()
-            for name in frozen
+            str(path.relative_to(C1_FAILED_RUN)): hashlib.sha256(path.read_bytes()).hexdigest()
+            for path in sorted(C1_FAILED_RUN.rglob("*"))
+            if path.is_file()
         }
         self.assertEqual(after, before)
 

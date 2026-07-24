@@ -34,44 +34,67 @@ def _validate_returned_sidecar(
     capture_payload: Mapping[str, Any],
     *,
     raw_path: Path,
+    raw_payload: bytes | None = None,
     run_root: Path,
 ) -> dict[str, Any]:
     sidecar_value = capture_payload.get("remote_metadata_path")
     sidecar_candidate = Path(str(sidecar_value)) if sidecar_value else None
-    sidecar_path = (
-        sidecar_candidate.resolve() if sidecar_candidate is not None else None
-    )
     evidence = {
-        "sidecar_path": None if sidecar_path is None else str(sidecar_path),
+        "sidecar_path": None,
         "sidecar_byte_count": None,
         "sidecar_sha256": None,
         "sidecar_validation_status": "fail",
+        "remote_capture_id": None,
+        "remote_request_id": None,
     }
-    if (
-        sidecar_path is None
-        or not sidecar_path.is_relative_to(run_root)
-        or sidecar_candidate is None
-        or sidecar_candidate.is_symlink()
-        or not sidecar_path.is_file()
-        or sidecar_path.stat().st_size <= 0
-        or sidecar_path != raw_path.with_suffix(raw_path.suffix + ".metadata.json")
-    ):
+    try:
+        sidecar_path = (
+            sidecar_candidate.resolve() if sidecar_candidate is not None else None
+        )
+        evidence["sidecar_path"] = (
+            None if sidecar_path is None else str(sidecar_path)
+        )
+        invalid_owner = (
+            sidecar_path is None
+            or not sidecar_path.is_relative_to(run_root)
+            or sidecar_candidate is None
+            or sidecar_candidate.is_symlink()
+            or not sidecar_path.is_file()
+            or sidecar_path.stat().st_size <= 0
+            or sidecar_path
+            != raw_path.with_suffix(raw_path.suffix + ".metadata.json")
+        )
+    except OSError as exc:
+        raise _SidecarAssociationError(
+            "capture adapter could not inspect retained CR3 sidecar evidence",
+            evidence=evidence,
+        ) from exc
+    if invalid_owner:
         raise _SidecarAssociationError(
             "capture adapter lacks the retained CR3 sidecar owner",
             evidence=evidence,
         )
-    sidecar_bytes = sidecar_path.read_bytes()
+    try:
+        sidecar_bytes = sidecar_path.read_bytes()
+    except OSError as exc:
+        raise _SidecarAssociationError(
+            "capture adapter could not read retained CR3 sidecar evidence",
+            evidence=evidence,
+        ) from exc
     evidence.update({
         "sidecar_byte_count": len(sidecar_bytes),
         "sidecar_sha256": hashlib.sha256(sidecar_bytes).hexdigest(),
     })
     try:
         sidecar = json.loads(sidecar_bytes.decode("utf-8"))
+        if raw_payload is None:
+            raw_payload = raw_path.read_bytes()
         remote_metadata, receipt = camera_remote_v2.split_and_validate_sidecar(
             sidecar,
-            payload=raw_path.read_bytes(),
+            payload=raw_payload,
         )
     except (
+        OSError,
         UnicodeError,
         json.JSONDecodeError,
         camera_remote_v2.RemoteCaptureV2Error,
@@ -80,6 +103,11 @@ def _validate_returned_sidecar(
             "capture adapter retained invalid CR3 sidecar evidence",
             evidence=evidence,
         ) from exc
+    evidence.update({
+        "sidecar_validation_status": "pass",
+        "remote_capture_id": remote_metadata.get("capture_id"),
+        "remote_request_id": remote_metadata.get("request_id"),
+    })
     if capture_payload.get("timing_metadata") != sidecar:
         raise _SidecarAssociationError(
             "capture adapter timing metadata differs from retained sidecar",
@@ -92,7 +120,6 @@ def _validate_returned_sidecar(
         )
     return {
         **evidence,
-        "sidecar_validation_status": "pass",
         "remote_metadata": remote_metadata,
         "receipt": receipt,
     }
@@ -898,8 +925,9 @@ def execute_plan(
         if reported_physical != 1:
             raise RuntimeError("thermal capture reported physical count differs from one retained CR3")
         ensure_physical_capacity()
-        sha256 = hashlib.sha256(raw_path.read_bytes()).hexdigest()
-        byte_count = raw_path.stat().st_size
+        raw_payload = raw_path.read_bytes()
+        sha256 = hashlib.sha256(raw_payload).hexdigest()
+        byte_count = len(raw_payload)
         association_error: RuntimeError | None = None
         if capture_payload.get("byte_count") not in {None, byte_count} or capture_payload.get(
             "sha256"
@@ -911,13 +939,13 @@ def execute_plan(
             sidecar_result = _validate_returned_sidecar(
                 capture_payload,
                 raw_path=raw_path,
+                raw_payload=raw_payload,
                 run_root=run_root,
             )
         except _SidecarAssociationError as exc:
             sidecar_evidence = dict(exc.evidence)
             if association_error is None:
                 association_error = exc
-            remote_metadata = None
         else:
             sidecar_evidence = {
                 key: sidecar_result[key]
@@ -926,20 +954,13 @@ def execute_plan(
                     "sidecar_byte_count",
                     "sidecar_sha256",
                     "sidecar_validation_status",
+                    "remote_capture_id",
+                    "remote_request_id",
                 )
             }
-            remote_metadata = sidecar_result["remote_metadata"]
 
-        remote_capture_id = (
-            remote_metadata.get("capture_id")
-            if isinstance(remote_metadata, Mapping)
-            else None
-        )
-        remote_request_id = (
-            remote_metadata.get("request_id")
-            if isinstance(remote_metadata, Mapping)
-            else None
-        )
+        remote_capture_id = sidecar_evidence["remote_capture_id"]
+        remote_request_id = sidecar_evidence["remote_request_id"]
         row = {
             "schema": thermal.PHYSICAL_RETURN_LEDGER_SCHEMA,
             "physical_index": run["physical_returned_cr3_count"] + 1,
@@ -1224,9 +1245,16 @@ def audit_post_return_failure(
     evidence_paths = {name: root / name for name in evidence_names}
     if any(not path.is_file() or path.is_symlink() for path in evidence_paths.values()):
         raise ValueError("post-return audit lacks immutable run evidence")
+    retained_paths = {
+        str(path.relative_to(root)): path
+        for path in sorted(root.rglob("*"))
+        if path.is_file()
+    }
+    if not retained_paths or any(path.is_symlink() for path in retained_paths.values()):
+        raise ValueError("post-return audit retained file set is invalid")
     before = {
         name: hashlib.sha256(path.read_bytes()).hexdigest()
-        for name, path in evidence_paths.items()
+        for name, path in retained_paths.items()
     }
 
     plan = json.loads(evidence_paths["plan.json"].read_text(encoding="utf-8"))
@@ -1366,9 +1394,14 @@ def audit_post_return_failure(
     ):
         raise ValueError("post-return cleanup, final-zero, or NPY evidence differs")
 
+    retained_after = {
+        str(path.relative_to(root)): path
+        for path in sorted(root.rglob("*"))
+        if path.is_file()
+    }
     after = {
         name: hashlib.sha256(path.read_bytes()).hexdigest()
-        for name, path in evidence_paths.items()
+        for name, path in retained_after.items()
     }
     if after != before:
         raise RuntimeError("post-return audit mutated the failed run")
@@ -1380,6 +1413,7 @@ def audit_post_return_failure(
         "accepted_formal": False,
         "reusable_capture": False,
         "failed_run": str(root),
+        "immutable_input_file_count": len(before),
         "immutable_input_sha256": before,
         "physical": {
             "setup": run.get("setup_physical_cr3_count"),
