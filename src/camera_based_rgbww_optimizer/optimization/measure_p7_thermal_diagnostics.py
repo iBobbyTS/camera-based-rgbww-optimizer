@@ -1475,7 +1475,11 @@ def run_authorized_plan(
     validate_authorized_execution_plan(plan, camera_backend=camera_backend)
     from camera_based_rgbww_optimizer.control import all_off, esphome, ray120c
     from camera_based_rgbww_optimizer.optimization import measure_raw_observer_validation as raw_validation
-    from camera_based_rgbww_optimizer.optimization.hsi_objective import required_hsi_features_from_report
+    from camera_based_rgbww_optimizer.measurement.raw_observer_analysis import DEFAULT_STATISTIC
+    from camera_based_rgbww_optimizer.optimization.hsi_objective import (
+        TD_B_FORMAL_FEATURE_STATISTIC,
+        required_hsi_features_from_report,
+    )
     from camera_based_rgbww_optimizer.optimization.measure_ray_hsi_manifold import _verify_readback
 
     root = Path(output_dir) / run_name
@@ -1559,6 +1563,18 @@ def run_authorized_plan(
         if plan["native_raw_ambient_policy"]
         == raw_validation.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT
         else None
+    )
+    exact_td_b_formal_owner = (
+        plan["schema"] == thermal.PLAN_SCHEMA_V2
+        and plan["experiment_id"] == thermal.TD_B
+        and plan["native_raw_ambient_policy"]
+        == raw_validation.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT
+        and ambient_policy_owner == raw_validation.TD_B_FORMAL_AMBIENT_POLICY_OWNER
+    )
+    feature_statistic = (
+        TD_B_FORMAL_FEATURE_STATISTIC
+        if exact_td_b_formal_owner
+        else DEFAULT_STATISTIC
     )
 
     def observe_physical_return(
@@ -1651,7 +1667,33 @@ def run_authorized_plan(
                 "black_level_tolerance_dn": raw_metadata["black_level_metadata_tolerance_dn"],
             }
         else:
-            output["feature_values"] = required_hsi_features_from_report(report, feature_ids)
+            context = report.get("analysis_context")
+            expected_ambient_subtraction = (
+                plan["native_raw_ambient_policy"]
+                == raw_validation.AMBIENT_POLICY_REQUIRE_PRECEDING
+            )
+            if (
+                not isinstance(context, Mapping)
+                or context.get("native_raw_ambient_policy")
+                != plan["native_raw_ambient_policy"]
+                or context.get("ambient_subtraction_applied")
+                is not expected_ambient_subtraction
+                or context.get("phase") != plan["stage"]
+                or context.get("formal_measurement")
+                is not bool(step["formal_measurement"])
+            ):
+                raise RuntimeError(
+                    "thermal RAW feature report context differs from the frozen plan"
+                )
+            output["feature_statistic"] = feature_statistic
+            output["ambient_policy_owner"] = (
+                None if ambient_policy_owner is None else dict(ambient_policy_owner)
+            )
+            output["feature_values"] = required_hsi_features_from_report(
+                report,
+                feature_ids,
+                statistic=feature_statistic,
+            )
         return output
 
     def both_off_gate(gate_id: str) -> Mapping[str, Any]:

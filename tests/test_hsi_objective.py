@@ -7,6 +7,7 @@ from camera_based_rgbww_optimizer.measurement.ray_hsi_manifold import RayHsiMani
 from camera_based_rgbww_optimizer.optimization.hsi_objective import (
     GROUP_ORDER,
     HsiRejectedFeaturesError,
+    TD_B_FORMAL_FEATURE_STATISTIC,
     P7_RESULT_STATUSES,
     evaluate_hsi_observation,
     evaluate_hsi_observation_v2,
@@ -181,6 +182,49 @@ class HsiObjectiveTests(unittest.TestCase):
 
         self.assertTrue(raised.exception.weak_signal_only)
 
+    def test_required_features_preserve_default_and_allow_explicit_statistic(self):
+        report = _feature_report()
+
+        default = required_hsi_features_from_report(
+            report,
+            ["block_01::R", "block_01::B"],
+        )
+        explicit = required_hsi_features_from_report(
+            report,
+            ["block_01::R", "block_01::B"],
+            statistic=TD_B_FORMAL_FEATURE_STATISTIC,
+        )
+
+        self.assertEqual(default, {"block_01::R": 1.0, "block_01::B": 4.0})
+        self.assertEqual(explicit, {"block_01::R": 11.0, "block_01::B": 14.0})
+
+    def test_explicit_statistic_rejects_missing_nonfinite_and_selected_quality(self):
+        for case in ("missing", "nonfinite", "quality"):
+            with self.subTest(case=case):
+                report = _feature_report()
+                selected = report["patches"][0]["planes"]["B"]
+                if case == "missing":
+                    del selected["statistics"]["normalized_per_second"]["trimmed_mean"]
+                elif case == "nonfinite":
+                    selected["statistics"]["normalized_per_second"]["trimmed_mean"] = float("nan")
+                else:
+                    selected["quality"]["status"] = "rejected"
+                    selected["metrics"]["near_noise_floor_fraction"] = 0.2
+
+                with self.assertRaises(HsiRejectedFeaturesError) as raised:
+                    required_hsi_features_from_report(
+                        report,
+                        ["block_01::R", "block_01::B"],
+                        statistic=TD_B_FORMAL_FEATURE_STATISTIC,
+                    )
+
+                rejected = raised.exception.rejected
+                self.assertEqual([item["feature_id"] for item in rejected], ["block_01::B"])
+                self.assertEqual(
+                    raised.exception.weak_signal_only,
+                    case == "quality",
+                )
+
 
 class _SyntheticUncertainty:
     def evaluate(self, manifold, candidate_features, *, target_hue, target_sat):
@@ -204,6 +248,49 @@ class _SyntheticUncertainty:
             "feasible": score <= 1.0,
             "decision": "faithful" if score <= 1.0 else "outside_coverage",
         }
+
+
+def _feature_report():
+    values = {"R": (1.0, 11.0), "G1": (2.0, 12.0), "G2": (3.0, 13.0), "B": (4.0, 14.0)}
+    return {
+        "schema_version": 1,
+        "measurement": "native_bayer_patch_statistics",
+        "source": {"path": "sample.cr3"},
+        "location_config": {"sha256": "location"},
+        "mosaic": {"plane_order": ["R", "G1", "G2", "B"]},
+        "observer_config": {
+            "quality_thresholds": {
+                "minimum_valid_pixels_per_plane": 10,
+                "maximum_nonfinite_fraction": 0.0,
+                "maximum_clipped_fraction": 0.0,
+                "maximum_near_noise_floor_fraction": 0.05,
+            },
+        },
+        "patches": [{
+            "name": "block_01",
+            "optimization_eligible": True,
+            "planes": {
+                plane: {
+                    "quality": {"status": "accepted"},
+                    "metrics": {
+                        "valid_pixel_count": 20,
+                        "nonfinite_fraction": 0.0,
+                        "clipped_fraction": 0.0,
+                        "near_noise_floor_fraction": 0.0,
+                    },
+                    "ambient_subtracted": {
+                        "trimmed_mean_per_second": ambient_value,
+                    },
+                    "statistics": {
+                        "normalized_per_second": {
+                            "trimmed_mean": no_ambient_value,
+                        },
+                    },
+                }
+                for plane, (ambient_value, no_ambient_value) in values.items()
+            },
+        }],
+    }
 
 
 if __name__ == "__main__":

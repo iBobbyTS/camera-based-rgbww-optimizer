@@ -832,7 +832,10 @@ zero ambient captures per source, and derives its 58-feature forensic vector
 from `statistics.normalized_per_second.trimmed_mean`; it does not silently
 substitute ambient-subtracted values. TD-A, TD-C, and every other shared RAW
 caller retain `require_preceding_ambient`. Unknown owners, an ambient step under
-the TD-B exception, or any plan/payload/report policy mismatch fail closed.
+the TD-B exception, or any plan/payload/report policy mismatch fail closed. The
+runner and retained-capture analyzer share one explicit statistic constant;
+the generic feature helper keeps `ambient_subtracted.trimmed_mean_per_second`
+as its unchanged default.
 
 Thermal v2 persists physical side effects and accepted measurements in
 different ledgers. The capture-return observer appends and hashes the nonempty

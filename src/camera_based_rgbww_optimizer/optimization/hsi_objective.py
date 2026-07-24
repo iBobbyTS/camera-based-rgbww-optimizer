@@ -13,12 +13,16 @@ from camera_based_rgbww_optimizer.measurement.hsi_policy_v2 import (
     local_tangent_evaluate,
     plane_block_regularize,
 )
-from camera_based_rgbww_optimizer.measurement.raw_observer_analysis import collect_patch_plane_features
+from camera_based_rgbww_optimizer.measurement.raw_observer_analysis import (
+    DEFAULT_STATISTIC,
+    collect_patch_plane_features,
+)
 
 
 GROUP_ORDER = ("hue", "sat", "shape")
 V2_GROUP_ORDER = ("coordinate", "rendering")
 CHANNELS = ("cw", "ww", "r", "g", "b")
+TD_B_FORMAL_FEATURE_STATISTIC = "statistics.normalized_per_second.trimmed_mean"
 P7_RESULT_STATUSES = frozenset({
     "faithful",
     "unconfirmed",
@@ -38,12 +42,15 @@ class HsiRejectedFeaturesError(ValueError):
 
 
 def required_hsi_features_from_report(
-    report: Mapping[str, Any], required_feature_ids: Sequence[str]
+    report: Mapping[str, Any],
+    required_feature_ids: Sequence[str],
+    *,
+    statistic: str = DEFAULT_STATISTIC,
 ) -> dict[str, float]:
     required = tuple(str(value) for value in required_feature_ids)
     if not required or len(set(required)) != len(required):
         raise ValueError("required HSI feature IDs must be unique and non-empty")
-    collection = collect_patch_plane_features([report])
+    collection = collect_patch_plane_features([report], statistic=statistic)
     by_id = {str(item["feature_id"]): item for item in collection["observations"]}
     missing = [feature for feature in required if feature not in by_id]
     if missing:

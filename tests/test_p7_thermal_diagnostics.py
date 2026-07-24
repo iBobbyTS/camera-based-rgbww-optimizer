@@ -15,7 +15,10 @@ from unittest import mock
 from camera_based_rgbww_optimizer.optimization import measure_p7_thermal_diagnostics as measure
 from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as subject
 from camera_based_rgbww_optimizer.optimization import analyze_p7_thermal_diagnostics as thermal_analyzer
-from camera_based_rgbww_optimizer.optimization.hsi_objective import HsiRejectedFeaturesError
+from camera_based_rgbww_optimizer.optimization.hsi_objective import (
+    HsiRejectedFeaturesError,
+    TD_B_FORMAL_FEATURE_STATISTIC,
+)
 from camera_based_rgbww_optimizer.control import camera_gphoto2, camera_remote_v2
 
 
@@ -26,6 +29,71 @@ C1_FAILED_RUN = Path(
 )
 C1_CR3_SHA256 = "0778e98d46d05e6bf13e218b79ee644178629076e4d9e6d8a1545fcb54a03889"
 C1_SIDECAR_SHA256 = "93d0e64f612ab591da717d99af25dc5606a98148729e1988cc43f667375b4e68"
+
+
+def _c3_native_raw_report(feature_ids, *, ambient_policy, phase):
+    required = set(feature_ids)
+    patches = []
+    feature_index = 0
+    for block_index in range(1, 25):
+        patch_name = f"block_{block_index:02d}"
+        planes = {}
+        for plane in ("R", "G1", "G2", "B"):
+            feature_id = f"{patch_name}::{plane}"
+            feature_index += 1
+            planes[plane] = {
+                "quality": {"status": "accepted"},
+                "metrics": {
+                    "valid_pixel_count": 30_000,
+                    "nonfinite_fraction": 0.0,
+                    "clipped_fraction": 0.0,
+                    "near_noise_floor_fraction": 0.0,
+                },
+                "statistics": {
+                    "normalized_per_second": {
+                        "trimmed_mean": float(feature_index),
+                    },
+                },
+            }
+            if feature_id not in required:
+                planes[plane]["ambient_subtracted"] = {
+                    "trimmed_mean_per_second": float(feature_index) + 1000.0,
+                }
+        patches.append({
+            "name": patch_name,
+            "optimization_eligible": True,
+            "planes": planes,
+        })
+    return {
+        "schema_version": 1,
+        "measurement": "native_bayer_patch_statistics",
+        "source": {"path": "synthetic.cr3"},
+        "location_config": {"sha256": "synthetic-location"},
+        "mosaic": {"plane_order": ["R", "G1", "G2", "B"]},
+        "observer_config": {
+            "quality_thresholds": {
+                "minimum_valid_pixels_per_plane": 29_000,
+                "maximum_nonfinite_fraction": 0.0,
+                "maximum_clipped_fraction": 0.0,
+                "maximum_near_noise_floor_fraction": 0.05,
+            },
+        },
+        "exposure_metadata": {"seconds": 0.001},
+        "raw_metadata": {
+            "black_level_per_channel": [512, 512, 512, 512],
+            "white_level": 16383,
+            "black_level_metadata_tolerance_dn": 8,
+        },
+        "analysis_context": {
+            "native_raw_ambient_policy": ambient_policy,
+            "ambient_subtraction_applied": (
+                ambient_policy == subject.AMBIENT_POLICY_REQUIRE_PRECEDING
+            ),
+            "phase": phase,
+            "formal_measurement": True,
+        },
+        "patches": patches,
+    }
 
 
 class _Clock:
@@ -1547,6 +1615,155 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
             subject.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
         )
 
+    def test_production_runner_uses_no_ambient_statistic_only_for_exact_td_b_owner(self):
+        feature_ids = json.loads(
+            subject.POLICY_PATH.read_text(encoding="utf-8")
+        )["feature_set"]["ids"]
+
+        class FakeBackend:
+            backend_name = "remote"
+            v2_capture_capability = measure.REMOTE_V2_CAPABILITY
+
+            def connect(self):
+                return camera_gphoto2.CameraConnection("fake-remote", "offline")
+
+            def resolve_capture_settings(self, **_kwargs):
+                return camera_gphoto2.CaptureSettings(
+                    iso="100",
+                    aperture="implicit auto",
+                    shutter_speed="1/100",
+                    image_format="RAW",
+                )
+
+            def capture_with_timing(self, **_kwargs):
+                raise AssertionError("fake RAW adapter owns the offline capture")
+
+        def run(plan, root, *, mutate_context=None):
+            observed = {}
+
+            def adapter_builder(**kwargs):
+                def adapter(step):
+                    report_path = kwargs["measurements_dir"] / (
+                        f"{step['capture_id']}.patch-statistics.json"
+                    )
+                    report_path.parent.mkdir(parents=True, exist_ok=True)
+                    report = _c3_native_raw_report(
+                        feature_ids,
+                        ambient_policy=kwargs["ambient_policy"],
+                        phase=plan["stage"],
+                    )
+                    if mutate_context is not None:
+                        mutate_context(report["analysis_context"])
+                    report_path.write_text(
+                        json.dumps(report),
+                        encoding="utf-8",
+                    )
+                    raw_path = kwargs["camera_dir"] / f"{step['capture_id']}.CR3"
+                    raw_path.parent.mkdir(parents=True, exist_ok=True)
+                    raw_path.write_bytes(b"synthetic-c3")
+                    return {
+                        "capture": {"saved_file": str(raw_path)},
+                        "saved_file": str(raw_path),
+                        "patch_statistics": str(report_path),
+                        "timing_metadata": {},
+                        "timing_evidence": {
+                            "best_effort_elapsed_s": 600.0,
+                            "local_readback_done_monotonic_s": 0.0,
+                        },
+                    }
+
+                return adapter
+
+            def fake_execute(resolved_plan, **kwargs):
+                formal = next(
+                    step for step in resolved_plan["captures"]
+                    if step["formal_measurement"]
+                )
+                kwargs["set_capture_context_fn"](0.0)
+                observed["capture"] = kwargs["capture_fn"](formal)
+                return root
+
+            with mock.patch(
+                "camera_based_rgbww_optimizer.optimization."
+                "measure_raw_observer_validation.build_native_raw_capture_step_fn",
+                side_effect=adapter_builder,
+            ), mock.patch.object(measure, "execute_plan", side_effect=fake_execute):
+                result = measure.run_authorized_plan(
+                    plan,
+                    output_dir=root.parent,
+                    run_name=root.name,
+                    camera_backend=FakeBackend(),
+                )
+            self.assertEqual(result, root)
+            return observed["capture"]
+
+        with _w0_temporary_directory() as tempdir:
+            root = Path(tempdir)
+            td_b = subject.build_diagnostic_plan(
+                subject.TD_B,
+                source="strip",
+                prerequisite_artifact=subject.OPERATING_ENVELOPE_V2_PATH,
+                for_execution=True,
+                human_authorization=subject.TD_B,
+                v2_capture_capability=True,
+            )
+            captured = run(td_b, root / "td-b")
+            self.assertEqual(captured["feature_statistic"], TD_B_FORMAL_FEATURE_STATISTIC)
+            self.assertEqual(len(captured["feature_values"]), 58)
+            self.assertEqual(list(captured["feature_values"]), feature_ids)
+
+            for label, mutation in (
+                (
+                    "ambient-subtraction",
+                    lambda context: context.__setitem__(
+                        "ambient_subtraction_applied", True
+                    ),
+                ),
+                (
+                    "phase",
+                    lambda context: context.__setitem__("phase", "TD-A"),
+                ),
+            ):
+                with self.subTest(report_context=label), self.assertRaisesRegex(
+                    RuntimeError,
+                    "report context",
+                ):
+                    run(
+                        td_b,
+                        root / f"td-b-{label}",
+                        mutate_context=mutation,
+                    )
+
+            td_a = subject.build_diagnostic_plan(
+                subject.TD_A,
+                source="ray",
+                for_execution=True,
+                human_authorization=subject.TD_A,
+                v2_capture_capability=True,
+            )
+            with self.assertRaises(HsiRejectedFeaturesError) as raised:
+                run(td_a, root / "td-a")
+            self.assertEqual(len(raised.exception.rejected), 58)
+            self.assertTrue(all(
+                item["status"] == "missing_statistic"
+                for item in raised.exception.rejected
+            ))
+            self.assertFalse(raised.exception.weak_signal_only)
+
+            mismatched = subject.build_diagnostic_plan(
+                subject.TD_B,
+                source="strip",
+                prerequisite_artifact=subject.OPERATING_ENVELOPE_V2_PATH,
+                for_execution=True,
+                human_authorization=subject.TD_B,
+                v2_capture_capability=True,
+            )
+            mismatched["native_raw_ambient_policy"] = (
+                subject.AMBIENT_POLICY_REQUIRE_PRECEDING
+            )
+            with self.assertRaisesRegex(PermissionError, "ambient policy"):
+                run(mismatched, root / "mismatched")
+
     def test_authorized_runner_settings_failure_is_before_run_directory_and_lights(self):
         class FakeBackend:
             backend_name = "remote"
@@ -2389,8 +2606,10 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
             new_checkpoint="b" * 40,
             changed_paths=[
                 ".agent-work/PLAN.md",
+                "src/camera_based_rgbww_optimizer/optimization/hsi_objective.py",
                 "src/camera_based_rgbww_optimizer/optimization/"
                 "measure_raw_observer_validation.py",
+                "tests/test_hsi_objective.py",
                 "tests/test_p7_thermal_diagnostics.py",
                 "docs/README.md",
             ],

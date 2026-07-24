@@ -113,12 +113,14 @@ TD_B_F0A_LINEAGE_CANDIDATE_SHA256 = (
     "6d74f2b0fa563147bad00d8c9a89985d3b5de97034288cdd242f10b1d52dc2f1"
 )
 TD_B_LINEAGE_ALLOWED_PRODUCTION_PATHS = frozenset({
+    "src/camera_based_rgbww_optimizer/optimization/hsi_objective.py",
     "src/camera_based_rgbww_optimizer/optimization/measure_raw_observer_validation.py",
     "src/camera_based_rgbww_optimizer/optimization/p7_thermal_diagnostics.py",
     "src/camera_based_rgbww_optimizer/optimization/measure_p7_thermal_diagnostics.py",
     "src/camera_based_rgbww_optimizer/optimization/analyze_p7_thermal_diagnostics.py",
 })
 TD_B_LINEAGE_ALLOWED_VALIDATION_PATHS = frozenset({
+    "tests/test_hsi_objective.py",
     "tests/test_measure_raw_observer_validation.py",
     "tests/test_p7_thermal_diagnostics.py",
     "tests/test_analyze_p7_thermal_diagnostics.py",

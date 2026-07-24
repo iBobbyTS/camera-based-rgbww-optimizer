@@ -29,6 +29,10 @@ from camera_based_rgbww_optimizer.control import camera_remote_v2
 from camera_based_rgbww_optimizer.optimization.analyze_hsi_reference_repeatability import (
     write_reference_epoch_v2_derived,
 )
+from camera_based_rgbww_optimizer.optimization.hsi_objective import (
+    TD_B_FORMAL_FEATURE_STATISTIC,
+    required_hsi_features_from_report,
+)
 
 
 TD_A_COMBINED_ANALYSIS_SCHEMA_V1 = "p7_td_a_combined_analysis_v1"
@@ -76,6 +80,26 @@ TD_B_RETAINED_FIRST_SIDECAR_SHA256 = (
 )
 TD_B_RETAINED_FIRST_CAPTURE_ID = "bfc876fa-9a69-445d-bfc2-298f42baf3af"
 TD_B_RETAINED_FIRST_REQUEST_ID = "36d2a813-8d35-4f9a-b860-c58cc1ba12e9"
+
+
+def td_b_feature_map_from_report(
+    report: Mapping[str, Any], feature_ids: Sequence[str],
+) -> dict[str, float]:
+    context = report.get("analysis_context")
+    if (
+        not isinstance(context, Mapping)
+        or context.get("native_raw_ambient_policy")
+        != raw_validation.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT
+        or context.get("ambient_subtraction_applied") is not False
+        or context.get("phase") != "TD-B"
+        or context.get("formal_measurement") is not True
+    ):
+        raise ValueError("retained TD-B report lacks the frozen no-ambient owner")
+    return required_hsi_features_from_report(
+        report,
+        feature_ids,
+        statistic=TD_B_FORMAL_FEATURE_STATISTIC,
+    )
 
 
 def analyze_thermal_run(
@@ -540,9 +564,6 @@ def _replay_td_b_first_capture(
         RecordedExposure,
         parse_nominal_exposure,
     )
-    from camera_based_rgbww_optimizer.measurement.raw_observer_analysis import (
-        collect_patch_plane_features,
-    )
 
     root = Path(failed_run_path).resolve()
     raw_candidate = Path(cr3_path)
@@ -683,6 +704,8 @@ def _replay_td_b_first_capture(
                 "forensic_only": True,
                 "accepted_formal": False,
                 "reusable_capture": False,
+                "phase": "TD-B",
+                "formal_measurement": True,
             },
         },
         ambient_capture=None,
@@ -697,24 +720,7 @@ def _replay_td_b_first_capture(
     )
     report = _load_json(report_path)
     feature_ids = _load_json(thermal.POLICY_PATH)["feature_set"]["ids"]
-    forensic_statistic = "statistics.normalized_per_second.trimmed_mean"
-    collection = collect_patch_plane_features(
-        [report],
-        statistic=forensic_statistic,
-    )
-    observations = {
-        str(item["feature_id"]): item for item in collection["observations"]
-    }
-    features = {
-        feature_id: float(observations[feature_id]["value"])
-        for feature_id in feature_ids
-        if (
-            feature_id in observations
-            and observations[feature_id].get("status") == "included"
-            and observations[feature_id].get("quality_status") == "accepted"
-            and observations[feature_id].get("value") is not None
-        )
-    }
+    features = td_b_feature_map_from_report(report, feature_ids)
     if len(features) != 58 or set(features) != set(feature_ids):
         raise ValueError("retained TD-B first-capture replay lacks frozen 58 features")
     feature_payload = json.dumps(
@@ -754,6 +760,9 @@ def _replay_td_b_first_capture(
         "native_raw_ambient_policy": (
             raw_validation.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT
         ),
+        "ambient_policy_owner": dict(
+            raw_validation.TD_B_FORMAL_AMBIENT_POLICY_OWNER
+        ),
         "ambient_subtraction_applied": False,
         "report_reference": {
             "path": str(Path(report_path).resolve()),
@@ -762,7 +771,7 @@ def _replay_td_b_first_capture(
         "quality": dict(quality),
         "feature_count": len(features),
         "feature_ids": list(feature_ids),
-        "feature_statistic": forensic_statistic,
+        "feature_statistic": TD_B_FORMAL_FEATURE_STATISTIC,
         "features_sha256": hashlib.sha256(feature_payload).hexdigest(),
     }
     artifact_path = output / "retained-first-capture-replay.json"

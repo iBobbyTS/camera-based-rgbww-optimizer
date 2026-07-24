@@ -108,7 +108,10 @@ source and uses the explicit un-subtracted
 `statistics.normalized_per_second.trimmed_mean` feature statistic. TD-A, TD-C,
 and all other callers must retain `require_preceding_ambient`. Bind this policy
 to the exact experiment/schema/phase owner and replay the same value from plan
-through capture payload and patch-statistics report.
+through capture payload and patch-statistics report. Keep that TD-B statistic
+in one shared feature-owner constant used by the runner and retained analyzer;
+the generic helper default remains
+`ambient_subtracted.trimmed_mean_per_second`, with no report-driven fallback.
 
 Keep camera-return side effects separate from accepted measurements. Persist a
 unique nonempty current-run CR3, hash, byte count, and capture owner in

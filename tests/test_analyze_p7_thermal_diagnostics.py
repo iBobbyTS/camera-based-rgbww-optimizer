@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import os
 import shutil
 import tempfile
@@ -14,6 +15,10 @@ from camera_based_rgbww_optimizer.optimization import analyze_p7_thermal_diagnos
 from camera_based_rgbww_optimizer.optimization import measure_p7_thermal_diagnostics as measure
 from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
 from camera_based_rgbww_optimizer.optimization.hsi_source_evidence import expected_strip_payloads
+from camera_based_rgbww_optimizer.optimization.hsi_objective import (
+    TD_B_FORMAL_FEATURE_STATISTIC,
+    required_hsi_features_from_report,
+)
 from camera_based_rgbww_optimizer.control import camera_remote_v2
 
 
@@ -21,6 +26,15 @@ FEATURE_IDS = json.loads(thermal.POLICY_PATH.read_text(encoding="utf-8"))["featu
 CODE_CHECKPOINT = "a" * 40
 F0A_TEMP_ROOT = Path(
     "/Volumes/4T/temp/rgbww-optimizer/p7-td-b-f0a-offline/test-runtime"
+)
+C3_FAILED_RUN = Path(
+    "/Volumes/4T/temp/rgbww-optimizer/p7-td-b-formal-ray-r1-20260723-182500"
+)
+C3_RETAINED_REPORT = (
+    C3_FAILED_RUN / "measurements" / "000-ray-a-t600.patch-statistics.json"
+)
+C3_RETAINED_REPORT_SHA256 = (
+    "64a84ea2b6169c11eb457adc54b8a0839895afc5b2ac9a0729d17e62888ed5bd"
 )
 
 
@@ -444,7 +458,11 @@ class AnalyzeP7ThermalDiagnosticsTests(unittest.TestCase):
             self.assertEqual(artifact["feature_count"], 58)
             self.assertEqual(
                 artifact["feature_statistic"],
-                "statistics.normalized_per_second.trimmed_mean",
+                TD_B_FORMAL_FEATURE_STATISTIC,
+            )
+            self.assertEqual(
+                artifact["ambient_policy_owner"],
+                measure.raw_validation.TD_B_FORMAL_AMBIENT_POLICY_OWNER,
             )
             self.assertEqual(
                 artifact["native_raw_ambient_policy"],
@@ -490,6 +508,67 @@ class AnalyzeP7ThermalDiagnosticsTests(unittest.TestCase):
                 (subject.TD_B_RETAINED_FAILED_RAY_RUN / name).read_bytes()
             ).hexdigest()
             for name in ("plan.json", "commands.jsonl", "failure.json")
+        }
+        self.assertEqual(after, before)
+
+    def test_current_r1_report_replays_with_runner_analyzer_statistic_agreement(self):
+        before = {
+            str(path.relative_to(C3_FAILED_RUN)): hashlib.sha256(
+                path.read_bytes()
+            ).hexdigest()
+            for path in sorted(C3_FAILED_RUN.rglob("*"))
+            if path.is_file()
+        }
+        report = json.loads(C3_RETAINED_REPORT.read_text(encoding="utf-8"))
+
+        runner_features = required_hsi_features_from_report(
+            report,
+            FEATURE_IDS,
+            statistic=TD_B_FORMAL_FEATURE_STATISTIC,
+        )
+        analyzer_features = subject.td_b_feature_map_from_report(
+            report,
+            FEATURE_IDS,
+        )
+
+        self.assertEqual(runner_features, analyzer_features)
+        self.assertEqual(list(runner_features), FEATURE_IDS)
+        self.assertEqual(len(runner_features), 58)
+        self.assertTrue(all(
+            isinstance(value, float) and math.isfinite(value)
+            for value in runner_features.values()
+        ))
+        rejected_planes = {
+            f"{patch['name']}::{plane}"
+            for patch in report["patches"]
+            for plane, payload in patch["planes"].items()
+            if payload["quality"]["status"] == "rejected"
+        }
+        self.assertEqual(len(rejected_planes), 6)
+        self.assertTrue(rejected_planes.isdisjoint(FEATURE_IDS))
+        for key, value in (
+            ("native_raw_ambient_policy", "require_preceding_ambient"),
+            ("ambient_subtraction_applied", True),
+            ("phase", "TD-A"),
+            ("formal_measurement", False),
+        ):
+            tampered = json.loads(json.dumps(report))
+            tampered["analysis_context"][key] = value
+            with self.subTest(context_key=key), self.assertRaisesRegex(
+                ValueError,
+                "no-ambient owner",
+            ):
+                subject.td_b_feature_map_from_report(tampered, FEATURE_IDS)
+        self.assertEqual(
+            hashlib.sha256(C3_RETAINED_REPORT.read_bytes()).hexdigest(),
+            C3_RETAINED_REPORT_SHA256,
+        )
+        after = {
+            str(path.relative_to(C3_FAILED_RUN)): hashlib.sha256(
+                path.read_bytes()
+            ).hexdigest()
+            for path in sorted(C3_FAILED_RUN.rglob("*"))
+            if path.is_file()
         }
         self.assertEqual(after, before)
 
