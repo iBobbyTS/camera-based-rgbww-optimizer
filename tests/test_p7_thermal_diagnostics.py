@@ -31,6 +31,22 @@ C1_CR3_SHA256 = "0778e98d46d05e6bf13e218b79ee644178629076e4d9e6d8a1545fcb54a0388
 C1_SIDECAR_SHA256 = "93d0e64f612ab591da717d99af25dc5606a98148729e1988cc43f667375b4e68"
 
 
+def _allowed_lineage_changed_paths_fixture() -> tuple[str, ...]:
+    """Return a small test-only fixture from the production allowlist owners."""
+
+    production = subject.TD_B_LINEAGE_ALLOWED_PRODUCTION_PATHS
+    validation = subject.TD_B_LINEAGE_ALLOWED_VALIDATION_PATHS
+    selected = {
+        ".agent-work/PLAN.md",
+        next(path for path in production if path.endswith("hsi_objective.py")),
+        next(path for path in production if path.endswith("measure_raw_observer_validation.py")),
+        next(path for path in validation if path.endswith("test_hsi_objective.py")),
+        next(path for path in validation if path.endswith("test_p7_thermal_diagnostics.py")),
+        next(path for path in validation if path == "docs/README.md"),
+    }
+    return tuple(sorted(selected))
+
+
 def _c3_native_raw_report(feature_ids, *, ambient_policy, phase):
     required = set(feature_ids)
     patches = []
@@ -2658,11 +2674,13 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                 run_name="lineage-release",
                 code_checkpoint=checkpoint,
                 validate_checkpoint_fn=lambda _checkpoint: None,
+                changed_paths_fn=lambda _old, _new: _allowed_lineage_changed_paths_fixture(),
             )
             release = _read_json(release_path)
             validated = subject.validate_td_b_setup_lineage_release(
                 release,
                 release_path=release_path,
+                changed_paths_fn=lambda _old, _new: _allowed_lineage_changed_paths_fixture(),
             )
             resolved = validated["resolved_plan"]
             self.assertTrue(release["production_release_usable"])
@@ -2681,11 +2699,24 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
             backend.connect = mock.Mock()
             backend.resolve_capture_settings = mock.Mock()
             backend.capture_with_timing = mock.Mock()
+            lineage_validator = subject.validate_td_b_setup_lineage_release
+
+            def validate_with_fixture(release, *, release_path):
+                return lineage_validator(
+                    release,
+                    release_path=release_path,
+                    changed_paths_fn=lambda _old, _new: _allowed_lineage_changed_paths_fixture(),
+                )
+
             with mock.patch.object(measure, "_validate_checkpoint_and_tree"), mock.patch.object(
                 measure,
                 "run_authorized_plan",
                 return_value=sentinel,
-            ) as run_mock:
+            ) as run_mock, mock.patch.object(
+                subject,
+                "validate_td_b_setup_lineage_release",
+                side_effect=validate_with_fixture,
+            ):
                 result = measure.run_resolved_td_b_formal(
                     release_path,
                     output_dir=Path(tempdir) / "runs",
@@ -2714,6 +2745,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                 run_name="lineage-release",
                 code_checkpoint=checkpoint,
                 validate_checkpoint_fn=lambda _checkpoint: None,
+                changed_paths_fn=lambda _old, _new: _allowed_lineage_changed_paths_fixture(),
             )
             release = _read_json(release_path)
             candidate_path = Path(release["current_lineage_candidate"]["path"])
@@ -2726,6 +2758,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                 subject.validate_td_b_setup_lineage_release(
                     release,
                     release_path=release_path,
+                    changed_paths_fn=lambda _old, _new: _allowed_lineage_changed_paths_fixture(),
                 )
 
         with _w0_temporary_directory() as tempdir:
@@ -2734,6 +2767,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                 run_name="lineage-release",
                 code_checkpoint=checkpoint,
                 validate_checkpoint_fn=lambda _checkpoint: None,
+                changed_paths_fn=lambda _old, _new: _allowed_lineage_changed_paths_fixture(),
             )
             release = _read_json(release_path)
             resolved_path = Path(release["resolved_formal_plan"]["path"])
@@ -2746,6 +2780,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                 subject.validate_td_b_setup_lineage_release(
                     release,
                     release_path=release_path,
+                    changed_paths_fn=lambda _old, _new: _allowed_lineage_changed_paths_fixture(),
                 )
 
         with _w0_temporary_directory() as tempdir:
@@ -2754,6 +2789,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                 run_name="lineage-release",
                 code_checkpoint=checkpoint,
                 validate_checkpoint_fn=lambda _checkpoint: None,
+                changed_paths_fn=lambda _old, _new: _allowed_lineage_changed_paths_fixture(),
             )
             symlink = Path(tempdir) / "release-link.json"
             symlink.symlink_to(release_path)
@@ -2761,6 +2797,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                 subject.validate_td_b_setup_lineage_release(
                     _read_json(release_path),
                     release_path=symlink,
+                    changed_paths_fn=lambda _old, _new: _allowed_lineage_changed_paths_fixture(),
                 )
 
         with _w0_temporary_directory() as tempdir:
@@ -2774,6 +2811,40 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                         "src/camera_based_rgbww_optimizer/control/camera_remote.py"
                     ],
                 )
+
+    def test_current_head_lineage_baseline_rejects_workflow_paths(self):
+        checkpoint = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=Path(__file__).parents[1],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        changed_paths = subject.changed_paths_between_checkpoints(
+            subject.TD_B_SETUP_CHECKPOINT,
+            checkpoint,
+        )
+        candidate = subject.build_td_b_setup_release_lineage_candidate(
+            subject.TD_B_SETUP_RELEASE_PATH,
+            old_checkpoint=subject.TD_B_SETUP_CHECKPOINT,
+            new_checkpoint=checkpoint,
+            changed_paths=changed_paths,
+        )
+        self.assertEqual(changed_paths, sorted(changed_paths))
+        self.assertEqual(candidate["status"], "ineligible_requires_new_setup")
+        prohibited = set(candidate["prohibited_paths"])
+        classifications = {
+            row["path"]: row["classification"]
+            for row in candidate["changed_paths"]
+        }
+        self.assertIn("AGENTS.md", prohibited)
+        self.assertEqual(classifications["AGENTS.md"], "prohibited_or_unreviewed")
+        self.assertEqual(
+            classifications[".agent-work/FULL_PLAN_REFERENCE.md"],
+            "planner_or_execution_audit_only",
+        )
+        self.assertNotIn(".agent-work/FULL_PLAN_REFERENCE.md", prohibited)
+        self.assertEqual(candidate["new_checkpoint"], checkpoint)
 
     def test_lineage_qualification_cli_never_constructs_backend(self):
         backend_factory = mock.Mock()
