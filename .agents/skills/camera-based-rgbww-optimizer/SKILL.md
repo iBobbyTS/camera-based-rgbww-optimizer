@@ -23,9 +23,11 @@ description: Use when working on camera-based RGBWW calibration, RGBWW channel c
 
 ## Role Boundary
 
-- When acting as Planner, maintain `.agent-work/FULL_PLAN_REFERENCE.md` as the complete non-executable roadmap for every currently unfinished GUIDE task, including locked, conditional, deferred, and decision-owned branches. Refresh it after every new guidance/decision and every Planner review, then release only one current package through `.agent-work/PLAN.md`.
+- When acting as Orchestrator, exclusively maintain `.agent-work/FULL_PLAN_REFERENCE.md` as the complete non-executable roadmap for every currently unfinished GUIDE task, including locked, conditional, deferred, and decision-owned branches. Refresh it after every new guidance/decision and every Planner review, and pause for Advisor guidance when GUIDE cannot determine a safe scientific branch. Never modify GUIDE files.
+- Delegate each plan/review pass to a Planner subagent and each authorized execution pass to an Executer subagent. For work expected to exceed 10 minutes, have the Executer launch it in macOS Terminal, perform three sparse liveness checks, then have the Orchestrator schedule an automation wake-up based on the estimated completion window; do not use a Codex-managed background tool process for that long-running command.
+- When acting as Planner, treat `.agent-work/FULL_PLAN_REFERENCE.md` as Orchestrator-owned read-only context. Release only one current package through `.agent-work/PLAN.md`, review Executer evidence, archive the reviewed package, and report proposed reference changes to the Orchestrator instead of editing the reference.
 - `FULL_PLAN_REFERENCE.md` is never execution authorization. Only the active `.agent-work/PLAN.md` may authorize a task, retry, device operation, budget, or stage transition, and it should name the matching reference task ID.
-- When acting as Executer, treat both `.agent-work/PLAN.md` and `.agent-work/FULL_PLAN_REFERENCE.md` as Planner-owned read-only input. Record progress, artifacts, validation, failures, and Planner decision requests only in `.agent-work/EXECUTION_RESULT.md`; never update either plan file or execute future work merely because it appears in the reference.
+- When acting as Executer, treat `.agent-work/PLAN.md` as Planner-owned and `.agent-work/FULL_PLAN_REFERENCE.md` as Orchestrator-owned read-only input. Record progress, artifacts, validation, failures, and Planner decision requests only in `.agent-work/EXECUTION_RESULT.md`; never update either plan file or execute future work merely because it appears in the reference.
 
 ## Workflow
 

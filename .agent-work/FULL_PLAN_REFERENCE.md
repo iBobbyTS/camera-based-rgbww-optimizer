@@ -1,10 +1,10 @@
 # GUIDE 当前未完成任务完整计划参考
 
-**文档状态：** `planner_reference_current`
+**文档状态：** `orchestrator_reference_current`
 
 **快照日期：** `2026-07-25`
 
-**Owner：** Planner
+**Owner：** Orchestrator（唯一写入者）
 
 **执行属性：** `non_executable_reference`
 
@@ -16,7 +16,7 @@
 
 ### 1.1 两层计划所有权
 
-- `.agent-work/FULL_PLAN_REFERENCE.md`：Planner 维护的完整未完成路线，回答“整个 GUIDE 还有什么要做”。
+- `.agent-work/FULL_PLAN_REFERENCE.md`：Orchestrator 独占维护的完整未完成路线，回答“整个 GUIDE 还有什么要做”；Planner 与 Executer 只读。
 - `.agent-work/PLAN.md`：唯一可执行合同，回答“Executer 现在只做什么、做到哪里必须停”。
 - active PLAN 应引用本文件中的一个 task ID；当前 Z0 PLAN 早于本规则建立，由本文件反向绑定，下一次
   Planner 重写 PLAN 时必须显式加入 task ID。
@@ -31,8 +31,8 @@
 3. 早期 GUIDE 中未被替代的要求；
 4. Planner review archives 和实现文档提供的执行/证据现状。
 
-active PLAN 是唯一执行边界，但不得静默放宽上述科学合同。发现冲突时，Planner 必须把冲突写成 decision task，
-不能由 Executer 选择一个解释继续。
+active PLAN 是唯一执行边界，但不得静默放宽上述科学合同。发现冲突时，Planner 必须停止受影响计划并向
+Orchestrator 报告 decision request；Orchestrator 将冲突写成 decision task。不能由 Executer 选择一个解释继续。
 
 ### 1.3 状态词
 
@@ -47,9 +47,9 @@ active PLAN 是唯一执行边界，但不得静默放宽上述科学合同。�
 | `ADVISOR_DECISION` | 需要 Advisor 冻结科学方向；不是危险操作授权请求。 |
 | `HUMAN_DECISION` | 需要 Human 决定产品范围、危险操作或最终安装。 |
 
-### 1.4 Planner 更新规则
+### 1.4 Orchestrator 更新规则
 
-发生以下任一事件时，Planner 必须在归档 review 后、重写下一份 active PLAN 前更新本文件：
+发生以下任一事件时，Orchestrator 必须在 Planner 归档 review 后更新本文件，再决定是否继续下一执行包：
 
 - 新 GUIDE、RESEARCH 结论或显式 Human/Developer 决定到达；
 - Executer 结果被接受、拒绝、分支或发现计划矛盾；
@@ -77,7 +77,7 @@ active PLAN 是唯一执行边界，但不得静默放宽上述科学合同。�
 | `.agent-work/PLANS/20260725-1031-p7-td-b-r1-c3-e2-r1-c2-review.md` | `8bc00632f878041dde21fb03709f248f8e33b6cdf104f3055bdd041752c9b17a` | 最近已接受的 progressive-evidence C2 review。 |
 | `.agent-work/PLAN.md` | `b34b4868d8ef8fbfad8a4fe174c8728be206170cd511e643f2b6f0d38e0668a9` | 当前唯一 Z0 执行合同。 |
 
-若上表任一文件内容变化，Planner 必须重新判断是否为合法 source update，而不是只替换 hash。
+若上表任一文件内容变化，Orchestrator 必须重新判断是否为合法 source update，而不是只替换 hash。
 
 ## 3. 已完成或保留的 baseline（不再列为待执行）
 

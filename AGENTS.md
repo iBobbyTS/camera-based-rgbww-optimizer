@@ -14,7 +14,7 @@
 
 ## Project Roles And Workflow
 
-This project has four explicit roles:
+This project has five explicit roles:
 
 ### Human
 
@@ -30,15 +30,23 @@ This project has four explicit roles:
 - Produces `RESEARCH.md` as the record of research reasoning, investigations, and external references supporting that guidance.
 - Does not directly replace the Planner's executable plan or the Human's high-risk device authorization.
 
+### Orchestrator
+
+- Is the primary Codex role that coordinates the Planner and Executer loop.
+- Exclusively owns `.agent-work/FULL_PLAN_REFERENCE.md` as the non-executable roadmap for every task required by the currently applicable Advisor guidance that is not yet complete. Planner and Executer must treat it as read-only.
+- Records the applicable GUIDE/Human-decision sources and hashes, applies later explicit Human/Advisor decisions over conflicting older guidance, and preserves non-conflicting requirements from earlier guides.
+- Gives every unfinished reference task a stable ID, status, dependencies, unlock owner, implementation outline, safety/authorization boundary, required evidence, acceptance criteria, failure branches, and stop point.
+- Reviews each Planner decision and execution result, then refreshes `FULL_PLAN_REFERENCE.md` when a task completes, is rejected, unlocks, blocks, defers, changes branch, or new guidance arrives.
+- Escalates to the Advisor and pauses the affected route when the applicable GUIDE is insufficient, contradictory, or cannot safely determine the next scientific branch. It must not modify GUIDE files itself.
+- Treats `FULL_PLAN_REFERENCE.md` as context only. It never authorizes execution, device access, retries, stage entry, budgets, or commits. `.agent-work/PLAN.md` remains the sole executable work package and should name the matching reference task ID when one exists.
+- Delegates each planning/review pass to a Planner subagent and each authorized execution pass to an Executer subagent; the Orchestrator independently reviews both handoffs before advancing the loop.
+- For an authorized task expected to run longer than 10 minutes, requires the Executer to launch it in a visible macOS Terminal session rather than as a Codex-managed background tool process. After launch, the Executer performs three sparse liveness checks; once survival is confirmed, the Orchestrator estimates the completion window and creates an automation to wake this task for review.
+
 ### Planner
 
 - Is a Codex role.
-- Converts the Advisor's `GUIDE.md` into the complete unfinished-work reference and the active `PLAN.md` for the Executer.
-- Owns `.agent-work/FULL_PLAN_REFERENCE.md` as the non-executable roadmap for every task required by the currently applicable Advisor guidance that is not yet complete. It must include active, blocked, locked, conditional, deferred, and Advisor/Human-decision branches rather than silently omitting future work.
-- Records the applicable GUIDE/Human-decision sources and hashes in `FULL_PLAN_REFERENCE.md`, applies later explicit Human/Advisor decisions over conflicting older guidance, and preserves non-conflicting requirements from earlier guides.
-- Gives every unfinished reference task a stable ID, status, dependencies, unlock owner, implementation outline, safety/authorization boundary, required evidence, acceptance criteria, failure branches, and stop point.
-- Refreshes `FULL_PLAN_REFERENCE.md` after a new GUIDE or explicit Human/Advisor decision, and after every Planner review that completes, rejects, unlocks, blocks, defers, or changes a referenced task. Completed details move to the review archives; the reference retains only the concise completed baseline needed to explain the remaining dependency graph.
-- Treats `FULL_PLAN_REFERENCE.md` as context only. It never authorizes execution, device access, retries, stage entry, budgets, or commits. `.agent-work/PLAN.md` remains the sole executable work package and should name the matching reference task ID when one exists.
+- Converts the Orchestrator-owned unfinished-work reference and the applicable Advisor `GUIDE.md` into the active `PLAN.md` for the Executer.
+- Treats `.agent-work/FULL_PLAN_REFERENCE.md` as Orchestrator-owned and read-only. After each review, reports the accepted/rejected branch, evidence, residual risks, and proposed reference-status changes to the Orchestrator instead of editing the reference.
 - Defines executable steps, frozen inputs, safety boundaries, evidence requirements, branches, acceptance criteria, and stopping points.
 - Reviews and accepts or rejects the Executer's results against `PLAN.md`.
 - On every review result, whether the Executer is rejected for another corrective pass or accepted to advance, first archives every completed, superseded, or already-reviewed part of the active plan under `.agent-work/PLANS/` without overwriting earlier archives.
@@ -54,20 +62,21 @@ This project has four explicit roles:
 - Executes the active `PLAN.md` within its exact authorization, scope, budgets, branches, and stopping points.
 - Produces the required code, tests, experiment artifacts, cleanup evidence, and handoff records for Planner review.
 - Does not independently change the experimental direction or enter a locked stage.
-- Must treat `.agent-work/PLAN.md` and `.agent-work/FULL_PLAN_REFERENCE.md` as Planner-owned and read-only. The Executer is prohibited from editing, appending to, changing status in, renaming, archiving, or otherwise modifying either file.
+- Must treat `.agent-work/PLAN.md` as Planner-owned and `.agent-work/FULL_PLAN_REFERENCE.md` as Orchestrator-owned; both are read-only to the Executer. The Executer is prohibited from editing, appending to, changing status in, renaming, archiving, or otherwise modifying either file.
 - May read `FULL_PLAN_REFERENCE.md` for dependency and future-stage context, but must never execute a referenced task, branch, retry, or device operation unless the active `PLAN.md` explicitly releases it.
 - Must write execution progress, validation results, artifacts, failures, discovered plan contradictions, and Planner decision requests to `.agent-work/EXECUTION_RESULT.md` instead.
-- If execution discovers a branch or contradiction requiring Planner judgment, stop the affected work, record the exact evidence and decision request in `EXECUTION_RESULT.md`, and leave both Planner-owned plan files unchanged for the Planner to update.
+- If execution discovers a branch or contradiction requiring Planner judgment, stop the affected work, record the exact evidence and decision request in `EXECUTION_RESULT.md`, and leave both plan files unchanged. Planner decides the active branch; Orchestrator alone updates the complete reference.
 
 The normal stage flow is:
 
 1. The Human prepares the environment and states the experiment goal.
 2. The Advisor researches and writes `GUIDE.md` plus `RESEARCH.md`.
-3. The Planner records all currently unfinished GUIDE work in `FULL_PLAN_REFERENCE.md`, then writes one matching current work package to `PLAN.md`, including execution and acceptance contracts.
-4. The Executer performs the authorized plan and returns evidence.
-5. The Executer records that evidence in `.agent-work/EXECUTION_RESULT.md` without modifying `PLAN.md`.
-6. The Planner reads `EXECUTION_RESULT.md`, accepts, rejects, or branches the result, archives the reviewed/completed plan material, refreshes `FULL_PLAN_REFERENCE.md`, then rewrites `PLAN.md` to contain only the next executable work package.
-7. When the stage is complete, the Planner creates the AUDIT PACK for the Advisor.
+3. The Orchestrator records all currently unfinished GUIDE work in `FULL_PLAN_REFERENCE.md` and selects the current reference task for planning.
+4. The Planner writes one matching current work package to `PLAN.md`, including execution and acceptance contracts.
+5. The Executer performs the authorized plan and records evidence in `.agent-work/EXECUTION_RESULT.md` without modifying either plan file.
+6. The Planner reads `EXECUTION_RESULT.md`, accepts, rejects, or branches the result, archives the reviewed/completed plan material, and rewrites `PLAN.md` to contain only the next executable work package or an explicit Planner stop.
+7. The Orchestrator reviews the Planner decision, updates `FULL_PLAN_REFERENCE.md` when required, and either continues the Planner/Executer loop or pauses for Advisor guidance.
+8. When the stage is complete, the Planner creates the AUDIT PACK for the Advisor and the Orchestrator records the resulting route state.
 
 ### High-Risk Device Authorization
 
