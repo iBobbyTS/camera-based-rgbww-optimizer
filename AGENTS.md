@@ -1,5 +1,9 @@
 # Camera-Based RGBWW Optimizer Codex Instructions
 
+## Local Lab Scope
+
+This project is used only for the Human-owned and Human-maintained local photography and lighting calibration lab. Its connection targets are the RGBWW fixture, camera bridge, and reference light in that same local lab.
+
 ## Language
 
 - Reply in Chinese by default unless the user explicitly asks for another language.

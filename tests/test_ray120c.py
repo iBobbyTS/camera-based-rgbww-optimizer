@@ -1,5 +1,9 @@
 import base64
+import contextlib
+import io
+import os
 import unittest
+from unittest import mock
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
@@ -7,22 +11,55 @@ from camera_based_rgbww_optimizer.control import ray120c
 
 
 class Ray120cTokenTests(unittest.TestCase):
+    def setUp(self):
+        self.secret = base64.b64encode(bytes(range(32))).decode("ascii")
+
     def test_generate_token_uses_iv_tag_ciphertext_layout(self):
         nonce = b"\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c"
-        token = ray120c.generate_token(ray120c.DEFAULT_OPENAPI_SECRET, now=1_717_171_717, nonce=nonce)
+        token = ray120c.generate_token(self.secret, now=1_717_171_717, nonce=nonce)
 
         raw = base64.b64decode(token)
         self.assertEqual(raw[:12], nonce)
 
         tag = raw[12:28]
         ciphertext = raw[28:]
-        key = base64.b64decode(ray120c.DEFAULT_OPENAPI_SECRET)
+        key = bytes(range(32))
         plaintext = AESGCM(key).decrypt(nonce, ciphertext + tag, None)
         self.assertEqual(plaintext, b"1717171717")
 
     def test_generate_token_rejects_non_12_byte_nonce(self):
         with self.assertRaises(ValueError):
-            ray120c.generate_token(nonce=b"short")
+            ray120c.generate_token(self.secret, nonce=b"short")
+
+    def test_generate_token_requires_and_validates_secret(self):
+        with self.assertRaises(TypeError):
+            ray120c.generate_token(now=1, nonce=b"0" * 12)
+        for value in ("not-base64", base64.b64encode(b"short").decode("ascii")):
+            with self.subTest(value=value), self.assertRaisesRegex(ValueError, "32 bytes|strict base64"):
+                ray120c.generate_token(value, now=1, nonce=b"0" * 12)
+
+
+class Ray120cSettingsTests(unittest.TestCase):
+    def setUp(self):
+        self.secret = base64.b64encode(bytes(range(32))).decode("ascii")
+
+    def test_from_env_requires_explicit_secret_and_does_not_leak_repr(self):
+        for values in ({}, {ray120c.OPENAPI_SECRET_ENV: ""}):
+            with self.subTest(values=values), self.assertRaisesRegex(ValueError, ray120c.OPENAPI_SECRET_ENV):
+                ray120c.OpenAPISettings.from_env(values)
+        settings = ray120c.OpenAPISettings.from_env({ray120c.OPENAPI_SECRET_ENV: self.secret})
+        self.assertEqual(settings.secret, self.secret)
+        self.assertNotIn(self.secret, repr(settings))
+
+    def test_cli_missing_secret_fails_before_connection_without_value_leak(self):
+        stdout, stderr = io.StringIO(), io.StringIO()
+        with mock.patch.dict(os.environ, {}, clear=True), mock.patch.object(
+            ray120c, "send_openapi_request", side_effect=AssertionError("must not connect")
+        ), contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            code = ray120c.main(["get-cct"])
+        self.assertEqual(code, 1)
+        self.assertIn(ray120c.OPENAPI_SECRET_ENV, stderr.getvalue())
+        self.assertEqual(stdout.getvalue(), "")
 
 
 class Ray120cValueMappingTests(unittest.TestCase):
@@ -48,7 +85,7 @@ class Ray120cValueMappingTests(unittest.TestCase):
                 url="ws://127.0.0.1:33782",
                 node_id="node-1",
                 client_id=9,
-                secret="unused",
+                secret=base64.b64encode(bytes(range(32))).decode("ascii"),
             )
 
             payload = ray120c.build_openapi_request(

@@ -1,9 +1,20 @@
+import base64
+import os
 import unittest
+from unittest import mock
 
 from camera_based_rgbww_optimizer.control import all_off
 
 
 class AllOffTests(unittest.TestCase):
+    def setUp(self):
+        secret = base64.b64encode(bytes(range(32))).decode("ascii")
+        self.environment = mock.patch.dict(os.environ, {"AMARAN_OPENAPI_SECRET": secret}, clear=True)
+        self.environment.start()
+
+    def tearDown(self):
+        self.environment.stop()
+
     def test_turn_everything_off_turns_strip_off_then_ray_off(self):
         calls = []
 

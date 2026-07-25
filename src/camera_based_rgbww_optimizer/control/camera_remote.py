@@ -15,6 +15,7 @@ from urllib import error, parse, request
 
 from camera_based_rgbww_optimizer.control import camera_gphoto2
 from camera_based_rgbww_optimizer.control import camera_remote_v2
+from camera_based_rgbww_optimizer.control.local_lab_context import cli_description
 
 RemoteCameraV2Error = camera_remote_v2.RemoteCaptureV2Error
 from camera_based_rgbww_optimizer.paths import PROJECT_ROOT
@@ -759,7 +760,7 @@ def _resolve_destination(output_dir: str | Path, filename_template: str, *, now:
 
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Inspect or capture through r6-camera-bridge.")
+    parser = argparse.ArgumentParser(description=cli_description("Inspect or capture through the local Canon camera bridge."))
     parser.add_argument("command", nargs="?", choices=("capture", "health", "config"), default="capture")
     parser.add_argument("--output-dir", default="captures/camera")
     parser.add_argument("--filename-template", default=DEFAULT_FILENAME_TEMPLATE)

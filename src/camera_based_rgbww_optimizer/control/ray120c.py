@@ -10,17 +10,19 @@ import ssl
 import struct
 import sys
 import time
-from dataclasses import dataclass
-from typing import Any
+from dataclasses import dataclass, field
+from typing import Any, Mapping
 from urllib.parse import urlsplit
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+
+from camera_based_rgbww_optimizer.control.local_lab_context import cli_description
 
 
 DEFAULT_WS_URL = "ws://127.0.0.1:33782"
 DEFAULT_NODE_ID = "40165-560387"
 DEFAULT_CLIENT_ID = 1
-DEFAULT_OPENAPI_SECRET = "9veqiL0G0EUOviwzL1prPc0iGIGUJtbzSaPYQfgfyxM="
+OPENAPI_SECRET_ENV = "AMARAN_OPENAPI_SECRET"
 
 CCT_MIN = 1800
 CCT_MAX = 20000
@@ -42,34 +44,49 @@ class AmaranOpenAPIError(RuntimeError):
 
 @dataclass(frozen=True)
 class OpenAPISettings:
+    secret: str = field(repr=False)
     url: str = DEFAULT_WS_URL
     node_id: str = DEFAULT_NODE_ID
     client_id: int = DEFAULT_CLIENT_ID
-    secret: str = DEFAULT_OPENAPI_SECRET
     timeout: float = 3.0
 
+    def __post_init__(self) -> None:
+        _decode_secret(self.secret)
+
     @classmethod
-    def from_env(cls) -> "OpenAPISettings":
+    def from_env(cls, env: Mapping[str, str] | None = None) -> "OpenAPISettings":
+        values = os.environ if env is None else env
+        secret = values.get(OPENAPI_SECRET_ENV)
+        if not secret:
+            raise ValueError(f"{OPENAPI_SECRET_ENV} is required")
         return cls(
-            url=os.environ.get("AMARAN_WS_URL", DEFAULT_WS_URL),
-            node_id=os.environ.get("AMARAN_NODE_ID", DEFAULT_NODE_ID),
-            client_id=int(os.environ.get("AMARAN_CLIENT_ID", str(DEFAULT_CLIENT_ID))),
-            secret=os.environ.get("AMARAN_OPENAPI_SECRET", DEFAULT_OPENAPI_SECRET),
-            timeout=float(os.environ.get("AMARAN_TIMEOUT", "3.0")),
+            url=values.get("AMARAN_WS_URL", DEFAULT_WS_URL),
+            node_id=values.get("AMARAN_NODE_ID", DEFAULT_NODE_ID),
+            client_id=int(values.get("AMARAN_CLIENT_ID", str(DEFAULT_CLIENT_ID))),
+            secret=secret,
+            timeout=float(values.get("AMARAN_TIMEOUT", "3.0")),
         )
 
 
+def _decode_secret(secret_key: str) -> bytes:
+    try:
+        key = base64.b64decode(secret_key, validate=True)
+    except (ValueError, TypeError) as exc:
+        raise ValueError("OpenAPI secret must be strict base64 encoding of exactly 32 bytes") from exc
+    if len(key) != 32:
+        raise ValueError("OpenAPI secret must decode to exactly 32 bytes")
+    return key
+
+
 def generate_token(
-    secret_key: str = DEFAULT_OPENAPI_SECRET,
+    secret_key: str,
     *,
     now: int | None = None,
     nonce: bytes | None = None,
 ) -> str:
     """Generate an Amaran/Sidus OpenAPI v2 AES-256-GCM request token."""
 
-    key = base64.b64decode(secret_key)
-    if len(key) != 32:
-        raise ValueError("OpenAPI secret must decode to 32 bytes for AES-256-GCM")
+    key = _decode_secret(secret_key)
 
     iv = nonce if nonce is not None else os.urandom(12)
     if len(iv) != 12:
@@ -525,17 +542,19 @@ def _add_common_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--url", default=os.environ.get("AMARAN_WS_URL", DEFAULT_WS_URL))
     parser.add_argument("--node-id", default=os.environ.get("AMARAN_NODE_ID", DEFAULT_NODE_ID))
     parser.add_argument("--client-id", type=int, default=int(os.environ.get("AMARAN_CLIENT_ID", DEFAULT_CLIENT_ID)))
-    parser.add_argument("--secret", default=os.environ.get("AMARAN_OPENAPI_SECRET", DEFAULT_OPENAPI_SECRET))
     parser.add_argument("--timeout", type=float, default=float(os.environ.get("AMARAN_TIMEOUT", "3.0")))
     parser.add_argument("--include-events", action="store_true")
 
 
 def _settings_from_args(args: argparse.Namespace) -> OpenAPISettings:
+    secret = os.environ.get(OPENAPI_SECRET_ENV)
+    if not secret:
+        raise ValueError(f"{OPENAPI_SECRET_ENV} is required")
     return OpenAPISettings(
+        secret=secret,
         url=args.url,
         node_id=args.node_id,
         client_id=args.client_id,
-        secret=args.secret,
         timeout=args.timeout,
     )
 
@@ -597,7 +616,7 @@ def _parse_set_rgb_args(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Control an Amaran Ray120c through Amaran Desktop OpenAPI v2.")
+    parser = argparse.ArgumentParser(description=cli_description("Control an Amaran Ray120c through Amaran Desktop OpenAPI v2."))
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     set_parser = subparsers.add_parser("set-cct", help="Set Ray120c CCT mode values.")
@@ -646,8 +665,8 @@ def main(argv: list[str] | None = None) -> int:
     _add_common_args(config_parser)
 
     args = parser.parse_args(argv)
-    settings = _settings_from_args(args)
     try:
+        settings = _settings_from_args(args)
         if args.command == "set-cct":
             response = set_cct(
                 **_parse_set_cct_args(args),

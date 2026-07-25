@@ -6,6 +6,10 @@ This project calibrates and optimizes a five-channel RGBWW light source using a
 camera as the measurement device, an Aputure Amaran Ray120c as the high-color
 reference, and a 24-patch color chart for camera-observed matching.
 
+The workstation, RGBWW fixture, camera bridge, Canon camera, and Ray120c form a
+user-owned local calibration lab. See [Local Lab Connection Boundary](local-lab-connection-boundary.md)
+for the connection, configuration, credential, and authorization boundaries.
+
 Core goals:
 
 - Measure per-channel RGBWW brightness response in linear camera RAW space.
@@ -1105,6 +1109,12 @@ intensity evidence. A future channel-response acquisition will record
 ## Ray120c Control
 
 Use Amaran Desktop OpenAPI v2 for Ray120c reference control:
+
+Set `AMARAN_OPENAPI_SECRET` explicitly in the command environment. There is no
+built-in secret default, and the CLI does not accept the secret as an argument;
+a missing value fails before a connection is attempted. Keep the value in the
+user-owned runtime environment and see [Local Lab Connection Boundary](local-lab-connection-boundary.md)
+for the complete local connection contract.
 
 ```bash
 .venv/bin/python -m camera_based_rgbww_optimizer.control.ray120c set-cct 1800 --intensity-percent 1 --gm 200

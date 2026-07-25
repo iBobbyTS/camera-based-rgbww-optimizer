@@ -1,189 +1,89 @@
 ---
 name: camera-based-rgbww-optimizer
-description: Use when working on camera-based RGBWW calibration, RGBWW channel control, Canon camera capture, Ray120c reference matching, or color-chart workflows.
+description: Use for camera-based RGBWW calibration, local RGBWW/Ray120c control, Canon capture, RAW measurement, and color-chart workflows.
 ---
 
-# Camera-Based RGBWW Optimizer Skill
+# Camera-Based RGBWW Optimizer
 
-## Project Facts
+## Scope
 
-- Planned optimizer language: Python.
-- Implementation package: `src/camera_based_rgbww_optimizer/`.
-- Source layout: `control/` for device control, `optimization/` for measurement/calibration workflows, `utils/` for shared helpers and post-processing, and `interaction/` for local UI tools.
-- Root-level compatibility scripts are intentionally not part of the current interface.
-- ESPHome device name and default host: `bedroom-rgbww-strip` / `bedroom-rgbww-strip.local`.
-- ESPHome firmware configs live under `firmware/esphome/bedroom-rgbww-strip*.yaml`.
-- `.venv/bin/python -m pip install -e .` installs the package's Python dependencies; `gphoto2`, `exiftool`, and `dcraw_emu` remain system dependencies.
-- Reference light: Aputure Amaran Ray120c at 100% brightness.
-- Camera path: Canon EOS R6 Mark III over USB PTP using `gphoto2`.
-- All new formal experiments use `control.camera_remote.RemoteCameraBackend`; local gphoto2 remains compatibility/test-only. `camera_remote health --json` performs only unauthenticated `GET /health`, while `config --json` performs only authenticated `GET /v1/config`; neither captures or changes settings. Only the Python process reads URL/token from environment or project `.env`; never source, print, pass, or persist the token. Capture retries `camera_busy` with a bounded whole-request retry, atomically saves CR3, and records backend/endpoint/attempt count without credentials. `camera_gphoto2.auto_expose_capture` owns the shared exposure search and receives the same injected backend for trials and final capture.
-- On macOS, `camera_gphoto2` retries once after a gphoto2 USB-claim or kernel-driver-detach failure by killing per-user `ptpcamerad`/`icdd` Image Capture processes; set `CAMERA_BASED_RGBWW_OPTIMIZER_DISABLE_MACOS_PTP_RECOVERY=1` to disable that recovery during host diagnostics.
-- Measurement basis: fixed linear camera RAW RGB pipeline by default. Visual fit-check tools default to the camera-rendered `JpgFromRaw` preview and may explicitly use `dcraw_emu` preview decoding as a fallback.
-- Calibration scene: black card, white card, 18% gray card, 24-color chart, RGBWW output, and Ray120c output.
+Use this skill for the Human-owned local photography and lighting calibration
+lab: the local workstation, ESPHome RGBWW fixture, local camera bridge and
+Canon camera, and Ray120c reference light. Python implementation belongs under
+`src/camera_based_rgbww_optimizer/`; use package module commands rather than
+adding root-level compatibility wrappers.
 
-## Role Boundary
+## When to Use
 
-- When acting as Orchestrator, exclusively maintain `.agent-work/FULL_PLAN_REFERENCE.md` as the complete non-executable roadmap for every currently unfinished GUIDE task, including locked, conditional, deferred, and decision-owned branches. Refresh it after every new guidance/decision and every Planner review, and pause for Advisor guidance when GUIDE cannot determine a safe scientific branch. Never modify GUIDE files.
-- Delegate each plan/review pass to a Planner subagent and each authorized execution pass to an Executer subagent. For work expected to exceed 10 minutes, have the Executer launch it in macOS Terminal, perform three sparse liveness checks, then have the Orchestrator schedule an automation wake-up based on the estimated completion window; do not use a Codex-managed background tool process for that long-running command.
-- When acting as Planner, treat `.agent-work/FULL_PLAN_REFERENCE.md` as Orchestrator-owned read-only context. Release only one current package through `.agent-work/PLAN.md`, review Executer evidence, archive the reviewed package, and report proposed reference changes to the Orchestrator instead of editing the reference.
-- `FULL_PLAN_REFERENCE.md` is never execution authorization. Only the active `.agent-work/PLAN.md` may authorize a task, retry, device operation, budget, or stage transition, and it should name the matching reference task ID.
-- When acting as Executer, treat `.agent-work/PLAN.md` as Planner-owned and `.agent-work/FULL_PLAN_REFERENCE.md` as Orchestrator-owned read-only input. Record progress, artifacts, validation, failures, and Planner decision requests only in `.agent-work/EXECUTION_RESULT.md`; never update either plan file or execute future work merely because it appears in the reference.
+- RGBWW channel control, response measurement, optimization, or cleanup.
+- Canon capture, remote camera bridge, RAW Bayer measurement, or chart location.
+- Ray120c CCT/G-M, HSI, RGB, reference matching, or thermal diagnostics.
+- Planning, executing, or reviewing experiment packages for this repository.
 
-## Workflow
+## Role and Ownership Core
 
-1. Check `docs/README.md` before changing calibration or device-control behavior.
-2. Use package module commands, for example `.venv/bin/python -m camera_based_rgbww_optimizer.control.camera_gphoto2 ...`.
-3. Keep all temporary project outputs under `/Volumes/4T/temp/rgbww-optimizer`. Repository `tmp/*.zsh` files are version-controlled wrapper sources only; do not place new run data or logs in repository `tmp/` or system `/tmp`.
-4. For channel tests, use low initial values and test one physical channel at a time.
-5. For Canon R6 Mark III sessions, use `camera_based_rgbww_optimizer.control.camera_gphoto2`.
-6. For Ray120c CCT/G-M, HSI, and RGB reference control, use `camera_based_rgbww_optimizer.control.ray120c`.
-7. For explicit cleanup after manual or interrupted runs, use `camera_based_rgbww_optimizer.control.all_off`; it calls ESPHome `all_off` and sets Ray120c intensity to `0`.
-8. For RGBWW code/duty response measurement, use `camera_based_rgbww_optimizer.optimization.measure_channel_response`.
-9. For color-block location annotation, use `camera_based_rgbww_optimizer.interaction.location_picker_ui`; add `--camera-backend remote` to run its complete auto-exposure and capture sequence through r6-camera-bridge. It keeps linear `.npy` RAW only for auto-exposure metering, then uses the camera-rendered `JpgFromRaw` preview for the Web UI image and automatic block detection. Out-of-bounds automatic detections are rejected instead of shown.
-10. For checking a saved location JSON against a fresh camera capture, use `camera_based_rgbww_optimizer.interaction.location_checker <locations.json>`; it uses full-frame auto-exposure, extracts the camera-rendered `JpgFromRaw` preview from the final RAW, and only uses the location JSON for outline + color-name label fit checking.
-11. For offline native Bayer patch measurement, use `camera_based_rgbww_optimizer.measurement.raw_mosaic_patches RAW --exposure SHUTTER`. It reads `raw_image_visible` directly, maps the saved color-chart coordinates to the visible mosaic, keeps `R/G1/G2/B` separate, optionally derives `G`, and can normalize/subtract a separately exposed ambient RAW. It does not call the camera, Ray, or ESPHome and does not create `.npy` files. Acquisition runners must resolve physical exposure through `measurement.recorded_exposure`: prefer CR3 `Canon:ExposureTime`, fall back to standard EXIF, and treat requested shutter labels only as a provenance-marked degraded fallback. The remote camera bridge is stricter: its v2 `recorded_exposure` accepts only ExifTool's Canon MakerNote `Canon:ExposureTime` and fails closed instead of using standard EXIF. Quality gates come only from `config/camera/raw-observer.json`. P1 validated identity RAW only in the `1.0x..1.25x` per-source auto-exposure envelope, with zero clipping/nonfinite tolerance, near-noise fraction at most `0.05`, at least 29000 valid pixels per plane, and `combine_green=false`; a rejected weak feature must be reacquired at a weak-signal exposure rather than retained by widening thresholds.
-12. For WW/CW endpoint CCT/G-M detection, use `camera_based_rgbww_optimizer.optimization.measure_white_endpoints`; this is a separate reusable calibration step and should usually run before formal white LUT optimization. Its default mode photographs strip WW/CW endpoints, estimates white-patch CCT/Duv from linear RAW, then controls Ray120c through target-driven alternating CCT/G-M correction: start from the strip-estimated CCT, correct the next CCT setting from observed error, solve G/M from observed Duv error, and repeat for three rounds. Defaults are total budgets of up to 64 CCT samples and 16 G/M samples per endpoint. Use `--ray-start ww=CCT,GM --ray-start cw=CCT,GM` to seed from a previous run. Use `--ray-search-mode grid` only when the fixed Ray reference grid is needed for cross-checking.
-13. For formal CCT/G-M white LUT calibration, use `camera_based_rgbww_optimizer.optimization.measure_white_lut --camera-backend remote --location-config config/location/locations-20260714-211759.json`. The canonical endpoint input is `config/white/white-endpoints.json`, the default Ray grid is `1800, 3200, 5600, 20000K` x raw G/M `0, 100, 200`, and the only new-experiment location has SHA-256 `21f02328bff8b5ffcfc10c767e15cdefbf8bb883bc352eff6f0fb7ade38a8f80`. Every capture must have exactly one source on: turn the strip off before enabling Ray, then set Ray intensity to `0` immediately after its reference capture and before enabling the strip. Maintain independent Ray and strip automatic-exposure shutter caches; each target's initial strip candidate auto-exposes from the previous strip result, while its probes and feedback keep that resolved strip shutter fixed. Treat every linear `.npy` decode as temporary: delete it after region statistics, white-point estimation, and exposure checks for Ray, initial strip, probe, feedback, and confirmation captures; retain RAW files, decode metadata JSON, and calibration results. The channel-basis solver supplies an initial high-output command; `--initial-lut` may replace it with a previous measured command for strict repeat passes. Outside the native CCT span, low-penalty compensation RGB channels may own the required `4095` high-output constraint so the endpoint white channel can move away from saturation. Camera-observed CCT/Duv feedback then probes the four free channels and estimates a local Jacobian. The measured default goal is Duv below `0.0005` plus a dynamic CCT tolerance of at least `25K`, raised at high CCT to the Kelvin equivalent of `1 mired`. When measured samples bracket the target CCT and interpolated Duv remains within tolerance, use sample-pair secant interpolation for the next command; otherwise run up to sixteen constrained Broyden correction rounds. Solve each damped Jacobian step with channel headroom, the `0..4095` range, and the round step limit included as box constraints; never solve unconstrained and clip afterward because clipping can discard compensating terms at saturated channels. A candidate only completes after two independent off/on reapplications of the same command also meet the goal; each confirmation holds the strip off for one second, then holds the command for 60 seconds before capture. A failed settled confirmation becomes a new thermal base, the local Jacobian is rebuilt, and older transient samples no longer drive secant prediction. Two consecutive materially inaccurate bracketed-CCT predictions trigger the same rebase so an early cold sample cannot trap later warm-state secant steps. RGB penalties are computed per R/G/B channel from both CCT extension and distance from the endpoint-interpolated native G/M: red is released for warmer extension, blue for cooler extension, red plus blue toward magenta, and green toward green.
-   For strict reruns, compare the previous measured command's score against the white-patch camera-RGB cone seed: keep the previous command first when its strict score is at most `4`, otherwise start from the cone model, and retain the other as fallback. Exhausted attempts may restart with the endpoint-biased or model-selected full-scale channel active; attempt indices must remain part of capture filenames.
-14. To apply a completed white LUT, use `camera_based_rgbww_optimizer.control.white_lut CCT GM`. It reads `config/white/white-lut.json` by default, performs bilinear interpolation over neighboring targets using Kelvin on the CCT axis and linear raw G/M on the tint axis, applies optional linear `--intensity-percent` scaling, and delegates the final command to the shared ESPHome controller. It is an explicit light-on tool and intentionally leaves the strip on.
-15. For RAW-observer validation, first use `camera_based_rgbww_optimizer.optimization.measure_raw_observer_validation --baseline-lut PATH --camera-backend remote --location-config config/location/locations-20260714-211759.json --target-max 19661 --linearity-factors 0.5,1,1.5 --preflight-only --dry-run`. It requires an external best 70-point LUT and writes an immutable five-capture plan without loading `.env`, network access, or light calls. The plan freezes backend, location path/hash, and Python/shell cleanup. Real P1 additionally requires `--execute --allow-high-output`, explicit user hardware approval, and `tmp/run-raw-observer-validation.zsh`; trials and final captures reuse one backend, recorded exposure remains mandatory, and all failures enter Python plus shell cleanup.
-16. After P1 completes, run `camera_based_rgbww_optimizer.optimization.analyze_raw_observer_validation RUN_DIR`. It restores source/purpose/repeat/factor/shutter provenance from the run records, then emits source-specific repeatability and linearity reports plus G1/G2 context. For legacy runs, add `--recompute-recorded-exposure`; this verifies frozen config hashes, reprocesses retained CR3 files, preserves `analysis.json`, and writes `analysis-recorded-exposure-v1.json`. Review total response and global-scale-removed patch/CFA shape separately. It rejects incomplete runs by default and never declares P1 pass/fail or writes observer thresholds automatically; apply the explicit branch criteria in `.agent-work/PLAN.md`.
-17. If corrected P1 evidence still enters PLAN.md 7.5-D, use `camera_based_rgbww_optimizer.optimization.measure_raw_shutter_response` for the bounded same-shutter diagnostic. Its plan keeps each source on continuously after one warm-up, uses the same explicit shutter order for Ray and strip, retains native Bayer reports without `.npy`, and has Python cleanup. Run real acquisition only through `tmp/run-raw-shutter-response.zsh` so its independent trap writes `all-off-shell.json`; the runner's offline analysis reports shutter ratios, global per-shutter scale, residual patch/CFA shape, clipping exclusions, exposure provenance, monotonic capture-duration distributions, and recorded source-on commands, but never changes observer thresholds automatically. The conservative Ray default is `1%`; `ray_intensity_percent` is always passed as `intensity_percent`, while raw `intensity` is reserved for explicit API-scale values such as shutdown `0`.
-18. If P1-D reproduces the same shutter-dependent shape residual for Ray and strip, run `camera_based_rgbww_optimizer.optimization.analyze_raw_response_candidate FULL_P1_RUN`. It fits only the candidate model `g(y)=y*(1+a*y+b*y^2)`, enforces `g(0)=0` and a positive derivative on `0..1`, records the measured training range with a reject-outside-range policy, and compares it with both identity and a lower exposure envelope. It must not alter native RAW reports or `config/camera/raw-observer.json`; a complete P1 from another natural day with the same frozen remote inputs is required as holdout before proposing installation. Evaluate that run with `--candidate TRAINING_RUN/raw-response-candidate.json --candidate-sha256 FROZEN_SHA256`; this mode verifies the artifact hash, rejects the training input hash, refuses out-of-range application, and never refits coefficients. A 7.5-B boundary-only run may add `--repeatability-run COMPLETED_FULL_P1` to reuse only that run's paired-repeat noise; location hashes must match and boundary linearity data still come exclusively from the new run.
-19. For P2 five-channel basis acquisition, use `camera_based_rgbww_optimizer.optimization.measure_chart_response_basis --dry-run` first and real runs only through `tmp/run-chart-response-basis.zsh`. The plan is fixed at 58 captures: ambient 1, per-channel 100% protection and 25% weak auto-exposure baselines 10, anchor baseline 1, `cw/ww/r/g/b x 1024/2048/4095 x 3` formal states 45, and one anchor check. It requires remote/latest-location, the code-duty curve, identity RAW, `combine_green=false`, and the validated `1.0x..1.25x` envelope. Analyze only completed runs with `optimization.analyze_chart_response_basis`; rejected or near-noise observations never enter the basis, and the analyzer reports level-specific matrices/SVD/condition/angles/bootstrap/weights without choosing the Stage-2 branch automatically.
-20. The completed P2 basis selected B-B: all five channels use piecewise-linear normalized columns at target codes `1024/2048/4095`. Missing low-signal cells may borrow the nearest accepted same-channel level at weight `0.25` only for matrix diagnostics; cells absent at every level are censored zero at weight `0`, and neither is treated as direct cross-level evidence. Validate this model with `camera_based_rgbww_optimizer.optimization.measure_chart_basis_mixtures --dry-run`, then run only through `tmp/run-chart-basis-mixtures.zsh`. P3 freezes 24 unique commands and two repeats each, with 55 total captures including ambient, protection/weak exposure baselines, and anchors. Analyze only against the frozen P2 artifact and explicit SHA-256 using `optimization.analyze_chart_basis_validation`; it reports absolute and scale-removed residuals, combined repeat/basis sigma, category/load/order/active-set context, and never selects M-A..M-E automatically.
-21. P3 selected M-E / `forward_model_seed_only`: mixture shape error was broad, not explained by load or anchor drift, and 0/24 samples met the 80%-within-2-sigma target. Do not add a global load correction or interaction expansion. P4 must use the P2 basis only for an initial command, then extend the existing bounded local camera-feedback path with neutral plus multipatch residuals while preserving white-point hard gates, secant/Broyden behavior, and thermal rebase. The frozen feature set is block 02..24 x `R/G1/G2/B`; neutral is 02..06, training color is 07/09/10/12/13/15/16/18/19/21/23, and holdout is 08/11/14/17/20/22/24.
-22. For P4 offline preflight, use `camera_based_rgbww_optimizer.optimization.measure_cct_multipatch_pilot --dry-run`. It verifies the exact frozen P2/location hashes and writes a 12-target, 92-feature, 84-formal-capture plan without creating a remote backend. The objective uses a nonnegative global brightness scale and strict lexicographic neutral/white/training/holdout ordering. The shared small box-constrained least-squares solver remains the single implementation used by white feedback and multipatch local steps. Real P4 acquisition requires `--execute --allow-high-output --camera-backend remote` and `tmp/run-cct-multipatch-pilot.zsh`; the runner rechecks all input hashes, records remote provenance/failure evidence, keeps independent Ray/strip exposure caches, uses native RAW without `.npy`, and guarantees Python plus shell cleanup. A candidate must pass neutral/white hard gates and rank strictly better than the same-run baseline center; non-converged points still receive two settled final-verification captures.
-23. Analyze a completed P4 run with `camera_based_rgbww_optimizer.optimization.analyze_cct_multipatch_pilot RUN_DIR`. It requires 12 target rows, successful Python and shell cleanup, nonempty CR3 plus recorded-exposure measurement for every capture, and zero `.npy`. It compares the settled candidate pair with the three-capture baseline center, evaluates training/holdout mean/P90/worst improvement against same-run three-sigma repeatability, checks neutral/white gates and white non-degradation, and reports command continuity/RGB fraction. It never chooses Gate-3 or expands to 70 points automatically.
-24. P4 weak-signal handling follows the P1 envelope contract. If and only if every rejected optimization feature is included, has enough valid pixels, passes nonfinite/clipping limits, and fails solely because near-noise fraction exceeds the frozen threshold, reacquire the same source/command once at `1.25x` exposure. Keep exposure-normalized native RAW values and both captures as evidence. If a Ray reference still has only weak-signal rejections after that bounded reacquisition, or the strip cannot establish its three-sample baseline under the same bound, record the target as `measurement_unreachable` with the failing stage, continue the 12-target protocol, exclude it from numerical Gate-3 aggregates, and force C-A false. During local feedback, reject an unmeasurable candidate without adding it to samples/Jacobian, then try `0.5` and `0.25` backtracks from the current valid command; if all fail, retain the best valid command and run settled final verification. A rejected confirmation is a failed confirmation eligible for thermal rebase; an unmeasurable setup/probe/final verification makes the target `measurement_unreachable`. Never widen the threshold, censor a frozen feature, extend exposure beyond `1.25x`, or downgrade mixed/pixel-count/clipping/nonfinite failures.
-25. P4 selected `keep_white_lut_diagnostic_only; stop_before_p5`: preserve the external white-only 70-point candidate and do not overwrite the default LUT. Stage 5 starts with Ray-only characterization through `optimization.measure_ray_hsi_manifold --dry-run`; real acquisition requires remote/latest-location, `--execute --allow-high-output`, and `tmp/run-ray-hsi-manifold.zsh`. The immutable P6 plan has 73 unique base states and 106 recorded captures: SAT=0 at six primary hues with two repeats plus five total Hue-0 anchors, the 12x6 HSI coarse grid, repeated primary HSI SAT100 endpoints, and two repeats of RGB R/Y/G/C/B/M. Every unique state auto-exposes independently, repeats reuse that state's shutter cache, every command is followed by exact mode readback, and the strip is explicitly turned off before every frame. Analyze a completed run with `measurement.ray_hsi_analysis`; only frozen-quality accepted native-Bayer features enter comparisons. It reports SAT=0 hue dependence, HSI/RGB endpoint shape after global scale, pooled-zero and periodic hue-dependent-zero affine candidates, radial monotonicity, and Hue closure, but never chooses Gate-5 automatically or implements strip HSI.
-26. Before P7 device work, freeze joint uncertainty with `measurement.hsi_uncertainty` (normally through `tmp/run-hsi-uncertainty.zsh`). It uses the ordered 58-feature unit-shape vector, P6 same-state Ray repeats, separately centered P1 natural-day strip repeat groups, and regular/high-curvature P6 interpolation CV. CFA-plane block-isotropic diagonal regularization is the only estimator; match covariance has no extra camera-noise term. Fixed-seed Monte Carlo calibrates a single 99.73% joint score and a bootstrap guarded limit, with SAT0 excluding Hue. Then use `optimization.measure_strip_hsi_pilot --target-set sentinel --dry-run`; real P7 sessions add exact-readback pre/post Ray anchors, three ordinary or five boundary/holdout confirmations, frozen spread checks, and 4095/3072/2048 full-scale-policy diagnostics. Never call the latter physical gamut, change uncertainty after captures, or enter P8 before P7 holdout and Gate-6.
-27. P7 policy v1 and the completed `p7_sentinel_4` are diagnostic-only after the PLAN 8.7 redesign. Preserve `config/hsi/strip-hsi-uncertainty.json`, `config/hsi/strip-hsi-pilot.json`, and their legacy hashes; replay old runs explicitly with `analyze_strip_hsi_pilot --policy-version v1`. P7-R0E uses the separate `strip-hsi-pilot-v2.json` runner config and `strip-hsi-policy-v2-waiting.json`; waiting or `calibrated_waiting_for_planner` artifacts must remain `formal_capture_eligible=false` and are hard-rejected by formal sentinel execution and analysis. V2 reference and confirmation statistics work directly in ordered 58-feature unit-shape space with state/command/block centering and per-CFA-plane MAD/RMS regularization; trend follows real within-block chronology, while A/B center shift is separate. SAT100 acceptance uses a signed, unclipped one-sided tangent from the nearest lower measured SAT node, SAT0 has no Hue gate, and any non-finite or sub-identifiable required scale hard-fails instead of using a numeric floor. Always report `hsi_coordinate_equivalent`, `observer_equivalent`, and `color_rendering_residual` separately. The v2 solver is limited to two distinct faces and eight feedback attempts per face, with at most two all-or-none four-probe rebases and two declared confirmation groups; confirmed faces outrank unconfirmed samples, started groups retain every measurable n=3/n=5 capture, and a best-valid final verification may consume only an unspent declared group. Ordinary targets hard-cap at 54 logical observations/67 physical CR3 and n=5 targets at 62/75, returning structured `solver_budget_exhausted` with the best valid sample. Formal v2 and P7-R1 require RAW-to-58-feature/objective replay, unique capture ownership, exact frozen-plan sequence and frozen sub-budget caps. A `measurement_rejected` entry must carry a non-empty capture-owner list and quality evidence; only an explicit `pre_capture_exhaustion` record may omit captures, and it must prove `capture_attempted=false` with physical counters. ESPHome `light()` is command acknowledgement only; formal P7 uses the independent generation-bearing `rgbww_commanded_state` snapshot through `verified_light`. The generation-bearing WebUI firmware was compiled and uploaded on 2026-07-18, then verified only at zero output with a generation increment; the full low-output D0 sequence remains separately gated. Use `optimization.analyze_hsi_policy_v2_replay` only for state-machine/old-sentinel holdout diagnostics, never calibration. `optimization.measure_hsi_reference_repeatability --dry-run` emits the 30-Ray/50-strip `p7_targeted_reference_repeatability_v2` plan without device calls; its Planner-frozen absolute cap is 250 CR3, with 82..170 as the no-weak baseline and 82..250 as the permitted full range. PLAN section 4.4 authorizes one continuous D0-then-R1 package: only a same-session D0-PASS unlocks the single exact named R1, while a second R1 remains unauthorized. Its hardened wrapper owns adjacent PID/log state and atomic child/cleanup/signal/final exit evidence, with cleanup exactly once. The completed 2026-07-19 run passes acquisition, source/readback, ownership, budget, synthetic coverage and dual-cleanup audits at 82 logical/105 physical, but all Ray states fail A/B compatibility and trend gates and all strip commands retain unresolved trend; keep candidate formal-ineligible and stop at Planner with `R-REFERENCE-UNSTABLE` plus `uncertainty_unresolved`. New sentinel, remaining, boundary, holdout, and P8 stay locked.
-28. Formal P7 exhaustion evidence is canonicalized only at runner finalization, where both solver/start and target physical facts are visible. Start-scoped logical exhaustion must persist identical non-empty top-level/nested ledgers with `capture_attempted=false` and `produced_physical_cr3=0`; normal results keep both absent. If a capture adapter has already produced a CR3 before reporting an overrun, fail the run as `physical_budget_accounting_violation`, retain evidence, and execute cleanup rather than relabeling it as pre-capture exhaustion. Use the stable path IDs in `EXHAUSTIBILITY_MATRIX` as the shared producer/analyzer/readiness contract. Only `logical.feedback_attempts` and `logical.confirmation_groups` are production-reachable formal exhaustion paths. Planner froze `physical.pre_capture_denial` as guarded-unreachable because 54/67 and 62/75 fill together and the logical gate runs before the capture callback; keep its remaining precheck only as defense-in-depth and reject it from runner finalization/public analysis. Post-capture physical, auto-exposure, and weak-reacquire overruns remain run-level fatal paths.
-29. Before P7-R1, the separately named `p7_strip_state_readback_preflight` must run only through `tmp/run-strip-state-readback-preflight.zsh`. It orchestrates the existing `control.esphome.verified_light` and `control.all_off` owners without duplicating protocol parsing. The frozen raw-PWM command is `(cw,ww,r,g,b)=(8,16,24,32,48)` with `curve_path=None`, repeated once between verified zero transitions; all five observed generations must increase globally under one exact device name and stable nonempty MAC. Python finally performs all-off and a final verified zero, while the shell wrapper independently traps EXIT/INT/TERM/HUP. The wrapper atomically records child, cleanup, signal, and final exit evidence; signal `128+n` outranks child failure, child failure outranks cleanup-only wrapper `70`, and shell cleanup executes exactly once with separate stdout/stderr. Missing firmware state, identity/readback drift, cleanup uncertainty, or incomplete wrapper evidence stops at D0; it never implies firmware upload, camera, P7-R1, or high-output authorization.
-30. After the valid-failure P7-R1, use `optimization.measure_p7_thermal_diagnostics --dry-run` for exact TD-A/B/C plans and keep every settle field in `config/hsi/p7-operating-envelope-v1.json` null until accepted real evidence exists. TD-A owns source-specific 60/120/300/600 monotonic schedules; shutter is frozen before the cycle, timed-cycle auto exposure is forbidden, and 600 is validation-only. Derive each plan's shutter ledger only from its exact experiment/source capture steps, so TD-A never inherits the TD-B-only `ray-h120-s50` setup. Before any run directory or light command, the formal remote runner resolves ISO, aperture, and RAW format exactly once through the backend and injects those same non-empty choice strings into ambient and fixed timed captures; null, non-RAW, missing, or cross-experiment settings fail closed. TD-A retains start/mid/end ambient; every TD-C session retains start/end ambient. Ambient is non-formal but consumes one physical CR3, so TD-C core is exactly 8 formal + 8 ambient with core cap 16 and total diagnostic allocation 128. Unresolved TD-B/TD-C dependency times stay null/deferred and production execution rejects them until an accepted prerequisite freezes 60/120/300. Timing starts at completed command/readback and ends at an actual exposure-start timestamp owned by the camera adapter; never substitute host request-start, and fail closed when the adapter lacks provenance. Require independently replayable both-source all-off/readback gates at run start, before every ambient, and after transitions. The public analyzer must replay exact ambient/formal order, role, owner, physical count, command/readback, isolation, exposure, and covariate evidence. TD-C must separately gate compatibility, balanced order effect, stable center, current Ray center versus P6 interpretability, and ambient trend; it may emit the Planner-waiting pass only when all gates pass. Thermal/history rows may only support diagnosis: never inflate covariance, fit-and-pass the same run, merge cold and steady centers, or silently move P6. TD-B execute requires accepted TD-A; TD-C core requires accepted TD-B; expansion requires Planner-accepted core. Every real stage still requires a new exact bounded active PLAN, but bounded light control itself does not require separate Human authorization; only dangerous non-exempt operations such as firmware upload, remote deployment, destructive hardware changes, or work outside the active plan's bounds require it. TD-C is order-balanced paired comparison, not classic ABBA. Generate R1 epoch-v2 only as derived files: the retained run is nonstationary and `reference_shift_class=not_identifiable`; legacy false is not proof of no shift. Sentinel, remaining, boundary, holdout, Gate-6, and P8 stay locked.
-31. The remote client keeps `/v1/capture` byte-for-byte compatible and exposes `/v2/capture` only through an explicit `capture_with_timing` path owned by the formal remote-v2 capability marker. Parse `multipart/mixed` structurally with exactly JSON metadata first and CR3 second; require HTTP 200, Content-Length, X-Capture-ID, X-Request-ID, X-Capture-Metadata-Schema, frozen part Content-ID/disposition, and reject extra/missing/truncated parts, schema/ID/hash/byte-count drift, unknown metadata, and unknown part headers. Retain the original safe `remote_capture_result_v2` metadata beside the CR3. Recompute local best-effort timing from the successful attempt's bridge request plus bridge estimate relative offset and local request/readback clocks; never subtract bridge/local monotonic values directly or trust a self-reported elapsed field. Every busy retry owns a separate local request-start. `estimated_not_absolute` and `weak_estimate` map to accepted Tier A/B anchors under `best_effort_gphoto2_exposure_start_estimate`; `unavailable` is Tier C and hard-rejected for formal timing. P7 public analysis independently replays retained metadata, response headers, parser version, successful-attempt receipt, hashes, tier, local timing, formal/ambient/physical ledger, and cleanup evidence. This remains best-effort only and does not unlock TD-A.
+- Human owns the physical lab, experiment goal, and dangerous-operation
+  authorization.
+- Advisor researches direction and owns `GUIDE.md`/`RESEARCH.md`; those files
+  are guidance, not execution authorization.
+- Orchestrator alone owns `.agent-work/FULL_PLAN_REFERENCE.md`, the complete
+  non-executable roadmap of unfinished GUIDE work.
+- Planner reads that roadmap and GUIDE, writes exactly one active executable
+  package to `.agent-work/PLAN.md`, reviews evidence, and archives reviewed work.
+- Executer treats GUIDE, PLAN, FULL reference, debug records, and archives as
+  read-only; executes only active PLAN bounds and appends results to
+  `.agent-work/EXECUTION_RESULT.md`.
 
-## Calibration Direction
+Only the active PLAN authorizes a task, device operation, retry, budget, or
+stage entry. If guidance cannot determine a safe scientific branch, pause for
+Advisor direction. For an authorized command expected to exceed 10 minutes,
+use the visible Terminal/liveness/automation workflow required by `AGENTS.md`.
 
-- White mode should match Ray120c 100% brightness across `1800K..20000K` CCT and `-1.0..+1.0` G/M offset.
-- Use the first-pass CCT/G-M LUT grid from `docs/README.md`.
-- Endpoint detection now uses white-patch CCT/Duv from linear RAW as the search target, then verifies by photographing Ray120c candidates during adaptive CCT/G-M correction. Treat the estimated CCT/Duv as a search heuristic, not a Lightroom-equivalent absolute color temperature.
-- White LUT optimization should read the endpoint JSON and interpolate the native white-only G/M between WW and CW. Preserve strong RGB penalties near that native locus, then directionally relax only the channels needed for CCT extension or G/M compensation.
-- Neutral patches are the primary objective for white calibration; color patches are auxiliary lower-weight checks.
-- Every RGBWW candidate in high-brightness white calibration should keep at least one channel at `4095`.
-- All optimizer logic should operate on gamma-calibrated channel values, not raw PWM values.
-- Color mode should use model-first matching in camera-observed color space plus sparse residual correction where measurements justify it.
-- If CCT/G-M calibration measurements reveal a better color-mode model or solver structure, update the strategy to follow the measured evidence.
+## Core Safety and Runtime Rules
 
-## Safety
+- Remote firmware upload/deployment, destructive hardware changes, and device
+  work outside active PLAN bounds require Human authorization.
+- Bounded light output already selected by PLAN and zero/off cleanup do not
+  require a separate approval. Keep exact target, intensity, duration, abort,
+  isolation, and Python/shell cleanup bounds.
+- Start new channel tests at low PWM, verify order and thermal behavior, then
+  ramp only within the plan. Any script that can leave the fixture on must turn
+  it off before exit unless it is an explicit light-on/control tool.
+- Keep disposable outputs under `/Volumes/4T/temp/rgbww-optimizer`.
+  Repository `tmp/*.zsh` files are versioned wrappers, not data directories.
+- Ray120c is the CCT/G-M reference. Never infer its CCT from camera RGB.
+- Formal camera work uses `control.camera_remote.RemoteCameraBackend`; do not
+  expose credentials in arguments, logs, artifacts, or source.
+- Ray OpenAPI commands require `AMARAN_OPENAPI_SECRET` in the user-owned process
+  environment. There is no built-in default or secret CLI argument.
 
-- Do not run broad high-output sweeps without an explicit bounded range.
-- Confirm channel order, brightness scaling, and thermal behavior before increasing PWM levels.
-- All scripts that can leave the RGBWW fixture on must explicitly turn it off before exiting, except dedicated light-on/control tools.
+## Routine Entry Points
 
-P7 thermal timing-v2 uses `p7_thermal_diagnostic_plan_v2` and the shared
-`best_effort_gphoto2_observed_elapsed_v2` contract. Nominal slots are scheduler
-targets only; finite Tier A/B observed elapsed values are accepted regardless
-of offset and feed chronology/settling summaries. Tier C, missing, non-finite,
-negative, or non-monotonic evidence fails closed. The estimate is never
-absolute exposure-start truth. Count a nonempty CR3 before later timing
-validation and retain rejected capture paths/hashes in failure evidence.
-Use the shared experiment-aware chronology identity (TD-A cycle, TD-B role,
-TD-C session), retain the recognized gphoto2 estimate method, and keep v1
-single/pair analysis under legacy schemas. Never mix v1 and v2 pair inputs.
+- Cleanup: `python -m camera_based_rgbww_optimizer.control.all_off`
+- ESPHome fixture: `python -m camera_based_rgbww_optimizer.control.esphome`
+- Ray reference: `python -m camera_based_rgbww_optimizer.control.ray120c`
+- Canon remote bridge: `python -m camera_based_rgbww_optimizer.control.camera_remote`
+- Local capture compatibility: `control.camera_gphoto2`
+- RAW patches: `measurement.raw_mosaic_patches`
+- Chart tools: `interaction.location_picker_ui` and
+  `interaction.location_checker`
 
-The retained TD-A result is `settling_not_demonstrated_by_600`. A separate
-Developer/Human decision may select 600 seconds as an operational dwell while
-rejecting a 900/1200-second extension. Keep this decision in
-`config/hsi/p7-operating-envelope-v2.json`; never fill
-`t_formal_provisional_s` or `t_formal_s`, and never rewrite the result as
-`steady` or `settled`. TD-B v2 uses the explicit developer override for A0,
-return anchors, and the 60/120/300/600 switch chronology. Its analyzer status is
-`td_b_operational_600_complete_waiting_for_planner` or
-`history_dependent_at_operational_dwell_600`, with
-`dwell_is_scientifically_settled=false` and a structured nonstationarity warning.
-The v1 envelope remains the legacy deferred path; v2 is still offline/dry-run
-until a new bounded Planner execution plan exists.
+Before changing device control, camera measurement, color conversion,
+optimizer solving, persistence, or shared state, inspect the routed source of
+truth and existing implementation. Add meaningful regression tests and preserve
+the existing cleanup and provenance owners.
 
-TD-B v2 formal acquisition is the only shared native-RAW caller allowed to use
-`unsubtracted_no_ambient`. It owns 16 formal and zero ambient captures per
-source and uses the explicit un-subtracted
-`statistics.normalized_per_second.trimmed_mean` feature statistic. TD-A, TD-C,
-and all other callers must retain `require_preceding_ambient`. Bind this policy
-to the exact experiment/schema/phase owner and replay the same value from plan
-through capture payload and patch-statistics report. Keep that TD-B statistic
-in one shared feature-owner constant used by the runner and retained analyzer;
-the generic helper default remains
-`ambient_subtracted.trimmed_mean_per_second`, with no report-driven fallback.
+## Progressive Routing
 
-Keep camera-return side effects separate from accepted measurements. Persist a
-unique nonempty current-run CR3, hash, byte count, and capture owner in
-`physical-returns.jsonl` immediately after the adapter returns; only append
-`captures.jsonl` after exposure, RAW, features, timing, and covariates all pass.
-Precheck the physical cap before every request. Public analysis must rebuild
-both ledgers and reject duplicate ownership, hash/counter drift, or missing
-cross-ledger association.
+| Task | Read only what is needed |
+| --- | --- |
+| Hardware assumptions, commands, calibration decisions, validation workflow | `docs/README.md` |
+| Local connection/configuration/credential boundary | `docs/local-lab-connection-boundary.md` |
+| Current executable work | `.agent-work/PLAN.md` plus the applicable `GUIDE.md` |
+| Orchestrator roadmap or dependency status | `.agent-work/FULL_PLAN_REFERENCE.md` (read-only except Orchestrator) |
+| P7 TD-B provenance or historical regression | `docs/engineering/p7-td-b-contract-history.md`, then only relevant archives/evidence |
+| Exact production behavior | The relevant module and focused tests |
 
-TD-B Ray H120/S50 exposure setup is a distinct non-formal physical ledger.
-Audit P6 `0047-ray-hsi_coarse` only as a legacy `1/6400` initial seed; never
-write it directly to `frozen_shutters`. A valid `p7_td_b_exposure_setup_v1`
-artifact replays 1..8 unique remote-v2 CR3/sidecar attempts, recorded exposure,
-Ray HSI set/readback, independent strip-zero generation evidence, Python/shell
-cleanup, and a complete 1800-second cold-proxy wait. Resolve
-`ray-h120-s50` only through that artifact. Count setup captures inside TD-B's
-unchanged physical cap 24, while excluding them from 16 formal captures,
-58-feature fitting, repeatability covariance, and history aggregates.
-
-For production TD-B, require explicit `--phase setup` or `--phase formal` at
-an exact clean Git checkpoint. Setup runs through
-`tmp/run-p7-thermal-diagnostics.zsh`; the shared auto-exposure algorithm remains
-the only search owner, while its optional observer retains every remote-v2
-attempt before normal temporary deletion. The child writes only
-`setup-provisional.json`. The explicit setup orchestrator must wait for the
-production wrapper process to exit and retain `wrapper-observed-exit.json`;
-only after successful child and shell cleanup may post-wrapper finalization
-perform an independent both-zero readback and create
-the v2 canonical `setup.json`, `resolved-formal-plan.json`, and
-`setup-release.json`. Resume Ray formal only from that on-disk release and the
-same checkpoint. Paired TD-B finalization requires two public source analyses
-plus independent final zero; it may summarize the exact `33..40` physical
-ledger but must not call 600 seconds settled or change either source result.
-
-After an implementation-only checkpoint change, do not feed a lineage artifact
-to the formal runner. Replay the retained canonical setup/release, classify
-every changed path, and emit only a
-`p7_td_b_setup_release_lineage_candidate_v1` with
-`production_release_usable=false`. Planner acceptance is mandatory; any
-camera/parser/setup/input/budget/command/shutter/cleanup change requires a new
-setup. The retained failed Ray first CR3 may be replayed only into a new
-forensic output with fixed CR3/sidecar hashes, IDs, command/readback, Canon
-exposure, Tier B timing, `forensic_only=true`, `accepted_formal=false`, and
-`reusable_capture=false`.
-
-For every thermal remote-v2 capture, the physical-return owner associates the
-returned CR3 with its canonical same-run `.metadata.json` sibling before report,
-feature, timing, or covariate processing can accept the measurement. The
-physical ledger and any post-return `failure.json.rejected_capture` retain the
-CR3 and sidecar canonical paths, byte counts, SHA-256 values, and remote
-capture/request IDs. Missing, empty, outside-run, symlinked, non-canonical, or
-tampered sidecars fail closed while preserving the already-returned CR3 in the
-physical count; they never enter the accepted capture ledger.
-
-Once Planner accepts that candidate, create a new
-`p7_td_b_setup_lineage_release_v2`; never edit or rebind the old release. The
-lineage release must recompute the full changed-path ledger, rebuild the current
-Ray TD-B v2 plan, resolve only the unchanged setup shutter, and bind the old
-release/setup, accepted candidate, current candidate, fresh resolved plan, and
-exact clean current checkpoint. Only this release may resume formal capture
-after the implementation checkpoint changes. Candidate files, old resolved
-plans, same-content copies, symlinks, or lineage releases from another
-checkpoint remain non-executable.
-
-Resolve the TD-B v2 operating-envelope prerequisite through the shared thermal
-trusted-prerequisite owner. Accept project-relative, `./`-relative, or exact
-absolute caller spelling, but persist the canonical repository path and frozen
-hash. Reject traversal, outside-root paths, missing files, directories,
-symlinks, hash drift, and same-content copies before backend or output access.
-Use the same resolver in plan production, setup frozen-input validation, and
-public analyzer replay; do not change generic `file_reference()` semantics.
+Do not preload P7 history for ordinary work. The history note is a reference,
+not authorization; its current route is paused until a future active PLAN
+explicitly releases work.

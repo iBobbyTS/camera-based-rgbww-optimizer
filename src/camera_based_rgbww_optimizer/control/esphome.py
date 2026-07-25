@@ -9,6 +9,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
+from camera_based_rgbww_optimizer.control.local_lab_context import cli_description
 from camera_based_rgbww_optimizer.paths import PROJECT_ROOT
 
 DEFAULT_HOST = os.environ.get("CAMERA_BASED_RGBWW_OPTIMIZER_ESPHOME_HOST", "bedroom-rgbww-strip.local")
@@ -293,8 +294,8 @@ def _load_api_encryption_key(secrets_path: str | Path) -> str:
     return match.group(1)
 
 
-def _main() -> int:
-    parser = argparse.ArgumentParser(description="Set RGBWW ESPHome channel codes.")
+def _main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=cli_description("Set RGBWW ESPHome fixture channel codes."))
     parser.add_argument("cw", type=int)
     parser.add_argument("ww", type=int)
     parser.add_argument("r", type=int)
@@ -305,7 +306,7 @@ def _main() -> int:
     parser.add_argument("--expected-name", default=DEFAULT_EXPECTED_NAME)
     parser.add_argument("--curve", type=Path, default=DEFAULT_CURVE_PATH, help="Optional code-duty curve JSON path.")
     parser.add_argument("--no-curve", action="store_true", help="Disable code-duty curve correction.")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     curve_path = None if args.no_curve else args.curve
     payload = light(
