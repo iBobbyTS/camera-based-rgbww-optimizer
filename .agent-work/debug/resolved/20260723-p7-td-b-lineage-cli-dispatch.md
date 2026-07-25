@@ -2,7 +2,7 @@
 
 ## 状态
 
-`unresolved`: production formal stopped before acquisition.
+`resolved_offline_waiting_for_planner`: CLI dispatch regression is fixed and verified; production formal was not retried.
 
 ## 已确认证据
 
@@ -21,4 +21,4 @@ When `--setup-release` is present, the release is the authoritative resolved-pla
 
 ## 下一步
 
-Add a regression test for the exact formal CLI dispatch, make the smallest dispatch-order fix, rerun offline focused/full/static checks, and regenerate a lineage release at the new checkpoint. Do not rerun hardware from this failed run without a new Planner execution decision.
+Commit `b38caa4` dispatches the exact setup release before constructing an unresolved plan. Focused `64/64`, full `545/545`, compileall, wrapper syntax, diff-check, and CodeGraph passed. Regenerate a lineage release at the new checkpoint only after Planner accepts the failed run and offline repair; do not reuse the old release or automatically retry hardware.

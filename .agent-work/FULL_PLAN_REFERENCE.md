@@ -17,9 +17,9 @@
 ### 1.1 两层计划所有权
 
 - `.agent-work/FULL_PLAN_REFERENCE.md`：Orchestrator 独占维护的完整未完成路线，回答“整个 GUIDE 还有什么要做”；Planner 与 Executer 只读。
-- `.agent-work/PLAN.md`：唯一可执行合同，回答“Executer 现在只做什么、做到哪里必须停”。
-- active PLAN 应引用本文件中的一个 task ID；当前 Z0 PLAN 早于本规则建立，由本文件反向绑定，下一次
-  Planner 重写 PLAN 时必须显式加入 task ID。
+- `.agent-work/PLAN.md`：唯一执行边界，回答“Executer 现在只做什么、做到哪里必须停”；也可明确记录无执行权限的等待门。
+- executable active PLAN 必须引用本文件中的一个 task ID；当前 PLAN 是 `NONE_AWAITING_ORCHESTRATOR_SELECTION` 的 non-executable
+  Human/Orchestrator priority-selection 等待门。
 - 本文件中的后续步骤、命令示例、预算上限和条件分支都不能被 Executer 直接消费为授权。
 
 ### 1.2 来源优先级
@@ -44,6 +44,7 @@ Orchestrator 报告 decision request；Orchestrator 将冲突写成 decision tas
 | `LOCKED` | GUIDE 明确禁止当前进入。 |
 | `CONDITIONAL` | 只有命名分支出现时才成为待执行任务。 |
 | `DEFERRED` | 尚未完成，但后来的决定已将其移出当前主路线。 |
+| `PAUSED_BY_HUMAN_PRIORITY` | 尚未完成；因 Human 明确调整优先级而暂停，不能写入执行 PLAN。 |
 | `ADVISOR_DECISION` | 需要 Advisor 冻结科学方向；不是危险操作授权请求。 |
 | `HUMAN_DECISION` | 需要 Human 决定产品范围、危险操作或最终安装。 |
 
@@ -63,7 +64,8 @@ Orchestrator 报告 decision request；Orchestrator 将冲突写成 decision tas
 3. 为新任务分配稳定 ID，不复用已删除 ID；
 4. 将已完成细节移入 `.agent-work/PLANS/` review archive，仅在第 3 节保留必要 baseline；
 5. 在 active task 行记录当前 PLAN path/hash；
-6. 验证所有 `ACTIVE` 恰好一个、所有依赖 ID 存在、Markdown 结构和 `git diff --check` 通过；
+6. 验证 executable PLAN 时 `ACTIVE` 恰好一个；non-executable等待门时 `ACTIVE` 恰好为零；所有依赖 ID 存在、Markdown结构和
+   `git diff --check` 通过；
 7. 不在本文件复制 secret、临时凭据或可执行的无界设备命令。
 
 ## 2. 冻结来源与当前证据锚点
@@ -75,7 +77,15 @@ Orchestrator 报告 decision request；Orchestrator 将冲突写成 decision tas
 | `advisor/3/1.GUIDE.md` | `92f766da523c40ff49c228c996dffd6d3839552f70bbd79aa7627485dd749be1` | 当前 thermal/reference 路线；替代直接进入 sentinel 的旧路径。 |
 | `advisor/4/0.AUDIT/03-human-decision-no-extension.md` | `c917c54473aa3c5cc4da9098ddeb81fb109fe9a4186fb71e994c447c63d0454a` | Human 拒绝 900/1200 秒，选择 600 秒 operational dwell；不得称为 settled。 |
 | `.agent-work/PLANS/20260725-1031-p7-td-b-r1-c3-e2-r1-c2-review.md` | `8bc00632f878041dde21fb03709f248f8e33b6cdf104f3055bdd041752c9b17a` | 最近已接受的 progressive-evidence C2 review。 |
-| `.agent-work/PLAN.md` | `b34b4868d8ef8fbfad8a4fe174c8728be206170cd511e643f2b6f0d38e0668a9` | 当前唯一 Z0 执行合同。 |
+| `.agent-work/PLANS/20260725-1132-p7-td-b-e2-r1-z0-checkpoint-supersession-review.md` | `36cb8afe24a18a2eb294a8262bfbd6e05e05b5b3696c132f04b9b86feb93353d` | Planner 对旧 Z0 checkpoint 漂移的验收与无执行 supersession。 |
+| `.agent-work/PLANS/20260725-1148-p7-td-b-e2-r1-z0-r1-pre-device-failure-review.md` | `759efbe584951dcd27cf5eeb7c89eaaebb5dc12aad9e3cf2f6d3b40baa48c987` | Z0-R1 valid pre-device failure 与外置 harness blockers 验收。 |
+| `.agent-work/PLANS/20260725-1207-p7-td-b-z0-r1-c1-pre-matrix-failure-review.md` | `d557a37ef026698f4e814f928d5a88bf38cf47ed2fcaafc488c6a9d3b16a5a80` | C1 bytecode 污染 pre-matrix failure 与 source-hygiene finding 验收。 |
+| `.agent-work/PLANS/20260725-1224-p7-td-b-z0-r1-c2-offline-pass-review.md` | `be3382d4dc4bea1575eff154f7023e87649b3ab8e90631597220e99aad20402f` | C2 offline harness pass 与四个 REV closure 验收。 |
+| `.agent-work/PLANS/20260725-1240-p7-td-b-z0-r2-pre-device-failure-review.md` | `b2907b58152a88ed26c663a0484290819880294f9525eae30703ccd1bf6771a5` | Z0-R2 evidence-tree policy 与 wrapper byte-copy pre-device failure 验收。 |
+| `.agent-work/PLANS/20260725-1250-p7-td-b-z0-r2-c1-human-priority-supersession.md` | `7dc40489dd7348592218eb4831380e1113ee27f477dd2acaf986f881271a723f` | 未执行 Z0-R2-C1 因 Human 最高优先级切换而暂停；不是执行失败。 |
+| `.agent-work/PLANS/20260725-1403-ref-workflow-01-implementation-review.md` | `b48b2405dfd753e2834f6aa19328675b880081c48eeafd8e4bf3d9ad1207dbcc` | 误判风险缓解实现验收；接受 frozen HEAD 的两项 P7 lineage baseline exception。 |
+| `.agent-work/PLANS/20260725-1410-ref-workflow-01-commit-final-review.md` | `be445be5277f350a1f7b9bc41c7b8fcfaa30e63b42f8f759b1cbfda9050b1880` | 误判风险缓解 commit-only 终验与 `REF-WORKFLOW-01` 完成证据。 |
+| `.agent-work/PLAN.md` | `4bab5c09d2d095443ae9f74eee1099451672b21884da0c3611ff1808039c774c` | 当前 non-executable Human/Orchestrator priority-selection 等待门。 |
 
 若上表任一文件内容变化，Orchestrator 必须重新判断是否为合法 source update，而不是只替换 hash。
 
@@ -94,17 +104,25 @@ Orchestrator 报告 decision request；Orchestrator 将冲突写成 decision tas
   `developer_selected_operational_dwell_s`，`t_formal_provisional_s` 和 `t_formal_s` 仍不得伪造为 600。
 - TD-B v2 离线合同、setup provenance、sidecar/physical ledger 修复、no-ambient statistic owner、evidence
   manifest 和 lineage release 已完成；这些只提供可重放前置证据，不表示 formal 完成。
+- `REF-WORKFLOW-01` 已完成并提交为 `3f8fb5c2f046ad5c75eab200005331acd5f2cc27`：移除 Ray built-in credential
+  default，建立三个 control CLI 共用的 user-owned local-lab context owner，新增集中连接边界文档，并将 project skill 从
+  `41300` bytes 缩为 `4678` bytes 的 progressive entrypoint。该工作降低误判信号但不保证平台分类结果。
 - 首次 Ray TD-B formal 在首张 `A@600s` 后因六个 plane-feature 低信号 quality rejection hard-fail；该张
   CR3/sidecar 仅是 immutable forensic evidence，不计入未来 fresh 16。
 - 随后的 E2 因 external Git-root bug 失败；C1 离线修复已接受。唯一 fresh E2 又因
   `bedroom-rgbww-strip.local` 解析超时 hard-fail；C2 progressive-evidence correction 已由 Planner 以实际
-  count `265` 接受。当前只放行 Z0。
+  count `265` 接受。旧 Z0 因 workflow-only checkpoint 前移而在执行前 supersede；Z0-R1 又因 external source 手填
+  PLAN bytes 错误在 matrix/device 前 valid-fail；C1 又因 compile preflight import 生成 `source/__pycache__/` 在 matrix 前
+  valid-fail。C2 已以 hygiene `10/10`、identity `14/14`、actual lifecycle `18/18`、terminal `527/527` 关闭四个 REV；
+  Z0-R2 随后因 planned-negative symlink被错误的通用tree policy拒绝，且wrapper copy多一个尾部`0a`，再次在production
+  import/device前 valid-fail；real Z0 gate仍未消费。未执行的 Z0-R2-C1 已归档为暂停（不是失败）；误判缓解任务现已完成，
+  当前处于 non-executable priority-selection 等待门，Human 重新排序前不自动恢复 P7。
 
 ## 4. 未完成路线总表
 
 | Task ID | 状态 | 任务 | 直接依赖 | 解锁/决定 owner |
 | --- | --- | --- | --- | --- |
-| `REF-P7-01` | `ACTIVE` | 一次 zero-only Z0 reachability gate | 已接受 C2 | active PLAN / Planner |
+| `REF-P7-01` | `PAUSED_BY_HUMAN_PRIORITY` | Z0 harness correction 后的一次 zero-only reachability gate | Human 重新排序 + lineage baseline debt处理 | Human/Orchestrator/Planner |
 | `REF-P7-02` | `NEXT_REVIEW` | Z0 验收与恢复分支选择 | `REF-P7-01` 结果 | Planner |
 | `REF-P7-03` | `BLOCKED` | fresh E2 readiness/final-zero gate | Z0 pass + 新 PLAN | Planner |
 | `REF-P7-04` | `LOCKED` | fresh Ray/strip TD-B formal 与 paired finalizer | E2 pass + exact release | Planner |
@@ -144,34 +162,46 @@ Z0 -> Planner review -> E2 -> TD-B -> TD-B review
 
 任一箭头都只是依赖关系，不是自动续跑授权。
 
-## 5. 当前恢复链
+## 5. 暂停的 P7 恢复链
 
-### REF-P7-01：一次 zero-only Z0 reachability gate
+### REF-P7-01：Z0 harness correction 与后续一次 zero-only reachability gate
 
-**状态：** `ACTIVE`
+**状态：** `PAUSED_BY_HUMAN_PRIORITY`
 
-**active PLAN：** `.agent-work/PLAN.md`，SHA-256
-`b34b4868d8ef8fbfad8a4fe174c8728be206170cd511e643f2b6f0d38e0668a9`
+**恢复前提：** 误判缓解任务已经完成，但仍须 Human 重新排序，并由 Planner 基于新 HEAD 与 lineage baseline debt 发布新的唯一
+PLAN。已归档、未执行的 Z0-R2-C1 不能作为现行授权直接恢复。
 
-**目标：** 只判断 exact `bedroom-rgbww-strip.local:6053` 的 ESPHome Native API 是否可达，并取得五个
-generation-bearing exact-zero readback；不重试 E2，不触发相机、Ray 或非零输出。
+**当前子状态：** `offline_evidence_source_owner_correction`。Z0-R2未通过mandatory self-check：immutable C2 evidence tree中
+按设计保留的两个negative symlink被unconditional policy误拒，fresh wrapper又比accepted C2 wrapper多一个尾部`0a`。real Z0
+仍未消费；本包只允许关闭`REV-Z0-R2-EVIDENCE-TREE-005`与`REV-Z0-R2-WRAPPER-BYTE-COPY-006`。
+
+**最终目标：** 先离线证明 future Z0 的 PLAN identity、真实 wrapper lifecycle、signal evidence、cleanup ordering 与 exit
+precedence 可独立重放；Planner 接受 correction 后才可另写一次 real Z0 PLAN，判断 exact
+`bedroom-rgbww-strip.local:6053` 是否可达并取得五个 generation-bearing exact-zero readback。不重试 E2，不触发相机、Ray
+或非零输出。
 
 **执行纲要：**
 
-1. 在唯一 fresh external root 构建 C2-style progressive evidence owner；冻结 C2、E2-R1、lineage、HEAD、
-   production owner 和 secret-input hash。
-2. 先执行 final control flow 的 no-device matrix `14/14`；fake network/secret/device call 为零。
-3. 只有 matrix 全过才运行一次 real wrapper，按 frozen order 各尝试一次：primary zero、Python-finally zero、
-   child-final zero、shell-trap zero、independent-final zero。
-4. 每个 attempt 必须先落盘，result 绑定 attempt hash；timeout/signal 后不得把 unknown 写成未调用或成功。
-5. 独立 terminal replay 验证 exact identity、state object、全零、generation 全局严格增加、退出优先级、
-   progressive counts、strict JSON、redaction 和 source/frozen drift。
+1. 建立独立immutable evidence-tree owner：planned-negative symlink只记录`lstat/readlink` identity且不follow target，allowlist精确
+   绑定accepted C2 terminal evidence；unknown/missing/path/target drift仍fail closed。
+2. executable source owner保持严格no-symlink exact三文件inventory；不得把evidence allowlist作为permissive flag泄漏到source、PLAN、
+   production owner或secrets。
+3. wrapper仅从accepted C2 artifact进行no-follow binary exclusive copy与destination reopen replay；禁止text writer/newline
+   normalization，并覆盖accepted+单个尾部`0a`、short read/write、inode与symlink负例。
+4. 在final三文件上各一次重跑policy/copy、source hygiene、PLAN identity、18-case actual lifecycle与injected real-adapter contract；
+   production import、secret、hostname/network/device均为零。
+5. terminal seal独立验证two-owner call-site map、symlink records、wrapper bytes/hash、old-root before/after、strict JSON、bytecode、
+   owned process和全部禁止预算。
+6. offline pass/fail均停Planner；同包real Z0为零。若该owner boundary纠偏仍失败，停止继续扩充harness并转engineering
+   architecture redirection，而不是再次放行real gate。
 
-**通过：** 五个 stage 全部 returned-success、generation-bearing zero、所有 terminal mismatch 为空。通过只证明
-当前 reachability 与 final zero，不恢复 E2/formal authorization。
+**当前 correction 通过：** 只证明 external harness 可供 Planner 重新验收，不授权或运行 real Z0。Planner 归档后可另写
+唯一 real Z0 PLAN；该未来 Z0 只有五个 stage 全部 returned-success、generation-bearing zero 且 terminal mismatch为空才通过，
+并且只证明 reachability/final zero，不恢复 E2/formal authorization。
 
-**失败：** 任一 resolve/connect/identity/state/generation/cleanup/seal failure 即 hard-fail；剩余 assigned cleanup
-仍按 plan 执行，禁止第二次 Z0、IP fallback、网络配置修改、firmware、capture 或 E2。
+**当前 correction 失败：** 任一 identity/lifecycle/signal/cleanup/seal/source drift 即 hard-fail，禁止原地修补或同包重跑。
+未来 real Z0 的任一 resolve/connect/identity/state/generation/cleanup/seal failure 仍 hard-fail；禁止 IP fallback、网络配置修改、
+firmware、capture 或 E2。
 
 **停止点：** 无论 pass/fail，写 `EXECUTION_RESULT.md` 后立即停在 Planner。
 
@@ -187,7 +217,8 @@ generation-bearing exact-zero readback；不重试 E2，不触发相机、Ray �
    inventory、actual count、identity/generation/zero evidence、cleanup、预算和 source/workspace drift。
 2. 验证 Z0 没有 camera、Ray、非零 strip、standalone hostname probe、`.env`、firmware 或 network-config side effect。
 3. 将 review 方法、artifact paths/hashes、mismatch、决定和 residual risk 写入新 archive。
-4. 更新本文件状态，再写仅含一个下一动作的 active PLAN。
+4. 向 Orchestrator 报告建议的 task 状态与分支变更；只有 Orchestrator 可更新本文件，Planner 再写仅含一个下一动作的
+   active PLAN 或明确停止。
 
 **分支：**
 

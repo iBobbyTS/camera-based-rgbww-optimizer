@@ -2,7 +2,8 @@
 
 | file | summary |
 | --- | --- |
-| active/20260723-p7-td-b-lineage-cli-dispatch.md | Ray TD-B formal stopped before acquisition because the CLI enforced the unresolved TD-B prerequisite before dispatching the accepted lineage release; offline fix required, no automatic hardware retry. |
+| active/20260725-platform-cyber-risk-false-positive.md | Platform flagged the authorized local calibration chat; highest-impact suspects are a hard-coded Ray OpenAPI key and oversized remote/rejection-heavy project context. |
+| active/20260725-p7-td-b-e2-r1-hostname-and-progressive-evidence.md | C2 harness is accepted, but Z0-R2 validly failed pre-device because planned negative symlinks were misclassified and the wrapper gained a trailing newline; real reachability remains unconsumed and E2/formal locked. |
 | active/20260722-p7-td-b-prerequisite-path-identity.md | PATH-R1 owns the raw relative/absolute operating-envelope identity mismatch; canonical producer, setup gate, and analyzer replay must close it before the single authorized setup retry. |
 | active/20260719-p7-r1-reference-instability.md | Completed R1 passes acquisition/coverage evidence but fails all Ray A/B compatibility and measured Ray/strip trend gates; candidate remains formal-ineligible for Planner review. |
 | active/20260714-p1-exposure-response.md | CR3 recorded exposure fixes the large P1 shutter error; residual high-signal RAW shape still blocks thresholds and P2 pending a lower-exposure full P1. |
@@ -21,6 +22,10 @@
 
 | file | summary |
 | --- | --- |
+| resolved/20260724-p7-td-b-e2-external-root-and-json-writer.md | C1 closes the external Git-root and literal backslash-n evidence defects with a frozen five-source owner, 22/22 fake/runtime cases, and 62 strict JSON artifacts; real E2 remains separately Planner-gated. |
+| resolved/20260723-p7-td-b-formal-statistic-owner-c3.md | C3 binds exact TD-B v2 formal to the shared no-ambient statistic constant, preserves the ambient default elsewhere, and proves 58-feature runner/analyzer agreement on immutable R1 evidence. |
+| resolved/20260723-p7-td-b-sidecar-atomicity-c2.md | C2 preserves exactly one physical owner across sidecar I/O failure and retains sidecar-verified remote IDs across later adapter drift; full retained-file replay remains immutable. |
+| resolved/20260723-p7-td-b-lineage-cli-dispatch.md | Commit b38caa4 dispatches the accepted lineage release before the unresolved prerequisite gate; offline suites pass, while the zero-capture hardware retry remains Planner-gated. |
 | resolved/20260722-p7-td-a-not-settled-by-600.md | TD-A remains scientifically not settled by 600 seconds, but Developer/Human rejected longer extension and selected 600 seconds as an explicit operational dwell without changing the measurement claim. |
 | resolved/20260720-p7-td-a-wrapper-runtime.md | W0 replaced zsh readonly `status`, proved six production-wrapper runtime paths, and added paired manifest replay; the then-unconsumed TD-A authorization was later consumed by the Ray timing-failure run. |
 | resolved/20260721-p7-td-a-observed-elapsed-timing.md | R1 closed legacy v1/v2 dispatch, experiment-aware chronology, produced-CR3 accounting, timing-method provenance, and immutable contract gaps; Human later cleared the exact TD-A gate and the active plan is executable once. |
