@@ -2848,6 +2848,16 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
         self.assertNotIn(".agent-work/FULL_PLAN_REFERENCE.md", prohibited)
         for path, classification in subject.TD_B_WORKFLOW_PATH_CLASSIFICATIONS.items():
             self.assertNotIn(path, prohibited)
+            self.assertEqual(
+                classifications[path],
+                subject.TD_B_PUBLIC_DEFAULT_SUCCESSOR_CLASSIFICATIONS.get(
+                    path, classification,
+                ),
+            )
+        for path, classification in (
+            subject.TD_B_PUBLIC_DEFAULT_SUCCESSOR_CLASSIFICATIONS.items()
+        ):
+            self.assertNotIn(path, prohibited)
             self.assertEqual(classifications[path], classification)
         for path, classification in subject.TD_B_CLEANUP_TEST_PROVENANCE_CLASSIFICATIONS.items():
             self.assertNotIn(path, prohibited)
@@ -2861,6 +2871,217 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
         )
         self.assertEqual(workflow_only["status"], "eligible_waiting_for_planner")
         self.assertEqual(workflow_only["prohibited_paths"], [])
+
+    def test_public_default_successor_lineage_layers_historical_and_current_owners(self):
+        checkpoint = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=Path(__file__).parents[1],
+            check=True, capture_output=True, text=True,
+        ).stdout.strip()
+        successor = subject._validate_td_b_public_default_successor_lineage(
+            new_checkpoint=checkpoint,
+        )
+        historical = subject._validate_td_b_workflow_path_lineage(
+            new_checkpoint=checkpoint,
+        )
+        overlap = set(successor).intersection(historical)
+        self.assertEqual(overlap, {
+            "docs/local-lab-connection-boundary.md",
+            "src/camera_based_rgbww_optimizer/control/ray120c.py",
+            "tests/test_all_off.py",
+            "tests/test_project_context_docs.py",
+            "tests/test_ray120c.py",
+        })
+        self.assertEqual(
+            successor["src/camera_based_rgbww_optimizer/control/ray120c.py"],
+            "human_directed_public_shared_protocol_default_boundary",
+        )
+
+        unchanged = "docs/engineering/p7-td-b-contract-history.md"
+        original_run = subprocess.run
+
+        def drift_checkpoint(command, *args, **kwargs):
+            if command == ["git", "show", f"{checkpoint}:{unchanged}"]:
+                return subprocess.CompletedProcess(command, 0, stdout=b"drift")
+            return original_run(command, *args, **kwargs)
+
+        with mock.patch.object(subject.subprocess, "run", side_effect=drift_checkpoint):
+            with self.assertRaisesRegex(ValueError, f"hash or diff differs: {unchanged}"):
+                subject._validate_td_b_workflow_path_lineage(
+                    new_checkpoint=checkpoint,
+                )
+
+    def test_public_default_successor_manifest_fails_closed_on_exact_drift(self):
+        checkpoint = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=Path(__file__).parents[1],
+            check=True, capture_output=True, text=True,
+        ).stdout.strip()
+        canonical = subject.TD_B_PUBLIC_DEFAULT_SUCCESSOR_MANIFEST_PATH.read_bytes()
+
+        with _w0_temporary_directory() as tempdir:
+            root = Path(tempdir)
+            copied = root / "successor-workflow-manifest.json"
+            copied.write_bytes(canonical)
+            with self.assertRaisesRegex(ValueError, "owner differs"):
+                subject._validate_td_b_public_default_successor_lineage(
+                    new_checkpoint=checkpoint,
+                    manifest_path=copied,
+                )
+            subject._validate_td_b_public_default_successor_lineage(
+                new_checkpoint=checkpoint,
+                manifest_path=copied,
+                require_canonical_manifest_owner=False,
+            )
+
+            def assert_semantic_rejection(label, mutate, message):
+                value = json.loads(canonical)
+                mutate(value)
+                changed = root / f"{label}.json"
+                changed.write_text(json.dumps(value, sort_keys=True), encoding="utf-8")
+                changed_sha = hashlib.sha256(changed.read_bytes()).hexdigest()
+                with mock.patch.object(
+                    subject,
+                    "TD_B_PUBLIC_DEFAULT_SUCCESSOR_MANIFEST_SHA256",
+                    changed_sha,
+                ):
+                    with self.assertRaisesRegex(ValueError, message):
+                        subject._validate_td_b_public_default_successor_lineage(
+                            new_checkpoint=checkpoint,
+                            manifest_path=changed,
+                            require_canonical_manifest_owner=False,
+                        )
+
+            contract_cases = (
+                ("schema", lambda value: value.__setitem__("schema", "wrong")),
+                ("parent", lambda value: value.__setitem__("parent_commit", "0" * 40)),
+                ("commit", lambda value: value.__setitem__("commit", "0" * 40)),
+                ("provenance", lambda value: value.__setitem__("human_provenance", "missing")),
+                ("extra", lambda value: value.__setitem__("extra_paths", ["OTHER"])),
+            )
+            for label, mutate in contract_cases:
+                with self.subTest(label=label):
+                    assert_semantic_rejection(label, mutate, "contract differs")
+
+            entry_cases = (
+                ("missing-path", lambda value: value["entries"].pop(), "entry count"),
+                ("extra-path", lambda value: value["entries"].append(
+                    dict(value["entries"][0], path="OTHER"),
+                ), "entry count"),
+                ("duplicate-path", lambda value: value["entries"][1].__setitem__(
+                    "path", value["entries"][0]["path"],
+                ), "duplicate paths"),
+                ("wrong-path", lambda value: value["entries"][0].__setitem__(
+                    "path", "OTHER",
+                ), "exact path set"),
+                ("old-hash", lambda value: value["entries"][0].__setitem__(
+                    "old_blob_sha256", "0" * 64,
+                ), "hash or diff differs"),
+                ("current-hash", lambda value: value["entries"][0].__setitem__(
+                    "current_blob_sha256", "0" * 64,
+                ), "hash or diff differs"),
+                ("diff-hash", lambda value: value["entries"][0].__setitem__(
+                    "diff_sha256", "0" * 64,
+                ), "hash or diff differs"),
+                ("classification", lambda value: value["entries"][0].__setitem__(
+                    "classification", "broader",
+                ), "contract differs"),
+                ("scope", lambda value: value["entries"][0].__setitem__(
+                    "scope", "broader",
+                ), "contract differs"),
+                ("human-decision", lambda value: value["entries"][0].__setitem__(
+                    "human_decision", "missing",
+                ), "contract differs"),
+                ("entry-provenance", lambda value: value["entries"][0].__setitem__(
+                    "provenance", "missing",
+                ), "contract differs"),
+                ("rollback", lambda value: value["entries"][0].__setitem__(
+                    "rollback", "broader",
+                ), "contract differs"),
+            )
+            for label, mutate, message in entry_cases:
+                with self.subTest(label=label):
+                    assert_semantic_rejection(label, mutate, message)
+
+            missing = root / "missing.json"
+            with self.assertRaisesRegex(ValueError, "missing"):
+                subject._validate_td_b_public_default_successor_lineage(
+                    new_checkpoint=checkpoint,
+                    manifest_path=missing,
+                    require_canonical_manifest_owner=False,
+                )
+            non_regular = root / "manifest-directory"
+            non_regular.mkdir()
+            with self.assertRaisesRegex(ValueError, "missing"):
+                subject._validate_td_b_public_default_successor_lineage(
+                    new_checkpoint=checkpoint,
+                    manifest_path=non_regular,
+                    require_canonical_manifest_owner=False,
+                )
+            symlink = root / "manifest-link.json"
+            symlink.symlink_to(copied)
+            with self.assertRaisesRegex(ValueError, "symlink"):
+                subject._validate_td_b_public_default_successor_lineage(
+                    new_checkpoint=checkpoint,
+                    manifest_path=symlink,
+                    require_canonical_manifest_owner=False,
+                )
+            with self.assertRaisesRegex(ValueError, "ancestry differs"):
+                subject._validate_td_b_public_default_successor_lineage(
+                    new_checkpoint=subject.TD_B_PUBLIC_DEFAULT_SUCCESSOR_PARENT,
+                )
+
+            target = (
+                Path(__file__).parents[1]
+                / "src/camera_based_rgbww_optimizer/control/ray120c.py"
+            ).resolve()
+            original_read_bytes = Path.read_bytes
+
+            def tampered_read_bytes(path):
+                if path.resolve() == target:
+                    return b"tampered working tree"
+                return original_read_bytes(path)
+
+            with mock.patch.object(Path, "read_bytes", tampered_read_bytes):
+                with self.assertRaisesRegex(ValueError, "hash or diff differs"):
+                    subject._validate_td_b_public_default_successor_lineage(
+                        new_checkpoint=checkpoint,
+                    )
+
+            predecessor = json.loads(subject.TD_B_WORKFLOW_PATH_MANIFEST_PATH.read_bytes())
+            predecessor["entries"][0]["current_blob_sha256"] = "0" * 64
+            predecessor_path = root / "predecessor-drift.json"
+            predecessor_path.write_text(
+                json.dumps(predecessor, sort_keys=True), encoding="utf-8",
+            )
+            predecessor_sha = hashlib.sha256(predecessor_path.read_bytes()).hexdigest()
+            with mock.patch.object(
+                subject, "TD_B_WORKFLOW_PATH_MANIFEST_SHA256", predecessor_sha,
+            ):
+                with self.assertRaisesRegex(ValueError, "hash or diff differs"):
+                    subject._validate_td_b_workflow_path_lineage(
+                        new_checkpoint=checkpoint,
+                        manifest_path=predecessor_path,
+                        require_canonical_manifest_owner=False,
+                    )
+
+            missing_overlap = json.loads(canonical)
+            missing_overlap["entries"] = [
+                entry for entry in missing_overlap["entries"]
+                if entry["path"] != "tests/test_ray120c.py"
+            ]
+            overlap_path = root / "missing-overlap.json"
+            overlap_path.write_text(
+                json.dumps(missing_overlap, sort_keys=True), encoding="utf-8",
+            )
+            overlap_sha = hashlib.sha256(overlap_path.read_bytes()).hexdigest()
+            with mock.patch.object(
+                subject, "TD_B_PUBLIC_DEFAULT_SUCCESSOR_MANIFEST_SHA256", overlap_sha,
+            ):
+                with self.assertRaisesRegex(ValueError, "entry count differs"):
+                    subject._validate_td_b_workflow_path_lineage(
+                        new_checkpoint=checkpoint,
+                        successor_manifest_path=overlap_path,
+                        require_canonical_successor_owner=False,
+                    )
 
     def test_cleanup_test_provenance_manifest_rejects_exact_drift(self):
         checkpoint = subprocess.run(

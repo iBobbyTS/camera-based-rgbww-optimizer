@@ -183,6 +183,48 @@ TD_B_WORKFLOW_PATH_SCOPES = MappingProxyType({
         "and off-command semantics remain equivalent"
     ),
 })
+TD_B_PUBLIC_DEFAULT_SUCCESSOR_MANIFEST_PATH = Path(
+    "/Volumes/4T/temp/rgbww-optimizer/"
+    "p7-td-b-ray-public-default-lineage-c1/20260726T144421Z/"
+    "successor-workflow-manifest.json"
+)
+TD_B_PUBLIC_DEFAULT_SUCCESSOR_MANIFEST_SHA256 = (
+    "6915c68cbb9436a8aa96ee5384751be6f9405c6f5330d19112cab2b77e898cd3"
+)
+TD_B_PUBLIC_DEFAULT_SUCCESSOR_COMMIT = "e7ccdda672b7d5902d81627ff98268160ff141cd"
+TD_B_PUBLIC_DEFAULT_SUCCESSOR_PARENT = "a87b09fc4a701a76e5214d6ff6d3a4e3de090521"
+TD_B_PUBLIC_DEFAULT_SUCCESSOR_HUMAN_DECISION = (
+    "Human classified the exact Ray key as a public shared protocol default and "
+    "AMARAN_OPENAPI_SECRET as an optional explicit private runtime override"
+)
+TD_B_PUBLIC_DEFAULT_SUCCESSOR_PROVENANCE = (
+    "Human decision and repository history only; not external-vendor documentation, "
+    "protocol specification, or security review verification; implemented by exact "
+    f"commit {TD_B_PUBLIC_DEFAULT_SUCCESSOR_COMMIT}"
+)
+TD_B_PUBLIC_DEFAULT_SUCCESSOR_CLASSIFICATIONS = MappingProxyType({
+    ".agents/skills/camera-based-rgbww-optimizer/SKILL.md":
+        "bounded_validation_or_documentation",
+    "docs/README.md": "bounded_validation_or_documentation",
+    "docs/local-lab-connection-boundary.md":
+        "bounded_validation_or_documentation",
+    "src/camera_based_rgbww_optimizer/control/ray120c.py":
+        "human_directed_public_shared_protocol_default_boundary",
+    "tests/test_all_off.py": "bounded_validation_or_documentation",
+    "tests/test_project_context_docs.py": "bounded_validation_or_documentation",
+    "tests/test_ray120c.py": "bounded_validation_or_documentation",
+})
+TD_B_PUBLIC_DEFAULT_SUCCESSOR_SCOPES = MappingProxyType({
+    "bounded_validation_or_documentation": (
+        "Bounded tests, documentation, and project-skill coverage for the exact "
+        "public-default/private-override contract only"
+    ),
+    "human_directed_public_shared_protocol_default_boundary": (
+        "Human-directed public shared protocol default and optional private override "
+        "boundary; strict validation and nondisclosure preserved; no device, network, "
+        "payload, timeout, or cleanup widening"
+    ),
+})
 TD_B_CLEANUP_TEST_PROVENANCE_MANIFEST_PATH = Path(
     "/Volumes/4T/temp/rgbww-optimizer/p7-td-b-lineage-cleanup-test-provenance-c1/"
     "20260727T020000Z/cleanup-test-provenance-manifest.json"
@@ -955,15 +997,206 @@ def _validate_td_b_agents_policy_lineage(
         raise ValueError("TD-B AGENTS diff scope differs")
 
 
+def _td_b_checkpoint_contains(
+    checkpoint: str,
+    ancestor: str,
+    *,
+    project_root: str | Path = PROJECT_ROOT,
+) -> bool:
+    """Return whether a full checkpoint contains an exact lineage commit."""
+    return subprocess.run(
+        ["git", "merge-base", "--is-ancestor", ancestor, checkpoint],
+        cwd=Path(project_root).resolve(), capture_output=True,
+    ).returncode == 0
+
+
+def _validate_td_b_public_default_successor_lineage(
+    *,
+    new_checkpoint: str,
+    project_root: str | Path = PROJECT_ROOT,
+    manifest_path: str | Path = TD_B_PUBLIC_DEFAULT_SUCCESSOR_MANIFEST_PATH,
+    require_canonical_manifest_owner: bool = True,
+) -> Mapping[str, str]:
+    """Validate the exact public-default successor commit and current path owners."""
+    root = Path(project_root).resolve()
+    requested = Path(manifest_path)
+    if requested.is_symlink():
+        raise ValueError("TD-B public-default successor manifest cannot be a symlink")
+    path = requested.resolve()
+    if (
+        require_canonical_manifest_owner
+        and path != TD_B_PUBLIC_DEFAULT_SUCCESSOR_MANIFEST_PATH.resolve()
+    ):
+        raise ValueError("TD-B public-default successor manifest owner differs")
+    if not path.is_file():
+        raise ValueError("TD-B public-default successor manifest is missing")
+    payload = path.read_bytes()
+    if hashlib.sha256(payload).hexdigest() != TD_B_PUBLIC_DEFAULT_SUCCESSOR_MANIFEST_SHA256:
+        raise ValueError("TD-B public-default successor manifest hash differs")
+    manifest = json.loads(payload)
+    required = {
+        "schema", "status", "commit", "parent_commit", "human_provenance",
+        "entries", "extra_paths", "qualification_runs", "replay_runs",
+        "candidate_builds", "release_generation", "release_consumption",
+        "device_calls", "network_calls", "env_content_reads", "formal_calls",
+        "git_mutations",
+    }
+    if (
+        set(manifest) != required
+        or manifest.get("schema")
+        != "p7_td_b_ray_public_default_successor_lineage_c1"
+        or manifest.get("status") != "pass"
+        or manifest.get("commit") != TD_B_PUBLIC_DEFAULT_SUCCESSOR_COMMIT
+        or manifest.get("parent_commit") != TD_B_PUBLIC_DEFAULT_SUCCESSOR_PARENT
+        or manifest.get("human_provenance")
+        != TD_B_PUBLIC_DEFAULT_SUCCESSOR_PROVENANCE
+        or manifest.get("extra_paths") != []
+        or any(manifest.get(name) != 0 for name in (
+            "qualification_runs", "replay_runs", "candidate_builds",
+            "release_generation", "release_consumption", "device_calls",
+            "network_calls", "env_content_reads", "formal_calls", "git_mutations",
+        ))
+    ):
+        raise ValueError("TD-B public-default successor manifest contract differs")
+
+    entries = manifest.get("entries")
+    entry_fields = {
+        "path", "classification", "old_blob_state", "old_blob_sha256",
+        "current_blob_sha256", "diff_sha256", "scope", "human_decision",
+        "provenance", "rollback", "extra_paths",
+    }
+    if (
+        not isinstance(entries, list)
+        or len(entries) != len(TD_B_PUBLIC_DEFAULT_SUCCESSOR_CLASSIFICATIONS)
+    ):
+        raise ValueError("TD-B public-default successor manifest entry count differs")
+    by_path: dict[str, Mapping[str, Any]] = {}
+    ordered_paths: list[str] = []
+    for raw_entry in entries:
+        if not isinstance(raw_entry, Mapping) or set(raw_entry) != entry_fields:
+            raise ValueError("TD-B public-default successor manifest entry schema differs")
+        entry_path = str(raw_entry.get("path"))
+        if entry_path in by_path:
+            raise ValueError("TD-B public-default successor manifest contains duplicate paths")
+        ordered_paths.append(entry_path)
+        by_path[entry_path] = raw_entry
+    if (
+        set(by_path) != set(TD_B_PUBLIC_DEFAULT_SUCCESSOR_CLASSIFICATIONS)
+        or ordered_paths != sorted(ordered_paths)
+    ):
+        raise ValueError("TD-B public-default successor manifest exact path set differs")
+
+    try:
+        resolved_checkpoint = subprocess.run(
+            ["git", "rev-parse", new_checkpoint], cwd=root, check=True,
+            capture_output=True, text=True,
+        ).stdout.strip()
+    except subprocess.CalledProcessError as exc:
+        raise ValueError("TD-B public-default successor checkpoint is invalid") from exc
+    if (
+        resolved_checkpoint != new_checkpoint
+        or not _td_b_checkpoint_contains(
+            resolved_checkpoint,
+            TD_B_PUBLIC_DEFAULT_SUCCESSOR_COMMIT,
+            project_root=root,
+        )
+    ):
+        raise ValueError("TD-B public-default successor checkpoint ancestry differs")
+
+    for entry_path, classification in TD_B_PUBLIC_DEFAULT_SUCCESSOR_CLASSIFICATIONS.items():
+        entry = by_path[entry_path]
+        rollback = (
+            f"restore {entry_path} from parent {TD_B_PUBLIC_DEFAULT_SUCCESSOR_PARENT} "
+            "and remove only this exact successor manifest entry"
+        )
+        if (
+            entry.get("classification") != classification
+            or entry.get("old_blob_state") != "present"
+            or entry.get("scope") != TD_B_PUBLIC_DEFAULT_SUCCESSOR_SCOPES[classification]
+            or entry.get("human_decision")
+            != TD_B_PUBLIC_DEFAULT_SUCCESSOR_HUMAN_DECISION
+            or entry.get("provenance") != TD_B_PUBLIC_DEFAULT_SUCCESSOR_PROVENANCE
+            or entry.get("rollback") != rollback
+            or entry.get("extra_paths") != []
+            or not all(
+                isinstance(entry.get(name), str)
+                and len(str(entry[name])) == 64
+                and all(character in "0123456789abcdef" for character in str(entry[name]))
+                for name in ("old_blob_sha256", "current_blob_sha256", "diff_sha256")
+            )
+        ):
+            raise ValueError(
+                f"TD-B public-default successor contract differs: {entry_path}"
+            )
+        working = root / entry_path
+        if working.is_symlink() or not working.is_file():
+            raise ValueError(
+                f"TD-B public-default successor path owner differs: {entry_path}"
+            )
+        try:
+            old = subprocess.run(
+                ["git", "show", f"{TD_B_PUBLIC_DEFAULT_SUCCESSOR_PARENT}:{entry_path}"],
+                cwd=root, check=True, capture_output=True,
+            ).stdout
+            current = subprocess.run(
+                ["git", "show", f"{TD_B_PUBLIC_DEFAULT_SUCCESSOR_COMMIT}:{entry_path}"],
+                cwd=root, check=True, capture_output=True,
+            ).stdout
+            checkpoint = subprocess.run(
+                ["git", "show", f"{new_checkpoint}:{entry_path}"],
+                cwd=root, check=True, capture_output=True,
+            ).stdout
+            diff = subprocess.run(
+                ["git", "diff", "--binary", TD_B_PUBLIC_DEFAULT_SUCCESSOR_PARENT,
+                 TD_B_PUBLIC_DEFAULT_SUCCESSOR_COMMIT, "--", entry_path],
+                cwd=root, check=True, capture_output=True,
+            ).stdout
+        except subprocess.CalledProcessError as exc:
+            raise ValueError(
+                f"TD-B public-default successor Git owner differs: {entry_path}"
+            ) from exc
+        if (
+            hashlib.sha256(working.read_bytes()).hexdigest()
+            != entry.get("current_blob_sha256")
+            or hashlib.sha256(old).hexdigest() != entry.get("old_blob_sha256")
+            or hashlib.sha256(current).hexdigest()
+            != entry.get("current_blob_sha256")
+            or hashlib.sha256(checkpoint).hexdigest()
+            != entry.get("current_blob_sha256")
+            or hashlib.sha256(diff).hexdigest() != entry.get("diff_sha256")
+        ):
+            raise ValueError(
+                f"TD-B public-default successor hash or diff differs: {entry_path}"
+            )
+    return TD_B_PUBLIC_DEFAULT_SUCCESSOR_CLASSIFICATIONS
+
+
 def _validate_td_b_workflow_path_lineage(
     *,
     new_checkpoint: str,
     project_root: str | Path = PROJECT_ROOT,
     manifest_path: str | Path = TD_B_WORKFLOW_PATH_MANIFEST_PATH,
     require_canonical_manifest_owner: bool = True,
+    successor_manifest_path: str | Path = TD_B_PUBLIC_DEFAULT_SUCCESSOR_MANIFEST_PATH,
+    require_canonical_successor_owner: bool = True,
 ) -> Mapping[str, str]:
-    """Validate the exact Human-directed workflow commit path-by-path."""
+    """Validate old workflow history while delegating superseded current owners."""
     root = Path(project_root).resolve()
+    successor_classifications = (
+        _validate_td_b_public_default_successor_lineage(
+            new_checkpoint=new_checkpoint,
+            project_root=root,
+            manifest_path=successor_manifest_path,
+            require_canonical_manifest_owner=require_canonical_successor_owner,
+        )
+        if _td_b_checkpoint_contains(
+            new_checkpoint,
+            TD_B_PUBLIC_DEFAULT_SUCCESSOR_COMMIT,
+            project_root=root,
+        )
+        else {}
+    )
+    successor_paths = set(successor_classifications)
     requested = Path(manifest_path)
     if requested.is_symlink():
         raise ValueError("TD-B workflow path manifest cannot be a symlink")
@@ -1052,16 +1285,22 @@ def _validate_td_b_workflow_path_lineage(
         ):
             raise ValueError(f"TD-B workflow path manifest contract differs: {entry_path}")
         working = root / entry_path
-        if working.is_symlink() or not working.is_file():
+        if entry_path not in successor_paths and (
+            working.is_symlink() or not working.is_file()
+        ):
             raise ValueError(f"TD-B workflow path owner differs: {entry_path}")
         current = subprocess.run(
             ["git", "show", f"{TD_B_WORKFLOW_PATH_COMMIT}:{entry_path}"],
             cwd=root, check=True, capture_output=True,
         ).stdout
-        checkpoint = subprocess.run(
-            ["git", "show", f"{new_checkpoint}:{entry_path}"],
-            cwd=root, check=True, capture_output=True,
-        ).stdout
+        checkpoint = (
+            b""
+            if entry_path in successor_paths
+            else subprocess.run(
+                ["git", "show", f"{new_checkpoint}:{entry_path}"],
+                cwd=root, check=True, capture_output=True,
+            ).stdout
+        )
         old_probe = subprocess.run(
             ["git", "cat-file", "-e", f"{TD_B_WORKFLOW_PATH_PARENT}:{entry_path}"],
             cwd=root, capture_output=True,
@@ -1084,9 +1323,11 @@ def _validate_td_b_workflow_path_lineage(
         ).stdout
         expected_current = entry.get("current_blob_sha256")
         if (
-            hashlib.sha256(working.read_bytes()).hexdigest() != expected_current
+            (entry_path not in successor_paths and (
+                hashlib.sha256(working.read_bytes()).hexdigest() != expected_current
+                or hashlib.sha256(checkpoint).hexdigest() != expected_current
+            ))
             or hashlib.sha256(current).hexdigest() != expected_current
-            or hashlib.sha256(checkpoint).hexdigest() != expected_current
             or hashlib.sha256(old).hexdigest() != entry.get("old_blob_sha256")
             or hashlib.sha256(diff).hexdigest() != entry.get("diff_sha256")
         ):
@@ -1249,6 +1490,19 @@ def build_td_b_setup_release_lineage_candidate(
     prohibited: list[str] = []
     if not changed_paths:
         raise ValueError("TD-B lineage changed-path ledger must not be empty")
+    successor_paths = (
+        set(TD_B_PUBLIC_DEFAULT_SUCCESSOR_CLASSIFICATIONS).intersection(changed_paths)
+        if _td_b_checkpoint_contains(
+            new_checkpoint,
+            TD_B_PUBLIC_DEFAULT_SUCCESSOR_COMMIT,
+        )
+        else set()
+    )
+    successor_classifications = (
+        _validate_td_b_public_default_successor_lineage(new_checkpoint=new_checkpoint)
+        if successor_paths
+        else {}
+    )
     workflow_paths = set(TD_B_WORKFLOW_PATH_CLASSIFICATIONS).intersection(changed_paths)
     workflow_classifications = (
         _validate_td_b_workflow_path_lineage(new_checkpoint=new_checkpoint)
@@ -1273,6 +1527,8 @@ def build_td_b_setup_release_lineage_candidate(
                 new_checkpoint=new_checkpoint,
             )
             classification = "bounded_validation_or_documentation"
+        elif changed_path in successor_classifications:
+            classification = successor_classifications[changed_path]
         elif changed_path in workflow_classifications:
             classification = workflow_classifications[changed_path]
         elif changed_path in cleanup_test_classifications:
