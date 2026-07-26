@@ -2849,6 +2849,9 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
         for path, classification in subject.TD_B_WORKFLOW_PATH_CLASSIFICATIONS.items():
             self.assertNotIn(path, prohibited)
             self.assertEqual(classifications[path], classification)
+        for path, classification in subject.TD_B_CLEANUP_TEST_PROVENANCE_CLASSIFICATIONS.items():
+            self.assertNotIn(path, prohibited)
+            self.assertEqual(classifications[path], classification)
         self.assertEqual(candidate["new_checkpoint"], checkpoint)
         workflow_only = subject.build_td_b_setup_release_lineage_candidate(
             subject.TD_B_SETUP_RELEASE_PATH,
@@ -2858,6 +2861,60 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
         )
         self.assertEqual(workflow_only["status"], "eligible_waiting_for_planner")
         self.assertEqual(workflow_only["prohibited_paths"], [])
+
+    def test_cleanup_test_provenance_manifest_rejects_exact_drift(self):
+        checkpoint = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=Path(__file__).parents[1],
+            check=True, capture_output=True, text=True,
+        ).stdout.strip()
+        canonical = subject.TD_B_CLEANUP_TEST_PROVENANCE_MANIFEST_PATH.read_bytes()
+        with _w0_temporary_directory() as tempdir:
+            root = Path(tempdir)
+            copied = root / "cleanup-test-provenance-manifest.json"
+            copied.write_bytes(canonical)
+            with self.assertRaisesRegex(ValueError, "owner differs"):
+                subject._validate_td_b_cleanup_test_provenance(
+                    new_checkpoint=checkpoint,
+                    manifest_path=copied,
+                )
+            subject._validate_td_b_cleanup_test_provenance(
+                new_checkpoint=checkpoint,
+                manifest_path=copied,
+                require_canonical_manifest_owner=False,
+            )
+            for label, mutate in (
+                ("bytes", lambda value: value["entries"][0].__setitem__(
+                    "current_blob_sha256", "0" * 64,
+                )),
+                ("scope", lambda value: value["entries"][0].__setitem__(
+                    "scope", "broader",
+                )),
+                ("path", lambda value: value["entries"][0].__setitem__(
+                    "path", "tests/OTHER.py",
+                )),
+                ("extra", lambda value: value.__setitem__(
+                    "extra_paths", ["tests/OTHER.py"],
+                )),
+            ):
+                with self.subTest(label=label):
+                    value = json.loads(canonical)
+                    mutate(value)
+                    changed = root / f"{label}.json"
+                    changed.write_text(json.dumps(value), encoding="utf-8")
+                    with self.assertRaisesRegex(ValueError, "hash differs"):
+                        subject._validate_td_b_cleanup_test_provenance(
+                            new_checkpoint=checkpoint,
+                            manifest_path=changed,
+                            require_canonical_manifest_owner=False,
+                        )
+            symlink = root / "manifest-link.json"
+            symlink.symlink_to(copied)
+            with self.assertRaisesRegex(ValueError, "symlink"):
+                subject._validate_td_b_cleanup_test_provenance(
+                    new_checkpoint=checkpoint,
+                    manifest_path=symlink,
+                    require_canonical_manifest_owner=False,
+                )
 
     def test_workflow_path_manifest_rejects_owner_hash_and_provenance_drift(self):
         checkpoint = subprocess.run(

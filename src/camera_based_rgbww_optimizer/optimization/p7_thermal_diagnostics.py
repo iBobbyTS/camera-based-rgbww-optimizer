@@ -183,6 +183,33 @@ TD_B_WORKFLOW_PATH_SCOPES = MappingProxyType({
         "and off-command semantics remain equivalent"
     ),
 })
+TD_B_CLEANUP_TEST_PROVENANCE_MANIFEST_PATH = Path(
+    "/Volumes/4T/temp/rgbww-optimizer/p7-td-b-lineage-cleanup-test-provenance-c1/"
+    "20260727T020000Z/cleanup-test-provenance-manifest.json"
+)
+TD_B_CLEANUP_TEST_PROVENANCE_MANIFEST_SHA256 = (
+    "753f00f15a9c40dd0e3a0c34773f063a2cd44605d7c1f5507f375d87f56ea0d0"
+)
+TD_B_CLEANUP_TEST_PROVENANCE_OLD = "6c42c6eafd51b441ab911b13115c5bceae2a39d9"
+TD_B_CLEANUP_TEST_PROVENANCE_NEW = "0c878cbf3c7d94dadef2a64446c08ba01931a0d2"
+TD_B_CLEANUP_TEST_PROVENANCE_CLASSIFICATIONS = MappingProxyType({
+    "tests/test_measure_chart_response_basis.py":
+        "bounded_validation_or_documentation",
+    "tests/test_measure_raw_shutter_response.py":
+        "bounded_validation_or_documentation",
+})
+TD_B_CLEANUP_TEST_PROVENANCE_SCOPES = MappingProxyType({
+    "tests/test_measure_chart_response_basis.py": (
+        "test-owned fake AMARAN_OPENAPI_SECRET injection around one cleanup execution test"
+    ),
+    "tests/test_measure_raw_shutter_response.py": (
+        "test-owned fake AMARAN_OPENAPI_SECRET injection around two cleanup execution tests"
+    ),
+})
+TD_B_CLEANUP_TEST_PROVENANCE_HUMAN_INSTRUCTION = (
+    "use a test-owned valid fake Ray credential only around cleanup execution tests "
+    "while preserving production credential, payload, cleanup, and .env behavior"
+)
 TD_B_LINEAGE_ALLOWED_PRODUCTION_PATHS = frozenset({
     "src/camera_based_rgbww_optimizer/optimization/hsi_objective.py",
     "src/camera_based_rgbww_optimizer/optimization/measure_raw_observer_validation.py",
@@ -1067,6 +1094,132 @@ def _validate_td_b_workflow_path_lineage(
     return TD_B_WORKFLOW_PATH_CLASSIFICATIONS
 
 
+def _validate_td_b_cleanup_test_provenance(
+    *,
+    new_checkpoint: str,
+    project_root: str | Path = PROJECT_ROOT,
+    manifest_path: str | Path = TD_B_CLEANUP_TEST_PROVENANCE_MANIFEST_PATH,
+    require_canonical_manifest_owner: bool = True,
+) -> Mapping[str, str]:
+    """Validate the exact cleanup-test correction without a tests allowlist."""
+    root = Path(project_root).resolve()
+    requested = Path(manifest_path)
+    if requested.is_symlink():
+        raise ValueError("TD-B cleanup-test provenance manifest cannot be a symlink")
+    path = requested.resolve()
+    if (
+        require_canonical_manifest_owner
+        and path != TD_B_CLEANUP_TEST_PROVENANCE_MANIFEST_PATH.resolve()
+    ):
+        raise ValueError("TD-B cleanup-test provenance manifest owner differs")
+    if not path.is_file():
+        raise ValueError("TD-B cleanup-test provenance manifest is missing")
+    payload = path.read_bytes()
+    if hashlib.sha256(payload).hexdigest() != TD_B_CLEANUP_TEST_PROVENANCE_MANIFEST_SHA256:
+        raise ValueError("TD-B cleanup-test provenance manifest hash differs")
+    manifest = json.loads(payload)
+    required = {
+        "schema", "status", "old_checkpoint", "new_checkpoint",
+        "human_provenance", "entries", "extra_paths", "qualification_runs",
+        "replay_runs", "candidate_builds", "release_generation", "device_calls",
+        "network_calls", "env_content_reads", "formal_calls", "git_mutations",
+    }
+    if (
+        set(manifest) != required
+        or manifest.get("schema") != "p7_td_b_lineage_cleanup_test_provenance_c1"
+        or manifest.get("status") != "pass"
+        or manifest.get("old_checkpoint") != TD_B_CLEANUP_TEST_PROVENANCE_OLD
+        or manifest.get("new_checkpoint") != TD_B_CLEANUP_TEST_PROVENANCE_NEW
+        or manifest.get("human_provenance")
+        != (
+            "Human instruction recorded in task history; exact commit subject: "
+            "fix(p7): bind workflow lineage paths exactly"
+        )
+        or manifest.get("extra_paths") != []
+        or any(manifest.get(name) != 0 for name in (
+            "qualification_runs", "replay_runs", "candidate_builds",
+            "release_generation", "device_calls", "network_calls",
+            "env_content_reads", "formal_calls", "git_mutations",
+        ))
+    ):
+        raise ValueError("TD-B cleanup-test provenance manifest contract differs")
+    entries = manifest.get("entries")
+    entry_fields = {
+        "path", "classification", "old_checkpoint", "new_checkpoint",
+        "old_blob_sha256", "current_blob_sha256", "diff_sha256", "scope",
+        "human_instruction", "provenance", "rollback", "extra_paths",
+    }
+    if not isinstance(entries, list) or len(entries) != 2:
+        raise ValueError("TD-B cleanup-test provenance manifest entry count differs")
+    by_path: dict[str, Mapping[str, Any]] = {}
+    for raw_entry in entries:
+        if not isinstance(raw_entry, Mapping) or set(raw_entry) != entry_fields:
+            raise ValueError("TD-B cleanup-test provenance manifest entry schema differs")
+        entry_path = str(raw_entry.get("path"))
+        if entry_path in by_path:
+            raise ValueError("TD-B cleanup-test provenance manifest contains duplicate paths")
+        by_path[entry_path] = raw_entry
+    if set(by_path) != set(TD_B_CLEANUP_TEST_PROVENANCE_CLASSIFICATIONS):
+        raise ValueError("TD-B cleanup-test provenance exact path set differs")
+
+    for entry_path, classification in TD_B_CLEANUP_TEST_PROVENANCE_CLASSIFICATIONS.items():
+        entry = by_path[entry_path]
+        if (
+            entry.get("classification") != classification
+            or entry.get("old_checkpoint") != TD_B_CLEANUP_TEST_PROVENANCE_OLD
+            or entry.get("new_checkpoint") != TD_B_CLEANUP_TEST_PROVENANCE_NEW
+            or entry.get("scope") != TD_B_CLEANUP_TEST_PROVENANCE_SCOPES[entry_path]
+            or entry.get("human_instruction")
+            != TD_B_CLEANUP_TEST_PROVENANCE_HUMAN_INSTRUCTION
+            or entry.get("provenance")
+            != (
+                "Human-directed cleanup-test correction implemented by exact commit "
+                f"{TD_B_CLEANUP_TEST_PROVENANCE_NEW}"
+            )
+            or entry.get("rollback")
+            != (
+                f"restore {entry_path} from checkpoint "
+                f"{TD_B_CLEANUP_TEST_PROVENANCE_OLD} and remove only this exact manifest entry"
+            )
+            or entry.get("extra_paths") != []
+            or not all(
+                isinstance(entry.get(name), str) and len(str(entry[name])) == 64
+                for name in ("old_blob_sha256", "current_blob_sha256", "diff_sha256")
+            )
+        ):
+            raise ValueError(f"TD-B cleanup-test provenance contract differs: {entry_path}")
+        working = root / entry_path
+        if working.is_symlink() or not working.is_file():
+            raise ValueError(f"TD-B cleanup-test provenance owner differs: {entry_path}")
+        old = subprocess.run(
+            ["git", "show", f"{TD_B_CLEANUP_TEST_PROVENANCE_OLD}:{entry_path}"],
+            cwd=root, check=True, capture_output=True,
+        ).stdout
+        current = subprocess.run(
+            ["git", "show", f"{TD_B_CLEANUP_TEST_PROVENANCE_NEW}:{entry_path}"],
+            cwd=root, check=True, capture_output=True,
+        ).stdout
+        checkpoint = subprocess.run(
+            ["git", "show", f"{new_checkpoint}:{entry_path}"],
+            cwd=root, check=True, capture_output=True,
+        ).stdout
+        diff = subprocess.run(
+            ["git", "diff", TD_B_CLEANUP_TEST_PROVENANCE_OLD,
+             TD_B_CLEANUP_TEST_PROVENANCE_NEW, "--", entry_path],
+            cwd=root, check=True, capture_output=True,
+        ).stdout
+        if (
+            hashlib.sha256(working.read_bytes()).hexdigest()
+            != entry.get("current_blob_sha256")
+            or hashlib.sha256(old).hexdigest() != entry.get("old_blob_sha256")
+            or hashlib.sha256(current).hexdigest() != entry.get("current_blob_sha256")
+            or hashlib.sha256(checkpoint).hexdigest() != entry.get("current_blob_sha256")
+            or hashlib.sha256(diff).hexdigest() != entry.get("diff_sha256")
+        ):
+            raise ValueError(f"TD-B cleanup-test provenance hash or diff differs: {entry_path}")
+    return TD_B_CLEANUP_TEST_PROVENANCE_CLASSIFICATIONS
+
+
 def build_td_b_setup_release_lineage_candidate(
     release_path: str | Path,
     *,
@@ -1102,6 +1255,14 @@ def build_td_b_setup_release_lineage_candidate(
         if workflow_paths
         else {}
     )
+    cleanup_test_paths = set(TD_B_CLEANUP_TEST_PROVENANCE_CLASSIFICATIONS).intersection(
+        changed_paths
+    )
+    cleanup_test_classifications = (
+        _validate_td_b_cleanup_test_provenance(new_checkpoint=new_checkpoint)
+        if cleanup_test_paths
+        else {}
+    )
     for raw_path in changed_paths:
         changed_path = str(raw_path).strip()
         if not changed_path or changed_path.startswith("/") or ".." in Path(changed_path).parts:
@@ -1114,6 +1275,8 @@ def build_td_b_setup_release_lineage_candidate(
             classification = "bounded_validation_or_documentation"
         elif changed_path in workflow_classifications:
             classification = workflow_classifications[changed_path]
+        elif changed_path in cleanup_test_classifications:
+            classification = cleanup_test_classifications[changed_path]
         elif changed_path in TD_B_LINEAGE_ALLOWED_PRODUCTION_PATHS:
             classification = "ambient_and_physical_ledger_contract"
         elif changed_path in TD_B_LINEAGE_ALLOWED_VALIDATION_PATHS:
