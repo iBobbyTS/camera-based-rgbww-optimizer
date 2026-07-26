@@ -112,6 +112,30 @@ TD_B_F0A_LINEAGE_CANDIDATE_PATH = Path(
 TD_B_F0A_LINEAGE_CANDIDATE_SHA256 = (
     "6d74f2b0fa563147bad00d8c9a89985d3b5de97034288cdd242f10b1d52dc2f1"
 )
+TD_B_AGENTS_POLICY_FREEZE_PATH = Path(
+    "/Volumes/4T/temp/rgbww-optimizer/p7-td-b-lineage-policy-freeze-c1/"
+    "20260726T230000Z/policy-freeze.json"
+)
+TD_B_AGENTS_POLICY_FREEZE_SHA256 = (
+    "833b4229986dbe1e551cc4da36d2eeaeb7b55c6ae0bab34e887e7ee63cfe746b"
+)
+TD_B_AGENTS_CURRENT_SHA256 = (
+    "a035e6955ea113100031bf411f30abad3b84a9dd260fde848f1b1cfbd194c8a5"
+)
+TD_B_AGENTS_PREVIOUS_SHA256 = (
+    "f4a4a9edffb563c0ea7709382b53eed919c4a5528c69ffa9878a4c32348ee99b"
+)
+TD_B_AGENTS_DIFF_SHA256 = (
+    "96785b5569cf420440666912944a471baad1d2d0a39743990eee5714c0f60918"
+)
+TD_B_AGENTS_POLICY_SCOPE = (
+    "workflow roles plus Human authorization boundary; release/off/on exceptions; "
+    "no scientific or device-contract changes"
+)
+TD_B_AGENTS_HUMAN_DECISION = (
+    "explicit instruction to clarify only remote firmware and comparable dangerous "
+    "operations require Human authorization; release and light on/off do not"
+)
 TD_B_LINEAGE_ALLOWED_PRODUCTION_PATHS = frozenset({
     "src/camera_based_rgbww_optimizer/optimization/hsi_objective.py",
     "src/camera_based_rgbww_optimizer/optimization/measure_raw_observer_validation.py",
@@ -778,6 +802,85 @@ def changed_paths_between_checkpoints(
     return paths
 
 
+def _validate_td_b_agents_policy_lineage(
+    *,
+    old_checkpoint: str,
+    new_checkpoint: str,
+    project_root: str | Path = PROJECT_ROOT,
+    policy_freeze_path: str | Path = TD_B_AGENTS_POLICY_FREEZE_PATH,
+    require_canonical_policy_owner: bool = True,
+) -> None:
+    """Validate the one Human-policy AGENTS.md lineage exception fail-closed."""
+    root = Path(project_root).resolve()
+    policy_requested = Path(policy_freeze_path)
+    if policy_requested.is_symlink():
+        raise ValueError("TD-B AGENTS policy freeze cannot be a symlink")
+    policy_path = policy_requested.resolve()
+    if require_canonical_policy_owner and policy_path != TD_B_AGENTS_POLICY_FREEZE_PATH.resolve():
+        raise ValueError("TD-B AGENTS policy freeze owner differs")
+    if not policy_path.is_file():
+        raise ValueError("TD-B AGENTS policy freeze is missing")
+    policy_bytes = policy_path.read_bytes()
+    if hashlib.sha256(policy_bytes).hexdigest() != TD_B_AGENTS_POLICY_FREEZE_SHA256:
+        raise ValueError("TD-B AGENTS policy freeze hash differs")
+    policy = json.loads(policy_bytes)
+    required = {
+        "schema", "status", "path", "classification", "current_blob_sha256",
+        "expected_current", "previous_blob_sha256", "scope", "human_decision",
+        "rollback", "provenance", "diff_sha256", "extra_paths",
+        "qualification_runs", "release_generation", "replay_runs",
+        "candidate_builds", "device_calls", "network_calls", "formal_calls",
+        "git_mutations",
+    }
+    if (
+        set(policy) != required
+        or policy.get("schema") != "p7_td_b_lineage_policy_freeze_c1"
+        or policy.get("status") != "pass"
+        or policy.get("path") != "AGENTS.md"
+        or policy.get("classification") != "bounded_validation_or_documentation"
+        or policy.get("current_blob_sha256") != TD_B_AGENTS_CURRENT_SHA256
+        or policy.get("expected_current") != TD_B_AGENTS_CURRENT_SHA256
+        or policy.get("previous_blob_sha256") != TD_B_AGENTS_PREVIOUS_SHA256
+        or policy.get("diff_sha256") != TD_B_AGENTS_DIFF_SHA256
+        or policy.get("scope") != TD_B_AGENTS_POLICY_SCOPE
+        or policy.get("human_decision") != TD_B_AGENTS_HUMAN_DECISION
+        or policy.get("extra_paths") != []
+        or not isinstance(policy.get("rollback"), str)
+        or not policy["rollback"].startswith("restore previous AGENTS.md blob hash")
+        or not isinstance(policy.get("provenance"), str)
+        or "Human instruction recorded in task history" not in policy["provenance"]
+        or any(policy.get(name) != 0 for name in (
+            "qualification_runs", "release_generation", "replay_runs",
+            "candidate_builds", "device_calls", "network_calls", "formal_calls",
+            "git_mutations",
+        ))
+    ):
+        raise ValueError("TD-B AGENTS policy freeze contract differs")
+    agents_path = root / "AGENTS.md"
+    if agents_path.is_symlink() or not agents_path.is_file():
+        raise ValueError("TD-B AGENTS policy owner differs")
+    if hashlib.sha256(agents_path.read_bytes()).hexdigest() != TD_B_AGENTS_CURRENT_SHA256:
+        raise ValueError("TD-B AGENTS current bytes differ")
+    previous = subprocess.run(
+        ["git", "show", f"{old_checkpoint}:AGENTS.md"], cwd=root, check=True,
+        capture_output=True,
+    ).stdout
+    current = subprocess.run(
+        ["git", "show", f"{new_checkpoint}:AGENTS.md"], cwd=root, check=True,
+        capture_output=True,
+    ).stdout
+    diff = subprocess.run(
+        ["git", "diff", old_checkpoint, new_checkpoint, "--", "AGENTS.md"],
+        cwd=root, check=True, capture_output=True,
+    ).stdout
+    if hashlib.sha256(previous).hexdigest() != TD_B_AGENTS_PREVIOUS_SHA256:
+        raise ValueError("TD-B AGENTS previous bytes differ")
+    if hashlib.sha256(current).hexdigest() != TD_B_AGENTS_CURRENT_SHA256:
+        raise ValueError("TD-B AGENTS checkpoint bytes differ")
+    if hashlib.sha256(diff).hexdigest() != TD_B_AGENTS_DIFF_SHA256:
+        raise ValueError("TD-B AGENTS diff scope differs")
+
+
 def build_td_b_setup_release_lineage_candidate(
     release_path: str | Path,
     *,
@@ -811,7 +914,13 @@ def build_td_b_setup_release_lineage_candidate(
         changed_path = str(raw_path).strip()
         if not changed_path or changed_path.startswith("/") or ".." in Path(changed_path).parts:
             raise ValueError("TD-B lineage changed path is not repository-relative")
-        if changed_path in TD_B_LINEAGE_ALLOWED_PRODUCTION_PATHS:
+        if changed_path == "AGENTS.md":
+            _validate_td_b_agents_policy_lineage(
+                old_checkpoint=old_checkpoint,
+                new_checkpoint=new_checkpoint,
+            )
+            classification = "bounded_validation_or_documentation"
+        elif changed_path in TD_B_LINEAGE_ALLOWED_PRODUCTION_PATHS:
             classification = "ambient_and_physical_ledger_contract"
         elif changed_path in TD_B_LINEAGE_ALLOWED_VALIDATION_PATHS:
             classification = "bounded_validation_or_documentation"

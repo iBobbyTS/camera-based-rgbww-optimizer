@@ -2812,7 +2812,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                     ],
                 )
 
-    def test_current_head_lineage_baseline_rejects_workflow_paths(self):
+    def test_current_head_lineage_accepts_exact_human_policy_freeze(self):
         checkpoint = subprocess.run(
             ["git", "rev-parse", "HEAD"],
             cwd=Path(__file__).parents[1],
@@ -2837,14 +2837,84 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
             row["path"]: row["classification"]
             for row in candidate["changed_paths"]
         }
-        self.assertIn("AGENTS.md", prohibited)
-        self.assertEqual(classifications["AGENTS.md"], "prohibited_or_unreviewed")
+        self.assertNotIn("AGENTS.md", prohibited)
+        self.assertEqual(
+            classifications["AGENTS.md"],
+            "bounded_validation_or_documentation",
+        )
         self.assertEqual(
             classifications[".agent-work/FULL_PLAN_REFERENCE.md"],
             "planner_or_execution_audit_only",
         )
         self.assertNotIn(".agent-work/FULL_PLAN_REFERENCE.md", prohibited)
         self.assertEqual(candidate["new_checkpoint"], checkpoint)
+
+    def test_agents_policy_lineage_rejects_wrong_bytes_owner_and_provenance(self):
+        checkpoint = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=Path(__file__).parents[1],
+            check=True, capture_output=True, text=True,
+        ).stdout.strip()
+        canonical = subject.TD_B_AGENTS_POLICY_FREEZE_PATH.read_bytes()
+        with _w0_temporary_directory() as tempdir:
+            root = Path(tempdir)
+            copied = root / "policy-freeze.json"
+            copied.write_bytes(canonical)
+            with self.assertRaisesRegex(ValueError, "owner differs"):
+                subject._validate_td_b_agents_policy_lineage(
+                    old_checkpoint=subject.TD_B_SETUP_CHECKPOINT,
+                    new_checkpoint=checkpoint,
+                    policy_freeze_path=copied,
+                )
+
+            subject._validate_td_b_agents_policy_lineage(
+                old_checkpoint=subject.TD_B_SETUP_CHECKPOINT,
+                new_checkpoint=checkpoint,
+                policy_freeze_path=copied,
+                require_canonical_policy_owner=False,
+            )
+            for label, mutate in (
+                ("wrong-hash", lambda value: value.__setitem__("current_blob_sha256", "0" * 64)),
+                ("extra-path", lambda value: value.__setitem__("extra_paths", ["OTHER.md"])),
+                ("missing-provenance", lambda value: value.pop("provenance")),
+                ("wrong-scope", lambda value: value.__setitem__("scope", "broader")),
+            ):
+                with self.subTest(label=label):
+                    value = json.loads(canonical)
+                    mutate(value)
+                    changed = root / f"{label}.json"
+                    changed.write_text(json.dumps(value), encoding="utf-8")
+                    with self.assertRaisesRegex(ValueError, "hash differs"):
+                        subject._validate_td_b_agents_policy_lineage(
+                            old_checkpoint=subject.TD_B_SETUP_CHECKPOINT,
+                            new_checkpoint=checkpoint,
+                            policy_freeze_path=changed,
+                            require_canonical_policy_owner=False,
+                        )
+            missing = root / "missing.json"
+            with self.assertRaisesRegex(ValueError, "missing"):
+                subject._validate_td_b_agents_policy_lineage(
+                    old_checkpoint=subject.TD_B_SETUP_CHECKPOINT,
+                    new_checkpoint=checkpoint,
+                    policy_freeze_path=missing,
+                    require_canonical_policy_owner=False,
+                )
+            symlink = root / "policy-link.json"
+            symlink.symlink_to(copied)
+            with self.assertRaisesRegex(ValueError, "symlink"):
+                subject._validate_td_b_agents_policy_lineage(
+                    old_checkpoint=subject.TD_B_SETUP_CHECKPOINT,
+                    new_checkpoint=checkpoint,
+                    policy_freeze_path=symlink,
+                    require_canonical_policy_owner=False,
+                )
+
+        candidate = subject.build_td_b_setup_release_lineage_candidate(
+            subject.TD_B_SETUP_RELEASE_PATH,
+            old_checkpoint=subject.TD_B_SETUP_CHECKPOINT,
+            new_checkpoint=checkpoint,
+            changed_paths=["ANOTHER_POLICY.md"],
+        )
+        self.assertEqual(candidate["prohibited_paths"], ["ANOTHER_POLICY.md"])
 
     def test_lineage_qualification_cli_never_constructs_backend(self):
         backend_factory = mock.Mock()
