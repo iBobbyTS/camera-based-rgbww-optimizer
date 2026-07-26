@@ -1,4 +1,5 @@
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -8,6 +9,9 @@ from camera_based_rgbww_optimizer.optimization import measure_chart_response_bas
 
 
 ROOT = Path(__file__).resolve().parents[1]
+FAKE_RAY_ENV = {
+    "AMARAN_OPENAPI_SECRET": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8="
+}
 
 
 class MeasureChartResponseBasisTests(unittest.TestCase):
@@ -113,7 +117,7 @@ class MeasureChartResponseBasisTests(unittest.TestCase):
             ray_calls.append((args, kwargs))
             return {}
 
-        with tempfile.TemporaryDirectory() as tempdir:
+        with mock.patch.dict(os.environ, FAKE_RAY_ENV, clear=False), tempfile.TemporaryDirectory() as tempdir:
             run = measure_chart_response_basis.raw_validation.execute_raw_observer_validation_plan(
                 plan,
                 run_dir=Path(tempdir) / "run",

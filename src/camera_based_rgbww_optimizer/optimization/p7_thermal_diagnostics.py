@@ -136,6 +136,53 @@ TD_B_AGENTS_HUMAN_DECISION = (
     "explicit instruction to clarify only remote firmware and comparable dangerous "
     "operations require Human authorization; release and light on/off do not"
 )
+TD_B_WORKFLOW_PATH_MANIFEST_PATH = Path(
+    "/Volumes/4T/temp/rgbww-optimizer/p7-td-b-lineage-workflow-path-c1/"
+    "20260727T010000Z/workflow-path-manifest.json"
+)
+TD_B_WORKFLOW_PATH_MANIFEST_SHA256 = (
+    "8f9189edfb1520be2e08913678d7e046b93cb0a3c42a0034331e16b39d982e94"
+)
+TD_B_WORKFLOW_PATH_COMMIT = "3f8fb5c2f046ad5c75eab200005331acd5f2cc27"
+TD_B_WORKFLOW_PATH_PARENT = "8cd04d847d42ff5c7bcf7501f46be97cbbef429d"
+TD_B_WORKFLOW_PATH_CLASSIFICATIONS = MappingProxyType({
+    "docs/engineering/p7-td-b-contract-history.md":
+        "bounded_validation_or_documentation",
+    "docs/local-lab-connection-boundary.md":
+        "bounded_validation_or_documentation",
+    "src/camera_based_rgbww_optimizer/control/camera_remote.py":
+        "human_directed_local_lab_cli_boundary",
+    "src/camera_based_rgbww_optimizer/control/esphome.py":
+        "human_directed_local_lab_cli_boundary",
+    "src/camera_based_rgbww_optimizer/control/local_lab_context.py":
+        "human_directed_local_lab_cli_boundary",
+    "src/camera_based_rgbww_optimizer/control/ray120c.py":
+        "human_directed_credential_boundary",
+    "tests/test_all_off.py": "bounded_validation_or_documentation",
+    "tests/test_local_lab_context.py": "bounded_validation_or_documentation",
+    "tests/test_project_context_docs.py": "bounded_validation_or_documentation",
+    "tests/test_ray120c.py": "bounded_validation_or_documentation",
+})
+TD_B_WORKFLOW_PATH_HUMAN_INSTRUCTION = (
+    "clarify the user-owned local calibration context and remove the built-in Ray "
+    "credential default to reduce cybersecurity-risk false positives without weakening "
+    "local-lab safety"
+)
+TD_B_WORKFLOW_PATH_SCOPES = MappingProxyType({
+    "bounded_validation_or_documentation": (
+        "Human-directed local-lab documentation and exact regression coverage only; "
+        "no scientific, device, payload, host, default, timeout, or cleanup behavior changes"
+    ),
+    "human_directed_local_lab_cli_boundary": (
+        "exact CLI description, user-owned local-lab context, and argv testability changes "
+        "only; no capture, parser, payload, host, default, timeout, or cleanup semantic changes"
+    ),
+    "human_directed_credential_boundary": (
+        "remove built-in credential, require strict secret decode and explicit environment "
+        "input only; with a valid key Ray mode, command payload, node/client, timeout, cleanup, "
+        "and off-command semantics remain equivalent"
+    ),
+})
 TD_B_LINEAGE_ALLOWED_PRODUCTION_PATHS = frozenset({
     "src/camera_based_rgbww_optimizer/optimization/hsi_objective.py",
     "src/camera_based_rgbww_optimizer/optimization/measure_raw_observer_validation.py",
@@ -881,6 +928,145 @@ def _validate_td_b_agents_policy_lineage(
         raise ValueError("TD-B AGENTS diff scope differs")
 
 
+def _validate_td_b_workflow_path_lineage(
+    *,
+    new_checkpoint: str,
+    project_root: str | Path = PROJECT_ROOT,
+    manifest_path: str | Path = TD_B_WORKFLOW_PATH_MANIFEST_PATH,
+    require_canonical_manifest_owner: bool = True,
+) -> Mapping[str, str]:
+    """Validate the exact Human-directed workflow commit path-by-path."""
+    root = Path(project_root).resolve()
+    requested = Path(manifest_path)
+    if requested.is_symlink():
+        raise ValueError("TD-B workflow path manifest cannot be a symlink")
+    path = requested.resolve()
+    if (
+        require_canonical_manifest_owner
+        and path != TD_B_WORKFLOW_PATH_MANIFEST_PATH.resolve()
+    ):
+        raise ValueError("TD-B workflow path manifest owner differs")
+    if not path.is_file():
+        raise ValueError("TD-B workflow path manifest is missing")
+    payload = path.read_bytes()
+    if hashlib.sha256(payload).hexdigest() != TD_B_WORKFLOW_PATH_MANIFEST_SHA256:
+        raise ValueError("TD-B workflow path manifest hash differs")
+    manifest = json.loads(payload)
+    required = {
+        "schema", "status", "commit", "parent_commit", "human_provenance",
+        "entries", "extra_paths", "qualification_runs", "replay_runs",
+        "candidate_builds", "release_generation", "device_calls", "network_calls",
+        "env_content_reads", "formal_calls", "git_mutations",
+    }
+    if (
+        set(manifest) != required
+        or manifest.get("schema") != "p7_td_b_lineage_workflow_path_manifest_c1"
+        or manifest.get("status") != "pass"
+        or manifest.get("commit") != TD_B_WORKFLOW_PATH_COMMIT
+        or manifest.get("parent_commit") != TD_B_WORKFLOW_PATH_PARENT
+        or manifest.get("human_provenance")
+        != (
+            "Human instruction recorded in task history; exact commit subject: "
+            "fix(workflow): clarify local calibration context"
+        )
+        or manifest.get("extra_paths") != []
+        or any(manifest.get(name) != 0 for name in (
+            "qualification_runs", "replay_runs", "candidate_builds",
+            "release_generation", "device_calls", "network_calls",
+            "env_content_reads", "formal_calls", "git_mutations",
+        ))
+    ):
+        raise ValueError("TD-B workflow path manifest contract differs")
+    entries = manifest.get("entries")
+    if not isinstance(entries, list) or len(entries) != len(TD_B_WORKFLOW_PATH_CLASSIFICATIONS):
+        raise ValueError("TD-B workflow path manifest entry count differs")
+    by_path: dict[str, Mapping[str, Any]] = {}
+    entry_fields = {
+        "path", "classification", "old_blob_state", "old_blob_sha256",
+        "current_blob_sha256", "diff_sha256", "scope", "human_instruction",
+        "provenance", "rollback", "extra_paths",
+    }
+    for raw_entry in entries:
+        if not isinstance(raw_entry, Mapping) or set(raw_entry) != entry_fields:
+            raise ValueError("TD-B workflow path manifest entry schema differs")
+        entry_path = str(raw_entry.get("path"))
+        if entry_path in by_path:
+            raise ValueError("TD-B workflow path manifest contains duplicate paths")
+        by_path[entry_path] = raw_entry
+    if set(by_path) != set(TD_B_WORKFLOW_PATH_CLASSIFICATIONS):
+        raise ValueError("TD-B workflow path manifest exact path set differs")
+
+    empty_sha = hashlib.sha256(b"").hexdigest()
+    for entry_path, classification in TD_B_WORKFLOW_PATH_CLASSIFICATIONS.items():
+        entry = by_path[entry_path]
+        old_state = entry.get("old_blob_state")
+        rollback = (
+            f"restore {entry_path} from parent {TD_B_WORKFLOW_PATH_PARENT} and remove "
+            "only this exact manifest entry"
+            if old_state == "present"
+            else f"remove commit-created {entry_path} and remove only this exact manifest entry"
+        )
+        if (
+            entry.get("classification") != classification
+            or old_state not in {"present", "absent"}
+            or entry.get("scope") != TD_B_WORKFLOW_PATH_SCOPES[classification]
+            or entry.get("human_instruction") != TD_B_WORKFLOW_PATH_HUMAN_INSTRUCTION
+            or entry.get("provenance")
+            != (
+                "Human instruction recorded in task history and implemented by exact commit "
+                f"{TD_B_WORKFLOW_PATH_COMMIT}"
+            )
+            or entry.get("rollback") != rollback
+            or entry.get("extra_paths") != []
+            or not all(
+                isinstance(entry.get(name), str) and len(str(entry[name])) == 64
+                for name in ("old_blob_sha256", "current_blob_sha256", "diff_sha256")
+            )
+        ):
+            raise ValueError(f"TD-B workflow path manifest contract differs: {entry_path}")
+        working = root / entry_path
+        if working.is_symlink() or not working.is_file():
+            raise ValueError(f"TD-B workflow path owner differs: {entry_path}")
+        current = subprocess.run(
+            ["git", "show", f"{TD_B_WORKFLOW_PATH_COMMIT}:{entry_path}"],
+            cwd=root, check=True, capture_output=True,
+        ).stdout
+        checkpoint = subprocess.run(
+            ["git", "show", f"{new_checkpoint}:{entry_path}"],
+            cwd=root, check=True, capture_output=True,
+        ).stdout
+        old_probe = subprocess.run(
+            ["git", "cat-file", "-e", f"{TD_B_WORKFLOW_PATH_PARENT}:{entry_path}"],
+            cwd=root, capture_output=True,
+        )
+        if old_state == "present":
+            if old_probe.returncode != 0:
+                raise ValueError(f"TD-B workflow path old owner differs: {entry_path}")
+            old = subprocess.run(
+                ["git", "show", f"{TD_B_WORKFLOW_PATH_PARENT}:{entry_path}"],
+                cwd=root, check=True, capture_output=True,
+            ).stdout
+        else:
+            if old_probe.returncode == 0 or entry.get("old_blob_sha256") != empty_sha:
+                raise ValueError(f"TD-B workflow path old absence differs: {entry_path}")
+            old = b""
+        diff = subprocess.run(
+            ["git", "diff", TD_B_WORKFLOW_PATH_PARENT, TD_B_WORKFLOW_PATH_COMMIT,
+             "--", entry_path],
+            cwd=root, check=True, capture_output=True,
+        ).stdout
+        expected_current = entry.get("current_blob_sha256")
+        if (
+            hashlib.sha256(working.read_bytes()).hexdigest() != expected_current
+            or hashlib.sha256(current).hexdigest() != expected_current
+            or hashlib.sha256(checkpoint).hexdigest() != expected_current
+            or hashlib.sha256(old).hexdigest() != entry.get("old_blob_sha256")
+            or hashlib.sha256(diff).hexdigest() != entry.get("diff_sha256")
+        ):
+            raise ValueError(f"TD-B workflow path hash or diff differs: {entry_path}")
+    return TD_B_WORKFLOW_PATH_CLASSIFICATIONS
+
+
 def build_td_b_setup_release_lineage_candidate(
     release_path: str | Path,
     *,
@@ -910,6 +1096,12 @@ def build_td_b_setup_release_lineage_candidate(
     prohibited: list[str] = []
     if not changed_paths:
         raise ValueError("TD-B lineage changed-path ledger must not be empty")
+    workflow_paths = set(TD_B_WORKFLOW_PATH_CLASSIFICATIONS).intersection(changed_paths)
+    workflow_classifications = (
+        _validate_td_b_workflow_path_lineage(new_checkpoint=new_checkpoint)
+        if workflow_paths
+        else {}
+    )
     for raw_path in changed_paths:
         changed_path = str(raw_path).strip()
         if not changed_path or changed_path.startswith("/") or ".." in Path(changed_path).parts:
@@ -920,6 +1112,8 @@ def build_td_b_setup_release_lineage_candidate(
                 new_checkpoint=new_checkpoint,
             )
             classification = "bounded_validation_or_documentation"
+        elif changed_path in workflow_classifications:
+            classification = workflow_classifications[changed_path]
         elif changed_path in TD_B_LINEAGE_ALLOWED_PRODUCTION_PATHS:
             classification = "ambient_and_physical_ledger_contract"
         elif changed_path in TD_B_LINEAGE_ALLOWED_VALIDATION_PATHS:

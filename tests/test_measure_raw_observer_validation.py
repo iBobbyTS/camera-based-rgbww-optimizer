@@ -1,6 +1,7 @@
 import contextlib
 import io
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -13,6 +14,9 @@ from camera_based_rgbww_optimizer.optimization import measure_raw_observer_valid
 F0A_TEMP_ROOT = Path(
     "/Volumes/4T/temp/rgbww-optimizer/p7-td-b-f0a-offline/test-runtime"
 )
+FAKE_RAY_ENV = {
+    "AMARAN_OPENAPI_SECRET": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8="
+}
 
 
 def write_lut(path: Path) -> None:
@@ -310,7 +314,7 @@ class RawObserverValidationPlanTests(unittest.TestCase):
             self.assertEqual(build_capture.call_args.kwargs["max_shutter_speed"], "25")
 
     def test_execute_plan_keeps_sources_isolated_and_writes_a_complete_run(self):
-        with tempfile.TemporaryDirectory() as tempdir:
+        with mock.patch.dict(os.environ, FAKE_RAY_ENV, clear=False), tempfile.TemporaryDirectory() as tempdir:
             root = Path(tempdir)
             plan = self._plan(root)
             strip_calls: list[tuple[int, int, int, int, int]] = []
@@ -355,7 +359,7 @@ class RawObserverValidationPlanTests(unittest.TestCase):
             self.assertTrue(all(item["ok"] for item in cleanup["steps"]))
 
     def test_execute_plan_failure_still_attempts_both_final_shutdowns(self):
-        with tempfile.TemporaryDirectory() as tempdir:
+        with mock.patch.dict(os.environ, FAKE_RAY_ENV, clear=False), tempfile.TemporaryDirectory() as tempdir:
             root = Path(tempdir)
             plan = self._plan(root)
             strip_calls: list[tuple[int, int, int, int, int]] = []
@@ -471,7 +475,7 @@ Focal Length: 50mm
                 )
 
     def test_execute_plan_marks_run_failed_when_cleanup_runner_raises(self):
-        with tempfile.TemporaryDirectory() as tempdir:
+        with mock.patch.dict(os.environ, FAKE_RAY_ENV, clear=False), tempfile.TemporaryDirectory() as tempdir:
             root = Path(tempdir)
             plan = self._plan(root)
 

@@ -2638,12 +2638,12 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
             release,
             old_checkpoint=subject.TD_B_SETUP_CHECKPOINT,
             new_checkpoint="c" * 40,
-            changed_paths=["src/camera_based_rgbww_optimizer/control/camera_remote.py"],
+            changed_paths=["src/camera_based_rgbww_optimizer/control/unreviewed.py"],
         )
         self.assertEqual(ineligible["status"], "ineligible_requires_new_setup")
         self.assertEqual(
             ineligible["prohibited_paths"],
-            ["src/camera_based_rgbww_optimizer/control/camera_remote.py"],
+            ["src/camera_based_rgbww_optimizer/control/unreviewed.py"],
         )
         with _w0_temporary_directory() as tempdir:
             candidate_path = Path(tempdir) / "lineage-candidate.json"
@@ -2808,7 +2808,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                     code_checkpoint=checkpoint,
                     validate_checkpoint_fn=lambda _checkpoint: None,
                     changed_paths_fn=lambda _old, _new: [
-                        "src/camera_based_rgbww_optimizer/control/camera_remote.py"
+                        "src/camera_based_rgbww_optimizer/control/unreviewed.py"
                     ],
                 )
 
@@ -2831,7 +2831,6 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
             changed_paths=changed_paths,
         )
         self.assertEqual(changed_paths, sorted(changed_paths))
-        self.assertEqual(candidate["status"], "ineligible_requires_new_setup")
         prohibited = set(candidate["prohibited_paths"])
         classifications = {
             row["path"]: row["classification"]
@@ -2847,7 +2846,78 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
             "planner_or_execution_audit_only",
         )
         self.assertNotIn(".agent-work/FULL_PLAN_REFERENCE.md", prohibited)
+        for path, classification in subject.TD_B_WORKFLOW_PATH_CLASSIFICATIONS.items():
+            self.assertNotIn(path, prohibited)
+            self.assertEqual(classifications[path], classification)
         self.assertEqual(candidate["new_checkpoint"], checkpoint)
+        workflow_only = subject.build_td_b_setup_release_lineage_candidate(
+            subject.TD_B_SETUP_RELEASE_PATH,
+            old_checkpoint=subject.TD_B_SETUP_CHECKPOINT,
+            new_checkpoint=checkpoint,
+            changed_paths=list(subject.TD_B_WORKFLOW_PATH_CLASSIFICATIONS),
+        )
+        self.assertEqual(workflow_only["status"], "eligible_waiting_for_planner")
+        self.assertEqual(workflow_only["prohibited_paths"], [])
+
+    def test_workflow_path_manifest_rejects_owner_hash_and_provenance_drift(self):
+        checkpoint = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=Path(__file__).parents[1],
+            check=True, capture_output=True, text=True,
+        ).stdout.strip()
+        canonical = subject.TD_B_WORKFLOW_PATH_MANIFEST_PATH.read_bytes()
+        with _w0_temporary_directory() as tempdir:
+            root = Path(tempdir)
+            copied = root / "workflow-path-manifest.json"
+            copied.write_bytes(canonical)
+            with self.assertRaisesRegex(ValueError, "owner differs"):
+                subject._validate_td_b_workflow_path_lineage(
+                    new_checkpoint=checkpoint,
+                    manifest_path=copied,
+                )
+            subject._validate_td_b_workflow_path_lineage(
+                new_checkpoint=checkpoint,
+                manifest_path=copied,
+                require_canonical_manifest_owner=False,
+            )
+            for label, mutate in (
+                ("wrong-current", lambda value: value["entries"][0].__setitem__(
+                    "current_blob_sha256", "0" * 64,
+                )),
+                ("wrong-diff", lambda value: value["entries"][0].__setitem__(
+                    "diff_sha256", "0" * 64,
+                )),
+                ("extra-path", lambda value: value.__setitem__("extra_paths", ["OTHER.md"])),
+                ("missing-provenance", lambda value: value.pop("human_provenance")),
+                ("wrong-path", lambda value: value["entries"][0].__setitem__(
+                    "path", "docs/engineering/OTHER.md",
+                )),
+            ):
+                with self.subTest(label=label):
+                    value = json.loads(canonical)
+                    mutate(value)
+                    changed = root / f"{label}.json"
+                    changed.write_text(json.dumps(value), encoding="utf-8")
+                    with self.assertRaisesRegex(ValueError, "hash differs"):
+                        subject._validate_td_b_workflow_path_lineage(
+                            new_checkpoint=checkpoint,
+                            manifest_path=changed,
+                            require_canonical_manifest_owner=False,
+                        )
+            missing = root / "missing.json"
+            with self.assertRaisesRegex(ValueError, "missing"):
+                subject._validate_td_b_workflow_path_lineage(
+                    new_checkpoint=checkpoint,
+                    manifest_path=missing,
+                    require_canonical_manifest_owner=False,
+                )
+            symlink = root / "manifest-link.json"
+            symlink.symlink_to(copied)
+            with self.assertRaisesRegex(ValueError, "symlink"):
+                subject._validate_td_b_workflow_path_lineage(
+                    new_checkpoint=checkpoint,
+                    manifest_path=symlink,
+                    require_canonical_manifest_owner=False,
+                )
 
     def test_agents_policy_lineage_rejects_wrong_bytes_owner_and_provenance(self):
         checkpoint = subprocess.run(

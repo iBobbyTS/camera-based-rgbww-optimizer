@@ -1,4 +1,5 @@
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -6,6 +7,11 @@ from unittest import mock
 
 from camera_based_rgbww_optimizer.measurement import recorded_exposure
 from camera_based_rgbww_optimizer.optimization import measure_raw_shutter_response
+
+
+FAKE_RAY_ENV = {
+    "AMARAN_OPENAPI_SECRET": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8="
+}
 
 
 def write_lut(path: Path) -> None:
@@ -89,7 +95,7 @@ class RawShutterResponseTests(unittest.TestCase):
             runner.assert_called_once()
 
     def test_executor_leaves_each_source_on_across_its_capture_group_and_cleans_up(self):
-        with tempfile.TemporaryDirectory() as tempdir:
+        with mock.patch.dict(os.environ, FAKE_RAY_ENV, clear=False), tempfile.TemporaryDirectory() as tempdir:
             root = Path(tempdir)
             plan = self._plan(root)
             calls = []
@@ -197,7 +203,7 @@ class RawShutterResponseTests(unittest.TestCase):
             self.assertNotIn("decision", analysis)
 
     def test_executor_failure_still_attempts_both_final_shutdowns(self):
-        with tempfile.TemporaryDirectory() as tempdir:
+        with mock.patch.dict(os.environ, FAKE_RAY_ENV, clear=False), tempfile.TemporaryDirectory() as tempdir:
             root = Path(tempdir)
             plan = self._plan(root)
             calls = []
