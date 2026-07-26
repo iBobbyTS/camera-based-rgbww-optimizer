@@ -3264,6 +3264,256 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
         )
         self.assertEqual(candidate["prohibited_paths"], ["ANOTHER_POLICY.md"])
 
+    def test_qualification_evidence_adapter_is_release_isolated(self):
+        with _w0_temporary_directory() as tempdir:
+            output = measure.write_td_b_lineage_qualification_evidence(
+                preparation_path=subject.TD_B_QUALIFICATION_PREPARATION_R1_PATH,
+                output_dir=Path(tempdir) / "direct",
+                run_name="evidence",
+                code_checkpoint=subject.TD_B_QUALIFICATION_AUDIT_CHECKPOINT,
+            )
+            evidence = _read_json(output)
+            self.assertEqual(set(evidence), {
+                "schema", "status", "preparation_reference",
+                "audit_current_head", "audit_current_parent", "artifact_owner",
+                "input_references", "validation_counts", "failure_oracle",
+                "side_effect_budgets",
+            })
+            self.assertEqual(
+                evidence["schema"], subject.TD_B_QUALIFICATION_EVIDENCE_SCHEMA,
+            )
+            self.assertEqual(
+                evidence["status"], subject.TD_B_QUALIFICATION_EVIDENCE_STATUS,
+            )
+            self.assertEqual(len(evidence["input_references"]), 17)
+            self.assertTrue(all(
+                set(reference) == {"input_index", "sha256", "bytes", "owner"}
+                for reference in evidence["input_references"]
+            ))
+            self.assertTrue(all(
+                value == 0 for value in evidence["side_effect_budgets"].values()
+            ))
+            serialized = json.dumps(evidence, sort_keys=True)
+            for forbidden in (
+                "production_release_usable", "setup-lineage-release.json",
+                "resolved_formal_plan", "device_authorization", "consumer_claim",
+                '"readiness"',
+            ):
+                self.assertNotIn(forbidden, serialized)
+
+        with _w0_temporary_directory() as tempdir:
+            backend_factory = mock.Mock()
+            run_fn = mock.Mock()
+            setup_fn = mock.Mock()
+            resolved_run_fn = mock.Mock()
+            with mock.patch.object(
+                measure, "write_td_b_setup_lineage_release",
+            ) as release_writer, mock.patch.object(
+                measure.thermal, "build_diagnostic_plan",
+            ) as formal_plan_owner:
+                result = measure.main(
+                    [
+                        "--experiment-id", subject.TD_B,
+                        "--source", "ray",
+                        "--phase", "formal",
+                        "--output-dir", str(Path(tempdir) / "cli"),
+                        "--run-name", "evidence",
+                        "--qualification-preparation",
+                        str(subject.TD_B_QUALIFICATION_PREPARATION_R1_PATH),
+                        "--code-checkpoint",
+                        subject.TD_B_QUALIFICATION_AUDIT_CHECKPOINT,
+                        "--prepare-lineage-qualification-evidence",
+                    ],
+                    backend_factory=backend_factory,
+                    run_fn=run_fn,
+                    setup_fn=setup_fn,
+                    resolved_run_fn=resolved_run_fn,
+                )
+            self.assertEqual(result, 0)
+            release_writer.assert_not_called()
+            formal_plan_owner.assert_not_called()
+            backend_factory.assert_not_called()
+            run_fn.assert_not_called()
+            setup_fn.assert_not_called()
+            resolved_run_fn.assert_not_called()
+
+    def test_qualification_evidence_adapter_rejects_preparation_drift(self):
+        canonical_path = subject.TD_B_QUALIFICATION_PREPARATION_R1_PATH
+        canonical_bytes = canonical_path.read_bytes()
+        canonical = json.loads(canonical_bytes)
+
+        with _w0_temporary_directory() as tempdir:
+            root = Path(tempdir)
+            copied = root / "copied-r1.json"
+            copied.write_bytes(canonical_bytes)
+            copied.chmod(0o600)
+            with self.assertRaisesRegex(ValueError, "owner differs"):
+                subject._validate_td_b_qualification_preparation_r1(
+                    preparation_path=copied,
+                    code_checkpoint=subject.TD_B_QUALIFICATION_AUDIT_CHECKPOINT,
+                )
+            subject._validate_td_b_qualification_preparation_r1(
+                preparation_path=copied,
+                code_checkpoint=subject.TD_B_QUALIFICATION_AUDIT_CHECKPOINT,
+                require_canonical_owner=False,
+                expected_payload_sha256=hashlib.sha256(canonical_bytes).hexdigest(),
+                expected_payload_bytes=len(canonical_bytes),
+            )
+
+            cases = (
+                ("schema", lambda value: value.__setitem__("schema", "p7_c3_v1")),
+                ("status", lambda value: value.__setitem__("status", "release_usable")),
+                ("head", lambda value: value.__setitem__("audit_current_head", "0" * 40)),
+                ("parent", lambda value: value.__setitem__("audit_current_parent", "0" * 40)),
+                ("owner-commit", lambda value: value["successor_entry"].__setitem__(
+                    "artifact_owner_commit", "0" * 40,
+                )),
+                ("owner-parent", lambda value: value["successor_entry"].__setitem__(
+                    "artifact_owner_parent", "0" * 40,
+                )),
+                ("ambiguous", lambda value: value["successor_entry"].__setitem__(
+                    "commit", subject.TD_B_QUALIFICATION_AUDIT_CHECKPOINT,
+                )),
+                ("missing", lambda value: value["inputs"].pop()),
+                ("extra", lambda value: value["inputs"].append(
+                    dict(value["inputs"][0], path="/other"),
+                )),
+                ("duplicate", lambda value: value["inputs"].append(
+                    dict(value["inputs"][0]),
+                )),
+                ("provenance", lambda value: value["successor_entry"].__setitem__(
+                    "provenance", "wrong",
+                )),
+                ("rollback", lambda value: value["successor_entry"].__setitem__(
+                    "rollback_entries", 6,
+                )),
+                ("mismatch", lambda value: value["input_closure"].__setitem__(
+                    "mismatches", ["drift"],
+                )),
+                ("prohibited", lambda value: value["input_closure"].__setitem__(
+                    "prohibited_paths", ["OTHER"],
+                )),
+                ("qualification-budget", lambda value: value["budgets"].__setitem__(
+                    "qualification", 1,
+                )),
+                ("release-budget", lambda value: value["budgets"].__setitem__(
+                    "release_generation", 1,
+                )),
+                ("live-budget", lambda value: value["budgets"].__setitem__(
+                    "live", 1,
+                )),
+                ("usable", lambda value: value.__setitem__(
+                    "production_release_usable", True,
+                )),
+                ("readiness", lambda value: value.__setitem__("readiness", True)),
+            )
+            for label, mutate in cases:
+                with self.subTest(label=label):
+                    value = json.loads(canonical_bytes)
+                    mutate(value)
+                    changed = root / f"{label}.json"
+                    changed.write_text(
+                        json.dumps(value, indent=2, sort_keys=True) + "\n",
+                        encoding="utf-8",
+                    )
+                    changed.chmod(0o600)
+                    payload = changed.read_bytes()
+                    with self.assertRaises(ValueError):
+                        subject._validate_td_b_qualification_preparation_r1(
+                            preparation_path=changed,
+                            code_checkpoint=subject.TD_B_QUALIFICATION_AUDIT_CHECKPOINT,
+                            require_canonical_owner=False,
+                            expected_payload_sha256=hashlib.sha256(payload).hexdigest(),
+                            expected_payload_bytes=len(payload),
+                        )
+
+            old_c3 = root / "old-c3.json"
+            old_c3.write_bytes(Path(
+                "/Volumes/4T/temp/rgbww-optimizer/"
+                "p7-td-b-ray-public-default-lineage-c3-offline-preparation/"
+                "20260726T092247Z/qualification-preparation.json"
+            ).read_bytes())
+            old_c3.chmod(0o600)
+            old_payload = old_c3.read_bytes()
+            with self.assertRaisesRegex(ValueError, "schema/status"):
+                subject._validate_td_b_qualification_preparation_r1(
+                    preparation_path=old_c3,
+                    code_checkpoint=subject.TD_B_QUALIFICATION_AUDIT_CHECKPOINT,
+                    require_canonical_owner=False,
+                    expected_payload_sha256=hashlib.sha256(old_payload).hexdigest(),
+                    expected_payload_bytes=len(old_payload),
+                )
+
+            wrong_mode = root / "wrong-mode.json"
+            wrong_mode.write_bytes(canonical_bytes)
+            wrong_mode.chmod(0o644)
+            with self.assertRaisesRegex(ValueError, "mode differs"):
+                subject._validate_td_b_qualification_preparation_r1(
+                    preparation_path=wrong_mode,
+                    code_checkpoint=subject.TD_B_QUALIFICATION_AUDIT_CHECKPOINT,
+                    require_canonical_owner=False,
+                )
+            symlink = root / "link.json"
+            symlink.symlink_to(copied)
+            with self.assertRaisesRegex(ValueError, "symlink"):
+                subject._validate_td_b_qualification_preparation_r1(
+                    preparation_path=symlink,
+                    code_checkpoint=subject.TD_B_QUALIFICATION_AUDIT_CHECKPOINT,
+                    require_canonical_owner=False,
+                )
+            directory = root / "directory"
+            directory.mkdir()
+            with self.assertRaisesRegex(ValueError, "non-regular"):
+                subject._validate_td_b_qualification_preparation_r1(
+                    preparation_path=directory,
+                    code_checkpoint=subject.TD_B_QUALIFICATION_AUDIT_CHECKPOINT,
+                    require_canonical_owner=False,
+                )
+            with self.assertRaisesRegex(PermissionError, "rejects release"):
+                measure.write_td_b_lineage_qualification_evidence(
+                    preparation_path=canonical_path,
+                    output_dir=root,
+                    run_name="release-request",
+                    code_checkpoint=subject.TD_B_QUALIFICATION_AUDIT_CHECKPOINT,
+                    release_requested=True,
+                )
+            with self.assertRaises(SystemExit):
+                measure.parse_args([
+                    "--experiment-id", subject.TD_B,
+                    "--source", "ray",
+                    "--run-name", "conflict",
+                    "--prepare-lineage-qualification-evidence",
+                    "--qualify-lineage-release",
+                ])
+            with self.assertRaisesRegex(PermissionError, "exact offline inputs"):
+                measure.main([
+                    "--experiment-id", subject.TD_B,
+                    "--source", "ray",
+                    "--phase", "formal",
+                    "--output-dir", str(root),
+                    "--run-name", "incomplete",
+                    "--prepare-lineage-qualification-evidence",
+                ])
+            self.assertFalse((root / "incomplete").exists())
+            existing = root / "existing"
+            existing.mkdir()
+            with self.assertRaisesRegex(FileExistsError, "must be fresh"):
+                measure.write_td_b_lineage_qualification_evidence(
+                    preparation_path=canonical_path,
+                    output_dir=root,
+                    run_name="existing",
+                    code_checkpoint=subject.TD_B_QUALIFICATION_AUDIT_CHECKPOINT,
+                )
+            symlink_output = root / "symlink-output"
+            symlink_output.symlink_to(root, target_is_directory=True)
+            with self.assertRaisesRegex(FileExistsError, "symlink owner"):
+                measure.write_td_b_lineage_qualification_evidence(
+                    preparation_path=canonical_path,
+                    output_dir=symlink_output,
+                    run_name="evidence",
+                    code_checkpoint=subject.TD_B_QUALIFICATION_AUDIT_CHECKPOINT,
+                )
+
     def test_lineage_qualification_cli_never_constructs_backend(self):
         backend_factory = mock.Mock()
         release = Path("/offline/setup-lineage-release.json")

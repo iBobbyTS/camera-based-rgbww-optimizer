@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import stat
 import subprocess
 from copy import deepcopy
 from dataclasses import dataclass
@@ -225,6 +226,25 @@ TD_B_PUBLIC_DEFAULT_SUCCESSOR_SCOPES = MappingProxyType({
         "payload, timeout, or cleanup widening"
     ),
 })
+TD_B_QUALIFICATION_PREPARATION_R1_PATH = Path(
+    "/Volumes/4T/temp/rgbww-optimizer/"
+    "p7-td-b-ray-public-default-lineage-c3-r1-offline-correction/"
+    "20260726T094349Z/qualification-preparation-r1.json"
+)
+TD_B_QUALIFICATION_PREPARATION_R1_SHA256 = (
+    "c6200a2307a8a3e95e82328f73acdcbc1d6746d9ff9365fe4b8d7a9ef92006de"
+)
+TD_B_QUALIFICATION_PREPARATION_R1_BYTES = 14163
+TD_B_QUALIFICATION_AUDIT_CHECKPOINT = "52a7168cd2510e9730e30101fc8fbf6f6d8153c1"
+TD_B_QUALIFICATION_PREPARATION_R1_SCHEMA = (
+    "p7_td_b_ray_public_default_lineage_c3_r1_preparation_v2"
+)
+TD_B_QUALIFICATION_EVIDENCE_SCHEMA = (
+    "p7_td_b_lineage_qualification_evidence_only_v1"
+)
+TD_B_QUALIFICATION_EVIDENCE_STATUS = (
+    "qualification_evidence_ready_waiting_for_planner"
+)
 TD_B_CLEANUP_TEST_PROVENANCE_MANIFEST_PATH = Path(
     "/Volumes/4T/temp/rgbww-optimizer/p7-td-b-lineage-cleanup-test-provenance-c1/"
     "20260727T020000Z/cleanup-test-provenance-manifest.json"
@@ -995,6 +1015,156 @@ def _validate_td_b_agents_policy_lineage(
         raise ValueError("TD-B AGENTS checkpoint bytes differ")
     if hashlib.sha256(diff).hexdigest() != TD_B_AGENTS_DIFF_SHA256:
         raise ValueError("TD-B AGENTS diff scope differs")
+
+
+def _validate_td_b_qualification_preparation_r1(
+    *,
+    preparation_path: str | Path,
+    code_checkpoint: str,
+    require_canonical_owner: bool = True,
+    expected_payload_sha256: str | None = None,
+    expected_payload_bytes: int | None = None,
+) -> Mapping[str, Any]:
+    """Validate the exact C3-R1 evidence preparation without release authority."""
+    requested = Path(preparation_path)
+    if requested.is_symlink():
+        raise ValueError("TD-B qualification preparation cannot be a symlink")
+    path = requested.resolve()
+    canonical_path = TD_B_QUALIFICATION_PREPARATION_R1_PATH.resolve()
+    if require_canonical_owner and path != canonical_path:
+        raise ValueError("TD-B qualification preparation owner differs")
+    if not path.is_file():
+        raise ValueError("TD-B qualification preparation is missing or non-regular")
+    if stat.S_IMODE(path.stat().st_mode) != 0o600:
+        raise ValueError("TD-B qualification preparation mode differs")
+    payload = path.read_bytes()
+    expected_bytes = (
+        TD_B_QUALIFICATION_PREPARATION_R1_BYTES
+        if expected_payload_bytes is None
+        else expected_payload_bytes
+    )
+    if len(payload) != expected_bytes:
+        raise ValueError("TD-B qualification preparation byte count differs")
+    expected_sha = (
+        TD_B_QUALIFICATION_PREPARATION_R1_SHA256
+        if expected_payload_sha256 is None
+        else expected_payload_sha256
+    )
+    if hashlib.sha256(payload).hexdigest() != expected_sha:
+        raise ValueError("TD-B qualification preparation hash differs")
+
+    canonical_payload = canonical_path.read_bytes()
+    if (
+        len(canonical_payload) != TD_B_QUALIFICATION_PREPARATION_R1_BYTES
+        or hashlib.sha256(canonical_payload).hexdigest()
+        != TD_B_QUALIFICATION_PREPARATION_R1_SHA256
+    ):
+        raise ValueError("TD-B canonical qualification preparation drifted")
+    preparation = json.loads(payload)
+    canonical = json.loads(canonical_payload)
+    required = {
+        "schema", "status", "audit_current_head", "audit_current_parent",
+        "source_c3_preparation", "successor_entry", "input_closure", "inputs",
+        "budgets", "negative_matrix", "canonical_before_after",
+    }
+    if (
+        set(preparation) != required
+        or preparation.get("schema") != TD_B_QUALIFICATION_PREPARATION_R1_SCHEMA
+        or preparation.get("status") != "prepared_waiting_for_planner"
+        or code_checkpoint != TD_B_QUALIFICATION_AUDIT_CHECKPOINT
+        or preparation.get("audit_current_head") != code_checkpoint
+        or preparation.get("audit_current_parent")
+        != TD_B_PUBLIC_DEFAULT_SUCCESSOR_COMMIT
+    ):
+        raise ValueError("TD-B qualification preparation schema/status/checkpoint differs")
+    for name in (
+        "source_c3_preparation", "successor_entry", "input_closure", "inputs",
+        "budgets", "negative_matrix", "canonical_before_after",
+    ):
+        if preparation.get(name) != canonical.get(name):
+            raise ValueError(f"TD-B qualification preparation {name} differs")
+
+    successor = preparation["successor_entry"]
+    successor_fields = {
+        "canonical_path", "canonical_sha256", "canonical_bytes",
+        "canonical_schema", "artifact_owner_commit", "artifact_owner_parent",
+        "audit_current_head", "audit_current_parent", "provenance",
+        "rollback_entries",
+    }
+    if (
+        not isinstance(successor, Mapping)
+        or set(successor) != successor_fields
+        or "commit" in successor
+        or "parent_commit" in successor
+        or successor.get("artifact_owner_commit")
+        != TD_B_PUBLIC_DEFAULT_SUCCESSOR_COMMIT
+        or successor.get("artifact_owner_parent")
+        != TD_B_PUBLIC_DEFAULT_SUCCESSOR_PARENT
+        or successor.get("audit_current_head") != code_checkpoint
+        or successor.get("audit_current_parent")
+        != TD_B_PUBLIC_DEFAULT_SUCCESSOR_COMMIT
+        or successor.get("canonical_path")
+        != str(TD_B_PUBLIC_DEFAULT_SUCCESSOR_MANIFEST_PATH)
+        or successor.get("canonical_sha256")
+        != TD_B_PUBLIC_DEFAULT_SUCCESSOR_MANIFEST_SHA256
+        or successor.get("canonical_schema")
+        != "p7_td_b_ray_public_default_successor_lineage_c1"
+        or successor.get("provenance")
+        != TD_B_PUBLIC_DEFAULT_SUCCESSOR_PROVENANCE
+        or successor.get("rollback_entries") != 7
+    ):
+        raise ValueError("TD-B qualification preparation successor provenance differs")
+    _validate_td_b_public_default_successor_lineage(
+        new_checkpoint=code_checkpoint,
+    )
+    if not _td_b_checkpoint_contains(
+        code_checkpoint,
+        TD_B_PUBLIC_DEFAULT_SUCCESSOR_COMMIT,
+    ):
+        raise ValueError("TD-B qualification preparation ancestry differs")
+
+    closure = preparation["input_closure"]
+    if closure != {
+        "unique_inputs": 17,
+        "predecessor_retained_artifacts": 13,
+        "changed_paths": 57,
+        "changed_paths_sorted_deduplicated": True,
+        "successor_paths": "7/7",
+        "workflow_overlap": "5/5",
+        "mismatches": [],
+        "prohibited_paths": [],
+    }:
+        raise ValueError("TD-B qualification preparation input closure differs")
+    inputs = preparation["inputs"]
+    if not isinstance(inputs, list) or len(inputs) != 17:
+        raise ValueError("TD-B qualification preparation input count differs")
+    seen: set[str] = set()
+    for reference in inputs:
+        if not isinstance(reference, Mapping) or set(reference) != {
+            "path", "owner", "regular", "symlink", "bytes", "sha256",
+        }:
+            raise ValueError("TD-B qualification preparation input schema differs")
+        input_path_value = str(reference.get("path"))
+        if input_path_value in seen:
+            raise ValueError("TD-B qualification preparation input is duplicated")
+        seen.add(input_path_value)
+        input_path = Path(input_path_value)
+        if (
+            input_path.is_symlink()
+            or not input_path.is_file()
+            or reference.get("regular") is not True
+            or reference.get("symlink") is not False
+            or input_path.stat().st_size != reference.get("bytes")
+            or hashlib.sha256(input_path.read_bytes()).hexdigest()
+            != reference.get("sha256")
+        ):
+            raise ValueError("TD-B qualification preparation input owner/hash differs")
+    budgets = preparation["budgets"]
+    if not isinstance(budgets, Mapping) or not budgets or any(
+        isinstance(value, bool) or value != 0 for value in budgets.values()
+    ):
+        raise ValueError("TD-B qualification preparation side-effect budget differs")
+    return preparation
 
 
 def _td_b_checkpoint_contains(

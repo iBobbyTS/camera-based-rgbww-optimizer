@@ -1872,6 +1872,81 @@ def write_td_b_setup_lineage_release(
     return release_path
 
 
+def write_td_b_lineage_qualification_evidence(
+    *,
+    preparation_path: str | Path,
+    output_dir: str | Path,
+    run_name: str,
+    code_checkpoint: str,
+    release_requested: bool = False,
+) -> Path:
+    """Write offline qualification evidence without invoking a release owner."""
+    if release_requested:
+        raise PermissionError("TD-B evidence-only mode rejects release requests")
+    preparation = thermal._validate_td_b_qualification_preparation_r1(
+        preparation_path=preparation_path,
+        code_checkpoint=code_checkpoint,
+    )
+    output_owner = Path(output_dir)
+    root_candidate = output_owner / run_name
+    if output_owner.is_symlink() or root_candidate.is_symlink():
+        raise FileExistsError(
+            "TD-B qualification evidence root cannot use a symlink owner"
+        )
+    root = root_candidate.resolve()
+    if root.exists() or root.parent.is_symlink():
+        raise FileExistsError(
+            f"TD-B qualification evidence root must be fresh and regular: {root}"
+        )
+    root.parent.mkdir(parents=True, exist_ok=True)
+    root.mkdir()
+    successor = preparation["successor_entry"]
+    closure = preparation["input_closure"]
+    evidence = {
+        "schema": thermal.TD_B_QUALIFICATION_EVIDENCE_SCHEMA,
+        "status": thermal.TD_B_QUALIFICATION_EVIDENCE_STATUS,
+        "preparation_reference": thermal.file_reference(preparation_path),
+        "audit_current_head": preparation["audit_current_head"],
+        "audit_current_parent": preparation["audit_current_parent"],
+        "artifact_owner": {
+            "artifact_owner_commit": successor["artifact_owner_commit"],
+            "artifact_owner_parent": successor["artifact_owner_parent"],
+            "canonical_manifest": {
+                "path": successor["canonical_path"],
+                "sha256": successor["canonical_sha256"],
+            },
+        },
+        "input_references": [
+            {
+                "input_index": index,
+                "sha256": reference["sha256"],
+                "bytes": reference["bytes"],
+                "owner": reference["owner"],
+            }
+            for index, reference in enumerate(preparation["inputs"], start=1)
+        ],
+        "validation_counts": {
+            "unique_inputs": closure["unique_inputs"],
+            "predecessor_retained_artifacts": closure[
+                "predecessor_retained_artifacts"
+            ],
+            "changed_paths": closure["changed_paths"],
+            "successor_paths": closure["successor_paths"],
+            "workflow_overlap": closure["workflow_overlap"],
+        },
+        "failure_oracle": {
+            "mismatches": closure["mismatches"],
+            "prohibited_paths": closure["prohibited_paths"],
+            "release_request_rejected": True,
+            "side_effects_allowed": False,
+        },
+        "side_effect_budgets": dict(preparation["budgets"]),
+    }
+    evidence_path = root / "qualification-evidence.json"
+    _write_json(evidence_path, evidence)
+    return evidence_path
+
+
 def _write_json(path: Path, value: Mapping[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(path.suffix + ".tmp")
@@ -1902,6 +1977,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--phase", choices=("setup", "formal"))
     parser.add_argument("--setup-release", type=Path)
     parser.add_argument("--lineage-candidate", type=Path)
+    parser.add_argument("--qualification-preparation", type=Path)
     parser.add_argument("--finalize-setup-run", type=Path)
     parser.add_argument("--orchestrate-setup", action="store_true")
     parser.add_argument("--code-checkpoint")
@@ -1909,6 +1985,9 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     mode.add_argument("--dry-run", action="store_true")
     mode.add_argument("--execute", action="store_true")
     mode.add_argument("--qualify-lineage-release", action="store_true")
+    mode.add_argument(
+        "--prepare-lineage-qualification-evidence", action="store_true"
+    )
     parser.add_argument("--allow-device-control", action="store_true")
     parser.add_argument("--human-authorization")
     camera_remote.add_camera_backend_arguments(parser, default="remote")
@@ -1925,6 +2004,26 @@ def main(
     resolved_run_fn: Callable[..., Path] = run_resolved_td_b_formal,
 ) -> int:
     args = parse_args(argv)
+    if args.prepare_lineage_qualification_evidence:
+        if (
+            args.experiment_id != thermal.TD_B
+            or args.source != "ray"
+            or args.phase != "formal"
+            or args.qualification_preparation is None
+            or not args.code_checkpoint
+            or args.setup_release is not None
+            or args.lineage_candidate is not None
+        ):
+            raise PermissionError(
+                "evidence-only lineage preparation requires exact offline inputs"
+            )
+        print(write_td_b_lineage_qualification_evidence(
+            preparation_path=args.qualification_preparation,
+            output_dir=args.output_dir,
+            run_name=args.run_name,
+            code_checkpoint=args.code_checkpoint,
+        ))
+        return 0
     if args.qualify_lineage_release:
         if (
             args.experiment_id != thermal.TD_B
