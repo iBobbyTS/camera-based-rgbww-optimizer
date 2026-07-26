@@ -54,8 +54,11 @@ use the visible Terminal/liveness/automation workflow required by `AGENTS.md`.
 - Ray120c is the CCT/G-M reference. Never infer its CCT from camera RGB.
 - Formal camera work uses `control.camera_remote.RemoteCameraBackend`; do not
   expose credentials in arguments, logs, artifacts, or source.
-- Ray OpenAPI commands require `AMARAN_OPENAPI_SECRET` in the user-owned process
-  environment. There is no built-in default or secret CLI argument.
+- Ray OpenAPI uses a Human-classified public shared protocol default; this is a
+  Human/repository-history decision and not an external-vendor verification claim.
+  `AMARAN_OPENAPI_SECRET` is an optional explicit override and remains a
+  private runtime value: never pass, print, log, or serialize it. Empty or invalid
+  overrides fail closed, and the CLI has no secret argument.
 
 ## Routine Entry Points
 

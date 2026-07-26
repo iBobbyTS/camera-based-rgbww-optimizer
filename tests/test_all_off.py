@@ -114,6 +114,40 @@ class AllOffTests(unittest.TestCase):
         self.assertEqual(calls, [(5600, 0, 0)])
         self.assertIn("invalid current CCT 0", steps[0].detail["current_read_error"])
 
+    def test_empty_environment_uses_public_default_and_serializes_both_fake_outcomes(self):
+        ray_settings = []
+
+        def fail_ray(*_args, **kwargs):
+            ray_settings.append(kwargs["settings"])
+            raise RuntimeError("fake Ray failure")
+
+        with mock.patch.dict(os.environ, {}, clear=True):
+            steps = all_off.turn_everything_off(
+                strip_off_fn=lambda: {"state": "off"},
+                ray_set_cct_fn=fail_ray,
+                ray_cct=5600,
+                ray_gm=100,
+            )
+
+        rows = [step.to_jsonable() for step in steps]
+        self.assertEqual([row["name"] for row in rows], ["esphome", "ray120c"])
+        self.assertTrue(rows[0]["ok"])
+        self.assertFalse(rows[1]["ok"])
+        self.assertIn("fake Ray failure", rows[1]["error"])
+        self.assertEqual(ray_settings[0].secret, all_off.ray120c.DEFAULT_OPENAPI_SECRET)
+        self.assertNotIn(all_off.ray120c.DEFAULT_OPENAPI_SECRET, str(rows))
+
+    def test_invalid_explicit_override_fails_before_ray_fake_adapter(self):
+        ray_calls = []
+        with mock.patch.dict(os.environ, {"AMARAN_OPENAPI_SECRET": "private-invalid-override"}, clear=True):
+            with self.assertRaisesRegex(ValueError, "strict base64"):
+                all_off.turn_everything_off(
+                    strip=False,
+                    ray_get_cct_fn=lambda **_kwargs: ray_calls.append("get") or {},
+                    ray_set_cct_fn=lambda *_args, **_kwargs: ray_calls.append("set") or {},
+                )
+        self.assertEqual(ray_calls, [])
+
 
 if __name__ == "__main__":
     unittest.main()

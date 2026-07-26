@@ -27,13 +27,22 @@ class Ray120cTokenTests(unittest.TestCase):
         plaintext = AESGCM(key).decrypt(nonce, ciphertext + tag, None)
         self.assertEqual(plaintext, b"1717171717")
 
+    def test_generate_token_default_uses_public_protocol_key_and_preserves_layout(self):
+        nonce = b"\x0c\x0b\x0a\x09\x08\x07\x06\x05\x04\x03\x02\x01"
+        token = ray120c.generate_token(now=1_717_171_718, nonce=nonce)
+
+        raw = base64.b64decode(token)
+        self.assertEqual(raw[:12], nonce)
+        plaintext = AESGCM(base64.b64decode(ray120c.DEFAULT_OPENAPI_SECRET)).decrypt(
+            nonce, raw[28:] + raw[12:28], None
+        )
+        self.assertEqual(plaintext, b"1717171718")
+
     def test_generate_token_rejects_non_12_byte_nonce(self):
         with self.assertRaises(ValueError):
             ray120c.generate_token(self.secret, nonce=b"short")
 
-    def test_generate_token_requires_and_validates_secret(self):
-        with self.assertRaises(TypeError):
-            ray120c.generate_token(now=1, nonce=b"0" * 12)
+    def test_generate_token_validates_explicit_override(self):
         for value in ("not-base64", base64.b64encode(b"short").decode("ascii")):
             with self.subTest(value=value), self.assertRaisesRegex(ValueError, "32 bytes|strict base64"):
                 ray120c.generate_token(value, now=1, nonce=b"0" * 12)
@@ -43,23 +52,55 @@ class Ray120cSettingsTests(unittest.TestCase):
     def setUp(self):
         self.secret = base64.b64encode(bytes(range(32))).decode("ascii")
 
-    def test_from_env_requires_explicit_secret_and_does_not_leak_repr(self):
-        for values in ({}, {ray120c.OPENAPI_SECRET_ENV: ""}):
-            with self.subTest(values=values), self.assertRaisesRegex(ValueError, ray120c.OPENAPI_SECRET_ENV):
-                ray120c.OpenAPISettings.from_env(values)
+    def test_empty_environment_uses_exact_public_default_without_repr_leak(self):
+        settings = ray120c.OpenAPISettings.from_env({})
+        self.assertEqual(settings.secret, ray120c.DEFAULT_OPENAPI_SECRET)
+        self.assertEqual(len(base64.b64decode(settings.secret, validate=True)), 32)
+        self.assertNotIn(ray120c.DEFAULT_OPENAPI_SECRET, repr(settings))
+
+    def test_explicit_override_wins_and_invalid_or_empty_override_fails_closed(self):
         settings = ray120c.OpenAPISettings.from_env({ray120c.OPENAPI_SECRET_ENV: self.secret})
         self.assertEqual(settings.secret, self.secret)
         self.assertNotIn(self.secret, repr(settings))
 
-    def test_cli_missing_secret_fails_before_connection_without_value_leak(self):
+        for value in ("", "not-base64", base64.b64encode(b"short").decode("ascii")):
+            values = {ray120c.OPENAPI_SECRET_ENV: value}
+            with self.subTest(value=value), self.assertRaisesRegex(ValueError, "32 bytes|strict base64"):
+                ray120c.OpenAPISettings.from_env(values)
+
+    def test_cli_missing_override_reaches_mocked_request_with_public_default(self):
         stdout, stderr = io.StringIO(), io.StringIO()
+        captured = []
+
+        def fake_get_cct(*, settings, include_events=False):
+            captured.append((settings, include_events))
+            return {"code": 0, "data": {"cct": 5600}}
+
         with mock.patch.dict(os.environ, {}, clear=True), mock.patch.object(
-            ray120c, "send_openapi_request", side_effect=AssertionError("must not connect")
+            ray120c, "get_cct", side_effect=fake_get_cct
+        ), contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            code = ray120c.main(["get-cct"])
+        self.assertEqual(code, 0)
+        self.assertEqual(captured[0][0].secret, ray120c.DEFAULT_OPENAPI_SECRET)
+        self.assertNotIn(ray120c.DEFAULT_OPENAPI_SECRET, stdout.getvalue())
+        self.assertEqual(stderr.getvalue(), "")
+
+    def test_cli_invalid_override_fails_before_request_without_value_leak(self):
+        override = "private-invalid-override"
+        stdout, stderr = io.StringIO(), io.StringIO()
+        with mock.patch.dict(os.environ, {ray120c.OPENAPI_SECRET_ENV: override}, clear=True), mock.patch.object(
+            ray120c, "get_cct", side_effect=AssertionError("must not request")
         ), contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
             code = ray120c.main(["get-cct"])
         self.assertEqual(code, 1)
-        self.assertIn(ray120c.OPENAPI_SECRET_ENV, stderr.getvalue())
-        self.assertEqual(stdout.getvalue(), "")
+        self.assertNotIn(override, stdout.getvalue() + stderr.getvalue())
+
+    def test_cli_does_not_accept_secret_argument(self):
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr), self.assertRaises(SystemExit) as raised:
+            ray120c.main(["get-cct", "--secret"])
+        self.assertEqual(raised.exception.code, 2)
+        self.assertIn("--secret", stderr.getvalue())
 
 
 class Ray120cValueMappingTests(unittest.TestCase):

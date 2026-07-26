@@ -23,6 +23,7 @@ DEFAULT_WS_URL = "ws://127.0.0.1:33782"
 DEFAULT_NODE_ID = "40165-560387"
 DEFAULT_CLIENT_ID = 1
 OPENAPI_SECRET_ENV = "AMARAN_OPENAPI_SECRET"
+DEFAULT_OPENAPI_SECRET = "9veqiL0G0EUOviwzL1prPc0iGIGUJtbzSaPYQfgfyxM="
 
 CCT_MIN = 1800
 CCT_MAX = 20000
@@ -44,7 +45,7 @@ class AmaranOpenAPIError(RuntimeError):
 
 @dataclass(frozen=True)
 class OpenAPISettings:
-    secret: str = field(repr=False)
+    secret: str = field(default=DEFAULT_OPENAPI_SECRET, repr=False)
     url: str = DEFAULT_WS_URL
     node_id: str = DEFAULT_NODE_ID
     client_id: int = DEFAULT_CLIENT_ID
@@ -56,9 +57,7 @@ class OpenAPISettings:
     @classmethod
     def from_env(cls, env: Mapping[str, str] | None = None) -> "OpenAPISettings":
         values = os.environ if env is None else env
-        secret = values.get(OPENAPI_SECRET_ENV)
-        if not secret:
-            raise ValueError(f"{OPENAPI_SECRET_ENV} is required")
+        secret = values[OPENAPI_SECRET_ENV] if OPENAPI_SECRET_ENV in values else DEFAULT_OPENAPI_SECRET
         return cls(
             url=values.get("AMARAN_WS_URL", DEFAULT_WS_URL),
             node_id=values.get("AMARAN_NODE_ID", DEFAULT_NODE_ID),
@@ -79,7 +78,7 @@ def _decode_secret(secret_key: str) -> bytes:
 
 
 def generate_token(
-    secret_key: str,
+    secret_key: str = DEFAULT_OPENAPI_SECRET,
     *,
     now: int | None = None,
     nonce: bytes | None = None,
@@ -547,11 +546,9 @@ def _add_common_args(parser: argparse.ArgumentParser) -> None:
 
 
 def _settings_from_args(args: argparse.Namespace) -> OpenAPISettings:
-    secret = os.environ.get(OPENAPI_SECRET_ENV)
-    if not secret:
-        raise ValueError(f"{OPENAPI_SECRET_ENV} is required")
+    resolved = OpenAPISettings.from_env()
     return OpenAPISettings(
-        secret=secret,
+        secret=resolved.secret,
         url=args.url,
         node_id=args.node_id,
         client_id=args.client_id,

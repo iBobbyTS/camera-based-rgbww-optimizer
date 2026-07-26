@@ -1110,11 +1110,15 @@ intensity evidence. A future channel-response acquisition will record
 
 Use Amaran Desktop OpenAPI v2 for Ray120c reference control:
 
-Set `AMARAN_OPENAPI_SECRET` explicitly in the command environment. There is no
-built-in secret default, and the CLI does not accept the secret as an argument;
-a missing value fails before a connection is attempted. Keep the value in the
-user-owned runtime environment and see [Local Lab Connection Boundary](local-lab-connection-boundary.md)
-for the complete local connection contract.
+The built-in Ray key is a Human-classified public shared protocol default, not
+a private credential. That classification comes from the Human and repository
+history; it is not an external-vendor verification claim. `AMARAN_OPENAPI_SECRET`
+is an optional explicit override. A missing override uses the public default;
+an explicitly empty, non-strict-base64, or non-32-byte override fails closed.
+An override remains a private runtime value: never pass it through argv, print
+or serialize it, or store it in project `.env`. The CLI has no secret argument.
+See [Local Lab Connection Boundary](local-lab-connection-boundary.md) for the
+complete local connection contract.
 
 ```bash
 .venv/bin/python -m camera_based_rgbww_optimizer.control.ray120c set-cct 1800 --intensity-percent 1 --gm 200

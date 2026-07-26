@@ -15,13 +15,17 @@ administration targets.
 | --- | --- | --- | --- |
 | RGBWW fixture | `control.esphome` | Host, port, expected device name, and ESPHome secrets path | Module help, parsing, analysis, and tests do not connect. |
 | Canon camera bridge | `control.camera_remote` | Base URL and token supplied by explicit arguments, environment, or the documented project environment file | Module help and offline RAW analysis do not load bridge credentials or connect. |
-| Ray120c reference | `control.ray120c` | Loopback URL/node settings and required `AMARAN_OPENAPI_SECRET` from the process environment | Module help does not read the secret or connect. A real command fails before connecting when it is absent or invalid. |
+| Ray120c reference | `control.ray120c` | Loopback URL/node settings, the Human-classified public shared protocol default, and optional explicit override `AMARAN_OPENAPI_SECRET` | Module help does not connect. A missing override uses the public default; an explicitly empty or invalid override fails before connecting. |
 
-The Ray secret has no source-code default and cannot be passed on the command
-line. Programmatic callers may construct `OpenAPISettings` explicitly; its
-secret is validated as strict base64 for a 32-byte key and is excluded from the
-dataclass representation. Tests use generated fake key material and do not
-inspect the developer environment.
+The repository treats the built-in Ray key as a Human-classified public shared
+protocol default, not a private credential. This is a Human decision supported
+by repository history and is not an external-vendor verification claim about
+documentation, protocol specifications, or security review. `AMARAN_OPENAPI_SECRET`
+is an optional explicit override; when supplied, it remains a private runtime value
+and must not be passed in argv, printed, logged, serialized, or exposed by
+`repr`. Both the default and an override are validated as strict base64 for a
+32-byte key. An explicitly empty or invalid override fails closed without
+falling back. The override is not read from the project `.env` by this owner.
 
 ## Execution and Authorization
 
@@ -35,13 +39,13 @@ not authorize or perform device operations.
 ## Local Preconditions and Troubleshooting
 
 Before a planned connection, confirm the intended local component is powered,
-the workstation is on the same local lab network where applicable, the exact
-documented hostname or loopback service is available, and the required
-credential/configuration is present in the user-owned runtime environment. If
+the workstation is on the same local lab network where applicable, and the exact
+documented hostname or loopback service is available. If an optional private
+runtime override is intentionally used, confirm it is present and valid. If
 those conditions are not met, stop at the plan's failure branch; do not widen
 the target set or alter network or firmware configuration outside the plan.
 
-Accurately describing this scope and removing a built-in credential can reduce
+Accurately describing this scope and the public-default/private-override boundary can reduce
 possible platform misclassification. It cannot guarantee a platform decision,
 does not alter platform policy, and is not a mechanism for bypassing safety or
 security controls.
