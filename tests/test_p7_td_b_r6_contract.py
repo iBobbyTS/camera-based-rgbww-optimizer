@@ -328,13 +328,15 @@ class EqR6LiveOwnerTests(unittest.TestCase):
         outer = Path(live["output_root"])
         outer.mkdir(parents=True, exist_ok=True)
         root = outer / f"candidate-{candidate_index}"
+        runtime_argv = ["--eq-r6-single-candidate", str(candidate_index)]
         measure.write_td_b_eq_r6_launch_ledger(
             live,
             candidate_index=candidate_index,
             candidate_root=root,
             outer_pid=111,
             wrapper_pid=222,
-            argv=["--eq-r6-single-candidate", str(candidate_index)],
+            runner_pid=333,
+            argv=runtime_argv,
         )
         return root
 
@@ -349,6 +351,10 @@ class EqR6LiveOwnerTests(unittest.TestCase):
             ray_c_fn=self.passing_command,
             capture_fn=capture_fn(root) if callable(capture_fn) else capture_fn,
             python_cleanup_fn=self.passing_cleanup,
+            runtime_outer_pid=111,
+            runtime_wrapper_pid=222,
+            runtime_runner_pid=333,
+            runtime_argv=["--eq-r6-single-candidate", str(candidate_index)],
             sleep_fn=lambda _seconds: None,
             monotonic_fn=lambda: 0.0,
         )
@@ -418,6 +424,10 @@ class EqR6LiveOwnerTests(unittest.TestCase):
                 ray_c_fn=self.passing_command,
                 capture_fn=self.capture_factory(root),
                 python_cleanup_fn=lambda: {"status": "fail"},
+                runtime_outer_pid=111,
+                runtime_wrapper_pid=222,
+                runtime_runner_pid=333,
+                runtime_argv=["--eq-r6-single-candidate", "1"],
                 sleep_fn=lambda _seconds: None,
                 monotonic_fn=lambda: 0.0,
             )
@@ -443,6 +453,10 @@ class EqR6LiveOwnerTests(unittest.TestCase):
                 ray_c_fn=self.passing_command,
                 capture_fn=capture,
                 python_cleanup_fn=self.passing_cleanup,
+                runtime_outer_pid=111,
+                runtime_wrapper_pid=222,
+                runtime_runner_pid=333,
+                runtime_argv=["--eq-r6-single-candidate", "1"],
                 sleep_fn=lambda _seconds: None,
                 monotonic_fn=lambda: 0.0,
             )
@@ -463,13 +477,20 @@ class EqR6LiveOwnerTests(unittest.TestCase):
             candidate_index = int(command[command.index("--eq-r6-single-candidate") + 1])
             outer_pid = int(command[command.index("--eq-r6-outer-pid") + 1])
             root = Path(command[2])
+            expected_child_argv = measure._eq_r6_exact_child_argv(
+                live,
+                candidate_index=candidate_index,
+                live_plan_path=Path(live["output_root"]) / "live-plan.json",
+                outer_pid=outer_pid,
+            )
             measure.write_td_b_eq_r6_launch_ledger(
                 live,
                 candidate_index=candidate_index,
                 candidate_root=root,
                 outer_pid=outer_pid,
                 wrapper_pid=300 + candidate_index,
-                argv=command[3:],
+                runner_pid=400 + candidate_index,
+                argv=expected_child_argv,
             )
             capture = behavior(candidate_index, root)
             measure.run_td_b_eq_r6_single_candidate(
@@ -481,6 +502,10 @@ class EqR6LiveOwnerTests(unittest.TestCase):
                 ray_c_fn=self.passing_command,
                 capture_fn=capture,
                 python_cleanup_fn=self.passing_cleanup,
+                runtime_outer_pid=outer_pid,
+                runtime_wrapper_pid=300 + candidate_index,
+                runtime_runner_pid=400 + candidate_index,
+                runtime_argv=expected_child_argv,
                 sleep_fn=lambda _seconds: None,
                 monotonic_fn=lambda: 0.0,
             )
@@ -488,11 +513,17 @@ class EqR6LiveOwnerTests(unittest.TestCase):
                 json.dumps([{"ok": True}]) + "\n", encoding="utf-8",
             )
             measure._write_json(root / "wrapper-result.json", {
+                "schema_version": 1,
+                "experiment": "p7_thermal_diagnostics_v1",
                 "status": "complete",
+                "run_dir": str(root.resolve()),
+                "wrapper_pid": 300 + candidate_index,
+                "child_pid": 400 + candidate_index,
                 "child_exit_code": 0,
                 "shell_cleanup_exit_code": 0,
                 "wrapper_exit_code": 0,
                 "signal": None,
+                "started_at": "2026-07-27T00:00:00Z",
             })
             return subprocess.CompletedProcess(command, 0)
         return run
@@ -579,6 +610,7 @@ class EqR6LiveOwnerTests(unittest.TestCase):
                 candidate_root=root,
                 outer_pid=111,
                 wrapper_pid=222,
+                runner_pid=333,
                 argv=["--eq-r6-single-candidate", "1"],
             )
         live = self.live_plan("private")
@@ -590,6 +622,7 @@ class EqR6LiveOwnerTests(unittest.TestCase):
                 candidate_root=Path(live["output_root"]) / "candidate-1",
                 outer_pid=111,
                 wrapper_pid=222,
+                runner_pid=333,
                 argv=["--token", "fabricated"],
             )
 
@@ -612,9 +645,260 @@ class EqR6LiveOwnerTests(unittest.TestCase):
                 ray_c_fn=lambda: calls.append("c"),
                 capture_fn=lambda _request: calls.append("capture"),
                 python_cleanup_fn=lambda: calls.append("cleanup"),
+                runtime_outer_pid=111,
+                runtime_wrapper_pid=222,
+                runtime_runner_pid=333,
+                runtime_argv=["--eq-r6-single-candidate", "1"],
                 sleep_fn=lambda _seconds: None,
             )
         self.assertEqual(calls, [])
+
+    def test_runtime_binding_entry_rejects_each_pid_and_argv_drift(self):
+        mutations = {
+            "outer_pid": lambda value: value.__setitem__("outer_pid", 112),
+            "wrapper_pid": lambda value: value.__setitem__("wrapper_pid", 223),
+            "runner_pid": lambda value: value.__setitem__("runner_pid", 334),
+            "argv_append": lambda value: value["argv"].append("--safe"),
+            "argv_duplicate": lambda value: value["argv"].append(
+                value["argv"][-1]
+            ),
+            "argv_remove": lambda value: value["argv"].pop(),
+            "argv_reorder": lambda value: value["argv"].reverse(),
+            "argv_replace": lambda value: value["argv"].__setitem__(1, "2"),
+        }
+        for index, (name, mutate) in enumerate(mutations.items(), start=1):
+            with self.subTest(case=name):
+                live = self.live_plan(f"entry-drift-{index}")
+                root = self.prepare_candidate(live, 1)
+                ledger_path = root / "launch-ledger.json"
+                ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+                mutate(ledger)
+                ledger_path.chmod(0o600)
+                ledger_path.write_text(
+                    json.dumps(ledger) + "\n",
+                    encoding="utf-8",
+                )
+                calls = []
+                with self.assertRaisesRegex(PermissionError, "binding differs"):
+                    measure.run_td_b_eq_r6_single_candidate(
+                        live,
+                        candidate_index=1,
+                        candidate_root=root,
+                        strip_zero_fn=lambda: calls.append("strip"),
+                        ray_a_fn=lambda: calls.append("a"),
+                        ray_c_fn=lambda: calls.append("c"),
+                        capture_fn=lambda _request: calls.append("capture"),
+                        python_cleanup_fn=lambda: calls.append("cleanup"),
+                        runtime_outer_pid=111,
+                        runtime_wrapper_pid=222,
+                        runtime_runner_pid=333,
+                        runtime_argv=["--eq-r6-single-candidate", "1"],
+                        sleep_fn=lambda _seconds: None,
+                    )
+                self.assertEqual(calls, [])
+
+    def test_runtime_binding_seal_rejects_wrapper_child_root_and_candidate_drift(self):
+        cases = (
+            "wrapper_pid",
+            "child_pid",
+            "run_dir",
+            "candidate_runner_pid",
+        )
+        for index, name in enumerate(cases, start=1):
+            with self.subTest(case=name):
+                live = self.live_plan(f"seal-drift-{index}")
+                base_run = self.fake_wrapper_run(
+                    live,
+                    lambda _candidate, root: self.capture_factory(
+                        root, clipped=True,
+                    ),
+                )
+
+                def run(command, *, check, case=name):
+                    completed = base_run(command, check=check)
+                    root = Path(command[2])
+                    if case == "candidate_runner_pid":
+                        path = root / "candidate-result.json"
+                        value = json.loads(path.read_text(encoding="utf-8"))
+                        value["runtime_binding"]["runner_pid"] += 1
+                    else:
+                        path = root / "wrapper-result.json"
+                        value = json.loads(path.read_text(encoding="utf-8"))
+                        if case == "run_dir":
+                            value[case] = str(root.parent / "safe-other")
+                        else:
+                            value[case] += 1
+                    path.write_text(json.dumps(value) + "\n", encoding="utf-8")
+                    return completed
+
+                zero_calls = []
+                with self.assertRaises(
+                    (PermissionError, RuntimeError),
+                ):
+                    measure.orchestrate_td_b_eq_r6(
+                        live,
+                        run_fn=run,
+                        final_zero_fn=lambda: (
+                            zero_calls.append("zero")
+                            or self.passing_final_zero()
+                        ),
+                        outer_pid=111,
+                    )
+                outer = Path(live["output_root"])
+                self.assertEqual(zero_calls, ["zero"])
+                self.assertFalse((outer / "candidate-2").exists())
+                self.assertTrue((outer / "outer-failure.json").is_file())
+                terminal = json.loads(
+                    (outer / "candidate-1-outer-terminal.json").read_text(
+                        encoding="utf-8"
+                    )
+                )
+                self.assertEqual(terminal["status"], "fail")
+
+    def test_exact_runtime_binding_passes_entry_and_terminal_seal(self):
+        live = self.live_plan("binding-pass")
+        result_path = measure.orchestrate_td_b_eq_r6(
+            live,
+            run_fn=self.fake_wrapper_run(
+                live,
+                lambda _index, root: self.capture_factory(root),
+            ),
+            final_zero_fn=self.passing_final_zero,
+            outer_pid=111,
+        )
+        result = json.loads(result_path.read_text(encoding="utf-8"))
+        seal = json.loads(
+            (Path(live["output_root"]) / "candidate-1" / "terminal-seal.json")
+            .read_text(encoding="utf-8")
+        )
+        self.assertEqual(result["status"], "qualified_1_2500")
+        self.assertEqual(seal["status"], "pass")
+        self.assertEqual(seal["runtime_binding"]["outer_pid"], 111)
+        self.assertEqual(seal["runtime_binding"]["wrapper_pid"], 301)
+        self.assertEqual(seal["runtime_binding"]["runner_pid"], 401)
+        self.assertEqual(
+            seal["runtime_binding"]["argv"],
+            result["candidate_launches"][0]["child_argv"],
+        )
+
+    def test_outer_final_zero_and_failure_evidence_cover_all_exit_paths(self):
+        cases = (
+            ("run_runtime_error", "run_runtime_error", None, RuntimeError, "primary"),
+            ("run_keyboard_interrupt", "run_keyboard_interrupt", None, KeyboardInterrupt, ""),
+            ("run_system_exit", "run_system_exit", None, SystemExit, ""),
+            ("subprocess_nonzero", "subprocess_nonzero", None, RuntimeError, ""),
+            ("missing_wrapper_result", "missing_wrapper_result", None, ValueError, ""),
+            ("malformed_wrapper_result", "malformed_wrapper_result", None, json.JSONDecodeError, ""),
+            ("tampered_wrapper_pid", "tampered_wrapper_pid", None, PermissionError, ""),
+            ("missing_candidate_result", "missing_candidate_result", None, ValueError, ""),
+            ("tampered_launch_ledger", "tampered_launch_ledger", None, PermissionError, ""),
+            ("seal_reference_failure", "seal_reference_failure", None, ValueError, ""),
+            ("final_zero_runtime_error", "success", RuntimeError("zero"), RuntimeError, "zero"),
+            ("final_zero_keyboard_interrupt", "success", KeyboardInterrupt(), KeyboardInterrupt, ""),
+            (
+                "primary_and_final_zero_failure",
+                "run_runtime_error",
+                RuntimeError("zero"),
+                RuntimeError,
+                "primary",
+            ),
+        )
+        for index, (
+            name,
+            run_case,
+            zero_exception,
+            expected_type,
+            expected_message,
+        ) in enumerate(cases, start=1):
+            with self.subTest(case=name):
+                live = self.live_plan(f"outer-failure-{index}")
+                base_run = self.fake_wrapper_run(
+                    live,
+                    lambda _candidate, root: self.capture_factory(root),
+                )
+
+                def run(command, *, check, case=run_case):
+                    if case == "run_runtime_error":
+                        raise RuntimeError("primary")
+                    if case == "run_keyboard_interrupt":
+                        raise KeyboardInterrupt()
+                    if case == "run_system_exit":
+                        raise SystemExit(7)
+                    completed = base_run(command, check=check)
+                    root = Path(command[2])
+                    if case == "subprocess_nonzero":
+                        return subprocess.CompletedProcess(command, 9)
+                    if case == "missing_wrapper_result":
+                        (root / "wrapper-result.json").unlink()
+                    elif case == "malformed_wrapper_result":
+                        (root / "wrapper-result.json").write_text(
+                            "{",
+                            encoding="utf-8",
+                        )
+                    elif case == "tampered_wrapper_pid":
+                        path = root / "wrapper-result.json"
+                        value = json.loads(path.read_text(encoding="utf-8"))
+                        value["wrapper_pid"] += 1
+                        path.write_text(
+                            json.dumps(value) + "\n",
+                            encoding="utf-8",
+                        )
+                    elif case == "missing_candidate_result":
+                        (root / "candidate-result.json").unlink()
+                    elif case == "tampered_launch_ledger":
+                        path = root / "launch-ledger.json"
+                        value = json.loads(path.read_text(encoding="utf-8"))
+                        value["runner_pid"] += 1
+                        path.chmod(0o600)
+                        path.write_text(
+                            json.dumps(value) + "\n",
+                            encoding="utf-8",
+                        )
+                    elif case == "seal_reference_failure":
+                        (root / "all-off-python.json").unlink()
+                    return completed
+
+                zero_calls = []
+
+                def final_zero(exc=zero_exception):
+                    zero_calls.append("zero")
+                    if exc is not None:
+                        raise exc
+                    return self.passing_final_zero()
+
+                caught = None
+                try:
+                    measure.orchestrate_td_b_eq_r6(
+                        live,
+                        run_fn=run,
+                        final_zero_fn=final_zero,
+                        outer_pid=111,
+                    )
+                except BaseException as exc:
+                    caught = exc
+                self.assertIsNotNone(caught)
+                self.assertIsInstance(caught, expected_type)
+                if name == "run_system_exit":
+                    self.assertEqual(caught.code, 7)
+                if expected_message:
+                    self.assertIn(expected_message, str(caught))
+                self.assertEqual(zero_calls, ["zero"])
+                outer = Path(live["output_root"])
+                self.assertFalse((outer / "outer-result.json").exists())
+                self.assertFalse((outer / "candidate-2").exists())
+                failure = json.loads(
+                    (outer / "outer-failure.json").read_text(encoding="utf-8")
+                )
+                terminal = json.loads(
+                    (outer / "candidate-1-outer-terminal.json").read_text(
+                        encoding="utf-8"
+                    )
+                )
+                self.assertEqual(failure["status"], "failed")
+                self.assertEqual(failure["candidate_2_launch_count"], 0)
+                self.assertTrue(terminal["launch_attempted"])
+                self.assertTrue(terminal["final_zero_attempted"])
+                self.assertEqual(terminal["status"], "fail")
 
     def test_shell_cleanup_artifact_failure_blocks_terminal_seal_and_candidate_two(self):
         live = self.live_plan()

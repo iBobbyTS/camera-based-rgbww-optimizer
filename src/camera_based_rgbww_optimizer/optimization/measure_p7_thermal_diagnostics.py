@@ -28,6 +28,9 @@ EQ_R6_LAUNCH_LEDGER_SCHEMA = "p7_td_b_eq_r6_launch_ledger_v1"
 EQ_R6_CANDIDATE_RESULT_SCHEMA = "p7_td_b_eq_r6_candidate_result_v1"
 EQ_R6_TERMINAL_SEAL_SCHEMA = "p7_td_b_eq_r6_candidate_terminal_seal_v1"
 EQ_R6_OUTER_RESULT_SCHEMA = "p7_td_b_eq_r6_outer_result_v1"
+EQ_R6_OUTER_CANDIDATE_TERMINAL_SCHEMA = (
+    "p7_td_b_eq_r6_outer_candidate_terminal_v1"
+)
 
 
 class _SidecarAssociationError(RuntimeError):
@@ -2113,6 +2116,7 @@ def write_td_b_eq_r6_launch_ledger(
     candidate_root: str | Path,
     outer_pid: int,
     wrapper_pid: int,
+    runner_pid: int,
     argv: Sequence[str],
 ) -> Path:
     """Write one immutable per-wrapper launch binding before device access."""
@@ -2123,9 +2127,23 @@ def write_td_b_eq_r6_launch_ledger(
     outer_root = Path(str(live_plan["output_root"])).resolve(strict=True)
     if root.parent != outer_root or root.name != f"candidate-{candidate_index}":
         raise ValueError("EQ-R6 launch ledger candidate owner differs")
-    if outer_pid <= 0 or wrapper_pid <= 0:
+    if (
+        type(outer_pid) is not int
+        or type(wrapper_pid) is not int
+        or type(runner_pid) is not int
+        or outer_pid <= 0
+        or wrapper_pid <= 0
+        or runner_pid <= 0
+    ):
         raise ValueError("EQ-R6 launch ledger requires positive process IDs")
-    safe_argv = [str(value) for value in argv]
+    if (
+        not isinstance(argv, Sequence)
+        or isinstance(argv, (str, bytes))
+        or not argv
+        or any(type(value) is not str for value in argv)
+    ):
+        raise ValueError("EQ-R6 launch argv requires an ordered string list")
+    safe_argv = list(argv)
     forbidden = ("secret", "token", "password", ".env", "private")
     if any(any(term in value.lower() for term in forbidden) for value in safe_argv):
         raise ValueError("EQ-R6 launch argv contains a private parameter")
@@ -2139,6 +2157,7 @@ def write_td_b_eq_r6_launch_ledger(
         "outer_root": str(outer_root),
         "outer_pid": int(outer_pid),
         "wrapper_pid": int(wrapper_pid),
+        "runner_pid": int(runner_pid),
         "code_checkpoint": live_plan["code_checkpoint"],
         "offline_plan_sha256": live_plan["offline_plan_sha256"],
         "exposure_policy": dict(live_plan["exposure_policy"]),
@@ -2158,16 +2177,33 @@ def _validate_td_b_eq_r6_launch_ledger(
     *,
     candidate_index: int,
     candidate_root: Path,
+    expected_outer_pid: int,
+    expected_wrapper_pid: int,
+    expected_runner_pid: int,
+    expected_argv: Sequence[str],
 ) -> None:
     expected_keys = {
         "schema", "status", "created_at", "experiment_id", "candidate_index",
-        "candidate_root", "outer_root", "outer_pid", "wrapper_pid",
+        "candidate_root", "outer_root", "outer_pid", "wrapper_pid", "runner_pid",
         "code_checkpoint", "offline_plan_sha256", "exposure_policy",
         "thermal_contract", "measurement_runner", "production_wrapper", "argv",
     }
     if set(ledger) != expected_keys:
         raise PermissionError("EQ-R6 launch ledger schema differs")
     safe_argv = ledger.get("argv")
+    expected_pids = (
+        expected_outer_pid,
+        expected_wrapper_pid,
+        expected_runner_pid,
+    )
+    if (
+        any(type(value) is not int or value <= 0 for value in expected_pids)
+        or not isinstance(expected_argv, Sequence)
+        or isinstance(expected_argv, (str, bytes))
+        or not expected_argv
+        or any(type(value) is not str for value in expected_argv)
+    ):
+        raise PermissionError("EQ-R6 expected runtime binding is invalid")
     forbidden = ("secret", "token", "password", ".env", "private")
     if (
         ledger.get("schema") != EQ_R6_LAUNCH_LEDGER_SCHEMA
@@ -2179,9 +2215,11 @@ def _validate_td_b_eq_r6_launch_ledger(
             Path(str(live_plan["output_root"])).resolve()
         )
         or type(ledger.get("outer_pid")) is not int
-        or int(ledger["outer_pid"]) <= 0
+        or ledger.get("outer_pid") != expected_outer_pid
         or type(ledger.get("wrapper_pid")) is not int
-        or int(ledger["wrapper_pid"]) <= 0
+        or ledger.get("wrapper_pid") != expected_wrapper_pid
+        or type(ledger.get("runner_pid")) is not int
+        or ledger.get("runner_pid") != expected_runner_pid
         or ledger.get("code_checkpoint") != live_plan["code_checkpoint"]
         or ledger.get("offline_plan_sha256") != live_plan["offline_plan_sha256"]
         or ledger.get("exposure_policy") != live_plan["exposure_policy"]
@@ -2190,6 +2228,8 @@ def _validate_td_b_eq_r6_launch_ledger(
         or ledger.get("production_wrapper") != live_plan["production_wrapper"]
         or not isinstance(safe_argv, list)
         or not safe_argv
+        or any(type(value) is not str for value in safe_argv)
+        or safe_argv != list(expected_argv)
         or any(
             any(term in str(value).lower() for term in forbidden)
             for value in safe_argv
@@ -2280,6 +2320,10 @@ def run_td_b_eq_r6_single_candidate(
     ray_c_fn: Callable[[], Mapping[str, Any]],
     capture_fn: Callable[[Mapping[str, Any]], Mapping[str, Any]],
     python_cleanup_fn: Callable[[], Mapping[str, Any]],
+    runtime_outer_pid: int,
+    runtime_wrapper_pid: int,
+    runtime_runner_pid: int,
+    runtime_argv: Sequence[str],
     bind_physical_return_observer_fn: Callable[
         [Callable[[Mapping[str, Any], Mapping[str, Any], int], Mapping[str, Any]]],
         None,
@@ -2303,6 +2347,10 @@ def run_td_b_eq_r6_single_candidate(
         live_plan,
         candidate_index=candidate_index,
         candidate_root=root,
+        expected_outer_pid=runtime_outer_pid,
+        expected_wrapper_pid=runtime_wrapper_pid,
+        expected_runner_pid=runtime_runner_pid,
+        expected_argv=runtime_argv,
     )
     _write_json(root / "candidate-plan.json", {
         "schema": "p7_td_b_eq_r6_candidate_plan_v1",
@@ -2457,6 +2505,12 @@ def run_td_b_eq_r6_single_candidate(
         "physical_returned_cr3_count": physical_returned,
         "accepted_capture_count": accepted,
         "python_cleanup": cleanup,
+        "runtime_binding": {
+            "outer_pid": runtime_outer_pid,
+            "wrapper_pid": runtime_wrapper_pid,
+            "runner_pid": runtime_runner_pid,
+            "argv": list(runtime_argv),
+        },
         "retry": 0,
         "completed_at": _utc_now(),
     }
@@ -2472,6 +2526,10 @@ def run_td_b_eq_r6_production_candidate(
     candidate_index: int,
     candidate_root: str | Path,
     camera_backend: Any,
+    runtime_outer_pid: int,
+    runtime_wrapper_pid: int,
+    runtime_runner_pid: int,
+    runtime_argv: Sequence[str],
 ) -> Path:
     """Bind the single-candidate owner to the existing real device adapters."""
     thermal.validate_td_b_eq_r6_live_plan(live_plan, require_fresh_root=False)
@@ -2690,6 +2748,10 @@ def run_td_b_eq_r6_production_candidate(
         ray_c_fn=lambda: set_ray("C"),
         capture_fn=capture,
         python_cleanup_fn=cleanup,
+        runtime_outer_pid=runtime_outer_pid,
+        runtime_wrapper_pid=runtime_wrapper_pid,
+        runtime_runner_pid=runtime_runner_pid,
+        runtime_argv=runtime_argv,
         bind_physical_return_observer_fn=lambda callback: physical_observer.__setitem__(
             "callback", callback,
         ),
@@ -2724,6 +2786,52 @@ def _reference(path: Path) -> dict[str, Any]:
     }
 
 
+def _load_regular_json(path: Path) -> dict[str, Any]:
+    if path.is_symlink() or not path.is_file():
+        raise ValueError(f"unsafe or missing EQ-R6 artifact: {path.name}")
+    value = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(value, dict):
+        raise ValueError(f"EQ-R6 artifact is not a JSON object: {path.name}")
+    return value
+
+
+def _eq_r6_exact_child_argv(
+    live_plan: Mapping[str, Any],
+    *,
+    candidate_index: int,
+    live_plan_path: Path,
+    outer_pid: int,
+) -> list[str]:
+    candidate_root = (
+        Path(str(live_plan["output_root"])).resolve()
+        / f"candidate-{candidate_index}"
+    )
+    return [
+        "--execute",
+        "--allow-device-control",
+        "--output-dir",
+        str(candidate_root.parent),
+        "--run-name",
+        candidate_root.name,
+        "--eq-r6-single-candidate",
+        str(candidate_index),
+        "--eq-r6-live-plan",
+        str(live_plan_path.resolve()),
+        "--eq-r6-outer-pid",
+        str(outer_pid),
+        "--code-checkpoint",
+        str(live_plan["code_checkpoint"]),
+        "--experiment-id",
+        thermal.TD_B,
+        "--source",
+        "ray",
+        "--phase",
+        "formal",
+        "--human-authorization",
+        thermal.TD_B_EQ_R6_EXPERIMENT_ID,
+    ]
+
+
 def _seal_eq_candidate(
     live_plan: Mapping[str, Any],
     *,
@@ -2731,19 +2839,81 @@ def _seal_eq_candidate(
     root: Path,
     wrapper_return_code: int,
     final_zero: Mapping[str, Any],
+    expected_outer_pid: int,
+    expected_child_argv: Sequence[str],
 ) -> dict[str, Any]:
     wrapper_path = root / "wrapper-result.json"
     result_path = root / "candidate-result.json"
-    wrapper = json.loads(wrapper_path.read_text(encoding="utf-8"))
-    result = json.loads(result_path.read_text(encoding="utf-8"))
-    launch = json.loads((root / "launch-ledger.json").read_text(encoding="utf-8"))
+    wrapper = _load_regular_json(wrapper_path)
+    result = _load_regular_json(result_path)
+    launch = _load_regular_json(root / "launch-ledger.json")
+    wrapper_keys = {
+        "schema_version",
+        "experiment",
+        "status",
+        "run_dir",
+        "wrapper_pid",
+        "child_pid",
+        "child_exit_code",
+        "shell_cleanup_exit_code",
+        "wrapper_exit_code",
+        "signal",
+        "started_at",
+    }
+    result_keys = {
+        "schema",
+        "status",
+        "candidate_index",
+        "nominal_shutter",
+        "classification",
+        "captures",
+        "attempted_capture_calls",
+        "physical_returned_cr3_count",
+        "accepted_capture_count",
+        "python_cleanup",
+        "runtime_binding",
+        "retry",
+        "completed_at",
+    }
+    if set(wrapper) != wrapper_keys:
+        raise PermissionError("EQ-R6 wrapper result schema differs")
+    if set(result) != result_keys:
+        raise PermissionError("EQ-R6 candidate result schema differs")
+    wrapper_pid = wrapper.get("wrapper_pid")
+    child_pid = wrapper.get("child_pid")
+    if (
+        type(wrapper_pid) is not int
+        or wrapper_pid <= 0
+        or type(child_pid) is not int
+        or child_pid <= 0
+        or wrapper.get("run_dir") != str(root.resolve())
+    ):
+        raise PermissionError("EQ-R6 wrapper runtime ownership differs")
     _validate_td_b_eq_r6_launch_ledger(
         launch,
         live_plan,
         candidate_index=candidate_index,
         candidate_root=root,
+        expected_outer_pid=expected_outer_pid,
+        expected_wrapper_pid=wrapper_pid,
+        expected_runner_pid=child_pid,
+        expected_argv=expected_child_argv,
     )
-    shell = json.loads((root / "all-off-shell.json").read_text(encoding="utf-8"))
+    runtime = result.get("runtime_binding")
+    if (
+        not isinstance(runtime, dict)
+        or set(runtime)
+        != {"outer_pid", "wrapper_pid", "runner_pid", "argv"}
+        or runtime.get("outer_pid") != expected_outer_pid
+        or runtime.get("wrapper_pid") != wrapper_pid
+        or runtime.get("runner_pid") != child_pid
+        or runtime.get("argv") != list(expected_child_argv)
+    ):
+        raise PermissionError("EQ-R6 candidate runtime ownership differs")
+    shell_path = root / "all-off-shell.json"
+    if shell_path.is_symlink() or not shell_path.is_file():
+        raise ValueError("unsafe or missing EQ-R6 artifact: all-off-shell.json")
+    shell = json.loads(shell_path.read_text(encoding="utf-8"))
     successful = (
         wrapper_return_code == 0
         and wrapper.get("status") == "complete"
@@ -2787,6 +2957,15 @@ def _seal_eq_candidate(
         "thermal_contract": dict(live_plan["thermal_contract"]),
         "measurement_runner": dict(live_plan["measurement_runner"]),
         "production_wrapper": dict(live_plan["production_wrapper"]),
+        "runtime_binding": {
+            "outer_pid": expected_outer_pid,
+            "wrapper_pid": wrapper_pid,
+            "runner_pid": child_pid,
+            "argv": list(expected_child_argv),
+            "launch_ledger": _reference(root / "launch-ledger.json"),
+            "wrapper_result": _reference(wrapper_path),
+            "candidate_result": _reference(result_path),
+        },
         "canonical_artifacts": canonical,
         "sealed_at": _utc_now(),
     }
@@ -2810,10 +2989,23 @@ def orchestrate_td_b_eq_r6(
     results: list[list[dict[str, Any]]] = []
     seals: list[dict[str, Any]] = []
     launches: list[dict[str, Any]] = []
+    outer_terminals: list[dict[str, Any]] = []
     feature_ids = tuple(
         json.loads(thermal.POLICY_PATH.read_text(encoding="utf-8"))["feature_set"]["ids"]
     )
     final_status = "failed"
+    frozen_outer_pid = outer_pid if outer_pid is not None else os.getpid()
+    if type(frozen_outer_pid) is not int or frozen_outer_pid <= 0:
+        raise ValueError("EQ-R6 outer owner requires a positive non-bool PID")
+
+    def exception_record(exc: BaseException | None) -> dict[str, Any] | None:
+        if exc is None:
+            return None
+        return {
+            "exception_type": type(exc).__name__,
+            "message": str(exc),
+        }
+
     try:
         for candidate_index in (1, 2):
             if candidate_index == 2:
@@ -2831,43 +3023,136 @@ def orchestrate_td_b_eq_r6(
                 ):
                     break
             candidate_root = root / f"candidate-{candidate_index}"
-            argv = [
-                "--eq-r6-single-candidate", str(candidate_index),
-                "--eq-r6-live-plan", str(live_plan_path),
-                "--eq-r6-outer-pid", str(outer_pid or os.getpid()),
-                "--code-checkpoint", str(live_plan["code_checkpoint"]),
-                "--experiment-id", thermal.TD_B,
-                "--source", "ray",
-                "--phase", "formal",
-                "--human-authorization", thermal.TD_B_EQ_R6_EXPERIMENT_ID,
-            ]
-            launched_at = _utc_now()
-            completed = run_fn(
-                [
-                    "zsh", str(live_plan["production_wrapper"]["path"]),
-                    str(candidate_root), *argv,
-                ],
-                check=False,
-            )
-            launches.append({
-                "candidate_index": candidate_index,
-                "launched_at": launched_at,
-                "return_code": int(completed.returncode),
-            })
-            if not (candidate_root / "wrapper-result.json").is_file():
-                raise RuntimeError("EQ-R6 wrapper exited without wrapper-result evidence")
-            final_zero = dict(final_zero_fn())
-            _write_json(candidate_root / "independent-final-zero.json", final_zero)
-            seal = _seal_eq_candidate(
+            expected_child_argv = _eq_r6_exact_child_argv(
                 live_plan,
                 candidate_index=candidate_index,
-                root=candidate_root,
-                wrapper_return_code=int(completed.returncode),
-                final_zero=final_zero,
+                live_plan_path=live_plan_path,
+                outer_pid=frozen_outer_pid,
             )
-            seals.append(seal)
-            if seal["status"] != "pass":
-                raise RuntimeError("EQ-R6 candidate terminal lifecycle failed")
+            wrapper_argv = expected_child_argv[6:]
+            command = [
+                "zsh",
+                str(live_plan["production_wrapper"]["path"]),
+                str(candidate_root),
+                *wrapper_argv,
+            ]
+            launched_at = _utc_now()
+            launch_record: dict[str, Any] = {
+                "candidate_index": candidate_index,
+                "launched_at": launched_at,
+                "launch_attempted": True,
+                "child_argv": list(expected_child_argv),
+                "return_code": None,
+                "exception": None,
+            }
+            launches.append(launch_record)
+            completed: subprocess.CompletedProcess[Any] | None = None
+            primary_failure: BaseException | None = None
+            final_zero_failure: BaseException | None = None
+            seal_failure: BaseException | None = None
+            final_zero: dict[str, Any] = {
+                "status": "fail",
+                "strip_verified_off": False,
+                "ray_verified_off": False,
+            }
+            try:
+                completed = run_fn(command, check=False)
+                launch_record["return_code"] = int(completed.returncode)
+            except BaseException as exc:
+                primary_failure = exc
+                launch_record["exception"] = exception_record(exc)
+            finally:
+                try:
+                    final_zero = dict(final_zero_fn())
+                except BaseException as exc:
+                    final_zero_failure = exc
+                    final_zero = {
+                        "status": "fail",
+                        "strip_verified_off": False,
+                        "ray_verified_off": False,
+                        **(exception_record(exc) or {}),
+                    }
+
+            candidate_root_safe = (
+                candidate_root.is_dir()
+                and not candidate_root.is_symlink()
+                and candidate_root.resolve().parent == root.resolve()
+            )
+            if candidate_root_safe:
+                try:
+                    _write_json(
+                        candidate_root / "independent-final-zero.json",
+                        final_zero,
+                    )
+                except BaseException as exc:
+                    seal_failure = exc
+            elif seal_failure is None:
+                seal_failure = RuntimeError(
+                    "EQ-R6 attempted candidate lacks a safe candidate root"
+                )
+
+            seal: dict[str, Any] | None = None
+            if primary_failure is None and completed is not None and seal_failure is None:
+                try:
+                    seal = _seal_eq_candidate(
+                        live_plan,
+                        candidate_index=candidate_index,
+                        root=candidate_root,
+                        wrapper_return_code=int(completed.returncode),
+                        final_zero=final_zero,
+                        expected_outer_pid=frozen_outer_pid,
+                        expected_child_argv=expected_child_argv,
+                    )
+                    seals.append(seal)
+                    if seal["status"] != "pass":
+                        seal_failure = RuntimeError(
+                            "EQ-R6 candidate terminal lifecycle failed"
+                        )
+                except BaseException as exc:
+                    seal_failure = exc
+
+            terminal = {
+                "schema": EQ_R6_OUTER_CANDIDATE_TERMINAL_SCHEMA,
+                "status": (
+                    "pass"
+                    if primary_failure is None
+                    and final_zero_failure is None
+                    and seal_failure is None
+                    and seal is not None
+                    and seal.get("status") == "pass"
+                    else "fail"
+                ),
+                "candidate_index": candidate_index,
+                "launch_attempted": True,
+                "wrapper_return_code": (
+                    None if completed is None else int(completed.returncode)
+                ),
+                "wrapper_exception": exception_record(primary_failure),
+                "final_zero_attempted": True,
+                "final_zero": final_zero,
+                "final_zero_exception": exception_record(final_zero_failure),
+                "seal": seal,
+                "seal_exception": exception_record(seal_failure),
+                "candidate_2_remained_locked": candidate_index == 1,
+                "recorded_at": _utc_now(),
+            }
+            terminal_path = root / f"candidate-{candidate_index}-outer-terminal.json"
+            _write_json(terminal_path, terminal)
+            outer_terminals.append(_reference(terminal_path))
+
+            if (
+                primary_failure is not None
+                or final_zero_failure is not None
+                or seal_failure is not None
+            ):
+                if primary_failure is not None:
+                    raise primary_failure
+                if final_zero_failure is not None:
+                    raise final_zero_failure
+                assert seal_failure is not None
+                raise seal_failure
+
+            assert seal is not None
             result = json.loads(
                 (candidate_root / "candidate-result.json").read_text(encoding="utf-8")
             )
@@ -2887,6 +3172,7 @@ def orchestrate_td_b_eq_r6(
                 _reference(root / f"candidate-{index}" / "terminal-seal.json")
                 for index in range(1, len(seals) + 1)
             ],
+            "outer_candidate_terminals": outer_terminals,
             "attempted_capture_calls": sum(
                 int(seal["attempted_capture_calls"]) for seal in seals
             ),
@@ -2910,6 +3196,10 @@ def orchestrate_td_b_eq_r6(
             "message": str(exc),
             "candidate_launches": launches,
             "candidate_seals": seals,
+            "outer_candidate_terminals": outer_terminals,
+            "candidate_2_launch_count": sum(
+                1 for item in launches if item["candidate_index"] == 2
+            ),
             "retry": 0,
             "failed_at": _utc_now(),
         })
@@ -3017,13 +3307,35 @@ def main(
             f"candidate-{args.eq_r6_single_candidate}"
         ):
             raise PermissionError("EQ-R6 candidate CLI root differs from the live owner")
+        current_outer_pid = args.eq_r6_outer_pid
+        current_wrapper_pid = os.getppid()
+        current_runner_pid = os.getpid()
+        current_argv = list(sys.argv[1:] if argv is None else argv)
+        expected_argv = _eq_r6_exact_child_argv(
+            live_plan,
+            candidate_index=args.eq_r6_single_candidate,
+            live_plan_path=live_path,
+            outer_pid=current_outer_pid,
+        )
         write_td_b_eq_r6_launch_ledger(
             live_plan,
             candidate_index=args.eq_r6_single_candidate,
             candidate_root=candidate_root,
-            outer_pid=args.eq_r6_outer_pid,
-            wrapper_pid=os.getppid(),
-            argv=list(sys.argv[1:] if argv is None else argv),
+            outer_pid=current_outer_pid,
+            wrapper_pid=current_wrapper_pid,
+            runner_pid=current_runner_pid,
+            argv=current_argv,
+        )
+        ledger = _load_regular_json(candidate_root / "launch-ledger.json")
+        _validate_td_b_eq_r6_launch_ledger(
+            ledger,
+            live_plan,
+            candidate_index=args.eq_r6_single_candidate,
+            candidate_root=candidate_root,
+            expected_outer_pid=current_outer_pid,
+            expected_wrapper_pid=current_wrapper_pid,
+            expected_runner_pid=current_runner_pid,
+            expected_argv=expected_argv,
         )
         if args.camera_backend != "remote":
             raise PermissionError("EQ-R6 requires the formal remote-v2 camera backend")
@@ -3041,6 +3353,10 @@ def main(
             candidate_index=args.eq_r6_single_candidate,
             candidate_root=candidate_root,
             camera_backend=backend,
+            runtime_outer_pid=current_outer_pid,
+            runtime_wrapper_pid=current_wrapper_pid,
+            runtime_runner_pid=current_runner_pid,
+            runtime_argv=expected_argv,
         ))
         return 0
     if args.prepare_lineage_qualification_evidence:
