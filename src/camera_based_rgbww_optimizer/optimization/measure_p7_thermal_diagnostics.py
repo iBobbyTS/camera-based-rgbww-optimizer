@@ -7,6 +7,7 @@ import json
 import math
 import os
 import shutil
+import stat
 import subprocess
 import sys
 import time
@@ -30,6 +31,17 @@ EQ_R6_TERMINAL_SEAL_SCHEMA = "p7_td_b_eq_r6_candidate_terminal_seal_v1"
 EQ_R6_OUTER_RESULT_SCHEMA = "p7_td_b_eq_r6_outer_result_v1"
 EQ_R6_OUTER_CANDIDATE_TERMINAL_SCHEMA = (
     "p7_td_b_eq_r6_outer_candidate_terminal_v1"
+)
+EQ_R6_PRELAUNCH_ARTIFACTS = (
+    "frozen-inputs.json",
+    "offline-plan.json",
+    "camera-readiness.json",
+    "ray-readiness.json",
+    "all-off-python.json",
+    "all-off-shell.json",
+    "independent-final-zero.json",
+    "prelaunch-terminal.json",
+    "prelaunch-manifest.json",
 )
 
 
@@ -3206,6 +3218,667 @@ def orchestrate_td_b_eq_r6(
         raise
 
 
+def _eq_prelaunch_exception(exc: BaseException) -> dict[str, str]:
+    """Return only a secret-independent exception classification."""
+    return {"exception_type": type(exc).__name__}
+
+
+def _eq_prelaunch_write_json(
+    root: Path,
+    name: str,
+    value: Mapping[str, Any],
+) -> Path:
+    """Atomically create one mode-0600 prelaunch artifact exactly once."""
+    if name not in EQ_R6_PRELAUNCH_ARTIFACTS:
+        raise ValueError("EQ-R6 prelaunch artifact name is not canonical")
+    if root.is_symlink() or not root.is_dir():
+        raise PermissionError("EQ-R6 prelaunch owner is not a regular directory")
+    resolved_root = root.resolve(strict=True)
+    target = root / name
+    if target.is_symlink() or target.exists():
+        raise FileExistsError(f"EQ-R6 prelaunch artifact already exists: {name}")
+    if target.resolve(strict=False).parent != resolved_root:
+        raise PermissionError("EQ-R6 prelaunch artifact escapes its owner")
+    payload = (
+        json.dumps(value, indent=2, sort_keys=True, allow_nan=False) + "\n"
+    ).encode("utf-8")
+    temporary = root / f".{name}.tmp-{os.getpid()}"
+    if temporary.exists() or temporary.is_symlink():
+        raise FileExistsError("EQ-R6 prelaunch temporary artifact already exists")
+    descriptor = os.open(
+        temporary,
+        os.O_WRONLY
+        | os.O_CREAT
+        | os.O_EXCL
+        | getattr(os, "O_NOFOLLOW", 0),
+        0o600,
+    )
+    try:
+        os.write(descriptor, payload)
+        os.fsync(descriptor)
+    except BaseException:
+        try:
+            temporary.unlink()
+        except OSError:
+            pass
+        raise
+    finally:
+        os.close(descriptor)
+    if target.exists() or target.is_symlink():
+        temporary.unlink(missing_ok=True)
+        raise FileExistsError(f"EQ-R6 prelaunch artifact raced: {name}")
+    os.replace(temporary, target)
+    os.chmod(target, 0o600, follow_symlinks=False)
+    return target
+
+
+def _eq_prelaunch_safe_parent_chain(path: Path) -> None:
+    if not path.is_absolute() or ".." in path.parts:
+        raise ValueError("EQ-R6 FAMILY must be an absolute non-escaping path")
+    existing: list[Path] = []
+    current = path.parent
+    while True:
+        if current.exists() or current.is_symlink():
+            existing.append(current)
+        if current == current.parent:
+            break
+        current = current.parent
+    for owner in reversed(existing):
+        mode = os.lstat(owner).st_mode
+        if stat.S_ISLNK(mode) or not stat.S_ISDIR(mode):
+            raise PermissionError(
+                "EQ-R6 FAMILY parent chain contains a non-directory owner"
+            )
+
+
+def _eq_prelaunch_acquire_root(family: Path) -> tuple[Path, Path]:
+    _eq_prelaunch_safe_parent_chain(family)
+    prelaunch = family / "prelaunch"
+    run_root = family / "run"
+    for path in (family, prelaunch, run_root):
+        if path.exists() or path.is_symlink():
+            raise FileExistsError(
+                f"EQ-R6 prelaunch path must be fresh: {path.name}"
+            )
+    if not family.parent.is_dir():
+        raise FileNotFoundError("EQ-R6 FAMILY parent does not exist")
+    os.mkdir(family, mode=0o700)
+    os.mkdir(prelaunch, mode=0o700)
+    os.chmod(family, 0o700)
+    os.chmod(prelaunch, 0o700)
+    return prelaunch, run_root
+
+
+def _eq_prelaunch_outer_argv(
+    *,
+    family: Path,
+    run_root: Path,
+    code_checkpoint: str,
+) -> list[str]:
+    return [
+        str(Path(__file__).parents[3] / ".venv/bin/python"),
+        "-m",
+        "camera_based_rgbww_optimizer.optimization.measure_p7_thermal_diagnostics",
+        "--execute",
+        "--allow-device-control",
+        "--eq-r6-orchestrate",
+        "--experiment-id",
+        thermal.TD_B,
+        "--source",
+        "ray",
+        "--phase",
+        "formal",
+        "--output-dir",
+        str(family),
+        "--run-name",
+        run_root.name,
+        "--code-checkpoint",
+        code_checkpoint,
+        "--human-authorization",
+        thermal.TD_B_EQ_R6_EXPERIMENT_ID,
+        "--camera-backend",
+        "remote",
+    ]
+
+
+def _eq_prelaunch_default_python_cleanup() -> Mapping[str, Any]:
+    from camera_based_rgbww_optimizer.control import all_off
+
+    steps = all_off.turn_everything_off()
+    rows = [
+        step.to_jsonable() if hasattr(step, "to_jsonable") else dict(step)
+        for step in steps
+    ]
+    return {
+        "status": (
+            "pass"
+            if rows and all(row.get("ok") is True for row in rows)
+            else "fail"
+        )
+    }
+
+
+def _eq_prelaunch_default_shell_cleanup() -> subprocess.CompletedProcess[str]:
+    python = str(Path(__file__).parents[3] / ".venv/bin/python")
+    return subprocess.run(
+        [
+            "zsh",
+            "-c",
+            'exec "$1" -m camera_based_rgbww_optimizer.control.all_off --json',
+            "eq-r6-prelaunch-cleanup",
+            python,
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        shell=False,
+    )
+
+
+def _eq_prelaunch_default_ray_readiness() -> Mapping[str, Any]:
+    from camera_based_rgbww_optimizer.control import ray120c
+
+    return ray120c.get_hsi()
+
+
+def _eq_prelaunch_reference(path: Path) -> dict[str, Any]:
+    reference = _reference(path)
+    reference["mode"] = oct(stat.S_IMODE(os.lstat(path).st_mode))
+    return reference
+
+
+def _eq_prelaunch_validate_root(prelaunch: Path) -> dict[str, Any]:
+    if prelaunch.is_symlink() or not prelaunch.is_dir():
+        raise PermissionError("EQ-R6 prelaunch manifest owner differs")
+    if stat.S_IMODE(os.lstat(prelaunch).st_mode) != 0o700:
+        raise PermissionError("EQ-R6 prelaunch root mode differs")
+    entries = sorted(path.name for path in prelaunch.iterdir())
+    if entries != sorted(EQ_R6_PRELAUNCH_ARTIFACTS):
+        raise PermissionError("EQ-R6 prelaunch canonical artifact set differs")
+    parsed: dict[str, dict[str, Any]] = {}
+    for name in EQ_R6_PRELAUNCH_ARTIFACTS:
+        path = prelaunch / name
+        if (
+            path.is_symlink()
+            or not path.is_file()
+            or path.resolve().parent != prelaunch.resolve()
+            or stat.S_IMODE(os.lstat(path).st_mode) != 0o600
+        ):
+            raise PermissionError(
+                f"EQ-R6 prelaunch artifact owner or mode differs: {name}"
+            )
+        raw = path.read_bytes()
+        if not raw.endswith(b"\n") or raw.endswith(b"\n\n"):
+            raise ValueError(f"EQ-R6 prelaunch JSON newline differs: {name}")
+        value = json.loads(raw.decode("utf-8"))
+        if not isinstance(value, dict):
+            raise ValueError(f"EQ-R6 prelaunch JSON is not an object: {name}")
+        if (
+            json.dumps(value, indent=2, sort_keys=True, allow_nan=False).encode(
+                "utf-8"
+            )
+            + b"\n"
+            != raw
+        ):
+            raise ValueError(f"EQ-R6 prelaunch JSON is not canonical: {name}")
+        parsed[name] = value
+    terminal = parsed["prelaunch-terminal.json"]
+    manifest = parsed["prelaunch-manifest.json"]
+    expected_terminal_refs = [
+        _eq_prelaunch_reference(prelaunch / name)
+        for name in EQ_R6_PRELAUNCH_ARTIFACTS[:7]
+    ]
+    expected_manifest_refs = [
+        _eq_prelaunch_reference(prelaunch / name)
+        for name in EQ_R6_PRELAUNCH_ARTIFACTS[:8]
+    ]
+    if terminal.get("canonical_artifacts") != expected_terminal_refs:
+        raise PermissionError("EQ-R6 prelaunch terminal references differ")
+    if (
+        manifest.get("canonical_artifacts") != expected_manifest_refs
+        or manifest.get("artifact_order") != list(EQ_R6_PRELAUNCH_ARTIFACTS)
+        or manifest.get("canonical_json_count") != 9
+        or manifest.get("status") != terminal.get("status")
+        or manifest.get("run_root_created") is not False
+        or manifest.get("dispatch_count") != 0
+    ):
+        raise PermissionError("EQ-R6 prelaunch manifest references differ")
+    stage_names = (
+        "camera-readiness.json",
+        "ray-readiness.json",
+        "all-off-python.json",
+        "all-off-shell.json",
+        "independent-final-zero.json",
+    )
+    stage_statuses = [parsed[name].get("status") for name in stage_names]
+    all_pass = all(status == "pass" for status in stage_statuses)
+    handoff = terminal.get("launch_handoff")
+    if (
+        terminal.get("status") not in {"pass", "fail"}
+        or not isinstance(handoff, Mapping)
+        or handoff.get("dispatch_count") != 0
+        or handoff.get("outer_launch_count") != 0
+        or (terminal.get("status") == "pass") != all_pass
+        or handoff.get("ready_for_dispatch")
+        != (terminal.get("status") == "pass")
+    ):
+        raise PermissionError("EQ-R6 prelaunch terminal decision differs")
+    if terminal.get("status") == "pass":
+        family = prelaunch.parent
+        run_root = family / "run"
+        expected_argv = _eq_prelaunch_outer_argv(
+            family=family,
+            run_root=run_root,
+            code_checkpoint=str(
+                parsed["frozen-inputs.json"]["code_checkpoint"]
+            ),
+        )
+        expected_hash = hashlib.sha256(
+            json.dumps(
+                expected_argv,
+                separators=(",", ":"),
+                ensure_ascii=False,
+                allow_nan=False,
+            ).encode("utf-8")
+        ).hexdigest()
+        if (
+            handoff.get("run_root") != str(run_root)
+            or handoff.get("outer_argv") != expected_argv
+            or handoff.get("outer_argv_sha256") != expected_hash
+            or run_root.exists()
+            or run_root.is_symlink()
+        ):
+            raise PermissionError("EQ-R6 prelaunch launch handoff differs")
+    elif "outer_argv" in handoff or "outer_argv_sha256" in handoff:
+        raise PermissionError("EQ-R6 failed prelaunch exposes executable argv")
+    if any(path.name.startswith(".") for path in prelaunch.iterdir()):
+        raise PermissionError("EQ-R6 prelaunch temporary artifact remains")
+    return parsed
+
+
+def run_td_b_eq_r6_prelaunch(
+    *,
+    family_root: str | Path,
+    code_checkpoint: str,
+    checkpoint_validator: Callable[[str], None] = _validate_checkpoint_and_tree,
+    backend_factory: Callable[[], Any] | None = None,
+    ray_readiness_fn: Callable[[], Mapping[str, Any]] | None = None,
+    python_cleanup_fn: Callable[[], Mapping[str, Any]] | None = None,
+    shell_cleanup_fn: Callable[[], Any] | None = None,
+    final_zero_fn: Callable[[], Mapping[str, Any]] = _default_eq_final_zero,
+    write_artifact_fn: Callable[
+        [Path, str, Mapping[str, Any]], Path
+    ] = _eq_prelaunch_write_json,
+    forbidden_secret_values: Sequence[str] = (),
+) -> Path:
+    """Build one no-dispatch EQ-R6 readiness seal in a fresh FAMILY."""
+    checkpoint_validator(code_checkpoint)
+    family = Path(family_root)
+    if not family.is_absolute():
+        raise ValueError("EQ-R6 FAMILY must be absolute")
+    _eq_prelaunch_safe_parent_chain(family)
+    family = family.resolve(strict=False)
+    prelaunch, run_root = _eq_prelaunch_acquire_root(family)
+    if run_root.exists() or run_root.is_symlink():
+        raise PermissionError("EQ-R6 RUN must remain absent during prelaunch")
+
+    frozen = {
+        "schema": "p7_td_b_eq_r6_prelaunch_frozen_inputs_v1",
+        "status": "pass",
+        "attempted": True,
+        "call_count": 1,
+        "code_checkpoint": code_checkpoint,
+        "family_root": str(family),
+        "prelaunch_root": str(prelaunch),
+        "run_root": str(run_root),
+        "measurement_runner": thermal.file_reference(Path(__file__)),
+        "production_wrapper": thermal.file_reference(PRODUCTION_WRAPPER),
+        "exposure_policy": thermal.file_reference(
+            thermal.TD_B_EXPOSURE_POLICY_V2_PATH
+        ),
+        "curve": thermal.file_reference(thermal.CURVE_PATH),
+        "human_authorization": thermal.TD_B_EQ_R6_EXPERIMENT_ID,
+        "human_confirmation_consumed": False,
+        "dispatch_count": 0,
+    }
+    write_artifact_fn(prelaunch, EQ_R6_PRELAUNCH_ARTIFACTS[0], frozen)
+
+    offline_plan = thermal.build_td_b_eq_r6_plan()
+    offline = {
+        "schema": "p7_td_b_eq_r6_prelaunch_offline_plan_v1",
+        "status": "pass",
+        "attempted": True,
+        "call_count": 1,
+        "offline_plan": offline_plan,
+        "live_output_contract": {
+            "family_root": str(family),
+            "output_root": str(run_root),
+            "run_root_must_be_absent": True,
+            "code_checkpoint": code_checkpoint,
+            "production_wrapper": thermal.file_reference(PRODUCTION_WRAPPER),
+            "measurement_runner": thermal.file_reference(Path(__file__)),
+        },
+        "formal": 0,
+        "ambient": 0,
+        "retry": 0,
+        "dispatch_count": 0,
+    }
+    write_artifact_fn(prelaunch, EQ_R6_PRELAUNCH_ARTIFACTS[1], offline)
+
+    primary_failure: BaseException | None = None
+    camera = {
+        "schema": "p7_td_b_eq_r6_camera_readiness_v1",
+        "status": "fail",
+        "attempted": True,
+        "factory_calls": 0,
+        "connect_calls": 0,
+        "resolve_settings_calls": 0,
+        "shutter_read_calls": 0,
+        "capture_calls": 0,
+        "settings_write_calls": 0,
+    }
+    try:
+        if backend_factory is None:
+            from camera_based_rgbww_optimizer.control import camera_remote
+
+            backend_factory = lambda: camera_remote.create_camera_backend(
+                "remote"
+            )
+        camera["factory_calls"] = 1
+        backend = backend_factory()
+        if getattr(backend, "backend_name", None) != "remote":
+            raise PermissionError("EQ-R6 prelaunch backend identity differs")
+        if (
+            getattr(backend, "v2_capture_capability", None)
+            != REMOTE_V2_CAPABILITY
+        ):
+            raise PermissionError("EQ-R6 prelaunch v2 capability differs")
+        if not callable(getattr(backend, "capture_with_timing", None)):
+            raise PermissionError(
+                "EQ-R6 prelaunch backend lacks capture_with_timing"
+            )
+        camera["connect_calls"] = 1
+        connection = backend.connect()
+        camera["resolve_settings_calls"] = 1
+        settings = backend.resolve_capture_settings(
+            iso=None,
+            aperture=None,
+            image_format="RAW",
+        )
+        iso = (
+            settings.get("iso")
+            if isinstance(settings, Mapping)
+            else getattr(settings, "iso", None)
+        )
+        aperture = (
+            settings.get("aperture")
+            if isinstance(settings, Mapping)
+            else getattr(settings, "aperture", None)
+        )
+        image_format = (
+            settings.get("image_format")
+            if isinstance(settings, Mapping)
+            else getattr(settings, "image_format", None)
+        )
+        if not str(iso or "") or not str(aperture or "") or image_format != "RAW":
+            raise PermissionError("EQ-R6 prelaunch resolved settings differ")
+        camera["shutter_read_calls"] = 1
+        _current, choices = backend.read_shutter_current_and_choices(connection)
+        if (
+            not isinstance(choices, Sequence)
+            or isinstance(choices, (str, bytes))
+            or "1/2500" not in choices
+            or "1/3200" not in choices
+        ):
+            raise PermissionError("EQ-R6 prelaunch shutter choices differ")
+        camera.update(
+            {
+                "status": "pass",
+                "backend_name": "remote",
+                "v2_capture_capability": REMOTE_V2_CAPABILITY,
+                "resolved_iso_nonempty": True,
+                "resolved_aperture_nonempty": True,
+                "resolved_image_format": "RAW",
+                "capture_with_timing_callable": True,
+                "required_shutters_present": True,
+            }
+        )
+    except BaseException as exc:
+        primary_failure = exc
+        camera["exception"] = _eq_prelaunch_exception(exc)
+    camera["call_count"] = sum(
+        int(camera[name])
+        for name in (
+            "factory_calls",
+            "connect_calls",
+            "resolve_settings_calls",
+            "shutter_read_calls",
+        )
+    )
+    write_artifact_fn(prelaunch, EQ_R6_PRELAUNCH_ARTIFACTS[2], camera)
+
+    ray = {
+        "schema": "p7_td_b_eq_r6_ray_readiness_v1",
+        "status": "not_attempted" if primary_failure is not None else "fail",
+        "attempted": primary_failure is None,
+        "get_hsi_calls": 0,
+        "nonzero_set_calls": 0,
+    }
+    if primary_failure is None:
+        try:
+            if ray_readiness_fn is None:
+                ray_readiness_fn = _eq_prelaunch_default_ray_readiness
+            ray["get_hsi_calls"] = 1
+            response = ray_readiness_fn()
+            data = response.get("data") if isinstance(response, Mapping) else None
+            if (
+                not isinstance(data, Mapping)
+                or any(
+                    type(data.get(name)) not in (int, float)
+                    for name in ("hue", "sat", "intensity")
+                )
+            ):
+                raise PermissionError("EQ-R6 prelaunch Ray response differs")
+            ray.update(
+                {
+                    "status": "pass",
+                    "response_data_schema_valid": True,
+                }
+            )
+        except BaseException as exc:
+            primary_failure = exc
+            ray["status"] = "fail"
+            ray["exception"] = _eq_prelaunch_exception(exc)
+    ray["call_count"] = ray["get_hsi_calls"]
+    write_artifact_fn(prelaunch, EQ_R6_PRELAUNCH_ARTIFACTS[3], ray)
+
+    cleanup_failures: list[BaseException] = []
+    python_cleanup = {
+        "schema": "p7_td_b_eq_r6_python_cleanup_v1",
+        "status": "fail",
+        "attempted": True,
+        "call_count": 1,
+    }
+    try:
+        result = (python_cleanup_fn or _eq_prelaunch_default_python_cleanup)()
+        if not isinstance(result, Mapping) or result.get("status") != "pass":
+            raise RuntimeError("EQ-R6 prelaunch Python cleanup failed")
+        python_cleanup["status"] = "pass"
+    except BaseException as exc:
+        cleanup_failures.append(exc)
+        python_cleanup["exception"] = _eq_prelaunch_exception(exc)
+    write_artifact_fn(prelaunch, EQ_R6_PRELAUNCH_ARTIFACTS[4], python_cleanup)
+
+    shell_cleanup = {
+        "schema": "p7_td_b_eq_r6_shell_cleanup_v1",
+        "status": "fail",
+        "attempted": True,
+        "call_count": 1,
+        "shell": False,
+    }
+    try:
+        completed = (
+            shell_cleanup_fn or _eq_prelaunch_default_shell_cleanup
+        )()
+        return_code = getattr(completed, "returncode", None)
+        stdout = getattr(completed, "stdout", None)
+        parsed_stdout = json.loads(stdout) if isinstance(stdout, str) else None
+        if (
+            type(return_code) is not int
+            or return_code != 0
+            or not isinstance(parsed_stdout, list)
+            or not parsed_stdout
+            or not all(
+                isinstance(row, Mapping) and row.get("ok") is True
+                for row in parsed_stdout
+            )
+        ):
+            raise RuntimeError("EQ-R6 prelaunch shell cleanup failed")
+        shell_cleanup.update(
+            {
+                "status": "pass",
+                "return_code": 0,
+                "stdout_json_valid": True,
+                "stderr_recorded": False,
+            }
+        )
+    except BaseException as exc:
+        cleanup_failures.append(exc)
+        shell_cleanup["exception"] = _eq_prelaunch_exception(exc)
+    write_artifact_fn(prelaunch, EQ_R6_PRELAUNCH_ARTIFACTS[5], shell_cleanup)
+
+    zero_failures: list[BaseException] = []
+    final_zero = {
+        "schema": "p7_td_b_eq_r6_independent_final_zero_v1",
+        "status": "fail",
+        "attempted": True,
+        "call_count": 1,
+    }
+    try:
+        zero = final_zero_fn()
+        if (
+            not isinstance(zero, Mapping)
+            or zero.get("status") != "pass"
+            or zero.get("strip_verified_off") is not True
+            or zero.get("ray_verified_off") is not True
+        ):
+            raise RuntimeError("EQ-R6 prelaunch independent final-zero failed")
+        final_zero.update(
+            {
+                "status": "pass",
+                "strip_generation_strictly_advanced": True,
+                "five_channels_zero": True,
+                "ray_intensity_zero": True,
+                "validate_both_off": "pass",
+            }
+        )
+    except BaseException as exc:
+        zero_failures.append(exc)
+        final_zero["exception"] = _eq_prelaunch_exception(exc)
+    write_artifact_fn(prelaunch, EQ_R6_PRELAUNCH_ARTIFACTS[6], final_zero)
+
+    failures = (
+        ([] if primary_failure is None else [primary_failure])
+        + cleanup_failures
+        + zero_failures
+    )
+    outer_argv = _eq_prelaunch_outer_argv(
+        family=family,
+        run_root=run_root,
+        code_checkpoint=code_checkpoint,
+    )
+    argv_sha256 = hashlib.sha256(
+        json.dumps(
+            outer_argv,
+            separators=(",", ":"),
+            ensure_ascii=False,
+            allow_nan=False,
+        ).encode("utf-8")
+    ).hexdigest()
+    handoff: dict[str, Any] = {
+        "ready_for_dispatch": not failures,
+        "dispatch_count": 0,
+        "outer_launch_count": 0,
+    }
+    if not failures:
+        handoff.update(
+            {
+                "run_root": str(run_root),
+                "code_checkpoint": code_checkpoint,
+                "human_authorization": thermal.TD_B_EQ_R6_EXPERIMENT_ID,
+                "outer_argv": outer_argv,
+                "outer_argv_sha256": argv_sha256,
+            }
+        )
+    safe_values = [
+        value
+        for value in forbidden_secret_values
+        if isinstance(value, str) and value
+    ]
+    preterminal_bytes = b"".join(
+        (prelaunch / name).read_bytes()
+        for name in EQ_R6_PRELAUNCH_ARTIFACTS[:7]
+    ) + json.dumps(handoff, sort_keys=True).encode("utf-8")
+    if any(value.encode("utf-8") in preterminal_bytes for value in safe_values):
+        secret_failure = PermissionError(
+            "EQ-R6 prelaunch secret-absence scan failed"
+        )
+        failures.append(secret_failure)
+        handoff = {
+            "ready_for_dispatch": False,
+            "dispatch_count": 0,
+            "outer_launch_count": 0,
+        }
+
+    terminal = {
+        "schema": "p7_td_b_eq_r6_prelaunch_terminal_v1",
+        "status": "pass" if not failures else "fail",
+        "attempted": True,
+        "call_count": 1,
+        "stage_status": {
+            "camera": camera["status"],
+            "ray": ray["status"],
+            "python_cleanup": python_cleanup["status"],
+            "shell_cleanup": shell_cleanup["status"],
+            "independent_final_zero": final_zero["status"],
+        },
+        "failures": [_eq_prelaunch_exception(exc) for exc in failures],
+        "launch_handoff": handoff,
+        "canonical_artifacts": [
+            _eq_prelaunch_reference(prelaunch / name)
+            for name in EQ_R6_PRELAUNCH_ARTIFACTS[:7]
+        ],
+        "sealed_at": _utc_now(),
+    }
+    write_artifact_fn(prelaunch, EQ_R6_PRELAUNCH_ARTIFACTS[7], terminal)
+    manifest = {
+        "schema": "p7_td_b_eq_r6_prelaunch_manifest_v1",
+        "status": terminal["status"],
+        "attempted": True,
+        "call_count": 1,
+        "artifact_order": list(EQ_R6_PRELAUNCH_ARTIFACTS),
+        "canonical_json_count": 9,
+        "canonical_artifacts": [
+            _eq_prelaunch_reference(prelaunch / name)
+            for name in EQ_R6_PRELAUNCH_ARTIFACTS[:8]
+        ],
+        "run_root_created": False,
+        "dispatch_count": 0,
+        "completed_at": _utc_now(),
+    }
+    manifest_path = write_artifact_fn(
+        prelaunch,
+        EQ_R6_PRELAUNCH_ARTIFACTS[8],
+        manifest,
+    )
+    _eq_prelaunch_validate_root(prelaunch)
+    if run_root.exists() or run_root.is_symlink():
+        raise PermissionError("EQ-R6 prelaunch created RUN")
+    if failures:
+        raise failures[0]
+    return manifest_path
+
+
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     from camera_based_rgbww_optimizer.control import camera_remote
 
@@ -3231,6 +3904,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--prepare-lineage-qualification-evidence", action="store_true"
     )
     eq_mode = parser.add_mutually_exclusive_group()
+    eq_mode.add_argument("--eq-r6-prelaunch", action="store_true")
     eq_mode.add_argument("--eq-r6-orchestrate", action="store_true")
     eq_mode.add_argument("--eq-r6-single-candidate", type=int, choices=(1, 2))
     parser.add_argument("--eq-r6-live-plan", type=Path)
@@ -3249,8 +3923,58 @@ def main(
     setup_finalize_fn: Callable[..., tuple[Path, Path, Path]] = finalize_td_b_setup_after_wrapper,
     setup_orchestrate_fn: Callable[..., tuple[Path, Path, Path]] = orchestrate_td_b_setup,
     resolved_run_fn: Callable[..., Path] = run_resolved_td_b_formal,
+    eq_prelaunch_fn: Callable[..., Path] = run_td_b_eq_r6_prelaunch,
 ) -> int:
     args = parse_args(argv)
+    if args.eq_r6_prelaunch:
+        from camera_based_rgbww_optimizer.control import camera_remote
+
+        if (
+            not args.execute
+            or not args.allow_device_control
+            or args.experiment_id != thermal.TD_B
+            or args.source != "ray"
+            or args.phase != "formal"
+            or args.run_name != "prelaunch"
+            or not args.output_dir.is_absolute()
+            or not args.code_checkpoint
+            or args.human_authorization != thermal.TD_B_EQ_R6_EXPERIMENT_ID
+            or args.camera_backend != "remote"
+            or args.setup_release is not None
+            or args.lineage_candidate is not None
+            or args.qualification_preparation is not None
+            or args.finalize_setup_run is not None
+            or args.orchestrate_setup
+            or args.eq_r6_live_plan is not None
+            or args.eq_r6_outer_pid is not None
+            or args.variant != "core"
+            or args.prerequisite_artifact != thermal.OPERATING_ENVELOPE_PATH
+            or Path(args.remote_env_file).resolve()
+            != Path(camera_remote.DEFAULT_ENV_FILE).resolve()
+            or args.remote_base_url is not None
+            or args.remote_timeout != camera_remote.DEFAULT_TIMEOUT
+        ):
+            raise PermissionError(
+                "EQ-R6 prelaunch requires its exact isolated production contract"
+            )
+        configured_backend_factory = (
+            None
+            if backend_factory is None
+            else lambda: backend_factory(
+                args.camera_backend,
+                env_file=args.remote_env_file,
+                base_url=args.remote_base_url,
+                timeout=args.remote_timeout,
+            )
+        )
+        print(
+            eq_prelaunch_fn(
+                family_root=args.output_dir,
+                code_checkpoint=args.code_checkpoint,
+                backend_factory=configured_backend_factory,
+            )
+        )
+        return 0
     if args.eq_r6_orchestrate:
         if (
             not args.execute

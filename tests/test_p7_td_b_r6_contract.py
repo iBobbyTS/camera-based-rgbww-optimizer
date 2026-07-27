@@ -2,11 +2,15 @@ from __future__ import annotations
 
 import json
 import hashlib
+import os
+import stat
 import subprocess
 import tempfile
 import unittest
 from copy import deepcopy
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import patch
 
 from camera_based_rgbww_optimizer.optimization import (
     analyze_p7_thermal_diagnostics as analyzer,
@@ -943,6 +947,802 @@ class EqR6LiveOwnerTests(unittest.TestCase):
             measure.main([
                 *base, "--qualify-lineage-release", "--eq-r6-orchestrate",
             ])
+
+
+class EqR6PrelaunchOwnerTests(unittest.TestCase):
+    def setUp(self):
+        self.tempdir = tempfile.TemporaryDirectory(
+            dir="/Volumes/4T/temp/rgbww-optimizer",
+        )
+        self.parent = Path(self.tempdir.name)
+
+    def tearDown(self):
+        self.tempdir.cleanup()
+
+    @staticmethod
+    def passing_shell():
+        return subprocess.CompletedProcess(
+            ["zsh"],
+            0,
+            stdout=json.dumps([{"ok": True}]),
+            stderr="",
+        )
+
+    @staticmethod
+    def passing_zero():
+        return {
+            "status": "pass",
+            "strip_verified_off": True,
+            "ray_verified_off": True,
+        }
+
+    @staticmethod
+    def passing_ray():
+        return {"data": {"hue": 120, "sat": 50, "intensity": 0}}
+
+    def dependencies(self, *, backend=None):
+        test_case = self
+        calls = {
+            "factory": 0,
+            "connect": 0,
+            "resolve": 0,
+            "shutters": 0,
+            "capture": 0,
+            "ray": 0,
+            "python": 0,
+            "shell": 0,
+            "zero": 0,
+            "dispatch": 0,
+        }
+
+        class Backend:
+            backend_name = "remote"
+            v2_capture_capability = measure.REMOTE_V2_CAPABILITY
+
+            def connect(self):
+                calls["connect"] += 1
+                return object()
+
+            def resolve_capture_settings(self, **kwargs):
+                calls["resolve"] += 1
+                test_case.assertEqual(
+                    kwargs,
+                    {"iso": None, "aperture": None, "image_format": "RAW"},
+                )
+                return SimpleNamespace(
+                    iso="100",
+                    aperture="8",
+                    image_format="RAW",
+                )
+
+            def read_shutter_current_and_choices(self, _connection):
+                calls["shutters"] += 1
+                return "1/2500", ["1/2000", "1/2500", "1/3200"]
+
+            def capture_with_timing(self, **_kwargs):
+                calls["capture"] += 1
+                raise AssertionError("prelaunch must not capture")
+
+        selected_backend = backend or Backend()
+
+        def factory():
+            calls["factory"] += 1
+            return selected_backend
+
+        def ray():
+            calls["ray"] += 1
+            return self.passing_ray()
+
+        def python_cleanup():
+            calls["python"] += 1
+            return {"status": "pass"}
+
+        def shell_cleanup():
+            calls["shell"] += 1
+            return self.passing_shell()
+
+        def zero():
+            calls["zero"] += 1
+            return self.passing_zero()
+
+        return calls, {
+            "backend_factory": factory,
+            "ray_readiness_fn": ray,
+            "python_cleanup_fn": python_cleanup,
+            "shell_cleanup_fn": shell_cleanup,
+            "final_zero_fn": zero,
+        }
+
+    def run_owner(self, name, **overrides):
+        calls, dependencies = self.dependencies()
+        dependencies.update(overrides)
+        family = self.parent / name
+        path = measure.run_td_b_eq_r6_prelaunch(
+            family_root=family,
+            code_checkpoint="a" * 40,
+            checkpoint_validator=lambda _checkpoint: None,
+            **dependencies,
+        )
+        return calls, family, path
+
+    def test_positive_prelaunch_has_exact_order_modes_counts_and_no_dispatch(self):
+        calls, family, manifest_path = self.run_owner("positive")
+        prelaunch = family / "prelaunch"
+        self.assertEqual(manifest_path, prelaunch / "prelaunch-manifest.json")
+        self.assertEqual(
+            calls,
+            {
+                "factory": 1,
+                "connect": 1,
+                "resolve": 1,
+                "shutters": 1,
+                "capture": 0,
+                "ray": 1,
+                "python": 1,
+                "shell": 1,
+                "zero": 1,
+                "dispatch": 0,
+            },
+        )
+        parsed = measure._eq_prelaunch_validate_root(prelaunch)
+        self.assertEqual(
+            list(parsed),
+            list(measure.EQ_R6_PRELAUNCH_ARTIFACTS),
+        )
+        self.assertEqual(
+            stat.S_IMODE(os.lstat(prelaunch).st_mode),
+            0o700,
+        )
+        self.assertEqual(stat.S_IMODE(os.lstat(family).st_mode), 0o700)
+        self.assertTrue(
+            all(
+                stat.S_IMODE(os.lstat(prelaunch / name).st_mode) == 0o600
+                for name in measure.EQ_R6_PRELAUNCH_ARTIFACTS
+            )
+        )
+        terminal = parsed["prelaunch-terminal.json"]
+        self.assertEqual(terminal["status"], "pass")
+        handoff = terminal["launch_handoff"]
+        self.assertTrue(handoff["ready_for_dispatch"])
+        self.assertEqual(
+            (handoff["dispatch_count"], handoff["outer_launch_count"]),
+            (0, 0),
+        )
+        self.assertFalse((family / "run").exists())
+        expected = measure._eq_prelaunch_outer_argv(
+            family=family,
+            run_root=family / "run",
+            code_checkpoint="a" * 40,
+        )
+        self.assertEqual(handoff["outer_argv"], expected)
+        expected_hash = hashlib.sha256(
+            json.dumps(
+                expected,
+                separators=(",", ":"),
+                ensure_ascii=False,
+                allow_nan=False,
+            ).encode("utf-8")
+        ).hexdigest()
+        self.assertEqual(handoff["outer_argv_sha256"], expected_hash)
+
+    def test_injected_prelaunch_never_reaches_real_dependency_owners(self):
+        from camera_based_rgbww_optimizer.control import (
+            all_off,
+            camera_remote,
+            esphome,
+            ray120c,
+        )
+
+        calls, dependencies = self.dependencies()
+        forbidden = AssertionError("real dependency owner was reached")
+        with (
+            patch.object(
+                camera_remote,
+                "create_camera_backend",
+                side_effect=forbidden,
+            ),
+            patch.object(
+                camera_remote,
+                "load_remote_camera_config",
+                side_effect=forbidden,
+            ),
+            patch.object(
+                camera_remote.request,
+                "urlopen",
+                side_effect=forbidden,
+            ),
+            patch.object(ray120c, "get_hsi", side_effect=forbidden),
+            patch.object(ray120c, "set_cct", side_effect=forbidden),
+            patch.object(esphome, "verified_light", side_effect=forbidden),
+            patch.object(all_off, "turn_everything_off", side_effect=forbidden),
+        ):
+            manifest = measure.run_td_b_eq_r6_prelaunch(
+                family_root=self.parent / "forbidden-real-dependencies",
+                code_checkpoint="a" * 40,
+                checkpoint_validator=lambda _checkpoint: None,
+                **dependencies,
+            )
+        self.assertTrue(manifest.is_file())
+        self.assertEqual(
+            (
+                calls["factory"],
+                calls["connect"],
+                calls["resolve"],
+                calls["shutters"],
+                calls["ray"],
+                calls["python"],
+                calls["shell"],
+                calls["zero"],
+                calls["capture"],
+                calls["dispatch"],
+            ),
+            (1, 1, 1, 1, 1, 1, 1, 1, 0, 0),
+        )
+
+    def test_readiness_negative_matrix_seals_failure_and_runs_all_cleanups(self):
+        cases = (
+            "factory_exception",
+            "factory_keyboard",
+            "factory_system_exit",
+            "connect_exception",
+            "connect_keyboard",
+            "connect_system_exit",
+            "backend_name",
+            "capability",
+            "settings_missing",
+            "settings_malformed",
+            "settings_nonraw",
+            "capture_missing",
+            "shutter_missing_2500",
+            "shutter_missing_3200",
+            "ray_exception",
+            "ray_keyboard",
+            "ray_system_exit",
+            "ray_missing_data",
+            "ray_malformed",
+        )
+        for index, case in enumerate(cases, start=1):
+            with self.subTest(case=case):
+                calls, dependencies = self.dependencies()
+                base_factory = dependencies["backend_factory"]
+                backend = base_factory()
+                calls["factory"] = 0
+                if case.startswith("factory_"):
+                    exc = {
+                        "factory_exception": RuntimeError("private-sentinel"),
+                        "factory_keyboard": KeyboardInterrupt(),
+                        "factory_system_exit": SystemExit(7),
+                    }[case]
+
+                    def factory(exc=exc):
+                        calls["factory"] += 1
+                        raise exc
+
+                    dependencies["backend_factory"] = factory
+                else:
+                    if case.startswith("connect_"):
+                        exc = {
+                            "connect_exception": RuntimeError("private"),
+                            "connect_keyboard": KeyboardInterrupt(),
+                            "connect_system_exit": SystemExit(8),
+                        }[case]
+                        backend.connect = lambda exc=exc: (
+                            calls.__setitem__("connect", calls["connect"] + 1)
+                            or (_ for _ in ()).throw(exc)
+                        )
+                    elif case == "backend_name":
+                        backend.backend_name = "local"
+                    elif case == "capability":
+                        backend.v2_capture_capability = "legacy"
+                    elif case == "settings_missing":
+                        backend.resolve_capture_settings = lambda **_kwargs: {}
+                    elif case == "settings_malformed":
+                        backend.resolve_capture_settings = lambda **_kwargs: "bad"
+                    elif case == "settings_nonraw":
+                        backend.resolve_capture_settings = lambda **_kwargs: {
+                            "iso": "100",
+                            "aperture": "8",
+                            "image_format": "JPEG",
+                        }
+                    elif case == "capture_missing":
+                        backend.capture_with_timing = None
+                    elif case == "shutter_missing_2500":
+                        backend.read_shutter_current_and_choices = (
+                            lambda _connection: ("1/3200", ["1/3200"])
+                        )
+                    elif case == "shutter_missing_3200":
+                        backend.read_shutter_current_and_choices = (
+                            lambda _connection: ("1/2500", ["1/2500"])
+                        )
+
+                    def factory(backend=backend):
+                        calls["factory"] += 1
+                        return backend
+
+                    dependencies["backend_factory"] = factory
+                if case.startswith("ray_"):
+                    if case == "ray_missing_data":
+                        dependencies["ray_readiness_fn"] = (
+                            lambda: calls.__setitem__("ray", calls["ray"] + 1)
+                            or {}
+                        )
+                    elif case == "ray_malformed":
+                        dependencies["ray_readiness_fn"] = (
+                            lambda: calls.__setitem__("ray", calls["ray"] + 1)
+                            or {"data": {"hue": "bad"}}
+                        )
+                    else:
+                        exc = {
+                            "ray_exception": RuntimeError("private"),
+                            "ray_keyboard": KeyboardInterrupt(),
+                            "ray_system_exit": SystemExit(9),
+                        }[case]
+                        dependencies["ray_readiness_fn"] = (
+                            lambda exc=exc: calls.__setitem__(
+                                "ray", calls["ray"] + 1
+                            )
+                            or (_ for _ in ()).throw(exc)
+                        )
+                family = self.parent / f"readiness-{index}"
+                caught = None
+                try:
+                    measure.run_td_b_eq_r6_prelaunch(
+                        family_root=family,
+                        code_checkpoint="a" * 40,
+                        checkpoint_validator=lambda _checkpoint: None,
+                        **dependencies,
+                    )
+                except BaseException as exc:
+                    caught = exc
+                self.assertIsNotNone(caught)
+                parsed = measure._eq_prelaunch_validate_root(
+                    family / "prelaunch"
+                )
+                self.assertEqual(
+                    parsed["prelaunch-terminal.json"]["status"],
+                    "fail",
+                )
+                self.assertFalse(
+                    parsed["prelaunch-terminal.json"]["launch_handoff"][
+                        "ready_for_dispatch"
+                    ]
+                )
+                self.assertEqual(
+                    (calls["python"], calls["shell"], calls["zero"]),
+                    (1, 1, 1),
+                )
+                self.assertEqual(calls["capture"], 0)
+                self.assertFalse((family / "run").exists())
+                if case.startswith(("factory_", "connect_")) or case in {
+                    "backend_name",
+                    "capability",
+                    "settings_missing",
+                    "settings_malformed",
+                    "settings_nonraw",
+                    "capture_missing",
+                    "shutter_missing_2500",
+                    "shutter_missing_3200",
+                }:
+                    self.assertEqual(calls["ray"], 0)
+
+    def test_cleanup_and_final_zero_baseexception_matrix_is_all_path(self):
+        cases = (
+            "python_fail",
+            "python_keyboard",
+            "python_system_exit",
+            "shell_nonzero",
+            "shell_malformed",
+            "shell_exception",
+            "shell_keyboard",
+            "shell_system_exit",
+            "zero_generation",
+            "zero_strip_nonzero",
+            "zero_ray_nonzero",
+            "zero_validate_failure",
+            "zero_exception",
+            "zero_keyboard",
+            "zero_system_exit",
+            "primary_python",
+            "primary_shell",
+            "primary_zero",
+            "all_three",
+        )
+        for index, case in enumerate(cases, start=1):
+            with self.subTest(case=case):
+                calls, dependencies = self.dependencies()
+
+                def python_result():
+                    calls["python"] += 1
+                    if case in {"python_keyboard"}:
+                        raise KeyboardInterrupt()
+                    if case in {"python_system_exit"}:
+                        raise SystemExit(10)
+                    if case in {"python_fail", "primary_python", "all_three"}:
+                        return {"status": "fail"}
+                    return {"status": "pass"}
+
+                def shell_result():
+                    calls["shell"] += 1
+                    if case in {"shell_exception"}:
+                        raise RuntimeError("private")
+                    if case in {"shell_keyboard"}:
+                        raise KeyboardInterrupt()
+                    if case in {"shell_system_exit"}:
+                        raise SystemExit(11)
+                    if case in {"shell_malformed"}:
+                        return subprocess.CompletedProcess(
+                            ["zsh"], 0, stdout="{", stderr=""
+                        )
+                    if case in {"shell_nonzero", "primary_shell", "all_three"}:
+                        return subprocess.CompletedProcess(
+                            ["zsh"], 3, stdout="[]", stderr="private"
+                        )
+                    return self.passing_shell()
+
+                def zero_result():
+                    calls["zero"] += 1
+                    if case == "zero_exception":
+                        raise RuntimeError("private")
+                    if case == "zero_keyboard":
+                        raise KeyboardInterrupt()
+                    if case == "zero_system_exit":
+                        raise SystemExit(12)
+                    if case in {
+                        "zero_generation",
+                        "zero_strip_nonzero",
+                        "zero_ray_nonzero",
+                        "zero_validate_failure",
+                        "primary_zero",
+                        "all_three",
+                    }:
+                        return {
+                            "status": "fail",
+                            "strip_verified_off": False,
+                            "ray_verified_off": False,
+                        }
+                    return self.passing_zero()
+
+                dependencies.update(
+                    {
+                        "python_cleanup_fn": python_result,
+                        "shell_cleanup_fn": shell_result,
+                        "final_zero_fn": zero_result,
+                    }
+                )
+                if case.startswith("primary_"):
+                    dependencies["ray_readiness_fn"] = lambda: (
+                        calls.__setitem__("ray", calls["ray"] + 1)
+                        or (_ for _ in ()).throw(RuntimeError("primary"))
+                    )
+                family = self.parent / f"cleanup-{index}"
+                caught = None
+                try:
+                    measure.run_td_b_eq_r6_prelaunch(
+                        family_root=family,
+                        code_checkpoint="a" * 40,
+                        checkpoint_validator=lambda _checkpoint: None,
+                        **dependencies,
+                    )
+                except BaseException as exc:
+                    caught = exc
+                self.assertIsNotNone(caught)
+                parsed = measure._eq_prelaunch_validate_root(
+                    family / "prelaunch"
+                )
+                terminal = parsed["prelaunch-terminal.json"]
+                self.assertEqual(terminal["status"], "fail")
+                self.assertFalse(
+                    terminal["launch_handoff"]["ready_for_dispatch"]
+                )
+                self.assertEqual(
+                    (calls["python"], calls["shell"], calls["zero"]),
+                    (1, 1, 1),
+                )
+                self.assertFalse((family / "run").exists())
+
+    def test_root_atomic_and_manifest_validation_fail_closed_matrix(self):
+        calls, dependencies = self.dependencies()
+        root_cases = (
+            "relative",
+            "escape",
+            "parent_symlink",
+            "family",
+            "prelaunch",
+            "run",
+        )
+        for index, case in enumerate(root_cases, start=1):
+            with self.subTest(case=case):
+                base = self.parent / f"root-{index}"
+                family = base / "family"
+                if case == "relative":
+                    family = Path("relative-family")
+                elif case == "escape":
+                    family = self.parent / "owner" / ".." / "escaped-family"
+                elif case == "parent_symlink":
+                    target = self.parent / f"target-{index}"
+                    target.mkdir()
+                    base.symlink_to(target, target_is_directory=True)
+                    family = base / "family"
+                elif case == "family":
+                    family.mkdir(parents=True)
+                elif case == "prelaunch":
+                    (family / "prelaunch").mkdir(parents=True)
+                elif case == "run":
+                    (family / "run").mkdir(parents=True)
+                before = dict(calls)
+                with self.assertRaises(
+                    (ValueError, PermissionError, FileExistsError)
+                ):
+                    measure.run_td_b_eq_r6_prelaunch(
+                        family_root=family,
+                        code_checkpoint="a" * 40,
+                        checkpoint_validator=lambda _checkpoint: None,
+                        **dependencies,
+                    )
+                self.assertEqual(calls, before)
+
+        checkpoint_family = self.parent / "checkpoint-reject"
+        before = dict(calls)
+        with self.assertRaises(PermissionError):
+            measure.run_td_b_eq_r6_prelaunch(
+                family_root=checkpoint_family,
+                code_checkpoint="a" * 40,
+                checkpoint_validator=lambda _checkpoint: (
+                    (_ for _ in ()).throw(PermissionError("checkpoint"))
+                ),
+                **dependencies,
+            )
+        self.assertFalse(checkpoint_family.exists())
+        self.assertEqual(calls, before)
+
+        calls, family, _manifest = self.run_owner("second")
+        before = dict(calls)
+        with self.assertRaises(FileExistsError):
+            measure.run_td_b_eq_r6_prelaunch(
+                family_root=family,
+                code_checkpoint="a" * 40,
+                checkpoint_validator=lambda _checkpoint: None,
+                **self.dependencies()[1],
+            )
+        self.assertEqual(calls, before)
+
+        writer_root = self.parent / "writer"
+        writer_root.mkdir(mode=0o700)
+        target = writer_root / "frozen-inputs.json"
+        target.write_text("{}\n", encoding="utf-8")
+        with self.assertRaises(FileExistsError):
+            measure._eq_prelaunch_write_json(
+                writer_root, "frozen-inputs.json", {}
+            )
+        target.unlink()
+        outside = self.parent / "outside.json"
+        target.symlink_to(outside)
+        with self.assertRaises(FileExistsError):
+            measure._eq_prelaunch_write_json(
+                writer_root, "frozen-inputs.json", {}
+            )
+
+        calls, dependencies = self.dependencies()
+        write_calls = []
+
+        def failing_writer(root, name, value):
+            write_calls.append(name)
+            if name == "camera-readiness.json":
+                raise OSError("injected atomic failure")
+            return measure._eq_prelaunch_write_json(root, name, value)
+
+        family = self.parent / "writer-failure"
+        with self.assertRaises(OSError):
+            measure.run_td_b_eq_r6_prelaunch(
+                family_root=family,
+                code_checkpoint="a" * 40,
+                checkpoint_validator=lambda _checkpoint: None,
+                write_artifact_fn=failing_writer,
+                **dependencies,
+            )
+        self.assertFalse(
+            (family / "prelaunch" / "prelaunch-manifest.json").exists()
+        )
+        self.assertEqual(
+            write_calls,
+            [
+                "frozen-inputs.json",
+                "offline-plan.json",
+                "camera-readiness.json",
+            ],
+        )
+
+        mutations = (
+            "manifest_hash",
+            "terminal_reference",
+            "extra_json",
+            "malformed",
+            "nonfinite",
+            "wrong_mode",
+        )
+        for index, mutation in enumerate(mutations, start=1):
+            with self.subTest(mutation=mutation):
+                _calls, family, _path = self.run_owner(
+                    f"manifest-drift-{index}"
+                )
+                prelaunch = family / "prelaunch"
+                if mutation == "manifest_hash":
+                    path = prelaunch / "prelaunch-manifest.json"
+                    value = json.loads(path.read_text(encoding="utf-8"))
+                    value["canonical_artifacts"][0]["sha256"] = "0" * 64
+                    path.write_text(
+                        json.dumps(value, indent=2, sort_keys=True) + "\n",
+                        encoding="utf-8",
+                    )
+                elif mutation == "terminal_reference":
+                    path = prelaunch / "prelaunch-terminal.json"
+                    value = json.loads(path.read_text(encoding="utf-8"))
+                    value["canonical_artifacts"][0]["bytes"] += 1
+                    path.write_text(
+                        json.dumps(value, indent=2, sort_keys=True) + "\n",
+                        encoding="utf-8",
+                    )
+                elif mutation == "extra_json":
+                    (prelaunch / "extra.json").write_text(
+                        "{}\n", encoding="utf-8"
+                    )
+                elif mutation == "malformed":
+                    (prelaunch / "camera-readiness.json").write_text(
+                        "{", encoding="utf-8"
+                    )
+                elif mutation == "nonfinite":
+                    (prelaunch / "camera-readiness.json").write_text(
+                        '{"value": NaN}\n', encoding="utf-8"
+                    )
+                elif mutation == "wrong_mode":
+                    (prelaunch / "camera-readiness.json").chmod(0o644)
+                with self.assertRaises(
+                    (PermissionError, ValueError, json.JSONDecodeError)
+                ):
+                    measure._eq_prelaunch_validate_root(prelaunch)
+
+    def test_cli_handoff_and_secret_absence_matrix(self):
+        exact = [
+            "--experiment-id",
+            thermal.TD_B,
+            "--source",
+            "ray",
+            "--phase",
+            "formal",
+            "--output-dir",
+            str(self.parent / "cli-family"),
+            "--run-name",
+            "prelaunch",
+            "--execute",
+            "--allow-device-control",
+            "--eq-r6-prelaunch",
+            "--code-checkpoint",
+            "a" * 40,
+            "--human-authorization",
+            thermal.TD_B_EQ_R6_EXPERIMENT_ID,
+            "--camera-backend",
+            "remote",
+        ]
+        calls = []
+
+        def fake_owner(**kwargs):
+            calls.append(kwargs)
+            return self.parent / "fake-manifest.json"
+
+        self.assertEqual(
+            measure.main(exact, eq_prelaunch_fn=fake_owner),
+            0,
+        )
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(calls[0]["family_root"], self.parent / "cli-family")
+        self.assertIsNone(calls[0]["backend_factory"])
+
+        def without_pair(values, flag):
+            index = values.index(flag)
+            return values[:index] + values[index + 2 :]
+
+        reject_cases = (
+            exact[: exact.index("--execute")] + exact[exact.index("--execute") + 1 :],
+            [value for value in exact if value != "--allow-device-control"],
+            without_pair(exact, "--code-checkpoint"),
+            without_pair(exact, "--human-authorization"),
+            [
+                "WRONG-AUTH" if value == thermal.TD_B_EQ_R6_EXPERIMENT_ID else value
+                for value in exact
+            ],
+            [value if value != "ray" else "strip" for value in exact],
+            [value if value != "formal" else "setup" for value in exact],
+            [value if value != "prelaunch" else "other" for value in exact],
+            [
+                "relative-family"
+                if value == str(self.parent / "cli-family")
+                else value
+                for value in exact
+            ],
+            exact[:-2] + ["--camera-backend", "local"],
+            exact + ["--remote-base-url", "http://safe.invalid"],
+            exact + ["--remote-env-file", str(self.parent / "fake.env")],
+            exact + ["--remote-timeout", "9"],
+            exact + ["--setup-release", str(self.parent / "release.json")],
+            exact + ["--eq-r6-orchestrate"],
+            exact + ["--unknown-prelaunch-state"],
+        )
+        for index, argv in enumerate(reject_cases, start=1):
+            with self.subTest(cli_reject=index):
+                before = len(calls)
+                with self.assertRaises((PermissionError, SystemExit)):
+                    measure.main(argv, eq_prelaunch_fn=fake_owner)
+                self.assertEqual(len(calls), before)
+
+        camera_token = "CAMERA_TOKEN_SENTINEL_C2"
+        ray_private = "RAY_PRIVATE_SENTINEL_C2"
+        shell_secret = "SHELL_SECRET_SENTINEL_C2"
+        calls, dependencies = self.dependencies()
+
+        def secret_factory():
+            calls["factory"] += 1
+            raise RuntimeError(camera_token)
+
+        dependencies["backend_factory"] = secret_factory
+        dependencies["shell_cleanup_fn"] = lambda: (
+            calls.__setitem__("shell", calls["shell"] + 1)
+            or subprocess.CompletedProcess(
+                ["zsh"],
+                2,
+                stdout=json.dumps(
+                    [{"ok": False, "authorization": shell_secret}]
+                ),
+                stderr=f"password={ray_private}",
+            )
+        )
+        family = self.parent / "secret"
+        with self.assertRaises(RuntimeError):
+            measure.run_td_b_eq_r6_prelaunch(
+                family_root=family,
+                code_checkpoint="a" * 40,
+                checkpoint_validator=lambda _checkpoint: None,
+                forbidden_secret_values=(
+                    camera_token,
+                    ray_private,
+                    shell_secret,
+                ),
+                **dependencies,
+            )
+        payload = b"".join(
+            path.read_bytes()
+            for path in (family / "prelaunch").iterdir()
+            if path.is_file()
+        )
+        self.assertNotIn(camera_token.encode(), payload)
+        self.assertNotIn(ray_private.encode(), payload)
+        self.assertNotIn(shell_secret.encode(), payload)
+        self.assertNotIn(b'"token"', payload.lower())
+        self.assertNotIn(b'"secret"', payload.lower())
+        self.assertNotIn(b'"password"', payload.lower())
+        self.assertFalse((family / "run").exists())
+
+        from camera_based_rgbww_optimizer.control import ray120c
+
+        public = ray120c.OpenAPISettings.from_env({})
+        self.assertEqual(public.secret, ray120c.DEFAULT_OPENAPI_SECRET)
+
+        fake_completed = self.passing_shell()
+        with patch.object(
+            measure.subprocess,
+            "run",
+            return_value=fake_completed,
+        ) as run:
+            self.assertIs(
+                measure._eq_prelaunch_default_shell_cleanup(),
+                fake_completed,
+            )
+        command = run.call_args.args[0]
+        self.assertIsInstance(command, list)
+        self.assertEqual(command[:2], ["zsh", "-c"])
+        self.assertIn("exec", command[2])
+        self.assertEqual(run.call_args.kwargs["shell"], False)
+        self.assertNotIn(camera_token, json.dumps(command))
+        self.assertNotIn(ray_private, json.dumps(command))
 
 
 class RayR6ContractTests(unittest.TestCase):
