@@ -93,6 +93,7 @@ OPERATING_ENVELOPE_V2_SCHEMA = "p7_operating_envelope_v2"
 TD_B_EXPOSURE_POLICY_V2_PATH = PROJECT_ROOT / "config/hsi/p7-ray-td-b-exposure-policy-v2.json"
 TD_B_EXPOSURE_POLICY_V2_SCHEMA = "p7_ray_td_b_exposure_policy_v2"
 TD_B_EQ_R6_EXPERIMENT_ID = "P7-TD-B-RAY-C-EXPOSURE-QUAL-R6"
+TD_B_EQ_R6_LIVE_PLAN_SCHEMA = "p7_td_b_eq_r6_live_plan_v1"
 TD_B_R6_EXPERIMENT_ID = "P7-TD-B-RAY-OP600-EXPOSURE-GUARDED-FORMAL-R6"
 TD_B_R5_PLAN_SHA256 = "94da09f240e2d0ca84ce545c52748522dfbaa9a674bf96ffcef5c8e74473ba9f"
 TD_B_R5_SHUTTERS_SHA256 = "b49dd52ebc1eabc8ae6ae0e3713884e5e939428d0682e6d7234eea8c17626e71"
@@ -788,6 +789,144 @@ def validate_td_b_eq_r6_plan(plan: Mapping[str, Any]) -> None:
         raise ValueError("EQ-R6 plan differs from the exact bounded offline contract")
 
 
+def activate_td_b_eq_r6_live_plan(
+    offline_plan: Mapping[str, Any],
+    *,
+    code_checkpoint: str,
+    output_root: str | Path,
+    wrapper_path: str | Path,
+    measurement_runner_path: str | Path,
+) -> dict[str, Any]:
+    """Bind the exact offline EQ contract to one fresh production owner.
+
+    Activation is intentionally side-effect free: the output root must not yet
+    exist, and callers remain responsible for creating it only after validating
+    this returned contract.
+    """
+    validate_td_b_eq_r6_plan(offline_plan)
+    if not isinstance(code_checkpoint, str) or len(code_checkpoint) != 40:
+        raise ValueError("EQ-R6 activation requires an exact Git checkpoint")
+    try:
+        int(code_checkpoint, 16)
+    except ValueError as exc:
+        raise ValueError("EQ-R6 activation checkpoint is not hexadecimal") from exc
+    root = Path(output_root)
+    if not root.is_absolute() or root.exists() or root.is_symlink():
+        raise ValueError("EQ-R6 activation requires one fresh absolute non-symlink root")
+    resolved_root = root.resolve(strict=False)
+    allowed_root = Path("/Volumes/4T/temp/rgbww-optimizer").resolve(strict=True)
+    if not resolved_root.is_relative_to(allowed_root):
+        raise ValueError("EQ-R6 output owner is outside the approved temporary root")
+    for parent in (root, *root.parents):
+        if parent.resolve(strict=False) == allowed_root.parent:
+            break
+        if parent.exists() and parent.is_symlink():
+            raise ValueError("EQ-R6 output owner has a symlink ancestor")
+    wrapper = Path(wrapper_path).resolve(strict=True)
+    measurement_runner = Path(measurement_runner_path).resolve(strict=True)
+    if wrapper.is_symlink() or measurement_runner.is_symlink():
+        raise ValueError("EQ-R6 production owner source cannot be a symlink")
+    return _build_td_b_eq_r6_live_plan(
+        offline_plan,
+        code_checkpoint=code_checkpoint,
+        resolved_root=resolved_root,
+        wrapper=wrapper,
+        measurement_runner=measurement_runner,
+    )
+
+
+def _build_td_b_eq_r6_live_plan(
+    offline_plan: Mapping[str, Any],
+    *,
+    code_checkpoint: str,
+    resolved_root: Path,
+    wrapper: Path,
+    measurement_runner: Path,
+) -> dict[str, Any]:
+    return {
+        "schema": TD_B_EQ_R6_LIVE_PLAN_SCHEMA,
+        "status": "live_bound_not_started",
+        "executable": True,
+        "experiment_id": TD_B_EQ_R6_EXPERIMENT_ID,
+        "code_checkpoint": code_checkpoint,
+        "output_root": str(resolved_root),
+        "offline_plan": dict(offline_plan),
+        "offline_plan_sha256": canonical_sha256(offline_plan),
+        "exposure_policy": file_reference(TD_B_EXPOSURE_POLICY_V2_PATH),
+        "thermal_contract": file_reference(Path(__file__)),
+        "measurement_runner": file_reference(measurement_runner),
+        "production_wrapper": file_reference(wrapper),
+        "candidate_order": [1, 2],
+        "physical_cr3_cap": 8,
+        "candidate_physical_cap": 4,
+        "formal": 0,
+        "ambient": 0,
+        "retry": 0,
+        "candidate_2_unlock": "candidate_1_first_failure_exactly_clipping_after_terminal_seal",
+        "cleanup": {
+            "python": "required",
+            "shell": "required",
+            "independent_final_zero": "required",
+            "terminal_seal": "required",
+        },
+    }
+
+
+def validate_td_b_eq_r6_live_plan(
+    plan: Mapping[str, Any],
+    *,
+    require_fresh_root: bool,
+) -> None:
+    """Reject any live binding or scientific-contract drift before adapters."""
+    if plan.get("schema") != TD_B_EQ_R6_LIVE_PLAN_SCHEMA:
+        raise ValueError("unsupported EQ-R6 live plan schema")
+    offline = plan.get("offline_plan")
+    if not isinstance(offline, Mapping):
+        raise ValueError("EQ-R6 live plan lacks its offline contract")
+    validate_td_b_eq_r6_plan(offline)
+    wrapper_ref = plan.get("production_wrapper")
+    runner_ref = plan.get("measurement_runner")
+    policy_ref = plan.get("exposure_policy")
+    thermal_ref = plan.get("thermal_contract")
+    for name, reference in (
+        ("production wrapper", wrapper_ref),
+        ("measurement runner", runner_ref),
+        ("exposure policy", policy_ref),
+        ("thermal contract", thermal_ref),
+    ):
+        if not isinstance(reference, Mapping) or set(reference) != {"path", "sha256"}:
+            raise ValueError(f"EQ-R6 {name} reference is malformed")
+        path = Path(str(reference["path"]))
+        if path.is_symlink() or not path.is_file():
+            raise ValueError(f"EQ-R6 {name} owner is missing or unsafe")
+        if hashlib.sha256(path.read_bytes()).hexdigest() != reference["sha256"]:
+            raise ValueError(f"EQ-R6 {name} hash drifted")
+    root = Path(str(plan.get("output_root", "")))
+    if not root.is_absolute() or root.is_symlink():
+        raise ValueError("EQ-R6 live root is invalid")
+    allowed_root = Path("/Volumes/4T/temp/rgbww-optimizer").resolve(strict=True)
+    if not root.resolve(strict=False).is_relative_to(allowed_root):
+        raise ValueError("EQ-R6 live root is outside the approved temporary root")
+    checkpoint = plan.get("code_checkpoint")
+    if (
+        not isinstance(checkpoint, str)
+        or len(checkpoint) != 40
+        or any(character not in "0123456789abcdef" for character in checkpoint)
+    ):
+        raise ValueError("EQ-R6 live checkpoint is invalid")
+    if require_fresh_root and root.exists():
+        raise ValueError("EQ-R6 live root is not fresh")
+    expected = _build_td_b_eq_r6_live_plan(
+        offline,
+        code_checkpoint=str(plan.get("code_checkpoint", "")),
+        resolved_root=root.resolve(strict=False),
+        wrapper=Path(str(wrapper_ref["path"])).resolve(strict=True),
+        measurement_runner=Path(str(runner_ref["path"])).resolve(strict=True),
+    )
+    if dict(plan) != expected:
+        raise ValueError("EQ-R6 live plan differs from its unique production binding")
+
+
 def td_b_eq_capture_quality_failures(
     capture: Mapping[str, Any],
     *,
@@ -881,10 +1020,19 @@ def classify_td_b_eq_r6(
         td_b_eq_capture_quality_failures(row, required_feature_ids=required_feature_ids)
         for row in candidate_results[1]
     ]
+    if not second_failures or len(second_failures) > 4:
+        raise ValueError("candidate 2 requires one to four returned slots")
+    second_bad = next((item for item in second_failures if item), None)
+    if second_bad is not None:
+        if second_failures.index(second_bad) != len(second_failures) - 1:
+            raise ValueError("candidate 2 continued after its first failure")
+        return {
+            "status": "exposure_window_unresolved",
+            "selected_shutter": None,
+            "candidate_2_call_count": len(second_failures),
+        }
     if len(second_failures) != 4:
-        raise ValueError("candidate 2 qualification requires exactly four returned slots")
-    if any(second_failures):
-        return {"status": "exposure_window_unresolved", "selected_shutter": None, "candidate_2_call_count": 4}
+        raise ValueError("qualified candidate 2 requires exactly four returned slots")
     return {"status": "qualified_1_3200", "selected_shutter": "1/3200", "candidate_2_call_count": 4}
 
 

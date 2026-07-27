@@ -5,8 +5,10 @@ import copy
 import hashlib
 import json
 import math
+import os
 import shutil
 import subprocess
+import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -22,6 +24,10 @@ DEFAULT_OUTPUT = PROJECT_TMP_DIR / "p7-thermal-diagnostics-offline"
 REMOTE_V2_CAPABILITY = "remote_v2_capture_timing_v1"
 PRODUCTION_WRAPPER = Path(__file__).parents[3] / "tmp/run-p7-thermal-diagnostics.zsh"
 WRAPPER_OBSERVED_EXIT_SCHEMA = "p7_td_b_wrapper_observed_exit_v1"
+EQ_R6_LAUNCH_LEDGER_SCHEMA = "p7_td_b_eq_r6_launch_ledger_v1"
+EQ_R6_CANDIDATE_RESULT_SCHEMA = "p7_td_b_eq_r6_candidate_result_v1"
+EQ_R6_TERMINAL_SEAL_SCHEMA = "p7_td_b_eq_r6_candidate_terminal_seal_v1"
+EQ_R6_OUTER_RESULT_SCHEMA = "p7_td_b_eq_r6_outer_result_v1"
 
 
 class _SidecarAssociationError(RuntimeError):
@@ -2077,6 +2083,839 @@ def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+def _write_json_exclusive(path: Path, value: Mapping[str, Any]) -> None:
+    """Create immutable JSON evidence without following an existing owner."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = json.dumps(value, indent=2, sort_keys=True, allow_nan=False) + "\n"
+    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0), 0o444)
+    try:
+        os.write(descriptor, payload.encode("utf-8"))
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def _safe_ledger_only_subroot(root: Path, expected_parent: Path) -> Path:
+    if not root.is_absolute() or root.is_symlink() or not root.is_dir():
+        raise ValueError("EQ-R6 candidate root must be an existing regular directory")
+    resolved = root.resolve(strict=True)
+    if resolved.parent != expected_parent.resolve(strict=True):
+        raise ValueError("EQ-R6 candidate root is outside its unique outer owner")
+    if {path.name for path in resolved.iterdir()} != {"launch-ledger.json"}:
+        raise ValueError("EQ-R6 candidate root is not a ledger-only fresh owner")
+    return resolved
+
+
+def write_td_b_eq_r6_launch_ledger(
+    live_plan: Mapping[str, Any],
+    *,
+    candidate_index: int,
+    candidate_root: str | Path,
+    outer_pid: int,
+    wrapper_pid: int,
+    argv: Sequence[str],
+) -> Path:
+    """Write one immutable per-wrapper launch binding before device access."""
+    thermal.validate_td_b_eq_r6_live_plan(live_plan, require_fresh_root=False)
+    if candidate_index not in (1, 2):
+        raise ValueError("EQ-R6 candidate index is outside the frozen contract")
+    root = Path(candidate_root).resolve(strict=False)
+    outer_root = Path(str(live_plan["output_root"])).resolve(strict=True)
+    if root.parent != outer_root or root.name != f"candidate-{candidate_index}":
+        raise ValueError("EQ-R6 launch ledger candidate owner differs")
+    if outer_pid <= 0 or wrapper_pid <= 0:
+        raise ValueError("EQ-R6 launch ledger requires positive process IDs")
+    safe_argv = [str(value) for value in argv]
+    forbidden = ("secret", "token", "password", ".env", "private")
+    if any(any(term in value.lower() for term in forbidden) for value in safe_argv):
+        raise ValueError("EQ-R6 launch argv contains a private parameter")
+    ledger = {
+        "schema": EQ_R6_LAUNCH_LEDGER_SCHEMA,
+        "status": "launch_bound",
+        "created_at": _utc_now(),
+        "experiment_id": thermal.TD_B_EQ_R6_EXPERIMENT_ID,
+        "candidate_index": candidate_index,
+        "candidate_root": str(root),
+        "outer_root": str(outer_root),
+        "outer_pid": int(outer_pid),
+        "wrapper_pid": int(wrapper_pid),
+        "code_checkpoint": live_plan["code_checkpoint"],
+        "offline_plan_sha256": live_plan["offline_plan_sha256"],
+        "exposure_policy": dict(live_plan["exposure_policy"]),
+        "thermal_contract": dict(live_plan["thermal_contract"]),
+        "measurement_runner": dict(live_plan["measurement_runner"]),
+        "production_wrapper": dict(live_plan["production_wrapper"]),
+        "argv": safe_argv,
+    }
+    path = root / "launch-ledger.json"
+    _write_json_exclusive(path, ledger)
+    return path
+
+
+def _validate_td_b_eq_r6_launch_ledger(
+    ledger: Mapping[str, Any],
+    live_plan: Mapping[str, Any],
+    *,
+    candidate_index: int,
+    candidate_root: Path,
+) -> None:
+    expected_keys = {
+        "schema", "status", "created_at", "experiment_id", "candidate_index",
+        "candidate_root", "outer_root", "outer_pid", "wrapper_pid",
+        "code_checkpoint", "offline_plan_sha256", "exposure_policy",
+        "thermal_contract", "measurement_runner", "production_wrapper", "argv",
+    }
+    if set(ledger) != expected_keys:
+        raise PermissionError("EQ-R6 launch ledger schema differs")
+    safe_argv = ledger.get("argv")
+    forbidden = ("secret", "token", "password", ".env", "private")
+    if (
+        ledger.get("schema") != EQ_R6_LAUNCH_LEDGER_SCHEMA
+        or ledger.get("status") != "launch_bound"
+        or ledger.get("experiment_id") != thermal.TD_B_EQ_R6_EXPERIMENT_ID
+        or ledger.get("candidate_index") != candidate_index
+        or ledger.get("candidate_root") != str(candidate_root.resolve())
+        or ledger.get("outer_root") != str(
+            Path(str(live_plan["output_root"])).resolve()
+        )
+        or type(ledger.get("outer_pid")) is not int
+        or int(ledger["outer_pid"]) <= 0
+        or type(ledger.get("wrapper_pid")) is not int
+        or int(ledger["wrapper_pid"]) <= 0
+        or ledger.get("code_checkpoint") != live_plan["code_checkpoint"]
+        or ledger.get("offline_plan_sha256") != live_plan["offline_plan_sha256"]
+        or ledger.get("exposure_policy") != live_plan["exposure_policy"]
+        or ledger.get("thermal_contract") != live_plan["thermal_contract"]
+        or ledger.get("measurement_runner") != live_plan["measurement_runner"]
+        or ledger.get("production_wrapper") != live_plan["production_wrapper"]
+        or not isinstance(safe_argv, list)
+        or not safe_argv
+        or any(
+            any(term in str(value).lower() for term in forbidden)
+            for value in safe_argv
+        )
+    ):
+        raise PermissionError("EQ-R6 launch ledger binding differs")
+
+
+def _validated_eq_physical_return(
+    root: Path,
+    request: Mapping[str, Any],
+    returned: Mapping[str, Any],
+    *,
+    physical_index: int,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Persist a verified physical return before reading its quality payload."""
+    capture_id = str(request["capture_id"])
+    raw_candidate = Path(str(returned.get("saved_file", "")))
+    raw_path = raw_candidate.resolve(strict=False)
+    row = {
+        "schema": thermal.PHYSICAL_RETURN_LEDGER_SCHEMA,
+        "physical_index": physical_index,
+        "capture_id": capture_id,
+        "source_id": "ray",
+        "state_id": "C",
+        "cr3_path": str(raw_path),
+        "cr3_byte_count": None,
+        "cr3_sha256": None,
+        "sidecar_path": None,
+        "sidecar_byte_count": None,
+        "sidecar_sha256": None,
+        "sidecar_validation_status": "pending",
+        "remote_capture_id": None,
+        "remote_request_id": None,
+        "returned_at": _utc_now(),
+        "accepted_measurement": False,
+    }
+    if (
+        raw_candidate.is_symlink()
+        or not raw_path.is_relative_to(root)
+        or not raw_path.is_file()
+        or raw_path.stat().st_size <= 0
+    ):
+        _append_jsonl(root / "physical-returns.jsonl", row)
+        raise RuntimeError("EQ-R6 return lacks a retained current-candidate CR3")
+    payload = raw_path.read_bytes()
+    row.update({
+        "cr3_byte_count": len(payload),
+        "cr3_sha256": hashlib.sha256(payload).hexdigest(),
+    })
+    association_error: BaseException | None = None
+    try:
+        sidecar = _validate_returned_sidecar(
+            returned, raw_path=raw_path, raw_payload=payload, run_root=root,
+        )
+    except _SidecarAssociationError as exc:
+        sidecar = dict(exc.evidence)
+        association_error = exc
+    row.update(sidecar)
+    _append_jsonl(root / "physical-returns.jsonl", row)
+    if association_error is not None:
+        raise association_error
+    receipt = {
+        "physical_return_persisted_before_postprocessing": True,
+        "cr3": {
+            "path": row["cr3_path"],
+            "bytes": row["cr3_byte_count"],
+            "sha256": row["cr3_sha256"],
+        },
+        "sidecar": {
+            "path": row["sidecar_path"],
+            "bytes": row["sidecar_byte_count"],
+            "sha256": row["sidecar_sha256"],
+        },
+        "remote_capture_id": row["remote_capture_id"],
+        "remote_request_id": row["remote_request_id"],
+    }
+    return row, receipt
+
+
+def run_td_b_eq_r6_single_candidate(
+    live_plan: Mapping[str, Any],
+    *,
+    candidate_index: int,
+    candidate_root: str | Path,
+    strip_zero_fn: Callable[[], Mapping[str, Any]],
+    ray_a_fn: Callable[[], Mapping[str, Any]],
+    ray_c_fn: Callable[[], Mapping[str, Any]],
+    capture_fn: Callable[[Mapping[str, Any]], Mapping[str, Any]],
+    python_cleanup_fn: Callable[[], Mapping[str, Any]],
+    bind_physical_return_observer_fn: Callable[
+        [Callable[[Mapping[str, Any], Mapping[str, Any], int], Mapping[str, Any]]],
+        None,
+    ] | None = None,
+    sleep_fn: Callable[[float], None] = time.sleep,
+    monotonic_fn: Callable[[], float] = time.monotonic,
+) -> Path:
+    """Execute exactly one EQ candidate inside one wrapper-owned lifecycle."""
+    thermal.validate_td_b_eq_r6_live_plan(live_plan, require_fresh_root=False)
+    outer_root = Path(str(live_plan["output_root"])).resolve(strict=True)
+    root = _safe_ledger_only_subroot(Path(candidate_root), outer_root)
+    if candidate_index not in (1, 2):
+        raise ValueError("EQ-R6 candidate index is outside the frozen contract")
+    candidate = dict(live_plan["offline_plan"]["candidates"][candidate_index - 1])
+    ledger_path = root / "launch-ledger.json"
+    if not ledger_path.is_file() or ledger_path.is_symlink():
+        raise PermissionError("EQ-R6 candidate device entry requires its immutable launch ledger")
+    ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+    _validate_td_b_eq_r6_launch_ledger(
+        ledger,
+        live_plan,
+        candidate_index=candidate_index,
+        candidate_root=root,
+    )
+    _write_json(root / "candidate-plan.json", {
+        "schema": "p7_td_b_eq_r6_candidate_plan_v1",
+        "candidate_index": candidate_index,
+        "candidate": candidate,
+        "live_plan_sha256": thermal.canonical_sha256(live_plan),
+    })
+    feature_ids = tuple(
+        json.loads(thermal.POLICY_PATH.read_text(encoding="utf-8"))["feature_set"]["ids"]
+    )
+    captures: list[dict[str, Any]] = []
+    attempted = 0
+    physical_returned = 0
+    accepted = 0
+    classification = "candidate_failed"
+    failure: BaseException | None = None
+    cleanup: dict[str, Any] = {"status": "not_run"}
+    physical_by_capture: dict[str, tuple[dict[str, Any], dict[str, Any]]] = {}
+
+    def observe_physical_return(
+        request: Mapping[str, Any],
+        returned: Mapping[str, Any],
+        reported_physical: int,
+    ) -> Mapping[str, Any]:
+        if reported_physical != 1:
+            raise RuntimeError("EQ-R6 capture returned a non-unit physical count")
+        capture_id = str(request["capture_id"])
+        if capture_id in physical_by_capture:
+            raise RuntimeError("EQ-R6 capture duplicated a physical return owner")
+        physical_by_capture[capture_id] = _validated_eq_physical_return(
+            root, request, returned, physical_index=len(physical_by_capture) + 1,
+        )
+        return dict(physical_by_capture[capture_id][1])
+
+    if bind_physical_return_observer_fn is not None:
+        bind_physical_return_observer_fn(observe_physical_return)
+    try:
+        strip_zero = dict(strip_zero_fn())
+        if strip_zero.get("status") != "pass" or strip_zero.get("generation_bearing_zero") is not True:
+            raise RuntimeError("EQ-R6 strip zero precondition failed")
+        _append_jsonl(root / "progressive-events.jsonl", {
+            "event": "strip_zero_verified", "at": _utc_now(), "evidence": strip_zero,
+        })
+        ray_a = dict(ray_a_fn())
+        if ray_a.get("status") != "pass":
+            raise RuntimeError("EQ-R6 Ray A command/readback failed")
+        _append_jsonl(root / "progressive-events.jsonl", {
+            "event": "ray_a_on", "at": _utc_now(), "evidence": ray_a,
+        })
+        sleep_fn(600.0)
+        ray_c = dict(ray_c_fn())
+        if ray_c.get("status") != "pass":
+            raise RuntimeError("EQ-R6 Ray C command/readback failed")
+        _append_jsonl(root / "progressive-events.jsonl", {
+            "event": "ray_a_to_c", "at": _utc_now(), "evidence": ray_c,
+        })
+        c_started = monotonic_fn()
+        for capture_id, slot_s in zip(candidate["capture_ids"], candidate["slots_s"], strict=True):
+            if attempted >= 4:
+                raise RuntimeError("EQ-R6 candidate physical cap exhausted")
+            request = {
+                "candidate_index": candidate_index,
+                "capture_id": capture_id,
+                "requested_elapsed_s": slot_s,
+                "nominal_shutter": candidate["nominal_shutter"],
+            }
+            remaining = float(slot_s) - (monotonic_fn() - c_started)
+            if remaining > 0:
+                sleep_fn(remaining)
+            attempted += 1
+            _append_jsonl(root / "capture-attempts.jsonl", {
+                **request, "attempt_index": attempted, "attempted_at": _utc_now(),
+            })
+            returned = dict(capture_fn(request))
+            physical, receipt = physical_by_capture.get(capture_id, (None, None))
+            if physical is None or receipt is None:
+                physical, receipt = _validated_eq_physical_return(
+                    root, request, returned, physical_index=physical_returned + 1,
+                )
+            physical_returned += 1
+            quality_payload = returned.get("quality_capture")
+            if not isinstance(quality_payload, Mapping):
+                raise RuntimeError("EQ-R6 capture adapter lacks a quality payload")
+            row = {**dict(quality_payload), **receipt}
+            if (
+                row.get("capture_id") != capture_id
+                or row.get("requested_elapsed_s", slot_s) != slot_s
+                or row.get("nominal_shutter", candidate["nominal_shutter"])
+                != candidate["nominal_shutter"]
+            ):
+                raise RuntimeError("EQ-R6 capture adapter returned a different frozen slot")
+            failures = thermal.td_b_eq_capture_quality_failures(
+                row, required_feature_ids=feature_ids,
+            )
+            physical["accepted_measurement"] = not failures
+            captures.append(row)
+            if not failures:
+                accepted += 1
+            _append_jsonl(root / "capture-results.jsonl", {
+                "capture_id": capture_id,
+                "failures": list(failures),
+                "accepted": not failures,
+                "physical_return": physical,
+                "quality_capture": row,
+                "processed_at": _utc_now(),
+            })
+            if failures:
+                classification = (
+                    "clipping_only" if set(failures) == {"clipping"} else "invalid"
+                )
+                break
+        else:
+            classification = "candidate_pass"
+    except BaseException as exc:
+        failure = exc
+        _write_json(root / "candidate-failure.json", {
+            "schema": "p7_td_b_eq_r6_candidate_failure_v1",
+            "status": "failed",
+            "exception_type": type(exc).__name__,
+            "message": str(exc),
+            "attempted": attempted,
+            "physical_returned": physical_returned,
+            "accepted": accepted,
+        })
+    finally:
+        try:
+            cleanup = dict(python_cleanup_fn())
+        except BaseException as cleanup_exc:
+            cleanup = {
+                "status": "fail",
+                "exception_type": type(cleanup_exc).__name__,
+                "message": str(cleanup_exc),
+            }
+            if failure is None:
+                failure = cleanup_exc
+        _write_json(root / "all-off-python.json", cleanup)
+        if cleanup.get("status") != "pass" and failure is None:
+            failure = RuntimeError("EQ-R6 Python cleanup failed")
+    physical_path = root / "physical-returns.jsonl"
+    if physical_path.is_file():
+        physical_returned = len(
+            [line for line in physical_path.read_text(encoding="utf-8").splitlines() if line]
+        )
+    result = {
+        "schema": EQ_R6_CANDIDATE_RESULT_SCHEMA,
+        "status": "complete" if failure is None else "failed",
+        "candidate_index": candidate_index,
+        "nominal_shutter": candidate["nominal_shutter"],
+        "classification": classification if failure is None else "candidate_failed",
+        "captures": captures,
+        "attempted_capture_calls": attempted,
+        "physical_returned_cr3_count": physical_returned,
+        "accepted_capture_count": accepted,
+        "python_cleanup": cleanup,
+        "retry": 0,
+        "completed_at": _utc_now(),
+    }
+    _write_json(root / "candidate-result.json", result)
+    if failure is not None:
+        raise RuntimeError("EQ-R6 single candidate failed") from failure
+    return root / "candidate-result.json"
+
+
+def run_td_b_eq_r6_production_candidate(
+    live_plan: Mapping[str, Any],
+    *,
+    candidate_index: int,
+    candidate_root: str | Path,
+    camera_backend: Any,
+) -> Path:
+    """Bind the single-candidate owner to the existing real device adapters."""
+    thermal.validate_td_b_eq_r6_live_plan(live_plan, require_fresh_root=False)
+    from camera_based_rgbww_optimizer.control import all_off, esphome, ray120c
+    from camera_based_rgbww_optimizer.measurement.raw_observer_analysis import (
+        collect_patch_plane_features,
+    )
+    from camera_based_rgbww_optimizer.measurement.recorded_exposure import (
+        parse_nominal_exposure,
+    )
+    from camera_based_rgbww_optimizer.optimization.hsi_objective import (
+        TD_B_FORMAL_FEATURE_STATISTIC,
+    )
+    from camera_based_rgbww_optimizer.optimization.measure_ray_hsi_manifold import (
+        _verify_readback,
+    )
+
+    root = Path(candidate_root).resolve(strict=True)
+    candidate = live_plan["offline_plan"]["candidates"][candidate_index - 1]
+    feature_ids = tuple(
+        json.loads(thermal.POLICY_PATH.read_text(encoding="utf-8"))["feature_set"]["ids"]
+    )
+    connection = camera_backend.connect()
+    resolved_settings, _ = _resolve_remote_capture_settings(camera_backend)
+    timing_context: dict[str, float | None] = {
+        "local_readback_done_monotonic_s": None,
+    }
+    physical_observer: dict[str, Callable[..., Mapping[str, Any]] | None] = {
+        "callback": None,
+    }
+    current_request: dict[str, Any] = {}
+
+    def timed_capture(**kwargs: Any) -> Any:
+        if timing_context["local_readback_done_monotonic_s"] is None:
+            raise RuntimeError("EQ-R6 timing context lacks Ray C readback completion")
+        method = getattr(camera_backend, "capture_with_timing", None)
+        if not callable(method):
+            raise PermissionError("EQ-R6 requires the remote-v2 timing backend")
+        return method(
+            output_dir=kwargs["output_dir"],
+            filename_template=kwargs["filename_template"],
+            settings=kwargs["settings"],
+            connection=connection,
+            local_readback_done_monotonic_s=float(
+                timing_context["local_readback_done_monotonic_s"]
+            ),
+        )
+
+    def observe_return(returned: Any, _raw_step: Mapping[str, Any], count: int) -> Mapping[str, Any]:
+        callback = physical_observer["callback"]
+        if callback is None:
+            raise RuntimeError("EQ-R6 physical return owner is not bound")
+        payload = (
+            returned.to_jsonable()
+            if hasattr(returned, "to_jsonable")
+            else dict(returned)
+        )
+        return callback(current_request, payload, count)
+
+    raw_capture = raw_validation.build_native_raw_capture_step_fn(
+        camera_dir=root / "camera",
+        measurements_dir=root / "measurements",
+        scratch_dir=root / "scratch",
+        location_config_path=thermal.LOCATION_PATH,
+        observer_config_path=thermal.OBSERVER_PATH,
+        iso=str(resolved_settings.iso),
+        aperture=str(resolved_settings.aperture),
+        image_format=str(resolved_settings.image_format),
+        camera_backend=camera_backend,
+        recorded_exposure_purpose=thermal.TD_B_EQ_R6_EXPERIMENT_ID,
+        frozen_shutter_by_cache={
+            "ray-h0-s0": str(candidate["nominal_shutter"]),
+        },
+        timed_capture_fn=timed_capture,
+        ambient_policy=raw_validation.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+        ambient_policy_owner=dict(raw_validation.TD_B_FORMAL_AMBIENT_POLICY_OWNER),
+        physical_return_observer=observe_return,
+    )
+
+    def strip_zero() -> Mapping[str, Any]:
+        evidence = esphome.verified_light(
+            0, 0, 0, 0, 0, curve_path=thermal.CURVE_PATH,
+        )
+        return {
+            "status": "pass",
+            "generation_bearing_zero": True,
+            "strip_device_evidence": dict(evidence),
+        }
+
+    def set_ray(state: str) -> Mapping[str, Any]:
+        command = dict(thermal.RAY_STATES[state])
+        response = ray120c.set_hsi(
+            int(command["hue"]),
+            int(command["sat"]),
+            intensity_percent=float(command["intensity_percent"]),
+        )
+        readback = ray120c.get_hsi()
+        _verify_readback(
+            readback,
+            {
+                "hue": int(command["hue"]),
+                "sat": int(command["sat"]),
+                "intensity": ray120c.intensity_percent_to_raw(
+                    float(command["intensity_percent"])
+                ),
+            },
+            mode="hsi",
+        )
+        timing_context["local_readback_done_monotonic_s"] = time.monotonic()
+        return {
+            "status": "pass",
+            "command": command,
+            "response": dict(response),
+            "readback": dict(readback),
+        }
+
+    def capture(request: Mapping[str, Any]) -> Mapping[str, Any]:
+        current_request.clear()
+        current_request.update(dict(request))
+        captured = dict(raw_capture({
+            "capture_id": request["capture_id"],
+            "source": "ray",
+            "purpose": f"p7_td_b_eq_r6_c{candidate_index}",
+            "repeat_index": int(request["capture_id"].split("-", 1)[0]),
+            "source_exposure_cache": "ray-h0-s0",
+            "auto_exposure": False,
+            "physical_capture_budget_remaining": 4,
+            "analysis_context": {
+                "phase": "eq_r6",
+                "formal_measurement": False,
+                "native_raw_ambient_policy":
+                    raw_validation.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+            },
+        }))
+        report = json.loads(
+            Path(str(captured["patch_statistics"])).read_text(encoding="utf-8")
+        )
+        collection = collect_patch_plane_features(
+            [report], statistic=TD_B_FORMAL_FEATURE_STATISTIC,
+        )
+        observations = {
+            str(item["feature_id"]): item for item in collection["observations"]
+        }
+        if tuple(observations) != feature_ids:
+            raise RuntimeError("EQ-R6 RAW report feature order differs")
+        exposure = dict(report["exposure_metadata"])
+        nominal_seconds = parse_nominal_exposure(str(candidate["nominal_shutter"]))
+        recorded_seconds = float(exposure.get("seconds", 0.0))
+        ratio_ok = (
+            recorded_seconds > 0
+            and 0.8 <= recorded_seconds / nominal_seconds <= 1.2
+        )
+        capture_payload = dict(captured.get("capture") or {})
+        output = {
+            **captured,
+            **capture_payload,
+            "saved_file": capture_payload["saved_file"],
+            "quality_capture": {
+                "capture_id": request["capture_id"],
+                "requested_elapsed_s": request["requested_elapsed_s"],
+                "nominal_shutter": candidate["nominal_shutter"],
+                "recorded_exposure": exposure,
+                "nominal_recorded_ratio_gate": "pass" if ratio_ok else "fail",
+                "ray_command_readback": "pass",
+                "strip_zero": "pass",
+                "source_isolation": "pass",
+                "timing_chronology": (
+                    "pass" if isinstance(captured.get("timing_evidence"), Mapping)
+                    else "fail"
+                ),
+                "no_stale": "pass",
+                "budget_accounting": "pass",
+                "feature_quality": {
+                    feature_id: {
+                        "value": observations[feature_id]["value"],
+                        "clipped_fraction": observations[feature_id]["metrics"][
+                            "clipped_fraction"
+                        ],
+                        "near_noise_floor_fraction": observations[feature_id]["metrics"][
+                            "near_noise_floor_fraction"
+                        ],
+                        "valid_pixel_count": observations[feature_id]["metrics"][
+                            "valid_pixel_count"
+                        ],
+                    }
+                    for feature_id in feature_ids
+                },
+            },
+        }
+        return output
+
+    def cleanup() -> Mapping[str, Any]:
+        steps = all_off.turn_everything_off(
+            strip_off_fn=lambda: esphome.verified_light(
+                0, 0, 0, 0, 0, curve_path=thermal.CURVE_PATH,
+            ),
+            ray_set_cct_fn=ray120c.set_cct,
+            ray_cct=5600,
+            ray_gm=100,
+        )
+        rows = [
+            item.to_jsonable() if hasattr(item, "to_jsonable") else dict(item)
+            for item in steps
+        ]
+        return {
+            "status": "pass" if rows and all(row.get("ok") for row in rows) else "fail",
+            "steps": rows,
+        }
+
+    return run_td_b_eq_r6_single_candidate(
+        live_plan,
+        candidate_index=candidate_index,
+        candidate_root=root,
+        strip_zero_fn=strip_zero,
+        ray_a_fn=lambda: set_ray("A"),
+        ray_c_fn=lambda: set_ray("C"),
+        capture_fn=capture,
+        python_cleanup_fn=cleanup,
+        bind_physical_return_observer_fn=lambda callback: physical_observer.__setitem__(
+            "callback", callback,
+        ),
+    )
+
+
+def _default_eq_final_zero() -> Mapping[str, Any]:
+    from camera_based_rgbww_optimizer.control import esphome, ray120c
+    from camera_based_rgbww_optimizer.optimization.hsi_source_evidence import validate_both_off
+
+    curve = json.loads(thermal.CURVE_PATH.read_text(encoding="utf-8"))
+    strip = esphome.verified_light(0, 0, 0, 0, 0, curve_path=thermal.CURVE_PATH)
+    ray120c.set_cct(5600, intensity=0, gm=100)
+    ray = ray120c.get_cct()
+    validate_both_off(strip, ray, curve)
+    return {
+        "status": "pass",
+        "strip_verified_off": True,
+        "ray_verified_off": True,
+        "strip_device_evidence": dict(strip),
+        "ray_readback": dict(ray),
+    }
+
+
+def _reference(path: Path) -> dict[str, Any]:
+    if path.is_symlink() or not path.is_file():
+        raise ValueError(f"unsafe or missing EQ-R6 artifact: {path.name}")
+    return {
+        "path": str(path.resolve()),
+        "bytes": path.stat().st_size,
+        "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+    }
+
+
+def _seal_eq_candidate(
+    live_plan: Mapping[str, Any],
+    *,
+    candidate_index: int,
+    root: Path,
+    wrapper_return_code: int,
+    final_zero: Mapping[str, Any],
+) -> dict[str, Any]:
+    wrapper_path = root / "wrapper-result.json"
+    result_path = root / "candidate-result.json"
+    wrapper = json.loads(wrapper_path.read_text(encoding="utf-8"))
+    result = json.loads(result_path.read_text(encoding="utf-8"))
+    launch = json.loads((root / "launch-ledger.json").read_text(encoding="utf-8"))
+    _validate_td_b_eq_r6_launch_ledger(
+        launch,
+        live_plan,
+        candidate_index=candidate_index,
+        candidate_root=root,
+    )
+    shell = json.loads((root / "all-off-shell.json").read_text(encoding="utf-8"))
+    successful = (
+        wrapper_return_code == 0
+        and wrapper.get("status") == "complete"
+        and wrapper.get("child_exit_code") == 0
+        and wrapper.get("shell_cleanup_exit_code") == 0
+        and wrapper.get("wrapper_exit_code") == 0
+        and wrapper.get("signal") is None
+        and result.get("status") == "complete"
+        and result.get("python_cleanup", {}).get("status") == "pass"
+        and isinstance(shell, list)
+        and bool(shell)
+        and all(isinstance(row, Mapping) and row.get("ok") is True for row in shell)
+        and final_zero.get("status") == "pass"
+        and final_zero.get("strip_verified_off") is True
+        and final_zero.get("ray_verified_off") is True
+    )
+    canonical = [
+        _reference(path)
+        for path in (
+            root / "launch-ledger.json",
+            root / "candidate-plan.json",
+            root / "candidate-result.json",
+            root / "all-off-python.json",
+            root / "all-off-shell.json",
+            root / "wrapper-result.json",
+            root / "independent-final-zero.json",
+        )
+    ]
+    seal = {
+        "schema": EQ_R6_TERMINAL_SEAL_SCHEMA,
+        "status": "pass" if successful else "fail",
+        "candidate_index": candidate_index,
+        "classification": result.get("classification"),
+        "attempted_capture_calls": result.get("attempted_capture_calls"),
+        "physical_returned_cr3_count": result.get("physical_returned_cr3_count"),
+        "accepted_capture_count": result.get("accepted_capture_count"),
+        "wrapper_return_code": wrapper_return_code,
+        "code_checkpoint": live_plan["code_checkpoint"],
+        "offline_plan_sha256": live_plan["offline_plan_sha256"],
+        "exposure_policy": dict(live_plan["exposure_policy"]),
+        "thermal_contract": dict(live_plan["thermal_contract"]),
+        "measurement_runner": dict(live_plan["measurement_runner"]),
+        "production_wrapper": dict(live_plan["production_wrapper"]),
+        "canonical_artifacts": canonical,
+        "sealed_at": _utc_now(),
+    }
+    _write_json(root / "terminal-seal.json", seal)
+    return seal
+
+
+def orchestrate_td_b_eq_r6(
+    live_plan: Mapping[str, Any],
+    *,
+    run_fn: Callable[..., subprocess.CompletedProcess[Any]] = subprocess.run,
+    final_zero_fn: Callable[[], Mapping[str, Any]] = _default_eq_final_zero,
+    outer_pid: int | None = None,
+) -> Path:
+    """Own the one-or-two wrapper sequence and the clipping-only unlock."""
+    thermal.validate_td_b_eq_r6_live_plan(live_plan, require_fresh_root=True)
+    root = Path(str(live_plan["output_root"]))
+    root.mkdir(parents=True, mode=0o700)
+    live_plan_path = root / "live-plan.json"
+    _write_json(live_plan_path, dict(live_plan))
+    results: list[list[dict[str, Any]]] = []
+    seals: list[dict[str, Any]] = []
+    launches: list[dict[str, Any]] = []
+    feature_ids = tuple(
+        json.loads(thermal.POLICY_PATH.read_text(encoding="utf-8"))["feature_set"]["ids"]
+    )
+    final_status = "failed"
+    try:
+        for candidate_index in (1, 2):
+            if candidate_index == 2:
+                first_failures = [
+                    thermal.td_b_eq_capture_quality_failures(
+                        row, required_feature_ids=feature_ids,
+                    )
+                    for row in results[0]
+                ]
+                first_bad = next((failure for failure in first_failures if failure), None)
+                if (
+                    first_bad is None
+                    or set(first_bad) != {"clipping"}
+                    or seals[0].get("status") != "pass"
+                ):
+                    break
+            candidate_root = root / f"candidate-{candidate_index}"
+            argv = [
+                "--eq-r6-single-candidate", str(candidate_index),
+                "--eq-r6-live-plan", str(live_plan_path),
+                "--eq-r6-outer-pid", str(outer_pid or os.getpid()),
+                "--code-checkpoint", str(live_plan["code_checkpoint"]),
+                "--experiment-id", thermal.TD_B,
+                "--source", "ray",
+                "--phase", "formal",
+                "--human-authorization", thermal.TD_B_EQ_R6_EXPERIMENT_ID,
+            ]
+            launched_at = _utc_now()
+            completed = run_fn(
+                [
+                    "zsh", str(live_plan["production_wrapper"]["path"]),
+                    str(candidate_root), *argv,
+                ],
+                check=False,
+            )
+            launches.append({
+                "candidate_index": candidate_index,
+                "launched_at": launched_at,
+                "return_code": int(completed.returncode),
+            })
+            if not (candidate_root / "wrapper-result.json").is_file():
+                raise RuntimeError("EQ-R6 wrapper exited without wrapper-result evidence")
+            final_zero = dict(final_zero_fn())
+            _write_json(candidate_root / "independent-final-zero.json", final_zero)
+            seal = _seal_eq_candidate(
+                live_plan,
+                candidate_index=candidate_index,
+                root=candidate_root,
+                wrapper_return_code=int(completed.returncode),
+                final_zero=final_zero,
+            )
+            seals.append(seal)
+            if seal["status"] != "pass":
+                raise RuntimeError("EQ-R6 candidate terminal lifecycle failed")
+            result = json.loads(
+                (candidate_root / "candidate-result.json").read_text(encoding="utf-8")
+            )
+            results.append([dict(row) for row in result["captures"]])
+            if candidate_index == 1 and result["classification"] != "clipping_only":
+                break
+        classification = thermal.classify_td_b_eq_r6(
+            results, required_feature_ids=feature_ids,
+        )
+        final_status = classification["status"]
+        output = {
+            "schema": EQ_R6_OUTER_RESULT_SCHEMA,
+            "status": final_status,
+            "classification": classification,
+            "candidate_launches": launches,
+            "candidate_seals": [
+                _reference(root / f"candidate-{index}" / "terminal-seal.json")
+                for index in range(1, len(seals) + 1)
+            ],
+            "attempted_capture_calls": sum(
+                int(seal["attempted_capture_calls"]) for seal in seals
+            ),
+            "physical_returned_cr3_count": sum(
+                int(seal["physical_returned_cr3_count"]) for seal in seals
+            ),
+            "accepted_capture_count": sum(
+                int(seal["accepted_capture_count"]) for seal in seals
+            ),
+            "retry": 0,
+            "completed_at": _utc_now(),
+        }
+        _write_json(root / "outer-result.json", output)
+        return root / "outer-result.json"
+    except BaseException as exc:
+        _write_json(root / "outer-failure.json", {
+            "schema": "p7_td_b_eq_r6_outer_failure_v1",
+            "status": "failed",
+            "classification": final_status,
+            "exception_type": type(exc).__name__,
+            "message": str(exc),
+            "candidate_launches": launches,
+            "candidate_seals": seals,
+            "retry": 0,
+            "failed_at": _utc_now(),
+        })
+        raise
+
+
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     from camera_based_rgbww_optimizer.control import camera_remote
 
@@ -2101,6 +2940,11 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     mode.add_argument(
         "--prepare-lineage-qualification-evidence", action="store_true"
     )
+    eq_mode = parser.add_mutually_exclusive_group()
+    eq_mode.add_argument("--eq-r6-orchestrate", action="store_true")
+    eq_mode.add_argument("--eq-r6-single-candidate", type=int, choices=(1, 2))
+    parser.add_argument("--eq-r6-live-plan", type=Path)
+    parser.add_argument("--eq-r6-outer-pid", type=int)
     parser.add_argument("--allow-device-control", action="store_true")
     parser.add_argument("--human-authorization")
     camera_remote.add_camera_backend_arguments(parser, default="remote")
@@ -2117,6 +2961,88 @@ def main(
     resolved_run_fn: Callable[..., Path] = run_resolved_td_b_formal,
 ) -> int:
     args = parse_args(argv)
+    if args.eq_r6_orchestrate:
+        if (
+            not args.execute
+            or not args.allow_device_control
+            or args.experiment_id != thermal.TD_B
+            or args.source != "ray"
+            or args.phase != "formal"
+            or not args.code_checkpoint
+            or args.human_authorization != thermal.TD_B_EQ_R6_EXPERIMENT_ID
+            or args.setup_release is not None
+            or args.lineage_candidate is not None
+            or args.finalize_setup_run is not None
+            or args.orchestrate_setup
+            or args.eq_r6_live_plan is not None
+        ):
+            raise PermissionError("EQ-R6 orchestration requires its exact isolated live contract")
+        _validate_checkpoint_and_tree(args.code_checkpoint)
+        root = (args.output_dir / args.run_name).resolve()
+        live_plan = thermal.activate_td_b_eq_r6_live_plan(
+            thermal.build_td_b_eq_r6_plan(),
+            code_checkpoint=args.code_checkpoint,
+            output_root=root,
+            wrapper_path=PRODUCTION_WRAPPER,
+            measurement_runner_path=Path(__file__),
+        )
+        print(orchestrate_td_b_eq_r6(live_plan))
+        return 0
+    if args.eq_r6_single_candidate is not None:
+        if (
+            not args.execute
+            or not args.allow_device_control
+            or args.experiment_id != thermal.TD_B
+            or args.source != "ray"
+            or args.phase != "formal"
+            or not args.code_checkpoint
+            or args.human_authorization != thermal.TD_B_EQ_R6_EXPERIMENT_ID
+            or args.eq_r6_live_plan is None
+            or args.eq_r6_outer_pid is None
+            or args.eq_r6_outer_pid <= 0
+            or args.setup_release is not None
+            or args.lineage_candidate is not None
+            or args.finalize_setup_run is not None
+            or args.orchestrate_setup
+        ):
+            raise PermissionError("EQ-R6 candidate mode requires its exact isolated child contract")
+        live_path = args.eq_r6_live_plan.resolve(strict=True)
+        live_plan = json.loads(live_path.read_text(encoding="utf-8"))
+        thermal.validate_td_b_eq_r6_live_plan(live_plan, require_fresh_root=False)
+        _validate_checkpoint_and_tree(args.code_checkpoint)
+        if live_plan["code_checkpoint"] != args.code_checkpoint:
+            raise PermissionError("EQ-R6 child checkpoint differs from its live plan")
+        candidate_root = (args.output_dir / args.run_name).resolve()
+        if candidate_root != Path(str(live_plan["output_root"])).resolve() / (
+            f"candidate-{args.eq_r6_single_candidate}"
+        ):
+            raise PermissionError("EQ-R6 candidate CLI root differs from the live owner")
+        write_td_b_eq_r6_launch_ledger(
+            live_plan,
+            candidate_index=args.eq_r6_single_candidate,
+            candidate_root=candidate_root,
+            outer_pid=args.eq_r6_outer_pid,
+            wrapper_pid=os.getppid(),
+            argv=list(sys.argv[1:] if argv is None else argv),
+        )
+        if args.camera_backend != "remote":
+            raise PermissionError("EQ-R6 requires the formal remote-v2 camera backend")
+        if backend_factory is None:
+            from camera_based_rgbww_optimizer.control import camera_remote
+            backend_factory = camera_remote.create_camera_backend
+        backend = backend_factory(
+            args.camera_backend,
+            env_file=args.remote_env_file,
+            base_url=args.remote_base_url,
+            timeout=args.remote_timeout,
+        )
+        print(run_td_b_eq_r6_production_candidate(
+            live_plan,
+            candidate_index=args.eq_r6_single_candidate,
+            candidate_root=candidate_root,
+            camera_backend=backend,
+        ))
+        return 0
     if args.prepare_lineage_qualification_evidence:
         if (
             args.experiment_id != thermal.TD_B

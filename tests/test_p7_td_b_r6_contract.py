@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import hashlib
+import subprocess
 import tempfile
 import unittest
 from copy import deepcopy
@@ -14,6 +15,7 @@ from camera_based_rgbww_optimizer.optimization import (
     measure_p7_thermal_diagnostics as measure,
 )
 from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
+from tests.test_p7_thermal_diagnostics import _attach_v2_capture_evidence
 
 
 FEATURE_IDS = tuple(
@@ -202,6 +204,13 @@ class EqR6ContractTests(unittest.TestCase):
         second[-1]["feature_quality"][FEATURE_IDS[0]]["valid_pixel_count"] = 1
         result = thermal.classify_td_b_eq_r6([[first], second], required_feature_ids=FEATURE_IDS)
         self.assertEqual(result["status"], "exposure_window_unresolved")
+        early = deepcopy(second[0])
+        early["feature_quality"][FEATURE_IDS[0]]["valid_pixel_count"] = 1
+        result = thermal.classify_td_b_eq_r6(
+            [[first], [early]], required_feature_ids=FEATURE_IDS,
+        )
+        self.assertEqual(result["status"], "exposure_window_unresolved")
+        self.assertEqual(result["candidate_2_call_count"], 1)
 
     def test_fake_scheduler_records_wait_cleanup_attempts_and_zero_real_calls(self):
         plan = thermal.build_td_b_eq_r6_plan()
@@ -255,6 +264,401 @@ class EqR6ContractTests(unittest.TestCase):
                 event_fn=lambda _event: None,
                 cleanup_fn=lambda name: {"status": "fail" if name == "shell" else "pass"},
             )
+
+
+class EqR6LiveOwnerTests(unittest.TestCase):
+    def setUp(self):
+        self.tempdir = tempfile.TemporaryDirectory(
+            dir="/Volumes/4T/temp/rgbww-optimizer",
+        )
+        self.parent = Path(self.tempdir.name)
+
+    def tearDown(self):
+        self.tempdir.cleanup()
+
+    def live_plan(self, name: str = "eq-live") -> dict:
+        return thermal.activate_td_b_eq_r6_live_plan(
+            thermal.build_td_b_eq_r6_plan(),
+            code_checkpoint="a" * 40,
+            output_root=self.parent / name,
+            wrapper_path=measure.PRODUCTION_WRAPPER,
+            measurement_runner_path=Path(measure.__file__),
+        )
+
+    @staticmethod
+    def passing_zero():
+        return {"status": "pass", "generation_bearing_zero": True}
+
+    @staticmethod
+    def passing_command():
+        return {"status": "pass"}
+
+    @staticmethod
+    def passing_cleanup():
+        return {"status": "pass", "steps": [{"ok": True}]}
+
+    @staticmethod
+    def passing_final_zero():
+        return {
+            "status": "pass",
+            "strip_verified_off": True,
+            "ray_verified_off": True,
+        }
+
+    def capture_factory(self, root: Path, *, clipped: bool = False, invalid: bool = False):
+        def capture(request):
+            result = _attach_v2_capture_evidence(
+                root, request, {}, observed=float(request["requested_elapsed_s"]),
+            )
+            quality = accepted_capture(
+                capture_id=request["capture_id"],
+                clipped=clipped,
+            )
+            quality.update({
+                "requested_elapsed_s": request["requested_elapsed_s"],
+                "nominal_shutter": request["nominal_shutter"],
+            })
+            if invalid:
+                quality["recorded_exposure"] = None
+            result["quality_capture"] = quality
+            return result
+        return capture
+
+    def prepare_candidate(self, live: dict, candidate_index: int) -> Path:
+        outer = Path(live["output_root"])
+        outer.mkdir(parents=True, exist_ok=True)
+        root = outer / f"candidate-{candidate_index}"
+        measure.write_td_b_eq_r6_launch_ledger(
+            live,
+            candidate_index=candidate_index,
+            candidate_root=root,
+            outer_pid=111,
+            wrapper_pid=222,
+            argv=["--eq-r6-single-candidate", str(candidate_index)],
+        )
+        return root
+
+    def run_candidate(self, live: dict, candidate_index: int, capture_fn) -> dict:
+        root = self.prepare_candidate(live, candidate_index)
+        result = measure.run_td_b_eq_r6_single_candidate(
+            live,
+            candidate_index=candidate_index,
+            candidate_root=root,
+            strip_zero_fn=self.passing_zero,
+            ray_a_fn=self.passing_command,
+            ray_c_fn=self.passing_command,
+            capture_fn=capture_fn(root) if callable(capture_fn) else capture_fn,
+            python_cleanup_fn=self.passing_cleanup,
+            sleep_fn=lambda _seconds: None,
+            monotonic_fn=lambda: 0.0,
+        )
+        return json.loads(result.read_text(encoding="utf-8"))
+
+    def test_activation_is_explicit_unique_and_rejects_contract_drift(self):
+        live = self.live_plan()
+        self.assertTrue(live["executable"])
+        self.assertEqual(live["physical_cr3_cap"], 8)
+        thermal.validate_td_b_eq_r6_live_plan(live, require_fresh_root=True)
+        drift = deepcopy(live)
+        drift["offline_plan"]["retry"] = 1
+        with self.assertRaisesRegex(ValueError, "offline contract"):
+            thermal.validate_td_b_eq_r6_live_plan(drift, require_fresh_root=True)
+        Path(live["output_root"]).mkdir()
+        with self.assertRaisesRegex(ValueError, "not fresh"):
+            thermal.validate_td_b_eq_r6_live_plan(live, require_fresh_root=True)
+
+    def test_single_candidate_accounts_attempt_return_accept_and_stops_clipping(self):
+        live = self.live_plan()
+        root_holder = {}
+
+        def factory(root):
+            root_holder["root"] = root
+            calls = 0
+
+            def capture(request):
+                nonlocal calls
+                calls += 1
+                return self.capture_factory(root, clipped=calls == 2)(request)
+            return capture
+
+        result = self.run_candidate(live, 1, factory)
+        self.assertEqual(result["classification"], "clipping_only")
+        self.assertEqual(
+            (
+                result["attempted_capture_calls"],
+                result["physical_returned_cr3_count"],
+                result["accepted_capture_count"],
+            ),
+            (2, 2, 1),
+        )
+        events = [
+            json.loads(line)
+            for line in (root_holder["root"] / "capture-results.jsonl")
+            .read_text(encoding="utf-8").splitlines()
+        ]
+        self.assertTrue(all(item["physical_return"]["cr3_sha256"] for item in events))
+
+    def test_nonclipping_and_python_cleanup_failure_fail_closed(self):
+        live = self.live_plan("invalid")
+        result = self.run_candidate(
+            live, 1, lambda root: self.capture_factory(root, invalid=True),
+        )
+        self.assertEqual(result["classification"], "invalid")
+        self.assertEqual(result["attempted_capture_calls"], 1)
+
+        live = self.live_plan("cleanup")
+        root = self.prepare_candidate(live, 1)
+        with self.assertRaisesRegex(RuntimeError, "single candidate failed"):
+            measure.run_td_b_eq_r6_single_candidate(
+                live,
+                candidate_index=1,
+                candidate_root=root,
+                strip_zero_fn=self.passing_zero,
+                ray_a_fn=self.passing_command,
+                ray_c_fn=self.passing_command,
+                capture_fn=self.capture_factory(root),
+                python_cleanup_fn=lambda: {"status": "fail"},
+                sleep_fn=lambda _seconds: None,
+                monotonic_fn=lambda: 0.0,
+            )
+        failure = json.loads((root / "candidate-result.json").read_text(encoding="utf-8"))
+        self.assertEqual(failure["status"], "failed")
+
+    def test_physical_sidecar_failure_is_retained_before_processing(self):
+        live = self.live_plan()
+        root = self.prepare_candidate(live, 1)
+
+        def capture(request):
+            result = self.capture_factory(root)(request)
+            Path(result["remote_metadata_path"]).unlink()
+            return result
+
+        with self.assertRaisesRegex(RuntimeError, "single candidate failed"):
+            measure.run_td_b_eq_r6_single_candidate(
+                live,
+                candidate_index=1,
+                candidate_root=root,
+                strip_zero_fn=self.passing_zero,
+                ray_a_fn=self.passing_command,
+                ray_c_fn=self.passing_command,
+                capture_fn=capture,
+                python_cleanup_fn=self.passing_cleanup,
+                sleep_fn=lambda _seconds: None,
+                monotonic_fn=lambda: 0.0,
+            )
+        physical = [
+            json.loads(line)
+            for line in (root / "physical-returns.jsonl").read_text(encoding="utf-8").splitlines()
+        ]
+        self.assertEqual(len(physical), 1)
+        self.assertIsNotNone(physical[0]["cr3_sha256"])
+        self.assertEqual(physical[0]["sidecar_validation_status"], "fail")
+        self.assertFalse((root / "capture-results.jsonl").exists())
+        result = json.loads((root / "candidate-result.json").read_text(encoding="utf-8"))
+        self.assertEqual(result["physical_returned_cr3_count"], 1)
+
+    def fake_wrapper_run(self, live, behavior):
+        def run(command, *, check):
+            self.assertFalse(check)
+            candidate_index = int(command[command.index("--eq-r6-single-candidate") + 1])
+            outer_pid = int(command[command.index("--eq-r6-outer-pid") + 1])
+            root = Path(command[2])
+            measure.write_td_b_eq_r6_launch_ledger(
+                live,
+                candidate_index=candidate_index,
+                candidate_root=root,
+                outer_pid=outer_pid,
+                wrapper_pid=300 + candidate_index,
+                argv=command[3:],
+            )
+            capture = behavior(candidate_index, root)
+            measure.run_td_b_eq_r6_single_candidate(
+                live,
+                candidate_index=candidate_index,
+                candidate_root=root,
+                strip_zero_fn=self.passing_zero,
+                ray_a_fn=self.passing_command,
+                ray_c_fn=self.passing_command,
+                capture_fn=capture,
+                python_cleanup_fn=self.passing_cleanup,
+                sleep_fn=lambda _seconds: None,
+                monotonic_fn=lambda: 0.0,
+            )
+            (root / "all-off-shell.json").write_text(
+                json.dumps([{"ok": True}]) + "\n", encoding="utf-8",
+            )
+            measure._write_json(root / "wrapper-result.json", {
+                "status": "complete",
+                "child_exit_code": 0,
+                "shell_cleanup_exit_code": 0,
+                "wrapper_exit_code": 0,
+                "signal": None,
+            })
+            return subprocess.CompletedProcess(command, 0)
+        return run
+
+    def test_outer_pass_does_not_launch_candidate_two(self):
+        live = self.live_plan()
+        result_path = measure.orchestrate_td_b_eq_r6(
+            live,
+            run_fn=self.fake_wrapper_run(
+                live, lambda _index, root: self.capture_factory(root),
+            ),
+            final_zero_fn=self.passing_final_zero,
+            outer_pid=111,
+        )
+        result = json.loads(result_path.read_text(encoding="utf-8"))
+        self.assertEqual(result["status"], "qualified_1_2500")
+        self.assertEqual(len(result["candidate_launches"]), 1)
+        self.assertFalse((Path(live["output_root"]) / "candidate-2").exists())
+
+    def test_outer_clipping_only_launches_candidate_two_after_first_seal(self):
+        live = self.live_plan()
+
+        def behavior(index, root):
+            return self.capture_factory(root, clipped=index == 1)
+
+        result_path = measure.orchestrate_td_b_eq_r6(
+            live,
+            run_fn=self.fake_wrapper_run(live, behavior),
+            final_zero_fn=self.passing_final_zero,
+            outer_pid=111,
+        )
+        result = json.loads(result_path.read_text(encoding="utf-8"))
+        self.assertEqual(result["status"], "qualified_1_3200")
+        self.assertEqual(len(result["candidate_launches"]), 2)
+        first_seal = json.loads(
+            (Path(live["output_root"]) / "candidate-1" / "terminal-seal.json")
+            .read_text(encoding="utf-8")
+        )
+        self.assertGreaterEqual(
+            result["candidate_launches"][1]["launched_at"],
+            first_seal["sealed_at"],
+        )
+
+    def test_outer_nonclipping_and_terminal_failure_never_launch_candidate_two(self):
+        live = self.live_plan("outer-invalid")
+        result_path = measure.orchestrate_td_b_eq_r6(
+            live,
+            run_fn=self.fake_wrapper_run(
+                live, lambda _index, root: self.capture_factory(root, invalid=True),
+            ),
+            final_zero_fn=self.passing_final_zero,
+            outer_pid=111,
+        )
+        result = json.loads(result_path.read_text(encoding="utf-8"))
+        self.assertEqual(result["status"], "run_invalid")
+        self.assertEqual(len(result["candidate_launches"]), 1)
+
+        live = self.live_plan("outer-zero-fail")
+        with self.assertRaisesRegex(RuntimeError, "terminal lifecycle"):
+            measure.orchestrate_td_b_eq_r6(
+                live,
+                run_fn=self.fake_wrapper_run(
+                    live, lambda _index, root: self.capture_factory(root, clipped=True),
+                ),
+                final_zero_fn=lambda: {
+                    "status": "fail",
+                    "strip_verified_off": False,
+                    "ray_verified_off": True,
+                },
+                outer_pid=111,
+            )
+        failure = json.loads(
+            (Path(live["output_root"]) / "outer-failure.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(len(failure["candidate_launches"]), 1)
+
+    def test_launch_ledger_is_immutable_and_rejects_private_argv(self):
+        live = self.live_plan()
+        root = self.prepare_candidate(live, 1)
+        with self.assertRaises(FileExistsError):
+            measure.write_td_b_eq_r6_launch_ledger(
+                live,
+                candidate_index=1,
+                candidate_root=root,
+                outer_pid=111,
+                wrapper_pid=222,
+                argv=["--eq-r6-single-candidate", "1"],
+            )
+        live = self.live_plan("private")
+        Path(live["output_root"]).mkdir()
+        with self.assertRaisesRegex(ValueError, "private parameter"):
+            measure.write_td_b_eq_r6_launch_ledger(
+                live,
+                candidate_index=1,
+                candidate_root=Path(live["output_root"]) / "candidate-1",
+                outer_pid=111,
+                wrapper_pid=222,
+                argv=["--token", "fabricated"],
+            )
+
+    def test_launch_ledger_tamper_rejects_before_any_adapter(self):
+        live = self.live_plan()
+        root = self.prepare_candidate(live, 1)
+        ledger_path = root / "launch-ledger.json"
+        ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+        ledger["measurement_runner"]["sha256"] = "0" * 64
+        ledger_path.chmod(0o600)
+        ledger_path.write_text(json.dumps(ledger) + "\n", encoding="utf-8")
+        calls = []
+        with self.assertRaisesRegex(PermissionError, "binding differs"):
+            measure.run_td_b_eq_r6_single_candidate(
+                live,
+                candidate_index=1,
+                candidate_root=root,
+                strip_zero_fn=lambda: calls.append("strip"),
+                ray_a_fn=lambda: calls.append("a"),
+                ray_c_fn=lambda: calls.append("c"),
+                capture_fn=lambda _request: calls.append("capture"),
+                python_cleanup_fn=lambda: calls.append("cleanup"),
+                sleep_fn=lambda _seconds: None,
+            )
+        self.assertEqual(calls, [])
+
+    def test_shell_cleanup_artifact_failure_blocks_terminal_seal_and_candidate_two(self):
+        live = self.live_plan()
+        base_run = self.fake_wrapper_run(
+            live, lambda _index, root: self.capture_factory(root, clipped=True),
+        )
+
+        def run(command, *, check):
+            completed = base_run(command, check=check)
+            root = Path(command[2])
+            (root / "all-off-shell.json").write_text(
+                json.dumps([{"ok": False}]) + "\n", encoding="utf-8",
+            )
+            return completed
+
+        with self.assertRaisesRegex(RuntimeError, "terminal lifecycle"):
+            measure.orchestrate_td_b_eq_r6(
+                live,
+                run_fn=run,
+                final_zero_fn=self.passing_final_zero,
+                outer_pid=111,
+            )
+        failure = json.loads(
+            (Path(live["output_root"]) / "outer-failure.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(len(failure["candidate_launches"]), 1)
+
+    def test_cli_modes_are_isolated_from_execute_dry_run_and_release(self):
+        base = [
+            "--experiment-id", thermal.TD_B,
+            "--source", "ray",
+            "--phase", "formal",
+            "--run-name", "fake",
+        ]
+        parsed = measure.parse_args([
+            *base, "--execute", "--allow-device-control", "--eq-r6-orchestrate",
+        ])
+        self.assertTrue(parsed.eq_r6_orchestrate)
+        with self.assertRaises(PermissionError):
+            measure.main([*base, "--dry-run", "--eq-r6-single-candidate", "1"])
+        with self.assertRaises(PermissionError):
+            measure.main([
+                *base, "--qualify-lineage-release", "--eq-r6-orchestrate",
+            ])
 
 
 class RayR6ContractTests(unittest.TestCase):
