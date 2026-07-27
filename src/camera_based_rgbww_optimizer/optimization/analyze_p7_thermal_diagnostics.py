@@ -80,6 +80,25 @@ TD_B_RETAINED_FIRST_SIDECAR_SHA256 = (
 )
 TD_B_RETAINED_FIRST_CAPTURE_ID = "bfc876fa-9a69-445d-bfc2-298f42baf3af"
 TD_B_RETAINED_FIRST_REQUEST_ID = "36d2a813-8d35-4f9a-b860-c58cc1ba12e9"
+TD_B_R5_FORMAL_ROOT = Path(
+    "/Volumes/4T/temp/rgbww-optimizer/p7-td-b-formal-r5/"
+    "formal-r5-1e3b107-20260726T220000Z"
+)
+TD_B_R5_ARTIFACT_HASHES = {
+    "ray-formal/plan.json": "94da09f240e2d0ca84ce545c52748522dfbaa9a674bf96ffcef5c8e74473ba9f",
+    "ray-formal/failure.json": "2984ec745f2b7cddad1549535b730ae75397cdf7f1fa8602f71010f6613a9a65",
+    "ray-formal/measurements/011-ray-c-t60.patch-statistics.json":
+        "98b792f0ef2d89718102c054fa4c4ad43206cf3cce82855d9c67900b6223a8be",
+    "ray-formal/run.json": "dfba25366d6deb093170ceb21ee2fa259143f0da4ba0628216de0d6f23f03079",
+    "ray-formal/physical-returns.jsonl":
+        "d6569f121c7a31ac1dfb427fe2de1dccc8b46fe3be6e4f3d7ba007d8019e6e02",
+    "terminal-audit.json": "4bee490fa83bad33830cf5e8941ccc7fa0ca83191903639c617af5fe9d5e7d79",
+    "returned-summary.json": "5e97023d84d91f0037b096bf84e1102a8b786aa174a383b65087669fb5401955",
+    "ray-formal/all-off-python.json":
+        "982cee95d59cc18ae1270fdc02f3c8947008796593fa22deb07f925ebd5327dc",
+    "ray-formal/all-off-shell.json":
+        "3c4ea47739e009cef740791e86195f8e76ec8ddb805b3a937efee75c01cf3381",
+}
 
 
 def td_b_feature_map_from_report(
@@ -100,6 +119,76 @@ def td_b_feature_map_from_report(
         feature_ids,
         statistic=TD_B_FORMAL_FEATURE_STATISTIC,
     )
+
+
+def r5_formal_tree_manifest(root: str | Path = TD_B_R5_FORMAL_ROOT) -> list[dict[str, Any]]:
+    """Return a deterministic, no-follow manifest for immutable R5 evidence."""
+    target = Path(root)
+    if target.resolve(strict=True) != TD_B_R5_FORMAL_ROOT.resolve(strict=True):
+        raise ValueError("R5 diagnostic requires the exact retained formal root")
+    rows: list[dict[str, Any]] = []
+    for path in sorted(target.rglob("*")):
+        relative = path.relative_to(target).as_posix()
+        if path.is_symlink():
+            rows.append({"path": relative, "type": "symlink"})
+        elif path.is_file():
+            rows.append({
+                "path": relative,
+                "type": "file",
+                "bytes": path.stat().st_size,
+                "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            })
+        elif path.is_dir():
+            rows.append({"path": relative, "type": "directory"})
+        else:
+            rows.append({"path": relative, "type": "other"})
+    return rows
+
+
+def build_r5_partial_diagnostic(
+    root: str | Path = TD_B_R5_FORMAL_ROOT,
+) -> dict[str, Any]:
+    """Describe the retained R5 prefix without running formal inference."""
+    target = Path(root)
+    if target.resolve(strict=True) != TD_B_R5_FORMAL_ROOT.resolve(strict=True):
+        raise ValueError("R5 diagnostic requires the exact retained formal root")
+    for relative, expected in TD_B_R5_ARTIFACT_HASHES.items():
+        artifact = target / relative
+        if artifact.is_symlink() or not artifact.is_file():
+            raise ValueError(f"R5 retained artifact is missing or unsafe: {relative}")
+        if hashlib.sha256(artifact.read_bytes()).hexdigest() != expected:
+            raise ValueError(f"R5 retained artifact hash drifted: {relative}")
+    run = _load_json(target / "ray-formal/run.json")
+    failure = _load_json(target / "ray-formal/failure.json")
+    if run.get("formal_pass") is True:
+        raise ValueError("R5 retained run cannot authorize formal pass")
+    return {
+        "schema": "r5_partial_diagnostic_analysis_v1",
+        "formal_authorizing": False,
+        "incomplete_sequence": True,
+        "missing_slots": ["011", "012", "013", "014", "015"],
+        "formal_pass": False,
+        "r5_capture_011_quality": "invalid",
+        "r5_run": "retained_accepted_hard_failed_formal_attempt",
+        "retained_11_use": "diagnostic_only",
+        "retained_11_formal_inference": "prohibited",
+        "old_new_pooling_allowed": False,
+        "failure_class": thermal.TD_B_R5_FAILURE_CLASS,
+        "retained_root": str(target),
+        "retained_artifact_hashes": dict(TD_B_R5_ARTIFACT_HASHES),
+        "formal_analysis_fields": {
+            "feature_vector": "not_evaluated",
+            "inverse": "not_evaluated",
+            "center": "not_evaluated",
+            "covariance": "not_evaluated",
+            "history": "not_evaluated",
+            "reference": "not_evaluated",
+        },
+        "source_status": {
+            "run_status": run.get("status"),
+            "failure_classification": failure.get("classification"),
+        },
+    }
 
 
 def analyze_thermal_run(
@@ -974,7 +1063,22 @@ def analyze_td_b(
     compatibility_fn: Callable[[Sequence[float], Sequence[float]], bool] | None = None,
     operational_override: bool = False,
     operational_dwell_s: int | None = None,
+    r6_operational_contract: bool = False,
 ) -> dict[str, Any]:
+    if r6_operational_contract:
+        if len(captures) != 16:
+            raise ValueError("Ray R6 analyzer requires complete 16/16 engineering/quality input")
+        if tuple(str(row.get("capture_id")) for row in captures) != thermal.TD_B_R6_CAPTURE_IDS:
+            raise ValueError("Ray R6 analyzer requires exact 000..015 order")
+        if any(
+            row.get("engineering_quality_status") != "pass"
+            or row.get("origin") != "ray_r6"
+            for row in captures
+        ):
+            raise ValueError("Ray R6 analyzer requires 16/16 accepted R6-only inputs")
+        roots = {str(row.get("run_root")) for row in captures}
+        if len(roots) != 1 or "" in roots:
+            raise ValueError("Ray R6 analyzer prohibits old/new or cross-root pooling")
     source = str(captures[0]["plan_step"].get("source_id", "ray")) if captures else "ray"
     anchor_compatibility = compatibility_fn or frozen_same_state_compatibility(
         source=source, state="A", feature_ids=feature_ids,
@@ -998,6 +1102,31 @@ def analyze_td_b(
         )
         for state, points in state_points.items()
     }
+    if r6_operational_contract:
+        nonstationary_states = sorted(
+            state for state, result in state_results.items()
+            if result.get("t_settle_s") is None
+        )
+        return {
+            "status": (
+                "td_b_operational_600_complete_waiting_for_planner"
+                if history_pass else "history_dependent_at_operational_dwell_600"
+            ),
+            "formal_pass": bool(history_pass),
+            "return_anchor_history": "pass" if history_pass else "fail",
+            "return_anchor_history_effect": "pass" if history_pass else "fail",
+            "steady_status": "not_demonstrated",
+            "time_dependent_within_600": bool(nonstationary_states),
+            "operational_endpoint_600_valid": bool(history_pass),
+            "operational_dwell_s": 600,
+            "claim": "selected_fixed_time_transient_not_proven_steady",
+            "nonstationary_states": nonstationary_states,
+            "state_specific_settle_time": {
+                state: result["t_settle_s"] for state, result in state_results.items()
+            },
+            "strip_unlock_condition": "planner_accepts_complete_ray_r6_history_pass",
+            "td_c_unlock_condition": "combined_td_b_pass",
+        }
     if operational_override:
         if operational_dwell_s != thermal.DEVELOPER_OPERATIONAL_DWELL_S:
             raise ValueError("TD-B operational override requires the frozen 600 second dwell")

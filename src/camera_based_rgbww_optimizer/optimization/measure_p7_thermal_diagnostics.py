@@ -267,6 +267,119 @@ def write_dry_run(
     return root / "plan.json"
 
 
+def run_td_b_eq_r6_fake(
+    plan: Mapping[str, Any],
+    *,
+    capture_fn: Callable[[Mapping[str, Any]], Mapping[str, Any]],
+    event_fn: Callable[[Mapping[str, Any]], None],
+    cleanup_fn: Callable[[str], Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Exercise the exact EQ-R6 scheduler through injected fake owners only."""
+    thermal.validate_td_b_eq_r6_plan(plan)
+    feature_ids = tuple(
+        json.loads(thermal.POLICY_PATH.read_text(encoding="utf-8"))["feature_set"]["ids"]
+    )
+    candidates: list[list[dict[str, Any]]] = []
+    event_ledger: list[dict[str, Any]] = []
+    cleanup_ledger: list[dict[str, Any]] = []
+    attempted_capture_calls = 0
+
+    def emit(event: Mapping[str, Any]) -> None:
+        record = dict(event)
+        event_fn(record)
+        event_ledger.append(record)
+
+    for candidate_index, candidate in enumerate(plan["candidates"], start=1):
+        if candidate_index == 2:
+            first_bad = thermal.td_b_eq_capture_quality_failures(
+                candidates[0][-1], required_feature_ids=feature_ids,
+            )
+            if set(first_bad) != {"clipping"}:
+                raise ValueError("candidate 2 is unlocked only by candidate 1 clipping")
+        emit({
+            "event": "strip_zero_verified",
+            "candidate_index": candidate_index,
+            "generation_bearing": True,
+        })
+        emit({
+            "event": "ray_a_on",
+            "candidate_index": candidate_index,
+            "command": dict(thermal.RAY_STATES["A"]),
+        })
+        emit({
+            "event": "fake_wait",
+            "candidate_index": candidate_index,
+            "duration_s": 600,
+            "capture_count": 0,
+        })
+        emit({
+            "event": "ray_a_to_c",
+            "candidate_index": candidate_index,
+            "command": dict(thermal.RAY_STATES["C"]),
+        })
+        returned: list[dict[str, Any]] = []
+        stop_kind: str | None = None
+        for capture_id, slot_s in zip(candidate["capture_ids"], candidate["slots_s"]):
+            request = {
+                "candidate_index": candidate_index,
+                "capture_id": capture_id,
+                "requested_elapsed_s": slot_s,
+                "nominal_shutter": candidate["nominal_shutter"],
+            }
+            attempted_capture_calls += 1
+            row = dict(capture_fn(request))
+            row.setdefault("capture_id", capture_id)
+            row.setdefault("requested_elapsed_s", slot_s)
+            row.setdefault("nominal_shutter", candidate["nominal_shutter"])
+            if row["capture_id"] != capture_id or row["requested_elapsed_s"] != slot_s:
+                raise ValueError("fake capture adapter returned a different EQ slot")
+            returned.append(row)
+            failures = thermal.td_b_eq_capture_quality_failures(
+                row, required_feature_ids=feature_ids,
+            )
+            emit({
+                "event": "capture_returned",
+                "candidate_index": candidate_index,
+                "capture_id": capture_id,
+                "failures": list(failures),
+            })
+            if failures:
+                stop_kind = "clipping" if set(failures) == {"clipping"} else "invalid"
+                break
+        candidates.append(returned)
+        emit({"event": "ray_off", "candidate_index": candidate_index})
+        for cleanup_name in ("python", "shell", "independent_final_zero", "terminal_seal"):
+            result = dict(cleanup_fn(cleanup_name))
+            if result.get("status") != "pass":
+                raise ValueError(f"fake EQ cleanup failed: {cleanup_name}")
+            cleanup_ledger.append({
+                "candidate_index": candidate_index,
+                "cleanup": cleanup_name,
+                **result,
+            })
+        if candidate_index == 1 and stop_kind == "clipping":
+            continue
+        break
+
+    classification = thermal.classify_td_b_eq_r6(
+        candidates, required_feature_ids=feature_ids,
+    )
+    return {
+        "schema": "p7_td_b_eq_r6_fake_run_v1",
+        "experiment_id": thermal.TD_B_EQ_R6_EXPERIMENT_ID,
+        "status": classification["status"],
+        "classification": classification,
+        "candidate_results": candidates,
+        "event_ledger": event_ledger,
+        "cleanup_ledger": cleanup_ledger,
+        "attempted_capture_calls": attempted_capture_calls,
+        "device_calls": 0,
+        "network_calls": 0,
+        "real_cleanup_calls": 0,
+        "retry": 0,
+    }
+
+
 def execute_td_b_exposure_setup(
     plan: Mapping[str, Any], *, run_dir: str | Path,
     capture_setup_fn: Callable[[Mapping[str, Any]], Sequence[Mapping[str, Any]]],

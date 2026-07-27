@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import re
 import stat
 import subprocess
 from copy import deepcopy
@@ -89,6 +90,64 @@ OPERATING_ENVELOPE_PATH = PROJECT_ROOT / "config/hsi/p7-operating-envelope-v1.js
 OPERATING_ENVELOPE_V2_PATH = PROJECT_ROOT / "config/hsi/p7-operating-envelope-v2.json"
 OPERATING_ENVELOPE_V2_SHA256 = "7012f254e5fa5182dd51b72624f64ce03645fd3d8b7227ab9144f5c7767cfc16"
 OPERATING_ENVELOPE_V2_SCHEMA = "p7_operating_envelope_v2"
+TD_B_EXPOSURE_POLICY_V2_PATH = PROJECT_ROOT / "config/hsi/p7-ray-td-b-exposure-policy-v2.json"
+TD_B_EXPOSURE_POLICY_V2_SCHEMA = "p7_ray_td_b_exposure_policy_v2"
+TD_B_EQ_R6_EXPERIMENT_ID = "P7-TD-B-RAY-C-EXPOSURE-QUAL-R6"
+TD_B_R6_EXPERIMENT_ID = "P7-TD-B-RAY-OP600-EXPOSURE-GUARDED-FORMAL-R6"
+TD_B_R5_PLAN_SHA256 = "94da09f240e2d0ca84ce545c52748522dfbaa9a674bf96ffcef5c8e74473ba9f"
+TD_B_R5_SHUTTERS_SHA256 = "b49dd52ebc1eabc8ae6ae0e3713884e5e939428d0682e6d7234eea8c17626e71"
+TD_B_FEATURE_IDS_SHA256 = "4a37bf13a1dcfa6b652bd4ce6a7793aa8ac0344c293d1a7fc73ff7fad763ab86"
+TD_B_R5_FAILURE_CLASS = (
+    "state_specific_exposure_policy_failure_with_required_feature_observer_saturation"
+)
+TD_B_EQ_CANDIDATES = ("1/2500", "1/3200")
+TD_B_EQ_CAPTURE_IDS = (
+    ("000-ray-c2500-t60", "001-ray-c2500-t120", "002-ray-c2500-t300", "003-ray-c2500-t600"),
+    ("004-ray-c3200-t60", "005-ray-c3200-t120", "006-ray-c3200-t300", "007-ray-c3200-t600"),
+)
+TD_B_R6_CAPTURE_IDS = (
+    "000-ray-a0-t600",
+    "001-ray-d-t60", "002-ray-d-t120", "003-ray-d-t300", "004-ray-d-t600",
+    "005-ray-a-after-d-t600",
+    "006-ray-b-t60", "007-ray-b-t120", "008-ray-b-t300", "009-ray-b-t600",
+    "010-ray-a-after-b-t600",
+    "011-ray-c-t60", "012-ray-c-t120", "013-ray-c-t300", "014-ray-c-t600",
+    "015-ray-a-after-c-t600",
+)
+TD_B_R6_PRE_EQ_CANONICAL_ARTIFACTS = (
+    "r5-source-manifest-before.json",
+    "r5-source-manifest-after.json",
+    "r5-partial-diagnostic-analysis-v1.json",
+    "exposure-policy-v2-validation.json",
+    "eq-r6-fake-matrix.json",
+    "ray-r6-validator-matrix.json",
+    "ray-r6-analyzer-matrix.json",
+    "locks-matrix.json",
+    "secret-path-scan.json",
+    "source-diff.json",
+    "strict-json-audit.json",
+    "validation-summary.json",
+    "terminal-summary.json",
+)
+TD_B_R6_PRE_EQ_PRE_SUMMARY_ARTIFACTS = TD_B_R6_PRE_EQ_CANONICAL_ARTIFACTS[:11]
+TD_B_R6_PRIVATE_OVERRIDE_IDENTIFIER = "AMARAN_OPENAPI_" + "SECRET"
+_TD_B_R6_NETWORK_TARGET_RE = re.compile(
+    r"https?://[^\s\"']+|(?<![\d.])(?:\d{1,3}\.){3}\d{1,3}(?![\d.])|"
+    r"\b[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*\.local\b"
+)
+_TD_B_R6_LITERAL_PRIVATE_VALUE_RE = re.compile(
+    r"""(?ix)
+    \b(?:password|private[_\s-]*value|access[_\s-]*token|api[_\s-]*key)
+    \s*[:=]\s*["'][^"'\n]{8,}["']
+    """
+)
+_TD_B_R6_ENV_READ_RE = re.compile(
+    r"\bos\.(?:environ|getenv)\b|\bdotenv\b|(?:^|/)\.env(?:\b|$)"
+)
+_TD_B_R6_ABSOLUTE_PATH_RE = re.compile(
+    r"(?<![A-Za-z0-9_.-])/(?:Users|Volumes|private|tmp|synthetic)/"
+    r"[A-Za-z0-9_./-]+"
+)
 DEVELOPER_OPERATIONAL_DWELL_S = 600
 DEVELOPER_DWELL_DECISION_AUDIT = PROJECT_ROOT / "advisor/4/0.AUDIT/03-human-decision-no-extension.md"
 DEVELOPER_DWELL_DECISION_AUDIT_SHA256 = "c917c54473aa3c5cc4da9098ddeb81fb109fe9a4186fb71e994c447c63d0454a"
@@ -345,6 +404,611 @@ def expected_native_raw_ambient_policy(
 def file_reference(path: str | Path) -> dict[str, str]:
     target = Path(path)
     return {"path": str(target), "sha256": hashlib.sha256(target.read_bytes()).hexdigest()}
+
+
+def _redacted_finding(kind: str, *, path: str, value: str) -> dict[str, str]:
+    return {
+        "path": path,
+        "kind": kind,
+        "redacted_sha256": hashlib.sha256(value.encode("utf-8")).hexdigest(),
+    }
+
+
+def scan_td_b_r6_offline_sources(
+    current_sources: Mapping[str, str],
+    *,
+    baseline_sources: Mapping[str, str],
+    expected_baseline_sha256: Mapping[str, str],
+    allowed_paths: Sequence[str],
+    allowed_absolute_roots: Sequence[str | Path],
+    symlink_paths: Sequence[str] = (),
+) -> dict[str, Any]:
+    """Fail-closed source scan with one exact baseline identifier exception.
+
+    The exception is deliberately limited to an identifier name already present
+    in the exact HEAD blob. Literal values, environment access, network targets,
+    unsafe paths and symlinks are always findings.
+    """
+    allowed = set(allowed_paths)
+    roots = tuple(Path(root).resolve(strict=False) for root in allowed_absolute_roots)
+    findings: list[dict[str, str]] = []
+    classifications: list[dict[str, Any]] = []
+    for relative, text in sorted(current_sources.items()):
+        if relative not in allowed:
+            findings.append({"path": relative, "kind": "path_outside_changed_allowlist"})
+            continue
+        baseline = baseline_sources.get(relative)
+        expected_hash = expected_baseline_sha256.get(relative)
+        baseline_hash = (
+            hashlib.sha256(baseline.encode("utf-8")).hexdigest()
+            if baseline is not None else None
+        )
+        current_identifier_count = text.count(TD_B_R6_PRIVATE_OVERRIDE_IDENTIFIER)
+        baseline_identifier_count = (
+            baseline.count(TD_B_R6_PRIVATE_OVERRIDE_IDENTIFIER)
+            if baseline is not None else 0
+        )
+        if current_identifier_count:
+            exact_baseline = (
+                baseline is not None
+                and expected_hash is not None
+                and baseline_hash == expected_hash
+                and current_identifier_count == baseline_identifier_count
+            )
+            classification = {
+                "path": relative,
+                "kind": "private_override_name",
+                "occurrences": current_identifier_count,
+                "baseline_occurrences": baseline_identifier_count,
+                "baseline_sha256": baseline_hash,
+                "expected_baseline_sha256": expected_hash,
+                "classification": (
+                    "known_identifier_not_secret_value"
+                    if exact_baseline else "new_or_unproven_identifier"
+                ),
+            }
+            classifications.append(classification)
+            if not exact_baseline:
+                findings.append({
+                    "path": relative,
+                    "kind": "new_or_unproven_private_override_name",
+                })
+        for match in _TD_B_R6_LITERAL_PRIVATE_VALUE_RE.finditer(text):
+            findings.append(_redacted_finding(
+                "literal_credential_or_private_value",
+                path=relative,
+                value=match.group(0),
+            ))
+        for match in _TD_B_R6_ENV_READ_RE.finditer(text):
+            findings.append({
+                "path": relative,
+                "kind": "environment_value_read_or_serialization",
+                "redacted_sha256": hashlib.sha256(
+                    match.group(0).encode("utf-8")
+                ).hexdigest(),
+            })
+        for match in _TD_B_R6_NETWORK_TARGET_RE.finditer(text):
+            findings.append(_redacted_finding(
+                "network_target",
+                path=relative,
+                value=match.group(0),
+            ))
+        for match in _TD_B_R6_ABSOLUTE_PATH_RE.finditer(text):
+            candidate = Path(match.group(0)).resolve(strict=False)
+            if not any(candidate == root or root in candidate.parents for root in roots):
+                findings.append({
+                    "path": relative,
+                    "kind": "absolute_path_outside_allowed_local_roots",
+                    "redacted_sha256": hashlib.sha256(
+                        str(candidate).encode("utf-8")
+                    ).hexdigest(),
+                })
+    for relative in sorted(symlink_paths):
+        findings.append({"path": relative, "kind": "symlink_escape_or_unsafe_path"})
+    return {
+        "schema": "p7_td_b_r6_baseline_aware_secret_path_scan_v2",
+        "status": "pass" if not findings else "fail",
+        "scanned_paths": sorted(current_sources),
+        "baseline_identifier_classifications": classifications,
+        "findings": findings,
+        "private_override_values_read": False,
+        "environment_values_serialized": False,
+        "network_targets_added": False,
+    }
+
+
+def build_td_b_r6_pre_eq_validation_summary(
+    artifact_references: Sequence[Mapping[str, Any]],
+    *,
+    case_results: Sequence[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Derive the pre-terminal summary from exactly eleven frozen artifacts."""
+    names = tuple(Path(str(item.get("path", ""))).name for item in artifact_references)
+    child_failures = [
+        {"case": str(item.get("case")), "status": str(item.get("status"))}
+        for item in case_results if item.get("status") != "pass"
+    ]
+    reference_failure = (
+        len(artifact_references) != 11
+        or names != TD_B_R6_PRE_EQ_PRE_SUMMARY_ARTIFACTS
+        or any(
+            not isinstance(item.get("bytes"), int)
+            or item["bytes"] <= 0
+            or not re.fullmatch(r"[0-9a-f]{64}", str(item.get("sha256", "")))
+            for item in artifact_references
+        )
+    )
+    if reference_failure:
+        child_failures.append({"case": "pre_summary_artifact_index", "status": "fail"})
+    return {
+        "schema": "p7_td_b_r6_pre_eq_validation_summary_v2",
+        "status": "pass" if not child_failures else "fail",
+        "indexed_preterminal_count": 11,
+        "artifacts": [dict(item) for item in artifact_references],
+        "cases": [dict(item) for item in case_results],
+        "failures": child_failures,
+    }
+
+
+def build_td_b_r6_pre_eq_terminal_summary(
+    validation_reference: Mapping[str, Any],
+    *,
+    validation_status: str,
+) -> dict[str, Any]:
+    """Build the non-recursive terminal record; its own hash stays external."""
+    validation_ok = (
+        Path(str(validation_reference.get("path", ""))).name == "validation-summary.json"
+        and isinstance(validation_reference.get("bytes"), int)
+        and validation_reference["bytes"] > 0
+        and re.fullmatch(r"[0-9a-f]{64}", str(validation_reference.get("sha256", "")))
+        and validation_status == "pass"
+    )
+    return {
+        "schema": "p7_td_b_r6_pre_eq_terminal_summary_v2",
+        "status": "pass" if validation_ok else "fail",
+        "canonical_root_json_count": 13,
+        "indexed_preterminal_count": 11,
+        "validation_summary_count": 1,
+        "terminal_self_count": 1,
+        "validation_summary": dict(validation_reference),
+        "terminal_self": {
+            "path": "terminal-summary.json",
+            "hash_owner": "external_execution_handoff",
+        },
+    }
+
+
+def validate_td_b_r6_pre_eq_terminal_seal(
+    root: str | Path,
+    *,
+    external_terminal_sha256: str,
+) -> dict[str, Any]:
+    """Independently validate the exact thirteen-file terminal package."""
+    target = Path(root)
+    findings: list[str] = []
+    if target.is_symlink() or not target.is_dir():
+        findings.append("unsafe_or_missing_root")
+        names: tuple[str, ...] = ()
+    else:
+        entries = sorted(target.iterdir(), key=lambda item: item.name)
+        names = tuple(item.name for item in entries)
+        if any(item.is_symlink() or not item.is_file() for item in entries):
+            findings.append("unsafe_or_non_file_entry")
+    if names != tuple(sorted(TD_B_R6_PRE_EQ_CANONICAL_ARTIFACTS)):
+        findings.append("canonical_name_or_count_mismatch")
+    parsed: dict[str, Any] = {}
+    if not findings:
+        for name in names:
+            try:
+                parsed[name] = json.loads((target / name).read_text(encoding="utf-8"))
+            except (OSError, UnicodeError, json.JSONDecodeError):
+                findings.append(f"strict_json_failure:{name}")
+    validation = parsed.get("validation-summary.json", {})
+    for item in validation.get("artifacts", ()):
+        path = target / Path(str(item.get("path", ""))).name
+        if (
+            path.name not in TD_B_R6_PRE_EQ_PRE_SUMMARY_ARTIFACTS
+            or not path.is_file()
+            or path.stat().st_size != item.get("bytes")
+            or hashlib.sha256(path.read_bytes()).hexdigest() != item.get("sha256")
+        ):
+            findings.append(f"stale_preterminal_reference:{path.name}")
+    terminal_path = target / "terminal-summary.json"
+    if terminal_path.is_file():
+        actual_terminal_hash = hashlib.sha256(terminal_path.read_bytes()).hexdigest()
+        if actual_terminal_hash != external_terminal_sha256:
+            findings.append("external_terminal_hash_mismatch")
+    terminal = parsed.get("terminal-summary.json", {})
+    if validation.get("indexed_preterminal_count") != 11:
+        findings.append("validation_count_mismatch")
+    if terminal.get("canonical_root_json_count") != 13:
+        findings.append("terminal_root_count_mismatch")
+    if terminal.get("indexed_preterminal_count") != 11:
+        findings.append("terminal_indexed_count_mismatch")
+    if terminal.get("validation_summary_count") != 1 or terminal.get("terminal_self_count") != 1:
+        findings.append("terminal_phase_count_mismatch")
+    if terminal.get("terminal_self") != {
+        "path": "terminal-summary.json",
+        "hash_owner": "external_execution_handoff",
+    }:
+        findings.append("terminal_self_owner_mismatch")
+    validation_path = target / "validation-summary.json"
+    validation_ref = terminal.get("validation_summary", {})
+    if validation_path.is_file() and (
+        validation_ref.get("bytes") != validation_path.stat().st_size
+        or validation_ref.get("sha256")
+        != hashlib.sha256(validation_path.read_bytes()).hexdigest()
+    ):
+        findings.append("terminal_validation_reference_mismatch")
+    if terminal.get("status") != validation.get("status"):
+        findings.append("terminal_cannot_override_validation_status")
+    return {
+        "schema": "p7_td_b_r6_pre_eq_external_terminal_seal_v1",
+        "status": "pass" if not findings else "fail",
+        "canonical_root_json_count": len(names),
+        "terminal_sha256": external_terminal_sha256,
+        "findings": findings,
+    }
+
+
+def validate_td_b_r6_pre_eq_handoff(
+    validation_summary: Mapping[str, Any],
+    terminal_summary: Mapping[str, Any],
+    handoff: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Reject any prose handoff that contradicts the frozen machine status."""
+    expected = {
+        "validation_status": validation_summary.get("status"),
+        "indexed_preterminal_count": validation_summary.get("indexed_preterminal_count"),
+        "terminal_status": terminal_summary.get("status"),
+        "canonical_root_json_count": terminal_summary.get("canonical_root_json_count"),
+    }
+    mismatches = [
+        key for key, value in expected.items() if handoff.get(key) != value
+    ]
+    if expected["validation_status"] != "pass" and handoff.get("first_sentence_kind") != "failure":
+        mismatches.append("first_sentence_kind")
+    return {
+        "schema": "p7_td_b_r6_pre_eq_handoff_consistency_v1",
+        "status": "pass" if not mismatches else "fail",
+        "expected": expected,
+        "mismatches": sorted(set(mismatches)),
+    }
+
+
+def load_td_b_exposure_policy_v2(
+    path: str | Path = TD_B_EXPOSURE_POLICY_V2_PATH,
+) -> dict[str, Any]:
+    """Load and validate the single versioned R6 exposure-policy owner."""
+    target = Path(path)
+    if target.resolve(strict=True) != TD_B_EXPOSURE_POLICY_V2_PATH.resolve(strict=True):
+        raise ValueError("TD-B exposure policy must use the repository-owned v2 artifact")
+    policy = json.loads(target.read_text(encoding="utf-8"))
+    if policy.get("schema") != TD_B_EXPOSURE_POLICY_V2_SCHEMA:
+        raise ValueError("unsupported TD-B exposure policy schema")
+    if policy.get("supersedes") != TD_B_R5_SHUTTERS_SHA256:
+        raise ValueError("TD-B exposure policy does not supersede the exact R5 shutter ledger")
+    superseded = policy.get("superseded_plan")
+    if not isinstance(superseded, Mapping) or superseded.get("sha256") != TD_B_R5_PLAN_SHA256:
+        raise ValueError("TD-B exposure policy lacks exact R5 plan provenance")
+    if policy.get("iso") != 100 or policy.get("aperture") != "implicit_auto":
+        raise ValueError("TD-B exposure policy camera settings drifted")
+    if policy.get("actual_exposure_owner") != "Canon:ExposureTime":
+        raise ValueError("TD-B recorded exposure owner drifted")
+    states = policy.get("states")
+    expected = {"A": "1/5000", "D": "1/6400", "B": "1/8000"}
+    if not isinstance(states, Mapping) or any(
+        not isinstance(states.get(state), Mapping)
+        or states[state].get("formal_shutter") != shutter
+        or states[state].get("source") != "exact_r5_frozen_plan"
+        for state, shutter in expected.items()
+    ):
+        raise ValueError("TD-B A/D/B shutters differ from exact R5 provenance")
+    c_state = states.get("C")
+    if (
+        not isinstance(c_state, Mapping)
+        or c_state.get("status") != "pending_qualification"
+        or tuple(c_state.get("nominal_candidates", ())) != TD_B_EQ_CANDIDATES
+        or c_state.get("formal_shutter") is not None
+    ):
+        raise ValueError("TD-B C exposure must remain pending exact EQ qualification")
+    provenance = policy.get("provenance")
+    policy_ids = json.loads(POLICY_PATH.read_text(encoding="utf-8"))["feature_set"]["ids"]
+    if (
+        not isinstance(provenance, Mapping)
+        or provenance.get("observer_sha256") != hashlib.sha256(OBSERVER_PATH.read_bytes()).hexdigest()
+        or provenance.get("hsi_policy_sha256") != hashlib.sha256(POLICY_PATH.read_bytes()).hexdigest()
+        or provenance.get("operating_envelope_sha256") != OPERATING_ENVELOPE_V2_SHA256
+        or provenance.get("uncertainty_sha256") != hashlib.sha256(UNCERTAINTY_PATH.read_bytes()).hexdigest()
+        or provenance.get("feature_count") != 58
+        or provenance.get("feature_ids_sha256") != canonical_sha256(policy_ids)
+        or provenance.get("feature_ids_sha256") != TD_B_FEATURE_IDS_SHA256
+    ):
+        raise ValueError("TD-B exposure policy scientific provenance drifted")
+    if policy.get("old_new_frame_combination") != "prohibited":
+        raise ValueError("TD-B exposure policy must prohibit old/new pooling")
+    return policy
+
+
+def build_td_b_eq_r6_plan(
+    policy: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Build the non-executable EQ-R6 contract consumed by the existing runner."""
+    exposure = dict(policy or load_td_b_exposure_policy_v2())
+    validate_td_b_exposure_policy_v2(exposure)
+    candidates = []
+    for index, (shutter, capture_ids) in enumerate(zip(TD_B_EQ_CANDIDATES, TD_B_EQ_CAPTURE_IDS), start=1):
+        candidates.append({
+            "candidate_index": index,
+            "nominal_shutter": shutter,
+            "capture_ids": list(capture_ids),
+            "slots_s": list(TIMED_POINTS),
+            "precondition": {
+                "strip_generation_bearing_zero": True,
+                "ray_a_command": dict(RAY_STATES["A"]),
+                "ray_a_dwell_s": 600,
+                "ray_a_capture_count": 0,
+                "transition_to_c": dict(RAY_STATES["C"]),
+            },
+        })
+    return {
+        "schema": "p7_td_b_eq_r6_plan_v1",
+        "status": "offline_contract_only",
+        "executable": False,
+        "experiment_id": TD_B_EQ_R6_EXPERIMENT_ID,
+        "source": "ray",
+        "strip": "generation_bearing_zero",
+        "formal": 0,
+        "ambient": 0,
+        "retry": 0,
+        "candidate_count_cap": 2,
+        "candidate_physical": 4,
+        "setup_physical_cap": 8,
+        "candidates": candidates,
+        "cleanup": {
+            "python": "required",
+            "shell": "required",
+            "independent_final_zero": "required",
+            "terminal_seal": "required",
+        },
+        "policy_sha256": hashlib.sha256(TD_B_EXPOSURE_POLICY_V2_PATH.read_bytes()).hexdigest(),
+    }
+
+
+def validate_td_b_exposure_policy_v2(policy: Mapping[str, Any]) -> None:
+    """Validate an in-memory policy without permitting a compatibility variant."""
+    owner = load_td_b_exposure_policy_v2()
+    if dict(policy) != owner:
+        raise ValueError("in-memory TD-B exposure policy differs from the repository owner")
+
+
+def validate_td_b_eq_r6_plan(plan: Mapping[str, Any]) -> None:
+    expected = build_td_b_eq_r6_plan(load_td_b_exposure_policy_v2())
+    if dict(plan) != expected:
+        raise ValueError("EQ-R6 plan differs from the exact bounded offline contract")
+
+
+def td_b_eq_capture_quality_failures(
+    capture: Mapping[str, Any],
+    *,
+    required_feature_ids: Sequence[str],
+) -> tuple[str, ...]:
+    """Apply the frozen 58-feature and engineering gates to one EQ return."""
+    required = tuple(str(value) for value in required_feature_ids)
+    if len(required) != 58 or canonical_sha256(list(required)) != TD_B_FEATURE_IDS_SHA256:
+        raise ValueError("EQ-R6 requires the exact ordered 58-feature owner")
+    failures: list[str] = []
+    if capture.get("physical_return_persisted_before_postprocessing") is not True:
+        failures.append("physical_return_evidence")
+    for evidence_name in ("cr3", "sidecar"):
+        evidence = capture.get(evidence_name)
+        if (
+            not isinstance(evidence, Mapping)
+            or not isinstance(evidence.get("path"), str)
+            or not evidence.get("path")
+            or int(evidence.get("bytes", 0)) <= 0
+            or not isinstance(evidence.get("sha256"), str)
+            or len(evidence.get("sha256", "")) != 64
+        ):
+            failures.append(f"{evidence_name}_evidence")
+    if not capture.get("remote_capture_id") or not capture.get("remote_request_id"):
+        failures.append("remote_ids")
+    recorded = capture.get("recorded_exposure")
+    if (
+        not isinstance(recorded, Mapping)
+        or recorded.get("source") != "Canon:ExposureTime"
+        or recorded.get("status") != "recorded"
+        or not math.isfinite(float(recorded.get("seconds", math.nan)))
+    ):
+        failures.append("recorded_exposure")
+    if capture.get("nominal_recorded_ratio_gate") != "pass":
+        failures.append("nominal_recorded_ratio")
+    for gate in (
+        "ray_command_readback", "strip_zero", "source_isolation",
+        "timing_chronology", "no_stale", "budget_accounting",
+    ):
+        if capture.get(gate) != "pass":
+            failures.append(gate)
+    quality = capture.get("feature_quality")
+    if not isinstance(quality, Mapping) or tuple(quality) != required:
+        failures.append("required_58_features")
+        return tuple(failures)
+    for feature_id in required:
+        row = quality[feature_id]
+        if not isinstance(row, Mapping):
+            failures.append("required_58_features")
+            continue
+        value = row.get("value")
+        if value is None or not math.isfinite(float(value)):
+            failures.append("nonfinite")
+        if float(row.get("clipped_fraction", math.inf)) != 0.0:
+            failures.append("clipping")
+        if float(row.get("near_noise_floor_fraction", math.inf)) > 0.05:
+            failures.append("near_noise")
+        if int(row.get("valid_pixel_count", -1)) < 29000:
+            failures.append("valid_pixel")
+    return tuple(sorted(set(failures)))
+
+
+def classify_td_b_eq_r6(
+    candidate_results: Sequence[Sequence[Mapping[str, Any]]],
+    *,
+    required_feature_ids: Sequence[str],
+) -> dict[str, Any]:
+    """Classify the exact two-candidate gate, including the sole C2 unlock."""
+    if not candidate_results or len(candidate_results) > 2:
+        raise ValueError("EQ-R6 requires one or at most two candidate result ledgers")
+    first_failures = [
+        td_b_eq_capture_quality_failures(row, required_feature_ids=required_feature_ids)
+        for row in candidate_results[0]
+    ]
+    if not first_failures or len(first_failures) > 4:
+        raise ValueError("candidate 1 must contain one to four returned slots")
+    first_bad = next((item for item in first_failures if item), None)
+    if first_bad is None:
+        if len(first_failures) != 4 or len(candidate_results) != 1:
+            raise ValueError("qualified candidate 1 requires 4/4 and zero candidate 2 calls")
+        return {"status": "qualified_1_2500", "selected_shutter": "1/2500", "candidate_2_call_count": 0}
+    if set(first_bad) != {"clipping"}:
+        if len(candidate_results) != 1:
+            raise ValueError("non-clipping candidate 1 failure prohibits candidate 2")
+        return {"status": "run_invalid", "selected_shutter": None, "candidate_2_call_count": 0}
+    if first_failures.index(first_bad) != len(first_failures) - 1:
+        raise ValueError("candidate 1 continued after its first clipping failure")
+    if len(candidate_results) != 2:
+        return {"status": "candidate_2_required", "selected_shutter": None, "candidate_2_call_count": 0}
+    second_failures = [
+        td_b_eq_capture_quality_failures(row, required_feature_ids=required_feature_ids)
+        for row in candidate_results[1]
+    ]
+    if len(second_failures) != 4:
+        raise ValueError("candidate 2 qualification requires exactly four returned slots")
+    if any(second_failures):
+        return {"status": "exposure_window_unresolved", "selected_shutter": None, "candidate_2_call_count": 4}
+    return {"status": "qualified_1_3200", "selected_shutter": "1/3200", "candidate_2_call_count": 4}
+
+
+def build_td_b_r6_formal_plan(
+    policy: Mapping[str, Any] | None = None,
+    *,
+    selected_c_shutter: str | None = None,
+) -> dict[str, Any]:
+    exposure = dict(policy or load_td_b_exposure_policy_v2())
+    validate_td_b_exposure_policy_v2(exposure)
+    if selected_c_shutter is not None:
+        raise ValueError("pre-EQ package cannot finalize or materialize the C shutter")
+    shutters = {
+        "A": exposure["states"]["A"]["formal_shutter"],
+        "D": exposure["states"]["D"]["formal_shutter"],
+        "B": exposure["states"]["B"]["formal_shutter"],
+        "C": None,
+    }
+    return {
+        "schema": "p7_td_b_ray_r6_formal_plan_v1",
+        "status": "pending_exposure_policy_non_executable",
+        "executable": False,
+        "experiment_id": TD_B_R6_EXPERIMENT_ID,
+        "source": "ray",
+        "strip": "zero_throughout",
+        "ambient": 0,
+        "formal_logical": 16,
+        "formal_physical_cap": 16,
+        "setup_in_formal_root": 0,
+        "launch": 1,
+        "retry": 0,
+        "capture_ids": list(TD_B_R6_CAPTURE_IDS),
+        "state_shutters": shutters,
+        "c_policy_status": "pending_qualification",
+        "old_new_frame_combination": "prohibited",
+        "failure_contract": {
+            "classification": "accepted_hard_failed_formal_attempt",
+            "formal_pass": False,
+            "strip_call_count": 0,
+            "retry": 0,
+        },
+    }
+
+
+def validate_td_b_r6_formal_plan(plan: Mapping[str, Any]) -> None:
+    expected = build_td_b_r6_formal_plan()
+    if dict(plan) != expected:
+        raise ValueError("Ray R6 plan differs from the exact pending-policy contract")
+
+
+def validate_td_b_r6_capture_ledger(
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    required_feature_ids: Sequence[str],
+    selected_c_shutter: str,
+) -> None:
+    if selected_c_shutter not in TD_B_EQ_CANDIDATES:
+        raise ValueError("Ray R6 requires one exact EQ-selected C shutter")
+    if len(rows) != 16 or tuple(str(row.get("capture_id")) for row in rows) != TD_B_R6_CAPTURE_IDS:
+        raise ValueError("Ray R6 requires exact 000..015 order with no skip/resume")
+    roots = {str(row.get("run_root")) for row in rows}
+    if len(roots) != 1 or "" in roots:
+        raise ValueError("Ray R6 capture ledger cannot pool roots")
+    if any(row.get("origin") != "ray_r6" for row in rows):
+        raise ValueError("R5 or cross-run frame pooling is prohibited")
+    policy = load_td_b_exposure_policy_v2()
+    expected_shutters = {
+        state: policy["states"][state]["formal_shutter"] for state in ("A", "D", "B")
+    }
+    expected_shutters["C"] = selected_c_shutter
+    for row in rows:
+        capture_id = str(row["capture_id"])
+        if "-ray-a" in capture_id:
+            state = "A"
+        elif "-ray-d-" in capture_id:
+            state = "D"
+        elif "-ray-b-" in capture_id:
+            state = "B"
+        elif "-ray-c-" in capture_id:
+            state = "C"
+        else:
+            raise ValueError("Ray R6 capture ID has no exact state owner")
+        if (
+            row.get("state_id") != state
+            or row.get("nominal_shutter") != expected_shutters[state]
+            or row.get("exposure_mode") != "fixed"
+            or row.get("weak_reacquire") is not False
+            or row.get("mid_run_shutter_change") is not False
+        ):
+            raise ValueError("Ray R6 state/shutter contract drifted")
+        failures = td_b_eq_capture_quality_failures(
+            row, required_feature_ids=required_feature_ids,
+        )
+        if failures:
+            raise ValueError(f"Ray R6 capture failed required gates: {failures}")
+
+
+def td_b_r6_machine_status() -> dict[str, Any]:
+    return {
+        "r5": {
+            "failure_class": TD_B_R5_FAILURE_CLASS,
+            "formal_pass": False,
+            "retained_11_use": "diagnostic_only",
+            "old_new_combination": "prohibited",
+        },
+        "exposure_qualification": {
+            "status": "pending", "slots_s": list(TIMED_POINTS), "physical_cap": 8,
+        },
+        "ray_r6": {
+            "formal_planned": 16, "formal_accepted": 0, "retry": 0,
+            "return_anchor_history": "not_evaluated",
+        },
+        "operating_envelope": {
+            "dwell_s": 600,
+            "claim": "selected_fixed_time_transient_not_proven_steady",
+            "steady_status": "not_demonstrated",
+        },
+        "locks": {
+            "strip": "blocked_until_ray_r6_pass",
+            "td_c": "blocked_until_combined_td_b_pass",
+            "sentinel": True,
+            "p8": True,
+        },
+    }
 
 
 def resolve_trusted_operating_envelope(
