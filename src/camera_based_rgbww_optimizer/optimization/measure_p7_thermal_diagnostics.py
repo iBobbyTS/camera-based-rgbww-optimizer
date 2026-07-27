@@ -2322,6 +2322,118 @@ def _validated_eq_physical_return(
     return row, receipt
 
 
+def _select_eq_r6_policy_observations(
+    observations: Sequence[Mapping[str, Any]],
+    policy_feature_ids: Sequence[str],
+) -> tuple[Mapping[str, Any], ...]:
+    """Select complete RAW observations in the exact frozen EQ-R6 policy order."""
+    if (
+        not isinstance(policy_feature_ids, Sequence)
+        or isinstance(policy_feature_ids, (str, bytes))
+        or len(policy_feature_ids) != 58
+        or any(
+            type(feature_id) is not str or not feature_id.strip()
+            for feature_id in policy_feature_ids
+        )
+        or len(set(policy_feature_ids)) != len(policy_feature_ids)
+    ):
+        raise ValueError("EQ-R6 policy feature IDs must be 58 unique non-empty strings")
+    if (
+        not isinstance(observations, Sequence)
+        or isinstance(observations, (str, bytes))
+    ):
+        raise ValueError("EQ-R6 RAW observations must be a sequence")
+
+    by_id: dict[str, Mapping[str, Any]] = {}
+    for index, observation in enumerate(observations):
+        if not isinstance(observation, Mapping):
+            raise ValueError(f"EQ-R6 RAW observation {index} is not an object")
+        feature_id = observation.get("feature_id")
+        if type(feature_id) is not str or not feature_id.strip():
+            raise ValueError(
+                f"EQ-R6 RAW observation {index} lacks a non-empty feature ID"
+            )
+        if feature_id in by_id:
+            raise ValueError(
+                f"EQ-R6 RAW observations contain duplicate feature ID: {feature_id}"
+            )
+        by_id[feature_id] = observation
+
+    missing = [
+        feature_id for feature_id in policy_feature_ids if feature_id not in by_id
+    ]
+    if missing:
+        raise ValueError(
+            "EQ-R6 RAW observations are missing required feature IDs: "
+            + ", ".join(missing)
+        )
+    selected = tuple(by_id[feature_id] for feature_id in policy_feature_ids)
+    if (
+        len(selected) != 58
+        or tuple(item["feature_id"] for item in selected)
+        != tuple(policy_feature_ids)
+    ):
+        raise RuntimeError("EQ-R6 selected RAW feature order differs from policy")
+    return selected
+
+
+def _count_eq_r6_physical_returns(candidate_root: str | Path) -> int:
+    """Strictly recount one candidate's authoritative physical-return ledger."""
+    root = Path(candidate_root).resolve(strict=True)
+    ledger_path = root / "physical-returns.jsonl"
+    if ledger_path.is_symlink():
+        raise ValueError("EQ-R6 physical-return ledger is unsafe")
+    if not ledger_path.exists():
+        return 0
+    if (
+        not ledger_path.is_file()
+        or not ledger_path.resolve(strict=True).is_relative_to(root)
+    ):
+        raise ValueError("EQ-R6 physical-return ledger is unsafe")
+
+    rows: list[Mapping[str, Any]] = []
+    capture_ids: set[str] = set()
+    for line_number, line in enumerate(
+        ledger_path.read_text(encoding="utf-8").splitlines(),
+        start=1,
+    ):
+        if not line:
+            continue
+        try:
+            row = json.loads(
+                line,
+                parse_constant=lambda value: (_ for _ in ()).throw(
+                    ValueError(f"non-finite JSON constant: {value}")
+                ),
+            )
+        except (json.JSONDecodeError, ValueError) as exc:
+            raise ValueError(
+                f"EQ-R6 physical-return ledger line {line_number} is invalid JSON"
+            ) from exc
+        if not isinstance(row, Mapping):
+            raise ValueError(
+                f"EQ-R6 physical-return ledger line {line_number} is not an object"
+            )
+        expected_index = len(rows) + 1
+        physical_index = row.get("physical_index")
+        if type(physical_index) is not int or physical_index != expected_index:
+            raise ValueError(
+                "EQ-R6 physical-return ledger indices are not contiguous from 1"
+            )
+        capture_id = row.get("capture_id")
+        if type(capture_id) is not str or not capture_id.strip():
+            raise ValueError(
+                f"EQ-R6 physical-return ledger line {line_number} lacks capture_id"
+            )
+        if capture_id in capture_ids:
+            raise ValueError(
+                f"EQ-R6 physical-return ledger duplicates capture_id: {capture_id}"
+            )
+        capture_ids.add(capture_id)
+        rows.append(row)
+    return len(rows)
+
+
 def run_td_b_eq_r6_single_candidate(
     live_plan: Mapping[str, Any],
     *,
@@ -2478,15 +2590,6 @@ def run_td_b_eq_r6_single_candidate(
             classification = "candidate_pass"
     except BaseException as exc:
         failure = exc
-        _write_json(root / "candidate-failure.json", {
-            "schema": "p7_td_b_eq_r6_candidate_failure_v1",
-            "status": "failed",
-            "exception_type": type(exc).__name__,
-            "message": str(exc),
-            "attempted": attempted,
-            "physical_returned": physical_returned,
-            "accepted": accepted,
-        })
     finally:
         try:
             cleanup = dict(python_cleanup_fn())
@@ -2501,11 +2604,17 @@ def run_td_b_eq_r6_single_candidate(
         _write_json(root / "all-off-python.json", cleanup)
         if cleanup.get("status") != "pass" and failure is None:
             failure = RuntimeError("EQ-R6 Python cleanup failed")
-    physical_path = root / "physical-returns.jsonl"
-    if physical_path.is_file():
-        physical_returned = len(
-            [line for line in physical_path.read_text(encoding="utf-8").splitlines() if line]
-        )
+    physical_returned = _count_eq_r6_physical_returns(root)
+    if failure is not None:
+        _write_json(root / "candidate-failure.json", {
+            "schema": "p7_td_b_eq_r6_candidate_failure_v1",
+            "status": "failed",
+            "exception_type": type(failure).__name__,
+            "message": str(failure),
+            "attempted": attempted,
+            "physical_returned": physical_returned,
+            "accepted": accepted,
+        })
     result = {
         "schema": EQ_R6_CANDIDATE_RESULT_SCHEMA,
         "status": "complete" if failure is None else "failed",
@@ -2682,11 +2791,15 @@ def run_td_b_eq_r6_production_candidate(
         collection = collect_patch_plane_features(
             [report], statistic=TD_B_FORMAL_FEATURE_STATISTIC,
         )
+        selected_observations = _select_eq_r6_policy_observations(
+            collection["observations"],
+            feature_ids,
+        )
         observations = {
-            str(item["feature_id"]): item for item in collection["observations"]
+            str(item["feature_id"]): item for item in selected_observations
         }
         if tuple(observations) != feature_ids:
-            raise RuntimeError("EQ-R6 RAW report feature order differs")
+            raise RuntimeError("EQ-R6 selected RAW feature order differs")
         exposure = dict(report["exposure_metadata"])
         nominal_seconds = parse_nominal_exposure(str(candidate["nominal_shutter"]))
         recorded_seconds = float(exposure.get("seconds", 0.0))

@@ -475,6 +475,243 @@ class EqR6LiveOwnerTests(unittest.TestCase):
         result = json.loads((root / "candidate-result.json").read_text(encoding="utf-8"))
         self.assertEqual(result["physical_returned_cr3_count"], 1)
 
+    def test_eq_r6_full_raw_observations_select_exact_policy_order(self):
+        policy_rows = [
+            {
+                "feature_id": feature_id,
+                "value": float(index + 1),
+                "metrics": {
+                    "clipped_fraction": 0.0,
+                    "near_noise_floor_fraction": 0.0,
+                    "valid_pixel_count": 30_000 + index,
+                },
+            }
+            for index, feature_id in enumerate(FEATURE_IDS)
+        ]
+        extras = [
+            {
+                "feature_id": f"diagnostic::{index:02d}",
+                "value": -float(index + 1),
+                "metrics": {
+                    "clipped_fraction": 0.0,
+                    "near_noise_floor_fraction": 0.0,
+                    "valid_pixel_count": 1_000 + index,
+                },
+            }
+            for index in range(34)
+        ]
+        observations = [
+            *extras[:17],
+            *reversed(policy_rows),
+            *extras[17:],
+        ]
+
+        selected = measure._select_eq_r6_policy_observations(
+            observations,
+            FEATURE_IDS,
+        )
+
+        self.assertEqual(len(observations), 92)
+        self.assertEqual(len(selected), 58)
+        self.assertEqual(
+            tuple(row["feature_id"] for row in selected),
+            FEATURE_IDS,
+        )
+        source_by_id = {row["feature_id"]: row for row in observations}
+        self.assertEqual(
+            selected,
+            tuple(source_by_id[feature_id] for feature_id in FEATURE_IDS),
+        )
+        self.assertEqual(selected[0]["feature_id"], "block_03::G1")
+
+    def test_eq_r6_feature_selection_rejects_missing_required_id(self):
+        observations = [
+            {"feature_id": feature_id, "value": float(index)}
+            for index, feature_id in enumerate(FEATURE_IDS[:-1])
+        ]
+
+        with self.assertRaisesRegex(ValueError, "missing required"):
+            measure._select_eq_r6_policy_observations(
+                observations,
+                FEATURE_IDS,
+            )
+
+    def test_eq_r6_feature_selection_rejects_duplicate_observation_id(self):
+        observations = [
+            {"feature_id": feature_id, "value": float(index)}
+            for index, feature_id in enumerate(FEATURE_IDS)
+        ]
+        observations.append(dict(observations[0]))
+
+        with self.assertRaisesRegex(ValueError, "duplicate"):
+            measure._select_eq_r6_policy_observations(
+                observations,
+                FEATURE_IDS,
+            )
+
+    def test_eq_r6_post_return_feature_failure_counts_physical_atomically(self):
+        live = self.live_plan("post-return-feature-failure")
+        root = self.prepare_candidate(live, 1)
+        observer = {}
+
+        def capture(request):
+            returned = _attach_v2_capture_evidence(
+                root,
+                request,
+                {},
+                observed=float(request["requested_elapsed_s"]),
+            )
+            observer["callback"](request, returned, 1)
+            raise RuntimeError("synthetic post-return feature failure")
+
+        with self.assertRaisesRegex(RuntimeError, "single candidate failed"):
+            measure.run_td_b_eq_r6_single_candidate(
+                live,
+                candidate_index=1,
+                candidate_root=root,
+                strip_zero_fn=self.passing_zero,
+                ray_a_fn=self.passing_command,
+                ray_c_fn=self.passing_command,
+                capture_fn=capture,
+                python_cleanup_fn=self.passing_cleanup,
+                runtime_outer_pid=111,
+                runtime_wrapper_pid=222,
+                runtime_runner_pid=333,
+                runtime_argv=["--eq-r6-single-candidate", "1"],
+                bind_physical_return_observer_fn=lambda callback: observer.__setitem__(
+                    "callback",
+                    callback,
+                ),
+                sleep_fn=lambda _seconds: None,
+                monotonic_fn=lambda: 0.0,
+            )
+
+        failure = json.loads(
+            (root / "candidate-failure.json").read_text(encoding="utf-8")
+        )
+        result = json.loads(
+            (root / "candidate-result.json").read_text(encoding="utf-8")
+        )
+        ledger = [
+            json.loads(line)
+            for line in (root / "physical-returns.jsonl")
+            .read_text(encoding="utf-8")
+            .splitlines()
+            if line
+        ]
+        self.assertEqual(len(ledger), 1)
+        self.assertEqual(failure["physical_returned"], 1)
+        self.assertEqual(result["physical_returned_cr3_count"], 1)
+
+        invalid_ledgers = {
+            "broken-symlink": None,
+            "malformed-json": ("{",),
+            "noncontiguous-index": (
+                json.dumps({"physical_index": 2, "capture_id": "capture-1"}),
+            ),
+            "duplicate-capture-id": (
+                json.dumps({"physical_index": 1, "capture_id": "capture-1"}),
+                json.dumps({"physical_index": 2, "capture_id": "capture-1"}),
+            ),
+        }
+        for case_name, lines in invalid_ledgers.items():
+            with self.subTest(strict_ledger=case_name):
+                strict_root = self.parent / f"strict-{case_name}"
+                strict_root.mkdir()
+                strict_ledger = strict_root / "physical-returns.jsonl"
+                if lines is None:
+                    strict_ledger.symlink_to(strict_root / "missing-ledger")
+                else:
+                    strict_ledger.write_text(
+                        "\n".join(lines) + "\n",
+                        encoding="utf-8",
+                    )
+                with self.assertRaisesRegex(
+                    ValueError,
+                    "physical-return ledger",
+                ):
+                    measure._count_eq_r6_physical_returns(strict_root)
+
+    def test_eq_r6_sidecar_failure_counts_physical_in_failure_and_result(self):
+        live = self.live_plan("sidecar-accounting")
+        root = self.prepare_candidate(live, 1)
+
+        def capture(request):
+            returned = self.capture_factory(root)(request)
+            Path(returned["remote_metadata_path"]).unlink()
+            return returned
+
+        with self.assertRaisesRegex(RuntimeError, "single candidate failed"):
+            measure.run_td_b_eq_r6_single_candidate(
+                live,
+                candidate_index=1,
+                candidate_root=root,
+                strip_zero_fn=self.passing_zero,
+                ray_a_fn=self.passing_command,
+                ray_c_fn=self.passing_command,
+                capture_fn=capture,
+                python_cleanup_fn=self.passing_cleanup,
+                runtime_outer_pid=111,
+                runtime_wrapper_pid=222,
+                runtime_runner_pid=333,
+                runtime_argv=["--eq-r6-single-candidate", "1"],
+                sleep_fn=lambda _seconds: None,
+                monotonic_fn=lambda: 0.0,
+            )
+
+        failure = json.loads(
+            (root / "candidate-failure.json").read_text(encoding="utf-8")
+        )
+        result = json.loads(
+            (root / "candidate-result.json").read_text(encoding="utf-8")
+        )
+        ledger = [
+            json.loads(line)
+            for line in (root / "physical-returns.jsonl")
+            .read_text(encoding="utf-8")
+            .splitlines()
+            if line
+        ]
+        self.assertEqual(len(ledger), 1)
+        self.assertEqual(ledger[0]["sidecar_validation_status"], "fail")
+        self.assertEqual(failure["physical_returned"], 1)
+        self.assertEqual(result["physical_returned_cr3_count"], 1)
+
+    def test_eq_r6_pre_return_failure_keeps_all_physical_counts_zero(self):
+        live = self.live_plan("pre-return-accounting")
+        root = self.prepare_candidate(live, 1)
+
+        with self.assertRaisesRegex(RuntimeError, "single candidate failed"):
+            measure.run_td_b_eq_r6_single_candidate(
+                live,
+                candidate_index=1,
+                candidate_root=root,
+                strip_zero_fn=lambda: {
+                    "status": "fail",
+                    "generation_bearing_zero": False,
+                },
+                ray_a_fn=self.passing_command,
+                ray_c_fn=self.passing_command,
+                capture_fn=lambda _request: self.fail("capture must not run"),
+                python_cleanup_fn=self.passing_cleanup,
+                runtime_outer_pid=111,
+                runtime_wrapper_pid=222,
+                runtime_runner_pid=333,
+                runtime_argv=["--eq-r6-single-candidate", "1"],
+                sleep_fn=lambda _seconds: None,
+                monotonic_fn=lambda: 0.0,
+            )
+
+        failure = json.loads(
+            (root / "candidate-failure.json").read_text(encoding="utf-8")
+        )
+        result = json.loads(
+            (root / "candidate-result.json").read_text(encoding="utf-8")
+        )
+        self.assertFalse((root / "physical-returns.jsonl").exists())
+        self.assertEqual(failure["physical_returned"], 0)
+        self.assertEqual(result["physical_returned_cr3_count"], 0)
+
     def fake_wrapper_run(self, live, behavior):
         def run(command, *, check):
             self.assertFalse(check)
