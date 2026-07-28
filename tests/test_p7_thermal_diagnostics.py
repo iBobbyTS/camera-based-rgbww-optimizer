@@ -2872,6 +2872,187 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
         self.assertEqual(workflow_only["status"], "eligible_waiting_for_planner")
         self.assertEqual(workflow_only["prohibited_paths"], [])
 
+    def test_post_eq_policy_lineage_classifies_only_exact_accepted_paths(self):
+        checkpoint = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=Path(__file__).parents[1],
+            check=True, capture_output=True, text=True,
+        ).stdout.strip()
+        expected = {
+            "config/hsi/p7-ray-td-b-exposure-policy-v2.json":
+                "accepted_post_eq_exposure_policy_contract",
+            "tests/test_p7_td_b_r6_contract.py":
+                "accepted_post_eq_exposure_policy_validation",
+        }
+        candidate = subject.build_td_b_setup_release_lineage_candidate(
+            subject.TD_B_SETUP_RELEASE_PATH,
+            old_checkpoint=subject.TD_B_SETUP_CHECKPOINT,
+            new_checkpoint=checkpoint,
+            changed_paths=sorted(expected),
+        )
+        self.assertEqual(
+            {row["path"]: row["classification"] for row in candidate["changed_paths"]},
+            expected,
+        )
+        self.assertEqual(candidate["status"], "eligible_waiting_for_planner")
+        self.assertEqual(candidate["prohibited_paths"], [])
+
+        changed_paths = subject.changed_paths_between_checkpoints(
+            subject.TD_B_SETUP_CHECKPOINT,
+            checkpoint,
+        )
+        full_candidate = subject.build_td_b_setup_release_lineage_candidate(
+            subject.TD_B_SETUP_RELEASE_PATH,
+            old_checkpoint=subject.TD_B_SETUP_CHECKPOINT,
+            new_checkpoint=checkpoint,
+            changed_paths=changed_paths,
+        )
+        self.assertEqual(len(changed_paths), 59)
+        self.assertEqual(full_candidate["status"], "eligible_waiting_for_planner")
+        self.assertEqual(full_candidate["prohibited_paths"], [])
+        self.assertEqual(dict(subject.TD_B_POST_EQ_POLICY_CLASSIFICATIONS), expected)
+        self.assertEqual(
+            dict(subject._validate_td_b_post_eq_policy_lineage(
+                new_checkpoint=checkpoint,
+            )),
+            expected,
+        )
+        for path, expected_sha256 in subject.TD_B_POST_EQ_POLICY_BLOB_SHA256.items():
+            accepted = subprocess.run(
+                ["git", "show", f"{subject.TD_B_POST_EQ_POLICY_COMMIT}:{path}"],
+                cwd=Path(__file__).parents[1], check=True, capture_output=True,
+            ).stdout
+            self.assertEqual(hashlib.sha256(accepted).hexdigest(), expected_sha256)
+            if path in expected:
+                self.assertEqual(
+                    (Path(__file__).parents[1] / path).read_bytes(),
+                    accepted,
+                )
+
+    def test_post_eq_policy_lineage_fails_closed_without_widening(self):
+        root = Path(__file__).parents[1]
+        checkpoint = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=root,
+            check=True, capture_output=True, text=True,
+        ).stdout.strip()
+        neighboring = [
+            "config/hsi/p7-ray-td-b-exposure-policy-v3.json",
+            "tests/test_p7_td_b_r7_contract.py",
+            "src/camera_based_rgbww_optimizer/control/unreviewed.py",
+        ]
+        candidate = subject.build_td_b_setup_release_lineage_candidate(
+            subject.TD_B_SETUP_RELEASE_PATH,
+            old_checkpoint=subject.TD_B_SETUP_CHECKPOINT,
+            new_checkpoint=checkpoint,
+            changed_paths=neighboring,
+        )
+        self.assertEqual(candidate["prohibited_paths"], neighboring)
+        self.assertTrue(all(
+            row["classification"] == "prohibited_or_unreviewed"
+            for row in candidate["changed_paths"]
+        ))
+        self.assertFalse(
+            set(subject.TD_B_POST_EQ_POLICY_CLASSIFICATIONS)
+            & set(subject.TD_B_LINEAGE_ALLOWED_PRODUCTION_PATHS)
+        )
+        self.assertFalse(
+            set(subject.TD_B_POST_EQ_POLICY_CLASSIFICATIONS)
+            & set(subject.TD_B_LINEAGE_ALLOWED_VALIDATION_PATHS)
+        )
+
+        with self.assertRaisesRegex(ValueError, "ancestry differs"):
+            subject._validate_td_b_post_eq_policy_lineage(
+                new_checkpoint=subject.TD_B_POST_EQ_POLICY_PARENT,
+            )
+        for name, replacement, message in (
+            ("TD_B_POST_EQ_POLICY_PARENT", "0" * 40, "parent differs"),
+            ("TD_B_POST_EQ_POLICY_SUBJECT", "wrong", "subject differs"),
+            ("TD_B_POST_EQ_POLICY_PATHS_SHA256", "0" * 64, "path set differs"),
+        ):
+            with self.subTest(name=name), mock.patch.object(subject, name, replacement):
+                with self.assertRaisesRegex(ValueError, message):
+                    subject._validate_td_b_post_eq_policy_lineage(
+                        new_checkpoint=checkpoint,
+                    )
+
+        accepted_path = next(iter(subject.TD_B_POST_EQ_POLICY_BLOB_SHA256))
+        changed_hashes = dict(subject.TD_B_POST_EQ_POLICY_BLOB_SHA256)
+        changed_hashes[accepted_path] = "0" * 64
+        with mock.patch.object(
+            subject,
+            "TD_B_POST_EQ_POLICY_BLOB_SHA256",
+            changed_hashes,
+        ):
+            with self.assertRaisesRegex(ValueError, "accepted blob differs"):
+                subject._validate_td_b_post_eq_policy_lineage(
+                    new_checkpoint=checkpoint,
+                )
+
+        mapped_path = next(iter(subject.TD_B_POST_EQ_POLICY_CLASSIFICATIONS))
+        original_run = subprocess.run
+        mapped_show_calls = 0
+
+        def drift_checkpoint(command, *args, **kwargs):
+            nonlocal mapped_show_calls
+            if command == ["git", "show", f"{checkpoint}:{mapped_path}"]:
+                mapped_show_calls += 1
+                if mapped_show_calls == 2:
+                    return subprocess.CompletedProcess(command, 0, stdout=b"drift")
+            return original_run(command, *args, **kwargs)
+
+        with mock.patch.object(subject.subprocess, "run", side_effect=drift_checkpoint):
+            with self.assertRaisesRegex(ValueError, "checkpoint blob differs"):
+                subject._validate_td_b_post_eq_policy_lineage(
+                    new_checkpoint=checkpoint,
+                )
+
+        mapped_owner = (root / mapped_path).resolve()
+        original_read_bytes = Path.read_bytes
+
+        def drift_working(path):
+            if path.resolve() == mapped_owner:
+                return b"drift"
+            return original_read_bytes(path)
+
+        with mock.patch.object(Path, "read_bytes", drift_working):
+            with self.assertRaisesRegex(ValueError, "working owner differs"):
+                subject._validate_td_b_post_eq_policy_lineage(
+                    new_checkpoint=checkpoint,
+                )
+        original_is_symlink = Path.is_symlink
+
+        def mapped_symlink(path):
+            return path.resolve() == mapped_owner or original_is_symlink(path)
+
+        with mock.patch.object(Path, "is_symlink", mapped_symlink):
+            with self.assertRaisesRegex(ValueError, "working owner differs"):
+                subject._validate_td_b_post_eq_policy_lineage(
+                    new_checkpoint=checkpoint,
+                )
+        original_is_file = Path.is_file
+
+        def mapped_missing(path):
+            return False if path.resolve() == mapped_owner else original_is_file(path)
+
+        with mock.patch.object(Path, "is_file", mapped_missing):
+            with self.assertRaisesRegex(ValueError, "working owner differs"):
+                subject._validate_td_b_post_eq_policy_lineage(
+                    new_checkpoint=checkpoint,
+                )
+        with self.assertRaisesRegex(ValueError, "duplicates"):
+            subject.build_td_b_setup_release_lineage_candidate(
+                subject.TD_B_SETUP_RELEASE_PATH,
+                old_checkpoint=subject.TD_B_SETUP_CHECKPOINT,
+                new_checkpoint=checkpoint,
+                changed_paths=[mapped_path, mapped_path],
+            )
+        with self.assertRaisesRegex(ValueError, "repository-relative"):
+            subject.build_td_b_setup_release_lineage_candidate(
+                subject.TD_B_SETUP_RELEASE_PATH,
+                old_checkpoint=subject.TD_B_SETUP_CHECKPOINT,
+                new_checkpoint=checkpoint,
+                changed_paths=["../outside.py"],
+            )
+
     def test_public_default_successor_lineage_layers_historical_and_current_owners(self):
         checkpoint = subprocess.run(
             ["git", "rev-parse", "HEAD"], cwd=Path(__file__).parents[1],

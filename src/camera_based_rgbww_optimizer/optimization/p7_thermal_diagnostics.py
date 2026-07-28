@@ -351,6 +351,31 @@ TD_B_CLEANUP_TEST_PROVENANCE_HUMAN_INSTRUCTION = (
     "use a test-owned valid fake Ray credential only around cleanup execution tests "
     "while preserving production credential, payload, cleanup, and .env behavior"
 )
+TD_B_POST_EQ_POLICY_COMMIT = "161094ffa2bf1f84ed1fc787e708e8c3463f10db"
+TD_B_POST_EQ_POLICY_PARENT = "f37517af3ae25efb41f085904fd48f037980ed04"
+TD_B_POST_EQ_POLICY_SUBJECT = "feat(p7): finalize eq-r6 state-c exposure policy"
+TD_B_POST_EQ_POLICY_PATHS = (
+    "config/hsi/p7-ray-td-b-exposure-policy-v2.json",
+    "src/camera_based_rgbww_optimizer/optimization/p7_thermal_diagnostics.py",
+    "tests/test_p7_td_b_r6_contract.py",
+)
+TD_B_POST_EQ_POLICY_PATHS_SHA256 = (
+    "fdd774e4686b3ebe45296880d6407666dd4ef6cc633e7f9cc891e62bd5480ac2"
+)
+TD_B_POST_EQ_POLICY_BLOB_SHA256 = MappingProxyType({
+    "config/hsi/p7-ray-td-b-exposure-policy-v2.json":
+        "c9080d18571f617cb7d323ade843ff9c86bf92e3795d23e3999e26d413968681",
+    "src/camera_based_rgbww_optimizer/optimization/p7_thermal_diagnostics.py":
+        "87efa4ff026b4433ff00b40876bdb6a0b96ec181190f8d288e1f3fea6ad41b90",
+    "tests/test_p7_td_b_r6_contract.py":
+        "10374ec2366fc8cbe928953690defc31c83dc5c04da192f599f59591ec196f23",
+})
+TD_B_POST_EQ_POLICY_CLASSIFICATIONS = MappingProxyType({
+    "config/hsi/p7-ray-td-b-exposure-policy-v2.json":
+        "accepted_post_eq_exposure_policy_contract",
+    "tests/test_p7_td_b_r6_contract.py":
+        "accepted_post_eq_exposure_policy_validation",
+})
 TD_B_LINEAGE_ALLOWED_PRODUCTION_PATHS = frozenset({
     "src/camera_based_rgbww_optimizer/optimization/hsi_objective.py",
     "src/camera_based_rgbww_optimizer/optimization/measure_raw_observer_validation.py",
@@ -2719,6 +2744,110 @@ def _validate_td_b_cleanup_test_provenance(
     return TD_B_CLEANUP_TEST_PROVENANCE_CLASSIFICATIONS
 
 
+def _validate_td_b_post_eq_policy_lineage(
+    *,
+    new_checkpoint: str,
+    project_root: str | Path = PROJECT_ROOT,
+) -> Mapping[str, str]:
+    """Validate the exact accepted post-EQ policy commit and mapped path owners."""
+    root = Path(project_root).resolve()
+    if (
+        len(new_checkpoint) != 40
+        or any(character not in "0123456789abcdef" for character in new_checkpoint)
+    ):
+        raise ValueError("TD-B post-EQ policy checkpoint is invalid")
+    try:
+        resolved = subprocess.run(
+            ["git", "rev-parse", new_checkpoint],
+            cwd=root, check=True, capture_output=True, text=True,
+        ).stdout.strip()
+    except subprocess.CalledProcessError as exc:
+        raise ValueError("TD-B post-EQ policy checkpoint is invalid") from exc
+    if (
+        resolved != new_checkpoint
+        or not _td_b_checkpoint_contains(
+            resolved,
+            TD_B_POST_EQ_POLICY_COMMIT,
+            project_root=root,
+        )
+    ):
+        raise ValueError("TD-B post-EQ policy checkpoint ancestry differs")
+
+    try:
+        parent = subprocess.run(
+            ["git", "rev-parse", f"{TD_B_POST_EQ_POLICY_COMMIT}^"],
+            cwd=root, check=True, capture_output=True, text=True,
+        ).stdout.strip()
+        subject = subprocess.run(
+            ["git", "show", "-s", "--format=%s", TD_B_POST_EQ_POLICY_COMMIT],
+            cwd=root, check=True, capture_output=True, text=True,
+        ).stdout.strip()
+        path_output = subprocess.run(
+            [
+                "git", "diff-tree", "--no-commit-id", "--name-only", "-r",
+                TD_B_POST_EQ_POLICY_COMMIT,
+            ],
+            cwd=root, check=True, capture_output=True, text=True,
+        ).stdout
+    except subprocess.CalledProcessError as exc:
+        raise ValueError("TD-B post-EQ policy accepted commit owner differs") from exc
+    if parent != TD_B_POST_EQ_POLICY_PARENT:
+        raise ValueError("TD-B post-EQ policy accepted parent differs")
+    if subject != TD_B_POST_EQ_POLICY_SUBJECT:
+        raise ValueError("TD-B post-EQ policy accepted subject differs")
+    paths = tuple(sorted(path for path in path_output.splitlines() if path))
+    path_payload = "".join(f"{path}\n" for path in paths).encode("utf-8")
+    if (
+        paths != TD_B_POST_EQ_POLICY_PATHS
+        or hashlib.sha256(path_payload).hexdigest()
+        != TD_B_POST_EQ_POLICY_PATHS_SHA256
+        or set(TD_B_POST_EQ_POLICY_BLOB_SHA256) != set(TD_B_POST_EQ_POLICY_PATHS)
+        or not set(TD_B_POST_EQ_POLICY_CLASSIFICATIONS).issubset(paths)
+    ):
+        raise ValueError("TD-B post-EQ policy accepted path set differs")
+
+    for entry_path in TD_B_POST_EQ_POLICY_PATHS:
+        try:
+            accepted = subprocess.run(
+                ["git", "show", f"{TD_B_POST_EQ_POLICY_COMMIT}:{entry_path}"],
+                cwd=root, check=True, capture_output=True,
+            ).stdout
+        except subprocess.CalledProcessError as exc:
+            raise ValueError(
+                f"TD-B post-EQ policy accepted Git owner differs: {entry_path}"
+            ) from exc
+        expected_sha256 = TD_B_POST_EQ_POLICY_BLOB_SHA256[entry_path]
+        if hashlib.sha256(accepted).hexdigest() != expected_sha256:
+            raise ValueError(
+                f"TD-B post-EQ policy accepted blob differs: {entry_path}"
+            )
+        if entry_path not in TD_B_POST_EQ_POLICY_CLASSIFICATIONS:
+            continue
+        working = root / entry_path
+        if working.is_symlink() or not working.is_file():
+            raise ValueError(
+                f"TD-B post-EQ policy working owner differs: {entry_path}"
+            )
+        try:
+            checkpoint = subprocess.run(
+                ["git", "show", f"{new_checkpoint}:{entry_path}"],
+                cwd=root, check=True, capture_output=True,
+            ).stdout
+        except subprocess.CalledProcessError as exc:
+            raise ValueError(
+                f"TD-B post-EQ policy checkpoint Git owner differs: {entry_path}"
+            ) from exc
+        if hashlib.sha256(checkpoint).hexdigest() != expected_sha256:
+            raise ValueError(
+                f"TD-B post-EQ policy checkpoint blob differs: {entry_path}"
+            )
+        if hashlib.sha256(working.read_bytes()).hexdigest() != expected_sha256:
+            raise ValueError(
+                f"TD-B post-EQ policy working owner differs: {entry_path}"
+            )
+    return TD_B_POST_EQ_POLICY_CLASSIFICATIONS
+
+
 def build_td_b_setup_release_lineage_candidate(
     release_path: str | Path,
     *,
@@ -2775,6 +2904,14 @@ def build_td_b_setup_release_lineage_candidate(
         if cleanup_test_paths
         else {}
     )
+    post_eq_paths = set(TD_B_POST_EQ_POLICY_CLASSIFICATIONS).intersection(
+        changed_paths
+    )
+    post_eq_classifications = (
+        _validate_td_b_post_eq_policy_lineage(new_checkpoint=new_checkpoint)
+        if post_eq_paths
+        else {}
+    )
     for raw_path in changed_paths:
         changed_path = str(raw_path).strip()
         if not changed_path or changed_path.startswith("/") or ".." in Path(changed_path).parts:
@@ -2791,6 +2928,8 @@ def build_td_b_setup_release_lineage_candidate(
             classification = workflow_classifications[changed_path]
         elif changed_path in cleanup_test_classifications:
             classification = cleanup_test_classifications[changed_path]
+        elif changed_path in post_eq_classifications:
+            classification = post_eq_classifications[changed_path]
         elif changed_path in TD_B_LINEAGE_ALLOWED_PRODUCTION_PATHS:
             classification = "ambient_and_physical_ledger_contract"
         elif changed_path in TD_B_LINEAGE_ALLOWED_VALIDATION_PATHS:
