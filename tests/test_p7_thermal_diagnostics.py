@@ -2990,13 +2990,13 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
         mapped_path = next(iter(subject.TD_B_POST_EQ_POLICY_CLASSIFICATIONS))
         original_run = subprocess.run
         mapped_show_calls = 0
+        target_show = ["git", "show", f"{checkpoint}:{mapped_path}"]
 
         def drift_checkpoint(command, *args, **kwargs):
             nonlocal mapped_show_calls
-            if command == ["git", "show", f"{checkpoint}:{mapped_path}"]:
+            if command == target_show:
                 mapped_show_calls += 1
-                if mapped_show_calls == 2:
-                    return subprocess.CompletedProcess(command, 0, stdout=b"drift")
+                return subprocess.CompletedProcess(command, 0, stdout=b"drift")
             return original_run(command, *args, **kwargs)
 
         with mock.patch.object(subject.subprocess, "run", side_effect=drift_checkpoint):
@@ -3004,6 +3004,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                 subject._validate_td_b_post_eq_policy_lineage(
                     new_checkpoint=checkpoint,
                 )
+        self.assertEqual(mapped_show_calls, 1)
 
         mapped_owner = (root / mapped_path).resolve()
         original_read_bytes = Path.read_bytes
