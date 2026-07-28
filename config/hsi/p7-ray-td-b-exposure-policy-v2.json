@@ -9,6 +9,14 @@
   "iso": 100,
   "aperture": "implicit_auto",
   "actual_exposure_owner": "Canon:ExposureTime",
+  "r5_failure_class": "state_specific_exposure_policy_failure_with_required_feature_observer_saturation",
+  "exposure_qualification_status": "qualified_1_2500",
+  "selected_state_c_nominal_shutter": "1/2500",
+  "selected_state_c_recorded_exposure_range": {
+    "owner": "Canon:ExposureTime",
+    "min_seconds": 0.000387549084953174,
+    "max_seconds": 0.000387549084953174
+  },
   "states": {
     "A": {
       "cache_key": "ray-h120-s100",
@@ -27,12 +35,12 @@
     },
     "C": {
       "cache_key": "ray-h300-s100",
-      "status": "pending_qualification",
+      "status": "qualified",
       "nominal_candidates": [
         "1/2500",
         "1/3200"
       ],
-      "formal_shutter": null
+      "formal_shutter": "1/2500"
     }
   },
   "old_new_frame_combination": "prohibited",
@@ -45,7 +53,46 @@
     "hsi_policy_sha256": "db9ebef1503c5e54c989649c719c4a5f75445bbd5487edb14c274e1b2894f3b4",
     "operating_envelope_sha256": "7012f254e5fa5182dd51b72624f64ce03645fd3d8b7227ab9144f5c7767cfc16",
     "uncertainty_sha256": "cedaa1e9d342beb7e464c4e38d77884ad8a7790771432ebdbb5a101ca604aa94",
-    "r2_lineage_release_sha256": "36a2ecd7c68bda35b4f722548b3c7a3bbafc880fc012af28c8fc501eed19d519"
+    "r2_lineage_release_sha256": "36a2ecd7c68bda35b4f722548b3c7a3bbafc880fc012af28c8fc501eed19d519",
+    "eq_r6_qualification": {
+      "root": "/Volumes/4T/temp/rgbww-optimizer/p7-td-b-exposure-qual-r6-f37517a-20260727T1928",
+      "qualification_checkpoint": "f37517a",
+      "code_checkpoint": "f37517af3ae25efb41f085904fd48f037980ed04",
+      "artifacts": [
+        {
+          "path": "run/outer-result.json",
+          "sha256": "20a4ee42c931e7df74b7fdd756eab3077530726e8ae5c03d3d48b45e8b562f0a"
+        },
+        {
+          "path": "run/candidate-1-outer-terminal.json",
+          "sha256": "6401f0f162ce3efcd1ca6139e8394ed17411df7552fb1722e2db3eb7a8e4cd16"
+        },
+        {
+          "path": "run/candidate-1/candidate-result.json",
+          "sha256": "7db4d60627c9a63304945664b4ba2e7918dafb12495f5fbf1d45500a46748612"
+        },
+        {
+          "path": "run/candidate-1/terminal-seal.json",
+          "sha256": "8baa46bc6431e9e79c035a6f83954d810c25def2c8b662a761784fd1d81417a3"
+        }
+      ],
+      "capture_ids": [
+        "000-ray-c2500-t60",
+        "001-ray-c2500-t120",
+        "002-ray-c2500-t300",
+        "003-ray-c2500-t600"
+      ],
+      "manifest": {
+        "schema": "planner_eq_family_manifest_v1",
+        "entries": 47,
+        "files": 42,
+        "directories": 5,
+        "symlinks": 0,
+        "other": 0,
+        "payload_bytes": 7980,
+        "sha256": "41136d0d1530163668e111b7a9213bb1b9df330d8a168b451c752e3e5dca28e9"
+      }
+    }
   },
   "quality_rules": {
     "required_feature_count": 58,

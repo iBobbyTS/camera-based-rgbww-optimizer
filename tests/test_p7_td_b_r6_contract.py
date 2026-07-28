@@ -111,17 +111,126 @@ class ExposurePolicyV2Tests(unittest.TestCase):
             ["1/5000", "1/6400", "1/8000"],
         )
 
-    def test_policy_keeps_c_pending_with_only_two_candidates(self):
-        c_state = thermal.load_td_b_exposure_policy_v2()["states"]["C"]
+    def test_policy_finalizes_qualified_c_without_authorizing_formal(self):
+        policy = thermal.load_td_b_exposure_policy_v2()
+        c_state = policy["states"]["C"]
         self.assertEqual(c_state["nominal_candidates"], ["1/2500", "1/3200"])
-        self.assertIsNone(c_state["formal_shutter"])
-        self.assertEqual(c_state["status"], "pending_qualification")
+        self.assertEqual(c_state["formal_shutter"], "1/2500")
+        self.assertEqual(c_state["status"], "qualified")
+        self.assertEqual(policy["exposure_qualification_status"], "qualified_1_2500")
+        self.assertEqual(policy["selected_state_c_nominal_shutter"], "1/2500")
+        self.assertEqual(
+            policy["selected_state_c_recorded_exposure_range"],
+            {
+                "owner": "Canon:ExposureTime",
+                "min_seconds": 0.000387549084953174,
+                "max_seconds": 0.000387549084953174,
+            },
+        )
+        forbidden_claims = {
+            "formal_pass", "td_b_pass", "history_pass", "release_usable",
+            "production_release_usable", "product_ready", "state_c_settled",
+        }
+        self.assertTrue(forbidden_claims.isdisjoint(policy))
 
     def test_policy_rejects_scientific_or_shutter_drift(self):
         policy = thermal.load_td_b_exposure_policy_v2()
         policy["states"]["A"]["formal_shutter"] = "1/4000"
         with self.assertRaisesRegex(ValueError, "differs"):
             thermal.validate_td_b_exposure_policy_v2(policy)
+
+    def test_selected_policy_hash_is_the_external_file_hash(self):
+        expected = hashlib.sha256(thermal.TD_B_EXPOSURE_POLICY_V2_PATH.read_bytes()).hexdigest()
+        self.assertEqual(len(expected), 64)
+        self.assertNotIn("selected_policy_hash", thermal.load_td_b_exposure_policy_v2())
+
+
+class EqFamilyManifestTests(unittest.TestCase):
+    def test_exact_family_manifest_matches_frozen_digest_and_qualification(self):
+        manifest = thermal.build_planner_eq_family_manifest(
+            thermal.TD_B_EQ_R6_ACCEPTED_ROOT,
+        )
+        self.assertEqual(
+            (manifest["entries"], manifest["files"], manifest["directories"],
+             manifest["symlinks"], manifest["other"], manifest["payload_bytes"]),
+            (47, 42, 5, 0, 0, 7980),
+        )
+        self.assertEqual(manifest["sha256"], thermal.TD_B_EQ_R6_MANIFEST_SHA256)
+        self.assertEqual(
+            manifest["rows"][0],
+            {"mode": "0o700", "path": "prelaunch", "type": "dir"},
+        )
+        self.assertNotIn("bytes", manifest["rows"][0])
+        self.assertNotIn("sha256", manifest["rows"][0])
+        audit = thermal.audit_td_b_eq_r6_qualification(
+            thermal.TD_B_EQ_R6_ACCEPTED_ROOT,
+        )
+        self.assertEqual(audit["status"], "qualified_1_2500")
+        self.assertEqual(audit["selected_shutter"], "1/2500")
+        self.assertEqual(audit["candidate_launch_count"], 1)
+        self.assertEqual(audit["candidate_2_call_count"], 0)
+        self.assertEqual(
+            (audit["attempted_capture_calls"], audit["physical_returned_cr3_count"],
+             audit["accepted_capture_count"]),
+            (4, 4, 4),
+        )
+        self.assertEqual(audit["feature_counts"], [58, 58, 58, 58])
+        self.assertEqual(
+            audit["recorded_exposure_seconds"],
+            [0.000387549084953174] * 4,
+        )
+        self.assertEqual(audit["recorded_to_nominal_ratio"], 0.9688727123829349)
+
+    def test_manifest_serializer_and_unsafe_types_fail_closed(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            os.chmod(root, 0o700)
+            (root / "z").mkdir(mode=0o700)
+            (root / "a.txt").write_bytes(b"alpha")
+            os.chmod(root / "a.txt", 0o600)
+            manifest = thermal.build_planner_eq_family_manifest(root)
+            self.assertEqual([row["path"] for row in manifest["rows"]], ["a.txt", "z"])
+            self.assertEqual(manifest["rows"][0]["type"], "file")
+            self.assertEqual(manifest["rows"][0]["mode"], "0o600")
+            expected_payload = json.dumps(
+                manifest["rows"],
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=False,
+                allow_nan=False,
+            ).encode("utf-8")
+            self.assertEqual(manifest["payload"], expected_payload)
+            self.assertFalse(manifest["payload"].endswith(b"\n"))
+            before_sha256 = manifest["sha256"]
+            (root / "a.txt").write_bytes(b"changed")
+            self.assertNotEqual(
+                thermal.build_planner_eq_family_manifest(root)["sha256"],
+                before_sha256,
+            )
+            (root / "escape").symlink_to(root.parent)
+            with self.assertRaisesRegex(ValueError, "symlink"):
+                thermal.build_planner_eq_family_manifest(root)
+
+    def test_qualification_rejects_wrong_root_and_artifact_hash_drift(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            with self.assertRaisesRegex(ValueError, "exact accepted"):
+                thermal.audit_td_b_eq_r6_qualification(Path(tempdir))
+        drifted = dict(thermal.TD_B_EQ_R6_ARTIFACT_SHA256)
+        drifted["run/outer-result.json"] = "0" * 64
+        with patch.object(thermal, "TD_B_EQ_R6_ARTIFACT_SHA256", drifted):
+            with self.assertRaisesRegex(ValueError, "artifact drifted"):
+                thermal.audit_td_b_eq_r6_qualification(
+                    thermal.TD_B_EQ_R6_ACCEPTED_ROOT,
+                )
+
+    @unittest.skipUnless(hasattr(os, "mkfifo"), "FIFO creation unavailable")
+    def test_manifest_rejects_other_filesystem_types(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            os.chmod(root, 0o700)
+            os.mkfifo(root / "fifo")
+            with self.assertRaisesRegex(ValueError, "unsupported filesystem type"):
+                thermal.build_planner_eq_family_manifest(root)
 
 
 class R5DiagnosticTests(unittest.TestCase):
@@ -1983,20 +2092,21 @@ class EqR6PrelaunchOwnerTests(unittest.TestCase):
 
 
 class RayR6ContractTests(unittest.TestCase):
-    def test_pre_eq_formal_plan_is_non_executable_and_exact(self):
+    def test_post_eq_formal_plan_is_still_non_executable_and_exact(self):
         plan = thermal.build_td_b_r6_formal_plan()
         self.assertFalse(plan["executable"])
-        self.assertEqual(plan["status"], "pending_exposure_policy_non_executable")
+        self.assertEqual(plan["status"], "selected_exposure_policy_non_executable")
         self.assertEqual(plan["capture_ids"], list(thermal.TD_B_R6_CAPTURE_IDS))
-        self.assertIsNone(plan["state_shutters"]["C"])
+        self.assertEqual(plan["state_shutters"]["C"], "1/2500")
+        self.assertEqual(plan["c_policy_status"], "qualified")
         self.assertEqual(
             (plan["formal_logical"], plan["formal_physical_cap"], plan["ambient"],
              plan["setup_in_formal_root"], plan["launch"], plan["retry"]),
             (16, 16, 0, 0, 1, 0),
         )
 
-    def test_pre_eq_c_materialization_and_plan_drift_fail_closed(self):
-        with self.assertRaisesRegex(ValueError, "cannot finalize"):
+    def test_external_c_override_and_plan_drift_fail_closed(self):
+        with self.assertRaisesRegex(ValueError, "cannot override"):
             thermal.build_td_b_r6_formal_plan(selected_c_shutter="1/2500")
         plan = thermal.build_td_b_r6_formal_plan()
         plan["retry"] = 1

@@ -102,6 +102,25 @@ TD_B_R5_FAILURE_CLASS = (
     "state_specific_exposure_policy_failure_with_required_feature_observer_saturation"
 )
 TD_B_EQ_CANDIDATES = ("1/2500", "1/3200")
+TD_B_EQ_R6_ACCEPTED_ROOT = Path(
+    "/Volumes/4T/temp/rgbww-optimizer/"
+    "p7-td-b-exposure-qual-r6-f37517a-20260727T1928"
+)
+TD_B_EQ_R6_QUALIFICATION_CHECKPOINT = "f37517af3ae25efb41f085904fd48f037980ed04"
+TD_B_EQ_R6_MANIFEST_SCHEMA = "planner_eq_family_manifest_v1"
+TD_B_EQ_R6_MANIFEST_SHA256 = "41136d0d1530163668e111b7a9213bb1b9df330d8a168b451c752e3e5dca28e9"
+TD_B_EQ_R6_ARTIFACT_SHA256 = {
+    "run/outer-result.json": "20a4ee42c931e7df74b7fdd756eab3077530726e8ae5c03d3d48b45e8b562f0a",
+    "run/candidate-1-outer-terminal.json": (
+        "6401f0f162ce3efcd1ca6139e8394ed17411df7552fb1722e2db3eb7a8e4cd16"
+    ),
+    "run/candidate-1/candidate-result.json": (
+        "7db4d60627c9a63304945664b4ba2e7918dafb12495f5fbf1d45500a46748612"
+    ),
+    "run/candidate-1/terminal-seal.json": (
+        "8baa46bc6431e9e79c035a6f83954d810c25def2c8b662a761784fd1d81417a3"
+    ),
+}
 TD_B_EQ_CAPTURE_IDS = (
     ("000-ray-c2500-t60", "001-ray-c2500-t120", "002-ray-c2500-t300", "003-ray-c2500-t600"),
     ("004-ray-c3200-t60", "005-ray-c3200-t120", "006-ray-c3200-t300", "007-ray-c3200-t600"),
@@ -385,6 +404,222 @@ def canonical_sha256(value: Any) -> str:
     return hashlib.sha256(
         json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False).encode("utf-8")
     ).hexdigest()
+
+
+def build_planner_eq_family_manifest(root: str | Path) -> dict[str, Any]:
+    """Serialize one EQ evidence family using the frozen Planner schema."""
+    target = Path(root)
+    root_stat = target.lstat()
+    if stat.S_ISLNK(root_stat.st_mode) or not stat.S_ISDIR(root_stat.st_mode):
+        raise ValueError("EQ family root must be a real directory")
+    if stat.S_IMODE(root_stat.st_mode) != 0o700:
+        raise ValueError("EQ family root mode must be 0o700")
+    rows: list[dict[str, Any]] = []
+    files = directories = symlinks = other = 0
+    paths = sorted(
+        target.rglob("*"),
+        key=lambda path: path.relative_to(target).as_posix(),
+    )
+    for path in paths:
+        row_stat = path.lstat()
+        relative = path.relative_to(target).as_posix()
+        mode = oct(stat.S_IMODE(row_stat.st_mode))
+        if stat.S_ISLNK(row_stat.st_mode):
+            symlinks += 1
+            raise ValueError(f"EQ family symlink is prohibited: {relative}")
+        if stat.S_ISDIR(row_stat.st_mode):
+            directories += 1
+            rows.append({"mode": mode, "path": relative, "type": "dir"})
+            continue
+        if stat.S_ISREG(row_stat.st_mode):
+            files += 1
+            payload = path.read_bytes()
+            if len(payload) != row_stat.st_size:
+                raise ValueError(f"EQ family file changed during manifest: {relative}")
+            rows.append({
+                "bytes": row_stat.st_size,
+                "mode": mode,
+                "path": relative,
+                "sha256": hashlib.sha256(payload).hexdigest(),
+                "type": "file",
+            })
+            continue
+        other += 1
+        raise ValueError(f"EQ family unsupported filesystem type: {relative}")
+    payload = json.dumps(
+        rows,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+        allow_nan=False,
+    ).encode("utf-8")
+    return {
+        "schema": TD_B_EQ_R6_MANIFEST_SCHEMA,
+        "entries": len(rows),
+        "files": files,
+        "directories": directories,
+        "symlinks": symlinks,
+        "other": other,
+        "payload_bytes": len(payload),
+        "sha256": hashlib.sha256(payload).hexdigest(),
+        "rows": rows,
+        "payload": payload,
+    }
+
+
+def audit_td_b_eq_r6_qualification(root: str | Path) -> dict[str, Any]:
+    """Re-derive the accepted EQ-R6 Branch A result from retained evidence."""
+    target = Path(root)
+    if target != TD_B_EQ_R6_ACCEPTED_ROOT:
+        raise ValueError("EQ-R6 qualification requires the exact accepted evidence root")
+    manifest = build_planner_eq_family_manifest(target)
+    expected_manifest = {
+        "entries": 47,
+        "files": 42,
+        "directories": 5,
+        "symlinks": 0,
+        "other": 0,
+        "payload_bytes": 7980,
+        "sha256": TD_B_EQ_R6_MANIFEST_SHA256,
+    }
+    if any(manifest[key] != value for key, value in expected_manifest.items()):
+        raise ValueError("EQ-R6 accepted evidence manifest drifted")
+    artifacts: dict[str, dict[str, Any]] = {}
+    for relative, expected_sha256 in TD_B_EQ_R6_ARTIFACT_SHA256.items():
+        path = target / relative
+        payload = path.read_bytes()
+        actual_sha256 = hashlib.sha256(payload).hexdigest()
+        if actual_sha256 != expected_sha256:
+            raise ValueError(f"EQ-R6 qualification artifact drifted: {relative}")
+        artifacts[relative] = json.loads(payload)
+    outer = artifacts["run/outer-result.json"]
+    outer_terminal = artifacts["run/candidate-1-outer-terminal.json"]
+    result = artifacts["run/candidate-1/candidate-result.json"]
+    seal = artifacts["run/candidate-1/terminal-seal.json"]
+    classification = outer.get("classification")
+    if (
+        outer.get("status") != "qualified_1_2500"
+        or classification != {
+            "candidate_2_call_count": 0,
+            "selected_shutter": "1/2500",
+            "status": "qualified_1_2500",
+        }
+        or outer.get("retry") != 0
+        or len(outer.get("candidate_launches", ())) != 1
+        or outer["candidate_launches"][0].get("candidate_index") != 1
+        or outer["candidate_launches"][0].get("return_code") != 0
+        or (target / "run/candidate-2").exists()
+    ):
+        raise ValueError("EQ-R6 Branch A launch/classification contract failed")
+    expected_counts = (4, 4, 4)
+    for owner in (outer, result, seal):
+        counts = (
+            owner.get("attempted_capture_calls"),
+            owner.get("physical_returned_cr3_count"),
+            owner.get("accepted_capture_count"),
+        )
+        if counts != expected_counts:
+            raise ValueError("EQ-R6 4/4/4 accounting contract failed")
+    if (
+        result.get("candidate_index") != 1
+        or result.get("retry") != 0
+        or seal.get("status") != "pass"
+        or seal.get("classification") != "candidate_pass"
+        or seal.get("code_checkpoint") != TD_B_EQ_R6_QUALIFICATION_CHECKPOINT
+        or seal.get("wrapper_return_code") != 0
+        or outer_terminal.get("status") != "pass"
+        or outer_terminal.get("candidate_2_remained_locked") is not True
+        or outer_terminal.get("final_zero", {}).get("status") != "pass"
+    ):
+        raise ValueError("EQ-R6 terminal seal contract failed")
+    required_ids = tuple(
+        json.loads(POLICY_PATH.read_text(encoding="utf-8"))["feature_set"]["ids"]
+    )
+    captures = result.get("captures")
+    if (
+        not isinstance(captures, list)
+        or tuple(row.get("capture_id") for row in captures) != TD_B_EQ_CAPTURE_IDS[0]
+    ):
+        raise ValueError("EQ-R6 accepted capture IDs drifted")
+    exposure_seconds: list[float] = []
+    ratios: list[float] = []
+    feature_counts: list[int] = []
+    for capture in captures:
+        failures = td_b_eq_capture_quality_failures(
+            capture,
+            required_feature_ids=required_ids,
+        )
+        if failures:
+            raise ValueError(f"EQ-R6 accepted capture quality failed: {failures}")
+        for evidence_name in ("cr3", "sidecar"):
+            evidence = capture[evidence_name]
+            evidence_path = Path(evidence["path"])
+            if (
+                evidence_path.is_symlink()
+                or not evidence_path.resolve(strict=True).is_relative_to(
+                    target.resolve(strict=True)
+                )
+            ):
+                raise ValueError("EQ-R6 physical evidence path escaped or is unsafe")
+            payload = evidence_path.read_bytes()
+            if (
+                len(payload) != evidence["bytes"]
+                or hashlib.sha256(payload).hexdigest() != evidence["sha256"]
+            ):
+                raise ValueError("EQ-R6 physical evidence content drifted")
+        recorded = capture["recorded_exposure"]
+        if (
+            recorded.get("source") != "Canon:ExposureTime"
+            or recorded.get("nominal_shutter_speed") != "1/2500"
+            or recorded.get("seconds") != 0.000387549084953174
+            or recorded.get("recorded_to_nominal_ratio") != 0.9688727123829349
+        ):
+            raise ValueError("EQ-R6 recorded exposure contract drifted")
+        exposure_seconds.append(recorded["seconds"])
+        ratios.append(recorded["recorded_to_nominal_ratio"])
+        feature_counts.append(len(capture["feature_quality"]))
+    python_cleanup = json.loads(
+        (target / "run/candidate-1/all-off-python.json").read_text(encoding="utf-8")
+    )
+    shell_cleanup = json.loads(
+        (target / "run/candidate-1/all-off-shell.json").read_text(encoding="utf-8")
+    )
+    final_zero = json.loads(
+        (target / "run/candidate-1/independent-final-zero.json").read_text(encoding="utf-8")
+    )
+    if (
+        python_cleanup.get("status") != "pass"
+        or any(step.get("ok") is not True for step in python_cleanup.get("steps", ()))
+        or any(step.get("ok") is not True for step in shell_cleanup)
+        or final_zero.get("status") != "pass"
+        or final_zero.get("ray_verified_off") is not True
+        or final_zero.get("strip_verified_off") is not True
+    ):
+        raise ValueError("EQ-R6 cleanup/final-zero contract failed")
+    return {
+        "status": "qualified_1_2500",
+        "selected_shutter": "1/2500",
+        "candidate_launch_count": 1,
+        "candidate_2_call_count": 0,
+        "attempted_capture_calls": 4,
+        "physical_returned_cr3_count": 4,
+        "accepted_capture_count": 4,
+        "capture_ids": list(TD_B_EQ_CAPTURE_IDS[0]),
+        "feature_counts": feature_counts,
+        "recorded_exposure_owner": "Canon:ExposureTime",
+        "recorded_exposure_seconds": exposure_seconds,
+        "recorded_exposure_min_seconds": min(exposure_seconds),
+        "recorded_exposure_max_seconds": max(exposure_seconds),
+        "recorded_to_nominal_ratio": ratios[0],
+        "retry": 0,
+        "manifest": {
+            key: manifest[key]
+            for key in (
+                "schema", "entries", "files", "directories", "symlinks",
+                "other", "payload_bytes", "sha256",
+            )
+        },
+    }
 
 
 def expected_native_raw_ambient_policy(
@@ -708,11 +943,22 @@ def load_td_b_exposure_policy_v2(
     c_state = states.get("C")
     if (
         not isinstance(c_state, Mapping)
-        or c_state.get("status") != "pending_qualification"
+        or c_state.get("status") != "qualified"
         or tuple(c_state.get("nominal_candidates", ())) != TD_B_EQ_CANDIDATES
-        or c_state.get("formal_shutter") is not None
+        or c_state.get("formal_shutter") != "1/2500"
     ):
-        raise ValueError("TD-B C exposure must remain pending exact EQ qualification")
+        raise ValueError("TD-B C exposure differs from exact accepted EQ qualification")
+    if (
+        policy.get("r5_failure_class") != TD_B_R5_FAILURE_CLASS
+        or policy.get("exposure_qualification_status") != "qualified_1_2500"
+        or policy.get("selected_state_c_nominal_shutter") != "1/2500"
+        or policy.get("selected_state_c_recorded_exposure_range") != {
+            "owner": "Canon:ExposureTime",
+            "min_seconds": 0.000387549084953174,
+            "max_seconds": 0.000387549084953174,
+        }
+    ):
+        raise ValueError("TD-B selected C exposure qualification drifted")
     provenance = policy.get("provenance")
     policy_ids = json.loads(POLICY_PATH.read_text(encoding="utf-8"))["feature_set"]["ids"]
     if (
@@ -726,6 +972,36 @@ def load_td_b_exposure_policy_v2(
         or provenance.get("feature_ids_sha256") != TD_B_FEATURE_IDS_SHA256
     ):
         raise ValueError("TD-B exposure policy scientific provenance drifted")
+    eq_provenance = provenance.get("eq_r6_qualification")
+    expected_artifacts = [
+        {"path": path, "sha256": sha256}
+        for path, sha256 in TD_B_EQ_R6_ARTIFACT_SHA256.items()
+    ]
+    if (
+        not isinstance(eq_provenance, Mapping)
+        or eq_provenance.get("root") != str(TD_B_EQ_R6_ACCEPTED_ROOT)
+        or eq_provenance.get("qualification_checkpoint") != "f37517a"
+        or eq_provenance.get("code_checkpoint") != TD_B_EQ_R6_QUALIFICATION_CHECKPOINT
+        or eq_provenance.get("artifacts") != expected_artifacts
+        or tuple(eq_provenance.get("capture_ids", ())) != TD_B_EQ_CAPTURE_IDS[0]
+        or eq_provenance.get("manifest") != {
+            "schema": TD_B_EQ_R6_MANIFEST_SCHEMA,
+            "entries": 47,
+            "files": 42,
+            "directories": 5,
+            "symlinks": 0,
+            "other": 0,
+            "payload_bytes": 7980,
+            "sha256": TD_B_EQ_R6_MANIFEST_SHA256,
+        }
+    ):
+        raise ValueError("TD-B EQ-R6 qualification provenance drifted")
+    prohibited_claims = {
+        "formal_pass", "td_b_pass", "history_pass", "release_usable",
+        "production_release_usable", "product_ready", "state_c_settled",
+    }
+    if prohibited_claims.intersection(policy):
+        raise ValueError("TD-B exposure policy contains a prohibited downstream claim")
     if policy.get("old_new_frame_combination") != "prohibited":
         raise ValueError("TD-B exposure policy must prohibit old/new pooling")
     return policy
@@ -1044,16 +1320,16 @@ def build_td_b_r6_formal_plan(
     exposure = dict(policy or load_td_b_exposure_policy_v2())
     validate_td_b_exposure_policy_v2(exposure)
     if selected_c_shutter is not None:
-        raise ValueError("pre-EQ package cannot finalize or materialize the C shutter")
+        raise ValueError("caller cannot override the repository-selected C shutter")
     shutters = {
         "A": exposure["states"]["A"]["formal_shutter"],
         "D": exposure["states"]["D"]["formal_shutter"],
         "B": exposure["states"]["B"]["formal_shutter"],
-        "C": None,
+        "C": exposure["states"]["C"]["formal_shutter"],
     }
     return {
         "schema": "p7_td_b_ray_r6_formal_plan_v1",
-        "status": "pending_exposure_policy_non_executable",
+        "status": "selected_exposure_policy_non_executable",
         "executable": False,
         "experiment_id": TD_B_R6_EXPERIMENT_ID,
         "source": "ray",
@@ -1066,7 +1342,7 @@ def build_td_b_r6_formal_plan(
         "retry": 0,
         "capture_ids": list(TD_B_R6_CAPTURE_IDS),
         "state_shutters": shutters,
-        "c_policy_status": "pending_qualification",
+        "c_policy_status": "qualified",
         "old_new_frame_combination": "prohibited",
         "failure_contract": {
             "classification": "accepted_hard_failed_formal_attempt",
@@ -1080,7 +1356,7 @@ def build_td_b_r6_formal_plan(
 def validate_td_b_r6_formal_plan(plan: Mapping[str, Any]) -> None:
     expected = build_td_b_r6_formal_plan()
     if dict(plan) != expected:
-        raise ValueError("Ray R6 plan differs from the exact pending-policy contract")
+        raise ValueError("Ray R6 plan differs from the exact selected-policy contract")
 
 
 def validate_td_b_r6_capture_ledger(
