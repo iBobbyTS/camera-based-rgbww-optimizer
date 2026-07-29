@@ -24,19 +24,25 @@ adding root-level compatibility wrappers.
 
 - Human owns the physical lab, experiment goal, and dangerous-operation
   authorization.
-- Advisor researches direction and owns `GUIDE.md`/`RESEARCH.md`; those files
-  are guidance, not execution authorization.
+- Advisor researches color science, measurement science, and scientific branch
+  selection and owns `GUIDE.md`/`RESEARCH.md`. Scientific guidance is authoritative
+  for those questions; implementation, file scope, provenance plumbing, execution
+  packaging, and Git topology remain Orchestrator-owned.
 - Orchestrator alone owns `.agent-work/FULL_PLAN_REFERENCE.md`, the complete
-  non-executable roadmap of unfinished GUIDE work.
-- Planner reads that roadmap and GUIDE, writes exactly one active executable
-  package to `.agent-work/PLAN.md`, reviews evidence, and archives reviewed work.
+  non-executable roadmap of unfinished Human-goal and scientifically guided work.
+  It also owns engineering architecture, repository scope, corrective execution,
+  and Git management, and may override non-scientific Advisor implementation advice.
+- Planner reads that roadmap and applicable scientific guidance, writes exactly one
+  active executable package to `.agent-work/PLAN.md`, reviews evidence, and archives
+  reviewed work. Non-scientific contradictions return to the Orchestrator.
 - Executer treats GUIDE, PLAN, FULL reference, debug records, and archives as
   read-only; executes only active PLAN bounds and appends results to
   `.agent-work/EXECUTION_RESULT.md`.
 
 Only the active PLAN authorizes a task, device operation, retry, budget, or
-stage entry. If guidance cannot determine a safe scientific branch, pause for
-Advisor direction. For an authorized command expected to exceed 10 minutes,
+stage entry. Pause for Advisor direction only when a safe scientific branch
+cannot be determined. Engineering, provenance, file, test, execution, and Git
+questions are resolved by the Orchestrator. For an authorized command expected to exceed 10 minutes,
 use the visible Terminal/liveness/automation workflow required by `AGENTS.md`.
 
 ## Core Safety and Runtime Rules

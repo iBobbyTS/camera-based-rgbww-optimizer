@@ -110,6 +110,111 @@ class RetainedReleaseAuditTests(unittest.TestCase):
         for name, data in payloads.items():
             (self.source / name).write_bytes(data)
 
+    def _write_valid_production_schema_sources(
+        self,
+        *,
+        candidate_mutator=None,
+        resolved_mutator=None,
+        release_mutator=None,
+    ) -> None:
+        checkpoint = "2" * 40
+        old_checkpoint = "1" * 40
+        resolved = {
+            "analysis_contract": {},
+            "budgets": {},
+            "camera": {},
+            "capture_ledger_contract": {},
+            "captures": [],
+            "cleanup": {},
+            "cold_proxy": {},
+            "continuous_command_between_timed_points": True,
+            "created_at": "synthetic",
+            "execute_lock": {},
+            "execution_authorization": {},
+            "experiment_id": "p7_td_b_command_switch_history_v1",
+            "exposure_setup_artifact": {},
+            "exposure_setup_required": [],
+            "formal_capture_eligible": True,
+            "frozen_shutters": {},
+            "hard_locks": {},
+            "inputs": {},
+            "native_raw_ambient_policy": "unsubtracted_no_ambient",
+            "offline_contract": {},
+            "operational_dwell": {},
+            "schema": "p7_thermal_diagnostic_plan_v2",
+            "setup_lineage_release_required": True,
+            "setup_physical_cr3_count": 2,
+            "shutter_ledger_provenance": {},
+            "source": "ray",
+            "source_isolation_contract": "synthetic",
+            "stage": "synthetic",
+            "status": "execute_authorized",
+            "timing_contract": {},
+            "timing_resolution": {},
+            "variant": "core",
+        }
+        if resolved_mutator:
+            resolved_mutator(resolved)
+        resolved_bytes = _canonical(resolved)
+        external = self.case / "synthetic-external"
+
+        def reference(name: str, digest: str = "a" * 64) -> dict[str, str]:
+            return {"path": str(external / name), "sha256": digest}
+
+        rows = [
+            {
+                "path": f"synthetic/path-{index:02d}.json",
+                "classification": "bounded_validation_or_documentation",
+            }
+            for index in range(59)
+        ]
+        candidate = {
+            "schema": "p7_td_b_setup_release_lineage_candidate_v1",
+            "status": "eligible_waiting_for_planner",
+            "old_checkpoint": old_checkpoint,
+            "new_checkpoint": checkpoint,
+            "release_reference": reference("setup-release.json"),
+            "canonical_setup_reference": reference("setup.json"),
+            "resolved_formal_plan_reference": reference("resolved-formal-plan.json"),
+            "changed_paths": rows,
+            "prohibited_paths": [],
+            "canonical_setup_replay": "pass",
+            "production_release_usable": False,
+            "planner_acceptance_required": True,
+        }
+        if candidate_mutator:
+            candidate_mutator(candidate)
+        candidate_bytes = _canonical(candidate)
+        release = {
+            "schema": "p7_td_b_setup_lineage_release_v2",
+            "status": "formal_plan_lineage_qualified",
+            "production_release_usable": True,
+            "old_checkpoint": old_checkpoint,
+            "code_checkpoint": checkpoint,
+            "legacy_release": reference("setup-release.json"),
+            "planner_lineage_candidate": reference(
+                "setup-release-lineage-candidate.json"
+            ),
+            "current_lineage_candidate": {
+                "path": str(self.source / "current-lineage-candidate.json"),
+                "sha256": hashlib.sha256(candidate_bytes).hexdigest(),
+            },
+            "canonical_setup": reference("setup.json"),
+            "resolved_formal_plan": {
+                "path": str(self.source / "resolved-formal-plan.json"),
+                "sha256": hashlib.sha256(resolved_bytes).hexdigest(),
+            },
+        }
+        if release_mutator:
+            release_mutator(release)
+        payloads = {
+            "current-lineage-candidate.json": candidate_bytes,
+            "resolved-formal-plan.json": resolved_bytes,
+            "setup-lineage-release.json": _canonical(release),
+        }
+        for name, data in payloads.items():
+            (self.source / name).write_bytes(data)
+
     def _run(
         self,
         *,
@@ -509,6 +614,60 @@ class RetainedReleaseAuditTests(unittest.TestCase):
             with self.subTest(name=name):
                 self._write_valid_sources(**kwargs)
                 self._assert_failure(family=f"artifact-{index}")
+
+    def test_production_schema_variant_and_mixed_shapes_fail_closed(self) -> None:
+        self._write_valid_production_schema_sources()
+        self.assertEqual(
+            self._run(family="production-positive")["status"],
+            "pass",
+        )
+
+        def mixed_resolved(value):
+            value.clear()
+            value.update({
+                "schema": "p7_td_b_resolved_formal_plan_v1",
+                "status": "formal_plan_resolved",
+                "code_checkpoint": "2" * 40,
+            })
+
+        cases = (
+            (
+                "unknown-schema",
+                {"candidate_mutator": lambda v: v.update(schema="unknown")},
+            ),
+            ("mixed-resolved", {"resolved_mutator": mixed_resolved}),
+            ("extra-key", {"candidate_mutator": lambda v: v.update(extra=True)}),
+            (
+                "missing-key",
+                {"release_mutator": lambda v: v.pop("legacy_release")},
+            ),
+            (
+                "wrong-status",
+                {"release_mutator": lambda v: v.update(status="wrong")},
+            ),
+            (
+                "malformed-reference",
+                {
+                    "release_mutator": lambda v: v[
+                        "current_lineage_candidate"
+                    ].pop("sha256")
+                },
+            ),
+            (
+                "cross-variant-fields",
+                {
+                    "candidate_mutator": lambda v: v.update(
+                        schema="p7_td_b_current_lineage_candidate_v1",
+                        status="eligible",
+                        code_checkpoint="2" * 40,
+                    )
+                },
+            ),
+        )
+        for index, (name, kwargs) in enumerate(cases):
+            with self.subTest(name=name):
+                self._write_valid_production_schema_sources(**kwargs)
+                self._assert_failure(family=f"production-negative-{index}")
 
     def test_callback_missing_exception_nonpass_and_exact_counts(self) -> None:
         self._assert_failure(family="callback-missing", validator=None)

@@ -104,3 +104,105 @@ exact zero，通过 generation-bearing state 证明当前状态，并把五个�
 4. 新纠偏必须offline-only，先复现上述两个原始症状并验证修复；不得同包启动real Z0。
 5. 若该针对同一 evidence-tree/source-copy boundary 的纠偏再次失败，停止继续叠加一次性owner，重新评估producer/state ownership与
    test fixture contract，而不是直接发布下一次real gate。
+
+## Second-pass reset：EQ-R6 production resolver checkpoint（2026-07-27）
+
+### 新确认事实
+
+1. `REF-P7-23` live prelaunch与`REF-P7-23-R1` fresh-root zero-only gate连续两次在同一边界失败：
+   camera/Ray readiness均pass，strip `bedroom-rgbww-strip.local`均抛`ResolveTimeoutAPIError`，随后Python cleanup、
+   shell cleanup与independent final-zero均truthful attempted once且fail。
+2. 两个fresh FAMILY均有exact 9/9 strict JSON、mode/containment/reference seal；RUN、Terminal dispatch、candidate、
+   capture、CR3、nonzero output、retry与extra probe均为0。失败不是evidence lifecycle缺口。
+3. Human较早提供的shell `ping bedroom-rgbww-strip.local -> 192.168.0.74`只证明当时OS resolver可用，不能证明当前
+   project `.venv`内`aioesphomeapi.host_resolver.async_resolve_host`可用。
+4. production ESPHome owner已有显式地址入口
+   `CAMERA_BASED_RGBWW_OPTIMIZER_ESPHOME_HOST`，并继续使用
+   `expected_name=bedroom-rgbww-strip`做身份约束；不需要为explicit address新建平行owner或先改代码。
+
+### 当前根因假设
+
+当前阻塞是外部mDNS/地址来源事实缺失，而不是科学合同或production seal owner缺失。下一步应由Human在当前环境二选一：
+
+- 用project `.venv`的同栈resolver证明`.local`当前可解析；或
+- 提供由router reservation/static assignment确认的当前稳定IP及其来源。
+
+历史ping、临时DHCP观察值或Planner猜测不能作为PLAN-frozen IP。未完成该checkpoint前不得第三次device attempt。
+
+### 已拒绝的做法
+
+- 不得自动第三次prelaunch/zero gate。
+- 不得硬编码历史`192.168.0.74`、写`/etc/hosts`、重启network/mDNS或新增“安全”fallback。
+- 不得为已有environment host入口再做pure-offline code correction。
+- 不得把Human checkpoint解释为EQ确认消费；当前EQ确认仍preserved/unconsumed。
+
+### H1 Human response review（2026-07-27）
+
+Human明确报告网络问题已处理，并提供当前普通`ping bedroom-rgbww-strip.local`成功：
+
+```text
+resolved IPv4 = 192.168.0.74
+replies = 2
+latency = 18.044 ms / 14.779 ms
+```
+
+该信息确认外部网络状态已发生有利变化，但仍不满足H1：
+
+- 不是project `.venv`内`aioesphomeapi.host_resolver.async_resolve_host`的同栈输出，因此A仍pending；
+- 未提供router DHCP reservation/static assignment来源，因此B仍pending。
+
+H1保持唯一active checkpoint；不得把本ping自动升级为第三次device attempt授权。
+
+### H1-A same-stack response review（2026-07-27）
+
+Human随后逐字运行H1-A命令。`async_resolve_host`未抛`ResolveTimeoutAPIError`，执行进入non-empty `rows`
+comprehension，并在`list(row.sockaddr)`抛：
+
+```text
+TypeError: 'IPv4Sockaddr' object is not iterable
+```
+
+Offline introspection确认当前project `.venv`中的contract：
+
+```text
+IPv4Sockaddr = dataclass(address: str, port: int)
+IPv6Sockaddr = dataclass(address: str, port: int, flowinfo: int, scope_id: int)
+AddrInfo = dataclass(family: int, type: int, proto: int, sockaddr: IPv4Sockaddr | IPv6Sockaddr)
+```
+
+因此可严格推出：
+
+1. same-stack resolver已成功return；
+2. `rows`至少有一项，否则comprehension不会执行`list(row.sockaddr)`；
+3. 非零exit来自Planner给出的JSON formatting bug，不是network/resolver failure。
+
+H1核心环境事实接受。无需Human再次network probe；下一步只能是fresh-root zero-only production recovery gate，
+先取得generation-bearing final-zero，再决定是否恢复live activation。
+
+### Verified resolution：R2 zero-only recovery（2026-07-27）
+
+`REF-P7-23-R2`在新FAMILY中单次通过production prelaunch：
+
+```text
+camera / Ray / Python cleanup / shell cleanup / independent final-zero = all pass
+strip generation strictly advanced = true
+strip five channels zero = true
+Ray intensity zero = true
+validate_both_off = pass
+RUN / dispatch / capture / nonzero / retry = 0
+```
+
+Terminal SHA-256：
+
+```text
+808056f62ef9af114736e2263cdb2996e4c6c908b757913e7fec8b310d27bf6c
+```
+
+Manifest SHA-256：
+
+```text
+3353fa3dd3cda4ea6706ccf42aaf47ff75e5c692aadd58505ded105ebe25eefa
+```
+
+这验证了Human网络修复后的same-stack resolver、ESPHome identity/state owner与generation-bearing zero path。
+调试记录转为resolved。R2 handoff不跨PLAN消费；后续live activation必须在全新FAMILY重跑production prelaunch。

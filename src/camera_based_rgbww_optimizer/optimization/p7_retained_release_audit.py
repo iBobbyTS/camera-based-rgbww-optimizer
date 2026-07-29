@@ -385,6 +385,28 @@ def _validate_reference(
         raise ValueError(f"artifact reference differs for {expected_path}")
 
 
+def _validate_absolute_reference_shape(
+    value: Any,
+    *,
+    expected_name: str,
+    expected_sha256: str | None = None,
+) -> None:
+    if not isinstance(value, dict) or set(value) != {"path", "sha256"}:
+        raise ValueError(f"artifact reference shape differs for {expected_name}")
+    path = value.get("path")
+    digest = value.get("sha256")
+    if (
+        not isinstance(path, str)
+        or not Path(path).is_absolute()
+        or Path(path).name != expected_name
+        or not isinstance(digest, str)
+        or len(digest) != 64
+        or any(character not in "0123456789abcdef" for character in digest)
+        or (expected_sha256 is not None and digest != expected_sha256)
+    ):
+        raise ValueError(f"artifact reference differs for {expected_name}")
+
+
 def _audit_schema(
     payloads: Mapping[str, dict[str, Any]],
     payload_bytes: Mapping[str, bytes],
@@ -392,7 +414,7 @@ def _audit_schema(
     candidate = payloads[SOURCE_NAMES[0]]
     resolved = payloads[SOURCE_NAMES[1]]
     release = payloads[SOURCE_NAMES[2]]
-    candidate_keys = {
+    synthetic_candidate_keys = {
         "schema",
         "status",
         "code_checkpoint",
@@ -401,32 +423,132 @@ def _audit_schema(
         "resolved_formal_plan",
         "setup_lineage_release",
     }
-    resolved_keys = {"schema", "status", "code_checkpoint"}
-    release_keys = {
+    synthetic_resolved_keys = {"schema", "status", "code_checkpoint"}
+    synthetic_release_keys = {
         "schema",
         "status",
         "code_checkpoint",
         "resolved_formal_plan",
     }
-    if (
-        set(candidate) != candidate_keys
-        or candidate.get("schema") != _CANDIDATE_SCHEMA
-        or candidate.get("status") != "eligible"
-        or set(resolved) != resolved_keys
-        or resolved.get("schema") != _RESOLVED_SCHEMA
-        or resolved.get("status") != "formal_plan_resolved"
-        or set(release) != release_keys
-        or release.get("schema") != _RELEASE_SCHEMA
-        or release.get("status") != "formal_plan_resolved"
-    ):
+    production_candidate_keys = {
+        "schema",
+        "status",
+        "old_checkpoint",
+        "new_checkpoint",
+        "release_reference",
+        "canonical_setup_reference",
+        "resolved_formal_plan_reference",
+        "changed_paths",
+        "prohibited_paths",
+        "canonical_setup_replay",
+        "production_release_usable",
+        "planner_acceptance_required",
+    }
+    production_resolved_keys = {
+        "analysis_contract",
+        "budgets",
+        "camera",
+        "capture_ledger_contract",
+        "captures",
+        "cleanup",
+        "cold_proxy",
+        "continuous_command_between_timed_points",
+        "created_at",
+        "execute_lock",
+        "execution_authorization",
+        "experiment_id",
+        "exposure_setup_artifact",
+        "exposure_setup_required",
+        "formal_capture_eligible",
+        "frozen_shutters",
+        "hard_locks",
+        "inputs",
+        "native_raw_ambient_policy",
+        "offline_contract",
+        "operational_dwell",
+        "schema",
+        "setup_lineage_release_required",
+        "setup_physical_cr3_count",
+        "shutter_ledger_provenance",
+        "source",
+        "source_isolation_contract",
+        "stage",
+        "status",
+        "timing_contract",
+        "timing_resolution",
+        "variant",
+    }
+    production_release_keys = {
+        "schema",
+        "status",
+        "production_release_usable",
+        "old_checkpoint",
+        "code_checkpoint",
+        "legacy_release",
+        "planner_lineage_candidate",
+        "current_lineage_candidate",
+        "canonical_setup",
+        "resolved_formal_plan",
+    }
+    synthetic_variant = (
+        set(candidate) == synthetic_candidate_keys
+        and candidate.get("schema") == _CANDIDATE_SCHEMA
+        and candidate.get("status") == "eligible"
+        and set(resolved) == synthetic_resolved_keys
+        and resolved.get("schema") == _RESOLVED_SCHEMA
+        and resolved.get("status") == "formal_plan_resolved"
+        and set(release) == synthetic_release_keys
+        and release.get("schema") == _RELEASE_SCHEMA
+        and release.get("status") == "formal_plan_resolved"
+    )
+    production_variant = (
+        set(candidate) == production_candidate_keys
+        and candidate.get("schema")
+        == "p7_td_b_setup_release_lineage_candidate_v1"
+        and candidate.get("status") == "eligible_waiting_for_planner"
+        and candidate.get("canonical_setup_replay") == "pass"
+        and candidate.get("production_release_usable") is False
+        and candidate.get("planner_acceptance_required") is True
+        and set(resolved) == production_resolved_keys
+        and resolved.get("schema") == "p7_thermal_diagnostic_plan_v2"
+        and resolved.get("status") == "execute_authorized"
+        and set(release) == production_release_keys
+        and release.get("schema") == "p7_td_b_setup_lineage_release_v2"
+        and release.get("status") == "formal_plan_lineage_qualified"
+        and release.get("production_release_usable") is True
+    )
+    if not synthetic_variant and not production_variant:
         raise ValueError("artifact schema or status differs")
-    checkpoint = candidate.get("code_checkpoint")
+    checkpoint = (
+        candidate.get("code_checkpoint")
+        if synthetic_variant
+        else candidate.get("new_checkpoint")
+    )
     if (
         not isinstance(checkpoint, str)
         or len(checkpoint) != 40
         or any(character not in "0123456789abcdef" for character in checkpoint)
-        or resolved.get("code_checkpoint") != checkpoint
-        or release.get("code_checkpoint") != checkpoint
+        or (
+            synthetic_variant
+            and (
+                resolved.get("code_checkpoint") != checkpoint
+                or release.get("code_checkpoint") != checkpoint
+            )
+        )
+        or (
+            production_variant
+            and (
+                release.get("code_checkpoint") != checkpoint
+                or candidate.get("old_checkpoint") != release.get("old_checkpoint")
+                or not isinstance(candidate.get("old_checkpoint"), str)
+                or len(candidate["old_checkpoint"]) != 40
+                or any(
+                    character not in "0123456789abcdef"
+                    for character in candidate["old_checkpoint"]
+                )
+                or candidate["old_checkpoint"] == checkpoint
+            )
+        )
     ):
         raise ValueError("artifact checkpoint links differ")
     rows = candidate.get("changed_paths")
@@ -448,23 +570,54 @@ def _audit_schema(
         raise ValueError("changed_paths must contain unique paths")
     if candidate.get("prohibited_paths") != []:
         raise ValueError("prohibited_paths must be empty")
+    candidate_sha = hashlib.sha256(payload_bytes[SOURCE_NAMES[0]]).hexdigest()
     resolved_sha = hashlib.sha256(payload_bytes[SOURCE_NAMES[1]]).hexdigest()
-    release_sha = hashlib.sha256(payload_bytes[SOURCE_NAMES[2]]).hexdigest()
-    _validate_reference(
-        candidate.get("resolved_formal_plan"),
-        expected_path=SOURCE_NAMES[1],
-        expected_sha256=resolved_sha,
-    )
-    _validate_reference(
-        candidate.get("setup_lineage_release"),
-        expected_path=SOURCE_NAMES[2],
-        expected_sha256=release_sha,
-    )
-    _validate_reference(
-        release.get("resolved_formal_plan"),
-        expected_path=SOURCE_NAMES[1],
-        expected_sha256=resolved_sha,
-    )
+    if synthetic_variant:
+        release_sha = hashlib.sha256(payload_bytes[SOURCE_NAMES[2]]).hexdigest()
+        _validate_reference(
+            candidate.get("resolved_formal_plan"),
+            expected_path=SOURCE_NAMES[1],
+            expected_sha256=resolved_sha,
+        )
+        _validate_reference(
+            candidate.get("setup_lineage_release"),
+            expected_path=SOURCE_NAMES[2],
+            expected_sha256=release_sha,
+        )
+        _validate_reference(
+            release.get("resolved_formal_plan"),
+            expected_path=SOURCE_NAMES[1],
+            expected_sha256=resolved_sha,
+        )
+    else:
+        for field, expected_name in (
+            ("release_reference", "setup-release.json"),
+            ("canonical_setup_reference", "setup.json"),
+            ("resolved_formal_plan_reference", SOURCE_NAMES[1]),
+        ):
+            _validate_absolute_reference_shape(
+                candidate.get(field),
+                expected_name=expected_name,
+            )
+        for field, expected_name in (
+            ("legacy_release", "setup-release.json"),
+            ("planner_lineage_candidate", "setup-release-lineage-candidate.json"),
+            ("canonical_setup", "setup.json"),
+        ):
+            _validate_absolute_reference_shape(
+                release.get(field),
+                expected_name=expected_name,
+            )
+        _validate_absolute_reference_shape(
+            release.get("current_lineage_candidate"),
+            expected_name=SOURCE_NAMES[0],
+            expected_sha256=candidate_sha,
+        )
+        _validate_absolute_reference_shape(
+            release.get("resolved_formal_plan"),
+            expected_name=SOURCE_NAMES[1],
+            expected_sha256=resolved_sha,
+        )
     return {
         "status": "pass",
         "artifact_count": 3,

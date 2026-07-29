@@ -1,71 +1,104 @@
-# Human / Orchestrator priority-selection等待门
+# REF-P7-25-R2-B1A-C3E6F17：exact PLAN-row-marker fixed-container bootstrap
 
-**计划状态：** `explicit_planner_stop_waiting_for_human_priority_selection`
+**计划状态：** `active_executable_exact_marker_bootstrap`
 
-**Planner 日期：** `2026-07-25`
+**Planner 日期：** `2026-07-29`
 
-**Reference task ID：** `NONE_AWAITING_ORCHESTRATOR_SELECTION`
+**Reference task：** `REF-P7-25-R2-B1A-C3E6F17`
 
-**PLAN contract ID：** `WORKFLOW-AWAIT-PRIORITY-R1`
+**执行合同：**
+`P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F17-PLAN-ROW-MARKER-BOOTSTRAP-V1`
 
-**Package kind：** `planner_stop_no_execution`
+**当前只读 FULL SHA-256：**
+`15127763a68a68b70404ce57ece44efbbfc1375a844588520584e2d1615b6725`
 
-**Current HEAD：** `3f8fb5c2f046ad5c75eab200005331acd5f2cc27`
+**F16 review archive：**
+`.agent-work/PLANS/20260729-1659-p7-retained-r3-option-b-b1a-c3e6f16-plan-row-label-review.md`
 
-`PLAN_MACHINE_CONTRACT={"schema":"planner_execution_contract_v1","contract_id":"WORKFLOW-AWAIT-PRIORITY-R1","reference_task_id":"NONE_AWAITING_ORCHESTRATOR_SELECTION","package_kind":"planner_stop_no_execution","expected_head":"3f8fb5c2f046ad5c75eab200005331acd5f2cc27"}`
+**F16 review archive SHA-256：**
+`8f5a221061fe242c6a1696214b8493a47bddb10fd2c1e5dfc0e0a3f22e1e16b9`
 
-**当前唯一动作：** Orchestrator将`REF-WORKFLOW-01`更新为`COMPLETE`，保留P7/Z0相关reference的paused/blocked状态，并依据刷新后的
-`FULL_PLAN_REFERENCE.md`向Human呈现仍未完成的优先级选项；等待Human明确选择下一reference。不得派发Executor或从本PLAN推断实验恢复。
+`PLAN_MACHINE_CONTRACT={"schema":"context_closed_bootstrap_plan_v2","reference_task_id":"REF-P7-25-R2-B1A-C3E6F17","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F17-PLAN-ROW-MARKER-BOOTSTRAP-V1","frozen_full_sha256":"15127763a68a68b70404ce57ece44efbbfc1375a844588520584e2d1615b6725","plan_machine_row_marker":"PLAN_MACHINE_CONTRACT=","full_machine_row_marker":"FULL_PLAN_MACHINE_STATE=","full_machine_row_scope":"unique_FULL_PLAN_MACHINE_STATE_row_only","full_reference_scope":"REF-P7-25-R2-B1A-C3E6F17_section_only","required_full_machine_subset":{"schema":"orchestrator_full_plan_reference_v2","active_task_count":1,"active_task":"REF-P7-25-R2-B1A-C3E6F17","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F17-PLAN-ROW-MARKER-BOOTSTRAP-V1","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":true,"device_authorized_by_this_file":false,"release_authorized_by_this_file":false,"candidate_machine_contract_sha256":"3c5847fcbe0af85833c901f6f01058d000a3cecdc0f84e6ae331ed24e138c225","candidate_contract_orchestrator_verified":true},"observed_full_active_task":"REF-P7-25-R2-B1A-C3E6F17","observed_full_active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F17-PLAN-ROW-MARKER-BOOTSTRAP-V1","observed_full_executer_dispatched":true,"activation_status":"ACTIVE_EXACT","executer_dispatch_authorized":true,"bootstrap_exec_command_max_after_activation":1,"pre_bootstrap_other_tool_calls":0,"post_bootstrap_er_appends_max":1,"codex_cli_secondary_dispatcher_forbidden":true,"controller_execution_authorized":false,"test_execution_authorized":false,"git_mutation_authorized":false,"r3_authorized":false,"release_authorized":false,"network_authorized":false,"device_authorized":false,"planner_stop":"return_after_one_bootstrap_terminal_and_one_ER_append"}`
 
-**唯一 Planner 停止点：** 在Human给出新的明确优先级、或出现新的适用Advisor guidance前，保持本Planner stop。收到选择后，Planner必须
-先归档本等待门，再基于届时HEAD、FULL与GUIDE另写一个single executable package；本PLAN本身不授权任何实现、Git或设备动作。
+## 1. 当前唯一动作与 Planner stop
 
-## 1. 已完成baseline
+F16 已因 bootstrap loader 错把 PLAN owner 读作不存在的 `PLAN_MACHINE_STATE` 而在任何路径检查前
+hard-fail。Orchestrator 已把 FULL 的唯一 active task/contract 更新为本 F17，并保持
+`active_task_count=1`、`executer_dispatched=true`、checkpoint、retained-R3 lock、device/release false
+和其余 roadmap locks 不变。Planner已按新 FULL SHA刷新本 PLAN，并证明 required subset `12/12`
+exact、activation mismatch为零；现在只授权本计划定义的唯一 direct Executer bootstrap。
 
-- `REF-WORKFLOW-01` implementation与commit finalization均已接受。
-- final commit：`3f8fb5c2f046ad5c75eab200005331acd5f2cc27`；parent
-  `8cd04d847d42ff5c7bcf7501f46be97cbbef429d`。
-- final review archive：`.agent-work/PLANS/20260725-1410-ref-workflow-01-commit-final-review.md`，SHA-256
-  `be445be5277f350a1f7b9bc41c7b8fcfaa30e63b42f8f759b1cbfda9050b1880`。
-- exact commit包含13个已验收paths；parent/message/path set/blob hashes/index与unrelated preservation均通过Planner独立核验。
-- 实现baseline：focused `51/51`；skill `41300 -> 4678` bytes；old exact credential current count `0`；credential/API/help/static/
-  link/CodeGraph checks通过；network/device/actual credential reads均`0`。
-- full `557/559`中的两个TD-B lineage errors已分类为frozen committed HEAD baseline debt，不影响`REF-WORKFLOW-01`完成。
+## 2. F17 唯一固定路径
 
-完成只表示移除Ray built-in credential default、建立shared local-lab context并完成相关文档/skill progressive disclosure；它降低possible
-platform misclassification信号但不保证分类结果，也不改变平台policy。
+激活后只允许以下四条全新路径：
 
-## 2. 仍暂停且不得自动恢复
+1. target：`/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b1a-c3e6f17-offline`
+2. record：`/Volumes/4T/temp/rgbww-optimizer/c3e6f17-container-bootstrap.json`
+3. seal：`/Volumes/4T/temp/rgbww-optimizer/c3e6f17-container-bootstrap.seal.json`
+4. fallback：`/Volumes/4T/temp/rgbww-optimizer/c3e6f17-container-bootstrap.fallback.json`
 
-- P7 lineage baseline test debt仍属于P7 engineering路径；本等待门不授权修复。
-- `REV-Z0-R2-EVIDENCE-TREE-005`与`REV-Z0-R2-WRAPPER-BYTE-COPY-006`仍open。
-- Z0-R2-C1先前因Human最高优先级切换而superseded/paused，不是执行失败；其旧PLAN不能复用为authorization。
-- real Z0、E2、Ray/strip/camera操作、capture、formal、TD-C、sentinel、remaining、boundary、holdout、Gate-6与P8全部保持
-  paused/blocked/locked，直到Human选择且Orchestrator更新reference、Planner发布新PLAN。
+四条路径在 bootstrap attempt 前必须全部 absent。不得读取、删除、修复、重试或复用 F16 路径；
+不得创建 timestamp root、clone、临时路径、alternate target 或其他 artifact。
 
-Human若选择恢复P7，Planner必须基于new HEAD重新冻结inputs并处理lineage baseline/checkpoint影响；不得直接续跑旧root、旧PLAN或旧budget。
-若选择需要新的科学方向且现有GUIDE不足或矛盾，由Orchestrator暂停对应route并请求Advisor；workflow closure本身不需要Advisor。
+## 3. Direct Executer 与 exact row-marker owner
 
-## 3. 本等待门的零预算
+激活后 Orchestrator 只能派发一个直接 worker Executer subagent，并把本合同完整交给它。Executer 的
+首个 tool call 必须是唯一 bootstrap `exec_command`；此前不得 memory lookup、skill/doc/GUIDE、FULL
+broad read、shell discovery、status 或其他 tool call，不得启动 Codex CLI 或二级 dispatcher。
 
-```text
-executor_dispatch = 0
-implementation_or_documentation_edits = 0
-test_or_module_execution = 0
-git_stage_or_commit = 0
-git_push_or_pr = 0
-network_calls = 0
-device_calls = 0
-credential_or_secret_reads = 0
-camera_calls = 0
-ray_calls = 0
-strip_calls = 0
-light_nonzero_output = 0
-z0_runs = 0
-e2_runs = 0
-capture_or_formal = 0
-firmware_or_deployment = 0
-```
+该唯一命令只启动一次 Python 标准库进程。limited-input loader 必须按以下两个不同且不可互换的 exact
+markers 解析：
 
-本PLAN是明确的non-executable Planner stop，不是Executor work package。FULL仍由Orchestrator独占维护，GUIDE/RESEARCH保持Advisor-owned；
-任何reference status或优先级变化必须先由对应owner记录，再触发下一次Planner规划。
+- PLAN：恰好一条以反引号包裹、内容前缀为 `PLAN_MACHINE_CONTRACT=` 的行；JSON bytes 是 exact
+  marker 后至末尾反引号前的 substring。
+- FULL：恰好一条以反引号包裹、内容前缀为 `FULL_PLAN_MACHINE_STATE=` 的行；JSON bytes 是 exact
+  marker 后至末尾反引号前的 substring。
+
+不得搜索、要求、生成或把 `PLAN_MACHINE_STATE` 当成 alias。两个 loader 都必须拒绝零条、多条、错误
+marker、非对象、duplicate key、NaN/Infinity、错误 JSON 类型或 required-key mismatch。它只能读取当前
+PLAN raw bytes、FULL 的唯一 machine row 与唯一 F17 section、shared Git metadata；不得读取 MEMORY、
+skill、GUIDE、ER、archive、controller/source、candidate、fixture、canonical content、测试、retained R3、
+release 或设备内容。
+
+任一 limited-input、marker、activation、hash、section uniqueness 或 required-subset failure 必须在检查
+四条路径前终止；container/record/seal/fallback attempts 与 succeeded 全部为 `0`，仅 append 一次 ER 后
+停 Planner。
+
+## 4. 唯一 bootstrap 方法
+
+通过 limited-input gate 后，标准库进程执行且只执行：
+
+1. 证明四条 F17 路径 absent、parent 是 existing directory/non-symlink；仅一次
+   `os.mkdir(target, 0o700)`。
+2. `lstat`/directory-fd `fstat` 证明 exact target、directory/non-symlink、mode `0700`、
+   uid/gid/dev/inode一致；container empty；fsync container 与 parent。
+3. 仅一次 `O_CREAT|O_EXCL|O_WRONLY`、mode `0600` 写 deterministic UTF-8 strict JSON record；
+   file/parent fsync、duplicate/nonfinite-reject reload、serialized raw-byte equality 与独立 SHA-256。
+4. 同样一次性写 seal；seal绑定 PLAN raw SHA、限定 FULL row/F17 section raw SHA、Git metadata、
+   target/record identities、record raw SHA和实际 counters；完成相同 fsync/reload/raw hash。
+5. 写后再次证明 target identity/mode未漂移且仍为空；record/seal必须在 container 外。
+
+成功实际计数必须精确为 container/record/seal attempts+succeeded 各 `1`，fallback `0/0`；
+`retry=reuse=rewrite=alternate_path=0`。
+
+## 5. 失败 terminal 与实际计数
+
+bootstrap gate 后任一 creation、identity、mode、emptiness、fsync、strict reload、raw equality/hash、Git
+metadata或post-write drift失败，保留已有 F17 artifact，不删除、修复、替换或重试。只可对 fixed fallback
+尝试一次 `O_EXCL`/`0600` deterministic strict JSON terminal，并执行 strict reload、file/directory fsync
+与独立 raw SHA；随后停 Planner。
+
+所有 terminal 必须记录实际 attempted/succeeded，且每类 attempt `<=1`、succeeded `<=attempted`。
+Limited-input/dispatch failure仍是四类 `0/0`且不得检查路径或创建 fallback；fallback自身失败不得重试。
+
+## 6. 零预算、交接与锁
+
+Controller/source/candidate root/clone/fixture/canonical-content、package/import、tests、stage、commit、validator、
+manifest、retained R3、audit、eligibility、consumer、release、network、DNS、`.env`、credential、device、camera、
+Ray、strip、cleanup、capture、public analyzer、FORMAL、firmware和deployment全部为 `0`。
+
+唯一 bootstrap command 返回后，Executer只可 append一次 `.agent-work/EXECUTION_RESULT.md`，再做该记录
+必要的只读 hash/stat核验并立即停 Planner。Pass也只建立一个empty sealed F17 prerequisite，不授权
+controller、后继package、R3、eligibility、release、network或device。
+
+**维护性判断：** F17 只把 PLAN/FULL 两个 machine-row marker 的不同 owner 显式固定；不改代码或科学合同，不新增并行执行路径。

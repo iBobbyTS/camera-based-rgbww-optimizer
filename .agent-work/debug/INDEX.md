@@ -2,8 +2,8 @@
 
 | file | summary |
 | --- | --- |
+| active/20260727-p7-r3-lineage-path-classification.md | C3E6F11 failed on an unpassed fresh-root value, then contaminated the root by retrying and serialized contradictory content-read counters; C3E6F12 must unify lifecycle and accounting ownership. |
 | active/20260725-platform-cyber-risk-false-positive.md | Platform flagged the authorized local calibration chat; highest-impact suspects are a hard-coded Ray OpenAPI key and oversized remote/rejection-heavy project context. |
-| active/20260725-p7-td-b-e2-r1-hostname-and-progressive-evidence.md | C2 harness is accepted, but Z0-R2 validly failed pre-device because planned negative symlinks were misclassified and the wrapper gained a trailing newline; real reachability remains unconsumed and E2/formal locked. |
 | active/20260722-p7-td-b-prerequisite-path-identity.md | PATH-R1 owns the raw relative/absolute operating-envelope identity mismatch; canonical producer, setup gate, and analyzer replay must close it before the single authorized setup retry. |
 | active/20260719-p7-r1-reference-instability.md | Completed R1 passes acquisition/coverage evidence but fails all Ray A/B compatibility and measured Ray/strip trend gates; candidate remains formal-ineligible for Planner review. |
 | active/20260714-p1-exposure-response.md | CR3 recorded exposure fixes the large P1 shutter error; residual high-signal RAW shape still blocks thresholds and P2 pending a lower-exposure full P1. |
@@ -22,6 +22,8 @@
 
 | file | summary |
 | --- | --- |
+| resolved/20260727-p7-eq-r6-feature-selection-and-failure-accounting.md | Commit f37517a closes ordered 92-to-58 policy selection and atomic post-return failure accounting; exact-12 evidence and immutable 1650 replay pass, while any fresh live EQ attempt remains Human-checkpointed. |
+| resolved/20260725-p7-td-b-e2-r1-hostname-and-progressive-evidence.md | Human repaired the local network; H1 proved same-stack non-empty resolution and R2 production prelaunch proved generation-bearing strip zero plus complete cleanup/final-zero. |
 | resolved/20260724-p7-td-b-e2-external-root-and-json-writer.md | C1 closes the external Git-root and literal backslash-n evidence defects with a frozen five-source owner, 22/22 fake/runtime cases, and 62 strict JSON artifacts; real E2 remains separately Planner-gated. |
 | resolved/20260723-p7-td-b-formal-statistic-owner-c3.md | C3 binds exact TD-B v2 formal to the shared no-ambient statistic constant, preserves the ambient default elsewhere, and proves 58-feature runner/analyzer agreement on immutable R1 evidence. |
 | resolved/20260723-p7-td-b-sidecar-atomicity-c2.md | C2 preserves exactly one physical owner across sidecar I/O failure and retains sidecar-verified remote IDs across later adapter drift; full retained-file replay remains immutable. |
