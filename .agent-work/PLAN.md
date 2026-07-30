@@ -1,153 +1,97 @@
-# REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-13：programmatic HEAD validation-only recovery
+# REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-14：retained source topology contract correction
 
-**计划状态：** `READY_FOR_PLAN_ONLY_ACTIVATION_COMMIT`
+**计划状态：** `WAITING_ORCHESTRATOR_ALIGNMENT`
 
 **Planner 日期：** `2026-07-30`
 
-**Reference task：** `REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-13`
+**Reference task：** `REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-14`
 
-**Contract ID：**
-`P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-13-PROGRAMMATIC-HEAD-VALIDATION`
+**Proposed contract ID：**
+`P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-14-SOURCE-TOPOLOGY-VALIDATION`
 
-**唯一当前动作：** Orchestrator以exact reviewed-state parent
-`6daa1e44eb842974d77030ef52ffb979b8d57bdb`创建一个PLAN-only activation commit；随后Executer在
-该activation child上以programmatic single-read/freeze方式取得dispatch HEAD，在brand-new C13 root
-对retained source/test/config运行一次fail-fast完整验证链，append terminal与ER证据后停止在Planner验收门。
-Executer不得编辑、stage或提交任何implementation路径。
+**唯一当前动作：** Orchestrator只读验收C13 rejection，更新其独占的
+`.agent-work/FULL_PLAN_REFERENCE.md`，将C13结果、下方exact C14 topology correction与review evidence一起创建一个
+focused reviewed-state commit，然后停止并交Planner签发PLAN-only activation。当前PLAN不授权Executer、controller、
+root创建、validation、implementation edit、Git commit、candidate/R3/release/device或后续阶段调用。
 
-**C12 review archive：**
-`.agent-work/PLANS/20260730-0749-p7-retained-r3-option-b-b1a-c3e6f19-corrective-12-review.md`，
-bytes `6082`，SHA-256
-`488e6953cd153109a14f3102a57bd2e40dc6d4f3ae2bcf05b545054d4f37ee20`。
+**C13 review archive：**
+`.agent-work/PLANS/20260730-0804-p7-retained-r3-option-b-b1a-c3e6f19-corrective-13-review.md`，
+bytes `4434`，SHA-256
+`c2018931bdb35e6424829177b0111a831bfbeab46f44ba7c69e5f7259f87f924`。
 
-`PLAN_MACHINE_CONTRACT={"schema":"f19_corrective_13_programmatic_head_validation_v1","reference_task_id":"REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-13","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-13-PROGRAMMATIC-HEAD-VALIDATION","dispatch_state":"ready_for_plan_only_activation_commit","single_current_action":"programmatic_dispatch_head_validation_only_recovery","review_archive":{"path":".agent-work/PLANS/20260730-0749-p7-retained-r3-option-b-b1a-c3e6f19-corrective-12-review.md","bytes":6082,"sha256":"488e6953cd153109a14f3102a57bd2e40dc6d4f3ae2bcf05b545054d4f37ee20"},"reviewed_state":{"commit":"6daa1e44eb842974d77030ef52ffb979b8d57bdb","parent":"a9a817137969d9d2692fdd0b244d08e26e8a025d","subject":"chore(orch): align f19 programmatic validation recovery"},"activation":{"required_parent":"6daa1e44eb842974d77030ef52ffb979b8d57bdb","subject":"chore(plan): activate f19 programmatic validation recovery","changed_paths":[".agent-work/PLAN.md"],"additional_paths":0,"commit_count":1,"initial_clean_required":true,"dispatch_head_owner":"controller_git_rev_parse_single_read_freeze","human_transcribed_expected_child_sha":0},"retained_test":{"commit":"a9a817137969d9d2692fdd0b244d08e26e8a025d","parent":"d4f97a63e304cd78ebe26930907024805ce25102","subject":"test(p7): align canonical lineage classification expectations","changed_paths":["tests/test_p7_thermal_diagnostics.py"],"additional_paths":0,"blob_oid":"e04c68f27eadda7d271fc449f6b6d4a673f2a8b3","bytes":216054,"sha256":"4eb823d5dfe22b95a172f4920b077285b50ad174b4a4c9cdda9fd7751dc164a5","canonical_patch_sha256":"546ef9de7ec338906b736a8cb981cfead7d807e17102182e84eda92e8e6e6d86","disposition":"retained_canonical_classification_expectation_v1_pending_validation","consumable":false,"eligibility":false},"retained_source":{"commit":"ba816216af9d37397873e054f44dbb7eea0f9b10","parent":"c0c51d9bc340da40ab5e95027e999962d2bd723e","subject":"fix(p7): separate historical lineage checkpoint ownership","path":"src/camera_based_rgbww_optimizer/optimization/p7_thermal_diagnostics.py","blob_oid":"efcb4b05877e857b47eebcb3d7e07dbf5979698f","bytes":193853,"sha256":"0a688f31728f8c7d072419b8a75a7d9b4b04315e906cde6daa17a80556f56b64","disposition":"retained_historical_checkpoint_seam_v1_pending_validation","consumable":false,"eligibility":false},"retained_config":{"commit":"0682cd8763516dfb19a8e1ad48c53cb9934b9d19","path":"config/hsi/p7-governance-lineage-successor-v1.json","blob_oid":"a08ea362c7cd33bfc0fd5277ca1f0f524958ad71","bytes":2571,"sha256":"69bbbb369e776e1aa11a227ecf3432de44bc517c7eb25828094f4820df45042e","rewrite_count":0},"execution_scope":{"repository_implementation_edits":0,"staged_paths":0,"implementation_commits":0,"plan_or_full_edits":0,"er_append_count":1,"brand_new_root_count":1,"fresh_root_prefix":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b1a-c3e6f19-corrective-13-offline/","targeted_selector_count":13,"focused_modules":["tests.test_p7_thermal_diagnostics","tests.test_agent_work_machine_contract","tests.test_p7_retained_r3_exact_five_controller","tests.test_p7_retained_release_audit"],"formal_chain_invocations_per_item":1,"retry":0,"fallback":0},"c12_er_supersession":{"old_recorded_precommit_sha256":"4f557d6d0d9cdcc2fdd7a48e7c968d6284e5d21ef9e9d65f96394be49e0f03a9","authoritative_precommit_sha256":"5821ab5d2b4d25cf218933c208b128854149150473c604a24131262ec0b6361a","old_er_rewrite_count":0,"required_c13_er_append_supersession":true},"locks":{"candidate":0,"retained_r3":0,"canonical_retained_validator":0,"eligibility_emission":0,"release":0,"network":0,"env":0,"device":0,"camera":0,"ray":0,"strip":0,"cleanup":0,"formal":0,"public_analyzer":0,"td_c":0,"sentinel":0,"p8":0},"retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","planner_stop":"F19_CORRECTIVE_13_TERMINAL_WAITING_PLANNER"}`
+`PLAN_MACHINE_CONTRACT={"schema":"f19_corrective_14_orchestrator_alignment_v1","reference_task_id":"REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-14","proposed_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-14-SOURCE-TOPOLOGY-VALIDATION","dispatch_state":"waiting_orchestrator_alignment","single_current_action":"orchestrator_accept_c13_review_and_freeze_corrected_source_topology","review_archive":{"path":".agent-work/PLANS/20260730-0804-p7-retained-r3-option-b-b1a-c3e6f19-corrective-13-review.md","bytes":4434,"sha256":"c2018931bdb35e6424829177b0111a831bfbeab46f44ba7c69e5f7259f87f924"},"c13":{"dispatch_head":"88d46061a50f0e8a89b2a6cc51ca9399d75f4347","terminal_path":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b1a-c3e6f19-corrective-13-offline/20260730T140212.594373Z/terminal-evidence.json","terminal_bytes":6711,"terminal_sha256":"94190eee0df9f0d49ea60b100fa4b0c77d24e2050fe3ad3f0b70e70604e3c02e","verdict":"rejected_source_topology_contract_mismatch","validation_items_executed":0,"retry":0},"corrected_source_topology":{"commit":"ba816216af9d37397873e054f44dbb7eea0f9b10","parent":"c0c51d9bc340da40ab5e95027e999962d2bd723e","subject":"fix(p7): separate historical lineage checkpoint ownership","exact_changed_paths":["src/camera_based_rgbww_optimizer/optimization/p7_thermal_diagnostics.py","tests/test_p7_thermal_diagnostics.py"],"additional_paths":0,"single_path_derivation_forbidden":true},"retained_source_identity":{"path":"src/camera_based_rgbww_optimizer/optimization/p7_thermal_diagnostics.py","blob_oid":"efcb4b05877e857b47eebcb3d7e07dbf5979698f","bytes":193853,"sha256":"0a688f31728f8c7d072419b8a75a7d9b4b04315e906cde6daa17a80556f56b64"},"next_planner_activation_requirements":{"plan_only_commit":true,"programmatic_dispatch_head_single_read":true,"brand_new_root_count":1,"targeted_selector_count":13,"one_shot_chain":true,"repository_implementation_edits":0,"implementation_commits":0,"retry":0,"fallback":0},"locks":{"executer_dispatch":0,"controller":0,"root_create":0,"validation":0,"candidate":0,"retained_r3":0,"canonical_retained_validator":0,"eligibility_emission":0,"release":0,"network":0,"env":0,"device":0,"camera":0,"ray":0,"strip":0,"cleanup":0,"formal":0,"public_analyzer":0,"td_c":0,"sentinel":0,"p8":0},"retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","planner_stop":"F19_CORRECTIVE_14_WAITING_ORCHESTRATOR_ALIGNMENT"}`
 
-## 1. Exact PLAN-only activation topology
+## 1. C13 review decision
 
-Orchestrator只可创建并核验一个activation commit：
+C13被拒绝，不得表示为validation通过。Programmatic dispatch HEAD gate与activation identity通过；retained
+source/test/config bytes identity通过；C12 supersession append通过。失败唯一来自PLAN错误要求controller把
+`ba816216af9d37397873e054f44dbb7eea0f9b10`推导成exact one-path commit。
 
-- direct parent exact：`6daa1e44eb842974d77030ef52ffb979b8d57bdb`；
-- parent subject exact：`chore(orch): align f19 programmatic validation recovery`；
-- parent direct parent：`a9a817137969d9d2692fdd0b244d08e26e8a025d`；
-- activation subject exact：`chore(plan): activate f19 programmatic validation recovery`；
-- changed path exact：`.agent-work/PLAN.md`；additional paths `0`；commit count `1`；
-- commit前与commit后worktree均须clean。
+Git与C13 terminal均证明该commit的exact changed-path set为：
 
-该activation commit属于Planner工作流拓扑，不是implementation commit。不得在同一commit包含ER、FULL、archive、
-source、test、config或其他路径。不得amend、rebase、cherry-pick或创建第二activation commit。
+1. `src/camera_based_rgbww_optimizer/optimization/p7_thermal_diagnostics.py`
+2. `tests/test_p7_thermal_diagnostics.py`
 
-Executer dispatch后，controller必须以一次Git读取直接取得当前full lowercase 40-character HEAD并冻结为
-`dispatch_head`；允许的等价命令是`git rev-parse --verify HEAD^{commit}`。该值只读取一次，之后activation child、
-baseline diff上界与所有topology比较都必须消费同一个冻结值；caller、wrapper、controller、terminal writer与ER不得
-手抄、截断、拼接、预测或第二次读取expected child SHA。若single read不是完整lowercase commit SHA，立即fail closed。
+其parent为`c0c51d9bc340da40ab5e95027e999962d2bd723e`，subject为
+`fix(p7): separate historical lineage checkpoint ownership`，additional paths `0`。C13 validation items `0`，因此
+不得从identity gate推断测试通过；也不得重试、复用或修改C13 root。
 
-在root创建、测试或ER append前，controller须以冻结的`dispatch_head`核验：其direct parent、subject、exact one-path
-changed set与上方activation合同完全一致；worktree clean；review archive与committed FULL仍匹配当前已冻结状态。
-任一不符只写terminal failure并向ER append一次，不得继续。
+## 2. Orchestrator alignment package
 
-## 2. Retained source/test/config exact identities
+Orchestrator应亲自：
 
-以下三个路径均为immutable validation inputs；Executer的编辑、stage、commit、rewrite、repair与regeneration均为`0`：
+1. 复核C13 terminal path、bytes、SHA与review archive identity；
+2. 在FULL中将C13标记为`REJECTED_SOURCE_TOPOLOGY_CONTRACT_MISMATCH`；
+3. 将C14设为唯一active reference task并冻结本PLAN的corrected two-path topology；
+4. 将ER append、C13 review archive、当前PLAN与FULL组成focused reviewed-state commit；
+5. 保持source、test、config、GUIDE、旧archive与旧evidence byte-exact不变；
+6. 在clean reviewed-state HEAD停止并交Planner编写PLAN-only activation。
 
-1. Retained test commit `a9a817137969d9d2692fdd0b244d08e26e8a025d`，direct parent
-   `d4f97a63e304cd78ebe26930907024805ce25102`，subject
-   `test(p7): align canonical lineage classification expectations`，exact changed path
-   `tests/test_p7_thermal_diagnostics.py`、additional `0`。当前test blob
-   `e04c68f27eadda7d271fc449f6b6d4a673f2a8b3`，bytes `216054`，SHA-256
-   `4eb823d5dfe22b95a172f4920b077285b50ad174b4a4c9cdda9fd7751dc164a5`；canonical binary patch
-   SHA-256 `546ef9de7ec338906b736a8cb981cfead7d807e17102182e84eda92e8e6e6d86`。
-2. Retained production commit `ba816216af9d37397873e054f44dbb7eea0f9b10`，direct parent
-   `c0c51d9bc340da40ab5e95027e999962d2bd723e`，subject
-   `fix(p7): separate historical lineage checkpoint ownership`。Source path
-   `src/camera_based_rgbww_optimizer/optimization/p7_thermal_diagnostics.py`，blob
-   `efcb4b05877e857b47eebcb3d7e07dbf5979698f`，bytes `193853`，SHA-256
-   `0a688f31728f8c7d072419b8a75a7d9b4b04315e906cde6daa17a80556f56b64`。
-3. Retained config provenance commit `0682cd8763516dfb19a8e1ad48c53cb9934b9d19`。Config path
-   `config/hsi/p7-governance-lineage-successor-v1.json`，blob
-   `a08ea362c7cd33bfc0fd5277ca1f0f524958ad71`，bytes `2571`，SHA-256
-   `69bbbb369e776e1aa11a227ecf3432de44bc517c7eb25828094f4820df45042e`。
+不得把本次失败上升到Advisor：这是Planner工程topology合同错误，不是色彩科学或测量科学分支。它不涉及高危设备
+操作，也不需要Human授权。
 
-Controller在root创建前必须从committed `dispatch_head`与working tree分别核验三路径的blob、bytes、SHA，
-并核验test commit topology与patch SHA；全部通过后才可创建root。旧policy、workflow、public-default payload、
-canonical classification owner、canonical candidate builder与旧manifest必须byte-exact不变。不得新增generic allowlist、
-第二eligibility owner或任何validation commit。
+## 3. 下一Planner必须冻结的C14 executable contract
 
-## 3. Brand-new C13 root与调用预算
+下一Planner仅在Orchestrator完成alignment commit后签发一个PLAN-only activation，并将activation direct parent冻为
+该exact reviewed-state HEAD。Executer随后只能执行validation-only C14；implementation source/test/config edits、stage、
+commit全部为`0`。
 
-Root prefix exact为：
-`/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b1a-c3e6f19-corrective-13-offline/`。
-Controller只可在prefix下用一个冻结UTC child name exclusive-create一个mode `0700` root。若exact path已存在，
-立即hard-fail；不得删除、复用、改名、选择第二root或读取C12/C11及任何旧execution root。Root count `1`，
-retry `0`，fallback `0`。
+Controller必须以一次`git rev-parse --verify HEAD^{commit}`读取并冻结dispatch HEAD，human-transcribed child SHA与
+second read均为`0`。Activation topology核验后，对`ba81621…`只能选择以下合同之一；下一Planner必须选定并写死，
+不得让Executer临时推导：
 
-每个validation log必须由一个owner通过`O_WRONLY|O_CREAT|O_EXCL|O_NOFOLLOW`只open一次，stdout/stderr
-共用该single fd；child退出后flush/fsync/close再digest。不得先预创建后reopen、使用第二fd或shell redirection。
-Artifacts须regular、non-symlink、mode `0600`。每个命令只调用一次；任一gate或命令nonzero立即停止所有后续项。
+- **首选：whole-commit exact topology。** 核验parent、subject及上述exact two-path set，additional paths `0`；随后分别
+  核验当前retained source与retained test的blob、bytes、SHA identity。
+- **允许的更窄替代：retained-path identity only。** 不声称`ba81621…`是one-path commit；只证明retained source path
+  在该commit与dispatch HEAD中的blob、bytes、SHA identity。若采用此项，test topology仍由其独立commit
+  `a9a817137969d9d2692fdd0b244d08e26e8a025d`合同核验。
 
-## 4. Exact 13-selector targeted gate
+任何形式的`ba81621… exact one-path`断言均禁止。旧policy、workflow、public-default payload、canonical candidate
+builder、canonical validator、旧manifest与retained R3均不可读取、修复或重建。
 
-Targeted命令必须恰好包含以下`13`个完整selector，顺序固定，不得增加、减少、alias、拆分或二次运行：
+## 4. 下一C14 execution outline
 
-1. `tests.test_p7_thermal_diagnostics.P7ThermalDiagnosticsTests.test_agents_policy_lineage_rejects_wrong_bytes_owner_and_provenance`
-2. `tests.test_p7_thermal_diagnostics.P7ThermalDiagnosticsTests.test_current_head_lineage_accepts_exact_human_policy_freeze`
-3. `tests.test_p7_thermal_diagnostics.P7ThermalDiagnosticsTests.test_lineage_release_rebuilds_current_plan_and_reaches_formal_runner`
-4. `tests.test_p7_thermal_diagnostics.P7ThermalDiagnosticsTests.test_lineage_release_rejects_candidate_and_resolved_plan_tampering`
-5. `tests.test_p7_thermal_diagnostics.P7ThermalDiagnosticsTests.test_post_eq_policy_lineage_classifies_only_exact_accepted_paths`
-6. `tests.test_p7_thermal_diagnostics.P7ThermalDiagnosticsTests.test_public_default_successor_lineage_layers_historical_and_current_owners`
-7. `tests.test_p7_thermal_diagnostics.P7ThermalDiagnosticsTests.test_public_default_successor_manifest_fails_closed_on_exact_drift`
-8. `tests.test_p7_thermal_diagnostics.P7ThermalDiagnosticsTests.test_qualification_evidence_adapter_is_release_isolated`
-9. `tests.test_p7_thermal_diagnostics.P7ThermalDiagnosticsTests.test_qualification_evidence_adapter_rejects_preparation_drift`
-10. `tests.test_p7_thermal_diagnostics.P7ThermalDiagnosticsTests.test_workflow_path_manifest_rejects_owner_hash_and_provenance_drift`
-11. `tests.test_p7_thermal_diagnostics.P7ThermalDiagnosticsTests.test_governance_lineage_successor_accepts_exact_authorized_history_and_preserves_canonical_owner`
-12. `tests.test_p7_thermal_diagnostics.P7ThermalDiagnosticsTests.test_governance_lineage_successor_fails_closed_on_exact_drift_without_widening`
-13. `tests.test_p7_thermal_diagnostics.P7ThermalDiagnosticsTests.test_public_default_successor_historical_checkpoint_ignores_working_owner`
+下一PLAN须沿用C13的validation-only边界：
 
-## 5. One-shot validation chain
+- root prefix改为
+  `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b1a-c3e6f19-corrective-14-offline/`；
+- brand-new exclusive-created child root恰好`1`，mode `0700`；retry `0`，fallback `0`，旧root读取`0`；
+- 每个log由单一owner以`O_WRONLY|O_CREAT|O_EXCL|O_NOFOLLOW`只open一次，stdout/stderr同fd，close后digest；
+- 依次且每项exactly once、fail-fast运行compileall、C13相同且顺序固定的exact 13 selectors、相同focused四模块、
+  full suite、`codegraph sync`、reviewed-state-to-dispatch exact PLAN-only diff check与working-tree diff check；
+- terminal最后single-fd exclusive-create、fsync、strict reload、digest、seal；ER只append一次；
+- C12 supersession无需再次新增或改写，只应引用C13已完成的权威append；
+- 成功仍只表示retained source/test/config validation green，停止在Planner验收门，不得调用canonical retained validator、
+  产生eligibility、消费release或进入FORMAL-R6/TD-C/P8。
 
-Activation、dispatch HEAD与三项retained identity gate通过后，在同一brand-new root依次运行；每项exactly once、
-fail-fast：
+若下一Planner预计完整链超过10分钟，必须在可见macOS Terminal中执行并遵循三次稀疏liveness、automation与goal
+blocked流程；不得拆包规避。
 
-1. `.venv/bin/python -m compileall -q src/camera_based_rgbww_optimizer/optimization/p7_thermal_diagnostics.py tests/test_p7_thermal_diagnostics.py`；exit `0`；
-2. `.venv/bin/python -m unittest -v <上一节按原顺序展开的exact 13 selectors>`；必须`13/13`、exit `0`；
-3. `.venv/bin/python -m unittest -v tests.test_p7_thermal_diagnostics tests.test_agent_work_machine_contract tests.test_p7_retained_r3_exact_five_controller tests.test_p7_retained_release_audit`；exit `0`；
-4. `.venv/bin/python -m unittest discover -s tests -v`；exit `0`；
-5. `codegraph sync`；exit `0`；
-6. `git diff --check 6daa1e44eb842974d77030ef52ffb979b8d57bdb..<frozen_dispatch_head>`与
-   `git diff --check`作为同一validation item，各调用一次且均exit `0`。该item必须在ER append前运行；第一个
-   diff只能是exact PLAN path，第二个必须为空。
+## 5. Locks与停止点
 
-不得以compileall、targeted或focused green替代full suite。既有full suite约两分钟，预计本包不超过10分钟；
-若Executer在dispatch前基于当前环境重新估算超过10分钟，必须使用Human可见macOS Terminal、三次稀疏liveness、
-automation与goal blocked流程，不得拆分命令规避。
+当前alignment包中，Executer dispatch、controller、root create、validation、repository implementation edit、stage、
+implementation commit均为`0`。Candidate、retained R3、canonical retained validator、eligibility emission、release、
+network、`.env`、device、camera、Ray、strip、cleanup、formal、public analyzer、TD-C、sentinel与P8全部为`0`。
+Retained R3保持`RETAINED_UNVALIDATED_UNCONSUMED`。
 
-## 6. Terminal seal、C12 supersession与ER
-
-Terminal strict JSON必须最后exclusive-create、fsync、reload、digest与seal，至少记录：
-
-- programmatic HEAD owner调用数`1`、冻结`dispatch_head`，且human-transcribed/second-read counts均`0`；
-- reviewed-state、activation与retained test/source/config exact topology、blob、bytes、SHA与patch核验；
-- brand-new root identity、mode、single-fd lifecycle与artifact identities；
-- exact 13 selector argv，以及compileall/targeted/focused/full/CodeGraph/diff的calls、exit、log bytes、SHA、mode；
-- repository implementation edits `0`、staged paths `0`、implementation commits `0`、retry/fallback `0`；
-- 所有硬锁调用数`0`与retained R3状态；
-- C12 evidence supersession：旧ER记录的precommit SHA-256
-  `4f557d6d0d9cdcc2fdd7a48e7c968d6284e5d21ef9e9d65f96394be49e0f03a9`不得改写；权威C12 artifact
-  SHA-256为`5821ab5d2b4d25cf218933c208b128854149150473c604a24131262ec0b6361a`。
-
-Terminal seal后只向`.agent-work/EXECUTION_RESULT.md`append一次C13结果。Append必须显式记录
-`supersedes_c12_precommit_sha256_misrecord=true`及old/authoritative值；不得重写旧ER、C12 terminal、precommit
-artifact或旧root。Append前worktree必须clean；append后只允许ER dirty。Executer不得stage或commit ER，由Planner/Orchestrator
-后续验收整理。
-
-## 7. 硬锁与停止点
-
-Candidate probe/read/build、retained R3 probe/read/copy/repair、canonical retained validator、eligibility
-emission、release qualification/generation/copy/consumption、network、`.env`、device、camera、Ray、strip、
-cleanup、FORMAL-R6、public analyzer、TD-C、sentinel与P8全部为`0`。Retained R3保持
-`RETAINED_UNVALIDATED_UNCONSUMED`。
-
-本包是offline validation-only工程纠偏，不涉及科学分支或高危设备操作，不需要Advisor或Human授权。即使完整链成功，
-也只证明retained source/test/config在activation dispatch HEAD上通过验证并等待Planner验收；不得访问candidate/R3、
-运行canonical retained validator、产生eligibility、消费release或进入后续阶段。失败不得retry、fallback、自行改PLAN或扩大scope。
-
-**Planner stop：** `F19_CORRECTIVE_13_TERMINAL_WAITING_PLANNER`。
+**Planner stop：** `F19_CORRECTIVE_14_WAITING_ORCHESTRATOR_ALIGNMENT`。

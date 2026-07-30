@@ -16,9 +16,9 @@
 
 **当前可执行任务数：** `1`
 
-**当前 active task：** `REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-13 programmatic HEAD validation-only recovery`
+**当前 active task：** `REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-14 retained source topology validation recovery`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-13","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-13-PROGRAMMATIC-HEAD-VALIDATION","next_reference_task":"REF-P7-25-R2-B2","next_reference_status":"BLOCKED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"B1A_C3E6F19_CORRECTIVE_12_REJECTED_SHA_TRANSCRIPTION_TEST_A9A8171_RETAINED_C13_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"3c5847fcbe0af85833c901f6f01058d000a3cecdc0f84e6ae331ed24e138c225","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-14","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-14-SOURCE-TOPOLOGY-VALIDATION","next_reference_task":"REF-P7-25-R2-B2","next_reference_status":"BLOCKED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"B1A_C3E6F19_CORRECTIVE_13_REJECTED_SOURCE_TOPOLOGY_CONTRACT_C14_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"3c5847fcbe0af85833c901f6f01058d000a3cecdc0f84e6ae331ed24e138c225","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -2816,13 +2816,28 @@ artifact权威SHA为`5821ab5d2b4d25cf218933c208b128854149150473c604a24131262ec0b
 
 ### REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-13：Programmatic HEAD validation-only recovery
 
-**状态：** `ACTIVE_WAITING_PLAN_ONLY_ACTIVATION_FREEZE`。
+**状态：** `REJECTED_SOURCE_TOPOLOGY_CONTRACT_MISMATCH`。Planner archive：
+`.agent-work/PLANS/20260730-0804-p7-retained-r3-option-b-b1a-c3e6f19-corrective-13-review.md`，bytes `4434`，SHA-256
+`c2018931bdb35e6424829177b0111a831bfbeab46f44ba7c69e5f7259f87f924`。
 
 保留test commit `a9a8171...`与production `ba81621...`为pending validation；本包repo edits、stage、implementation commits均为0。
 Executer controller必须从Git直接读取一次full lowercase dispatch HEAD并冻结，所有topology比较只消费该值；禁止人手抄expected child或
 再次拼接。Brand-new C13 root执行activation/retained identities gate后，one-shot compileall、exact 13 targeted、focused、full、CodeGraph、
 baseline/working diff-check；single-fd、fail-fast、retry/fallback0。Terminal/ER append-only supersede C12 precommit SHA误记。
 所有candidate/R3/release/device/scientific锁为0；成功也只表示pending implementation完成验证，不授权eligibility或消费。
+
+C13 programmatic dispatch HEAD single-read gate、activation/archive/FULL与retained三路径identities、C12 supersession全部通过。唯一失败是
+controller错误要求`ba816216...`为exact one-path commit；实际changed paths精确为source与test两项，parent/subject均正确。
+Validation items 0，terminal SHA-256 `94190eee0df9f0d49ea60b100fa4b0c77d24e2050fe3ad3f0b70e70604e3c02e`。
+
+### REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-14：Retained source topology validation recovery
+
+**状态：** `ACTIVE_WAITING_PLAN_ONLY_ACTIVATION_FREEZE`。
+
+Repo edits/stage/implementation commit继续为0。Controller必须programmatic single-read dispatch HEAD，并核验`ba816216...`的exact parent、subject、
+whole-commit two-path set：source与`tests/test_p7_thermal_diagnostics.py`，additional0；随后分别核验retained source/test path identity。
+禁止再推导source-only commit。Brand-new C14 root运行与C13相同的exact 13 targeted、focused、full、CodeGraph、diff one-shot链；
+C12 supersession只引用C13已完成append，不重复。所有R3/release/device/scientific锁0；无需Advisor/Human。
 
 ### REF-P7-25-R2-B2：唯一repair commit与immutable manifest seal
 
@@ -3449,7 +3464,7 @@ Option A owner prerequisite = accepted complete
 Advisor lineage owner decision = Option B subordinate exact provenance manifest
 Human engineering governance override = Orchestrator owns files/code/provenance/execution/Git
 helper v1 disposition = retained_release_audit_prerequisite_v1_superseded_before_real_validation
-repair v2 status = B1A-C3E6F19-CORRECTIVE-12 rejected SHA transcription only; test a9a8171 retained; corrective-13 active
+repair v2 status = B1A-C3E6F19-CORRECTIVE-13 rejected source topology contract; corrective-14 active
 accepted B1 result = ACCEPTED_BLOCKED_CONTRACT_CONFLICT
 accepted B1A result = HARD_FAILURE_PRE_ACQUISITION_LIFECYCLE; implementation progress 0
 accepted B1A-C1 result = HARD_FAILURE_BEFORE_TEST_EXEC; candidate carry-forward only
@@ -3510,8 +3525,9 @@ accepted B1A-C3E6F19-CORRECTIVE-9 result = FORMAL_COMPILEALL_CONSUMED_BEFORE_IMP
 accepted B1A-C3E6F19-CORRECTIVE-10 result = TARGETED_AMBIENT_HEAD_AND_HISTORICAL_CHECKPOINT_SEAMS; new tests pass; targeted9/12
 accepted B1A-C3E6F19-CORRECTIVE-11 result = TARGETED_AMBIENT_FULL_SET_EXPECTATION_ONLY; production seam tests pass; targeted12/13
 accepted B1A-C3E6F19-CORRECTIVE-12 result = POSTCOMMIT_EXPECTED_CHILD_SHA_TRANSCRIPTION_ONLY; test commit exact; validation0
-active task = REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-13 programmatic HEAD validation-only recovery
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-13-PROGRAMMATIC-HEAD-VALIDATION
+accepted B1A-C3E6F19-CORRECTIVE-13 result = SOURCE_TOPOLOGY_CONTRACT_MISMATCH; programmatic HEAD pass; validation0
+active task = REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-14 retained source topology validation recovery
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-14-SOURCE-TOPOLOGY-VALIDATION
 active executable task count = 1
 next reference task = REF-P7-25-R2-B2 BLOCKED
 selected state C shutter = 1/2500
@@ -3538,8 +3554,8 @@ JavaScript SyntaxError 未启动 Python；C4 随后仅 8/12，C5 又因正文 ma
 但 Executer scanner 将 PLAN candidate 错计为0；C12 的更精确文字合同仍因临时实现转录漂移错报0/0。当前 C13 将 scanner
 收敛到一个validation-only helper与一个dedicated test并获Planner接受，避免继续复制实现；它不拥有eligibility或retained-release语义。
 后继另包才可冻结新controller并建立 fresh bootstrap container；不得重跑F14、提前修改production或输出eligibility。retained R3继续为
-`REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-13`不再编辑或提交implementation；programmatic dispatch HEAD替代手抄child；
-brand-new root对retained production/test/config运行one-shot完整链，并append supersede C12 evidence误记；
+`REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-14`继续zero-edit validation；programmatic HEAD并核验ba81621 exact source+test two-path topology；
+brand-new root对retained production/test/config运行one-shot完整链；
 canonical validator call、eligibility emission、retained R3/release/device访问仍为0；
 retained R3 仍为 `RETAINED_UNVALIDATED_UNCONSUMED`。
 
