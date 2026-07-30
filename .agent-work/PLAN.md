@@ -1,6 +1,6 @@
 # REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-16：retained metadata-boundary validation-only successor
 
-**计划状态：** `PLANNER_REVIEWED_WAITING_ORCHESTRATOR`
+**计划状态：** `EXECUTER_AUTHORIZED`
 
 **Planner 日期：** `2026-07-30`
 
@@ -9,15 +9,15 @@
 **Contract ID：**
 `P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-16-RETAINED-METADATA-BOUNDARY-VALIDATION`
 
-**唯一当前动作：** Orchestrator验收C15 rejection、更新FULL并提交reviewed state；随后Planner只可将该exact reviewed-state
-commit冻结为PLAN-only activation parent并把本包转为Executer-authorized。当前不得dispatch Executer、运行validation或执行
-任何后续工作。
+**唯一当前动作：** Executer从本PLAN activation commit的clean dispatch HEAD启动exact一次C16 zero-edit validation-only
+controller，创建brand-new evidence root，冻结Git-object identities并执行第5节的一次性验证链；terminal seal与ER append后立即停止在
+Planner验收门。
 
 **C15 review archive：**
 `.agent-work/PLANS/20260730-0837-p7-retained-r3-option-b-b1a-c3e6f19-corrective-15-review.md`，bytes `5301`，SHA-256
 `f1a5f7300248aa74176c363f0d128bfb2214890572a16019b3d4e2ca5464afd3`；Orchestrator须独立复算。
 
-`PLAN_MACHINE_CONTRACT={"schema":"f19_corrective_16_retained_validation_v1","reference_task_id":"REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-16","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-16-RETAINED-METADATA-BOUNDARY-VALIDATION","dispatch_state":"planner_reviewed_waiting_orchestrator","execution_authorized":false,"single_current_action":"orchestrator_review_full_update_and_reviewed_state_commit","activation":{"required_parent":"TO_BE_FROZEN_AFTER_ORCHESTRATOR_REVIEW","subject":"chore(plan): activate f19 corrective 16","changed_paths":[".agent-work/PLAN.md"],"additional_paths":0,"commit_count":1},"retained_implementation":{"commit":"3a14fe0bd663250dd48c65e71f1a6550df89267f","parent":"431d9d8dd58a6c0df7fb0b225ce206d2e8c57f53","subject":"fix(p7): exclude root Finder metadata from EQ evidence","changed_paths":["src/camera_based_rgbww_optimizer/optimization/p7_thermal_diagnostics.py","tests/test_p7_td_b_r6_contract.py"],"additional_paths":0,"commit_count":1},"repository_mutations":{"source_edits":0,"test_edits":0,"config_edits":0,"implementation_commits":0},"validation":{"compileall":1,"targeted_selector_count":6,"focused_modules":["tests.test_p7_td_b_r6_contract","tests.test_p7_thermal_diagnostics","tests.test_agent_work_machine_contract","tests.test_p7_retained_r3_exact_five_controller","tests.test_p7_retained_release_audit"],"full_suite":1,"codegraph_sync":1,"diff_check":1,"retry":0,"fallback":0},"locks":{"candidate":0,"retained_r3":0,"canonical_retained_validator":0,"eligibility_emission":0,"release":0,"network":0,"env":0,"device":0,"camera":0,"ray":0,"strip":0,"cleanup":0,"formal":0,"public_analyzer":0,"td_c":0,"sentinel":0,"p8":0},"retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","planner_stop":"F19_CORRECTIVE_16_TERMINAL_WAITING_PLANNER"}`
+`PLAN_MACHINE_CONTRACT={"schema":"f19_corrective_16_retained_validation_v1","reference_task_id":"REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-16","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-16-RETAINED-METADATA-BOUNDARY-VALIDATION","dispatch_state":"executer_authorized","execution_authorized":true,"single_current_action":"execute_exact_once_c16_zero_edit_validation_only_controller","activation":{"required_parent":"930f650fc38ae38fe832d6060b2bcc1347fcc555","subject":"chore(plan): activate f19 corrective 16","changed_paths":[".agent-work/PLAN.md"],"additional_paths":0,"commit_count":1},"retained_implementation":{"commit":"3a14fe0bd663250dd48c65e71f1a6550df89267f","parent":"431d9d8dd58a6c0df7fb0b225ce206d2e8c57f53","subject":"fix(p7): exclude root Finder metadata from EQ evidence","changed_paths":["src/camera_based_rgbww_optimizer/optimization/p7_thermal_diagnostics.py","tests/test_p7_td_b_r6_contract.py"],"additional_paths":0,"commit_count":1},"repository_mutations":{"source_edits":0,"test_edits":0,"config_edits":0,"implementation_commits":0},"validation":{"compileall":1,"targeted_selector_count":6,"focused_modules":["tests.test_p7_td_b_r6_contract","tests.test_p7_thermal_diagnostics","tests.test_agent_work_machine_contract","tests.test_p7_retained_r3_exact_five_controller","tests.test_p7_retained_release_audit"],"full_suite":1,"codegraph_sync":1,"diff_check":1,"retry":0,"fallback":0},"locks":{"candidate":0,"retained_r3":0,"canonical_retained_validator":0,"eligibility_emission":0,"release":0,"network":0,"env":0,"device":0,"camera":0,"ray":0,"strip":0,"cleanup":0,"formal":0,"public_analyzer":0,"td_c":0,"sentinel":0,"p8":0},"retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","planner_stop":"F19_CORRECTIVE_16_TERMINAL_WAITING_PLANNER"}`
 
 ## 1. C15 decision与保留实现
 
@@ -29,11 +29,12 @@ compileall、targeted、focused、full、CodeGraph与diff调用均为`0`，retry
 C16必须保留该实现提交，不得amend、cherry-pick、rebase、重做、编辑或创建新implementation commit。C16只证明：在验证开始
 之前，从immutable Git objects得到的parent-before与retained-commit-after identities、exact commit topology及完整验证结果。
 
-## 2. Planner activation gate（当前尚未授权）
+## 2. Planner activation gate（已授权）
 
-Orchestrator完成reviewed-state commit后，Planner必须独立验证工作区clean，将该commit full SHA冻结为activation direct parent，
-并仅修改本PLAN中的状态、machine contract与exact parent。Activation commit subject必须exact为
-`chore(plan): activate f19 corrective 16`，changed paths exact `.agent-work/PLAN.md`，additional `0`，commit count `1`。
+Planner已独立验证工作区clean，并将Orchestrator reviewed-state commit
+`930f650fc38ae38fe832d6060b2bcc1347fcc555`冻结为activation direct parent。Activation commit subject必须exact为
+`chore(plan): activate f19 corrective 16`，changed paths exact `.agent-work/PLAN.md`，additional `0`，commit count `1`；本提交
+成功后Executer获得第4至第7节的exact一次执行授权。
 
 Executer controller启动时从clean worktree一次programmatic执行`git rev-parse --verify HEAD^{commit}`，冻结结果为dispatch HEAD；
 second HEAD read与human-transcribed child SHA均为`0`。它必须验证dispatch commit direct parent、subject、PLAN-only path set，
