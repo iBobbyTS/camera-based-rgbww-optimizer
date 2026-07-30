@@ -16,9 +16,9 @@
 
 **当前可执行任务数：** `1`
 
-**当前 active task：** `REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-1 marker parsing / limited-input gate correction`
+**当前 active task：** `REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-3 canonical machine-row owner semantics`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-29","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-2","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F17-CORRECTIVE-2","next_reference_task":"REF-P7-25-R2-B2","next_reference_status":"BLOCKED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"B1A_C3E6F17_CORRECTIVE_1_REJECTED_CONTRACT_FIELD_BINDING_MISMATCH_CORRECTIVE_2_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"release_authorized_by_this_file":false,"candidate_machine_contract_sha256":"3c5847fcbe0af85833c901f6f01058d000a3cecdc0f84e6ae331ed24e138c225","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-29","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-3","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F17-CORRECTIVE-3","next_reference_task":"REF-P7-25-R2-B2","next_reference_status":"BLOCKED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"B1A_C3E6F17_CORRECTIVE_2_REJECTED_MARKER_COUNT_GATE_CORRECTIVE_3_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"3c5847fcbe0af85833c901f6f01058d000a3cecdc0f84e6ae331ed24e138c225","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -2266,7 +2266,7 @@ Planner，不得删除、修复或重试。Pass只建立一个empty sealed conta
 **状态：** `REJECTED_PLAN_ROW_LABEL_PRECONDITION`。Review archive：
 `.agent-work/PLANS/20260729-1659-p7-retained-r3-option-b-b1a-c3e6f16-plan-row-label-review.md`，SHA-256
 `8f5a221061fe242c6a1696214b8493a47bddb10fd2c1e5dfc0e0a3f22e1e16b9`。Executer错误寻找不存在的
-`PLAN_MACHINE_STATE=`，而权威行标记为`PLAN_MACHINE_CONTRACT=`；失败发生在dispatch verification与四路径检查前，
+`PLAN_MACHINE_STATE=`，而权威行使用唯一的 PLAN machine-row marker；失败发生在dispatch verification与四路径检查前，
 container/record/seal/fallback attempts与succeeded均0，四条F16路径均absent，不得重试或复用。
 
 **依赖与唯一纠偏：** 只纠正F15的dispatcher read-scope violation，保持bootstrap科学与filesystem语义不变。使用全新目标
@@ -2299,7 +2299,7 @@ Pass也只建立empty sealed prerequisite并回Planner，不授权controller或�
 Executer 在输入 gate 报 `ValueError: PLAN exact marker count 0`，未创建任何 artifact，四类 counters 均为 `0/0`；随后错误地在 limited-input failure 后检查四条固定路径，违反了 path-inspection lock。因此本包不可作为 bootstrap evidence，也不得重试旧 F17 root 或 fixed paths。
 
 **依赖与唯一纠偏：** 仅纠正F16 loader的machine-row label owner，不改变bootstrap filesystem语义。PLAN owner必须按唯一精确
-marker `PLAN_MACHINE_CONTRACT=`读取JSON；FULL owner必须按唯一精确marker `FULL_PLAN_MACHINE_STATE=`读取JSON；禁止搜索、
+PLAN machine-row marker读取JSON；FULL owner必须按唯一精确的 FULL machine-row marker读取JSON；禁止搜索、
 推导或发明`PLAN_MACHINE_STATE=` alias。使用全新F17 target/record/seal/fallback四路径，执行前均须absent；F16路径只读冻结且
 不得检查、删除、修复或复用。
 
@@ -2328,7 +2328,7 @@ qualification pass 或 bootstrap 授权；不得重试本包或触碰旧 F17 roo
 并保持 `RETAINED_UNVALIDATED_UNCONSUMED`。
 
 **唯一范围：** 只验证 Markdown inline-code machine row 的精确 marker extraction 与 strict JSON gate。PLAN 只接受恰好一条
-反引号包裹的 `PLAN_MACHINE_CONTRACT=` 行，FULL 只接受恰好一条反引号包裹的 `FULL_PLAN_MACHINE_STATE=` 行；不得把
+反引号包裹的 PLAN machine-row 行，FULL 只接受恰好一条反引号包裹的 FULL machine-row 行；不得把
 `PLAN_MACHINE_STATE=` 视为 alias。任何 gate failure 必须在 `lexists`、`lstat`、mkdir、open 或其他 path operation 之前 terminal。
 
 **证据与锁：** 允许读取当前 PLAN raw bytes、FULL 唯一 machine row/F17 section 与 shared Git metadata；禁止读取 ER、archive、
@@ -2342,12 +2342,27 @@ R3、release、network 或 device。
 
 ### REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-2：Canonical task-id binding correction
 
-**状态：** `ACTIVE_PLANNER_CORRECTIVE_ONLY`。
+**状态：** `REJECTED_MARKER_COUNT_GATE`。Planner 归档：
+`.agent-work/PLANS/20260729-1812-p7-retained-r3-option-b-b1a-c3e6f17-corrective-2-review.md`，SHA-256
+`93c7f85a11a8d81a567598e679c2962602dcde718870412bdfb844a8cb702edd`。
+
+Executer 发现 PLAN 有 2 条、FULL 有 3 条可匹配的 wrapped marker 行，因而在 path operation 前 terminal；artifact/path counters
+为 `0/0`，未 append ER，故证据有限且不能作为通过。多余行来自 C1/C2 正文的 marker 示例，必须由后续 owner-semantics audit
+避免命中 canonical scanner；不得重试本包或触碰旧 F17 root。
 
 **唯一范围：** 只验证两个 inline-code machine rows 与 canonical `task_id` contract：PLAN row 必须提供唯一 `task_id`，
 FULL 的 `active_task` 必须 exact 等于该 task id；不得使用 `reference_task_id` alias。仍不得检查、创建、删除、修复、复用或
 重试任何 F17 path，所有 artifact/path/fallback/retry/reuse/rewrite/alternate/test/Git/device/release/network 计数必须为 `0`。
 Executer 只可 append 一次 ER，随后停止；通过也只代表离线 contract qualification，不代表 bootstrap、release、eligibility 或设备授权。
+
+### REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-3：Canonical machine-row owner semantics
+
+**状态：** `ACTIVE_PLANNER_CORRECTIVE_ONLY`。
+
+只审计 canonical machine-row 的唯一性与 owner 语义：正文历史说明、示例和空 payload 不得成为 marker 候选；只有唯一的
+wrapped canonical row 才可参与解析。仍仅限离线 PLAN/FULL/Git metadata，gate 前 path operation 必须为 `0/0`，所有
+artifact/fallback/retry/reuse/rewrite/alternate/test/Git/device/release/network 为 `0`；无论 pass/fail 最多 append 一次 ER，
+然后立即停止并交 Planner。通过不授权 bootstrap、release、eligibility 或设备。
 
 ### REF-P7-25-R2-B2：唯一repair commit与immutable manifest seal
 
@@ -2974,7 +2989,7 @@ Option A owner prerequisite = accepted complete
 Advisor lineage owner decision = Option B subordinate exact provenance manifest
 Human engineering governance override = Orchestrator owns files/code/provenance/execution/Git
 helper v1 disposition = retained_release_audit_prerequisite_v1_superseded_before_real_validation
-repair v2 status = B1A-C3E6F17-CORRECTIVE-1 rejected task-id binding; C3E6F17-CORRECTIVE-2 active
+repair v2 status = B1A-C3E6F17-CORRECTIVE-2 rejected marker-count gate; C3E6F17-CORRECTIVE-3 active
 accepted B1 result = ACCEPTED_BLOCKED_CONTRACT_CONFLICT
 accepted B1A result = HARD_FAILURE_PRE_ACQUISITION_LIFECYCLE; implementation progress 0
 accepted B1A-C1 result = HARD_FAILURE_BEFORE_TEST_EXEC; candidate carry-forward only
@@ -3007,8 +3022,9 @@ accepted B1A-C3E6F15 result = DISPATCHER_READ_SCOPE_VIOLATION; bootstrap attempt
 accepted B1A-C3E6F16 result = PLAN_ROW_LABEL_PRECONDITION_FAILURE; paths unchecked and all attempts0
 accepted B1A-C3E6F17 result = LIMITED_INPUT_MARKER_AND_PATH_INSPECTION_VIOLATION; counters0/0; no artifact
 accepted B1A-C3E6F17-CORRECTIVE-1 result = CONTRACT_FIELD_BINDING_MISMATCH; counters0/0; no artifact
-active task = REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-2 canonical task-id binding correction
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F17-CORRECTIVE-2
+accepted B1A-C3E6F17-CORRECTIVE-2 result = MARKER_COUNT_GATE; PLAN2/FULL3; counters0/0; ER absent
+active task = REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-3 canonical machine-row owner semantics
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F17-CORRECTIVE-3
 active executable task count = 1
 next reference task = REF-P7-25-R2-B2 BLOCKED
 selected state C shutter = 1/2500
@@ -3029,8 +3045,8 @@ programmatic activation与exact subset-check通过，但Executer controller擅�
 但唯一controller在fresh root前因fixed container absent hard-fail。F15又因CLI dispatcher在bootstrap前自动读取memory/broad FULL而rejected，
 F17 的 context-closed direct Executer 在输入 gate 报 `PLAN exact marker count 0`，且随后错误检查四条固定路径，故已由
 Planner 拒绝并归档；C3E6F17-CORRECTIVE-1 又因 canonical `task_id` 与 PLAN `reference_task_id` 不一致而拒绝，均不得重试
-旧 root。当前`REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-2`只验证 canonical task-id binding 与两个 exact marker 的
-inline-code extraction/strict JSON gate；controller/source/root/test/commit/artifact均为0。
+旧 root。C3E6F17-CORRECTIVE-2 因 PLAN2/FULL3 marker rows 在 path operation 前拒绝，当前`REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-3`
+只审计 canonical machine-row owner semantics，确保正文示例和空 payload 不命中 scanner；controller/source/root/test/commit/artifact均为0。
 后继另包才可冻结新controller并建立 fresh bootstrap container；不得重跑F14、提前修改production或输出eligibility。retained R3继续为
 `RETAINED_UNVALIDATED_UNCONSUMED`。
 
