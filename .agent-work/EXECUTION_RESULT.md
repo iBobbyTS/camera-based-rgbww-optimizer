@@ -16388,3 +16388,23 @@ C13_IMPLEMENTATION_RESULT {"schema":"c13_implementation_result_v1","timestamp":"
 - Failure: `none`
 - Planner stop: `B2_C1_PATH_OWNER_INDEX_WAITING_PLANNER_REVIEW`.
 - Decision request: Planner must review only the path-owner index; it is not a B2 manifest pass, retained-R3 content validation, eligibility, consumability, or release authority.
+
+## REF-P7-25-R2-B2-C2 Executer handoff — hard_failure_waiting_for_planner
+
+- Contract: `P7-TD-B-RETAINED-R3-OPTION-B-B2-C2-CONTENT-FREE-CONTROLLER-LIFECYCLE-CORRECTION-V1`.
+- Programmatic dispatch HEAD: `93d34a802dba8d98a2337b88885b95e866f7f8c5`; activation parent `6a20100f4d57a6a3abf21110d249df2a4f959f14`; exact subject and sole changed path `.agent-work/PLAN.md` passed. Symbolic HEAD reads `1`, second reads `0`.
+- Active PLAN blob/worktree identity: bytes `17858`, SHA-256 `7524d0c9aaa881e6722ab6cad97fe0c494c7dda3950e7c054e8be0e16a10fb7c`; worktree was clean before root creation.
+- Sole builder: `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-b2-c2-builder-da90556.py`; bytes `21294`; SHA-256 `068cf2b083069ca4ab08d64e2fe4522268d085ddb8f8890c8e7a8a4b8fdb5596`; process/invocation `1/1`.
+- Brand-new root: `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c2-controller-correction-da90556-20260730T1621Z`; inode `2188356`, mode `0700`; create/second-root/reuse/repair `1/0/0/0`.
+- Frozen rejected controller identity passed: bytes `29841`, SHA-256 `da9055626eac266f0eb983e713f246b18bdf26f7443a30d2a6f2ddb503cf3ba4`, device `16777240`, inode `2188350`; lstat/open/bounded-read/hash `1/1/1/1` with before/after open-file identity match.
+- Frozen failed-root metadata passed: mode `0700`, inode `2188351`, direct entries `0`; non-following lstat/scandir `1/1`; child opens and mutation `0/0`.
+- Exact failure: after durable `progressive-00-root-created.json`, the mechanical source transform found the frozen `main` definition anchor cardinality did not equal one and raised `RuntimeError: main anchor count`. It failed closed before successor generation or content-free invocation. No anchor value was inferred by a second source read.
+- Results: resolved-record matrix `0/10` not entered; lifecycle matrix `0/8` not entered; successor real-input/content-free invocation `0/0`; successor/patch/validation writes `0/0/0`; terminal/terminal-seal writes `1/1`.
+- Progressive root evidence: `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c2-controller-correction-da90556-20260730T1621Z/progressive-00-root-created.json`, bytes `1062`, SHA-256 `7e72b76432d815c6040656b2e9d61092677437e3464c8a9e53bca6aba453b0d0`.
+- Failure terminal: `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c2-controller-correction-da90556-20260730T1621Z/terminal-evidence.json`, bytes `1607`, SHA-256 `56bf421941259015d02531369dc21e6e1184468e2246cb7adec49e99b992ce48`, schema `p7_retained_r3_option_b_b2_c2_controller_correction_terminal_v1`, status `hard_failure_waiting_for_planner`.
+- Physical terminal seal: `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c2-controller-correction-da90556-20260730T1621Z/terminal-evidence.sha256.json`, bytes `455`, SHA-256 `b3624e6c948afce349534461e54864dd19590489f3b454293a3af3b0f49db101`; it binds the terminal bytes/hash/schema/status, records `terminal_write_returned=true`, and is non-self-attested.
+- Physical ordering verified before this sole ER append: progressive writer returned, terminal writer returned, terminal-seal writer returned, then ER append. No ER payload or repository write occurred before the seal.
+- C1 evidence lstat/open/read/hash/parse `0/0/0/0/0`; retained artifact/directory access `0`; decision-source access `0`. Rejected source and failed-root metadata were not read again after the builder.
+- Canonical validator/helper/consumer/replay, eligibility, release, tests, compileall, CodeGraph, network/DNS/`.env`/credentials, device/camera/Ray/strip/cleanup/capture, FORMAL/public analyzer/TD-C/sentinel/P8, firmware/deployment are all `0`.
+- Retry/fallback/second builder/second root `0/0/0/0`; repository implementation edit/commit `0/0`; this is the sole post-seal `EXECUTION_RESULT.md` append.
+- Retained state remains `RETAINED_UNVALIDATED_UNCONSUMED`. Stop: `B2_C2_CONTROLLER_CORRECTION_WAITING_PLANNER_REVIEW`. Planner must reject or branch this C2 failure without retrying, repairing, reusing the root, or entering B2/B3.
