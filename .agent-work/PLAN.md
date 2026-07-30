@@ -1,115 +1,58 @@
 # REF-P7-25-R2-B1A-C3E6F18：Committed-helper fixed-container bootstrap prerequisite
 
-**计划状态：** `WAITING_ORCHESTRATOR_FULL_ACTIVATION_NO_EXECUTER_DISPATCH`
+**计划状态：** `ACTIVE_DISPATCH_READY_SINGLE_OFFLINE_BOOTSTRAP`
 
 **Planner 日期：** `2026-07-30`
 
 **Reference task：** `REF-P7-25-R2-B1A-C3E6F18`
 
-**Proposed contract：** `P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F18-BOOTSTRAP-PREREQUISITE`
+**active_plan_contract_id：** `P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F18-BOOTSTRAP-PREREQUISITE`
 
 **Reviewed parent task：** `REF-P7-25-R2-B1A-C3E6F17-C13-LINEAGE-SEAL`
 
 **Lineage-seal review archive：** `.agent-work/PLANS/20260730-0219-p7-retained-r3-option-b-b1a-c3e6f17-c13-lineage-seal-review.md`；SHA-256 `d6d8a47a0a60e06e7a4048dd7ae729e3952075031fe82858e358cf29a87319fb`。
 
-## Planner decision and current stop
+**Dispatch repository anchor：** HEAD `ddfefa29261aacb45ad77419d1f00e60ff2080b6`；direct parent `64c34ade850aecd8c3aefb78358c7e66fcc4de88`；HEAD exact changed paths 为 `.agent-work/FULL_PLAN_REFERENCE.md`、`.agent-work/PLAN.md`、`.agent-work/PLANS/20260730-0219-p7-retained-r3-option-b-b1a-c3e6f17-c13-lineage-seal-review.md`。
 
-C13 lineage seal commit `64c34ade850aecd8c3aefb78358c7e66fcc4de88` 已通过 Planner 只读验收：direct parent、exact six changed paths、六条 committed identity、C13 archive、PLAN/FULL/ER binding 与 pre-review clean ledger 全部一致。该 commit 只固化 validation-only scanner owner，不产生 eligibility，也未触碰 retained R3、candidate 或 release。
+**Activation input identities：** prepared PLAN SHA-256 `1429cd19a2b7758563b0b13d6a0d610efa7aa57a26f586b2766a8e3fced85a5c`；current read-only FULL SHA-256 `2fbf160c15d865ef254c6100d013812cbdc0ccf291cc67e7f38e7b7665cd4292`。本 activation 后 PLAN 的 raw SHA 由 Executer 在 dispatch 时从唯一 PLAN buffer独立计算并写入 terminal evidence；PLAN 不内嵌自身 SHA。
 
-本文件现在只保留一个 next package：使用已提交 helper 的最小离线 fixed-container bootstrap prerequisite。它尚未获得 FULL activation，当前严格禁止 dispatch Executer。
+`PLAN_MACHINE_CONTRACT={"schema":"planner_execution_contract_v2","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F18-BOOTSTRAP-PREREQUISITE","task_id":"REF-P7-25-R2-B1A-C3E6F18","parent_reference_task_id":"REF-P7-25-R2-B1A-C3E6F17-C13-LINEAGE-SEAL","package_kind":"single_offline_fixed_container_bootstrap_prerequisite","dispatch_lock":"released_by_planner_after_orchestrator_full_activation","single_current_action":"one_functions_exec_containing_one_exec_command_and_one_python_invocation_runs_preflight_bootstrap_terminal_evidence_er_append_then_stops","repository_identity":{"dispatch_head":"ddfefa29261aacb45ad77419d1f00e60ff2080b6","direct_parent":"64c34ade850aecd8c3aefb78358c7e66fcc4de88","head_changed_paths":[".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/PLANS/20260730-0219-p7-retained-r3-option-b-b1a-c3e6f17-c13-lineage-seal-review.md"],"seal_commit":"64c34ade850aecd8c3aefb78358c7e66fcc4de88","seal_direct_parent":"fd1fe095f59b9accf008c95eeba73fbf6e778030","seal_commit_must_be_ancestor":true,"allowed_dispatch_status":{"staged_paths":[],"unstaged_paths":[".agent-work/PLAN.md"],"untracked_paths":[]}},"source_binding":{"plan_absolute_path":"/Users/ibobby/Projects/WLED-RGBWW/.agent-work/PLAN.md","full_absolute_path":"/Users/ibobby/Projects/WLED-RGBWW/.agent-work/FULL_PLAN_REFERENCE.md","activation_input_plan_sha256":"1429cd19a2b7758563b0b13d6a0d610efa7aa57a26f586b2766a8e3fced85a5c","dispatch_plan_sha256":"runtime_exact_raw_bytes_evidence_no_self_hash_field","expected_full_sha256":"2fbf160c15d865ef254c6100d013812cbdc0ccf291cc67e7f38e7b7665cd4292","raw_byte_buffer_count":2,"cross_owner_buffer_reuse":false},"machine_contract_helper":{"path":"src/camera_based_rgbww_optimizer/utils/agent_work_machine_contract.py","blob_oid":"5c581f9b502bcab1809b6a61a082a47f4150e09f","sha256":"743e2948f6c30a31fde5d072c8effa8b1365d321b303d61e9899ad18ac41825f","plan_function":"parse_plan_machine_contract","full_function":"parse_full_plan_machine_state","plan_calls":1,"full_calls":1,"manual_or_copied_scanner_calls":0,"fallback_parser_calls":0,"payload_repairs":0},"full_required_fields":{"active_task":"REF-P7-25-R2-B1A-C3E6F18","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F18-BOOTSTRAP-PREREQUISITE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","candidate_contract_orchestrator_verified":true,"executer_dispatched":false},"external_paths":{"parent":"/Volumes/4T/temp/rgbww-optimizer","container":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b1a-c3e6f18-offline","record":"/Volumes/4T/temp/rgbww-optimizer/c3e6f18-container-bootstrap.json","seal":"/Volumes/4T/temp/rgbww-optimizer/c3e6f18-container-bootstrap.seal.json","fallback":"/Volumes/4T/temp/rgbww-optimizer/c3e6f18-container-bootstrap.fallback.json","exact_allowed_new_path_count":4,"alternate_paths":0,"all_four_must_be_absent_before_first_create":true},"call_budget":{"functions_exec_calls":1,"exec_command_calls":1,"python_invocations":1,"additional_python_invocations":0,"controller_processes":0,"controller_invocations":0,"test_runner_invocations":0,"retry":0},"success_operation_budget":{"container_create_attempt":1,"container_create_succeeded":1,"record_create_attempt":1,"record_create_succeeded":1,"seal_create_attempt":1,"seal_create_succeeded":1,"fallback_create_attempt":0,"fallback_create_succeeded":0,"execution_result_append":1},"failure_operation_caps":{"container_create_attempt":1,"record_create_attempt":1,"seal_create_attempt":1,"fallback_create_attempt":1,"execution_result_append":1,"repair":0,"delete":0,"reuse":0,"rewrite":0,"alternate_path":0,"retry":0},"filesystem_contract":{"parent_existing_regular_directory_non_symlink":true,"container_create":"single_os_mkdir_mode_0700","container_identity":"absolute_path_lstat_open_directory_fd_fstat_mode_uid_gid_dev_inode_empty","record_create":"O_CREAT_O_EXCL_mode_0600","seal_create":"O_CREAT_O_EXCL_mode_0600","fallback_create":"O_CREAT_O_EXCL_mode_0600_only_after_parent_and_four_path_absence_gate","json":"deterministic_utf8_strict_duplicate_key_and_nonfinite_rejecting_reload","fsync":["container","record","seal_or_fallback","parent_after_each_create"],"preserve_on_failure":true},"evidence_contract":{"record_schema":"p7_td_b_c3e6f18_container_bootstrap_record_v1","seal_schema":"p7_td_b_c3e6f18_container_bootstrap_seal_v1","fallback_schema":"p7_td_b_c3e6f18_container_bootstrap_failure_v1","execution_result_schema":"p7_td_b_c3e6f18_container_bootstrap_terminal_v1","record_seal_fallback_raw_bytes_and_sha256":true,"first_failure_stage_and_reasons":true,"operation_counters":true,"planner_stop":true},"zero_locks":{"retained_r3_access":0,"candidate_materialization":0,"old_release_access":0,"new_release_access":0,"manifest_access":0,"consumer_access":0,"canonical_validator_calls":0,"eligibility_emissions":0,"controller_source_access":0,"clone":0,"fixture_or_canonical_content_access":0,"tests":0,"network":0,"dns":0,"env":0,"credential":0,"device":0,"camera":0,"ray":0,"strip":0,"cleanup":0,"capture":0,"public_analyzer":0,"formal":0,"td_c":0,"sentinel":0,"p8":0,"firmware":0,"deployment":0,"git_mutation":0},"execution_result_append_cap":1,"append_on_pass_or_fail":true,"planner_stop_required":true}`
 
-Orchestrator 必须先：
+## Planner activation decision
 
-1. 独立复核上述 review handoff；
-2. 更新其独占的 `.agent-work/FULL_PLAN_REFERENCE.md`，将 active task/contract 切换到本 task/contract，并记录 seal commit、direct parent、exact six-path lineage 与 review archive SHA；
-3. 继续冻结 `retained_r3_status=RETAINED_UNVALIDATED_UNCONSUMED`、canonical validator calls `0`、eligibility emissions `0`、`executer_dispatched=false`；
-4. 按 AGENTS 整理并提交 Planner archive、PLAN 与 FULL 状态；
-5. 再交 Planner 做一次 activation pass，冻结 dispatch HEAD、PLAN/FULL exact SHA 与唯一 machine contract。只有该 activation PLAN 被 Orchestrator 接受后才可 dispatch Executer。
+Orchestrator 已将 FULL 的唯一 machine row 激活到 C3E6F18，FULL task/contract、retained lock 与 candidate contract verification 均与上方 strict machine contract一致；Planner解除 pre-dispatch lock。唯一授权动作是建立一次 empty、sealed、fixed-container prerequisite。PASS不产生candidate、eligibility或release权限。
 
-## Prepared next package — exact objective
+Executer 的首个 execution tool call必须也是本包唯一 execution tool call：一个 `functions.exec`，内部恰好一个 `exec_command`；该command恰好启动一次 repository `.venv/bin/python -c`，运行一份纯Python标准库source。不得使用Codex CLI、二级dispatcher、heredoc、另一个Python、test runner、controller或shell cleanup。命令构造失败、Python未启动或任一gate失败均不得fallback command或retry。
 
-唯一目标是在外置临时根下创建一个全新、空、mode `0700`、identity 稳定且有 record/seal 证明的 fixed container prerequisite。此包不运行后继 controller，不创建 candidate root，不读取 retained R3，不运行 canonical validator，不产生 eligibility，也不创建或消费 release。
+## Frozen source、helper与Git gate
 
-### Frozen repository owner
+1. 分别以两个独立 `Path.read_bytes()` buffer读取绝对PLAN与FULL；不得跨owner复用或从prose推导字段。
+2. 从已提交helper import `parse_plan_machine_contract`与`parse_full_plan_machine_state`，对对应buffer各调用恰好一次。不得手写、复制、包装第二套scanner，不得alias/fallback parse或repair payload。helper返回的owner、candidate count/lines、source/raw-row/payload bytes与SHA必须完整保留。
+3. PLAN对象必须逐键逐类型匹配本合同；FULL source SHA必须等于 `2fbf...4292`，FULL对象的active task/contract、retained status、verification与dispatch flag必须匹配冻结值。PLAN raw SHA只由dispatch buffer计算并记录，避免自引用。
+4. 只读Git gate必须证明当前HEAD/direct parent/HEAD changed-path set、seal commit ancestry、helper blob与working file SHA全部精确一致。dispatch status只允许未stage的 `.agent-work/PLAN.md`，不得有其他staged、unstaged或untracked path；Git mutation为0。
+5. 任何source/helper/Git gate失败发生在外置path operation之前：不得检查四条外置路径，不得创建fallback，只append一次ER terminal row后停止。
 
-- accepted helper path：`src/camera_based_rgbww_optimizer/utils/agent_work_machine_contract.py`
-- committed helper blob：`5c581f9b502bcab1809b6a61a082a47f4150e09f`
-- committed helper SHA-256：`743e2948f6c30a31fde5d072c8effa8b1365d321b303d61e9899ad18ac41825f`
-- owner functions：`parse_plan_machine_contract(source: bytes)` 与 `parse_full_plan_machine_state(source: bytes)`
-- helper 只负责 exact machine-row pure-bytes parse/evidence；它不是 path、bootstrap、eligibility 或 release owner。
+## Exact four-path bootstrap
 
-最终 activation 必须让同一 caller 分别读取 PLAN 与 FULL 为两个独立 raw `bytes` buffer，各调用对应 parser 恰一次；禁止手写/复制 marker scanner、alias、fallback parser、payload repair、跨 owner buffer 复用或从 prose 推导字段。
+只允许接触machine contract冻结的parent与四条新路径。禁止探测、读取、删除或复用任何F14/F15/F16/F17或其他历史root/evidence。
 
-### Exact allowed repository paths
-
-最终执行只允许读取：
-
-- `.agent-work/PLAN.md` raw bytes；
-- `.agent-work/FULL_PLAN_REFERENCE.md` raw bytes；
-- 上述 committed helper 及 Python import 所需的现有 package metadata；
-- shared Git repository 的只读 HEAD/direct-parent/changed-path/status metadata。
-
-repository 写入只允许向 `.agent-work/EXECUTION_RESULT.md` append 一条 terminal strict-JSON evidence；PLAN、FULL、helper、test、GUIDE、RESEARCH、debug 与所有 archive 均只读。禁止 stage、commit、amend、rebase、checkout、reset、clean 或其他 Git mutation。
-
-### Exact allowed external paths
-
-只允许以下四条新路径；执行前均必须 absent，且不得选择 alternate/timestamp/fallback root：
-
-1. container：`/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b1a-c3e6f18-offline`
-2. record：`/Volumes/4T/temp/rgbww-optimizer/c3e6f18-container-bootstrap.json`
-3. seal：`/Volumes/4T/temp/rgbww-optimizer/c3e6f18-container-bootstrap.seal.json`
-4. failure terminal：`/Volumes/4T/temp/rgbww-optimizer/c3e6f18-container-bootstrap.fallback.json`
-
-parent `/Volumes/4T/temp/rgbww-optimizer` 必须是 existing regular directory、non-symlink。不得检查、读取、删除、修复或复用任何 F14/F15/F16/F17 root、record、seal、fallback 或历史外置 evidence。
-
-### Exact call and operation budget
-
-最终 activation pass 必须把整个 bootstrap 固定为 Executer 的首个且唯一 execution tool call：一个 `exec_command`、一个 Python 标准库 process、controller process/invocation `0`。该 process 内部完成 preflight、helper parse、只读 Git gate、四路径 absent gate、bootstrap、terminal evidence 与 ER 单次 append；不得启动 Codex CLI、二级 dispatcher、shell cleanup、test runner或另一个 Python process。
-
-成功预算：
-
-- PLAN helper parse `1`，FULL helper parse `1`；
-- container create attempt/succeeded `1/1`；
-- record create attempt/succeeded `1/1`；
-- seal create attempt/succeeded `1/1`；
-- fallback attempt/succeeded `0/0`；
-- ER append `1`；
-- retry、reuse、rewrite、alternate path、controller、test、canonical validator、eligibility、Git mutation全部 `0`。
-
-失败预算：失败前操作按真实值记录；fixed fallback terminal最多 attempt `1`，不得删除、修复、重试或换路径。无论 PASS/FAIL，ER 只能 append 一次，随后立即 Planner stop。
-
-## Bootstrap semantics
-
-1. helper gate必须证明 PLAN/FULL各只有一个exact candidate，owner/source/raw-row/payload identity完整；激活后的 PLAN/FULL task/contract 必须均绑定C3E6F18，FULL retained lock保持不变。
-2. Git gate必须绑定最终 activation 冻结的 dispatch HEAD/direct parent/changed-path set、seal commit `64c34ad...` 的祖先关系、helper committed blob/SHA及无未知 staged/dirty path。
-3. 四条外置路径及目标container必须在任何创建前全部absent；任一存在或symlink立即fail closed，禁止检查内容或复用。
-4. 只以单次 `os.mkdir(path, mode=0o700)` 创建container；禁止`mkdir -p`。以 `lstat` 与已打开directory fd的`fstat`证明exact absolute path、directory、non-symlink、mode、uid/gid/dev/inode，且container为空。
-5. fsync container与parent。record/seal分别以`O_CREAT|O_EXCL`、mode `0600`创建；内容为deterministic UTF-8 strict JSON，reload时拒绝duplicate keys与non-finite constants；分别fsync file与parent并记录raw bytes/SHA-256。
-6. seal必须绑定 PLAN/FULL/helper evidence、Git lineage、container identity、record bytes/SHA 与全部operation counters。写后再次证明container仍为空且lstat/fstat identity未漂移。
-7. 任一 gate/creation/reload/fsync/identity/emptiness失败，只可按实际计数尝试一次fixed failure terminal；保留现场，不删除、不修复、不重试。
+1. 先以`lstat`证明parent是existing regular directory且non-symlink，再证明四条路径全部absent。存在、symlink或检查错误均fail closed；不得读取存在对象内容。
+2. 只以一次`os.mkdir(container, mode=0o700)`创建container，禁止parents/mkdir-p。以absolute path、`lstat`及open directory fd的`fstat`冻结mode、uid、gid、dev、inode并证明empty；fsync directory fd与parent。
+3. record以`O_CREAT|O_EXCL`、mode `0600`创建，写deterministic UTF-8 strict JSON、fsync file/parent、strict reload并记录raw bytes/SHA。record绑定source/helper/Git gates、四路径preflight、container identity与当时counters。
+4. seal以同样exclusive/0600/deterministic/reload/fsync规则创建，绑定record bytes/SHA、再次确认的container lstat/fstat identity与emptiness、全部counter及hard locks。
+5. 任一失败只能在parent与四路径absence gate已成功后尝试一次fixed fallback；fallback同样exclusive/0600/strict/reload/fsync，记录真实阶段、原因、已发生操作、保留现场及所有未发生项。若absence gate本身未通过，fallback attempt必须为0。
+6. 不论PASS/FAIL，最后最多向 `.agent-work/EXECUTION_RESULT.md` append一条single-line strict JSON terminal evidence；append后立即Planner stop。ER不得改写既有内容。
 
 ## Required terminal evidence
 
-外置 record/seal/fallback 与 ER terminal row 必须至少记录：
+record、seal/fallback与ER必须覆盖：schema、UTC、terminal status、first failure；task/contract；PLAN/FULL raw bytes/SHA与helper两份parse evidence；dispatch HEAD/direct parent/changed paths/status、seal ancestry、helper committed path/blob/SHA；四条exact path与pre/post identity、mode/uid/gid/dev/inode/emptiness/fsync；record/seal/fallback bytes/SHA与strict reload；全部attempt/succeeded counter；`RETAINED_UNVALIDATED_UNCONSUMED`、canonical validator `0`、eligibility `0`及全部hard locks；`planner_stop=true`。
 
-- schema、UTC timestamp、terminal PASS/FAIL、first failure stage与reasons；
-- task/contract、dispatch PLAN/FULL source bytes与SHA；
-- helper committed path/blob/SHA以及PLAN/FULL parser evidence的owner、candidate count/lines、source/raw-row/payload bytes与SHA；
-- dispatch HEAD/direct parent/changed paths/status ledger及seal commit ancestor binding；
-- 四条exact paths、pre/post lstat/fstat、mode、uid/gid/dev/inode、emptiness、fsync结果；
-- record/seal/fallback bytes与SHA、strict reload结果；
-- 每项attempt/succeeded counter、ER append count和全部zero locks；
-- `retained_r3_status=RETAINED_UNVALIDATED_UNCONSUMED`、canonical validator calls `0`、eligibility emissions `0`；
-- `planner_stop=true`。
+## Acceptance、failure branch与stop
 
-## Acceptance, failure branch, and hard locks
+PASS仅接受“一个全新empty fixed container及其immutable record/seal prerequisite已创建”。它不授权后继controller、candidate、retained R3 audit、manifest、canonical validator、consumer、release或设备工作。Planner必须独立只读审查外置evidence、ER、identity与预算。
 
-PASS只证明一个empty sealed fixed-container prerequisite已建立；不授权后继 controller、candidate materialization、retained R3 audit、manifest、canonical eligibility validation、consumer或release。Planner必须独立只读验收外置 evidence、ER、路径 identity与预算后，再由Orchestrator决定下一包。
+FAIL保留现场并停止；不得删除、修复、改路径、重跑或进入后继。工程纠偏回Orchestrator；仅真正的色彩/测量科学矛盾才回Advisor。
 
-任何失败均保留现场并停止；不得在本包内修改脚本、换路径、重跑或进入后继。工程纠偏由Orchestrator建立新的bounded package，不需要Advisor；只有出现真正的色彩/测量科学分支矛盾才回Advisor。
+**Planner stop：** `C3E6F18_TERMINAL_EVIDENCE_READY_FOR_PLANNER_REVIEW`。
 
-retained R3、candidate、旧/新 release、manifest、consumer、canonical validator、eligibility emission、controller/source、clone、fixture/canonical content、tests、network、DNS、`.env`、credential、device、camera、Ray、strip、cleanup、capture、public analyzer、FORMAL、TD-C、sentinel、P8、firmware与deployment全部硬锁为 `0`。
-
-**唯一当前 stop：** `C3E6F18_PREPARED_WAITING_ORCHESTRATOR_FULL_ACTIVATION_NO_EXECUTER_DISPATCH`。
-
-**维护性判断：** 本包复用已提交的唯一 pure-bytes machine-contract owner，删除继续复制临时scanner的必要；bootstrap filesystem owner仍局限于单次外置执行，不增加生产或eligibility owner。
+**维护性判断：** 本包强制复用唯一committed pure-bytes helper，filesystem bootstrap仍是单次外置执行owner；没有新增production、eligibility或release owner。
