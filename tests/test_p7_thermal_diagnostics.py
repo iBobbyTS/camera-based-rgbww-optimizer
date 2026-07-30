@@ -2970,9 +2970,213 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
             ).stdout
             self.assertEqual(hashlib.sha256(accepted).hexdigest(), expected_sha256)
             if path in expected:
+                current_sha256 = (
+                    subject.TD_B_POST_EQ_VALIDATION_SUCCESSOR_IDENTITIES[path][
+                        "after_sha256"
+                    ]
+                    if path in subject.TD_B_POST_EQ_VALIDATION_SUCCESSOR_CLASSIFICATIONS
+                    else expected_sha256
+                )
                 self.assertEqual(
-                    (Path(__file__).parents[1] / path).read_bytes(),
-                    accepted,
+                    hashlib.sha256(
+                        (Path(__file__).parents[1] / path).read_bytes()
+                    ).hexdigest(),
+                    current_sha256,
+                )
+
+    def test_post_eq_validation_successor_binds_exact_commit_and_only_validation_path(self):
+        root = Path(__file__).parents[1]
+        checkpoint = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=root,
+            check=True, capture_output=True, text=True,
+        ).stdout.strip()
+        expected = {
+            "tests/test_p7_td_b_r6_contract.py":
+                "accepted_post_eq_exposure_policy_validation",
+        }
+        self.assertEqual(
+            subject.TD_B_POST_EQ_VALIDATION_SUCCESSOR_COMMIT,
+            "3a14fe0bd663250dd48c65e71f1a6550df89267f",
+        )
+        self.assertEqual(
+            subject.TD_B_POST_EQ_VALIDATION_SUCCESSOR_PARENT,
+            "431d9d8dd58a6c0df7fb0b225ce206d2e8c57f53",
+        )
+        self.assertEqual(
+            subject.TD_B_POST_EQ_VALIDATION_SUCCESSOR_SUBJECT,
+            "fix(p7): exclude root Finder metadata from EQ evidence",
+        )
+        self.assertEqual(
+            subject.TD_B_POST_EQ_VALIDATION_SUCCESSOR_PATHS,
+            (
+                "src/camera_based_rgbww_optimizer/optimization/p7_thermal_diagnostics.py",
+                "tests/test_p7_td_b_r6_contract.py",
+            ),
+        )
+        self.assertEqual(
+            dict(subject.TD_B_POST_EQ_VALIDATION_SUCCESSOR_CLASSIFICATIONS),
+            expected,
+        )
+        self.assertNotIn(
+            "src/camera_based_rgbww_optimizer/optimization/p7_thermal_diagnostics.py",
+            subject.TD_B_POST_EQ_VALIDATION_SUCCESSOR_CLASSIFICATIONS,
+        )
+        self.assertEqual(
+            dict(subject._validate_td_b_post_eq_validation_successor(
+                new_checkpoint=checkpoint,
+            )),
+            expected,
+        )
+
+        with mock.patch.object(
+            subject,
+            "_validate_td_b_post_eq_validation_successor",
+            wraps=subject._validate_td_b_post_eq_validation_successor,
+        ) as subordinate, mock.patch.object(
+            subject.subprocess,
+            "run",
+            wraps=subprocess.run,
+        ) as git_run:
+            classifications = subject._validate_td_b_post_eq_policy_lineage(
+                new_checkpoint=checkpoint,
+            )
+        self.assertEqual(dict(classifications), dict(subject.TD_B_POST_EQ_POLICY_CLASSIFICATIONS))
+        subordinate.assert_called_once_with(
+            new_checkpoint=checkpoint,
+            project_root=root.resolve(),
+        )
+        commands = [call.args[0] for call in git_run.call_args_list]
+        for path in subject.TD_B_POST_EQ_POLICY_PATHS:
+            self.assertIn(
+                ["git", "show", f"{subject.TD_B_POST_EQ_POLICY_COMMIT}:{path}"],
+                commands,
+            )
+
+        candidate = subject.build_td_b_setup_release_lineage_candidate(
+            subject.TD_B_SETUP_RELEASE_PATH,
+            old_checkpoint=subject.TD_B_SETUP_CHECKPOINT,
+            new_checkpoint=checkpoint,
+            changed_paths=[
+                "tests/test_p7_td_b_r6_contract.py",
+                "src/camera_based_rgbww_optimizer/optimization/p7_thermal_diagnostics.py",
+                "tests/test_p7_td_b_r7_contract.py",
+            ],
+        )
+        by_path = {row["path"]: row["classification"] for row in candidate["changed_paths"]}
+        self.assertEqual(by_path["tests/test_p7_td_b_r6_contract.py"], expected[next(iter(expected))])
+        self.assertEqual(
+            by_path["src/camera_based_rgbww_optimizer/optimization/p7_thermal_diagnostics.py"],
+            "ambient_and_physical_ledger_contract",
+        )
+        self.assertEqual(
+            by_path["tests/test_p7_td_b_r7_contract.py"],
+            "prohibited_or_unreviewed",
+        )
+
+    def test_post_eq_validation_successor_rejects_topology_blob_and_working_drift(self):
+        root = Path(__file__).parents[1]
+        checkpoint = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=root,
+            check=True, capture_output=True, text=True,
+        ).stdout.strip()
+        validate = subject._validate_td_b_post_eq_validation_successor
+
+        with self.assertRaisesRegex(ValueError, "ancestry differs"):
+            validate(new_checkpoint=subject.TD_B_POST_EQ_VALIDATION_SUCCESSOR_PARENT)
+        for name, replacement, message in (
+            ("TD_B_POST_EQ_VALIDATION_SUCCESSOR_COMMIT", "0" * 40, "Git owner differs"),
+            ("TD_B_POST_EQ_VALIDATION_SUCCESSOR_PARENT", "0" * 40, "parent differs"),
+            ("TD_B_POST_EQ_VALIDATION_SUCCESSOR_SUBJECT", "wrong", "subject differs"),
+            ("TD_B_POST_EQ_VALIDATION_SUCCESSOR_PATHS", ("tests/nearby.py",), "path set differs"),
+            ("TD_B_POST_EQ_VALIDATION_SUCCESSOR_PATHS_SHA256", "0" * 64, "path set differs"),
+            ("TD_B_POST_EQ_VALIDATION_SUCCESSOR_PATCH_SHA256", "0" * 64, "combined diff differs"),
+        ):
+            with self.subTest(name=name), mock.patch.object(subject, name, replacement):
+                with self.assertRaisesRegex(ValueError, message):
+                    validate(new_checkpoint=checkpoint)
+
+        identity_path = subject.TD_B_POST_EQ_VALIDATION_SUCCESSOR_PATHS[0]
+        for field, replacement in (
+            ("before_blob_oid", "0" * 40),
+            ("before_bytes", 0),
+            ("before_sha256", "0" * 64),
+            ("after_blob_oid", "0" * 40),
+            ("after_bytes", 0),
+            ("after_sha256", "0" * 64),
+            ("binary_diff_sha256", "0" * 64),
+        ):
+            changed = {
+                path: dict(identity)
+                for path, identity in (
+                    subject.TD_B_POST_EQ_VALIDATION_SUCCESSOR_IDENTITIES.items()
+                )
+            }
+            changed[identity_path][field] = replacement
+            with self.subTest(identity_field=field), mock.patch.object(
+                subject,
+                "TD_B_POST_EQ_VALIDATION_SUCCESSOR_IDENTITIES",
+                changed,
+            ):
+                with self.assertRaisesRegex(ValueError, "path identity differs"):
+                    validate(new_checkpoint=checkpoint)
+
+        validation_path = next(iter(subject.TD_B_POST_EQ_VALIDATION_SUCCESSOR_CLASSIFICATIONS))
+        original_run = subprocess.run
+        checkpoint_show = ["git", "show", f"{checkpoint}:{validation_path}"]
+
+        def drift_checkpoint(command, *args, **kwargs):
+            if command == checkpoint_show:
+                return subprocess.CompletedProcess(command, 0, stdout=b"drift")
+            return original_run(command, *args, **kwargs)
+
+        with mock.patch.object(subject.subprocess, "run", side_effect=drift_checkpoint):
+            with self.assertRaisesRegex(ValueError, "checkpoint blob differs"):
+                validate(new_checkpoint=checkpoint)
+
+        working_owner = (root / validation_path).resolve()
+        original_read_bytes = Path.read_bytes
+
+        def drift_working(path):
+            return b"drift" if path.resolve() == working_owner else original_read_bytes(path)
+
+        with mock.patch.object(Path, "read_bytes", drift_working):
+            with self.assertRaisesRegex(ValueError, "working owner differs"):
+                validate(new_checkpoint=checkpoint)
+        original_is_symlink = Path.is_symlink
+        with mock.patch.object(
+            Path,
+            "is_symlink",
+            lambda path: path.resolve() == working_owner or original_is_symlink(path),
+        ):
+            with self.assertRaisesRegex(ValueError, "working owner differs"):
+                validate(new_checkpoint=checkpoint)
+        original_is_file = Path.is_file
+        with mock.patch.object(
+            Path,
+            "is_file",
+            lambda path: False if path.resolve() == working_owner else original_is_file(path),
+        ):
+            with self.assertRaisesRegex(ValueError, "working owner differs"):
+                validate(new_checkpoint=checkpoint)
+
+        with mock.patch.object(
+            subject,
+            "_validate_td_b_post_eq_policy_lineage",
+            side_effect=AssertionError("lineage precheck must not run"),
+        ):
+            with self.assertRaisesRegex(ValueError, "duplicates"):
+                subject.build_td_b_setup_release_lineage_candidate(
+                    subject.TD_B_SETUP_RELEASE_PATH,
+                    old_checkpoint=subject.TD_B_SETUP_CHECKPOINT,
+                    new_checkpoint=checkpoint,
+                    changed_paths=[validation_path, validation_path],
+                )
+            with self.assertRaisesRegex(ValueError, "repository-relative"):
+                subject.build_td_b_setup_release_lineage_candidate(
+                    subject.TD_B_SETUP_RELEASE_PATH,
+                    old_checkpoint=subject.TD_B_SETUP_CHECKPOINT,
+                    new_checkpoint=checkpoint,
+                    changed_paths=[validation_path, "../outside.py"],
                 )
 
     def test_post_eq_policy_lineage_fails_closed_without_widening(self):

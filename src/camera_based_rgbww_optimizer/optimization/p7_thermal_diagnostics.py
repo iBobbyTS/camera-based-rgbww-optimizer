@@ -398,6 +398,56 @@ TD_B_POST_EQ_POLICY_CLASSIFICATIONS = MappingProxyType({
     "tests/test_p7_td_b_r6_contract.py":
         "accepted_post_eq_exposure_policy_validation",
 })
+TD_B_POST_EQ_VALIDATION_SUCCESSOR_COMMIT = (
+    "3a14fe0bd663250dd48c65e71f1a6550df89267f"
+)
+TD_B_POST_EQ_VALIDATION_SUCCESSOR_PARENT = (
+    "431d9d8dd58a6c0df7fb0b225ce206d2e8c57f53"
+)
+TD_B_POST_EQ_VALIDATION_SUCCESSOR_SUBJECT = (
+    "fix(p7): exclude root Finder metadata from EQ evidence"
+)
+TD_B_POST_EQ_VALIDATION_SUCCESSOR_PATHS = (
+    "src/camera_based_rgbww_optimizer/optimization/p7_thermal_diagnostics.py",
+    "tests/test_p7_td_b_r6_contract.py",
+)
+TD_B_POST_EQ_VALIDATION_SUCCESSOR_PATHS_SHA256 = (
+    "cf2edd153dbd6c49caa9efc65b793521055d1358079d5dc70ad84df319b8011e"
+)
+TD_B_POST_EQ_VALIDATION_SUCCESSOR_PATCH_SHA256 = (
+    "018cf00c4e452673f4303ce528fbea2c0b6667e8dc691f5ff44c6968603412de"
+)
+TD_B_POST_EQ_VALIDATION_SUCCESSOR_IDENTITIES = MappingProxyType({
+    "src/camera_based_rgbww_optimizer/optimization/p7_thermal_diagnostics.py":
+        MappingProxyType({
+            "before_blob_oid": "efcb4b05877e857b47eebcb3d7e07dbf5979698f",
+            "before_bytes": 193853,
+            "before_sha256":
+                "0a688f31728f8c7d072419b8a75a7d9b4b04315e906cde6daa17a80556f56b64",
+            "after_blob_oid": "2d65c51200688e71dacc531e2e99b1240b4649d5",
+            "after_bytes": 193918,
+            "after_sha256":
+                "d81a504c3eb2df654f493bd8cfa94189a4cb6673c0ef24fb9c183834a0bac93e",
+            "binary_diff_sha256":
+                "7948c6d4bfa74617717f6a9fb6fd50fa1f392f805892e70e1e181928b6d01075",
+        }),
+    "tests/test_p7_td_b_r6_contract.py": MappingProxyType({
+        "before_blob_oid": "4bc6a791972ad04693015961c0d43c57865305db",
+        "before_bytes": 102435,
+        "before_sha256":
+            "10374ec2366fc8cbe928953690defc31c83dc5c04da192f599f59591ec196f23",
+        "after_blob_oid": "3a2397d8d02ff85388c4a5dfb87333721871dbcb",
+        "after_bytes": 104738,
+        "after_sha256":
+            "77ef59ccee5eee34d85658aadf7a6ce40f413fee9b8395cd11fb82145df27104",
+        "binary_diff_sha256":
+            "0ae363872c7db9ae0bd79ae855f31b91e5bdc4f3176d3fac013d9bd53cf540d4",
+    }),
+})
+TD_B_POST_EQ_VALIDATION_SUCCESSOR_CLASSIFICATIONS = MappingProxyType({
+    "tests/test_p7_td_b_r6_contract.py":
+        "accepted_post_eq_exposure_policy_validation",
+})
 TD_B_LINEAGE_ALLOWED_PRODUCTION_PATHS = frozenset({
     "src/camera_based_rgbww_optimizer/optimization/hsi_objective.py",
     "src/camera_based_rgbww_optimizer/optimization/measure_raw_observer_validation.py",
@@ -3092,6 +3142,153 @@ def _validate_td_b_cleanup_test_provenance(
     return TD_B_CLEANUP_TEST_PROVENANCE_CLASSIFICATIONS
 
 
+def _validate_td_b_post_eq_validation_successor(
+    *,
+    new_checkpoint: str,
+    project_root: str | Path = PROJECT_ROOT,
+) -> Mapping[str, str]:
+    """Validate the one exact post-EQ validation-only successor layer."""
+    root = Path(project_root).resolve()
+    if (
+        not isinstance(new_checkpoint, str)
+        or len(new_checkpoint) != 40
+        or any(character not in "0123456789abcdef" for character in new_checkpoint)
+    ):
+        raise ValueError("TD-B post-EQ validation successor checkpoint is invalid")
+    try:
+        resolved = subprocess.run(
+            ["git", "rev-parse", new_checkpoint],
+            cwd=root, check=True, capture_output=True, text=True,
+        ).stdout.strip()
+        parent = subprocess.run(
+            ["git", "rev-parse", f"{TD_B_POST_EQ_VALIDATION_SUCCESSOR_COMMIT}^"],
+            cwd=root, check=True, capture_output=True, text=True,
+        ).stdout.strip()
+        subject = subprocess.run(
+            ["git", "show", "-s", "--format=%s", TD_B_POST_EQ_VALIDATION_SUCCESSOR_COMMIT],
+            cwd=root, check=True, capture_output=True, text=True,
+        ).stdout.strip()
+        path_output = subprocess.run(
+            [
+                "git", "diff-tree", "--no-commit-id", "--name-only", "-r",
+                TD_B_POST_EQ_VALIDATION_SUCCESSOR_COMMIT,
+            ],
+            cwd=root, check=True, capture_output=True, text=True,
+        ).stdout
+    except subprocess.CalledProcessError as exc:
+        raise ValueError("TD-B post-EQ validation successor Git owner differs") from exc
+    if (
+        resolved != new_checkpoint
+        or not _td_b_checkpoint_contains(
+            resolved,
+            TD_B_POST_EQ_VALIDATION_SUCCESSOR_COMMIT,
+            project_root=root,
+        )
+    ):
+        raise ValueError("TD-B post-EQ validation successor ancestry differs")
+    if parent != TD_B_POST_EQ_VALIDATION_SUCCESSOR_PARENT:
+        raise ValueError("TD-B post-EQ validation successor parent differs")
+    if subject != TD_B_POST_EQ_VALIDATION_SUCCESSOR_SUBJECT:
+        raise ValueError("TD-B post-EQ validation successor subject differs")
+    paths = tuple(sorted(path for path in path_output.splitlines() if path))
+    path_payload = "".join(f"{path}\n" for path in paths).encode("utf-8")
+    if (
+        paths != TD_B_POST_EQ_VALIDATION_SUCCESSOR_PATHS
+        or len(paths) != 2
+        or len(paths) != len(set(paths))
+        or hashlib.sha256(path_payload).hexdigest()
+        != TD_B_POST_EQ_VALIDATION_SUCCESSOR_PATHS_SHA256
+        or set(TD_B_POST_EQ_VALIDATION_SUCCESSOR_IDENTITIES) != set(paths)
+        or set(TD_B_POST_EQ_VALIDATION_SUCCESSOR_CLASSIFICATIONS)
+        != {"tests/test_p7_td_b_r6_contract.py"}
+    ):
+        raise ValueError("TD-B post-EQ validation successor path set differs")
+
+    try:
+        for entry_path in paths:
+            identity = TD_B_POST_EQ_VALIDATION_SUCCESSOR_IDENTITIES[entry_path]
+            before_oid = subprocess.run(
+                [
+                    "git", "rev-parse",
+                    f"{TD_B_POST_EQ_VALIDATION_SUCCESSOR_PARENT}:{entry_path}",
+                ],
+                cwd=root, check=True, capture_output=True, text=True,
+            ).stdout.strip()
+            after_oid = subprocess.run(
+                [
+                    "git", "rev-parse",
+                    f"{TD_B_POST_EQ_VALIDATION_SUCCESSOR_COMMIT}:{entry_path}",
+                ],
+                cwd=root, check=True, capture_output=True, text=True,
+            ).stdout.strip()
+            before = subprocess.run(
+                ["git", "show", f"{TD_B_POST_EQ_VALIDATION_SUCCESSOR_PARENT}:{entry_path}"],
+                cwd=root, check=True, capture_output=True,
+            ).stdout
+            after = subprocess.run(
+                ["git", "show", f"{TD_B_POST_EQ_VALIDATION_SUCCESSOR_COMMIT}:{entry_path}"],
+                cwd=root, check=True, capture_output=True,
+            ).stdout
+            single_diff = subprocess.run(
+                [
+                    "git", "diff", "--binary",
+                    TD_B_POST_EQ_VALIDATION_SUCCESSOR_PARENT,
+                    TD_B_POST_EQ_VALIDATION_SUCCESSOR_COMMIT,
+                    "--", entry_path,
+                ],
+                cwd=root, check=True, capture_output=True,
+            ).stdout
+            if (
+                before_oid != identity["before_blob_oid"]
+                or after_oid != identity["after_blob_oid"]
+                or len(before) != identity["before_bytes"]
+                or len(after) != identity["after_bytes"]
+                or hashlib.sha256(before).hexdigest() != identity["before_sha256"]
+                or hashlib.sha256(after).hexdigest() != identity["after_sha256"]
+                or hashlib.sha256(single_diff).hexdigest()
+                != identity["binary_diff_sha256"]
+            ):
+                raise ValueError(
+                    f"TD-B post-EQ validation successor path identity differs: {entry_path}"
+                )
+        combined_diff = subprocess.run(
+            [
+                "git", "diff", "--binary",
+                TD_B_POST_EQ_VALIDATION_SUCCESSOR_PARENT,
+                TD_B_POST_EQ_VALIDATION_SUCCESSOR_COMMIT,
+                "--", *TD_B_POST_EQ_VALIDATION_SUCCESSOR_PATHS,
+            ],
+            cwd=root, check=True, capture_output=True,
+        ).stdout
+    except subprocess.CalledProcessError as exc:
+        raise ValueError("TD-B post-EQ validation successor path owner differs") from exc
+    if (
+        hashlib.sha256(combined_diff).hexdigest()
+        != TD_B_POST_EQ_VALIDATION_SUCCESSOR_PATCH_SHA256
+    ):
+        raise ValueError("TD-B post-EQ validation successor combined diff differs")
+
+    validation_path = next(iter(TD_B_POST_EQ_VALIDATION_SUCCESSOR_CLASSIFICATIONS))
+    expected_sha256 = TD_B_POST_EQ_VALIDATION_SUCCESSOR_IDENTITIES[validation_path][
+        "after_sha256"
+    ]
+    working = root / validation_path
+    if working.is_symlink() or not working.is_file():
+        raise ValueError("TD-B post-EQ validation successor working owner differs")
+    try:
+        checkpoint = subprocess.run(
+            ["git", "show", f"{new_checkpoint}:{validation_path}"],
+            cwd=root, check=True, capture_output=True,
+        ).stdout
+    except subprocess.CalledProcessError as exc:
+        raise ValueError("TD-B post-EQ validation successor checkpoint owner differs") from exc
+    if hashlib.sha256(checkpoint).hexdigest() != expected_sha256:
+        raise ValueError("TD-B post-EQ validation successor checkpoint blob differs")
+    if hashlib.sha256(working.read_bytes()).hexdigest() != expected_sha256:
+        raise ValueError("TD-B post-EQ validation successor working owner differs")
+    return TD_B_POST_EQ_VALIDATION_SUCCESSOR_CLASSIFICATIONS
+
+
 def _validate_td_b_post_eq_policy_lineage(
     *,
     new_checkpoint: str,
@@ -3104,6 +3301,10 @@ def _validate_td_b_post_eq_policy_lineage(
         or any(character not in "0123456789abcdef" for character in new_checkpoint)
     ):
         raise ValueError("TD-B post-EQ policy checkpoint is invalid")
+    successor_classifications = _validate_td_b_post_eq_validation_successor(
+        new_checkpoint=new_checkpoint,
+        project_root=root,
+    )
     try:
         resolved = subprocess.run(
             ["git", "rev-parse", new_checkpoint],
@@ -3164,8 +3365,8 @@ def _validate_td_b_post_eq_policy_lineage(
             raise ValueError(
                 f"TD-B post-EQ policy accepted Git owner differs: {entry_path}"
             ) from exc
-        expected_sha256 = TD_B_POST_EQ_POLICY_BLOB_SHA256[entry_path]
-        if hashlib.sha256(accepted).hexdigest() != expected_sha256:
+        historical_sha256 = TD_B_POST_EQ_POLICY_BLOB_SHA256[entry_path]
+        if hashlib.sha256(accepted).hexdigest() != historical_sha256:
             raise ValueError(
                 f"TD-B post-EQ policy accepted blob differs: {entry_path}"
             )
@@ -3185,11 +3386,16 @@ def _validate_td_b_post_eq_policy_lineage(
             raise ValueError(
                 f"TD-B post-EQ policy checkpoint Git owner differs: {entry_path}"
             ) from exc
-        if hashlib.sha256(checkpoint).hexdigest() != expected_sha256:
+        expected_current_sha256 = (
+            TD_B_POST_EQ_VALIDATION_SUCCESSOR_IDENTITIES[entry_path]["after_sha256"]
+            if entry_path in successor_classifications
+            else historical_sha256
+        )
+        if hashlib.sha256(checkpoint).hexdigest() != expected_current_sha256:
             raise ValueError(
                 f"TD-B post-EQ policy checkpoint blob differs: {entry_path}"
             )
-        if hashlib.sha256(working.read_bytes()).hexdigest() != expected_sha256:
+        if hashlib.sha256(working.read_bytes()).hexdigest() != expected_current_sha256:
             raise ValueError(
                 f"TD-B post-EQ policy working owner differs: {entry_path}"
             )
@@ -3225,8 +3431,16 @@ def build_td_b_setup_release_lineage_candidate(
     prohibited: list[str] = []
     if not changed_paths:
         raise ValueError("TD-B lineage changed-path ledger must not be empty")
+    normalized_paths: list[str] = []
+    for raw_path in changed_paths:
+        changed_path = str(raw_path).strip()
+        if not changed_path or changed_path.startswith("/") or ".." in Path(changed_path).parts:
+            raise ValueError("TD-B lineage changed path is not repository-relative")
+        normalized_paths.append(changed_path)
+    if len(normalized_paths) != len(set(normalized_paths)):
+        raise ValueError("TD-B lineage changed-path ledger contains duplicates")
     successor_paths = (
-        set(TD_B_PUBLIC_DEFAULT_SUCCESSOR_CLASSIFICATIONS).intersection(changed_paths)
+        set(TD_B_PUBLIC_DEFAULT_SUCCESSOR_CLASSIFICATIONS).intersection(normalized_paths)
         if _td_b_checkpoint_contains(
             new_checkpoint,
             TD_B_PUBLIC_DEFAULT_SUCCESSOR_COMMIT,
@@ -3238,14 +3452,14 @@ def build_td_b_setup_release_lineage_candidate(
         if successor_paths
         else {}
     )
-    workflow_paths = set(TD_B_WORKFLOW_PATH_CLASSIFICATIONS).intersection(changed_paths)
+    workflow_paths = set(TD_B_WORKFLOW_PATH_CLASSIFICATIONS).intersection(normalized_paths)
     workflow_classifications = (
         _validate_td_b_workflow_path_lineage(new_checkpoint=new_checkpoint)
         if workflow_paths
         else {}
     )
     cleanup_test_paths = set(TD_B_CLEANUP_TEST_PROVENANCE_CLASSIFICATIONS).intersection(
-        changed_paths
+        normalized_paths
     )
     cleanup_test_classifications = (
         _validate_td_b_cleanup_test_provenance(new_checkpoint=new_checkpoint)
@@ -3253,17 +3467,14 @@ def build_td_b_setup_release_lineage_candidate(
         else {}
     )
     post_eq_paths = set(TD_B_POST_EQ_POLICY_CLASSIFICATIONS).intersection(
-        changed_paths
+        normalized_paths
     )
     post_eq_classifications = (
         _validate_td_b_post_eq_policy_lineage(new_checkpoint=new_checkpoint)
         if post_eq_paths
         else {}
     )
-    for raw_path in changed_paths:
-        changed_path = str(raw_path).strip()
-        if not changed_path or changed_path.startswith("/") or ".." in Path(changed_path).parts:
-            raise ValueError("TD-B lineage changed path is not repository-relative")
+    for changed_path in normalized_paths:
         if changed_path == "AGENTS.md":
             _validate_td_b_agents_policy_lineage(
                 old_checkpoint=old_checkpoint,
@@ -3288,9 +3499,6 @@ def build_td_b_setup_release_lineage_candidate(
             classification = "prohibited_or_unreviewed"
             prohibited.append(changed_path)
         classifications.append({"path": changed_path, "classification": classification})
-    if len(classifications) != len({item["path"] for item in classifications}):
-        raise ValueError("TD-B lineage changed-path ledger contains duplicates")
-
     eligible = not prohibited
     return {
         "schema": TD_B_SETUP_RELEASE_LINEAGE_CANDIDATE_SCHEMA,
