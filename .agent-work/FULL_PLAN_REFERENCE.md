@@ -14,11 +14,11 @@
 
 **当前代码 checkpoint：** `9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e`
 
-**当前可执行任务数：** `1`
+**当前可执行任务数：** `0`
 
-**当前 active task：** `REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-17 post-EQ validation exact subordinate successor`
+**当前 active task：** `REF-P7-25-R2-B2 modern immutable integration manifest seal transition`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-17","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-17-POST-EQ-VALIDATION-SUCCESSOR","next_reference_task":"REF-P7-25-R2-B2","next_reference_status":"BLOCKED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"B1A_C3E6F19_CORRECTIVE_16_REJECTED_POST_EQ_SUCCESSOR_MISSING_C17_WAITING_ACTIVATION","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"d103c2119dee82315ffb766364f2002cf8ea964f52156dfb58c024572dc45903","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":0,"active_task":"REF-P7-25-R2-B2","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-ORCHESTRATOR-TRANSITION-STOP","next_reference_task":"REF-P7-25-R2-B2","next_reference_status":"UNLOCKED_WAITING_PLANNER_PACKAGE","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"B1A_ACCEPTED_COMPLETE_C17_VALIDATED_B2_UNLOCKED_WAITING_PLANNER","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"5e7347ac6160f7fed744e417b53ab25078d5e1900398cb399d4d5e8b22fdf540","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -254,7 +254,7 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-ADVISOR-STOP` | `ACCEPTED_OPTION_B` | 选择helper commit exact lineage classification owner | subordinate exact manifest；canonical validator唯一eligibility owner | Advisor |
 | `REF-P7-25-R2-B0` | `ACCEPTED_COMPLETE` | 冻结Option B决定、v1 disposition、v2 exact repair与持续锁 | Advisor attachment SHA91a88e5 | Orchestrator |
 | `REF-P7-25-R2-B1` | `ACCEPTED_BLOCKED_CONTRACT_CONFLICT` | 证明clean-room exact commit/manifest/canonical-validator路径可行且无第三repo path | static seam证明第三repo path必需；clean-room未创建 | Planner/Executer |
-| `REF-P7-25-R2-B1A` | `ACCEPTED_HARD_FAILURE_REJECTED_FOR_ADVANCEMENT` | exact five-path canonical-validator seam、single commit与subordinate manifest seal | pre-acquisition lifecycle failure；implementation0 | Planner/Executer |
+| `REF-P7-25-R2-B1A` | `ACCEPTED_COMPLETE_CANONICAL_SEAM_INTEGRATION` | exact canonical-validator seam与subordinate provenance integration | C17 full691/691 accepted；retained R3仍未验证/消费 | Planner/Executer |
 | `REF-P7-25-R2-B1A-C1` | `ACCEPTED_HARD_FAILURE_WITH_CANDIDATE_CARRY_FORWARD` | single Python fail-fast acquisition后执行原five-path合同 | candidate frozen；pytest launcher absent；tests0 | Planner/Executer |
 | `REF-P7-25-R2-B1A-C2` | `ACCEPTED_FALSE_REJECTION_OWNER_REASSESSMENT` | fresh-root exact candidate carry-forward + clean-room unittest identity | controller transcribed wrong SHA；source unchanged | Planner/Executer |
 | `REF-P7-25-R2-B1A-C3` | `ACCEPTED_PRE_ROOT_ORCHESTRATOR_ACTIVATION_FAILURE` | PLAN内唯一strict candidate machine contract驱动carry/test/commit/seal | FULL漏2 machine fields；root0 | Planner/Executer |
@@ -278,7 +278,7 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-B1A-C3E6F11` | `REJECTED_CONTROLLER_LIFECYCLE_AND_ACCOUNTING` | exact nested-AST prerequisite + successor seal | KeyError；same-root retry；5 reads与zero counters矛盾 | Planner/Executer |
 | `REF-P7-25-R2-B1A-C3E6F12` | `REJECTED_WORKTREE_BLOB_ORACLE_FALSE_REJECTION` | direct-root single-controller prerequisite + truthful accounting | atomic replace exact；index parent blob误作worktree blob | Planner/Executer |
 | `REF-P7-25-R2-B1A-C3E6F13` | `ACTIVE` | split index/worktree blob identity prerequisite + successor seal | C3E6F12 review archive SHA 81ddc4ce；matching PLAN active | Planner/Executer |
-| `REF-P7-25-R2-B2` | `BLOCKED_ON_B1A` | 创建唯一exact successor repair commit并seal immutable manifest | `REF-P7-25-R2-B1A` accepted implementation contract | Planner/Executer |
+| `REF-P7-25-R2-B2` | `UNLOCKED_WAITING_PLANNER_MODERN_PACKAGE` | 对accepted integration chain与原三件套seal immutable subordinate manifest v2 | B1A/C17 accepted；不再创建repair commit | Planner/Executer |
 | `REF-P7-25-R2-B3` | `BLOCKED` | Manifest自校验后执行postcommit focused、durable full、synthetic terminal/replay | `REF-P7-25-R2-B2` accepted | Planner/Executer |
 | `REF-P7-25-R2-B4` | `BLOCKED` | 对原retained R3三件套做首次真实audit并由canonical validator唯一判定eligibility | `REF-P7-25-R2-B3` accepted | Planner/Executer |
 | `REF-P7-25-R2-B5` | `BLOCKED` | 独立验收validated-unconsumed状态、manifest与rollback provenance | `REF-P7-25-R2-B4` pass | Planner/Orchestrator |
@@ -1682,7 +1682,7 @@ exact two-path合同禁止的第三repository path；若把seam放入helper则�
 
 ### REF-P7-25-R2-B1A：Orchestrator-owned canonical seam integration contract
 
-**状态：** `ACCEPTED_HARD_FAILURE_REJECTED_FOR_IMPLEMENTATION_ADVANCEMENT`。Human 2026-07-29明确覆盖Advisor的工程限制：Advisor仅指导色彩科学与测量科学，
+**状态：** `ACCEPTED_COMPLETE_CANONICAL_SEAM_INTEGRATION`。Human 2026-07-29明确覆盖Advisor的工程限制：Advisor仅指导色彩科学与测量科学，
 Orchestrator负责文件、代码、provenance、execution packaging和Git管理；只有科学问题或AGENTS高风险设备操作才停下。
 
 Planner已归档旧工程Advisor stop并签发active package：
@@ -1745,7 +1745,9 @@ review archive SHA-256 =
   2391436a11577840dd6838f5e846083f000082443ec49adbec19348c177ab17f
 ```
 
-失败root immutable retained；路线转入`REF-P7-25-R2-B1A-C1`，B2继续锁定。
+失败root immutable retained；历史路线转入`REF-P7-25-R2-B1A-C1`。该integration route最终由C17完整关闭：实现commit
+`7c31c1be26274955686e9214a14bb29d1adc77b5`及全部targeted/focused/full/CodeGraph/diff证据获Planner接受，archive SHA-256
+`85c8dc47284d8fa347a93e7de29e508ae576a40ff6f03d1443e6ca4418ee7124`。因此B1A依赖现已满足，B2不再锁定。
 
 ### REF-P7-25-R2-B1A-C1：Fail-fast clean-room acquisition correction
 
@@ -2879,20 +2881,60 @@ fail-fast保持0。Terminal SHA-256 `53372a9d08ed8f30c5f2f471c15cabf0f7fe9c432ce
 
 ### REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-17：post-EQ validation exact subordinate successor
 
-**状态：** `ACTIVE_WAITING_PLAN_ONLY_ACTIVATION_FREEZE`。
+**状态：** `ACCEPTED_COMPLETE_POST_EQ_VALIDATION_SUCCESSOR`。Planner archive：
+`.agent-work/PLANS/20260730-0917-p7-retained-r3-option-b-b1a-c3e6f19-corrective-17-review.md`，bytes `7394`，SHA-256
+`85c8dc47284d8fa347a93e7de29e508ae576a40ff6f03d1443e6ca4418ee7124`。
 
 仅在既有post-EQ lineage owner与`tests/test_p7_thermal_diagnostics.py`内新增exact subordinate successor binding：冻结`3a14fe0`
 commit/parent/subject、exact source+R6-test two paths、path-ledger、canonical/per-path patch与before/after blob identities；历史`161094f`
 三路径及commit-qualified blobs继续完整验证。Successor source仅作provenance，不获classification；唯一延续的是exact
 `tests/test_p7_td_b_r6_contract.py -> accepted_post_eq_exposure_policy_validation`。禁止generic allowlist、任意descendant/current blob、
 近邻路径或第二candidate owner。Brand-new C17 root必须先pre-edit freeze，再exact one source+dedicated-test commit，运行5 targeted、focused、
-full、CodeGraph与diff one-shot链。所有retained-R3、eligibility、release、network/device/scientific route继续锁定。
+full、CodeGraph与diff one-shot链。实现commit `7c31c1be26274955686e9214a14bb29d1adc77b5` exact source+dedicated-test，
+terminal SHA-256 `e46158d6b0dae3ca600113f5a18bba57fbb58356e07769d4c06d9f9cca359d9a`；targeted `5/5`、focused
+`195/195`、full `691/691`、CodeGraph与两项diff全部一次通过，retry/fallback0，全部locks0。历史owner未弱化，successor只延续
+exact R6 validation path classification，canonical candidate/eligibility owner不变。该通过关闭B1A依赖但不读取/验证/消费retained R3。
 
-### REF-P7-25-R2-B2：唯一repair commit与immutable manifest seal
+### REF-P7-25-R2-B2：modern accepted-integration immutable manifest seal
 
-**状态：** `BLOCKED_ON_B1A`。B1 negative feasibility已证明旧exact two-path合同无法实现本节；Human已将工程owner交给
-Orchestrator。Planner必须先完成B1A的minimal exact path/owner/commit topology合同并经Orchestrator验收，本节才可由
-新的active PLAN替代或恢复；不再等待Advisor工程决定。
+**状态：** `UNLOCKED_WAITING_PLANNER_MODERN_PACKAGE`。B1A及C17现已accepted；无需Advisor或Human决定。Planner下一pass须把
+下述现代基线转换为一个manifest-only、pure-offline executable package，不得恢复旧single-repair/two-path合同。
+
+**现代B2目标：** 不再创建、amend、cherry-pick或重做repository implementation commit。B2只在brand-new external root中
+exclusive-create并seal一个`retained-r3-audit-provenance-manifest-v2.json`，schema
+`p7_retained_r3_audit_provenance_manifest_v2`，status exact `sealed_subordinate_provenance_evidence`。它是canonical validator的
+从属证据输入，不判断或emit eligibility，不创建/复制/修复release，不运行canonical retained validator；B2通过只解锁B3独立验证。
+
+**必须绑定的accepted integration baseline：**
+
+- historical helper v1：commit `9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e`、parent/release checkpoint
+  `32b9e670ff3bbea0cd1505528c2ca87c2935446c`，disposition exact
+  `retained_release_audit_prerequisite_v1_superseded_before_real_validation`，不可消费；
+- integration commit `3e2ebed132b6d4338bfa324bfc42c3565d2eeb3c`、parent `9303aa22...`、full 181-path LF ledger
+  SHA-256 `9596c3fa8aee58259aff13b44badcc7d448e0555c80f166b20706dcd1e321118`，其中只有helper与dedicated test作为B2
+  scientific-audit prerequisite selected paths；其他179 paths必须显式标记`present_in_commit_not_authorized_by_this_manifest`；
+- selected helper/test after SHA-256分别为
+  `48c0c57fb95c08205c3fef7b23e6df3729928352cd23e1722e8693b9f3634cf8`与
+  `c8d6c7c99815d823871ecfddce79eadd5d5def918affbcd7e4ce86de691d1b3f`，并绑定其commit-qualified before/after blob OID、
+  bytes、SHA-256及per-path/selected binary patch digests；
+- canonical seam integration chain必须按full SHA、direct parent、subject、exact changed paths、before/after Git object与binary patch绑定：
+  `0682cd8763516dfb19a8e1ad48c53cb9934b9d19`、`ba816216af9d37397873e054f44dbb7eea0f9b10`、
+  `a9a817137969d9d2692fdd0b244d08e26e8a025d`、`3a14fe0bd663250dd48c65e71f1a6550df89267f`、
+  `7c31c1be26274955686e9214a14bb29d1adc77b5`；任何遗漏、额外semantic path或identity不一致fail closed；
+- canonical governance manifest `config/hsi/p7-governance-lineage-successor-v1.json` SHA-256
+  `69bbbb369e776e1aa11a227ecf3432de44bc517c7eb25828094f4820df45042e`，以及历史post-EQ owner和exact validation successor
+  的accepted constants/identities；
+- GUIDE SHA、Advisor decision evidence SHA `842cfad090549ebf6379df4551bd4f051267e4bf93014f899c5e329c57085620`、
+  attachment SHA `91a88e5467e13c811794c2149b6a8d5669e613c3e259d8f4091ba08c048733d6`与Human engineering-governance override；
+- 原retained R3 source root exact
+  `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-lineage-release-r3/lineage-release-161094f-c1-20260727T2103`及原三artifact
+  paths/hashes。B2只允许对三件套各一次lstat/open/read并做before/after identity，读取不等于audit、validation或consumption。
+
+**Persistence与验证边界：** Planner须冻结一个single-process/single-root controller、exact input/read budgets、strict duplicate-key和
+non-finite拒绝、canonical compact sorted UTF-8 JSON+LF、`O_EXCL|O_NOFOLLOW`、0600、file+directory fsync、strict reload、独立hash
+seal及terminal。Manifest一旦seal不得rewrite/repair/replace/relocate。B2只做schema/self-consistency、Git-object重算、原三artifact hash与
+immutability重算；不运行full suite或synthetic audit（留给B3），不修改repo，不生成eligibility。Retry/fallback0；network、`.env`、device、
+camera、Ray、strip、cleanup、FORMAL、public analyzer、TD-C、sentinel、P8均0。
 
 > 以下旧two-path执行细节已由Human engineering-governance override与B1A exact-five contract supersede，不得作为未来
 > PLAN输入；B1A-C2/后续Planner验收冻结的five-path child与manifest facts才是B2的新工程基线。本段保留仅作旧合同历史。
@@ -3513,7 +3555,7 @@ Option A owner prerequisite = accepted complete
 Advisor lineage owner decision = Option B subordinate exact provenance manifest
 Human engineering governance override = Orchestrator owns files/code/provenance/execution/Git
 helper v1 disposition = retained_release_audit_prerequisite_v1_superseded_before_real_validation
-repair v2 status = B1A-C3E6F19-CORRECTIVE-16 rejected post-EQ validation successor missing; corrective-17 waiting activation
+repair v2 status = B1A accepted complete through corrective-17; B2 modern manifest-only package unlocked
 accepted B1 result = ACCEPTED_BLOCKED_CONTRACT_CONFLICT
 accepted B1A result = HARD_FAILURE_PRE_ACQUISITION_LIFECYCLE; implementation progress 0
 accepted B1A-C1 result = HARD_FAILURE_BEFORE_TEST_EXEC; candidate carry-forward only
@@ -3578,10 +3620,11 @@ accepted B1A-C3E6F19-CORRECTIVE-13 result = SOURCE_TOPOLOGY_CONTRACT_MISMATCH; p
 accepted B1A-C3E6F19-CORRECTIVE-14 result = FULL_SUITE_EQ_R6_MANIFEST_METADATA_DRIFT; targeted13/13; focused125/125; full687 failures2
 accepted B1A-C3E6F19-CORRECTIVE-15 result = PREVALIDATION_EVIDENCE_ORDER; implementation3a14fe0 retained; validation0
 accepted B1A-C3E6F19-CORRECTIVE-16 result = FOCUSED_POST_EQ_VALIDATION_SUCCESSOR_MISSING; targeted6/6; focused193 failures1 errors2
-active task = REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-17 post-EQ validation exact subordinate successor
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-17-POST-EQ-VALIDATION-SUCCESSOR
-active executable task count = 1
-next reference task = REF-P7-25-R2-B2 BLOCKED
+accepted B1A-C3E6F19-CORRECTIVE-17 result = ACCEPTED_COMPLETE_POST_EQ_VALIDATION_SUCCESSOR; targeted5/5; focused195/195; full691/691
+active task = REF-P7-25-R2-B2 modern accepted-integration immutable manifest seal transition
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-ORCHESTRATOR-TRANSITION-STOP
+active executable task count = 0
+next reference task = REF-P7-25-R2-B2 UNLOCKED_WAITING_PLANNER_MODERN_PACKAGE
 selected state C shutter = 1/2500
 device/network/camera/light = forbidden by active PLAN
 release qualification/generation/copy/consumption = forbidden
@@ -3610,7 +3653,8 @@ JavaScript SyntaxError 未启动 Python；C4 随后仅 8/12，C5 又因正文 ma
 顶层非证据`.DS_Store`污染整树manifest而拒绝；`REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-15`仅在既有manifest owner内加入
 root-relative exact regular `.DS_Store`边界并用dedicated tests锁定；C15实现已形成但因prevalidation evidence order拒收，
 `REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-16`证明metadata实现targeted通过，但focused暴露post-EQ历史blob缺少exact successor；
-`REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-17`在同一lineage owner内绑定`3a14fe0`exact subordinate successor并运行完整链；
+`REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-17`在同一lineage owner内绑定`3a14fe0`exact subordinate successor并以full691/691获接受；
+`REF-P7-25-R2-B2`现已解锁为manifest-only package，只seal accepted integration chain与原三artifact identities，不创建新repair commit；
 canonical validator call、eligibility emission、retained R3/release/device访问仍为0；
 retained R3 仍为 `RETAINED_UNVALIDATED_UNCONSUMED`。
 
