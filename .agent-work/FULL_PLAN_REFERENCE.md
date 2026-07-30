@@ -16,9 +16,9 @@
 
 **当前可执行任务数：** `1`
 
-**当前 active task：** `REF-P7-25-R2-B1A-C3E6F19 fixed-container exact-five controller preparation`
+**当前 active task：** `REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-1 dedicated static-test owner correction`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B1A-C3E6F19","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CONTROLLER-PREPARATION","next_reference_task":"REF-P7-25-R2-B2","next_reference_status":"BLOCKED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"B1A_C3E6F18_CORRECTIVE_1_ACCEPTED_BOOTSTRAP_PREREQUISITE_ONLY_C3E6F19_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"3c5847fcbe0af85833c901f6f01058d000a3cecdc0f84e6ae331ed24e138c225","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-1-STATIC-TEST","next_reference_task":"REF-P7-25-R2-B2","next_reference_status":"BLOCKED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"B1A_C3E6F19_REJECTED_DEDICATED_STATIC_TEST_FALSE_POSITIVE_CORRECTIVE_1_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"3c5847fcbe0af85833c901f6f01058d000a3cecdc0f84e6ae331ed24e138c225","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -2547,12 +2547,29 @@ retry0、ER append1。该接受不验证或消费retained R3，也不调用valid
 
 ### REF-P7-25-R2-B1A-C3E6F19：Fixed-container exact-five controller preparation
 
-**状态：** `ACTIVE_PLANNER_PREPARATION_ONLY`。
+**状态：** `REJECTED_DEDICATED_STATIC_TEST_FALSE_POSITIVE`。Planner archive：
+`.agent-work/PLANS/20260730-0315-p7-retained-r3-option-b-b1a-c3e6f19-failure-review.md`，SHA-256
+`b10e05fdf141c5864edf2eadcfa5022a7e92293bd573c51faf2c609bcad522de`。
 
 Planner 下一包只可基于已接受的immutable F18 container/record/seal与已提交machine-contract helper，冻结一个single-process exact-five
 candidate/controller执行合同及其输入、path、callback、test、Git和terminal evidence预算。准备阶段不得执行controller、创建candidate、
 读取retained R3、调用canonical validator或产生eligibility；不得访问release、network或device。B2继续blocked，直到该后继真正完成并经
 Planner验收。
+
+Dispatch/bootstrap/absence与compileall均通过；targeted `11`项中`10 pass / 1 fail`。失败是 dedicated test 把lexically nested
+local `ast.Name("run")`误判为`subprocess.run`；Planner独立确认controller无subprocess/os/pathlib import、无`.run()`属性调用、
+无builtin open或direct filesystem I/O。focused/full/CodeGraph/diff-check均未启动，retry0；真实controller、R3、validator、release、
+network与device均为0。controller source冻结SHA-256
+`746fd13056c326489b48ca555b21618b65c8a78f198d035e18c02f68af689726`。
+
+### REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-1：Dedicated static-test owner correction
+
+**状态：** `ACTIVE_PLANNER_CORRECTIVE_WAITING_SHA_ACTIVATION`。
+
+只允许修改`tests/test_p7_retained_r3_exact_five_controller.py`，把`ast.Name` builtin/global callee与`ast.Attribute` method callee及
+bytecode local/global/attribute owners分开；必须保留open、filesystem/subprocess attributes、forbidden imports、callback protocol与
+eligibility边界断言。controller source byte-exact不变；fresh root运行一次compile/targeted/focused/full/CodeGraph/diff链，retry0。
+不得读取candidate/R3/release或运行真实controller/validator/network/device。
 
 ### REF-P7-25-R2-B2：唯一repair commit与immutable manifest seal
 
@@ -3179,7 +3196,7 @@ Option A owner prerequisite = accepted complete
 Advisor lineage owner decision = Option B subordinate exact provenance manifest
 Human engineering governance override = Orchestrator owns files/code/provenance/execution/Git
 helper v1 disposition = retained_release_audit_prerequisite_v1_superseded_before_real_validation
-repair v2 status = B1A-C3E6F18-CORRECTIVE-1 bootstrap prerequisite accepted; C3E6F19 active
+repair v2 status = B1A-C3E6F19 rejected dedicated static-test false positive; corrective-1 active
 accepted B1 result = ACCEPTED_BLOCKED_CONTRACT_CONFLICT
 accepted B1A result = HARD_FAILURE_PRE_ACQUISITION_LIFECYCLE; implementation progress 0
 accepted B1A-C1 result = HARD_FAILURE_BEFORE_TEST_EXEC; candidate carry-forward only
@@ -3227,8 +3244,9 @@ accepted B1A-C3E6F17-CORRECTIVE-13 result = VALIDATION_ONLY_SCANNER_OWNER_ACCEPT
 accepted B1A-C3E6F17-C13-LINEAGE-SEAL result = EXACT_SIX_PATH_COMMIT_ACCEPTED; commit64c34ad; retainedR3 untouched
 accepted B1A-C3E6F18 result = IMPORT_OWNER_AND_TERMINAL_EVIDENCE_FAILURE; external paths untouched; ER0
 accepted B1A-C3E6F18-CORRECTIVE-1 result = BOOTSTRAP_PREREQUISITE_ONLY; empty0700; record/seal0600; validator0
-active task = REF-P7-25-R2-B1A-C3E6F19 fixed-container exact-five controller preparation
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CONTROLLER-PREPARATION
+accepted B1A-C3E6F19 result = DEDICATED_STATIC_TEST_FALSE_POSITIVE; compile0; targeted10/11; later tests0; real operations0
+active task = REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-1 dedicated static-test owner correction
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-1-STATIC-TEST
 active executable task count = 1
 next reference task = REF-P7-25-R2-B2 BLOCKED
 selected state C shutter = 1/2500
@@ -3255,7 +3273,7 @@ JavaScript SyntaxError 未启动 Python；C4 随后仅 8/12，C5 又因正文 ma
 但 Executer scanner 将 PLAN candidate 错计为0；C12 的更精确文字合同仍因临时实现转录漂移错报0/0。当前 C13 将 scanner
 收敛到一个validation-only helper与一个dedicated test并获Planner接受，避免继续复制实现；它不拥有eligibility或retained-release语义。
 后继另包才可冻结新controller并建立 fresh bootstrap container；不得重跑F14、提前修改production或输出eligibility。retained R3继续为
-`REF-P7-25-R2-B1A-C3E6F19`只准备复用accepted fixed container的exact-five candidate/controller合同；尚不执行controller或读取R3；
+`REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-1`只纠正dedicated static-test owner分类并fresh验证；controller source冻结，仍不执行真实controller或读取R3；
 canonical validator call、eligibility emission、retained R3/release/device访问仍为0；
 retained R3 仍为 `RETAINED_UNVALIDATED_UNCONSUMED`。
 
