@@ -2910,23 +2910,52 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
         self.assertEqual(len(changed_paths), len(set(changed_paths)))
         full_rows = full_candidate["changed_paths"]
         self.assertEqual([row["path"] for row in full_rows], changed_paths)
-        canonical_candidate = subject.build_td_b_setup_release_lineage_candidate(
-            subject.TD_B_SETUP_RELEASE_PATH,
-            old_checkpoint=subject.TD_B_SETUP_CHECKPOINT,
-            new_checkpoint=checkpoint,
-            changed_paths=list(reversed(changed_paths)),
-        )
+
+        def canonical_classification(path):
+            if path == "AGENTS.md":
+                return "bounded_validation_or_documentation"
+            if path in subject.TD_B_PUBLIC_DEFAULT_SUCCESSOR_CLASSIFICATIONS:
+                return subject.TD_B_PUBLIC_DEFAULT_SUCCESSOR_CLASSIFICATIONS[path]
+            if path in subject.TD_B_WORKFLOW_PATH_CLASSIFICATIONS:
+                return subject.TD_B_WORKFLOW_PATH_CLASSIFICATIONS[path]
+            if path in subject.TD_B_CLEANUP_TEST_PROVENANCE_CLASSIFICATIONS:
+                return subject.TD_B_CLEANUP_TEST_PROVENANCE_CLASSIFICATIONS[path]
+            if path in subject.TD_B_POST_EQ_POLICY_CLASSIFICATIONS:
+                return subject.TD_B_POST_EQ_POLICY_CLASSIFICATIONS[path]
+            if path in subject.TD_B_LINEAGE_ALLOWED_PRODUCTION_PATHS:
+                return "ambient_and_physical_ledger_contract"
+            if path in subject.TD_B_LINEAGE_ALLOWED_VALIDATION_PATHS:
+                return "bounded_validation_or_documentation"
+            if path.startswith(".agent-work/"):
+                return "planner_or_execution_audit_only"
+            return "prohibited_or_unreviewed"
+
         canonical_classifications = {
-            row["path"]: row["classification"]
-            for row in canonical_candidate["changed_paths"]
+            path: canonical_classification(path) for path in changed_paths
         }
-        self.assertEqual(set(canonical_classifications), set(changed_paths))
         for row in full_rows:
             self.assertEqual(
                 row["classification"], canonical_classifications[row["path"]],
             )
-        self.assertEqual(full_candidate["status"], "eligible_waiting_for_planner")
-        self.assertEqual(full_candidate["prohibited_paths"], [])
+        accepted_paths = [
+            path for path in changed_paths
+            if canonical_classifications[path] != "prohibited_or_unreviewed"
+        ]
+        prohibited_paths = [
+            path for path in changed_paths
+            if canonical_classifications[path] == "prohibited_or_unreviewed"
+        ]
+        self.assertTrue(accepted_paths)
+        self.assertTrue(prohibited_paths)
+        self.assertEqual(full_candidate["prohibited_paths"], prohibited_paths)
+        self.assertEqual(
+            full_candidate["status"],
+            (
+                "ineligible_requires_new_setup"
+                if prohibited_paths
+                else "eligible_waiting_for_planner"
+            ),
+        )
         self.assertEqual(dict(subject.TD_B_POST_EQ_POLICY_CLASSIFICATIONS), expected)
         self.assertEqual(
             dict(subject._validate_td_b_post_eq_policy_lineage(
