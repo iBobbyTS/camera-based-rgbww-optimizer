@@ -146,6 +146,53 @@ class ExposurePolicyV2Tests(unittest.TestCase):
 
 
 class EqFamilyManifestTests(unittest.TestCase):
+    def test_manifest_ignores_only_root_regular_ds_store(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            os.chmod(root, 0o700)
+            (root / "evidence.json").write_bytes(b"evidence")
+            os.chmod(root / "evidence.json", 0o600)
+            baseline = thermal.build_planner_eq_family_manifest(root)
+
+            ds_store = root / ".DS_Store"
+            ds_store.write_bytes(b"Finder metadata version one")
+            os.chmod(ds_store, 0o644)
+            with_metadata = thermal.build_planner_eq_family_manifest(root)
+            ds_store.write_bytes(b"Finder metadata changed")
+            after_payload_change = thermal.build_planner_eq_family_manifest(root)
+
+            for manifest in (with_metadata, after_payload_change):
+                self.assertEqual(manifest["rows"], baseline["rows"])
+                self.assertEqual(
+                    tuple(manifest[key] for key in (
+                        "entries", "files", "directories", "symlinks", "other",
+                        "payload_bytes", "sha256", "payload",
+                    )),
+                    tuple(baseline[key] for key in (
+                        "entries", "files", "directories", "symlinks", "other",
+                        "payload_bytes", "sha256", "payload",
+                    )),
+                )
+
+    def test_manifest_does_not_hide_unsafe_or_nested_ds_store(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            os.chmod(root, 0o700)
+            (root / ".DS_Store").symlink_to(root.parent)
+            with self.assertRaisesRegex(ValueError, "symlink"):
+                thermal.build_planner_eq_family_manifest(root)
+
+        with tempfile.TemporaryDirectory() as tempdir:
+            root = Path(tempdir)
+            os.chmod(root, 0o700)
+            baseline = thermal.build_planner_eq_family_manifest(root)
+            nested = root / "nested"
+            nested.mkdir(mode=0o700)
+            (nested / ".DS_Store").write_bytes(b"nested evidence")
+            manifest = thermal.build_planner_eq_family_manifest(root)
+            self.assertIn("nested/.DS_Store", [row["path"] for row in manifest["rows"]])
+            self.assertNotEqual(manifest["sha256"], baseline["sha256"])
+
     def test_exact_family_manifest_matches_frozen_digest_and_qualification(self):
         manifest = thermal.build_planner_eq_family_manifest(
             thermal.TD_B_EQ_R6_ACCEPTED_ROOT,

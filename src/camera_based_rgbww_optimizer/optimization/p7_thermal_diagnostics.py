@@ -479,6 +479,8 @@ def build_planner_eq_family_manifest(root: str | Path) -> dict[str, Any]:
             rows.append({"mode": mode, "path": relative, "type": "dir"})
             continue
         if stat.S_ISREG(row_stat.st_mode):
+            if relative == ".DS_Store":
+                continue
             files += 1
             payload = path.read_bytes()
             if len(payload) != row_stat.st_size:
