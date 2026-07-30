@@ -1,6 +1,6 @@
 # REF-P7-25-R2-B2-C4-C1：content-free byte-span statement-selector correction
 
-**计划状态：** `PLANNER_COMPLETE_WAITING_ORCHESTRATOR_REVIEW`
+**计划状态：** `EXECUTION_AUTHORIZED`
 
 **Planner 日期：** `2026-07-30`
 
@@ -21,16 +21,16 @@ statement containment 为 byte-span containment 的单一 helper，并以合成�
 **Planner stop：**
 `B2_C4_C1_BYTE_SPAN_SELECTOR_WAITING_PLANNER_REVIEW`。
 
-本文件当前 `execution_authorized=false`。Orchestrator 必须先独立验收本 review、
-更新 FULL 并整理提交；随后 Planner 只能以单独 PLAN-only commit 冻结 activation
-parent/subject/changed-path 后，才可把本包切换为 `execution_authorized=true`。
+本文件当前 `execution_authorized=true`，仅放行本 PLAN 精确定义的 C4-C1
+content-free correction。真实 C4、B2/B3、retained R3、validator、release、设备
+与 scientific route 仍未放行。
 
 **Reviewed archive：**
 `.agent-work/PLANS/20260730-1135-p7-retained-r3-option-b-b2-c4-v3-semantic-failure-review.md`
 （bytes `5464`，SHA-256
 `87551c8dba39c05606974f2d0696e935f970683ad4869ecade1407d7bcf8fd15`）。
 
-`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_c4_c1_byte_span_selector_plan_v1","reference_task_id":"REF-P7-25-R2-B2-C4-C1","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-C1-BYTE-SPAN-STATEMENT-SELECTOR-CORRECTION-V1","dispatch_state":"waiting_orchestrator_review","execution_authorized":false,"single_current_action":"content_free_byte_span_statement_selector_correction","activation_parent_freeze_pending":true,"activation_changed_paths":[".agent-work/PLAN.md"],"activation_additional_paths":0,"activation_commit_count":1,"review_archive":{"path":".agent-work/PLANS/20260730-1135-p7-retained-r3-option-b-b2-c4-v3-semantic-failure-review.md","bytes":5464,"sha256":"87551c8dba39c05606974f2d0696e935f970683ad4869ecade1407d7bcf8fd15"},"rejected_c4_v3_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-ast-span-successor-da90556-r3-20260730T1730Z","rejected_c4_v3_builder":{"path":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-b2-c4-ast-span-successor-builder-v3.py","bytes":21474,"sha256":"df0020d9aa7c902cdd11bb6d5c52b80dabce01b31693808a60035a900dc68e37"},"c4_v3_evidence_reads_each":1,"c4_v3_builder_reads":1,"c3_source_c1_c2_retained_decision_reads":0,"future_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-c1-byte-span-selector-df0020d-20260730T1745Z","corrected_builder_generations":1,"corrected_builder_real_main_invocations":0,"selector_matrix":"12/12","canonical_validator_calls":0,"eligibility_emissions":0,"release_operations":0,"retry":0,"fallback":0,"planner_stop":"B2_C4_C1_BYTE_SPAN_SELECTOR_WAITING_PLANNER_REVIEW"}`
+`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_c4_c1_byte_span_selector_plan_v1","reference_task_id":"REF-P7-25-R2-B2-C4-C1","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-C1-BYTE-SPAN-STATEMENT-SELECTOR-CORRECTION-V1","dispatch_state":"execution_authorized","execution_authorized":true,"single_current_action":"content_free_byte_span_statement_selector_correction","activation_parent":"149c2cabc94336407b324d21fe894f89e545d3c1","activation_parent_freeze_pending":false,"activation_subject":"chore(plan): activate b2 c4 c1 byte span selector","activation_changed_paths":[".agent-work/PLAN.md"],"activation_additional_paths":0,"activation_commit_count":1,"programmatic_dispatch_head_reads":1,"second_dispatch_head_reads":0,"dispatch_plan_sha256_owner":"sha256_of_exact_plan_blob_at_programmatic_dispatch_head","hand_transcribed_child_sha":false,"review_archive":{"path":".agent-work/PLANS/20260730-1135-p7-retained-r3-option-b-b2-c4-v3-semantic-failure-review.md","bytes":5464,"sha256":"87551c8dba39c05606974f2d0696e935f970683ad4869ecade1407d7bcf8fd15"},"rejected_c4_v3_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-ast-span-successor-da90556-r3-20260730T1730Z","rejected_c4_v3_builder":{"path":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-b2-c4-ast-span-successor-builder-v3.py","bytes":21474,"sha256":"df0020d9aa7c902cdd11bb6d5c52b80dabce01b31693808a60035a900dc68e37"},"c4_v3_evidence_reads_each":1,"c4_v3_builder_reads":1,"c3_source_c1_c2_retained_decision_reads":0,"future_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-c1-byte-span-selector-df0020d-20260730T1745Z","corrected_builder_generations":1,"corrected_builder_real_main_invocations":0,"selector_matrix":"12/12","canonical_validator_calls":0,"eligibility_emissions":0,"release_operations":0,"retry":0,"fallback":0,"planner_stop":"B2_C4_C1_BYTE_SPAN_SELECTOR_WAITING_PLANNER_REVIEW"}`
 
 ## 1. Planner decision and authority boundary
 
@@ -58,11 +58,18 @@ parent/subject/changed-path 后，才可把本包切换为 `execution_authorized
 
 ## 2. Activation and immutable namespace
 
-1. Before execution, a later PLAN-only activation must freeze exact direct
-   parent, subject, sole changed path `.agent-work/PLAN.md`, additional paths
-   `0`, one commit, `execution_authorized=true`, and the unchanged final Planner
-   stop. The activation child SHA is programmatically read once at dispatch and
-   must not be hand-transcribed into its own blob.
+1. Activation direct parent is exact
+   `149c2cabc94336407b324d21fe894f89e545d3c1`; subject is exact
+   `chore(plan): activate b2 c4 c1 byte span selector`; changed paths are exact
+   `.agent-work/PLAN.md`, additional paths `0`, activation commit count `1`.
+   Executer reads symbolic HEAD exactly once and verifies from Git objects that
+   the programmatic dispatch HEAD is that parent's direct child with the exact
+   subject/path topology. The active PLAN SHA-256 is derived non-circularly
+   from the `.agent-work/PLAN.md` blob at that programmatic dispatch HEAD and
+   must equal working bytes; no PLAN-embedded expected hash, hand-transcribed
+   child SHA, or second HEAD read is allowed. It must also prove
+   `execution_authorized=true` and the unchanged final Planner stop
+   `B2_C4_C1_BYTE_SPAN_SELECTOR_WAITING_PLANNER_REVIEW`.
 2. Exact future root:
    `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-c1-byte-span-selector-df0020d-20260730T1745Z`.
    It must be absent before one owner creates it mode `0700`. No precreation,
