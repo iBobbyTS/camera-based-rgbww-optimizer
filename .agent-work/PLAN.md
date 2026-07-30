@@ -1,6 +1,6 @@
 # REF-P7-25-R2-B2-C4：deterministic pre-HEAD dispatch correction
 
-**计划状态：** `PLANNER_COMPLETE_WAITING_ORCHESTRATOR_REVIEW`
+**计划状态：** `EXECUTION_AUTHORIZED`
 
 **Planner 日期：** `2026-07-30`
 
@@ -11,25 +11,23 @@
 **Contract ID：**
 `P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-AST-SPAN-SUCCESSOR-QUALIFICATION-V3`
 
-**当前唯一动作：** Orchestrator review 并提交本 V2 rejection、review
-archive 与 C4 V3 candidate PLAN；随后 Planner 只能通过一个 exact
-PLAN-only direct-child commit 填入 activation parent 并设置
-`execution_authorized=true`。V3 仍是原 C4 science-free package，但 pre-HEAD
-wrapper 使用固定 ordinary variable 与 Python 纯内存 bytewise validator，
-不依赖任何 zsh pattern option。
+**当前唯一动作：** Executer 以一个 `zsh -f` dispatch owner、一次 builder
+invocation 和一个 brand-new external root 执行 C4 V3。pre-HEAD wrapper 使用
+固定 ordinary variable 与 Python 纯内存 bytewise validator，不依赖任何 zsh
+pattern option；随后仅生成并资格验证一个 disposable AST/span successor，写入
+terminal seal 与一次 ER handoff 后停 Planner 验收。
 
 **Planner stop：**
-`B2_C4_V2_SELFCHECK_FAILURE_REVIEWED_WAITING_PLAN_ONLY_ACTIVATION`。
+`B2_C4_AST_SPAN_SUCCESSOR_WAITING_PLANNER_REVIEW`。
 
-本文件当前 `execution_authorized=false`，Executer 不得运行 wrapper、
-HEAD read、builder、root、C3/source 读取、successor 生成或任何后续阶段。
-real B2、retained-R3 access、validator、release、device 或 scientific operation
-仍未放行。
+本文件当前 `execution_authorized=true`，仅放行本 PLAN 精确定义的 C4 V3
+offline qualification。real B2、retained-R3 access、validator、release、device
+或 scientific operation 仍未放行。
 
 **Reviewed archive：**
 `.agent-work/PLANS/20260730-1119-p7-retained-r3-option-b-b2-c4-v2-wrapper-selfcheck-failure-review.md`，bytes `5224`，SHA-256 `8ba3187e08f3af280f2c49d615683704c24eb77de2ae000debbcf40a33998c25`。
 
-`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_c4_ast_span_successor_plan_v3","reference_task_id":"REF-P7-25-R2-B2-C4","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-AST-SPAN-SUCCESSOR-QUALIFICATION-V3","dispatch_state":"waiting_orchestrator_review_then_plan_only_activation","execution_authorized":false,"single_current_action":"orchestrator_review_then_exact_plan_only_activation_of_c4_v3","activation_parent":null,"activation_parent_freeze_pending":true,"activation_subject":"chore(plan): reactivate b2 c4 deterministic dispatch","activation_changed_paths":[".agent-work/PLAN.md"],"activation_additional_paths":0,"activation_commit_count":1,"programmatic_dispatch_head_reads":1,"second_dispatch_head_reads":0,"dispatch_plan_sha256_owner":"sha256_of_exact_plan_blob_at_programmatic_dispatch_head","hand_transcribed_child_sha":false,"review_archive":{"path":".agent-work/PLANS/20260730-1119-p7-retained-r3-option-b-b2-c4-v2-wrapper-selfcheck-failure-review.md","bytes":5224,"sha256":"8ba3187e08f3af280f2c49d615683704c24eb77de2ae000debbcf40a33998c25"},"superseded_unused_roots":["/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-ast-span-successor-da90556-20260730T1700Z","/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-ast-span-successor-da90556-r2-20260730T1710Z"],"c3_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c3-source-structure-da90556-20260730T1645Z","c3_input_reads_each":1,"source":{"path":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-b2-corrected-controller-cb38ac5.py","bytes":29841,"sha256":"da9055626eac266f0eb983e713f246b18bdf26f7443a30d2a6f2ddb503cf3ba4","new_read_budget":1},"future_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-ast-span-successor-da90556-r3-20260730T1730Z","dispatch_wrapper_self_checks":"8/8","shell_pattern_option_dependencies":0,"dynamic_shell_variable_names":0,"builder_invocations":1,"successor_generation":1,"successor_real_b2_invocations":0,"content_free_shared_lifecycle_matrix":"12/12","c1_c2_retained_decision_reads":0,"canonical_validator_calls":0,"eligibility_emissions":0,"release_operations":0,"retry":0,"fallback":0,"planner_stop":"B2_C4_V2_SELFCHECK_FAILURE_REVIEWED_WAITING_PLAN_ONLY_ACTIVATION"}`
+`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_c4_ast_span_successor_plan_v3","reference_task_id":"REF-P7-25-R2-B2-C4","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-AST-SPAN-SUCCESSOR-QUALIFICATION-V3","dispatch_state":"execution_authorized","execution_authorized":true,"single_current_action":"single_zsh_f_dispatch_and_builder_qualification_of_c4_v3_successor","activation_parent":"d7a63f1695de1856361ed5c5cebe926a5d66f40e","activation_parent_freeze_pending":false,"activation_subject":"chore(plan): reactivate b2 c4 deterministic dispatch","activation_changed_paths":[".agent-work/PLAN.md"],"activation_additional_paths":0,"activation_commit_count":1,"programmatic_dispatch_head_reads":1,"second_dispatch_head_reads":0,"dispatch_plan_sha256_owner":"sha256_of_exact_plan_blob_at_programmatic_dispatch_head","hand_transcribed_child_sha":false,"review_archive":{"path":".agent-work/PLANS/20260730-1119-p7-retained-r3-option-b-b2-c4-v2-wrapper-selfcheck-failure-review.md","bytes":5224,"sha256":"8ba3187e08f3af280f2c49d615683704c24eb77de2ae000debbcf40a33998c25"},"superseded_unused_roots":["/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-ast-span-successor-da90556-20260730T1700Z","/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-ast-span-successor-da90556-r2-20260730T1710Z"],"c3_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c3-source-structure-da90556-20260730T1645Z","c3_input_reads_each":1,"source":{"path":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-b2-corrected-controller-cb38ac5.py","bytes":29841,"sha256":"da9055626eac266f0eb983e713f246b18bdf26f7443a30d2a6f2ddb503cf3ba4","new_read_budget":1},"future_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-ast-span-successor-da90556-r3-20260730T1730Z","dispatch_wrapper_self_checks":"8/8","shell_pattern_option_dependencies":0,"dynamic_shell_variable_names":0,"builder_invocations":1,"successor_generation":1,"successor_real_b2_invocations":0,"content_free_shared_lifecycle_matrix":"12/12","c1_c2_retained_decision_reads":0,"canonical_validator_calls":0,"eligibility_emissions":0,"release_operations":0,"retry":0,"fallback":0,"planner_stop":"B2_C4_AST_SPAN_SUCCESSOR_WAITING_PLANNER_REVIEW"}`
 
 ## 1. Planner decision and authority boundary
 
@@ -59,17 +57,18 @@ real B2、retained-R3 access、validator、release、device 或 scientific opera
    remain read-only. Executer may append only the final handoff to ER after the
    terminal seal.
 
-## 2. Pending activation and immutable root
+## 2. Activated dispatch and immutable root
 
-1. This candidate is non-executable. After Orchestrator review/commit, one
-   direct-child activation may change only `.agent-work/PLAN.md`, must freeze
-   that exact parent, and must use exact subject
-   `chore(plan): reactivate b2 c4 deterministic dispatch`. The child SHA is not
-   hand-transcribed into its own PLAN blob: the corrected wrapper captures the
-   programmatic dispatch HEAD once and owns the exact PLAN-blob SHA-256 at that
-   HEAD, avoiding circular self-identity while proving the direct-child
-   topology, sole changed path, `execution_authorized=true`, and final review
-   stop `B2_C4_AST_SPAN_SUCCESSOR_WAITING_PLANNER_REVIEW`.
+1. Activation direct parent is exact
+   `d7a63f1695de1856361ed5c5cebe926a5d66f40e`; subject is exact
+   `chore(plan): reactivate b2 c4 deterministic dispatch`; changed paths are
+   exact `.agent-work/PLAN.md`, additional paths `0`, activation commit count
+   `1`. The child SHA is not hand-transcribed into its own PLAN blob: the
+   corrected wrapper captures the programmatic dispatch HEAD once and owns the
+   exact PLAN-blob SHA-256 at that HEAD, avoiding circular self-identity while
+   proving the direct-child topology, sole changed path,
+   `execution_authorized=true`, and final review stop
+   `B2_C4_AST_SPAN_SUCCESSOR_WAITING_PLANNER_REVIEW`.
 2. Activation freezes only the actual parent, programmatically owned child and
    PLAN blob identity, dispatch state, and final review stop. It does not widen
    inputs, budgets, transforms, matrices, roots, locks, or successor authority.
