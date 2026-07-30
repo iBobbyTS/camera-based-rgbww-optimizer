@@ -1,284 +1,276 @@
-# REF-P7-25-R2-B2-C3：content-free source-structure index
+# REF-P7-25-R2-B2-C4：AST/span successor transform qualification
 
-**计划状态：** `EXECUTION_AUTHORIZED`
+**计划状态：** `PLANNER_COMPLETE_WAITING_ORCHESTRATOR_REVIEW`
 
 **Planner 日期：** `2026-07-30`
 
-**Reference task：** `REF-P7-25-R2-B2-C3`
+**Reference task：** `REF-P7-25-R2-B2-C4`
 
 **Contract ID：**
-`P7-TD-B-RETAINED-R3-OPTION-B-B2-C3-CONTENT-FREE-SOURCE-STRUCTURE-INDEX-V1`
+`P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-AST-SPAN-SUCCESSOR-QUALIFICATION-V1`
 
-**预计时长：** `2–6 分钟`；纯离线，不属于预计超过10分钟的长任务。
+**预计时长：** `4–9 分钟`；纯离线，不属于预计超过10分钟的长任务。
 
-**当前唯一动作：** Orchestrator 审查本 PLAN 后，仅可用一个新的 PLAN-only activation commit 冻结 dispatch；激活后，Executer 可调用一次新的 external index builder，在一个 brand-new root 中重新获得一次 rejected controller source read budget，生成 immutable AST/source-structure index 与 content-free selector matrix，并 durably seal C3 evidence。C3 不生成、修改或运行 successor。
+**当前唯一动作：** Orchestrator 验收 C3 review 和本 PLAN 后，先提交已审查状态，再由 Planner 仅修改本文件制作一个 direct-child PLAN-only activation commit。激活后的 Executer 才可运行一次新的 external builder：消费 accepted C3 structure index，重新读取 frozen rejected controller 一次，使用已证明的 AST selector 与物理 span 做一个最小 successor transform，并仅在 content-free synthetic inputs 上证明 successor 的真实 `main` post-root 路径和 fixtures 调用同一个 lifecycle owner。
 
 **Planner stop：**
-`B2_C3_SOURCE_STRUCTURE_INDEX_WAITING_PLANNER_REVIEW`。
+`B2_C4_AST_SPAN_SUCCESSOR_WAITING_ORCHESTRATOR_ACTIVATION`。
 
-本文件当前 `execution_authorized=true`。Executer 只可执行本 PLAN 冻结的一次 C3 content-free source-structure index；不得生成、修改或运行 successor，不得读取 C1/retained/decision sources，不得进入 B2/B3、调用 canonical validator、产生 eligibility/release，或进入任何设备/scientific route。
+本文件当前 `execution_authorized=false`。任何 builder、source/C3 artifact 读取、root 创建、successor 生成/运行、real B2、retained-R3 access、validator、release、device 或 scientific operation 均未放行。
 
 **Reviewed archive：**
-`.agent-work/PLANS/20260730-1039-p7-retained-r3-option-b-b2-c2-controller-correction-failure-review.md`，bytes `10555`，SHA-256 `8ba91dfb19458fc234b600bb9c39ed78624e6ab121df4b8b28265cc878f12728`。
+`.agent-work/PLANS/20260730-1054-p7-retained-r3-option-b-b2-c3-source-structure-index-review.md`，bytes `6695`，SHA-256 `694eb8a26b073d471035312c0c078c0b10912ef5f3eaa9f28d60534c8b74585f`。
 
-`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_c3_source_structure_index_plan_v1","reference_task_id":"REF-P7-25-R2-B2-C3","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C3-CONTENT-FREE-SOURCE-STRUCTURE-INDEX-V1","dispatch_state":"execution_authorized","execution_authorized":true,"single_current_action":"build_immutable_ast_source_structure_index_without_transforming_or_executing_successor","activation_parent":"3b5b242e033284fae47f9ba2e3b457330cfb4dff","activation_subject":"chore(plan): activate b2 c3 source structure index","activation_changed_paths":[".agent-work/PLAN.md"],"activation_additional_paths":0,"activation_commit_count":1,"programmatic_dispatch_head_reads":1,"second_dispatch_head_reads":0,"dispatch_plan_sha256_owner":"sha256_of_exact_plan_blob_at_programmatic_dispatch_head","hand_transcribed_child_sha":false,"review_archive":{"path":".agent-work/PLANS/20260730-1039-p7-retained-r3-option-b-b2-c2-controller-correction-failure-review.md","bytes":10555,"sha256":"8ba91dfb19458fc234b600bb9c39ed78624e6ab121df4b8b28265cc878f12728"},"source":{"path":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-b2-corrected-controller-cb38ac5.py","bytes":29841,"sha256":"da9055626eac266f0eb983e713f246b18bdf26f7443a30d2a6f2ddb503cf3ba4","new_read_budget":1},"c2_evidence":{"root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c2-controller-correction-da90556-20260730T1621Z","progressive_sha256":"7e72b76432d815c6040656b2e9d61092677437e3464c8a9e53bca6aba453b0d0","terminal_sha256":"56bf421941259015d02531369dc21e6e1184468e2246cb7adec49e99b992ce48","terminal_seal_sha256":"b3624e6c948afce349534461e54864dd19590489f3b454293a3af3b0f49db101","read_budget_each":1,"mutation":0},"future_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c3-source-structure-da90556-20260730T1645Z","builder_invocations":1,"source_structure_indexes":1,"selector_matrix":"12/12","successor_generation":0,"successor_invocations":0,"c1_evidence_reads":0,"retained_artifact_reads":0,"decision_source_reads":0,"retry":0,"fallback":0,"planner_stop":"B2_C3_SOURCE_STRUCTURE_INDEX_WAITING_PLANNER_REVIEW"}`
+`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_c4_ast_span_successor_plan_v1","reference_task_id":"REF-P7-25-R2-B2-C4","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-AST-SPAN-SUCCESSOR-QUALIFICATION-V1","dispatch_state":"waiting_orchestrator_activation","execution_authorized":false,"single_current_action":"generate_one_ast_span_selected_successor_and_qualify_shared_real_fixture_lifecycle_without_real_b2","activation_parent":"ORCHESTRATOR_REVIEW_COMMIT_TO_BE_FROZEN_BY_PLAN_ONLY_ACTIVATION","activation_subject":"chore(plan): activate b2 c4 ast span successor","activation_changed_paths":[".agent-work/PLAN.md"],"activation_additional_paths":0,"activation_commit_count":1,"programmatic_dispatch_head_reads":1,"second_dispatch_head_reads":0,"dispatch_plan_sha256_owner":"sha256_of_exact_plan_blob_at_programmatic_dispatch_head","review_archive":{"path":".agent-work/PLANS/20260730-1054-p7-retained-r3-option-b-b2-c3-source-structure-index-review.md","bytes":6695,"sha256":"694eb8a26b073d471035312c0c078c0b10912ef5f3eaa9f28d60534c8b74585f"},"c3_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c3-source-structure-da90556-20260730T1645Z","c3_input_reads_each":1,"source":{"path":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-b2-corrected-controller-cb38ac5.py","bytes":29841,"sha256":"da9055626eac266f0eb983e713f246b18bdf26f7443a30d2a6f2ddb503cf3ba4","new_read_budget":1},"future_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-ast-span-successor-da90556-20260730T1700Z","builder_invocations":1,"successor_generation":1,"successor_real_b2_invocations":0,"content_free_shared_lifecycle_matrix":"12/12","c1_c2_retained_decision_reads":0,"canonical_validator_calls":0,"eligibility_emissions":0,"release_operations":0,"retry":0,"fallback":0,"planner_stop":"B2_C4_AST_SPAN_SUCCESSOR_WAITING_ORCHESTRATOR_ACTIVATION"}`
 
-## 1. Review decision and authority boundary
+## 1. Planner decision and authority boundary
 
-1. C2 is rejected as
-   `REJECTED_SOURCE_TRANSFORM_ANCHOR_UNPROVEN_WITH_CORRECTION_ROOT_FAILURE_LIFECYCLE_ACCEPTED`.
-   It durably proved its correction-root failure lifecycle, but it failed before
-   successor generation, patching, or either content-free matrix.
-2. The exact source-shape cause is not durable evidence. C2 stored only
-   `main anchor count`, not the match count or structural candidates. Planner
-   did not reopen the already consumed source and will not infer whether the
-   cause was annotation, multiline syntax, decorators, nesting, or cardinality.
-3. The C2 builder's `ExactPostRootLifecycle` fixture helper was never invoked;
-   its matrix is `0/8`. Its attempted text transformation also did not connect
-   that helper to the future real `main` body. Only the builder/correction-root
-   progressive→terminal→seal→ER ordering is accepted as physically proven.
-4. C3 is discovery-only. It freezes semantic source structure and validates an
-   AST selector against synthetic in-memory sources. It does not select an
-   experimental/scientific branch, transform source, generate a successor,
-   run real inputs, emit eligibility, or consume a release.
-5. This is an Orchestrator-owned offline engineering/provenance question. No
-   unresolved color/measurement science or dangerous device operation exists;
-   Advisor/Human authorization is not required.
+1. C3 is accepted only as
+   `ACCEPTED_EXACT_SOURCE_STRUCTURE_INDEX_ONLY`. Its archive and physical
+   evidence prove the frozen source has one unambiguous top-level `main`, one
+   exact predicate, one main guard and one `main` mkdir candidate, and that the
+   content-free selector matrix is `12/12`.
+2. C3 terminal payload counters `terminal_writes=0` and
+   `terminal_seal_writes=0` are accepted as the truthful pre-write snapshot.
+   The separately returned physical terminal/seal and exact hash link prove
+   returned existence `1/1`; rewriting the terminal would be circular.
+3. C4 is an offline engineering/provenance qualification. It does not select a
+   scientific branch, touch hardware, consume retained R3, invoke real B2, or
+   call the canonical validator. Advisor/Human authorization is not required.
+4. C4 may create only a disposable successor and evidence under the future
+   root. Repository production/test/docs/skill/wrapper/GUIDE/FULL/archive paths
+   remain read-only. Executer may append only the final handoff to ER after the
+   terminal seal.
 
 ## 2. Activation and immutable root
 
-1. Orchestrator must first commit the reviewed ER/archive/PLAN/FULL state. Then
-   Planner may change only `.agent-work/PLAN.md` in one direct-child activation
-   commit with exact subject
-   `chore(plan): activate b2 c3 source structure index`.
-2. The activated PLAN must freeze the exact parent and child, preserve the sole
-   changed path and additional-path count `0`, set
-   `dispatch_state=execution_authorized`, `execution_authorized=true`, and set
-   the current stop to `B2_C3_SOURCE_STRUCTURE_INDEX_WAITING_PLANNER_REVIEW`.
-   It may not alter C3 scope, budgets, root, inputs, matrices, or locks.
-3. Executer must read symbolic HEAD exactly once and derive the exact PLAN blob
-   bytes/SHA from that programmatic dispatch commit. No hand-transcribed child
-   SHA, PLAN-embedded expected blob SHA, second HEAD read, alternate dispatch,
-   or commit by Executer is allowed.
-4. Worktree must be clean before root creation. If not, stop before any C2
-   evidence or source access; Executer may not clean or commit.
-5. Exact future root:
-   `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c3-source-structure-da90556-20260730T1645Z`.
+1. Orchestrator must first commit the reviewed C3 ER/archive/PLAN/FULL state.
+   Planner then changes only `.agent-work/PLAN.md` in one direct-child commit
+   with exact subject `chore(plan): activate b2 c4 ast span successor`.
+2. Activation may only freeze the actual parent/child, PLAN blob identity,
+   dispatch state, and final review stop. It may not widen inputs, budgets,
+   transforms, matrices, roots, locks, or successor authority.
+3. Executer reads symbolic HEAD once and derives the exact PLAN blob bytes/SHA
+   from that programmatic dispatch commit. A second HEAD read, hand-transcribed
+   child SHA, alternate dispatch, Executer commit, or dirty worktree is a hard
+   stop before any C3/source access.
+4. Exact future root:
+   `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-ast-span-successor-da90556-20260730T1700Z`.
    It must be absent immediately before one builder creates it mode `0700`.
-   No precreation, alternate timestamp/root, reuse, delete, rename, repair,
-   retry, fallback, second root, or second builder is allowed.
-6. Executer may author one disposable builder source outside the repository
-   under `/Volumes/4T/temp/rgbww-optimizer`, freeze its bytes/SHA before its
-   single invocation, and invoke it once. Repository implementation/test/docs/
-   skill/wrapper/GUIDE/FULL/archive/PLAN paths remain read-only.
+   No precreation, alternate root, reuse, repair, delete, rename, retry,
+   fallback, second builder, or second successor is allowed.
+5. Executer may author one new disposable builder under
+   `/Volumes/4T/temp/rgbww-optimizer`, freeze its bytes/SHA before one
+   invocation, and may not read or reuse the rejected C2/C3 builders as source.
 
-## 3. Frozen predecessor inputs and exact budgets
+## 3. Exact accepted C3 inputs
 
-After root creation and durable `progressive-00-root-created.json`, the sole
-builder may consume these inputs only:
+After durable `progressive-00-root-created.json`, the sole builder must perform
+one non-following root `lstat`, one direct `scandir`, and prove the exact nine
+C3 entries recorded in the accepted archive. It then receives exactly one
+non-following `lstat`, one `O_RDONLY|O_NOFOLLOW` open, one bounded read, one
+before/after `fstat` identity check, one SHA-256 and one strict parse for each of
+these six content inputs:
 
-### 3.1 C2 lifecycle evidence
+| File | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `source-structure-index.json` | 143133 | `b353f7664071ab4f2c83b34405be6dc1209b5f94a299aaeb04c095012743d4d4` |
+| `source-structure-index.sha256.json` | 563 | `7c7ea37c16320d2f56912f91b2949b90e80bd3f5b75c6e98495428258c86abf8` |
+| `ast-selector-validation-summary.json` | 11115 | `8251e1961e7900f3bbb0c1778c052b068e2cd8e472320b14b78ef3a3ad098d36` |
+| `ast-selector-validation-summary.sha256.json` | 536 | `faef3be5d6bfd430b53c6ab020279c9988f3655fe65ad4606990b4d2376b1e06` |
+| `terminal-evidence.json` | 5407 | `7861d271789a99cc0e52d03b320d37235ebebe5fb76403ecf2513c5744c07726` |
+| `terminal-evidence.sha256.json` | 542 | `301962e4004f39208d012871beab76ae0491dee939fd2abbbd273c26f3858777` |
 
-Each gets exactly one non-following `lstat`, one `O_RDONLY|O_NOFOLLOW` open, one
-bounded read, before/after `fstat` identity comparison, and one SHA-256:
+The three progressives may receive direct-entry metadata observation only;
+their content read/open/hash budgets are zero because their exact hashes are
+already bound by the accepted terminal. The builder must validate all three
+seals, `12/12`, source identity, selector cardinalities and ambiguity flags,
+`normalized_ast_include_attributes=false`, span mapping status, terminal
+status/stop, and all C3 lock zeros. It must write and durably reload
+`progressive-01-c3-index-accepted.json` before source access.
 
-1. `progressive-00-root-created.json`, expected bytes `1062`, SHA-256
-   `7e72b76432d815c6040656b2e9d61092677437e3464c8a9e53bca6aba453b0d0`;
-2. `terminal-evidence.json`, expected bytes `1607`, SHA-256
-   `56bf421941259015d02531369dc21e6e1184468e2246cb7adec49e99b992ce48`;
-3. `terminal-evidence.sha256.json`, expected bytes `455`, SHA-256
-   `b3624e6c948afce349534461e54864dd19590489f3b454293a3af3b0f49db101`.
+Forbidden C3 access includes parent/sibling enumeration, any C3 mutation,
+reopening an input, mmap/copy, and using the index as authority for anything
+beyond this exact frozen source.
 
-All must parse as strict canonical JSON; the seal must bind the exact physical
-terminal bytes/hash/schema/status and preserve its non-self-attestation. The C2
-root may receive one non-following directory `lstat` and one direct `scandir`
-proving its exact three-file set. No file or directory is mutated. After these
-checks, write and durably reload `progressive-01-c2-evidence-validated.json`.
+## 4. One frozen source read and semantic revalidation
 
-### 3.2 Rejected controller source
-
-Exact path:
+Exact source:
 `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-b2-corrected-controller-cb38ac5.py`,
-expected bytes `29841`, SHA-256
+bytes `29841`, SHA-256
 `da9055626eac266f0eb983e713f246b18bdf26f7443a30d2a6f2ddb503cf3ba4`.
 
-It receives one newly explicit non-following `lstat`, one
-`O_RDONLY|O_NOFOLLOW` open, one bounded read, one before/after `fstat` identity
-comparison, and one SHA-256. The same in-memory bytes may be decoded, tokenized,
-parsed with `ast.parse`, indexed, and source-span hashed; no second filesystem
-read is permitted. The source is never imported, compiled for execution,
-executed, copied, rewritten, patched, or serialized into an output.
+The builder gets exactly one non-following lstat/open/bounded-read/hash with
+before/after identity equality. The same in-memory bytes may be decoded,
+tokenized and parsed. It must independently recompute and match the C3 module,
+top-level-main, main-body, exact-predicate, main-guard and mkdir AST/span hashes
+before transforming. No regex, line-string anchor, first candidate, source
+reread, import, execution, copy-as-input, or direct text search may select a
+transform location.
 
-Forbidden reads/access counts remain exact zero:
+The builder must reject unless the accepted selectors are still exactly
+unambiguous (`main=1`, exact predicate `1`, guard `1`, mkdir in main `1`) and
+every selected physical byte span hashes to the accepted index. It then writes
+and durably reloads `progressive-02-source-revalidated.json`.
 
-- C1 index/seals/terminal artifacts and their directories;
-- all retained-R3 artifacts and their parent/sibling directories;
-- GUIDE, Advisor attachment/decision sources, release inputs;
-- canonical validator/helper/consumer/replay and production imports;
-- rejected C2 builder reread as an input; earlier failed-root access;
-- network, DNS, `.env`, credentials, device, camera, Ray, strip, cleanup,
-  capture, CR3/NPY, FORMAL, public analyzer, TD-C, sentinel, P8;
-- tests, compileall, CodeGraph, release generation/copy/consumption.
+## 5. Minimal AST/span successor transform
 
-## 4. Immutable AST/source-structure index
+The builder may generate exactly one successor source inside the future root.
+The transformation must be derived from AST node identity and accepted physical
+span boundaries, not from matching source text. It may change only:
 
-The builder must parse the frozen in-memory source without executing it and
-write one canonical `source-structure-index.json`. Discovery must complete and
-record candidate cardinalities even when they are zero or greater than one; it
-must not select the first candidate or fail merely because a prior textual
-cardinality assumption was wrong.
+1. one module-level lifecycle-owner definition needed to provide post-root
+   terminal/seal/ER gating; and
+2. the selected top-level `main` post-root region beginning only after the
+   accepted `.mkdir(...)` call returns, so that the real path delegates to that
+   same owner.
 
-The index must bind:
+Everything before and including root creation remains byte-identical. Module
+imports may change only by the minimum imports mechanically required by the
+single lifecycle owner. No CLI option, retained path, expected hash, manifest
+science/provenance predicate, canonical validator call, eligibility rule,
+release behavior, or `__main__` entry semantics may change.
 
-1. source path, bytes, SHA-256, device/inode, before/after open-file identity,
-   decode/AST/tokenize success, Python AST version, and no-execution counters;
-2. every `FunctionDef` or `AsyncFunctionDef` named `main`, including semantic
-   scope path, top-level flag, node kind, decorators count, argument/return AST
-   hashes, `lineno/col_offset/end_lineno/end_col_offset`, exact byte-span bytes
-   and SHA-256, and parent-node kind;
-3. every exact semantic call candidate equivalent to
-   `contains(index, expected_paths)`—callee/argument node kinds, keyword count,
-   enclosing scope, positions, normalized AST hash, and exact source-span hash;
-4. every module-level or nested `if` candidate semantically comparing
-   `__name__` with string `__main__`, including operand order, scope, body/else
-   statement counts, positions, normalized AST hash, and exact span hash;
-5. for each `main` candidate, an ordered body outline containing statement
-   index, AST node kind, positions, normalized AST hash, exact span hash,
-   descendant `Try`/handler counts, and call-node fingerprints;
-6. all `.mkdir(...)` call candidates inside each `main`, recording receiver AST
-   hash, positional/keyword shape, enclosing statement index, positions, and
-   span hash without assuming the receiver name;
-7. constant filename occurrences relevant to progressive, terminal, and seal
-   persistence as hashes plus enclosing call/statement descriptors; raw source
-   text or complete string payloads must not be emitted;
-8. one `selector_assessment` reporting candidate counts and unambiguous/ambiguous
-   booleans for each selector. These booleans are evidence only and do not grant
-   transformation authority.
+The lifecycle owner must be the sole owner of post-root progressive output,
+success terminal, failure terminal, terminal seal, and “ER exposure permitted”
+state. Its terminal payload is frozen before its writer and therefore records
+self terminal/seal writes as pre-write zero; the separate seal binds the
+returned physical terminal and states `terminal_write_returned=true` while
+remaining `not_self_attested`. It must never rewrite a terminal to manufacture
+post-return self counters.
 
-All normalized AST dumps used for hashing must set `include_attributes=false`;
-all exact source spans must additionally bind physical byte offsets and hashes
-so formatting boundaries are not lost. The builder must validate that every
-recorded span reparses or maps back to the indexed AST node as applicable.
+The successor must be canonical UTF-8, mode `0600`, parse successfully, and be
+sealed by `successor-source.sha256.json`. A canonical
+`transform-delta.json` must bind source/successor bytes+SHA, exact AST selector
+records consumed, insertion/replacement spans, before/after normalized AST
+hashes, unchanged prefix hash through root mkdir, changed byte ranges, import
+delta, and structural call edge from the real `main` to the sole lifecycle
+owner. Its seal is non-self-attested.
 
-After writing and strict-reloading the index, write a separate canonical
-`source-structure-index.sha256.json` binding its bytes/hash/schema/source hash,
-with `index_write_returned=true` and
-`index_seal_self_write_return=not_self_attested`.
+No successor is written until all source/index checks pass. The frozen rejected
+source and C3 root remain unchanged.
 
-## 5. Content-free AST selector matrix
+## 6. Content-free shared-lifecycle qualification
 
-The same builder must use only in-memory synthetic Python strings, never the
-real source path, for at least these exact `12/12` selector cases:
+The sole successor may be compiled in memory for qualification and loaded only
+into an isolated child namespace whose filesystem/network/device/validator/
+release entry points are replaced before any call. The successor's real CLI
+entry point and real B2 path are never invoked.
 
-1. plain top-level `def main():` is indexed;
-2. return-annotated top-level `def main() -> int:` is indexed;
-3. multiline `main` signature is indexed;
-4. decorated top-level `main` is indexed with decorator metadata;
-5. a nested `main` plus one top-level `main` are distinguished by scope;
-6. two top-level `main` definitions are reported ambiguous, not first-selected;
-7. an async top-level `main` is recorded as `AsyncFunctionDef`, not sync main;
-8. exact `contains(index, expected_paths)` call is identified semantically;
-9. extra/missing/reordered predicate arguments do not qualify as the exact call;
-10. single- and double-quoted `__main__` guards are semantically equivalent;
-11. reversed `"__main__" == __name__` operand order is recorded explicitly;
-12. multiline/keyword `.mkdir(...)` calls are indexed by AST, not line regex.
+One exact `12/12` matrix must prove the lifecycle callable object reached by the
+transformed real `main` is the same object exercised by fixtures—not a copied,
+shadow, fixture-only, monkeypatched replacement, or parallel owner:
 
-Each case must assert candidate counts, scope/top-level classification, node
-kinds, positions/span hashes where relevant, and ambiguity behavior. Write one
-canonical `ast-selector-validation-summary.json` and one non-self-attested
-`ast-selector-validation-summary.sha256.json`. No fixture directory or source
-file is needed; synthetic strings stay in memory and are not execution inputs.
+1. AST call-edge from exact top-level real `main` resolves to the sole owner;
+2. exactly one lifecycle-owner definition and one real-main delegation exist;
+3. bytes before/through real root mkdir are unchanged;
+4. success writes progressives before terminal, then terminal, then seal;
+5. failure immediately after root creation preserves the root progressive and
+   writes one truthful failure terminal plus one seal;
+6. failure during accepted-input validation preserves earlier evidence and
+   seals the exact stage/error;
+7. failure during manifest/index work cannot expose ER permission;
+8. terminal writer failure exposes neither seal nor ER permission;
+9. terminal-seal writer failure exposes no ER permission and never invents a
+   seal or rewrites terminal;
+10. successful physical terminal/seal linkage alone sets ER permission once;
+11. repeated owner entry, second terminal, clobber, retry and fallback all fail
+    closed;
+12. success and every failure case leave retained/validator/release/network/
+    device counters at zero and preserve the truthful pre-write self counters.
 
-After both index seals and selector-summary seals return, write and durably
-reload `progressive-02-structure-index-sealed.json`.
+Fixtures use brand-new child directories beneath the C4 root, deterministic
+in-memory records, injected local writers and failure points only. They may not
+read C1/C2/C3/source/retained inputs again. Each case records expected/actual
+ordered events, exact returned-write counts, pre-write payload counters,
+physical seal linkage, ER permission, exception stage and lock zeros.
 
-## 6. Single correction-root lifecycle and evidence
+The builder writes and seals `shared-lifecycle-validation-summary.json`, then
+writes and durably reloads `progressive-03-successor-qualified.json`. The
+successor is qualification-only and is not a B2 output, validator input,
+eligible release, repository source, or reusable authority until a later
+Planner review explicitly accepts it.
 
-Immediately after successful root creation, all later C2-evidence reads, source
-read/indexing, selector matrix, index/summary/seal writes, terminal, and ER
-exposure must be enclosed by one lifecycle owner. It must use exclusive-create,
-canonical bytes, file fsync, directory fsync, strict reload, and no-clobber for:
+## 7. Root lifecycle, terminal, and budgets
+
+All work after root creation is enclosed by one external evidence owner using
+exclusive-create, canonical bytes, file fsync, directory fsync, strict reload,
+mode `0600`, and no-clobber for:
 
 1. `progressive-00-root-created.json`;
-2. `progressive-01-c2-evidence-validated.json`;
-3. `source-structure-index.json`;
-4. `source-structure-index.sha256.json`;
-5. `ast-selector-validation-summary.json`;
-6. `ast-selector-validation-summary.sha256.json`;
-7. `progressive-02-structure-index-sealed.json`;
-8. `terminal-evidence.json`;
-9. `terminal-evidence.sha256.json`.
+2. `progressive-01-c3-index-accepted.json`;
+3. `progressive-02-source-revalidated.json`;
+4. `successor-controller.py`;
+5. `successor-source.sha256.json`;
+6. `transform-delta.json` and its seal;
+7. `shared-lifecycle-validation-summary.json` and its seal;
+8. `progressive-03-successor-qualified.json`;
+9. `terminal-evidence.json`;
+10. `terminal-evidence.sha256.json`.
 
-On any exception after root creation, preserve earlier files unchanged and
-write one truthful `hard_failure_waiting_for_planner` terminal with exact
-failing stage, exception type/message, counters, root/source/C2 evidence
-identities, last durable stage, and all lock zeros, then one physical terminal
-seal. Success status is `pass_waiting_for_planner`. Terminal schema:
-`p7_retained_r3_option_b_b2_c3_source_structure_terminal_v1`; seal schema:
-`p7_retained_r3_option_b_b2_c3_source_structure_terminal_seal_v1`.
-
-ER payload may become visible only after terminal-seal writer return. Executer
-must verify the physical terminal/seal link immediately before exactly one ER
-append. If progressive, terminal, or seal persistence fails, no ER append,
-invented seal, pass claim, rewrite, repair, retry, or fallback is permitted.
+On any post-root exception, preserve prior files and write exactly one
+`hard_failure_waiting_for_planner` terminal with exact stage/error/counters,
+then one physical terminal seal. ER is appended exactly once only after the
+terminal-seal writer returns and its link is reloaded. Persistence failure means
+no ER append, rewrite, repair, retry, fallback, second root or pass claim.
 
 Success budgets:
 
 ```text
 builder process/invocation = 1/1
-C3 root create = 1
-C2 root lstat/scandir/direct entries = 1/1/3
-C2 evidence lstat/open/read/hash/parse = 3/3/3/3/3
-rejected controller lstat/open/read/hash = 1/1/1/1
-source decode/tokenize/AST parse/index = 1/1/1/1
-source import/compile-for-execution/execute/copy/patch = 0/0/0/0/0
-source structure index/index seal = 1/1
-AST selector matrix = 12/12
-selector summary/summary seal = 1/1
-successor generation/patch/real invocation/content-free invocation = 0/0/0/0
-C1 evidence reads = 0
-retained artifact/directory access = 0
-decision-source access = 0
-retry/fallback/second builder/second root = 0/0/0/0
+C4 root create = 1
+C3 root lstat/scandir/direct entries = 1/1/9
+C3 six inputs lstat/open/read/hash/parse = 6/6/6/6/6
+C3 progressive content reads = 0
+source lstat/open/read/hash/decode/tokenize/AST parse = 1/1/1/1/1/1/1
+source import/execute/copy-as-input/text-regex selection = 0/0/0/0
+successor generation/write/seal = 1/1/1
+transform delta/seal = 1/1
+successor in-memory compile = 1
+successor real-main structural delegation proof = 1
+successor real B2/CLI/retained invocation = 0/0/0
+shared lifecycle matrix = 12/12
+validation summary/seal = 1/1
+C1/C2/retained/decision-source reads = 0
+canonical validator/helper/consumer/replay calls = 0
+eligibility/release = 0/0
+retry/fallback/second builder/second root/second successor = 0/0/0/0/0
 repository implementation edit/commit = 0/0
 EXECUTION_RESULT append = 1, only after terminal seal
 ```
 
-Canonical validator/helper/consumer/replay, eligibility, release, tests,
-compileall, focused/full/synthetic repo tests, CodeGraph, network/DNS/`.env`/
-credentials, device/camera/Ray/strip/cleanup/capture/FORMAL/public analyzer/
+Tests, compileall, CodeGraph, repository imports, network/DNS/`.env`/
+credentials, device/camera/Ray/strip/cleanup/capture, FORMAL/public analyzer/
 TD-C/sentinel/P8, firmware/deployment are all zero.
 
-Any dispatch/input/source/index/matrix/budget/persistence mismatch hard-fails
-with no retry, fallback, second root, repair, or later-stage entry. After durable
-C3 terminal seal and sole ER append, stop exact
-`B2_C3_SOURCE_STRUCTURE_INDEX_WAITING_PLANNER_REVIEW`.
+Any dispatch/input/index/source/transform/matrix/budget/persistence mismatch
+hard-fails with no retry or later-stage entry. After one terminal seal and one
+ER append, stop exact `B2_C4_AST_SPAN_SUCCESSOR_WAITING_PLANNER_REVIEW`.
 
-## 7. Acceptance and future lock
+## 8. Acceptance and future lock
 
-Planner may accept C3 only if it independently proves:
+Planner may accept C4 only if independent replay proves:
 
-- the C2 failure evidence chain is exact and unchanged;
-- the rejected source received exactly one newly authorized read and was never
-  imported, executed, copied, transformed, or patched;
-- the index records all semantic candidates and exact byte-span/AST hashes
-  without regex-based first-match selection;
-- discovery completion is independent of candidate cardinality;
-- selector fixtures pass `12/12`, including annotations, multiline syntax,
-  decorators, nesting, ambiguity, async, predicate, guard, and mkdir cases;
-- index, summary, terminal, and all seals are physical, canonical, linked, and
-  non-circular;
-- all C1/retained/decision/validator/release/device/scientific and successor
-  operation counters are zero.
+- all accepted C3 inputs and seals were exact and read only within budget;
+- one source read matched every accepted AST/span selector;
+- the successor delta is mechanically limited to the sole owner, minimum
+  imports, and real-main post-root delegation while the through-mkdir prefix is
+  byte-identical;
+- the transformed real main and all fixtures resolve to the same owner;
+- matrix is `12/12`, failure ordering is fail-closed, and terminal/seal/ER
+  ordering is non-circular;
+- all retained/validator/eligibility/release/device/scientific locks are zero.
 
-Even a C3 pass only freezes source-structure evidence. It does not prove or
-authorize a successor transformation, resolved-record behavior, successor
-lifecycle matrix, real-main lifecycle integration, real B2 invocation, B3,
-validator, eligibility, release, device work, FORMAL-R6, strip, TD-C, sentinel,
-or P8. A later Planner package must consume the accepted structure index and
-define one AST-based minimal transform that routes both content-free fixtures
-and the real post-root path through the same lifecycle owner.
+Even acceptance authorizes no real B2. The next Planner package must consume
+the accepted successor plus C1 path-owner evidence and define a new bounded
+content-reading B2 invocation. B3, eligibility, release consumption, devices,
+FORMAL-R6, strip, TD-C, sentinel and P8 remain hard locked.
 
 ## 维护性判断
 
-本纠偏把“发现源结构”和“修改源结构”拆开：C3 只建立单一 AST/index owner，并复用已被物理证明的 correction-root terminal persistence 模式，不再依赖脆弱的文本 regex anchor。它不修改 production/test owner、不新增 eligibility/scientific owner，也不形成平行执行框架；后续 transform 必须消费本 index 并保持一个真实/fixture 共用的 lifecycle owner。
+C4 keeps semantic selection in the accepted C3 AST index and requires exactly
+one lifecycle owner shared by real-main structure and fixtures. The successor
+remains disposable and offline, so this package introduces no production owner
+or parallel execution framework. Follow-up cleanup is unnecessary unless C4
+reveals that the existing controller cannot express the single-owner boundary
+without a broader refactor; that would return to Orchestrator, not Advisor.
