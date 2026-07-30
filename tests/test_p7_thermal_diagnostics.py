@@ -3092,6 +3092,329 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                     new_checkpoint=checkpoint,
                 )
 
+    def test_governance_lineage_successor_accepts_exact_authorized_history_and_preserves_canonical_owner(self):
+        root = Path(__file__).parents[1]
+        checkpoint = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=root, check=True,
+            capture_output=True, text=True,
+        ).stdout.strip()
+        canonical = subject.TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_PATH.read_bytes()
+        manifest = json.loads(canonical)
+        self.assertEqual(
+            canonical,
+            json.dumps(
+                manifest, sort_keys=True, separators=(",", ":"), allow_nan=False,
+            ).encode("utf-8") + b"\n",
+        )
+        self.assertEqual(
+            set(manifest["changed_path_ledger"]), {"argv", "count", "lf_sha256"},
+        )
+        self.assertEqual(manifest["changed_path_ledger"]["count"], 181)
+        self.assertEqual(
+            manifest["changed_path_ledger"]["argv"],
+            [
+                "git", "diff", "--name-only",
+                subject.TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_PARENT,
+                subject.TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_COMMIT,
+            ],
+        )
+        classifications = subject._validate_td_b_governance_lineage_successor(
+            new_checkpoint=checkpoint,
+        )
+        self.assertEqual(dict(classifications), {
+            ".agents/skills/camera-based-rgbww-optimizer/SKILL.md":
+                "bounded_validation_or_documentation",
+            "AGENTS.md": "bounded_validation_or_documentation",
+        })
+        self.assertFalse(
+            {"eligibility", "eligible", "release", "production_release_usable"}
+            .intersection(classifications)
+        )
+        subject._validate_td_b_agents_policy_lineage(
+            old_checkpoint=subject.TD_B_SETUP_CHECKPOINT,
+            new_checkpoint=checkpoint,
+        )
+        subject._validate_td_b_public_default_successor_lineage(
+            new_checkpoint=checkpoint,
+        )
+        candidate = subject.build_td_b_setup_release_lineage_candidate(
+            subject.TD_B_SETUP_RELEASE_PATH,
+            old_checkpoint=subject.TD_B_SETUP_CHECKPOINT,
+            new_checkpoint=checkpoint,
+            changed_paths=list(classifications),
+        )
+        self.assertEqual(candidate["status"], "eligible_waiting_for_planner")
+        self.assertFalse(candidate["production_release_usable"])
+        self.assertTrue(candidate["planner_acceptance_required"])
+        self.assertNotIn("eligibility", classifications)
+
+    def test_governance_lineage_successor_fails_closed_on_exact_drift_without_widening(self):
+        root = Path(__file__).parents[1]
+        checkpoint = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=root, check=True,
+            capture_output=True, text=True,
+        ).stdout.strip()
+        canonical = subject.TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_PATH.read_bytes()
+
+        with _w0_temporary_directory() as tempdir:
+            temp = Path(tempdir)
+            copied = temp / "governance-successor.json"
+            copied.write_bytes(canonical)
+
+            def canonical_bytes(value):
+                return json.dumps(
+                    value, sort_keys=True, separators=(",", ":"), allow_nan=False,
+                ).encode("utf-8") + b"\n"
+
+            def reject_bytes(label, payload, message=None):
+                changed = temp / f"{label}.json"
+                changed.write_bytes(payload)
+                expected = hashlib.sha256(payload).hexdigest()
+                assertion = (
+                    self.assertRaisesRegex(ValueError, message)
+                    if message else self.assertRaises(ValueError)
+                )
+                with assertion:
+                    subject._validate_td_b_governance_lineage_successor(
+                        new_checkpoint=checkpoint,
+                        manifest_path=changed,
+                        require_canonical_manifest_owner=False,
+                        expected_manifest_sha256=expected,
+                    )
+
+            def reject_mutation(label, mutate, message=None):
+                value = json.loads(canonical)
+                mutate(value)
+                reject_bytes(label, canonical_bytes(value), message)
+
+            with self.assertRaisesRegex(ValueError, "owner differs"):
+                subject._validate_td_b_governance_lineage_successor(
+                    new_checkpoint=checkpoint, manifest_path=copied,
+                )
+            subject._validate_td_b_governance_lineage_successor(
+                new_checkpoint=checkpoint, manifest_path=copied,
+                require_canonical_manifest_owner=False,
+            )
+            tampered = canonical[:-2] + b"0\n"
+            changed = temp / "whole-file-hash.json"
+            changed.write_bytes(tampered)
+            with self.assertRaisesRegex(ValueError, "hash differs"):
+                subject._validate_td_b_governance_lineage_successor(
+                    new_checkpoint=checkpoint, manifest_path=changed,
+                    require_canonical_manifest_owner=False,
+                )
+            missing = temp / "missing.json"
+            with self.assertRaisesRegex(ValueError, "missing"):
+                subject._validate_td_b_governance_lineage_successor(
+                    new_checkpoint=checkpoint, manifest_path=missing,
+                    require_canonical_manifest_owner=False,
+                )
+            directory = temp / "directory.json"
+            directory.mkdir()
+            with self.assertRaisesRegex(ValueError, "non-regular"):
+                subject._validate_td_b_governance_lineage_successor(
+                    new_checkpoint=checkpoint, manifest_path=directory,
+                    require_canonical_manifest_owner=False,
+                )
+            link = temp / "link.json"
+            link.symlink_to(copied)
+            with self.assertRaisesRegex(ValueError, "symlink"):
+                subject._validate_td_b_governance_lineage_successor(
+                    new_checkpoint=checkpoint, manifest_path=link,
+                    require_canonical_manifest_owner=False,
+                )
+
+            reject_bytes("malformed", b"{", "JSON differs")
+            reject_bytes(
+                "duplicate-key",
+                canonical.replace(b'"count":181', b'"count":181,"count":181'),
+                "JSON differs",
+            )
+            reject_bytes(
+                "non-finite", canonical.replace(b'"count":181', b'"count":NaN'),
+                "JSON differs",
+            )
+
+            top_level_cases = (
+                ("top-missing", lambda v: v.pop("rollback")),
+                ("top-extra", lambda v: v.__setitem__("unexpected", 0)),
+                ("schema", lambda v: v.__setitem__("schema", "wrong")),
+                ("status", lambda v: v.__setitem__("status", "wrong")),
+                ("owner", lambda v: v.__setitem__("owner", "wrong")),
+                ("scope", lambda v: v.__setitem__("scope", "broader")),
+                ("eligibility-owner", lambda v: v.__setitem__("eligibility_owner", "other")),
+                ("commit", lambda v: v.__setitem__("commit", "0" * 40)),
+                ("parent", lambda v: v.__setitem__("parent_commit", "0" * 40)),
+                ("selected-count-field", lambda v: v.__setitem__("selected_path_count", 3)),
+                ("combined-diff", lambda v: v.__setitem__("selected_binary_diff_sha256", "0" * 64)),
+                ("rollback", lambda v: v.__setitem__("rollback", "broader")),
+                ("top-extra-paths", lambda v: v.__setitem__("extra_paths", ["OTHER"])),
+            )
+            ledger_cases = (
+                ("ledger-missing", lambda v: v["changed_path_ledger"].pop("argv")),
+                ("ledger-extra", lambda v: v["changed_path_ledger"].__setitem__("extra", 0)),
+                ("ledger-argv", lambda v: v["changed_path_ledger"]["argv"].append("OTHER")),
+                ("ledger-count", lambda v: v["changed_path_ledger"].__setitem__("count", 180)),
+                ("ledger-count-bool", lambda v: v["changed_path_ledger"].__setitem__("count", True)),
+                ("ledger-hash", lambda v: v["changed_path_ledger"].__setitem__("lf_sha256", "0" * 64)),
+            )
+            for label, mutate in (*top_level_cases, *ledger_cases):
+                with self.subTest(case=label):
+                    reject_mutation(label, mutate)
+
+            selected_cases = (
+                ("selected-missing", lambda v: v["selected_paths"].pop()),
+                ("selected-extra", lambda v: v["selected_paths"].append(dict(v["selected_paths"][0]))),
+                ("selected-order", lambda v: v["selected_paths"].reverse()),
+                ("selected-duplicate", lambda v: v["selected_paths"][1].__setitem__("path", v["selected_paths"][0]["path"])),
+                ("selected-third-path", lambda v: v["selected_paths"][1].__setitem__("path", "OTHER")),
+                ("entry-missing-key", lambda v: v["selected_paths"][0].pop("scope")),
+                ("entry-extra-key", lambda v: v["selected_paths"][0].__setitem__("unexpected", 0)),
+                ("entry-classification", lambda v: v["selected_paths"][0].__setitem__("classification", "broader")),
+                ("entry-scope", lambda v: v["selected_paths"][0].__setitem__("scope", "broader")),
+                ("before-blob", lambda v: v["selected_paths"][0].__setitem__("before_blob_oid", "0" * 40)),
+                ("after-blob", lambda v: v["selected_paths"][0].__setitem__("after_blob_oid", "0" * 40)),
+                ("before-sha", lambda v: v["selected_paths"][0].__setitem__("before_sha256", "0" * 64)),
+                ("after-sha", lambda v: v["selected_paths"][0].__setitem__("after_sha256", "0" * 64)),
+                ("single-diff", lambda v: v["selected_paths"][0].__setitem__("binary_diff_sha256", "0" * 64)),
+                ("entry-rollback", lambda v: v["selected_paths"][0].__setitem__("rollback", "broader")),
+                ("entry-extra-paths", lambda v: v["selected_paths"][0].__setitem__("extra_paths", ["OTHER"])),
+            )
+            counter_cases = (
+                ("counter-missing", lambda v: v["operation_counters"].pop("camera_calls")),
+                ("counter-extra", lambda v: v["operation_counters"].__setitem__("other", 0)),
+                ("counter-nonzero", lambda v: v["operation_counters"].__setitem__("camera_calls", 1)),
+                ("counter-bool", lambda v: v["operation_counters"].__setitem__("camera_calls", False)),
+                ("counter-type", lambda v: v["operation_counters"].__setitem__("camera_calls", "0")),
+            )
+            for label, mutate in (*selected_cases, *counter_cases):
+                with self.subTest(case=label):
+                    reject_mutation(label, mutate)
+
+            for label, value in (
+                ("invalid-checkpoint", "not-a-checkpoint"),
+                ("abbreviated-checkpoint", checkpoint[:12]),
+                ("non-descendant", subject.TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_PARENT),
+            ):
+                with self.subTest(case=label), self.assertRaises(ValueError):
+                    subject._validate_td_b_governance_lineage_successor(
+                        new_checkpoint=value,
+                    )
+            with mock.patch.object(
+                subject.subprocess, "run",
+                side_effect=subprocess.CalledProcessError(1, ["git"]),
+            ):
+                with self.assertRaisesRegex(ValueError, "Git owner differs"):
+                    subject._validate_td_b_governance_lineage_successor(
+                        new_checkpoint=checkpoint,
+                    )
+
+            original_run = subprocess.run
+
+            def reject_git_drift(label, matches, output, message):
+                def drift(command, *args, **kwargs):
+                    if matches(command):
+                        emitted = (
+                            output.decode("utf-8")
+                            if kwargs.get("text") and isinstance(output, bytes)
+                            else output
+                        )
+                        return subprocess.CompletedProcess(command, 0, stdout=emitted)
+                    return original_run(command, *args, **kwargs)
+
+                with self.subTest(case=label), mock.patch.object(
+                    subject.subprocess, "run", side_effect=drift,
+                ):
+                    with self.assertRaisesRegex(ValueError, message):
+                        subject._validate_td_b_governance_lineage_successor(
+                            new_checkpoint=checkpoint,
+                        )
+
+            selected_path = ".agents/skills/camera-based-rgbww-optimizer/SKILL.md"
+            reject_git_drift(
+                "historical-parent",
+                lambda c: c == ["git", "rev-parse", f"{subject.TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_COMMIT}^"],
+                ("0" * 40 + "\n").encode(), "historical owner differs",
+            )
+            reject_git_drift(
+                "ledger-bytes",
+                lambda c: c[:3] == ["git", "diff", "--name-only"],
+                b"drift\n", "historical owner differs",
+            )
+            reject_git_drift(
+                "before-blob-recompute",
+                lambda c: c == ["git", "rev-parse", f"{subject.TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_PARENT}:{selected_path}"],
+                ("0" * 40 + "\n").encode(), "path identity differs",
+            )
+            reject_git_drift(
+                "after-blob-recompute",
+                lambda c: c == ["git", "rev-parse", f"{subject.TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_COMMIT}:{selected_path}"],
+                ("0" * 40 + "\n").encode(), "path identity differs",
+            )
+            reject_git_drift(
+                "before-bytes-recompute",
+                lambda c: c == ["git", "show", f"{subject.TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_PARENT}:{selected_path}"],
+                b"drift", "path identity differs",
+            )
+            reject_git_drift(
+                "after-bytes-recompute",
+                lambda c: c == ["git", "show", f"{subject.TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_COMMIT}:{selected_path}"],
+                b"drift", "path identity differs",
+            )
+            reject_git_drift(
+                "checkpoint-bytes",
+                lambda c: c == ["git", "show", f"{checkpoint}:{selected_path}"],
+                b"drift", "path identity differs",
+            )
+            reject_git_drift(
+                "single-binary-diff",
+                lambda c: c[-1:] == [selected_path] and c[:3] == ["git", "diff", "--binary"],
+                b"drift", "path identity differs",
+            )
+            reject_git_drift(
+                "combined-binary-diff",
+                lambda c: c[:3] == ["git", "diff", "--binary"] and len(c) == 8,
+                b"drift", "combined diff differs",
+            )
+
+            working_path = root / ".agents/skills/camera-based-rgbww-optimizer/SKILL.md"
+            original_read_bytes = Path.read_bytes
+
+            def drift_working(path):
+                if path.resolve() == working_path.resolve():
+                    return b"drift"
+                return original_read_bytes(path)
+
+            with mock.patch.object(Path, "read_bytes", drift_working):
+                with self.assertRaisesRegex(ValueError, "path identity differs"):
+                    subject._validate_td_b_governance_lineage_successor(
+                        new_checkpoint=checkpoint,
+                    )
+
+            # Both old immutable payloads must reject before the subordinate
+            # validator runs; no new hash can serve as a fallback.
+            with mock.patch.object(
+                subject, "TD_B_PUBLIC_DEFAULT_SUCCESSOR_MANIFEST_SHA256", "0" * 64,
+            ), mock.patch.object(
+                subject, "_validate_td_b_governance_lineage_successor",
+            ) as subordinate:
+                with self.assertRaisesRegex(ValueError, "manifest hash differs"):
+                    subject._validate_td_b_public_default_successor_lineage(
+                        new_checkpoint=checkpoint,
+                    )
+                subordinate.assert_not_called()
+            with mock.patch.object(
+                subject, "TD_B_AGENTS_POLICY_FREEZE_SHA256", "0" * 64,
+            ), mock.patch.object(
+                subject, "_validate_td_b_governance_lineage_successor",
+            ) as subordinate:
+                with self.assertRaisesRegex(ValueError, "freeze hash differs"):
+                    subject._validate_td_b_agents_policy_lineage(
+                        old_checkpoint=subject.TD_B_SETUP_CHECKPOINT,
+                        new_checkpoint=checkpoint,
+                    )
+                subordinate.assert_not_called()
+
     def test_public_default_successor_manifest_fails_closed_on_exact_drift(self):
         checkpoint = subprocess.run(
             ["git", "rev-parse", "HEAD"], cwd=Path(__file__).parents[1],

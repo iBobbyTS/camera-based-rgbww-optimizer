@@ -309,7 +309,7 @@ TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_PATH = (
     PROJECT_ROOT / "config/hsi/p7-governance-lineage-successor-v1.json"
 )
 TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_SHA256 = (
-    "7ff96378e76c5b450c44db55d5b5eee922afe084bb0ea37d837a6f12db928795"
+    "69bbbb369e776e1aa11a227ecf3432de44bc517c7eb25828094f4820df45042e"
 )
 TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_COMMIT = (
     "3e2ebed132b6d4338bfa324bfc42c3565d2eeb3c"
@@ -2332,6 +2332,33 @@ def _td_b_checkpoint_contains(
     ).returncode == 0
 
 
+def _load_td_b_strict_json_object(payload: bytes, *, owner: str) -> Mapping[str, Any]:
+    """Decode an exact JSON object while rejecting duplicate and non-finite values."""
+
+    def reject_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError(f"{owner} JSON contains duplicate keys")
+            result[key] = value
+        return result
+
+    def reject_non_finite(value: str) -> None:
+        raise ValueError(f"{owner} JSON contains non-finite value: {value}")
+
+    try:
+        decoded = json.loads(
+            payload.decode("utf-8"),
+            object_pairs_hook=reject_duplicate_keys,
+            parse_constant=reject_non_finite,
+        )
+    except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
+        raise ValueError(f"{owner} JSON differs") from exc
+    if not isinstance(decoded, Mapping):
+        raise ValueError(f"{owner} contract differs")
+    return decoded
+
+
 def _validate_td_b_governance_lineage_successor(
     *,
     new_checkpoint: str,
@@ -2363,13 +2390,10 @@ def _validate_td_b_governance_lineage_successor(
     )
     if hashlib.sha256(payload).hexdigest() != expected_payload_sha256:
         raise ValueError("TD-B governance successor manifest hash differs")
-    try:
-        manifest = json.loads(payload)
-    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
-        raise ValueError("TD-B governance successor manifest JSON differs") from exc
-
-    if not isinstance(manifest, Mapping):
-        raise ValueError("TD-B governance successor manifest contract differs")
+    manifest = _load_td_b_strict_json_object(
+        payload,
+        owner="TD-B governance successor manifest",
+    )
     required = {
         "schema", "status", "owner", "scope", "eligibility_owner", "commit",
         "parent_commit", "changed_path_ledger", "selected_path_count",
@@ -2417,8 +2441,8 @@ def _validate_td_b_governance_lineage_successor(
     ]
     if (
         not isinstance(ledger, Mapping)
-        or set(ledger) != {"command", "count", "lf_sha256"}
-        or ledger.get("command") != expected_ledger_command
+        or set(ledger) != {"argv", "count", "lf_sha256"}
+        or ledger.get("argv") != expected_ledger_command
         or type(ledger.get("count")) is not int
         or ledger.get("count") != 181
         or ledger.get("lf_sha256")
@@ -2576,17 +2600,15 @@ def _validate_td_b_public_default_successor_lineage(
 ) -> Mapping[str, str]:
     """Validate the exact public-default successor commit and current path owners."""
     root = Path(project_root).resolve()
-    governance_classifications = (
-        _validate_td_b_governance_lineage_successor(
-            new_checkpoint=new_checkpoint,
-            project_root=root,
-        )
-        if _td_b_checkpoint_contains(
-            new_checkpoint,
-            TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_COMMIT,
-            project_root=root,
-        )
-        else {}
+    governance_successor = _td_b_checkpoint_contains(
+        new_checkpoint,
+        TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_COMMIT,
+        project_root=root,
+    )
+    historical_checkpoint = (
+        TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_PARENT
+        if governance_successor
+        else new_checkpoint
     )
     requested = Path(manifest_path)
     if requested.is_symlink():
@@ -2674,11 +2696,6 @@ def _validate_td_b_public_default_successor_lineage(
 
     for entry_path, classification in TD_B_PUBLIC_DEFAULT_SUCCESSOR_CLASSIFICATIONS.items():
         entry = by_path[entry_path]
-        current_owner_sha256 = (
-            TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_CURRENT_SHA256[entry_path]
-            if entry_path in governance_classifications
-            else entry.get("current_blob_sha256")
-        )
         rollback = (
             f"restore {entry_path} from parent {TD_B_PUBLIC_DEFAULT_SUCCESSOR_PARENT} "
             "and remove only this exact successor manifest entry"
@@ -2717,7 +2734,7 @@ def _validate_td_b_public_default_successor_lineage(
                 cwd=root, check=True, capture_output=True,
             ).stdout
             checkpoint = subprocess.run(
-                ["git", "show", f"{new_checkpoint}:{entry_path}"],
+                ["git", "show", f"{historical_checkpoint}:{entry_path}"],
                 cwd=root, check=True, capture_output=True,
             ).stdout
             diff = subprocess.run(
@@ -2730,17 +2747,35 @@ def _validate_td_b_public_default_successor_lineage(
                 f"TD-B public-default successor Git owner differs: {entry_path}"
             ) from exc
         if (
-            hashlib.sha256(working.read_bytes()).hexdigest() != current_owner_sha256
+            (
+                not (
+                    governance_successor
+                    and entry_path
+                    in TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_CLASSIFICATIONS
+                )
+                and hashlib.sha256(working.read_bytes()).hexdigest()
+                != entry.get("current_blob_sha256")
+            )
             or hashlib.sha256(old).hexdigest() != entry.get("old_blob_sha256")
             or hashlib.sha256(current).hexdigest()
             != entry.get("current_blob_sha256")
             or hashlib.sha256(checkpoint).hexdigest()
-            != current_owner_sha256
+            != entry.get("current_blob_sha256")
             or hashlib.sha256(diff).hexdigest() != entry.get("diff_sha256")
         ):
             raise ValueError(
                 f"TD-B public-default successor hash or diff differs: {entry_path}"
             )
+    if governance_successor:
+        governance_classifications = _validate_td_b_governance_lineage_successor(
+            new_checkpoint=new_checkpoint,
+            project_root=root,
+        )
+        overlap = set(governance_classifications).intersection(
+            TD_B_PUBLIC_DEFAULT_SUCCESSOR_CLASSIFICATIONS
+        )
+        if overlap != {".agents/skills/camera-based-rgbww-optimizer/SKILL.md"}:
+            raise ValueError("TD-B governance successor overlap differs")
     return TD_B_PUBLIC_DEFAULT_SUCCESSOR_CLASSIFICATIONS
 
 
