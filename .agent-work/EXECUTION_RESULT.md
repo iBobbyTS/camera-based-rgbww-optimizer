@@ -16321,3 +16321,17 @@ C13_IMPLEMENTATION_RESULT {"schema":"c13_implementation_result_v1","timestamp":"
 - Retained R3: `RETAINED_UNVALIDATED_UNCONSUMED`.
 - Terminal: `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b1a-c3e6f19-corrective-15-offline/20260730T143516Z/terminal-evidence.json`; bytes `3693`; SHA-256 `507747e10989e4acd57274a013d512c21015a7bd05607deba17a3a61716a406e`.
 - Decision request: Planner must reject this execution evidence and decide a bounded successor that can validate the already-created exact implementation commit without representing reconstructed identities as pre-edit freezes.
+
+
+## F19 Corrective 16 — retained metadata-boundary validation-only execution
+
+- Contract: `P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-16-RETAINED-METADATA-BOUNDARY-VALIDATION`
+- Status: `FAILED`; Planner stop: `F19_CORRECTIVE_16_TERMINAL_WAITING_PLANNER`.
+- Dispatch HEAD: `7f2ce2393eaa0f4ed42d891ae666faccb422d445` (programmatic symbolic HEAD read count `1`; human-transcribed child SHA count `0`).
+- Brand-new root: `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b1a-c3e6f19-corrective-16-offline/20260730T144754Z`; root/retry/fallback = `1/0/0`.
+- Prevalidation Git-object freeze: `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b1a-c3e6f19-corrective-16-offline/20260730T144754Z/prevalidation-git-object-freeze.json`, SHA-256 `d928035c5a60c6da0162802ea269d887b3d162da892c797f02ae7ee06d6cfedd`; `derived_prevalidation_from_git_objects=true`, `recorded_before_historical_edit=false`.
+- Retained implementation remains `3a14fe0bd663250dd48c65e71f1a6550df89267f` with exact parent/subject/source+test topology and canonical binary patch SHA-256 `018cf00c4e452673f4303ce528fbea2c0b6667e8dc691f5ff44c6968603412de`.
+- Validation calls: [{"exit_code": 0, "log": "/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b1a-c3e6f19-corrective-16-offline/20260730T144754Z/01-compileall.log", "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "name": "compileall"}, {"exit_code": 0, "log": "/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b1a-c3e6f19-corrective-16-offline/20260730T144754Z/02-targeted-six.log", "log_sha256": "19b5fbf73c8c5b2c8c110309cdacc10084d4a49fea2dc439df8a7c4d8b814bd5", "name": "targeted-six"}, {"exit_code": 1, "log": "/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b1a-c3e6f19-corrective-16-offline/20260730T144754Z/03-focused.log", "log_sha256": "abbc6431d0ed70994b553d47631ecbca4b32f4382f1f2374b9d836dd9c78e26e", "name": "focused"}]
+- Terminal: `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b1a-c3e6f19-corrective-16-offline/20260730T144754Z/terminal-evidence.json`, bytes `7577`, SHA-256 `53372a9d08ed8f30c5f2f471c15cabf0f7fe9c432ce070a1d23a2ec30db7566a`.
+- Candidate/retained-R3 validator/eligibility/release/network/`.env`/device/camera/Ray/strip/cleanup/formal/public analyzer/TD-C/sentinel/P8 calls all `0`.
+- No source/test/config edits or implementation commit; retained R3 remains `RETAINED_UNVALIDATED_UNCONSUMED`.
