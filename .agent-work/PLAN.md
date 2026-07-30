@@ -1,6 +1,6 @@
 # REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-17：post-EQ validation exact subordinate successor
 
-**计划状态：** `PLANNER_REVIEWED_WAITING_ORCHESTRATOR`
+**计划状态：** `EXECUTER_AUTHORIZED`
 
 **Planner 日期：** `2026-07-30`
 
@@ -9,13 +9,13 @@
 **Contract ID：**
 `P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-17-POST-EQ-VALIDATION-SUCCESSOR`
 
-**唯一当前动作：** Orchestrator验收C16 rejection，更新其独占的FULL reference，并把C16 ER、review archive、本C17 PLAN与FULL整理为一个focused reviewed-state commit；随后Planner只可将该exact reviewed-state commit冻结为PLAN-only activation parent并把本包转为Executer-authorized。当前不得dispatch Executer、编辑代码、运行测试、创建evidence root或执行后续阶段。
+**唯一当前动作：** Executer从本PLAN activation commit的clean dispatch HEAD启动exact一次C17 controller，在brand-new evidence root内完成pre-edit freeze、exact source+dedicated-test implementation commit及第6节的一次性验证链；terminal seal与ER append后立即停止在Planner验收门。
 
 **C16 review archive：**
 `.agent-work/PLANS/20260730-0852-p7-retained-r3-option-b-b1a-c3e6f19-corrective-16-review.md`，bytes `5055`，SHA-256
 `394223de840fcdeeaeda645cac9835c453d71ac758839122b7b6df5c16a16cc2`；Orchestrator须独立复算。
 
-`PLAN_MACHINE_CONTRACT={"schema":"f19_corrective_17_post_eq_validation_successor_v1","reference_task_id":"REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-17","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-17-POST-EQ-VALIDATION-SUCCESSOR","dispatch_state":"planner_reviewed_waiting_orchestrator","execution_authorized":false,"single_current_action":"orchestrator_review_full_update_and_reviewed_state_commit","review_archive":{"path":".agent-work/PLANS/20260730-0852-p7-retained-r3-option-b-b1a-c3e6f19-corrective-16-review.md","bytes":5055,"sha256":"394223de840fcdeeaeda645cac9835c453d71ac758839122b7b6df5c16a16cc2"},"c16":{"dispatch_head":"7f2ce2393eaa0f4ed42d891ae666faccb422d445","terminal_sha256":"53372a9d08ed8f30c5f2f471c15cabf0f7fe9c432ce070a1d23a2ec30db7566a","decision":"rejected_focused_post_eq_validation_successor_missing"},"future_activation":{"required":true,"required_parent":"TO_BE_FROZEN_AFTER_ORCHESTRATOR_REVIEW","subject":"chore(plan): activate f19 corrective 17","changed_paths":[".agent-work/PLAN.md"],"additional_paths":0,"commit_count":1},"implementation":{"changed_paths":["src/camera_based_rgbww_optimizer/optimization/p7_thermal_diagnostics.py","tests/test_p7_thermal_diagnostics.py"],"additional_paths":0,"commit_count":1,"subject":"fix(p7): bind post-eq validation successor"},"subordinate_successor":{"commit":"3a14fe0bd663250dd48c65e71f1a6550df89267f","parent":"431d9d8dd58a6c0df7fb0b225ce206d2e8c57f53","subject":"fix(p7): exclude root Finder metadata from EQ evidence","changed_paths":["src/camera_based_rgbww_optimizer/optimization/p7_thermal_diagnostics.py","tests/test_p7_td_b_r6_contract.py"],"paths_lf_sha256":"cf2edd153dbd6c49caa9efc65b793521055d1358079d5dc70ad84df319b8011e","canonical_binary_patch_sha256":"018cf00c4e452673f4303ce528fbea2c0b6667e8dc691f5ff44c6968603412de","classification_path":"tests/test_p7_td_b_r6_contract.py","classification":"accepted_post_eq_exposure_policy_validation"},"validation":{"compileall":1,"targeted_selector_count":5,"focused_modules":["tests.test_p7_td_b_r6_contract","tests.test_p7_thermal_diagnostics","tests.test_agent_work_machine_contract","tests.test_p7_retained_r3_exact_five_controller","tests.test_p7_retained_release_audit"],"full_suite":1,"codegraph_sync":1,"diff_check":1,"retry":0,"fallback":0},"locks":{"candidate":0,"retained_r3":0,"canonical_retained_validator":0,"eligibility_emission":0,"release":0,"network":0,"env":0,"device":0,"camera":0,"ray":0,"strip":0,"cleanup":0,"formal":0,"public_analyzer":0,"td_c":0,"sentinel":0,"p8":0},"retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","planner_stop":"F19_CORRECTIVE_17_TERMINAL_WAITING_PLANNER"}`
+`PLAN_MACHINE_CONTRACT={"schema":"f19_corrective_17_post_eq_validation_successor_v1","reference_task_id":"REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-17","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-17-POST-EQ-VALIDATION-SUCCESSOR","dispatch_state":"executer_authorized","execution_authorized":true,"single_current_action":"execute_exact_once_c17_post_eq_validation_successor_controller","review_archive":{"path":".agent-work/PLANS/20260730-0852-p7-retained-r3-option-b-b1a-c3e6f19-corrective-16-review.md","bytes":5055,"sha256":"394223de840fcdeeaeda645cac9835c453d71ac758839122b7b6df5c16a16cc2"},"c16":{"dispatch_head":"7f2ce2393eaa0f4ed42d891ae666faccb422d445","terminal_sha256":"53372a9d08ed8f30c5f2f471c15cabf0f7fe9c432ce070a1d23a2ec30db7566a","decision":"rejected_focused_post_eq_validation_successor_missing"},"activation":{"required_parent":"e9d38824ac2ddb84dca3350f6792f4183a1b565b","subject":"chore(plan): activate f19 corrective 17","changed_paths":[".agent-work/PLAN.md"],"additional_paths":0,"commit_count":1},"implementation":{"changed_paths":["src/camera_based_rgbww_optimizer/optimization/p7_thermal_diagnostics.py","tests/test_p7_thermal_diagnostics.py"],"additional_paths":0,"commit_count":1,"subject":"fix(p7): bind post-eq validation successor"},"subordinate_successor":{"commit":"3a14fe0bd663250dd48c65e71f1a6550df89267f","parent":"431d9d8dd58a6c0df7fb0b225ce206d2e8c57f53","subject":"fix(p7): exclude root Finder metadata from EQ evidence","changed_paths":["src/camera_based_rgbww_optimizer/optimization/p7_thermal_diagnostics.py","tests/test_p7_td_b_r6_contract.py"],"paths_lf_sha256":"cf2edd153dbd6c49caa9efc65b793521055d1358079d5dc70ad84df319b8011e","canonical_binary_patch_sha256":"018cf00c4e452673f4303ce528fbea2c0b6667e8dc691f5ff44c6968603412de","classification_path":"tests/test_p7_td_b_r6_contract.py","classification":"accepted_post_eq_exposure_policy_validation"},"validation":{"compileall":1,"targeted_selector_count":5,"focused_modules":["tests.test_p7_td_b_r6_contract","tests.test_p7_thermal_diagnostics","tests.test_agent_work_machine_contract","tests.test_p7_retained_r3_exact_five_controller","tests.test_p7_retained_release_audit"],"full_suite":1,"codegraph_sync":1,"diff_check":1,"retry":0,"fallback":0},"locks":{"candidate":0,"retained_r3":0,"canonical_retained_validator":0,"eligibility_emission":0,"release":0,"network":0,"env":0,"device":0,"camera":0,"ray":0,"strip":0,"cleanup":0,"formal":0,"public_analyzer":0,"td_c":0,"sentinel":0,"p8":0},"retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","planner_stop":"F19_CORRECTIVE_17_TERMINAL_WAITING_PLANNER"}`
 
 ## 1. C16 decision与冻结根因
 
@@ -33,14 +33,15 @@ bytes `7577`、mode `0600`、SHA-256
 `10374ec2366fc8cbe928953690defc31c83dc5c04da192f599f59591ec196f23`。合法retained C15 commit `3a14fe0...`已把该path精确改为
 `77ef59ccee5eee34d85658aadf7a6ce40f413fee9b8395cd11fb82145df27104`。两项正常测试因此报`checkpoint blob differs`；duplicates负例被同一前置漂移遮蔽。这是工程provenance seam，不是科学分支，不需要Advisor或Human授权。
 
-## 2. Orchestrator review与activation gate
+## 2. Planner activation gate（已授权）
 
-Orchestrator须先验收本review、更新FULL、按AGENTS整理并提交当前dirty reviewed state，留下clean worktree。Planner随后仅可编辑本PLAN，把reviewed-state commit full SHA冻结为activation direct parent，修改状态与machine contract为Executer-authorized，并创建exact一个PLAN-only activation commit：
+Planner已独立验证工作区clean，并将Orchestrator reviewed-state commit
+`e9d38824ac2ddb84dca3350f6792f4183a1b565b`冻结为activation direct parent。本PLAN只可创建exact一个PLAN-only activation commit：
 
 - subject exact `chore(plan): activate f19 corrective 17`；
 - changed paths exact `.agent-work/PLAN.md`；
 - additional paths `0`、commit count `1`；
-- activation前后worktree均须clean。
+- activation前后worktree均须clean；提交成功后Executer获得第3至第8节的exact一次执行授权。
 
 Executer controller须从clean worktree一次programmatic执行`git rev-parse --verify HEAD^{commit}`冻结dispatch HEAD；second HEAD read与human-transcribed child SHA均为`0`。它须在创建root、读取实现文件或运行任何validation前验证activation direct parent、subject、PLAN-only path set；任一不符立即hard-fail。
 
