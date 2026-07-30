@@ -16,9 +16,9 @@
 
 **当前可执行任务数：** `1`
 
-**当前 active task：** `REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-7 byte-exact marker extraction correction`
+**当前 active task：** `REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-8 newline policy correction`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-29","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-7","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F17-CORRECTIVE-7","next_reference_task":"REF-P7-25-R2-B2","next_reference_status":"BLOCKED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"B1A_C3E6F17_CORRECTIVE_6_REJECTED_SCANNER_SEMANTICS_MISMATCH_CORRECTIVE_7_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"3c5847fcbe0af85833c901f6f01058d000a3cecdc0f84e6ae331ed24e138c225","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-29","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-8","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F17-CORRECTIVE-8","next_reference_task":"REF-P7-25-R2-B2","next_reference_status":"BLOCKED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"B1A_C3E6F17_CORRECTIVE_7_REJECTED_EXECUTOR_NEWLINE_MISJUDGMENT_CORRECTIVE_8_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"3c5847fcbe0af85833c901f6f01058d000a3cecdc0f84e6ae331ed24e138c225","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -2411,11 +2411,24 @@ direct offline qualification，gate-before-path、全零锁、PASS/FAIL 后一�
 
 ### REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-7：Byte-exact marker extraction correction
 
-**状态：** `ACTIVE_PLANNER_CORRECTIVE_ONLY`。
+**状态：** `REJECTED_C7_EXECUTOR_NEWLINE_MISJUDGMENT`。Planner 归档：
+`.agent-work/PLANS/20260730-0110-p7-retained-r3-option-b-b1a-c3e6f17-corrective-7-review.md`，SHA-256
+`3ca7244319c2823bc96519645a83fd434bec14ba334e15fa1fd4341d9336ff78`。
+
+直接 bytes 核对证明 PLAN line17 以单个 LF 结束且非 CRLF；Executer 的 missing-LF 结论错误。artifact/path/old-root/retry
+均 `0/0/0/0`，ER append 一次；不可作为通过。
 
 冻结逐字节算法：物理行必须 startswith 反引号、拒绝 CRLF、仅移除一个 LF、endswith 反引号、inner exact prefix，再切 JSON
 slice/object；PLAN/FULL canonical candidate lines 固定为 17/21。required_subset_12 与 zero_budget_fields 仍逐键逐值冻结。
 仅一次 direct offline qualification，gate-before-path、全零锁、PASS/FAIL 一次 ER append 后 stop；不进入 bootstrap/release/device。
+
+### REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-8：Newline policy correction
+
+**状态：** `ACTIVE_PLANNER_CORRECTIVE_ONLY`。
+
+冻结每个 canonical marker physical line 必须恰好一个 LF、拒绝 EOF 无 LF、拒绝 CRLF；继续使用逐字节 startswith/endswith/prefix/JSON
+slice 算法、required_subset_12 与 zero_budget_fields 唯一对象。仅一次 direct offline qualification，gate-before-path、全零锁、
+PASS/FAIL 一次 ER append 后 stop；不得进入 bootstrap、release、R3、network 或 device。
 
 ### REF-P7-25-R2-B2：唯一repair commit与immutable manifest seal
 
@@ -3042,7 +3055,7 @@ Option A owner prerequisite = accepted complete
 Advisor lineage owner decision = Option B subordinate exact provenance manifest
 Human engineering governance override = Orchestrator owns files/code/provenance/execution/Git
 helper v1 disposition = retained_release_audit_prerequisite_v1_superseded_before_real_validation
-repair v2 status = B1A-C3E6F17-CORRECTIVE-6 rejected scanner semantics; C3E6F17-CORRECTIVE-7 active
+repair v2 status = B1A-C3E6F17-CORRECTIVE-7 rejected newline misjudgment; C3E6F17-CORRECTIVE-8 active
 accepted B1 result = ACCEPTED_BLOCKED_CONTRACT_CONFLICT
 accepted B1A result = HARD_FAILURE_PRE_ACQUISITION_LIFECYCLE; implementation progress 0
 accepted B1A-C1 result = HARD_FAILURE_BEFORE_TEST_EXEC; candidate carry-forward only
@@ -3080,8 +3093,9 @@ accepted B1A-C3E6F17-CORRECTIVE-3 result = INVOCATION_LAYER_SYNTAX_FAILURE; coun
 accepted B1A-C3E6F17-CORRECTIVE-4 result = CONTRACT_QUALIFICATION_8_OF_12; counters0/0; ER appended
 accepted B1A-C3E6F17-CORRECTIVE-5 result = CANDIDATE_AND_FIELD_FREEZE; PLAN2/FULL3; subset0; counters0/0; ER appended
 accepted B1A-C3E6F17-CORRECTIVE-6 result = SCANNER_SEMANTICS_MISMATCH; candidate0/0; counters0/0; ER appended
-active task = REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-7 byte-exact marker extraction correction
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F17-CORRECTIVE-7
+accepted B1A-C3E6F17-CORRECTIVE-7 result = EXECUTOR_NEWLINE_MISJUDGMENT; line17 LF present; counters0/0; ER appended
+active task = REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-8 newline policy correction
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F17-CORRECTIVE-8
 active executable task count = 1
 next reference task = REF-P7-25-R2-B2 BLOCKED
 selected state C shutter = 1/2500
@@ -3107,8 +3121,8 @@ JavaScript SyntaxError 未启动 Python；C4 随后仅 8/12，C5 又因正文 ma
 `REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-6`冻结 canonical scanner 及 12-key/19-budget JSON objects，保持 owner audit 与
 controller/source/root/test/commit/artifact均为0。
 后继另包才可冻结新controller并建立 fresh bootstrap container；不得重跑F14、提前修改production或输出eligibility。retained R3继续为
-`REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-7`冻结逐字节 marker extraction 与 PLAN/FULL 行号 17/21，保持 owner audit 与
-controller/source/root/test/commit/artifact均为0；retained R3 仍为 `RETAINED_UNVALIDATED_UNCONSUMED`。
+`REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-8`冻结 exactly-one-LF/EOF-reject/CRLF-reject newline policy 与逐字节 marker extraction，
+保持 owner audit 与 controller/source/root/test/commit/artifact均为0；retained R3 仍为 `RETAINED_UNVALIDATED_UNCONSUMED`。
 
 B1A-B5均为offline validation/provenance工作，不命中AGENTS高危设备授权；但这不等于当前已授权执行。Release
 consumption、qualification/re-generation、retained payload repair/copy、network、device、camera、Ray、FORMAL-R6、

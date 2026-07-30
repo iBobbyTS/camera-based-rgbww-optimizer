@@ -16102,3 +16102,58 @@ scientific guidance or Human device authorization is required.
 
 ## F17 corrective qualification
 {"artifact_path_operation_counters": {"artifact": 0, "path": 0}, "first_failure_stage": "marker/strict-json qualification", "forbidden_calls": {"authorization": 0, "bootstrap": 0, "camera": 0, "controller": 0, "device": 0, "env": 0, "git_mutation": 0, "network": 0, "production": 0, "public_analyzer": 0, "ray": 0, "release": 0, "strip": 0, "tests": 0}, "frozen_full_sha256": "c352bb8e07238df36a0204ee613bbec72b58bf1445d1938e1035736d401d3a86", "frozen_plan_sha256": "31c192d361214dd1dca55e32c320f6711afb78d960deb0fac6e7ca32a102f62d", "full_plan_raw_sha256": "c352bb8e07238df36a0204ee613bbec72b58bf1445d1938e1035736d401d3a86", "git_head": "09cc568858260a785e8076651aa3cce2000463e2", "marker_extraction": {"full": {"line": 21, "ok": true}, "plan": {"line": 17, "ok": true}, "strict_json": true}, "mode": "offline marker/strict-JSON qualification", "old_root_touch": 0, "plan_raw_sha256": "31c192d361214dd1dca55e32c320f6711afb78d960deb0fac6e7ca32a102f62d", "retry": 0, "role": "Executer", "stop": "terminal qualification; no artifact/path probing or follow-on execution; locks preserved.", "strict_json_rejection_ledger": [{"error": "task_id", "stage": "marker/strict-json"}], "task_id": "REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-1", "terminal": "FAIL", "timestamp_utc": "2026-07-30T00:02:30.140847+00:00"}
+
+## F17 corrective-4 canonical machine-row qualification
+
+- timestamp_utc: 2026-07-30T00:29:39.156814+00:00
+- task_id: REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-4
+- terminal: FAIL
+- raw_plan_sha256: fb95192a98dd805e2d5e5ed35a1f14d9648cd79ee904279eaf22208681dfa5c3
+- raw_full_plan_reference_sha256: 359e12bdd766a2360a5349dd90dd49119acf2ac800401dcba81e6a41df756c49
+- candidate_count: PLAN=1, FULL=1
+- candidate_lines: PLAN=[15], FULL=[21]
+- task_binding: PLAN.task_id=REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-4, FULL.active_task=REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-4
+- owner_semantics: retained_lock=true, owner_active_task=true
+- qualification_checks: 8/12
+- rejection_ledger: plan_sha=PASS,full_sha=PASS,plan_candidate_count=PASS,full_candidate_count=PASS,canonical_wrappers=FAIL,plan_task_id=PASS,full_active_task=PASS,contract_exact=FAIL,strict_types_keys_hash=PASS,twelve_of_twelve=FAIL,retained_lock_owner=PASS,zero_budgets=FAIL
+- first_failure: canonical_wrappers
+- artifact_operations/path_operations: 0/0
+- old_root_operations/retry_operations: 0/0
+- prohibited_calls: production=0, controller=0, tests=0, git_mutation=0, public_analyzer=0, camera=0, ray=0, strip=0, release=0, network=0, env=0, device=0, bootstrap=0, eligibility=0
+- git_head: c4b1a197efdc81015347eb62f31f66c5608a06d6
+- stop: terminal qualification reached; no further calls permitted
+
+## F17 corrective-5 qualification
+{"HEAD": "185b998df7a4999ce103f473c11f8f8ed2ffa449", "candidate_counts_lines": {"full": 3, "full_lines": [701, 737, 2378], "plan": 2, "plan_lines": [15, 27]}, "counters": {"artifact": 0, "old_root": 0, "path": 0, "retry": 0}, "first_failure": "candidate_counts", "ledger": {"candidate_counts": false, "full_sha": true, "no_forbidden": false, "plan_sha": true, "required_subset_12_count": false, "required_subset_12_match": false, "strict_reject": false, "task_id": true, "wrapper_contract": false, "zero_budget_fields_count": true, "zero_budget_values": false}, "prohibited_calls": true, "qualification": "REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-5", "raw_hashes": {"full": "95cd9a2aebb10006128c5999f8ca52d9ad517a430fcc414ea7450789928e12b6", "plan": "0a0620853ad6003027bcbe66ded8765a36c3898b900b4584ecdbed93697040f7"}, "required_subset_12": {"checks": [], "count": 0}, "status": "FAIL", "terminal": "FAIL", "timestamp": "2026-07-30T00:39:06.830092+00:00", "wrapper_contract": false, "zero_budget_fields": {"all_zero": false, "count": 19, "fields": ["artifact_operations", "path_operations", "fallback", "retry", "reuse", "rewrite", "alternate_path", "old_root_touch", "controller_access", "source_access", "test_execution", "git_mutation", "release_access", "network_access", "env_access", "device_access", "camera_access", "ray_access", "strip_access"]}}
+
+[qualification REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-6]
+terminal=FAIL
+raw_sha_plan=b1acac5eb1a343d82d851575cff39f3048707d26789ee8fff6fabee414e68938
+raw_sha_full=61ba86f43525beb66f3a7dba8e0f7194445bc50e02b142b31f76262f5358a066
+candidate_counts plan=0 full=0 lines_plan=[] lines_full=[]
+required_subset_12=FAIL
+zero_budget_fields_19=FAIL
+wrapper_contract=FAIL
+ledger=
+first_failure=candidate_count
+counters artifact_path=0/0 old_root_retry=0/0
+forbidden_calls=0
+HEAD=7fbf976945794926f3f8462a4c44af4f59c20841
+git_status=M .agent-work/EXECUTION_RESULT.md
+\n\n## F17 corrective-7 marker qualification 2026-07-30T00:57:39.819253+00:00\n{
+  "artifact_path_operations": 0,
+  "device_calls": 0,
+  "evidence": {
+    "full_sha256": "8c1ccf2c0b5e361980e1c49f27f87425157d34a0869a9e80f44c1172fb898431",
+    "plan_sha256": "bbb0cbd6c71b4b25a5bfc224187a7918f54610818d24b838b0efa05a9d4fea52"
+  },
+  "git_head": "274ed9e2bf9fcfd040dc7f5205c5d31ea08eaba5",
+  "network_calls": 0,
+  "old_root_operations": 0,
+  "reasons": [
+    "ValueError:missing-LF line 17"
+  ],
+  "retry_operations": 0,
+  "status": "append-only qualification; no bootstrap/release/eligibility/device authorization",
+  "terminal": "FAIL"
+}\n
