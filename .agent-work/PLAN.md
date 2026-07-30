@@ -1,6 +1,6 @@
 # REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-1：dedicated static-test owner correction
 
-**计划状态：** `PLANNER_CORRECTIVE_DRAFT_WAITING_ORCHESTRATOR_FULL_ACTIVATION`
+**计划状态：** `READY_FOR_EXACT_ACTIVATION_COMMIT_THEN_CLEAN_EXECUTER_DISPATCH`
 
 **Planner 日期：** `2026-07-30`
 
@@ -9,78 +9,79 @@
 **Contract ID：** `P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-1-STATIC-TEST`
 
 **唯一动作：** 仅修正 dedicated static regression 对局部 `run` callback helper
-的误判，然后在 fresh evidence root 中按 fail-fast 顺序完成一次冻结验证链并停止。
+的误判，然后在唯一 fresh evidence root 中按 fail-fast 顺序执行一次冻结验证链并停止。
 
-**Dispatch lock：** `LOCKED_PENDING_ORCHESTRATOR_FULL_UPDATE_AND_FRESH_PLANNER_ACTIVATION`。
-本草案不授权 Executer；Orchestrator 必须先审查 F19 rejection、更新
-`FULL_PLAN_REFERENCE.md`、整理并提交当前 reviewed state，再由新的 Planner
-activation pass 将实际 FULL SHA、dispatch HEAD/parent/changed paths 与 clean
-porcelain 冻结进可执行 PLAN。未完成该 activation 时，任何 edit、test、evidence
-root 创建或 ER append 均为 `0`。
+**Dispatch verdict：** `READY_AFTER_EXACT_ACTIVATION_COMMIT_AND_CLEAN_PORCELAIN`。
+Orchestrator必须先以当前HEAD为直接parent，使用下述exact subject提交且只提交本PLAN；
+actual child SHA、PLAN blob OID、PLAN raw SHA及clean porcelain由dispatch runtime读取并冻结，
+不写回本PLAN，从而避免自引用。提交合同不完全匹配时，Executer不得创建root、编辑、运行测试
+或append ER；由Orchestrator纠正activation lineage后重新dispatch。
 
 **F19 failure review archive：**
 `.agent-work/PLANS/20260730-0315-p7-retained-r3-option-b-b1a-c3e6f19-failure-review.md`；
 SHA-256 `b10e05fdf141c5864edf2eadcfa5022a7e92293bd573c51faf2c609bcad522de`。
 
-`PLAN_MACHINE_CONTRACT={"schema":"f19_corrective_1_planner_draft_v1","reference_task_id":"REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-1","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-1-STATIC-TEST","dispatch_lock":"locked_pending_orchestrator_full_update_and_fresh_planner_activation","parent_reference_task_id":"REF-P7-25-R2-B1A-C3E6F19","single_current_action":"test_only_static_callee_owner_correction_then_one_fail_fast_validation_chain_and_planner_stop","review_archive":{"path":".agent-work/PLANS/20260730-0315-p7-retained-r3-option-b-b1a-c3e6f19-failure-review.md","sha256":"b10e05fdf141c5864edf2eadcfa5022a7e92293bd573c51faf2c609bcad522de"},"frozen_failed_inputs":{"dispatch_head":"1b38baa28e80c164656215500657031608c9692c","dispatch_parent":"2457844a5f0f1c9c279348dd4d5b5e2c5b4f393b","reviewed_plan_sha256":"a641fce40be077fb50bb47d69e1ba8dc17e8d6077a000bb1f47f3f60f68fb45b","reviewed_full_sha256":"05d9d3458d71a176ffd197aeb46fdf812a7b34e226ee62fc3aa5094d67f6adc6","controller_source_sha256":"746fd13056c326489b48ca555b21618b65c8a78f198d035e18c02f68af689726","dedicated_test_before_sha256":"579ae0cbd6517cccdf184dfc2eb89e90b20c08cb502dcbe5c292ba5914edc647","failed_terminal_sha256":"7ec1b83244b5b6ee6119baaeb0feb1bff12bbfff38e9af68411017bd28560e46"},"repo_edit_paths":["tests/test_p7_retained_r3_exact_five_controller.py"],"repo_preserve_paths":["src/camera_based_rgbww_optimizer/utils/p7_retained_r3_exact_five_controller.py"],"old_evidence_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b1a-c3e6f19-preparation-offline","old_evidence_immutable":true,"fresh_evidence_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b1a-c3e6f19-corrective-1-offline","fresh_evidence_root_required_absent_at_activation":true,"test_correction_contract":{"separate_ast_name_and_attribute_callees":true,"builtin_open_name_still_prohibited":true,"filesystem_and_subprocess_attributes_still_prohibited":["read_text","read_bytes","write_text","write_bytes","unlink","mkdir","system","run","Popen"],"bytecode_global_and_attribute_opcodes_classified_separately":true,"load_fast_run_not_subprocess":true,"nested_local_run_owner_explicitly_asserted":true,"generic_string_absence_check_forbidden":true,"production_rename_forbidden":true},"test_budgets_after_activation":{"compileall":1,"targeted_unittest":1,"focused_unittest":1,"full_unittest":1,"codegraph_sync":1,"git_diff_check":1,"retry":0},"operation_budgets":{"controller_calls":0,"candidate_payload_reads":0,"retained_r3_reads":0,"canonical_validator_calls":0,"eligibility_emissions":0,"manifest_writes":0,"commits":0,"stages":0,"release_calls":0,"network_calls":0,"env_reads":0,"device_calls":0,"camera_calls":0,"ray_calls":0,"strip_calls":0,"cleanup_calls":0,"formal_calls":0,"public_analyzer_calls":0},"execution_result_append_cap_after_activation":1,"planner_stop":"F19_CORRECTIVE_1_TERMINAL_WAITING_PLANNER"}`
+`PLAN_MACHINE_CONTRACT={"schema":"f19_corrective_1_active_plan_v1","reference_task_id":"REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-1","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-1-STATIC-TEST","dispatch_state":"ready_after_exact_activation_commit_and_clean_porcelain","single_current_action":"test_only_static_callee_owner_correction_then_one_fail_fast_validation_chain_and_planner_stop","full_contract":{"raw_sha256":"1125e0a0474f3e34f073c9b7c3639217a5ebe797a1be25e9c8b2efc192abae96","active_task_count":1,"active_task":"REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-1-STATIC-TEST","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","candidate_contract_orchestrator_verified":true},"activation_commit_contract":{"parent_sha":"784b0de8722d60af2a08a7346015de127540ffe2","exact_subject":"chore(plan): activate f19 static-test corrective","exact_changed_paths":[".agent-work/PLAN.md"],"actual_child_sha_owner":"dispatch_runtime_git_rev_parse_HEAD","actual_child_parent_owner":"dispatch_runtime_git_rev_parse_HEAD_parent","actual_plan_blob_oid_owner":"dispatch_runtime_git_ls_tree_HEAD","actual_plan_sha256_owner":"dispatch_runtime_raw_bytes","expected_clean_porcelain_sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","self_reference_forbidden":true},"review_archive":{"path":".agent-work/PLANS/20260730-0315-p7-retained-r3-option-b-b1a-c3e6f19-failure-review.md","sha256":"b10e05fdf141c5864edf2eadcfa5022a7e92293bd573c51faf2c609bcad522de"},"committed_baseline":{"controller":{"path":"src/camera_based_rgbww_optimizer/utils/p7_retained_r3_exact_five_controller.py","blob_oid":"45097745bcc48aa1312b06fc07c6c910a4529325","sha256":"746fd13056c326489b48ca555b21618b65c8a78f198d035e18c02f68af689726"},"dedicated_test":{"path":"tests/test_p7_retained_r3_exact_five_controller.py","blob_oid":"656dbda9cf852e1a52affe5edd60148366f401bf","sha256":"579ae0cbd6517cccdf184dfc2eb89e90b20c08cb502dcbe5c292ba5914edc647"}},"repo_edit_paths":["tests/test_p7_retained_r3_exact_five_controller.py"],"repo_preserve_paths":["src/camera_based_rgbww_optimizer/utils/p7_retained_r3_exact_five_controller.py"],"old_evidence":{"root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b1a-c3e6f19-preparation-offline","immutable":true,"artifacts":{"00-dispatch-and-bootstrap-replay.json":"b4f6557fbc7a3a8dc1718c472900ea4d24045a9da6373a62b984889d2a32ffaa","01-controller-source-identity.json":"3feba60353c1307a5809c86f1b2a1607574e27345109580632e120176b00cc00","02-targeted.log":"ea1c8715a6cf27c66e6ad038803b9af85331561fbd90e254ced492bd3ff82ba7","06-validation-summary.json":"8c1d2090611e3c08c8028384a2d766d96a373752798d695f31175fcb0979bcfe","07-terminal-summary.json":"7ec1b83244b5b6ee6119baaeb0feb1bff12bbfff38e9af68411017bd28560e46"}},"fresh_evidence_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b1a-c3e6f19-corrective-1-offline","fresh_evidence_root_required_absent_at_dispatch":true,"test_correction_contract":{"separate_ast_name_and_attribute_callees":true,"builtin_open_name_still_prohibited":true,"filesystem_and_subprocess_attributes_still_prohibited":["read_text","read_bytes","write_text","write_bytes","unlink","mkdir","system","run","Popen"],"bytecode_global_and_attribute_opcodes_classified_separately":true,"load_fast_run_not_subprocess":true,"nested_local_run_owner_explicitly_asserted":true,"generic_string_absence_check_forbidden":true,"production_rename_forbidden":true},"validation_chain":{"fail_fast":true,"compileall":1,"targeted_unittest":1,"focused_unittest":1,"full_unittest":1,"codegraph_sync":1,"git_diff_check":1,"retry":0},"operation_budgets":{"test_file_edits":1,"controller_calls":0,"candidate_payload_reads":0,"retained_r3_reads":0,"canonical_validator_calls":0,"eligibility_emissions":0,"manifest_writes":0,"commits":0,"stages":0,"release_calls":0,"network_calls":0,"env_reads":0,"device_calls":0,"camera_calls":0,"ray_calls":0,"strip_calls":0,"cleanup_calls":0,"formal_calls":0,"public_analyzer_calls":0},"execution_result_append_cap":1,"planner_stop":"F19_CORRECTIVE_1_TERMINAL_WAITING_PLANNER"}`
 
-## 1. Correction owner and exact scope
+## 1. Activation gate（任何repo path operation之前）
 
-F19 controller source保持byte-exact不变：
+Executer在任何fresh-root创建、repo编辑或测试命令前，必须只读验证：
 
-`src/camera_based_rgbww_optimizer/utils/p7_retained_r3_exact_five_controller.py`
+1. 当前HEAD的直接parent为
+   `784b0de8722d60af2a08a7346015de127540ffe2`；subject精确为
+   `chore(plan): activate f19 static-test corrective`；该commit changed-path set精确且仅为
+   `.agent-work/PLAN.md`。
+2. runtime读取实际child SHA、PLAN blob OID和PLAN raw SHA；HEAD blob与worktree PLAN bytes一致，
+   porcelain为空且其SHA-256为
+   `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`。
+3. FULL raw SHA为
+   `1125e0a0474f3e34f073c9b7c3639217a5ebe797a1be25e9c8b2efc192abae96`；其machine state严格为
+   active count `1`、本task、本contract、
+   `retained_r3_status=RETAINED_UNVALIDATED_UNCONSUMED`、
+   `candidate_contract_orchestrator_verified=true`。
+4. committed controller blob/SHA分别为
+   `45097745bcc48aa1312b06fc07c6c910a4529325` /
+   `746fd13056c326489b48ca555b21618b65c8a78f198d035e18c02f68af689726`；
+   committed test baseline blob/SHA分别为
+   `656dbda9cf852e1a52affe5edd60148366f401bf` /
+   `579ae0cbd6517cccdf184dfc2eb89e90b20c08cb502dcbe5c292ba5914edc647`。
+5. review archive及旧F19 root五项artifact的path、regular/non-symlink、bytes、mode `0600`
+   与machine contract所列SHA均匹配；旧root mode为`0700`。
+6. fresh corrective root仍不存在。
 
-冻结SHA-256：
-`746fd13056c326489b48ca555b21618b65c8a78f198d035e18c02f68af689726`。
+任一gate失败：不得创建fresh root、不得编辑test、不得执行任何验证命令，也不得append ER；
+停止并向Planner/Orchestrator报告activation lineage contradiction。retry、fallback、alternate path均为0。
+
+## 2. 唯一代码改动
 
 唯一允许编辑：
 
 `tests/test_p7_retained_r3_exact_five_controller.py`
 
-其失败baseline SHA-256为：
-`579ae0cbd6517cccdf184dfc2eb89e90b20c08cb502dcbe5c292ba5914edc647`。
+必须保持controller source byte-exact不变。Dedicated test必须：
 
-不允许修改任何 production source、helper、其他test、doc、skill、wrapper、
-PLAN、FULL、archive或GUIDE。不得通过production rename迁就误报，也不得删除
-static regression、缩小其direct-I/O边界或仅断言字符串不存在。
-
-Dedicated test必须将以下owner分开：
-
-1. `ast.Name` direct builtin/global calls：继续禁止builtin `open`；
-2. `ast.Attribute` method calls：继续禁止 `read_text`、`read_bytes`、
-   `write_text`、`write_bytes`、`unlink`、`mkdir`、`system`、`run`、`Popen`；
-3. bytecode只把global/name load与attribute/method load按相应owner判定，
-   不得把`LOAD_FAST run`当作subprocess；
-4. 明确验证被接受的`Name("run")`定义和调用均位于
+1. 分离`ast.Name` direct builtin/global call与`ast.Attribute` method call；继续禁止builtin `open`；
+2. 继续禁止attribute `read_text`、`read_bytes`、`write_text`、`write_bytes`、`unlink`、
+   `mkdir`、`system`、`run`、`Popen`；
+3. bytecode按global/name load与attribute/method load分别分类，不把`LOAD_FAST run`视为subprocess；
+4. 显式断言被接受的`Name("run")`定义及调用均位于
    `execute_prepared_exact_five_controller`的lexically nested local helper边界；
-5. forbidden import集合与callback protocol/eligibility边界断言必须原样保留。
+5. 原forbidden-import、callback protocol及eligibility边界断言保持；不得改production命名、删除static
+   regression、改成generic string absence或缩小direct-I/O边界。
 
-## 2. Activation and preservation gates
+编辑后exact worktree diff path必须且仅为上述test；否则fail并进入terminal seal。
 
-Fresh Planner activation必须在dispatch前重新冻结：
+## 3. Fresh evidence与验证链
 
-- Orchestrator-updated FULL raw SHA、active task/contract、active count `1`、
-  `retained_r3_status=RETAINED_UNVALIDATED_UNCONSUMED`及candidate verified flag；
-- 实际dispatch HEAD、direct parent、subject、exact changed-path set；
-- HEAD blob PLAN与worktree PLAN bytes一致及clean porcelain；
-- controller source与failed-test baseline identities；
-- old F19 evidence root五个artifact path/bytes/SHA均未改变；
-- fresh corrective root仍absent。
-
-任一gate失败：不得创建fresh root、不得编辑test、不得运行command，仅append一次
-truthful pre-root FAIL（若activation PLAN明确授权）并Planner stop；retry/fallback为0。
-
-## 3. Fresh validation chain
-
-Activation后，Executer只可建立一次fresh root：
+只允许exclusive-create一次：
 
 `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b1a-c3e6f19-corrective-1-offline`
 
-root必须exclusive-create、mode `0700`；artifact必须regular/non-symlink、mode
-`0600`、不可覆盖。建议使用与F19相同的progressive布局：dispatch/identity、
-targeted、focused、full、CodeGraph、validation summary与terminal summary。
+root必须mode `0700`；每个artifact必须exclusive-create、regular/non-symlink、mode `0600`、不可覆盖。
+必须progressive持久化dispatch/identity、targeted、focused、full、CodeGraph、diff-check、validation summary
+与terminal summary；每项绑定path、bytes、SHA-256、exit code、测试计数（若适用）及实际调用计数。
 
-验证命令均最多一次，前一项nonzero立即停止，后续为0：
+严格按以下顺序，每项最多一次，前一项nonzero立即停止且后续调用计数为0：
 
 ```text
 PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m compileall -q \
@@ -98,27 +99,25 @@ PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m unittest -v \
 PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m unittest discover -s tests -v
 
 codegraph sync
+
 git diff --check
 ```
 
-Terminal必须绑定before/after source/test bytes与SHA、exact diff path、activation
-lineage、PLAN/FULL/archive/old-evidence identities、所有command exit/test counts、
-fresh artifact identity及全部zero locks。Executer只可向
-`.agent-work/EXECUTION_RESULT.md` append一次，不得stage或commit。
+Terminal seal必须记录before/after controller/test bytes、SHA、blob身份、exact diff path、activation
+lineage、PLAN/FULL/archive/旧证据身份、fresh artifact manifest、全部command exit/count与zero locks。
+Executer只可向`.agent-work/EXECUTION_RESULT.md` append一次truthful terminal record，不得stage或commit。
 
-## 4. Hard locks and branch
+## 4. Hard locks与终止分支
 
-- old F19 evidence只读且immutable；不得reuse、repair、rewrite或delete。
-- 禁止读取或stat retained R3、candidate、release payload/path。
+- old F19 evidence只读immutable；不得reuse、repair、rewrite、append或delete。
+- 禁止读取、stat或probe retained R3、candidate及release payload/path。
 - 禁止真实controller、manifest、canonical validator、eligibility、consumer或release。
-- 禁止network、DNS、env/credential、device、camera、Ray、strip、cleanup、capture、
-  FORMAL、public analyzer、TD-C、sentinel、P8、firmware或deployment。
-- PASS只说明test false positive已纠正且controller preparation validation chain通过；
-  不自动commit、不进入真实F19 controller execution或B2。
+- 禁止network、DNS、env/credential、device、camera、Ray、strip、cleanup、capture、FORMAL、
+  public analyzer、TD-C、sentinel、P8、firmware或deployment。
+- PASS仅表示static-test false positive已纠正且一次验证链通过；不授权commit、不进入真实F19 controller或B2。
 - FAIL保留fresh evidence并停止；retry、fallback、alternate path均为0。
 
-**Planner stop：** `F19_CORRECTIVE_1_DRAFT_WAITING_ORCHESTRATOR_FULL_ACTIVATION`。
+**Planner stop：** `F19_CORRECTIVE_1_TERMINAL_WAITING_PLANNER`。
 
-**维护性判断：** 纠偏仅修复dedicated static test的callee-owner分类，不改变
-controller状态机、callback API或eligibility边界；保持一source一test的清晰owner，
-无需新增抽象或production重构。
+**维护性判断：** 纠偏仅调整dedicated static test的callee-owner分类；controller状态机、callback API、
+eligibility与provenance owner均不变。单一test owner和完整回归链足够，无需新增抽象或production重构。
