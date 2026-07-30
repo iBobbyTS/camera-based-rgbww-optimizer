@@ -1,6 +1,6 @@
 # REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-15：EQ-R6 non-evidence macOS metadata boundary
 
-**计划状态：** `WAITING_ORCHESTRATOR_REVIEWED_STATE`
+**计划状态：** `ACTIVE_EXECUTER_AUTHORIZED`
 
 **Planner 日期：** `2026-07-30`
 
@@ -9,17 +9,16 @@
 **Contract ID：**
 `P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-15-EQ-R6-METADATA-BOUNDARY`
 
-**唯一当前动作：** Orchestrator验收C14 Planner review、更新其独占的
-`.agent-work/FULL_PLAN_REFERENCE.md`，并将C14 ER、review archive、本C15 PLAN与FULL整理为一个focused
-reviewed-state commit；然后由Planner在clean reviewed-state parent上补写exact PLAN-only activation topology。当前状态
-不授权Executer编辑、测试、创建root、提交或执行下述implementation；activation未完成前必须停止。
+**唯一当前动作：** Executer在下述exact PLAN-only activation parent与全量锁定边界内执行一次C15
+EQ-R6 non-evidence macOS metadata纠偏：只改exact source+test两个路径、创建一个implementation commit、在一个brand-new
+C15 root运行one-shot完整验证链并停止在Planner验收门。不得执行任何未由本PLAN显式放行的后续工作。
 
 **C14 review archive：**
 `.agent-work/PLANS/20260730-0825-p7-retained-r3-option-b-b1a-c3e6f19-corrective-14-review.md`，
 bytes `5792`，SHA-256
 `febe5afa8dd3d4597ecafcc1778c73181a14ba3b91877813afbb5909a7a13685`。
 
-`PLAN_MACHINE_CONTRACT={"schema":"f19_corrective_15_eq_r6_metadata_boundary_v1","reference_task_id":"REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-15","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-15-EQ-R6-METADATA-BOUNDARY","dispatch_state":"waiting_orchestrator_reviewed_state","execution_authorized":false,"single_current_action":"orchestrator_review_full_update_and_focused_reviewed_state_commit","review_archive":{"path":".agent-work/PLANS/20260730-0825-p7-retained-r3-option-b-b1a-c3e6f19-corrective-14-review.md","bytes":5792,"sha256":"febe5afa8dd3d4597ecafcc1778c73181a14ba3b91877813afbb5909a7a13685"},"c14":{"dispatch_head":"d61accd5b1eac975874a128db949fddb594d34e8","terminal_path":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b1a-c3e6f19-corrective-14-offline/20260730T141613Z/terminal-evidence.json","terminal_sha256":"0439ff6136737d41b168409a113f7df12e0794638eed39777cdfdf6f8b27e8fe","decision":"rejected_full_suite_eq_r6_manifest_metadata_drift"},"future_activation":{"required":true,"required_parent":"planner_must_freeze_after_orchestrator_review","changed_paths":[".agent-work/PLAN.md"],"additional_paths":0,"commit_count":1,"initial_clean_required":true},"implementation":{"changed_paths":["src/camera_based_rgbww_optimizer/optimization/p7_thermal_diagnostics.py","tests/test_p7_td_b_r6_contract.py"],"additional_paths":0,"commit_count":1,"scope":"exact_root_ds_store_metadata_boundary_only"},"immutable":{"accepted_root_rewrites":0,"manifest_sha256":"41136d0d1530163668e111b7a9213bb1b9df330d8a168b451c752e3e5dca28e9","artifact_hash_rewrites":0,"canonical_eligibility_owner":"audit_td_b_eq_r6_qualification"},"validation":{"compileall":1,"targeted_selector_count":6,"focused_modules":["tests.test_p7_td_b_r6_contract","tests.test_p7_thermal_diagnostics","tests.test_agent_work_machine_contract","tests.test_p7_retained_r3_exact_five_controller","tests.test_p7_retained_release_audit"],"full_suite":1,"codegraph_sync":1,"diff_check":1,"retry":0,"fallback":0},"locks":{"candidate":0,"retained_r3":0,"canonical_retained_validator":0,"eligibility_emission":0,"release":0,"network":0,"env":0,"device":0,"camera":0,"ray":0,"strip":0,"cleanup":0,"formal":0,"public_analyzer":0,"td_c":0,"sentinel":0,"p8":0},"retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","planner_stop":"F19_CORRECTIVE_15_TERMINAL_WAITING_PLANNER"}`
+`PLAN_MACHINE_CONTRACT={"schema":"f19_corrective_15_eq_r6_metadata_boundary_v1","reference_task_id":"REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-15","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-15-EQ-R6-METADATA-BOUNDARY","dispatch_state":"active_executer_authorized","execution_authorized":true,"single_current_action":"execute_exact_root_ds_store_metadata_boundary_and_one_shot_validation","review_archive":{"path":".agent-work/PLANS/20260730-0825-p7-retained-r3-option-b-b1a-c3e6f19-corrective-14-review.md","bytes":5792,"sha256":"febe5afa8dd3d4597ecafcc1778c73181a14ba3b91877813afbb5909a7a13685"},"c14":{"dispatch_head":"d61accd5b1eac975874a128db949fddb594d34e8","terminal_path":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b1a-c3e6f19-corrective-14-offline/20260730T141613Z/terminal-evidence.json","terminal_sha256":"0439ff6136737d41b168409a113f7df12e0794638eed39777cdfdf6f8b27e8fe","decision":"rejected_full_suite_eq_r6_manifest_metadata_drift"},"activation":{"required_parent":"15c8a8416333b655fa09351eec2bcab8f198580d","subject":"chore(plan): activate f19 corrective 15","changed_paths":[".agent-work/PLAN.md"],"additional_paths":0,"commit_count":1,"initial_clean_verified":true,"dispatch_head_read_count":1,"dispatch_head_second_read":0,"human_transcribed_child_sha":0},"implementation":{"changed_paths":["src/camera_based_rgbww_optimizer/optimization/p7_thermal_diagnostics.py","tests/test_p7_td_b_r6_contract.py"],"additional_paths":0,"commit_count":1,"scope":"exact_root_ds_store_metadata_boundary_only"},"immutable":{"accepted_root_rewrites":0,"manifest_sha256":"41136d0d1530163668e111b7a9213bb1b9df330d8a168b451c752e3e5dca28e9","artifact_hash_rewrites":0,"canonical_eligibility_owner":"audit_td_b_eq_r6_qualification"},"validation":{"compileall":1,"targeted_selector_count":6,"focused_modules":["tests.test_p7_td_b_r6_contract","tests.test_p7_thermal_diagnostics","tests.test_agent_work_machine_contract","tests.test_p7_retained_r3_exact_five_controller","tests.test_p7_retained_release_audit"],"full_suite":1,"codegraph_sync":1,"diff_check":1,"retry":0,"fallback":0},"locks":{"candidate":0,"retained_r3":0,"canonical_retained_validator":0,"eligibility_emission":0,"release":0,"network":0,"env":0,"device":0,"camera":0,"ray":0,"strip":0,"cleanup":0,"formal":0,"public_analyzer":0,"td_c":0,"sentinel":0,"p8":0},"retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","planner_stop":"F19_CORRECTIVE_15_TERMINAL_WAITING_PLANNER"}`
 
 ## 1. C14 decision与冻结根因
 
@@ -45,19 +44,20 @@ evidence；C14 retry/fallback仍为`0/0`。
 该`.DS_Store`不是资格artifact。不得删除、修改、chmod、移动或重建它来取得green；accepted root、C14 root、四个
 canonical artifacts与所有旧evidence必须只读。
 
-## 2. Orchestrator review与后续activation gate
+## 2. Exact PLAN-only activation与dispatch gate
 
-在任何Executer dispatch前，Orchestrator必须先：
+Orchestrator reviewed-state已由exact commit
+`15c8a8416333b655fa09351eec2bcab8f198580d`冻结；本次Planner activation的direct parent必须恰为该commit，changed paths必须
+恰为`.agent-work/PLAN.md`、additional paths `0`、commit count `1`，subject exact为
+`chore(plan): activate f19 corrective 15`。Activation前工作区已验证clean；不得amend、squash或把任何ER、FULL、archive、
+production/test/config路径带入activation commit。
 
-1. 验收C14 review决定与本C15 branch；
-2. 更新其独占的FULL reference；
-3. 将当前dirty worktree按AGENTS要求分类整理并创建一个focused reviewed-state commit；
-4. 留下clean worktree，并将exact commit、parent、subject与changed paths交回Planner。
-
-Planner随后只可修改`.agent-work/PLAN.md`，把本节替换为exact reviewed-state parent与exact PLAN-only activation
-commit合同，创建一个PLAN-only activation commit并核验commit前后clean。Executer不得消费
-`waiting_orchestrator_reviewed_state`状态，不得预测或手抄activation child SHA；activation后dispatch HEAD必须由controller
-一次programmatic `git rev-parse --verify HEAD^{commit}`读取并冻结，second read与human-transcribed expected child SHA均为`0`。
+Executer controller启动时必须从clean worktree一次programmatic执行
+`git rev-parse --verify HEAD^{commit}`并将结果冻结为dispatch HEAD与activation child；second Git HEAD read与
+human-transcribed expected child SHA均为`0`。Controller必须从该single read结果验证：direct parent exact为
+`15c8a8416333b655fa09351eec2bcab8f198580d`、subject exact、whole-commit changed path set exact PLAN-only、additional `0`。
+任一不符须在创建C15 root、编辑、测试或提交前hard-fail。后续implementation commit的direct parent必须恰为该programmatic
+activation child；不得预测child SHA或以手抄SHA替代controller读取。
 
 ## 3. Exact implementation scope
 
