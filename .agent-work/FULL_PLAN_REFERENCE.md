@@ -16,9 +16,9 @@
 
 **当前可执行任务数：** `1`
 
-**当前 active task：** `REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-4 exact field-owner gate correction`
+**当前 active task：** `REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-5 exact C2 evidence-identity binding`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-4","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-4-FIELD-OWNER","next_reference_task":"REF-P7-25-R2-B2","next_reference_status":"BLOCKED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"B1A_C3E6F19_CORRECTIVE_3_REJECTED_PRE_EDIT_FIELD_OWNER_KEYERROR_CORRECTIVE_4_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"3c5847fcbe0af85833c901f6f01058d000a3cecdc0f84e6ae331ed24e138c225","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-5","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-5-EVIDENCE-IDENTITY","next_reference_task":"REF-P7-25-R2-B2","next_reference_status":"BLOCKED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"B1A_C3E6F19_CORRECTIVE_4_REJECTED_EXPECTED_DIGEST_TRANSCRIPTION_ERROR_CORRECTIVE_5_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"3c5847fcbe0af85833c901f6f01058d000a3cecdc0f84e6ae331ed24e138c225","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -2606,11 +2606,25 @@ ER append1，所有锁定操作0。
 
 ### REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-4：Exact field-owner gate correction
 
-**状态：** `ACTIVE_PLANNER_CORRECTIVE_WAITING_SHA_ACTIVATION`。
+**状态：** `REJECTED_EXECUTION_SIDE_EXPECTED_DIGEST_TRANSCRIPTION_ERROR`。Planner archive：
+`.agent-work/PLANS/20260729-2218-p7-retained-r3-option-b-b1a-c3e6f19-corrective-4-review.md`，SHA-256
+`59e24e783eb59463ba048da5a11bb9d18473a5df6af1cc542331df63e82fa8b6`。
 
 PLAN activation须逐字段冻结PLAN/FULL parsed mapping的exact owner/path/type/value；禁止未列candidate key、nested object、alias、
 fallback、inference、`.get()`降级或cross-owner borrowing。实际FULL candidate fields只从上述两个顶层键读取。通过gate后仍只执行
 C3 dedicated-test STORE_FAST/LOAD_FAST owner correction与fresh完整链；controller/R3/release/validator/network/device锁不变。
+
+C4 field ledger `12/12`与helper `1/1`通过；Executer手抄`compileall.log` expected digest时把index22的`c`写成`d`。
+C2五artifact未漂移，实际/PLAN expected空文件SHA为`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`。
+C4 root/test/tests均0，ER append1，所有锁定操作0。
+
+### REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-5：Exact C2 evidence-identity binding
+
+**状态：** `ACTIVE_PLANNER_CORRECTIVE_WAITING_SHA_ACTIVATION`。
+
+C2每个artifact expected bytes/SHA只能从parsed PLAN `immutable_c2_evidence.artifacts[name]`单次读取；执行源禁止shadow digest
+literal、手抄字典、alias、fallback或repair。actual只来自lstat与single file bytes。通过后仍只改dedicated test的local
+STORE_FAST/LOAD_FAST owner并运行fresh完整链；controller/R3/release/validator/network/device锁不变。
 
 ### REF-P7-25-R2-B2：唯一repair commit与immutable manifest seal
 
@@ -3237,7 +3251,7 @@ Option A owner prerequisite = accepted complete
 Advisor lineage owner decision = Option B subordinate exact provenance manifest
 Human engineering governance override = Orchestrator owns files/code/provenance/execution/Git
 helper v1 disposition = retained_release_audit_prerequisite_v1_superseded_before_real_validation
-repair v2 status = B1A-C3E6F19-CORRECTIVE-3 rejected pre-edit field-owner KeyError; corrective-4 active
+repair v2 status = B1A-C3E6F19-CORRECTIVE-4 rejected expected digest transcription; corrective-5 active
 accepted B1 result = ACCEPTED_BLOCKED_CONTRACT_CONFLICT
 accepted B1A result = HARD_FAILURE_PRE_ACQUISITION_LIFECYCLE; implementation progress 0
 accepted B1A-C1 result = HARD_FAILURE_BEFORE_TEST_EXEC; candidate carry-forward only
@@ -3289,8 +3303,9 @@ accepted B1A-C3E6F19 result = DEDICATED_STATIC_TEST_FALSE_POSITIVE; compile0; ta
 accepted B1A-C3E6F19-CORRECTIVE-1 result = WRONG_PLAN_MARKER_OWNER; edits0; tests0; ER0; fresh root absent
 accepted B1A-C3E6F19-CORRECTIVE-2 result = STORE_FAST_LOCAL_BINDING_FALSE_POSITIVE; helper1/1; targeted10/11; later0
 accepted B1A-C3E6F19-CORRECTIVE-3 result = PRE_EDIT_FIELD_OWNER_KEYERROR; helper1/1; edits0; tests0; ER1
-active task = REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-4 exact field-owner gate correction
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-4-FIELD-OWNER
+accepted B1A-C3E6F19-CORRECTIVE-4 result = EXPECTED_DIGEST_TRANSCRIPTION_ERROR; ledger12/12; evidence unchanged; edits0
+active task = REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-5 exact C2 evidence-identity binding
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-5-EVIDENCE-IDENTITY
 active executable task count = 1
 next reference task = REF-P7-25-R2-B2 BLOCKED
 selected state C shutter = 1/2500
@@ -3317,7 +3332,7 @@ JavaScript SyntaxError 未启动 Python；C4 随后仅 8/12，C5 又因正文 ma
 但 Executer scanner 将 PLAN candidate 错计为0；C12 的更精确文字合同仍因临时实现转录漂移错报0/0。当前 C13 将 scanner
 收敛到一个validation-only helper与一个dedicated test并获Planner接受，避免继续复制实现；它不拥有eligibility或retained-release语义。
 后继另包才可冻结新controller并建立 fresh bootstrap container；不得重跑F14、提前修改production或输出eligibility。retained R3继续为
-`REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-4`先冻结exact parsed-field owners，再纠正local run断言并fresh验证；controller source冻结，仍不执行真实controller或读取R3；
+`REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-5`从parsed PLAN单一owner读取C2 identities，再纠正local run断言并fresh验证；controller source冻结，仍不执行真实controller或读取R3；
 canonical validator call、eligibility emission、retained R3/release/device访问仍为0；
 retained R3 仍为 `RETAINED_UNVALIDATED_UNCONSUMED`。
 
