@@ -23,14 +23,14 @@ accepted Git/provenance baseline及原retained-R3三件套的byte identity，exc
 `.agent-work/PLANS/20260730-0927-p7-retained-r3-option-b-b2-orchestrator-transition-review.md`，bytes `3107`，SHA-256
 `6e9d4be889262848b7266dce05d6d940fd17a4711a346d03d385324614b9892f`。
 
-`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_modern_manifest_seal_plan_v2","reference_task_id":"REF-P7-25-R2-B2","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-MODERN-MANIFEST-SEAL-V2","dispatch_state":"execution_authorized","execution_authorized":true,"single_current_action":"single_controller_single_root_seal_subordinate_exact_provenance_manifest_v2","dispatch_parent":"995633a3f671acf50f4cbbaa0837ae357ca2d41f","root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-modern-manifest-995633a-20260730T0932Z","manifest_name":"retained-r3-audit-provenance-manifest-v2.json","manifest_schema":"p7_retained_r3_audit_provenance_manifest_v2","manifest_status":"sealed_subordinate_provenance_evidence","controller_invocations":1,"root_creations":1,"repo_implementation_edits":0,"repo_implementation_commits":0,"canonical_validator_calls":0,"retained_artifact_count":3,"per_retained_artifact":{"lstat":1,"open":1,"read":1},"full_suite_calls":0,"synthetic_audit_calls":0,"retry":0,"fallback":0,"er_appends":1,"planner_stop":"B2_MANIFEST_SEALED_WAITING_PLANNER_REVIEW"}`
+`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_modern_manifest_seal_plan_v2","reference_task_id":"REF-P7-25-R2-B2","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-MODERN-MANIFEST-SEAL-V2","dispatch_state":"execution_authorized","execution_authorized":true,"single_current_action":"single_controller_single_root_seal_subordinate_exact_provenance_manifest_v2","dispatch_parent":"444d412e2c2a03f5e58ea67b99fc48e8944d3208","root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-modern-manifest-995633a-20260730T0932Z","manifest_name":"retained-r3-audit-provenance-manifest-v2.json","manifest_schema":"p7_retained_r3_audit_provenance_manifest_v2","manifest_status":"sealed_subordinate_provenance_evidence","controller_invocations":1,"root_creations":1,"repo_implementation_edits":0,"repo_implementation_commits":0,"canonical_validator_calls":0,"retained_artifact_count":3,"per_retained_artifact":{"lstat":1,"open":1,"read":1},"full_suite_calls":0,"synthetic_audit_calls":0,"retry":0,"fallback":0,"er_appends":1,"planner_stop":"B2_MANIFEST_SEALED_WAITING_PLANNER_REVIEW"}`
 
 ## 1. Frozen dispatch、owner与root
 
 1. 当前activation的direct parent必须为
-   `995633a3f671acf50f4cbbaa0837ae357ca2d41f`；该parent只归档transition review。Executer开始时只允许一次
+   `444d412e2c2a03f5e58ea67b99fc48e8944d3208`；该parent是首次现代B2 PLAN-only activation。Executer开始时只允许一次
    `git rev-parse HEAD`，并验证dispatch HEAD是该parent的direct child、subject exact
-   `chore(plan): activate modern b2 manifest seal`、changed paths exact `.agent-work/PLAN.md`、additional `0`，且
+   `chore(plan): bind modern b2 governance evidence`、changed paths exact `.agent-work/PLAN.md`、additional `0`，且
    staged/unstaged/untracked均为`0`。
 2. 唯一root exact：
    `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-modern-manifest-995633a-20260730T0932Z`。
@@ -113,10 +113,21 @@ Manifest必须绑定并由controller各执行一次regular-file/non-symlink iden
 - `/Users/ibobby/.codex/attachments/cba7928d-712a-441e-a708-4301ee32bd66/pasted-text.txt`
   = `91a88e5467e13c811794c2149b6a8d5669e613c3e259d8f4091ba08c048733d6`。
 
-另绑定Human engineering-governance override URI
-`conversation://human/2026-07-29/orchestrator-engineering-owner`、SHA-256
-`52394bcd3fa819fcb83c82c50a89d0b9c4aaa53a41eca18bb953c174787b259d`及结论：Advisor仅拥有色彩/测量科学指导，
-Orchestrator拥有文件、代码、provenance、execution packaging与Git路线。本包不修改GUIDE或Advisor evidence。
+Engineering-governance只允许绑定可独立验证的repository policy owner，不得再引用无实体source的conversation URI/hash：
+
+- owner path exact `AGENTS.md`，owner commit exact `3e2ebed132b6d4338bfa324bfc42c3565d2eeb3c`，commit-qualified/current
+  blob OID均须为`58bfacb5fc46fcb42bf643d12974063533a684eb`，commit-qualified/current bytes SHA-256均须为
+  `604b10bedeac6c9285f6448f94323521bf021a58275cce84d64163e16a2f07a0`；controller从Git object与working path各独立读取一次并验证
+  byte-exact一致，且此路径在3e2的181-path ledger中仍保持
+  `present_in_commit_not_authorized_by_this_manifest`，不得变成scientific-audit-prerequisite selected path。
+- 同一owner bytes必须包含下列四条exact UTF-8 policy statements，manifest绑定owner commit/blob/SHA及规范化语义字段，不复制或发明
+  conversation provenance：
+  1. `Guides color science, measurement science, experimental interpretation, and scientific branch selection; performs research and external investigation in those areas.`
+  2. `Does not own file selection, code architecture, provenance implementation, execution orchestration, Git management, the Planner's executable plan, or the Human's high-risk device authorization.`
+  3. `Owns experiment orchestration outside scientific interpretation, including implementation architecture, exact repository scope, provenance and evidence plumbing, execution packaging, corrective branches, and Git/commit topology.`
+  4. `Escalates to the Advisor and pauses the affected route only when scientific guidance is insufficient or contradictory, or the next color-science/measurement-science branch cannot be determined safely.`
+- Manifest规范化结论只能是：Advisor拥有色彩/测量科学指导；Orchestrator拥有implementation architecture、repository scope、provenance、
+  execution packaging与Git topology；非科学工程问题不得仅因GUIDE实现建议不足而升级Advisor。本包不修改`AGENTS.md`、GUIDE或Advisor evidence。
 
 ## 4. 原retained R3三件套：exact one-read immutability
 
