@@ -16453,3 +16453,24 @@ C13_IMPLEMENTATION_RESULT {"schema":"c13_implementation_result_v1","timestamp":"
 - Root: `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-c1-byte-span-selector-df0020d-20260730T1745Z`.
 - Terminal SHA-256: `09b4add8bfb7daf931087aa2d6b2c752028682035b1ed6dcd4f305d4c468a7c0`; retry/fallback `0/0`.
 - Stop: `B2_C4_C1_BYTE_SPAN_SELECTOR_WAITING_PLANNER_REVIEW`.
+
+## REF-P7-25-R2-B2-C4-P1 Executer handoff — pass_waiting_for_planner
+
+- Contract: `P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-P1-REPO-OWNED-PREPARATION-V1`.
+- Implementation parent: `aa0baf80aa7c83fe094ce139c5a14d04f13c67dd`; child: `ce096155227d4f24f1d6659550319aaf335d014b`; parent relation exact.
+- Exact commit subject: `feat(p7): add retained r3 controller preparation owner`; commit count `1`; exact two new regular paths: `src/camera_based_rgbww_optimizer/utils/p7_retained_r3_controller_preparation.py` and `tests/test_p7_retained_r3_controller_preparation.py`; no third implementation path.
+- Ownership/API: one pure typed in-memory owner provides explicit AST parent edges, unique regular-function and same-list adjacency selection, validated UTF-8 byte-span replacement, deterministic parse+compile checked source, canonical terminal JSON with exactly one LF, exact five-field target linkage, an internally constructed validated seal gate, and seal-dominant injected ER callback sequencing. It owns no filesystem, validator, eligibility, release or device operation.
+- Dedicated inventory: `17` behavioral tests cover direct/nested/double-nested owners; cross-function/lambda/async/zero/multiple rejection; same-list adjacency; same-line and non-ASCII UTF-8 offsets; boundary/order/overlap/reversed/out-of-range/empty replacements; deterministic parseable/compilable output; invalid prepared source; canonical LF success; literal-backslash-n/CRLF/missing/extra/embedded LF/invalid UTF-8; duplicate/non-finite/noncanonical JSON; path/bytes/SHA/device/inode linkage; PASS/FAIL ER sequencing; invalid-seal ER count zero; primary error preservation; non-forgeable-in-normal-use gate; and static no-I/O/no-large-nested-program constraints.
+- Targeted precommit: `.venv/bin/python -m unittest discover -s tests -p 'test_p7_retained_r3_controller_preparation.py' -v`, exit `0`, `17/17`.
+- Related focused 1: `.venv/bin/python -m unittest discover -s tests -p 'test_p7_retained_r3_exact_five_controller.py' -v`, exit `0`, `11/11`.
+- Related focused 2: `.venv/bin/python -m unittest discover -s tests -p 'test_p7_retained_release_audit.py' -v`, exit `0`, `21/21`.
+- Full: `.venv/bin/python -m unittest discover -s tests -p 'test_*.py' -v`, exit `0`, `708/708` in `182.359s`.
+- Compile: `.venv/bin/python -m compileall -q src/camera_based_rgbww_optimizer tests`, exit `0`.
+- CodeGraph: `codegraph sync`, exit `0`, `Already up to date`.
+- Precommit repository gate: `git diff --check`, exit `0`; unstaged/staged implementation path union exactly the frozen two-path set. Staged path set before commit exactly the frozen sorted two-path set.
+- Postcommit targeted: `.venv/bin/python -m unittest discover -s tests -p 'test_p7_retained_r3_controller_preparation.py' -v`, exit `0`, `17/17`.
+- Postcommit repository gate: `git diff --check`, exit `0`; implementation-scope worktree drift `0`.
+- Static result: forbidden direct-I/O/network/process/environment/device/release/validator imports and calls `0`; nested large generated programs `0`; static behavioral test passed.
+- Explicit zero counters: old C4/external owner reads `0`; retained-R3 reads `0`; external controller invocations `0`; canonical validator calls `0`; eligibility emissions `0`; release operations `0`; public analyzer `0`; network/DNS `0`; `.env`/credential reads `0`; device/camera/Ray/strip/cleanup/capture/FORMAL/TD-C/sentinel/P8 operations all `0`.
+- Maintainability: the preparation state owner is a separate pure typed module with a dedicated behavioral test owner; production execution and canonical eligibility boundaries remain unchanged. Historical integration stays deferred, so no parallel eligibility owner or large generated controller was introduced.
+- Result: `pass_waiting_for_planner`; exact stop: `B2_C4_P1_IMPLEMENTATION_COMPLETE_WAITING_PLANNER_REVIEW`. P1 does not authorize C4 integration, real B2, retained-R3 audit, B3, eligibility, release consumption or device work.
