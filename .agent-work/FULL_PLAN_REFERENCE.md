@@ -16,9 +16,9 @@
 
 **当前可执行任务数：** `1`
 
-**当前 active task：** `REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-13 exact scanner owner implementation`
+**当前 active task：** `REF-P7-25-R2-B1A-C3E6F17-C13-LINEAGE-SEAL acceptance commit and lineage seal`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-13","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F17-CORRECTIVE-13","next_reference_task":"REF-P7-25-R2-B2","next_reference_status":"BLOCKED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"B1A_C3E6F17_CORRECTIVE_12_REJECTED_REPEATED_SCANNER_FALSE_NEGATIVE_CORRECTIVE_13_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"3c5847fcbe0af85833c901f6f01058d000a3cecdc0f84e6ae331ed24e138c225","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B1A-C3E6F17-C13-LINEAGE-SEAL","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F17-C13-LINEAGE-SEAL","next_reference_task":"REF-P7-25-R2-B2","next_reference_status":"BLOCKED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"B1A_C3E6F17_CORRECTIVE_13_PLANNER_ACCEPTED_WAITING_LINEAGE_SEAL","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"3c5847fcbe0af85833c901f6f01058d000a3cecdc0f84e6ae331ed24e138c225","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -2484,7 +2484,9 @@ candidate。Planner 独立 raw-byte 复核仍为 PLAN/FULL `1/1`，Executer 再�
 
 ### REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-13：Exact scanner owner implementation
 
-**状态：** `ACTIVE_PLANNER_ENGINEERING_CORRECTIVE_ONLY`。
+**状态：** `PLANNER_ACCEPTED_WAITING_LINEAGE_SEAL`。Planner 归档：
+`.agent-work/PLANS/20260730-0218-p7-retained-r3-option-b-b1a-c3e6f17-corrective-13-review.md`，SHA-256
+`e5e8ae9bfc9d02b3653e269e47e888a21fecc1c88260c0221a059782ca3a14cb`。
 
 Orchestrator 冻结 exact changed-path set，仅允许：
 
@@ -2496,6 +2498,19 @@ parsed object与可重放 evidence；不得读取路径、修复payload、访问
 合法LF、CRLF、无LF EOF、重复候选、错误prefix/suffix、非object JSON、PLAN/FULL owner分离及JSON value/type。canonical lineage
 validator继续独占eligibility。下一包只可实现并测试这两个exact paths，绑定before/after identity、source SHA、test结果与raw-row SHA；
 bootstrap、release、R3、network、device及既有candidate持续锁定。
+
+Executer targeted `11/11`，Planner 独立 targeted `11/11`；no-write compile、strict evidence、PLAN/FULL replay、exact path set与
+source/blob identities均通过。helper SHA-256 `743e2948f6c30a31fde5d072c8effa8b1365d321b303d61e9899ad18ac41825f`，
+test SHA-256 `32c0d47cfcdfa49ecad2a4976f401021f0ff1bef947eab705a8c89836b2f5a19`。canonical validator call与
+eligibility emission均为0。
+
+### REF-P7-25-R2-B1A-C3E6F17-C13-LINEAGE-SEAL：Acceptance commit and lineage seal
+
+**状态：** `ACTIVE_ORCHESTRATOR_ONLY`。
+
+Orchestrator 只可提交 PLAN 冻结的exact six-path set，验证direct parent、changed paths、committed blobs、clean worktree并记录lineage。
+不得dispatch Executer；不得运行canonical validator或访问retained R3/release/candidate/network/device。本commit仅固化已接受的
+validation helper与治理证据，不产生eligibility，也不解锁bootstrap或B2。
 
 ### REF-P7-25-R2-B2：唯一repair commit与immutable manifest seal
 
@@ -3122,7 +3137,7 @@ Option A owner prerequisite = accepted complete
 Advisor lineage owner decision = Option B subordinate exact provenance manifest
 Human engineering governance override = Orchestrator owns files/code/provenance/execution/Git
 helper v1 disposition = retained_release_audit_prerequisite_v1_superseded_before_real_validation
-repair v2 status = B1A-C3E6F17-CORRECTIVE-12 rejected repeated scanner false negative; C3E6F17-CORRECTIVE-13 active
+repair v2 status = B1A-C3E6F17-CORRECTIVE-13 Planner accepted; lineage seal active
 accepted B1 result = ACCEPTED_BLOCKED_CONTRACT_CONFLICT
 accepted B1A result = HARD_FAILURE_PRE_ACQUISITION_LIFECYCLE; implementation progress 0
 accepted B1A-C1 result = HARD_FAILURE_BEFORE_TEST_EXEC; candidate carry-forward only
@@ -3166,8 +3181,9 @@ accepted B1A-C3E6F17-CORRECTIVE-9 result = JS_BASE64_ENCODER_UNAVAILABLE; exec0;
 accepted B1A-C3E6F17-CORRECTIVE-10 result = INPUT_OWNER_BINDING; subset12/12; zero0/19; counters0/0; ER appended
 accepted B1A-C3E6F17-CORRECTIVE-11 result = PLAN_SCANNER_FALSE_NEGATIVE; actual candidates1/1; reported plan0; counters0/0; ER appended
 accepted B1A-C3E6F17-CORRECTIVE-12 result = REPEATED_SCANNER_FALSE_NEGATIVE; actual candidates1/1; reported0/0; counters0/0; ER appended
-active task = REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-13 exact scanner owner implementation
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F17-CORRECTIVE-13
+accepted B1A-C3E6F17-CORRECTIVE-13 result = VALIDATION_ONLY_SCANNER_OWNER_ACCEPTED; Executer11/11; Planner11/11; eligibility0
+active task = REF-P7-25-R2-B1A-C3E6F17-C13-LINEAGE-SEAL acceptance commit and lineage seal
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F17-C13-LINEAGE-SEAL
 active executable task count = 1
 next reference task = REF-P7-25-R2-B2 BLOCKED
 selected state C shutter = 1/2500
@@ -3192,10 +3208,10 @@ Planner 拒绝并归档；C3E6F17-CORRECTIVE-1 又因 canonical `task_id` 与 PL
 JavaScript SyntaxError 未启动 Python；C4 随后仅 8/12，C5 又因正文 marker candidates 与未冻结字段失败，C6 又报 candidate0；
 之后 wrapper、newline、base64 与 input-owner 多轮纠偏均保持所有执行预算为零。C11 的两文件 hash 与真实 machine rows 均正确，
 但 Executer scanner 将 PLAN candidate 错计为0；C12 的更精确文字合同仍因临时实现转录漂移错报0/0。当前 C13 将 scanner
-收敛到一个validation-only helper与一个dedicated test，避免继续复制实现；它不拥有eligibility或retained-release语义。
+收敛到一个validation-only helper与一个dedicated test并获Planner接受，避免继续复制实现；它不拥有eligibility或retained-release语义。
 后继另包才可冻结新controller并建立 fresh bootstrap container；不得重跑F14、提前修改production或输出eligibility。retained R3继续为
-`REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-13`冻结exact helper/test两路径、纯bytes scanner语义与可重放evidence；实现包以外的
-controller/source/root/commit/artifact均为0，canonical validator仍是sole eligibility owner；
+`REF-P7-25-R2-B1A-C3E6F17-C13-LINEAGE-SEAL`只固化C13 accepted helper/test与治理证据的exact six-path commit；
+canonical validator call、eligibility emission、retained R3/release/device访问仍为0；
 retained R3 仍为 `RETAINED_UNVALIDATED_UNCONSUMED`。
 
 B1A-B5均为offline validation/provenance工作，不命中AGENTS高危设备授权；但这不等于当前已授权执行。Release
