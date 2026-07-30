@@ -16474,3 +16474,26 @@ C13_IMPLEMENTATION_RESULT {"schema":"c13_implementation_result_v1","timestamp":"
 - Explicit zero counters: old C4/external owner reads `0`; retained-R3 reads `0`; external controller invocations `0`; canonical validator calls `0`; eligibility emissions `0`; release operations `0`; public analyzer `0`; network/DNS `0`; `.env`/credential reads `0`; device/camera/Ray/strip/cleanup/capture/FORMAL/TD-C/sentinel/P8 operations all `0`.
 - Maintainability: the preparation state owner is a separate pure typed module with a dedicated behavioral test owner; production execution and canonical eligibility boundaries remain unchanged. Historical integration stays deferred, so no parallel eligibility owner or large generated controller was introduced.
 - Result: `pass_waiting_for_planner`; exact stop: `B2_C4_P1_IMPLEMENTATION_COMPLETE_WAITING_PLANNER_REVIEW`. P1 does not authorize C4 integration, real B2, retained-R3 audit, B3, eligibility, release consumption or device work.
+
+## REF-P7-25-R2-B2-C4-P1-C1 Executer handoff — pass_waiting_for_planner
+
+- Contract: `P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-P1-C1-EXACT-PREPARATION-CORRECTION-V1`.
+- Dispatch/implementation parent: `a99292e3cc75345d3c783131fd4c716b8fe698f7`; successor: `4678a3e6f93704912952776bc11fa2b0945d80b1`; direct-parent relation exact and `ce096155227d4f24f1d6659550319aaf335d014b` remains an ancestor.
+- Exact commit subject: `fix(p7): harden retained r3 preparation invariants`; commit count `1`; exact changed paths: `src/camera_based_rgbww_optimizer/utils/p7_retained_r3_controller_preparation.py` (SHA-256 `882f3819d161369012ce7fcd52cb1de1b9c56e4e1f821ff4554f6a1d8340738b`) and `tests/test_p7_retained_r3_controller_preparation.py` (SHA-256 `80ef2bead548856031c6d6f07f4ee0b6c74b8b917a45787e9f96fbf57b4d4527`); no third implementation path.
+- REV-P1-001: target linkage now requires the exact five-key set plus exact runtime type and exact value for every field, rejecting bool/int, integral-float/int, string/numeric coercions, missing and extra fields.
+- REV-P1-002: AST ownership now traverses the complete explicit-parent chain, accepts exactly one regular `FunctionDef`, rejects nested multiple regular owners and any async/lambda boundary, while retaining valid one-owner nested statements and same-list adjacency.
+- REV-P1-003: strict-reloaded JSON is recursively detached and frozen before callback visibility; dictionaries become read-only mappings, lists become tuples, nested combinations share no mutable caller containers, and the frozen target identity remains immutable.
+- REV-P1-004: replacement entries are materialized and exact-type validated before sorting or attribute access; malformed iterable and non-iterable inputs fail with stable `ControllerPreparationError("invalid_replacement")`.
+- Static guard: `Import` roots continue to derive from alias names, while `ImportFrom` roots now derive from `node.module`; direct-I/O calls and large nested-program literals remain prohibited.
+- Targeted precommit: `.venv/bin/python -m unittest discover -s tests -p 'test_p7_retained_r3_controller_preparation.py' -v`, exit `0`, `21/21`.
+- Related focused 1: `.venv/bin/python -m unittest discover -s tests -p 'test_p7_retained_r3_exact_five_controller.py' -v`, exit `0`, `11/11`.
+- Related focused 2: `.venv/bin/python -m unittest discover -s tests -p 'test_p7_retained_release_audit.py' -v`, exit `0`, `21/21`.
+- Full: `.venv/bin/python -m unittest discover -s tests -p 'test_*.py' -v`, exit `0`, `712/712` in `175.951s`.
+- Compile: `.venv/bin/python -m compileall -q src/camera_based_rgbww_optimizer tests`, exit `0`.
+- CodeGraph: `codegraph sync`, exit `0`, `Already up to date`.
+- Precommit repository gate: `git diff --check`, exit `0`; implementation path union exactly the frozen two-path set. Staged path set before commit exactly the frozen sorted two-path set.
+- Postcommit targeted: `.venv/bin/python -m unittest discover -s tests -p 'test_p7_retained_r3_controller_preparation.py' -v`, exit `0`, `21/21`.
+- Postcommit repository gate: `git diff --check`, exit `0`; implementation-scope drift `0`.
+- Explicit zero counters: historical C4/external-owner reads `0`; retained-R3 reads `0`; external controller invocations `0`; canonical validator calls `0`; eligibility emissions `0`; release operations `0`; public analyzer `0`; network/DNS `0`; `.env`/credential reads `0`; device/camera/Ray/strip/cleanup/capture/FORMAL/TD-C/sentinel/P8/firmware/deployment operations all `0`.
+- Maintainability: the correction remains within the single pure preparation owner and its dedicated regression owner; it tightens provenance invariants without widening the API, adding a parallel validator, or changing production/eligibility ownership. No follow-up refactor is indicated by this package.
+- Result: `pass_waiting_for_planner`; exact stop: `B2_C4_P1_C1_IMPLEMENTATION_COMPLETE_WAITING_PLANNER_REVIEW`. This passing correction does not authorize C4 integration, real B2, retained-R3 audit, B3, eligibility, release consumption or device work.

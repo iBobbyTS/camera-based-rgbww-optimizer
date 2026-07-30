@@ -16,9 +16,9 @@
 
 **当前可执行任务数：** `0`
 
-**当前 active task：** `REF-P7-25-R2-B2-C4-P1-C1 exact preparation invariant correction`
+**当前 active task：** `REF-P7-25-R2-B2-C4-P2 committed preparation integration route`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-C4-P1-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-P1-C1-EXACT-PREPARATION-CORRECTION-V1","next_reference_task":"REF-P7-25-R2-B2-C4-P1-C1","next_reference_status":"ACTIVE","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P1_REJECTED_BOUNDED_EXACT_INVARIANT_CORRECTION_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"6e815dd49533312a9094e20ff31961ab6aa33e0704995061e6e0c303b1d10886","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":0,"active_task":"REF-P7-25-R2-B2-C4-P2","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-P1-C1-ACCEPTED-ORCHESTRATOR-GATE-V1","next_reference_task":"REF-P7-25-R2-B2-C4-P2","next_reference_status":"READY_FOR_PLANNING","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P1_C1_ACCEPTED_COMMITTED_PREPARATION_OWNER_PROVENANCE_BOUND","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"1321ecc3eabffe6640513e99be7c21e4c98c8f7e37b9be5a645de6d367dc0f54","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -286,7 +286,8 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-B2-C4-C1` | `REJECTED_DUAL_OWNER_AND_EVIDENCE_LIFECYCLE_FAILURE` | content-free byte-span statement-selector correction与12-case matrix | C4 V3 semantic failure | Planner/Executer |
 | `REF-P7-25-R2-B2-C4-C1-C1` | `REJECTED_PRE_ROOT_OWNER_SYNTAX_FAILURE_NO_C4_PROGRESS` | AST ancestor/same-list selector与canonical-LF strict pre-ER gate correction | C4-C1 dual failure | Planner/Executer |
 | `REF-P7-25-R2-B2-C4-P1` | `REJECTED_BOUNDED_P1_CORRECTION_REQUIRED` | repo-owned、dedicated、tested preparation/serialization/AST owner | C4-C1-C1 architecture stop | Planner/Executer |
-| `REF-P7-25-R2-B2-C4-P1-C1` | `ACTIVE` | exact identity、unique owner、deep immutable gate、typed malformed replacement correction | P1 review findings | Planner/Executer |
+| `REF-P7-25-R2-B2-C4-P1-C1` | `ACCEPTED_COMPLETE` | exact identity、unique owner、deep immutable gate、typed malformed replacement correction | P1 review findings | Planner/Executer |
+| `REF-P7-25-R2-B2-C4-P2` | `READY_FOR_PLANNING` | bind accepted helper commit into smallest repo-owned C4 integration/qualification package | P1-C1 accepted | Planner/Executer |
 | `REF-P7-25-R2-B3` | `BLOCKED` | Manifest自校验后执行postcommit focused、durable full、synthetic terminal/replay | `REF-P7-25-R2-B2` accepted | Planner/Executer |
 | `REF-P7-25-R2-B4` | `BLOCKED` | 对原retained R3三件套做首次真实audit并由canonical validator唯一判定eligibility | `REF-P7-25-R2-B3` accepted | Planner/Executer |
 | `REF-P7-25-R2-B5` | `BLOCKED` | 独立验收validated-unconsumed状态、manifest与rollback provenance | `REF-P7-25-R2-B4` pass | Planner/Orchestrator |
@@ -3116,7 +3117,13 @@ function只返回最近owner；gate payload只有浅层不可变；replacement�
 
 ### REF-P7-25-R2-B2-C4-P1-C1：exact preparation invariant correction
 
-**状态：** `ACTIVE`。
+**状态：** `ACCEPTED_COMPLETE`。Successor
+`4678a3e6f93704912952776bc11fa2b0945d80b1`，parent
+`a99292e3cc75345d3c783131fd4c716b8fe698f7`；helper/test SHA-256分别为
+`882f3819d161369012ce7fcd52cb1de1b9c56e4e1f821ff4554f6a1d8340738b`与
+`80ef2bead548856031c6d6f07f4ee0b6c74b8b917a45787e9f96fbf57b4d4527`。Planner review archive：
+`.agent-work/PLANS/20260730-1247-p7-retained-r3-option-b-b2-c4-p1-c1-implementation-review.md`，bytes `7625`，SHA-256
+`45ddabac38649f6d635ede63821e21baaf4aca1fc37c47bd9077600fee776293`。
 
 **实现：** 只修改P1 exact helper+dedicated test。Target identity要求exact key set、exact runtime type与exact value；完整ancestor chain
 必须恰有一个regular FunctionDef并拒绝async/lambda/two-or-more regular owner；callback-visible payload递归冻结且不共享mutable container；
@@ -3127,9 +3134,28 @@ function只返回最近owner；gate payload只有浅层不可变；replacement�
 `fix(p7): harden retained r3 preparation invariants`；postcommit targeted一次。所有历史C4/retained/validator/eligibility/release/network/device
 预算为0，失败不在同执行修复或重跑。
 
-**成功出口与stop：** Planner接受后，Orchestrator先把successor commit加入provenance route，再创建独立C4 preparation/execution package；
-P1-C1本身不得读取旧C4 artifacts或运行real B2。当前stop为
-`B2_C4_P1_C1_IMPLEMENTATION_COMPLETE_WAITING_PLANNER_REVIEW`。
+Targeted21/21、related11/11与21/21、full712/712、compileall、CodeGraph、diff/path与postcommit21/21均通过；Planner以Git topology、
+CodeGraph和静态AST独立关闭五项finding，未重跑测试。Orchestrator接受该disposition并将exact successor/path/file identities绑定为P2
+唯一implementation input；P1-C1本身未读取旧C4 artifacts或运行real B2。
+
+### REF-P7-25-R2-B2-C4-P2：committed preparation integration route
+
+**状态：** `READY_FOR_PLANNING`。
+
+**依赖与冻结输入：** 只接受P1-C1 successor `4678a3e6...`的committed helper/test blobs及上述SHA；不得从worktree、旧external owner或
+临时转录复制implementation facts。Canonical validator继续是唯一eligibility owner。
+
+**最小工程路线：** Planner下一包应只做repo-owned integration/qualification设计与实现，优先以现有callback lifecycle组合accepted pure helper，
+禁止重新建立30KB external generated controller或第二validator。若需要新adapter，必须先证明现有`p7_retained_r3_exact_five_controller`
+callbacks不能承载，并将新增path保持为最小单一owner+dedicated test；不得在同包读取real retained R3或运行real B2。
+
+**边界与证据：** 可以在PLAN精确冻结后读取accepted C3/C4 structure evidence做content-free/qualification-only integration，但旧失败root不得
+repair/reuse，retained artifacts、validator、eligibility、release、network/device持续0。需要exact commit/path/blob/file hashes、纯synthetic
+matrix、targeted/focused/full、compileall、CodeGraph与独立Planner review。任一架构范围超过最小owner或引入平行execution framework，退回
+Orchestrator，不升级Advisor。
+
+**出口与stop：** 只有P2 Planner package被Orchestrator验收并另行激活后才可执行；当前执行数0，stop为
+`B2_C4_P2_WAITING_PLANNER_INTEGRATION_PLAN`。
 
 > 以下旧two-path执行细节已由Human engineering-governance override与B1A exact-five contract supersede，不得作为未来
 > PLAN输入；B1A-C2/后续Planner验收冻结的five-path child与manifest facts才是B2的新工程基线。本段保留仅作旧合同历史。
@@ -3750,7 +3776,7 @@ Option A owner prerequisite = accepted complete
 Advisor lineage owner decision = Option B subordinate exact provenance manifest
 Human engineering governance override = Orchestrator owns files/code/provenance/execution/Git
 helper v1 disposition = retained_release_audit_prerequisite_v1_superseded_before_real_validation
-repair v2 status = P1 rejected on exact invariant review; P1-C1 active bounded correction
+repair v2 status = P1-C1 accepted; committed preparation owner bound; P2 ready for planning
 accepted B1 result = ACCEPTED_BLOCKED_CONTRACT_CONFLICT
 accepted B1A result = HARD_FAILURE_PRE_ACQUISITION_LIFECYCLE; implementation progress 0
 accepted B1A-C1 result = HARD_FAILURE_BEFORE_TEST_EXEC; candidate carry-forward only
@@ -3827,10 +3853,11 @@ rejected B2-C4 V3 result = TRANSFORM_PRECONDITION_LINE_ONLY_STATEMENT_CONTAINMEN
 rejected B2-C4-C1 result = DUAL_OWNER_AND_EVIDENCE_LIFECYCLE_FAILURE; invalid seal; unauthorized ER diagnostic
 rejected B2-C4-C1-C1 result = PRE_ROOT_OWNER_SYNTAX_FAILURE_NO_C4_PROGRESS; parse1; dispatch/root/input/output0
 rejected B2-C4-P1 result = SEMANTIC_INVARIANT_GAPS; commit ce09615 retained; tests708/708
-active task = REF-P7-25-R2-B2-C4-P1-C1 exact preparation invariant correction
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-P1-C1-EXACT-PREPARATION-CORRECTION-V1
-active executable task count = 1
-next reference task = REF-P7-25-R2-B2-C4-P1-C1 ACTIVE
+accepted B2-C4-P1-C1 result = ACCEPTED_COMPLETE; successor4678a3e; tests712/712; five findings closed
+active task = REF-P7-25-R2-B2-C4-P2 committed preparation integration route
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-P1-C1-ACCEPTED-ORCHESTRATOR-GATE-V1
+active executable task count = 0
+next reference task = REF-P7-25-R2-B2-C4-P2 READY_FOR_PLANNING
 selected state C shutter = 1/2500
 device/network/camera/light = forbidden by active PLAN
 release qualification/generation/copy/consumption = forbidden
@@ -3871,7 +3898,8 @@ real-main/fixture共享lifecycle，仍不得运行real B2；
 external controller，转入`REF-P7-25-R2-B2-C4-P1`仓库内纯preparation owner。该owner必须以exact helper+dedicated test将AST selection、
 canonical-LF、terminal linkage与ER gate变为可单测边界，未来execution I/O仍由独立callbacks/package拥有；
 P1首版虽通过full708/708，但Planner发现type-exact identity、unique enclosing owner、deep immutable gate与typed malformed input guard缺口；
-当前P1-C1只在同一helper/test边界修复这些semantic invariants，不新增owner或第三路径；
+P1-C1已在同一helper/test边界关闭这些semantic invariants并由Planner接受；P2只可把accepted committed helper绑定到最小repo-owned
+integration/qualification route，不得恢复external generated-controller链或新增eligibility owner；
 canonical validator call、eligibility emission、retained R3/release/device访问仍为0；
 retained R3 仍为 `RETAINED_UNVALIDATED_UNCONSUMED`。
 
