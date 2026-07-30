@@ -1,6 +1,6 @@
 # REF-P7-25-R2-B2-C4-C1-C1：content-free dual-owner controller correction
 
-**计划状态：** `PLANNER_COMPLETE_WAITING_ORCHESTRATOR_REVIEW`
+**计划状态：** `ACTIVE_EXECUTION_AUTHORIZED`
 
 **Planner 日期：** `2026-07-30`
 
@@ -11,27 +11,26 @@
 **Contract ID：**
 `P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-C1-C1-DUAL-OWNER-CONTROLLER-CORRECTION-V1`
 
-**当前唯一动作：** 等待 Orchestrator 独立验收 C4-C1 dual failure 与本
-corrective package。若接受，Planner 必须另行完成一次只改本 PLAN 的 activation
-commit，冻结 activation parent 后，Executer 才可在一个 brand-new external root
-运行一次 content-free correction owner：只读取 C4-C1 的四个 durable physical
-artifacts 与冻结 C4-C1 controller 各一次，生成一个 corrected controller，精确
-修正 AST ancestor/statement-scope containment 与 canonical-LF terminal seal plus
-strict pre-ER gate，并以合成 negative matrix 资格化。不得读取任何 C4 V3 payload、
-V3 builder、C3/source/retained input，也不得执行 corrected controller real `main`。
+**当前唯一动作：** Executer 在一个 brand-new external root 运行一次 content-free
+correction owner：只读取 C4-C1 的四个 durable physical artifacts 与冻结 C4-C1
+controller 各一次，生成一个 corrected controller，精确修正 AST
+ancestor/statement-scope containment 与 canonical-LF terminal seal plus strict
+pre-ER gate，并以合成 negative matrix 资格化。不得读取任何 C4 V3 payload、V3
+builder、C3/source/retained input，也不得执行 corrected controller real `main`。
 
 **Planner stop：**
-`B2_C4_C1_C1_DUAL_OWNER_CORRECTION_WAITING_PLAN_ONLY_ACTIVATION_FREEZE`。
+`B2_C4_C1_C1_DUAL_OWNER_CORRECTION_WAITING_PLANNER_REVIEW`。
 
-本文件当前 `execution_authorized=false`。它不授权 Executer、controller、测试、
-validator、release、网络或设备调用；仅定义等待 Orchestrator 审核的下一包。
+本文件当前 `execution_authorized=true`。它只授权上述一次 content-free correction
+owner 及本 PLAN 明列的离线证据生命周期；不授权 corrected controller real
+`main`、validator、release、网络或设备调用。
 
 **Reviewed archive：**
 `.agent-work/PLANS/20260730-1152-p7-retained-r3-option-b-b2-c4-c1-dual-failure-review.md`
 （bytes `7487`，SHA-256
 `a842794607f17ecc0ede62f126eda7064b090eb50830e72df852ea075311c90c`）。
 
-`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_c4_c1_c1_dual_owner_controller_correction_plan_v1","reference_task_id":"REF-P7-25-R2-B2-C4-C1-C1","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-C1-C1-DUAL-OWNER-CONTROLLER-CORRECTION-V1","dispatch_state":"planner_complete_waiting_orchestrator_review","execution_authorized":false,"single_current_action":"content_free_dual_owner_controller_correction","activation_parent":null,"activation_parent_freeze_pending":true,"activation_subject":"chore(plan): activate b2 c4 c1 c1 controller correction","activation_changed_paths":[".agent-work/PLAN.md"],"activation_additional_paths":0,"activation_commit_count":1,"programmatic_dispatch_head_reads":1,"second_dispatch_head_reads":0,"review_archive":{"path":".agent-work/PLANS/20260730-1152-p7-retained-r3-option-b-b2-c4-c1-dual-failure-review.md","bytes":7487,"sha256":"a842794607f17ecc0ede62f126eda7064b090eb50830e72df852ea075311c90c"},"rejected_c4_c1_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-c1-byte-span-selector-df0020d-20260730T1745Z","rejected_terminal_sha256":"09b4add8bfb7daf931087aa2d6b2c752028682035b1ed6dcd4f305d4c468a7c0","invalid_terminal_seal_sha256":"8bc0fe09d02fb0cebbefb05554cef0f4f3b84cfb1403d5e8f01e6cf58be36ade","er_handoff_accepted":false,"c4_c1_artifact_reads_each":1,"c4_v3_payload_builder_reads":0,"frozen_c4_c1_controller":{"path":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-b2-c4-c1-byte-span-controller-v1.py","bytes":28701,"sha256":"ba05a533f76dec4e64519b1a76970c791521223c1936ff3cb856222218d45dac"},"future_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-c1-c1-dual-owner-correction-ba05a53-20260730T1800Z","corrected_controller_generations":1,"corrected_controller_real_main_invocations":0,"negative_matrix":"16/16","canonical_validator_calls":0,"eligibility_emissions":0,"release_operations":0,"retry":0,"fallback":0,"planner_stop":"B2_C4_C1_C1_DUAL_OWNER_CORRECTION_WAITING_PLAN_ONLY_ACTIVATION_FREEZE"}`
+`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_c4_c1_c1_dual_owner_controller_correction_plan_v1","reference_task_id":"REF-P7-25-R2-B2-C4-C1-C1","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-C1-C1-DUAL-OWNER-CONTROLLER-CORRECTION-V1","dispatch_state":"dispatchable_one_fresh_executer_after_plan_only_activation_commit","execution_authorized":true,"single_current_action":"content_free_dual_owner_controller_correction","activation_parent":"7119db934b526b6c0e0a8095d55909914bd4deda","activation_parent_freeze_pending":false,"activation_subject":"chore(plan): activate b2 c4 c1 c1 controller correction","activation_changed_paths":[".agent-work/PLAN.md"],"activation_additional_paths":0,"activation_commit_count":1,"activation_plan_blob_owner":"runtime_git_rev_parse_HEAD_colon_exact_plan_path","activation_plan_sha256_owner":"runtime_sha256_of_committed_plan_blob","activation_plan_worktree_must_equal_committed_blob":true,"activation_self_referential_expected_child_blob_or_plan_sha_forbidden":true,"programmatic_dispatch_head_reads":1,"second_dispatch_head_reads":0,"review_archive":{"path":".agent-work/PLANS/20260730-1152-p7-retained-r3-option-b-b2-c4-c1-dual-failure-review.md","bytes":7487,"sha256":"a842794607f17ecc0ede62f126eda7064b090eb50830e72df852ea075311c90c"},"rejected_c4_c1_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-c1-byte-span-selector-df0020d-20260730T1745Z","rejected_terminal_sha256":"09b4add8bfb7daf931087aa2d6b2c752028682035b1ed6dcd4f305d4c468a7c0","invalid_terminal_seal_sha256":"8bc0fe09d02fb0cebbefb05554cef0f4f3b84cfb1403d5e8f01e6cf58be36ade","er_handoff_accepted":false,"c4_c1_artifact_reads_each":1,"c4_v3_payload_builder_reads":0,"frozen_c4_c1_controller":{"path":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-b2-c4-c1-byte-span-controller-v1.py","bytes":28701,"sha256":"ba05a533f76dec4e64519b1a76970c791521223c1936ff3cb856222218d45dac"},"future_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-c1-c1-dual-owner-correction-ba05a53-20260730T1800Z","corrected_controller_generations":1,"corrected_controller_real_main_invocations":0,"negative_matrix":"16/16","canonical_validator_calls":0,"eligibility_emissions":0,"release_operations":0,"retry":0,"fallback":0,"planner_stop":"B2_C4_C1_C1_DUAL_OWNER_CORRECTION_WAITING_PLANNER_REVIEW"}`
 
 ## 1. Planner decision and authority boundary
 
@@ -57,12 +56,11 @@ validator、release、网络或设备调用；仅定义等待 Orchestrator 审�
 
 ## 2. Activation and immutable namespace
 
-1. This package is not executable yet. After Orchestrator accepts the archive
-   and commits the reviewed state, Planner must make exactly one PLAN-only
-   activation commit with subject exact
-   `chore(plan): activate b2 c4 c1 c1 controller correction`, direct parent
-   frozen to the then-current reviewed-state HEAD, exact changed path
-   `.agent-work/PLAN.md`, and additional paths `0`.
+1. This package is executable exactly once by the activation commit being
+   created now. Its subject is exact
+   `chore(plan): activate b2 c4 c1 c1 controller correction`, its direct parent
+   is frozen to `7119db934b526b6c0e0a8095d55909914bd4deda`, its exact changed path is
+   `.agent-work/PLAN.md`, and additional paths are `0`.
 2. At dispatch, Executer reads symbolic HEAD exactly once and derives the PLAN
    SHA-256 from that commit's PLAN blob, proving direct parent, subject, sole
    changed path, clean worktree, blob/worktree equality,
