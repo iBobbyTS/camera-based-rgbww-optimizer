@@ -1,69 +1,104 @@
-# REF-P7-25-R2-B2-C4：AST/span successor transform qualification
+# REF-P7-25-R2-B2-C4：AST/span successor transform qualification dispatch correction
 
-**计划状态：** `ACTIVE_EXECUTION_AUTHORIZED`
+**计划状态：** `PLANNER_COMPLETE_WAITING_ORCHESTRATOR_REVIEW`
 
 **Planner 日期：** `2026-07-30`
 
 **Reference task：** `REF-P7-25-R2-B2-C4`
 
 **Contract ID：**
-`P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-AST-SPAN-SUCCESSOR-QUALIFICATION-V1`
+`P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-AST-SPAN-SUCCESSOR-QUALIFICATION-V2`
 
 **预计时长：** `4–9 分钟`；纯离线，不属于预计超过10分钟的长任务。
 
-**当前唯一动作：** Executer 运行一次新的 external builder：消费 accepted C3 structure index，重新读取 frozen rejected controller 一次，使用已证明的 AST selector 与物理 span 做一个最小 successor transform，并仅在 content-free synthetic inputs 上证明 successor 的真实 `main` post-root 路径和 fixtures 调用同一个 lifecycle owner。
+**当前唯一动作：** 等待 Orchestrator 审核 pre-root dispatch failure；随后由
+Planner 仅通过一个 direct-child PLAN-only activation 冻结 shell-safe dispatch
+wrapper，再由 Executer 运行原 C4 science-free package 的一次新 external
+builder。builder 仍只消费 accepted C3 structure index、重新读取 frozen
+rejected controller 一次、使用已证明的 AST selector 与物理 span 做一个最小
+successor transform，并仅在 content-free synthetic inputs 上证明 successor 的
+真实 `main` post-root 路径和 fixtures 调用同一个 lifecycle owner。
 
 **Planner stop：**
-`B2_C4_AST_SPAN_SUCCESSOR_WAITING_PLANNER_REVIEW`。
+`B2_C4_DISPATCH_FAILURE_REVIEWED_WAITING_PLAN_ONLY_ACTIVATION`。
 
-本文件当前 `execution_authorized=true`。仅本 PLAN 明确界定的一次 builder、C3/source 读取、future root 创建、successor 生成和 content-free qualification 获得放行；real B2、retained-R3 access、validator、release、device 或 scientific operation 仍未放行。
+本文件当前 `execution_authorized=false`。builder、C3/source 读取、future root
+创建、successor 生成和 content-free qualification 均未放行；必须等待独立的
+PLAN-only activation。real B2、retained-R3 access、validator、release、device
+或 scientific operation 仍未放行。
 
 **Reviewed archive：**
-`.agent-work/PLANS/20260730-1054-p7-retained-r3-option-b-b2-c3-source-structure-index-review.md`，bytes `6695`，SHA-256 `694eb8a26b073d471035312c0c078c0b10912ef5f3eaa9f28d60534c8b74585f`。
+`.agent-work/PLANS/20260730-1104-p7-retained-r3-option-b-b2-c4-pre-root-dispatch-failure-review.md`，bytes `4552`，SHA-256 `05e8ec155c487a01ccd3ce5ace8a690005ba678500cfa4450870af99f9393463`。
 
-`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_c4_ast_span_successor_plan_v1","reference_task_id":"REF-P7-25-R2-B2-C4","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-AST-SPAN-SUCCESSOR-QUALIFICATION-V1","dispatch_state":"execution_authorized","execution_authorized":true,"single_current_action":"generate_one_ast_span_selected_successor_and_qualify_shared_real_fixture_lifecycle_without_real_b2","activation_parent":"b4a3ad513f3bbca55f0c38c08fde2d3aa06aa29b","activation_subject":"chore(plan): activate b2 c4 ast span successor","activation_changed_paths":[".agent-work/PLAN.md"],"activation_additional_paths":0,"activation_commit_count":1,"programmatic_dispatch_head_reads":1,"second_dispatch_head_reads":0,"dispatch_plan_sha256_owner":"sha256_of_exact_plan_blob_at_programmatic_dispatch_head","review_archive":{"path":".agent-work/PLANS/20260730-1054-p7-retained-r3-option-b-b2-c3-source-structure-index-review.md","bytes":6695,"sha256":"694eb8a26b073d471035312c0c078c0b10912ef5f3eaa9f28d60534c8b74585f"},"c3_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c3-source-structure-da90556-20260730T1645Z","c3_input_reads_each":1,"source":{"path":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-b2-corrected-controller-cb38ac5.py","bytes":29841,"sha256":"da9055626eac266f0eb983e713f246b18bdf26f7443a30d2a6f2ddb503cf3ba4","new_read_budget":1},"future_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-ast-span-successor-da90556-20260730T1700Z","builder_invocations":1,"successor_generation":1,"successor_real_b2_invocations":0,"content_free_shared_lifecycle_matrix":"12/12","c1_c2_retained_decision_reads":0,"canonical_validator_calls":0,"eligibility_emissions":0,"release_operations":0,"retry":0,"fallback":0,"planner_stop":"B2_C4_AST_SPAN_SUCCESSOR_WAITING_PLANNER_REVIEW"}`
+`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_c4_ast_span_successor_plan_v2","reference_task_id":"REF-P7-25-R2-B2-C4","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-AST-SPAN-SUCCESSOR-QUALIFICATION-V2","dispatch_state":"waiting_plan_only_activation","execution_authorized":false,"single_current_action":"orchestrator_review_then_plan_only_activate_shell_safe_dispatch_for_same_c4","activation_parent":"TO_BE_FROZEN_BY_PLAN_ONLY_ACTIVATION","activation_subject":"chore(plan): reactivate b2 c4 shell safe dispatch","activation_changed_paths":[".agent-work/PLAN.md"],"activation_additional_paths":0,"activation_commit_count":1,"programmatic_dispatch_head_reads":1,"second_dispatch_head_reads":0,"dispatch_plan_sha256_owner":"sha256_of_exact_plan_blob_at_programmatic_dispatch_head","review_archive":{"path":".agent-work/PLANS/20260730-1104-p7-retained-r3-option-b-b2-c4-pre-root-dispatch-failure-review.md","bytes":4552,"sha256":"05e8ec155c487a01ccd3ce5ace8a690005ba678500cfa4450870af99f9393463"},"superseded_unused_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-ast-span-successor-da90556-20260730T1700Z","c3_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c3-source-structure-da90556-20260730T1645Z","c3_input_reads_each":1,"source":{"path":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-b2-corrected-controller-cb38ac5.py","bytes":29841,"sha256":"da9055626eac266f0eb983e713f246b18bdf26f7443a30d2a6f2ddb503cf3ba4","new_read_budget":1},"future_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-ast-span-successor-da90556-r2-20260730T1710Z","dispatch_wrapper_self_checks":"6/6","builder_invocations":1,"successor_generation":1,"successor_real_b2_invocations":0,"content_free_shared_lifecycle_matrix":"12/12","c1_c2_retained_decision_reads":0,"canonical_validator_calls":0,"eligibility_emissions":0,"release_operations":0,"retry":0,"fallback":0,"planner_stop":"B2_C4_DISPATCH_FAILURE_REVIEWED_WAITING_PLAN_ONLY_ACTIVATION"}`
 
 ## 1. Planner decision and authority boundary
 
-1. C3 is accepted only as
+1. The first C4 dispatch is rejected as
+   `REJECTED_PRE_ROOT_DISPATCH_WRAPPER_FAILURE`. Its sole symbolic HEAD read
+   completed, but zsh rejected assignment to its read-only special parameter
+   `status` before the captured value was emitted. Builder/root/C3/source/
+   successor/ER counts are all zero, so it proves no C4 acceptance condition.
+2. A standalone C4-C1 qualification is not required. The failure is isolated
+   to the pre-root shell wrapper and can be corrected by one PLAN-only
+   reactivation with a frozen shell-safe self-check/capture/output contract.
+3. C3 is accepted only as
    `ACCEPTED_EXACT_SOURCE_STRUCTURE_INDEX_ONLY`. Its archive and physical
    evidence prove the frozen source has one unambiguous top-level `main`, one
    exact predicate, one main guard and one `main` mkdir candidate, and that the
    content-free selector matrix is `12/12`.
-2. C3 terminal payload counters `terminal_writes=0` and
+4. C3 terminal payload counters `terminal_writes=0` and
    `terminal_seal_writes=0` are accepted as the truthful pre-write snapshot.
    The separately returned physical terminal/seal and exact hash link prove
    returned existence `1/1`; rewriting the terminal would be circular.
-3. C4 is an offline engineering/provenance qualification. It does not select a
+5. C4 is an offline engineering/provenance qualification. It does not select a
    scientific branch, touch hardware, consume retained R3, invoke real B2, or
    call the canonical validator. Advisor/Human authorization is not required.
-4. C4 may create only a disposable successor and evidence under the future
+6. C4 may create only a disposable successor and evidence under the future
    root. Repository production/test/docs/skill/wrapper/GUIDE/FULL/archive paths
    remain read-only. Executer may append only the final handoff to ER after the
    terminal seal.
 
 ## 2. Activation and immutable root
 
-1. The reviewed C3 ER/archive/PLAN/FULL state is frozen at activation parent
-   `b4a3ad513f3bbca55f0c38c08fde2d3aa06aa29b`, subject
-   `chore(orch): accept b2 source structure index`. This direct-child activation
-   changes only `.agent-work/PLAN.md` with exact subject
-   `chore(plan): activate b2 c4 ast span successor`.
+1. The reviewed dispatch-failure archive/PLAN/FULL state must first be committed
+   by the Orchestrator. A later direct-child activation changes only
+   `.agent-work/PLAN.md` with exact subject
+   `chore(plan): reactivate b2 c4 shell safe dispatch`; it freezes the actual
+   parent/child, exact PLAN blob identity, `execution_authorized=true`, and the
+   final C4 review stop. Until then this package is not executable.
 2. Activation may only freeze the actual parent/child, PLAN blob identity,
    dispatch state, and final review stop. It may not widen inputs, budgets,
    transforms, matrices, roots, locks, or successor authority.
-3. Executer reads symbolic HEAD once and derives the exact PLAN blob bytes/SHA
-   from that programmatic dispatch commit. A second HEAD read, hand-transcribed
-   child SHA, alternate dispatch, Executer commit, or dirty worktree is a hard
-   stop before any C3/source access.
+3. The corrected dispatch must be one `zsh -f` owner. Before any symbolic HEAD
+   read, it runs an exact `6/6` content-free self-check through the same
+   capture-validation-output helper: safe local-variable assignment, rejection
+   of `status`, rejection of another declared zsh special/read-only name,
+   acceptance of one lowercase 40-hex value, rejection of malformed/cardinality
+   values, and exactly-one output event. Self-check output remains in memory and
+   cannot invoke Git, the builder, root creation, C3, or source access.
 4. Exact future root:
-   `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-ast-span-successor-da90556-20260730T1700Z`.
+   `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-ast-span-successor-da90556-r2-20260730T1710Z`.
    It must be absent immediately before one builder creates it mode `0700`.
    No precreation, alternate root, reuse, repair, delete, rename, retry,
    fallback, second builder, or second successor is allowed.
 5. Executer may author one new disposable builder under
    `/Volumes/4T/temp/rgbww-optimizer`, freeze its bytes/SHA before one
    invocation, and may not read or reuse the rejected C2/C3 builders as source.
+6. After the self-check passes, the same wrapper executes exactly one
+   `git rev-parse HEAD`, captures its stdout into the ordinary local variable
+   `dispatch_head_value`, validates exactly one lowercase 40-hex line, binds it
+   to the activated direct-child topology and exact PLAN blob, emits that value
+   exactly once, and passes the same in-memory value to the sole builder. It may
+   not assign to `status`, `pipestatus`, `argv`, `path`, `fpath`, `commands`, or
+   any zsh special/read-only parameter. It may not perform a second HEAD read,
+   transcribe/reconstruct the value, retry the wrapper, use fallback capture,
+   or launch an alternate dispatch.
+7. The superseded root
+   `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-ast-span-successor-da90556-20260730T1700Z`
+   is accepted only as reported unused (`root creates=0`). It must remain
+   unprobed, uncreated, unreused, undeleted and unrenamed; it is not evidence or
+   an available fallback namespace.
 
 ## 3. Exact accepted C3 inputs
 
