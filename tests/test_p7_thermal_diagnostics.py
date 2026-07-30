@@ -2906,7 +2906,25 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
             new_checkpoint=checkpoint,
             changed_paths=changed_paths,
         )
-        self.assertEqual(len(changed_paths), 59)
+        self.assertEqual(changed_paths, sorted(changed_paths))
+        self.assertEqual(len(changed_paths), len(set(changed_paths)))
+        full_rows = full_candidate["changed_paths"]
+        self.assertEqual([row["path"] for row in full_rows], changed_paths)
+        canonical_candidate = subject.build_td_b_setup_release_lineage_candidate(
+            subject.TD_B_SETUP_RELEASE_PATH,
+            old_checkpoint=subject.TD_B_SETUP_CHECKPOINT,
+            new_checkpoint=checkpoint,
+            changed_paths=list(reversed(changed_paths)),
+        )
+        canonical_classifications = {
+            row["path"]: row["classification"]
+            for row in canonical_candidate["changed_paths"]
+        }
+        self.assertEqual(set(canonical_classifications), set(changed_paths))
+        for row in full_rows:
+            self.assertEqual(
+                row["classification"], canonical_classifications[row["path"]],
+            )
         self.assertEqual(full_candidate["status"], "eligible_waiting_for_planner")
         self.assertEqual(full_candidate["prohibited_paths"], [])
         self.assertEqual(dict(subject.TD_B_POST_EQ_POLICY_CLASSIFICATIONS), expected)
@@ -3055,12 +3073,22 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
             )
 
     def test_public_default_successor_lineage_layers_historical_and_current_owners(self):
+        root = Path(__file__).parents[1]
         checkpoint = subprocess.run(
-            ["git", "rev-parse", "HEAD"], cwd=Path(__file__).parents[1],
+            ["git", "rev-parse", "HEAD"], cwd=root,
             check=True, capture_output=True, text=True,
         ).stdout.strip()
-        successor = subject._validate_td_b_public_default_successor_lineage(
+        with mock.patch.object(
+            subject,
+            "_validate_td_b_governance_lineage_successor",
+            wraps=subject._validate_td_b_governance_lineage_successor,
+        ) as subordinate:
+            successor = subject._validate_td_b_public_default_successor_lineage(
+                new_checkpoint=checkpoint,
+            )
+        subordinate.assert_called_once_with(
             new_checkpoint=checkpoint,
+            project_root=root.resolve(),
         )
         historical = subject._validate_td_b_workflow_path_lineage(
             new_checkpoint=checkpoint,
@@ -3078,6 +3106,22 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
             "human_directed_public_shared_protocol_default_boundary",
         )
 
+        governance_owner = (
+            root / ".agents/skills/camera-based-rgbww-optimizer/SKILL.md"
+        ).resolve()
+        original_read_bytes = Path.read_bytes
+
+        def drift_governance_working(path):
+            if path.resolve() == governance_owner:
+                return b"drift"
+            return original_read_bytes(path)
+
+        with mock.patch.object(Path, "read_bytes", drift_governance_working):
+            with self.assertRaisesRegex(ValueError, "path identity differs"):
+                subject._validate_td_b_public_default_successor_lineage(
+                    new_checkpoint=checkpoint,
+                )
+
         unchanged = "docs/engineering/p7-td-b-contract-history.md"
         original_run = subprocess.run
 
@@ -3091,6 +3135,32 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                 subject._validate_td_b_workflow_path_lineage(
                     new_checkpoint=checkpoint,
                 )
+
+    def test_public_default_successor_historical_checkpoint_ignores_working_owner(self):
+        root = Path(__file__).parents[1]
+        governance_owner = (
+            root / ".agents/skills/camera-based-rgbww-optimizer/SKILL.md"
+        ).resolve()
+        original_read_bytes = Path.read_bytes
+
+        def forbid_governance_working_read(path):
+            if path.resolve() == governance_owner:
+                raise AssertionError("historical validation read ambient working owner")
+            return original_read_bytes(path)
+
+        with mock.patch.object(
+            Path, "read_bytes", forbid_governance_working_read,
+        ), mock.patch.object(
+            subject, "_validate_td_b_governance_lineage_successor",
+        ) as subordinate:
+            classifications = subject._validate_td_b_public_default_successor_lineage(
+                new_checkpoint=subject.TD_B_QUALIFICATION_AUDIT_CHECKPOINT,
+            )
+        self.assertEqual(
+            dict(classifications),
+            dict(subject.TD_B_PUBLIC_DEFAULT_SUCCESSOR_CLASSIFICATIONS),
+        )
+        subordinate.assert_not_called()
 
     def test_governance_lineage_successor_accepts_exact_authorized_history_and_preserves_canonical_owner(self):
         root = Path(__file__).parents[1]

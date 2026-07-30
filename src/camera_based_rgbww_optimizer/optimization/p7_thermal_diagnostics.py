@@ -2600,15 +2600,39 @@ def _validate_td_b_public_default_successor_lineage(
 ) -> Mapping[str, str]:
     """Validate the exact public-default successor commit and current path owners."""
     root = Path(project_root).resolve()
+    if (
+        not isinstance(new_checkpoint, str)
+        or len(new_checkpoint) != 40
+        or any(character not in "0123456789abcdef" for character in new_checkpoint)
+    ):
+        raise ValueError("TD-B public-default successor checkpoint is invalid")
+    try:
+        resolved_checkpoint = subprocess.run(
+            ["git", "rev-parse", new_checkpoint], cwd=root, check=True,
+            capture_output=True, text=True,
+        ).stdout.strip()
+        resolved_head = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=root, check=True,
+            capture_output=True, text=True,
+        ).stdout.strip()
+    except subprocess.CalledProcessError as exc:
+        raise ValueError("TD-B public-default successor checkpoint is invalid") from exc
+    if (
+        resolved_checkpoint != new_checkpoint
+        or len(resolved_head) != 40
+        or any(character not in "0123456789abcdef" for character in resolved_head)
+    ):
+        raise ValueError("TD-B public-default successor checkpoint is invalid")
+    current_head = resolved_checkpoint == resolved_head
     governance_successor = _td_b_checkpoint_contains(
-        new_checkpoint,
+        resolved_checkpoint,
         TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_COMMIT,
         project_root=root,
     )
     historical_checkpoint = (
         TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_PARENT
-        if governance_successor
-        else new_checkpoint
+        if current_head and governance_successor
+        else resolved_checkpoint
     )
     requested = Path(manifest_path)
     if requested.is_symlink():
@@ -2677,16 +2701,8 @@ def _validate_td_b_public_default_successor_lineage(
     ):
         raise ValueError("TD-B public-default successor manifest exact path set differs")
 
-    try:
-        resolved_checkpoint = subprocess.run(
-            ["git", "rev-parse", new_checkpoint], cwd=root, check=True,
-            capture_output=True, text=True,
-        ).stdout.strip()
-    except subprocess.CalledProcessError as exc:
-        raise ValueError("TD-B public-default successor checkpoint is invalid") from exc
     if (
-        resolved_checkpoint != new_checkpoint
-        or not _td_b_checkpoint_contains(
+        not _td_b_checkpoint_contains(
             resolved_checkpoint,
             TD_B_PUBLIC_DEFAULT_SUCCESSOR_COMMIT,
             project_root=root,
@@ -2720,7 +2736,16 @@ def _validate_td_b_public_default_successor_lineage(
                 f"TD-B public-default successor contract differs: {entry_path}"
             )
         working = root / entry_path
-        if working.is_symlink() or not working.is_file():
+        require_legacy_working_owner = (
+            current_head
+            and not (
+                governance_successor
+                and entry_path in TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_CLASSIFICATIONS
+            )
+        )
+        if require_legacy_working_owner and (
+            working.is_symlink() or not working.is_file()
+        ):
             raise ValueError(
                 f"TD-B public-default successor path owner differs: {entry_path}"
             )
@@ -2748,11 +2773,7 @@ def _validate_td_b_public_default_successor_lineage(
             ) from exc
         if (
             (
-                not (
-                    governance_successor
-                    and entry_path
-                    in TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_CLASSIFICATIONS
-                )
+                require_legacy_working_owner
                 and hashlib.sha256(working.read_bytes()).hexdigest()
                 != entry.get("current_blob_sha256")
             )
@@ -2766,7 +2787,7 @@ def _validate_td_b_public_default_successor_lineage(
             raise ValueError(
                 f"TD-B public-default successor hash or diff differs: {entry_path}"
             )
-    if governance_successor:
+    if current_head and governance_successor:
         governance_classifications = _validate_td_b_governance_lineage_successor(
             new_checkpoint=new_checkpoint,
             project_root=root,
