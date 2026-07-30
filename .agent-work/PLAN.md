@@ -1,6 +1,6 @@
 # REF-P7-25-R2-B2：corrected exact-path modern manifest seal
 
-**计划状态：** `PLANNER_COMPLETE_WAITING_ORCHESTRATOR_REVIEW`
+**计划状态：** `EXECUTION_AUTHORIZED`
 
 **Planner 日期：** `2026-07-30`
 
@@ -10,23 +10,22 @@
 **Contract ID：**
 `P7-TD-B-RETAINED-R3-OPTION-B-B2-CORRECTED-PATH-MANIFEST-SEAL-V3`
 
-**当前唯一动作：** Orchestrator独立复核C1验收、更新其独占的
-`.agent-work/FULL_PLAN_REFERENCE.md`，并提交reviewed state。当前
-`execution_authorized=false`；Executer不得运行controller、读取C1 evidence或retained
-artifact、创建root/manifest、运行validator、修改repository或执行任何设备操作。
+**预计时长：** `2–6 分钟`；不得运行tests/full/synthetic或任何设备任务，不属于预计超过10分钟的长任务。
 
-**当前 Planner stop：** `B2_C1_ACCEPTED_WAITING_ORCHESTRATOR_REVIEW`。
+**当前唯一动作：** Executer以一个本地Python controller、一次invocation和一个brand-new external root，先验证并消费C1 exact
+path-owner index及其双seal，再对index解析出的三个exact retained artifacts各执行一次non-following lstat/open/read/hash，重算完整现代
+accepted Git/provenance baseline，exclusive-create并durably seal唯一subordinate immutable v2 manifest、manifest seal、terminal及terminal
+seal；随后只向`.agent-work/EXECUTION_RESULT.md` append一次并停Planner验收。
+
+**Planner stop：** `B2_CORRECTED_MANIFEST_SEALED_WAITING_PLANNER_REVIEW`。成功也不得运行B3、canonical validator、eligibility、release、
+设备或scientific route。
 
 **C1 review archive：**
 `.agent-work/PLANS/20260730-1000-p7-retained-r3-option-b-b2-c1-path-owner-index-review.md`，bytes
 `7795`，SHA-256
 `d9fdec1891c9e251df2fa264eda615abbabe5d6b0a9bde2be67b650652917f34`。
 
-Orchestrator接受并更新FULL后，后续Planner必须先把activation direct parent、subject、exact
-PLAN-only topology及programmatic child规则写入本PLAN并明确改为`EXECUTION_AUTHORIZED`，才能dispatch下述唯一包。不得把当前
-reviewed-state PLAN本身解释为执行许可。
-
-`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_corrected_path_manifest_plan_v3","reference_task_id":"REF-P7-25-R2-B2","accepted_corrective_task_id":"REF-P7-25-R2-B2-C1","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-CORRECTED-PATH-MANIFEST-SEAL-V3","dispatch_state":"planner_complete_waiting_orchestrator_review","execution_authorized":false,"single_current_action":"orchestrator_review_c1_acceptance_update_full_and_commit_reviewed_state","review_archive":{"path":".agent-work/PLANS/20260730-1000-p7-retained-r3-option-b-b2-c1-path-owner-index-review.md","bytes":7795,"sha256":"d9fdec1891c9e251df2fa264eda615abbabe5d6b0a9bde2be67b650652917f34"},"accepted_path_owner_index":{"path":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c1-path-owner-27aacbf-20260730T1547Z/path-owner-index.json","bytes":12195,"sha256":"b189117fdd0a9a65ca80660245ec84b7f2f533c3e496c96e76eb48a4666feb35","resolved_paths":3},"future_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-corrected-manifest-b189117-20260730T1600Z","future_controller_invocations":1,"per_c1_evidence_lstat_open_read_hash":1,"per_retained_artifact_lstat_open_read":1,"retained_artifacts":3,"manifest_writes":1,"manifest_seal_writes":1,"terminal_writes":1,"terminal_seal_writes":1,"canonical_validator_calls":0,"retry":0,"fallback":0,"current_planner_stop":"B2_C1_ACCEPTED_WAITING_ORCHESTRATOR_REVIEW","future_planner_stop":"B2_CORRECTED_MANIFEST_SEALED_WAITING_PLANNER_REVIEW"}`
+`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_corrected_path_manifest_plan_v3","reference_task_id":"REF-P7-25-R2-B2","accepted_corrective_task_id":"REF-P7-25-R2-B2-C1","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-CORRECTED-PATH-MANIFEST-SEAL-V3","dispatch_state":"execution_authorized","execution_authorized":true,"single_current_action":"single_controller_consume_exact_c1_index_and_seal_corrected_subordinate_manifest","activation_parent":"4587389e7ea8c0a0bfe7bb9edb70bc0712f5d182","activation_subject":"chore(plan): activate corrected b2 manifest seal","activation_changed_paths":[".agent-work/PLAN.md"],"activation_additional_paths":0,"activation_commit_count":1,"programmatic_dispatch_head_reads":1,"second_dispatch_head_reads":0,"dispatch_plan_sha256_owner":"sha256_of_exact_plan_blob_at_programmatic_dispatch_head","hand_transcribed_child_sha":false,"review_archive":{"path":".agent-work/PLANS/20260730-1000-p7-retained-r3-option-b-b2-c1-path-owner-index-review.md","bytes":7795,"sha256":"d9fdec1891c9e251df2fa264eda615abbabe5d6b0a9bde2be67b650652917f34"},"accepted_path_owner_index":{"path":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c1-path-owner-27aacbf-20260730T1547Z/path-owner-index.json","bytes":12195,"sha256":"b189117fdd0a9a65ca80660245ec84b7f2f533c3e496c96e76eb48a4666feb35","resolved_paths":3},"root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-corrected-manifest-b189117-20260730T1600Z","controller_invocations":1,"per_c1_evidence_lstat_open_read_hash":1,"per_retained_artifact_lstat_open_read_hash":1,"retained_artifacts":3,"manifest_writes":1,"manifest_seal_writes":1,"terminal_writes":1,"terminal_seal_writes":1,"canonical_validator_calls":0,"retry":0,"fallback":0,"planner_stop":"B2_CORRECTED_MANIFEST_SEALED_WAITING_PLANNER_REVIEW"}`
 
 ## 1. C1 acceptance and authority boundary
 
@@ -36,7 +35,7 @@ reviewed-state PLAN本身解释为执行许可。
    device authority, or formal authority.
 2. Exact accepted C1 evidence root:
    `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c1-path-owner-27aacbf-20260730T1547Z`.
-   Future execution must consume these exact four immutable evidence files;
+   Execution must consume these exact four immutable evidence files;
    each gets exactly one non-following lstat, one `O_RDONLY|O_NOFOLLOW` open,
    one read, and one SHA-256 computation:
 
@@ -61,19 +60,21 @@ reviewed-state PLAN本身解释为执行许可。
    canonical owner says otherwise. This B2 package is subordinate provenance
    only and cannot make that decision.
 
-## 2. Future activation, single controller, and brand-new root
+## 2. Activated dispatch, single controller, and brand-new root
 
-These are frozen next-package requirements, not current authorization:
-
-1. After Orchestrator review, a later Planner activation must bind its actual
-   direct parent and exact subject, change only `.agent-work/PLAN.md`, and set
-   additional paths `0`, activation commit count `1`, and
-   `execution_authorized=true`. Executer must read symbolic HEAD once and verify
-   the programmatic child from Git objects; no hand-transcribed child SHA or
-   second HEAD read is allowed.
+1. Activation direct parent is exact
+   `4587389e7ea8c0a0bfe7bb9edb70bc0712f5d182`; subject is exact
+   `chore(plan): activate corrected b2 manifest seal`; changed paths are exact
+   `.agent-work/PLAN.md`, additional paths `0`, activation commit count `1`.
+   Executer must read symbolic HEAD exactly once and verify from Git objects
+   that the programmatic dispatch HEAD is that parent's direct child with the
+   exact subject/path topology. The exact active PLAN SHA-256 is derived
+   non-circularly from the `.agent-work/PLAN.md` blob at that programmatic
+   dispatch HEAD and must equal working bytes; no PLAN-embedded expected hash,
+   hand-transcribed child SHA, or second HEAD read is allowed.
 2. Worktree must be clean before root creation. If not, stop before any evidence
    or retained-artifact access; Executer may not commit, repair, or clean it.
-3. Exact future brand-new root:
+3. Exact brand-new root:
    `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-corrected-manifest-b189117-20260730T1600Z`.
    It must be absent immediately before the sole controller creates it once with
    mode `0700`. No precreation, reuse, rename, delete, repair, timestamp
@@ -196,11 +197,22 @@ exact SHA check:
 - `/Users/ibobby/.codex/attachments/cba7928d-712a-441e-a708-4301ee32bd66/pasted-text.txt`
   SHA-256 `91a88e5467e13c811794c2149b6a8d5669e613c3e259d8f4091ba08c048733d6`.
 
-Bind Human engineering-governance override URI
-`conversation://human/2026-07-29/orchestrator-engineering-owner`, SHA-256
-`52394bcd3fa819fcb83c82c50a89d0b9c4aaa53a41eca18bb953c174787b259d`:
-Advisor owns color/measurement science while Orchestrator owns implementation,
-provenance, execution packaging, and Git. GUIDE/evidence remain immutable.
+Engineering-governance evidence must be replayed only from exact Git object
+`3e2ebed132b6d4338bfa324bfc42c3565d2eeb3c:AGENTS.md`: blob OID exact
+`58bfacb5fc46fcb42bf643d12974063533a684eb`, file SHA-256 exact
+`604b10bedeac6c9285f6448f94323521bf021a58275cce84d64163e16a2f07a0`.
+Controller must use read-only Git plumbing to verify commit-qualified path,
+blob OID, bytes hash, and these four exact governance semantics:
+
+1. Advisor owns color science, measurement science, and scientific branch guidance;
+2. Orchestrator owns implementation, provenance, execution packaging, and Git route;
+3. only an unresolved scientific branch or a high-risk device operation requires a stop for Advisor/Human input;
+4. GUIDE and Advisor evidence remain immutable to this package.
+
+Within the `3e2ebed...` 181-path ledger, `AGENTS.md` must retain disposition
+`present_in_commit_not_authorized_by_this_manifest`. It is non-selected
+governance evidence only and must not be promoted to a scientific-audit
+prerequisite, generic allowlist entry, eligibility input, or release authority.
 
 ## 6. Manifest schema, persistence, and physical terminal seal
 
@@ -260,7 +272,7 @@ checks within the same controller but do not increase this frozen 12-case
 matrix by silently relabeling test credit. No production validator/helper,
 fake retained file, or second root.
 
-Future successful execution exact budgets:
+Successful execution exact budgets:
 
 ```text
 controller process/invocation = 1/1
@@ -287,7 +299,7 @@ Any dispatch/root/C1 evidence/schema/seal/path/Git/source/artifact/hash/
 immutability/budget/persistence mismatch fails closed with no retry, fallback,
 second root, substitute path, repair, or later-stage entry. Terminal seal durable
 后只向`.agent-work/EXECUTION_RESULT.md` append exactly once并停止；不得修改
-PLAN/FULL/archive/GUIDE或提交。Future Planner stop exact
+PLAN/FULL/archive/GUIDE或提交。Planner stop exact
 `B2_CORRECTED_MANIFEST_SEALED_WAITING_PLANNER_REVIEW`。B2即使通过也只解锁
 Planner/Orchestrator考虑B3；不得自行运行canonical validator、emit eligibility、
 consume release或进入设备/scientific阶段。
