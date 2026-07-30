@@ -336,7 +336,10 @@ class ExactFiveControllerTests(unittest.TestCase):
         self.assertTrue(run_loads)
         self.assertEqual(
             set(run_loads),
-            {("execute_prepared_exact_five_controller", "LOAD_FAST")},
+            {
+                ("execute_prepared_exact_five_controller", "STORE_FAST"),
+                ("execute_prepared_exact_five_controller", "LOAD_FAST"),
+            },
         )
 
     def test_success_terminal_follows_validator_and_owns_no_authorization(self):
