@@ -16,9 +16,9 @@
 
 **当前可执行任务数：** `0`
 
-**当前 active task：** `REF-P7-25-R2-B2-C4-C1 byte-span statement-selector correction`
+**当前 active task：** `REF-P7-25-R2-B2-C4-C1-C1 dual-owner controller correction`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":0,"active_task":"REF-P7-25-R2-B2-C4-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-C1-BYTE-SPAN-STATEMENT-SELECTOR-CORRECTION-V1","next_reference_task":"REF-P7-25-R2-B2-C4","next_reference_status":"BLOCKED_ON_C4_C1_ACCEPTANCE","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"B2_C4_V3_REJECTED_LINE_ONLY_STATEMENT_CONTAINMENT_C1_WAITING_ACTIVATION","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"394f5697b0a56cc32c0f96dac1102695decac2f4bff5c3c306e8e7554c316cc9","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":0,"active_task":"REF-P7-25-R2-B2-C4-C1-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-C1-C1-DUAL-OWNER-CONTROLLER-CORRECTION-V1","next_reference_task":"REF-P7-25-R2-B2-C4-C1","next_reference_status":"BLOCKED_ON_C4_C1_C1_ACCEPTANCE","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"B2_C4_C1_REJECTED_DUAL_OWNER_AND_INVALID_SEAL_C1_WAITING_ACTIVATION","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"9bc0c4e9e35d57036bcb85b243cbda773659b215d33a1a5ddf547e156bdee65f","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -283,7 +283,8 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-B2-C2` | `REJECTED_TRANSFORM_ANCHOR_UNPROVEN_FAILURE_LIFECYCLE_ACCEPTED` | content-free exact resolved-record owner与progressive failure terminal lifecycle | corrected B2 controller failure | Planner/Executer |
 | `REF-P7-25-R2-B2-C3` | `ACCEPTED_EXACT_SOURCE_STRUCTURE_INDEX_ONLY` | immutable AST/source-structure index与12-case selector matrix | C2 transform anchor failure | Planner/Executer |
 | `REF-P7-25-R2-B2-C4` | `REJECTED_LINE_ONLY_STATEMENT_CONTAINMENT` | AST/span-selected successor与shared lifecycle 12-case qualification | C3 accepted；V1/V2 pre-root rejected | Planner/Executer |
-| `REF-P7-25-R2-B2-C4-C1` | `ACTIVE_WAITING_PLAN_ONLY_ACTIVATION_FREEZE` | content-free byte-span statement-selector correction与12-case matrix | C4 V3 semantic failure | Planner/Executer |
+| `REF-P7-25-R2-B2-C4-C1` | `REJECTED_DUAL_OWNER_AND_EVIDENCE_LIFECYCLE_FAILURE` | content-free byte-span statement-selector correction与12-case matrix | C4 V3 semantic failure | Planner/Executer |
+| `REF-P7-25-R2-B2-C4-C1-C1` | `ACTIVE_WAITING_PLAN_ONLY_ACTIVATION_FREEZE` | AST ancestor/same-list selector与canonical-LF strict pre-ER gate correction | C4-C1 dual failure | Planner/Executer |
 | `REF-P7-25-R2-B3` | `BLOCKED` | Manifest自校验后执行postcommit focused、durable full、synthetic terminal/replay | `REF-P7-25-R2-B2` accepted | Planner/Executer |
 | `REF-P7-25-R2-B4` | `BLOCKED` | 对原retained R3三件套做首次真实audit并由canonical validator唯一判定eligibility | `REF-P7-25-R2-B3` accepted | Planner/Executer |
 | `REF-P7-25-R2-B5` | `BLOCKED` | 独立验收validated-unconsumed状态、manifest与rollback provenance | `REF-P7-25-R2-B4` pass | Planner/Orchestrator |
@@ -3045,12 +3046,30 @@ Successor/delta/matrix0，retained/validator/release/device0。Terminal/seal SHA
 
 ### REF-P7-25-R2-B2-C4-C1：content-free byte-span statement-selector correction
 
-**状态：** `ACTIVE_WAITING_PLAN_ONLY_ACTIVATION_FREEZE`。
+**状态：** `REJECTED_DUAL_OWNER_AND_EVIDENCE_LIFECYCLE_FAILURE`。Planner archive：
+`.agent-work/PLANS/20260730-1152-p7-retained-r3-option-b-b2-c4-c1-dual-failure-review.md`，bytes `7487`，SHA-256
+`a842794607f17ecc0ede62f126eda7064b090eb50830e72df852ea075311c90c`。
 
 只读取C4 V3五个durable evidence与冻结V3 builder各一次；C3/source/C1/C2/retained/decision reads全部0。以AST结构唯一定位
 faulty line-only block，机械替换为`_select_unique_main_statement_by_byte_span`单一helper；real path从既有UTF-8 bytepos mapping导出
 direct-main statement spans并使用accepted mkdir physical span。用同一helper做12/12纯内存matrix，覆盖same-line columns、nested compound、
 UTF-8、boundaries、zero/multiple/invalid bounds与determinism。C4-C1只qualify corrected disposable builder，不运行其main或real C4。
+
+唯一C4-C1在V3 five inputs与builder read通过后，AST selector因错误要求assignment direct parent为FunctionDef而报
+`RuntimeError: faulty assignment owner`；corrected/delta/matrix均0。Terminal SHA-256
+`09b4add8bfb7daf931087aa2d6b2c752028682035b1ed6dcd4f305d4c468a7c0`合法，但seal SHA-256
+`8bc0fe09d02fb0cebbefb05554cef0f4f3b84cfb1403d5e8f01e6cf58be36ade`以literal`\\n`结尾而strict JSON失败；controller仍
+append ER，故该ER仅是unauthorized diagnostic observation，不是sealed handoff。Old root与四physical files保留不可修复。
+
+### REF-P7-25-R2-B2-C4-C1-C1：content-free dual-owner controller correction
+
+**状态：** `ACTIVE_WAITING_PLAN_ONLY_ACTIVATION_FREEZE`。
+
+只读取C4-C1四个physical artifacts与冻结C4-C1 controller各一次；上游C4 V3/builder、C3/source/retained全部0。AST transform以
+ancestor-edge map找到sole enclosing main并要求assignment与cardinality validation属于immediate container的同一list field且相邻，
+移除direct-parent假设。Evidence transform统一success/failure seal writer为canonical JSON+exact LF，parent strict reload/canonical-byte/
+target identity validation后才返回gate token，两个ER path均被该token支配。用16/16 negative matrix覆盖nested scope、same-list adjacency、
+literal-backslash-n/CRLF/missing/extra LF/noncanonical JSON、wrong target与invalid-seal ER open/append0。
 
 > 以下旧two-path执行细节已由Human engineering-governance override与B1A exact-five contract supersede，不得作为未来
 > PLAN输入；B1A-C2/后续Planner验收冻结的five-path child与manifest facts才是B2的新工程基线。本段保留仅作旧合同历史。
@@ -3671,7 +3690,7 @@ Option A owner prerequisite = accepted complete
 Advisor lineage owner decision = Option B subordinate exact provenance manifest
 Human engineering governance override = Orchestrator owns files/code/provenance/execution/Git
 helper v1 disposition = retained_release_audit_prerequisite_v1_superseded_before_real_validation
-repair v2 status = B2-C4 V3 line-only statement containment rejected; C4-C1 waiting activation
+repair v2 status = B2-C4-C1 dual owner and invalid seal rejected; C4-C1-C1 waiting activation
 accepted B1 result = ACCEPTED_BLOCKED_CONTRACT_CONFLICT
 accepted B1A result = HARD_FAILURE_PRE_ACQUISITION_LIFECYCLE; implementation progress 0
 accepted B1A-C1 result = HARD_FAILURE_BEFORE_TEST_EXEC; candidate carry-forward only
@@ -3745,10 +3764,11 @@ accepted B2-C3 result = ACCEPTED_EXACT_SOURCE_STRUCTURE_INDEX_ONLY; selector12/1
 rejected B2-C4 V1 result = PRE_ROOT_DISPATCH_WRAPPER_FAILURE; HEAD read1; builder/root/source0
 rejected B2-C4 V2 result = PRE_HEAD_WRAPPER_SELFCHECK_FAILURE; selfcheck0/6; HEAD/root/builder0
 rejected B2-C4 V3 result = TRANSFORM_PRECONDITION_LINE_ONLY_STATEMENT_CONTAINMENT; source revalidated; successor0
-active task = REF-P7-25-R2-B2-C4-C1 byte-span statement-selector correction
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-C1-BYTE-SPAN-STATEMENT-SELECTOR-CORRECTION-V1
+rejected B2-C4-C1 result = DUAL_OWNER_AND_EVIDENCE_LIFECYCLE_FAILURE; invalid seal; unauthorized ER diagnostic
+active task = REF-P7-25-R2-B2-C4-C1-C1 dual-owner controller correction
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-C1-C1-DUAL-OWNER-CONTROLLER-CORRECTION-V1
 active executable task count = 0
-next reference task = REF-P7-25-R2-B2-C4 BLOCKED_ON_C4_C1_ACCEPTANCE
+next reference task = REF-P7-25-R2-B2-C4-C1 BLOCKED_ON_C4_C1_C1_ACCEPTANCE
 selected state C shutter = 1/2500
 device/network/camera/light = forbidden by active PLAN
 release qualification/generation/copy/consumption = forbidden

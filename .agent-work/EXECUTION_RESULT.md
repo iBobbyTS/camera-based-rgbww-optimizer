@@ -16445,3 +16445,11 @@ C13_IMPLEMENTATION_RESULT {"schema":"c13_implementation_result_v1","timestamp":"
 - C1/C2/retained/decision-source reads `0/0/0/0`; real B2/CLI/retained invocation `0/0/0`; canonical validator/eligibility/release `0/0/0`; repository production/test/docs/skill/wrapper/GUIDE/FULL/archive edits and commits `0/0`.
 - Tests/compileall/CodeGraph and network/DNS/`.env`/credentials/device/camera/Ray/strip/cleanup/capture/FORMAL/public analyzer/TD-C/sentinel/P8/firmware/deployment all remained `0`.
 - No retry, fallback, repair, root reuse, alternate root, second successor or later-stage entry occurred. Retained R3 remains `RETAINED_UNVALIDATED_UNCONSUMED`. Stop: `B2_C4_AST_SPAN_SUCCESSOR_WAITING_PLANNER_REVIEW`.
+
+
+## B2 C4-C1 byte-span selector correction failure
+
+- Result: `FAILURE`; `RuntimeError: faulty assignment owner`.
+- Root: `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-c1-byte-span-selector-df0020d-20260730T1745Z`.
+- Terminal SHA-256: `09b4add8bfb7daf931087aa2d6b2c752028682035b1ed6dcd4f305d4c468a7c0`; retry/fallback `0/0`.
+- Stop: `B2_C4_C1_BYTE_SPAN_SELECTOR_WAITING_PLANNER_REVIEW`.

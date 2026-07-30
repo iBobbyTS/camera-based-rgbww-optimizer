@@ -1,260 +1,287 @@
-# REF-P7-25-R2-B2-C4-C1：content-free byte-span statement-selector correction
+# REF-P7-25-R2-B2-C4-C1-C1：content-free dual-owner controller correction
 
-**计划状态：** `EXECUTION_AUTHORIZED`
+**计划状态：** `PLANNER_COMPLETE_WAITING_ORCHESTRATOR_REVIEW`
 
 **Planner 日期：** `2026-07-30`
 
-**Reference task：** `REF-P7-25-R2-B2-C4-C1`
+**Reference task：** `REF-P7-25-R2-B2-C4-C1-C1`
 
-**预计时长：** `3–7 分钟`；纯离线，不属于预计超过10分钟的长任务。
+**预计时长：** `4–8 分钟`；纯离线，不属于预计超过10分钟的长任务。
 
 **Contract ID：**
-`P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-C1-BYTE-SPAN-STATEMENT-SELECTOR-CORRECTION-V1`
+`P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-C1-C1-DUAL-OWNER-CONTROLLER-CORRECTION-V1`
 
-**当前唯一动作：** 在 Orchestrator 验收并通过一次 PLAN-only activation 后，
-Executer 以一个 brand-new external root 执行一次 content-free correction：只读取
-C4 V3 的五个 durable evidence 文件与冻结 builder 各一次，机械替换 line-only
-statement containment 为 byte-span containment 的单一 helper，并以合成输入验证
-同一 helper。不得读取 C3、真实 frozen source、C1/C2、retained 或 decision inputs，
-不得调用 corrected builder 的 real `main`。
+**当前唯一动作：** 等待 Orchestrator 独立验收 C4-C1 dual failure 与本
+corrective package。若接受，Planner 必须另行完成一次只改本 PLAN 的 activation
+commit，冻结 activation parent 后，Executer 才可在一个 brand-new external root
+运行一次 content-free correction owner：只读取 C4-C1 的四个 durable physical
+artifacts 与冻结 C4-C1 controller 各一次，生成一个 corrected controller，精确
+修正 AST ancestor/statement-scope containment 与 canonical-LF terminal seal plus
+strict pre-ER gate，并以合成 negative matrix 资格化。不得读取任何 C4 V3 payload、
+V3 builder、C3/source/retained input，也不得执行 corrected controller real `main`。
 
 **Planner stop：**
-`B2_C4_C1_BYTE_SPAN_SELECTOR_WAITING_PLANNER_REVIEW`。
+`B2_C4_C1_C1_DUAL_OWNER_CORRECTION_WAITING_PLAN_ONLY_ACTIVATION_FREEZE`。
 
-本文件当前 `execution_authorized=true`，仅放行本 PLAN 精确定义的 C4-C1
-content-free correction。真实 C4、B2/B3、retained R3、validator、release、设备
-与 scientific route 仍未放行。
+本文件当前 `execution_authorized=false`。它不授权 Executer、controller、测试、
+validator、release、网络或设备调用；仅定义等待 Orchestrator 审核的下一包。
 
 **Reviewed archive：**
-`.agent-work/PLANS/20260730-1135-p7-retained-r3-option-b-b2-c4-v3-semantic-failure-review.md`
-（bytes `5464`，SHA-256
-`87551c8dba39c05606974f2d0696e935f970683ad4869ecade1407d7bcf8fd15`）。
+`.agent-work/PLANS/20260730-1152-p7-retained-r3-option-b-b2-c4-c1-dual-failure-review.md`
+（bytes `7487`，SHA-256
+`a842794607f17ecc0ede62f126eda7064b090eb50830e72df852ea075311c90c`）。
 
-`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_c4_c1_byte_span_selector_plan_v1","reference_task_id":"REF-P7-25-R2-B2-C4-C1","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-C1-BYTE-SPAN-STATEMENT-SELECTOR-CORRECTION-V1","dispatch_state":"execution_authorized","execution_authorized":true,"single_current_action":"content_free_byte_span_statement_selector_correction","activation_parent":"149c2cabc94336407b324d21fe894f89e545d3c1","activation_parent_freeze_pending":false,"activation_subject":"chore(plan): activate b2 c4 c1 byte span selector","activation_changed_paths":[".agent-work/PLAN.md"],"activation_additional_paths":0,"activation_commit_count":1,"programmatic_dispatch_head_reads":1,"second_dispatch_head_reads":0,"dispatch_plan_sha256_owner":"sha256_of_exact_plan_blob_at_programmatic_dispatch_head","hand_transcribed_child_sha":false,"review_archive":{"path":".agent-work/PLANS/20260730-1135-p7-retained-r3-option-b-b2-c4-v3-semantic-failure-review.md","bytes":5464,"sha256":"87551c8dba39c05606974f2d0696e935f970683ad4869ecade1407d7bcf8fd15"},"rejected_c4_v3_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-ast-span-successor-da90556-r3-20260730T1730Z","rejected_c4_v3_builder":{"path":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-b2-c4-ast-span-successor-builder-v3.py","bytes":21474,"sha256":"df0020d9aa7c902cdd11bb6d5c52b80dabce01b31693808a60035a900dc68e37"},"c4_v3_evidence_reads_each":1,"c4_v3_builder_reads":1,"c3_source_c1_c2_retained_decision_reads":0,"future_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-c1-byte-span-selector-df0020d-20260730T1745Z","corrected_builder_generations":1,"corrected_builder_real_main_invocations":0,"selector_matrix":"12/12","canonical_validator_calls":0,"eligibility_emissions":0,"release_operations":0,"retry":0,"fallback":0,"planner_stop":"B2_C4_C1_BYTE_SPAN_SELECTOR_WAITING_PLANNER_REVIEW"}`
+`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_c4_c1_c1_dual_owner_controller_correction_plan_v1","reference_task_id":"REF-P7-25-R2-B2-C4-C1-C1","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-C1-C1-DUAL-OWNER-CONTROLLER-CORRECTION-V1","dispatch_state":"planner_complete_waiting_orchestrator_review","execution_authorized":false,"single_current_action":"content_free_dual_owner_controller_correction","activation_parent":null,"activation_parent_freeze_pending":true,"activation_subject":"chore(plan): activate b2 c4 c1 c1 controller correction","activation_changed_paths":[".agent-work/PLAN.md"],"activation_additional_paths":0,"activation_commit_count":1,"programmatic_dispatch_head_reads":1,"second_dispatch_head_reads":0,"review_archive":{"path":".agent-work/PLANS/20260730-1152-p7-retained-r3-option-b-b2-c4-c1-dual-failure-review.md","bytes":7487,"sha256":"a842794607f17ecc0ede62f126eda7064b090eb50830e72df852ea075311c90c"},"rejected_c4_c1_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-c1-byte-span-selector-df0020d-20260730T1745Z","rejected_terminal_sha256":"09b4add8bfb7daf931087aa2d6b2c752028682035b1ed6dcd4f305d4c468a7c0","invalid_terminal_seal_sha256":"8bc0fe09d02fb0cebbefb05554cef0f4f3b84cfb1403d5e8f01e6cf58be36ade","er_handoff_accepted":false,"c4_c1_artifact_reads_each":1,"c4_v3_payload_builder_reads":0,"frozen_c4_c1_controller":{"path":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-b2-c4-c1-byte-span-controller-v1.py","bytes":28701,"sha256":"ba05a533f76dec4e64519b1a76970c791521223c1936ff3cb856222218d45dac"},"future_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-c1-c1-dual-owner-correction-ba05a53-20260730T1800Z","corrected_controller_generations":1,"corrected_controller_real_main_invocations":0,"negative_matrix":"16/16","canonical_validator_calls":0,"eligibility_emissions":0,"release_operations":0,"retry":0,"fallback":0,"planner_stop":"B2_C4_C1_C1_DUAL_OWNER_CORRECTION_WAITING_PLAN_ONLY_ACTIVATION_FREEZE"}`
 
 ## 1. Planner decision and authority boundary
 
-1. C4 V3 is rejected as
-   `REJECTED_TRANSFORM_PRECONDITION_LINE_ONLY_STATEMENT_CONTAINMENT`.
-   Exact terminal/seal hashes are
-   `6b88723d8fca83bb7836a1a9adf1b3ab72fd23fe8b5b8625d5a7e8d73253fbee`
-   and
-   `663a63e3191260d710abfb1bc831d13c7045408321c7fee1a504e8c48a9649d3`.
-2. The durable `progressive-02-source-revalidated.json` proves accepted C3
-   field interpretation, normalized AST hashes, byte-offset mapping and physical
-   span hashes all passed. The subsequent builder block discarded those columns
-   and byte spans and used line-only containment, then raised exact
-   `RuntimeError: mkdir statement cardinality`.
-3. C4-C1 is the minimal content-free engineering correction. It may neither
-   reinterpret scientific guidance nor touch retained R3, real B2, canonical
-   validator, release, network or devices. Advisor/Human authorization is not
-   required.
-4. C4-C1 may create only a corrected disposable builder and qualification
-   evidence. It does not generate a controller successor, validate real C4,
-   authorize B2/B3, or make retained R3 consumable.
-5. Executer may append one post-seal handoff to ER. PLAN/FULL/GUIDE/archive,
-   repository production/test/docs/skill/wrapper paths and frozen external
-   inputs are read-only.
+1. C4-C1 is rejected as
+   `REJECTED_DUAL_OWNER_AND_EVIDENCE_LIFECYCLE_FAILURE`.
+   The selector stopped with exact `RuntimeError: faulty assignment owner` before
+   corrected generation; the terminal seal is strict-JSON invalid because its
+   final two bytes are literal `\\n`; the controller nevertheless appended ER.
+2. The invalid seal and ER append are evidence-lifecycle violations. The ER
+   entry is an unauthorized diagnostic observation, not a sealed handoff. It
+   cannot advance C4-C1 or B2.
+3. This is a bounded engineering correction, not a scientific branch. It needs
+   neither Advisor guidance nor Human authorization. It may not reinterpret
+   GUIDE, retained evidence, scientific inputs or eligibility.
+4. One correction process owns both local repairs because both are necessary
+   prerequisites for a trustworthy retry. The corrected controller still has
+   two explicit semantic owners: statement-scope selection and terminal-seal/
+   ER gating. It may add no production owner or alternate execution framework.
+5. Executer may append ER only after the new package's own terminal seal is
+   canonical, strictly reloaded and physically linked. PLAN/FULL/GUIDE/archive,
+   repository production/test/docs/skill/wrapper paths, rejected physical
+   artifacts and frozen controller are read-only.
 
 ## 2. Activation and immutable namespace
 
-1. Activation direct parent is exact
-   `149c2cabc94336407b324d21fe894f89e545d3c1`; subject is exact
-   `chore(plan): activate b2 c4 c1 byte span selector`; changed paths are exact
-   `.agent-work/PLAN.md`, additional paths `0`, activation commit count `1`.
-   Executer reads symbolic HEAD exactly once and verifies from Git objects that
-   the programmatic dispatch HEAD is that parent's direct child with the exact
-   subject/path topology. The active PLAN SHA-256 is derived non-circularly
-   from the `.agent-work/PLAN.md` blob at that programmatic dispatch HEAD and
-   must equal working bytes; no PLAN-embedded expected hash, hand-transcribed
-   child SHA, or second HEAD read is allowed. It must also prove
-   `execution_authorized=true` and the unchanged final Planner stop
-   `B2_C4_C1_BYTE_SPAN_SELECTOR_WAITING_PLANNER_REVIEW`.
-2. Exact future root:
-   `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-c1-byte-span-selector-df0020d-20260730T1745Z`.
+1. This package is not executable yet. After Orchestrator accepts the archive
+   and commits the reviewed state, Planner must make exactly one PLAN-only
+   activation commit with subject exact
+   `chore(plan): activate b2 c4 c1 c1 controller correction`, direct parent
+   frozen to the then-current reviewed-state HEAD, exact changed path
+   `.agent-work/PLAN.md`, and additional paths `0`.
+2. At dispatch, Executer reads symbolic HEAD exactly once and derives the PLAN
+   SHA-256 from that commit's PLAN blob, proving direct parent, subject, sole
+   changed path, clean worktree, blob/worktree equality,
+   `execution_authorized=true`, and unchanged Planner stop. No hand-transcribed
+   child SHA, PLAN-embedded expected hash, or second HEAD read is permitted.
+3. Exact future root:
+   `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-c1-c1-dual-owner-correction-ba05a53-20260730T1800Z`.
    It must be absent before one owner creates it mode `0700`. No precreation,
-   alternate root, reuse, repair, delete, rename, retry, fallback, second owner,
-   second corrected builder or root is allowed.
-3. Executer may author one new disposable C4-C1 builder under
-   `/Volumes/4T/temp/rgbww-optimizer`, freeze its bytes/hash, and invoke it once.
-   It may not reuse a rejected builder as executable code; the V3 builder is an
-   immutable content input only.
-4. The pre-root dispatcher must prove the activation and clean worktree, read
-   symbolic HEAD exactly once, and bind the active PLAN blob. Any mismatch
-   stops before root/input access and produces no ER handoff.
+   reuse, repair, delete, rename, alternate root, retry, fallback, second owner
+   or second corrected controller is allowed.
+4. Executer may author exactly one disposable correction-owner script at
+   `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-b2-c4-c1-c1-dual-owner-correction-v1.py`,
+   freeze its bytes/hash before its sole invocation, and never invoke it again.
+   The owner writes one corrected controller under the new root; corrected real
+   `main` and any real C4/C4-C1 path remain uninvoked.
+5. Any pre-root activation/cleanliness/root-absence mismatch stops before any
+   frozen input read and produces no root or ER append.
 
-## 3. Exact C4 V3 durable evidence inputs
+## 3. Exact C4-C1 physical inputs
 
-The sole correction owner receives exactly one non-following lstat, one
-`O_RDONLY|O_NOFOLLOW` open, one bounded read, one before/after fstat identity
-check, one SHA-256 and one strict parse for each file:
+The rejected root receives one non-following lstat and one direct scandir,
+proving exact four entries. The sole owner receives exactly one non-following
+lstat, one `O_RDONLY|O_NOFOLLOW` open, one bounded read, before/after fstat and
+lstat identity equality, one SHA-256 operation, and one strict parse attempt
+for each:
 
-| File | Bytes | SHA-256 |
-| --- | ---: | --- |
-| `progressive-00-root-created.json` | 1558 | `8d4cff7212cf5c8615e411ee19dcb93ffa47664c294f8348796689277f75a219` |
-| `progressive-01-c3-index-accepted.json` | 3830 | `cb78f46f84f832ff701059cf235b67c742e91062df0f12da24a3a4204bee29eb` |
-| `progressive-02-source-revalidated.json` | 2563 | `2e94fa3740a8298349bc589808d28fa10e1b32a3fa84ee287d9432b1b077e56c` |
-| `terminal-evidence.json` | 1869 | `6b88723d8fca83bb7836a1a9adf1b3ab72fd23fe8b5b8625d5a7e8d73253fbee` |
-| `terminal-evidence.sha256.json` | 285 | `663a63e3191260d710abfb1bc831d13c7045408321c7fee1a504e8c48a9649d3` |
+| File | Bytes | SHA-256 | Required interpretation |
+| --- | ---: | --- | --- |
+| `progressive-00-root-created.json` | 645 | `3d6e1ba53f2d8cb8384684179d526c371df78732f158a7e55af4e64181323b03` | strict JSON valid; exact dispatch/root identity |
+| `progressive-01-v3-failure-accepted.json` | 2256 | `f36acbe877a27b9c2e5f75d86c6566df600532edad35bfc41c649278de20aacf` | strict JSON valid; reported inputs/locks only |
+| `terminal-evidence.json` | 962 | `09b4add8bfb7daf931087aa2d6b2c752028682035b1ed6dcd4f305d4c468a7c0` | strict JSON valid; exact failure/stop |
+| `terminal-evidence.sha256.json` | 336 | `8bc0fe09d02fb0cebbefb05554cef0f4f3b84cfb1403d5e8f01e6cf58be36ade` | strict JSON must fail at extra data; bytes must end exact literal `\\n` |
 
-The root may receive one non-following lstat and one direct scandir proving the
-exact five names above; no parent/sibling enumeration. The owner validates the
-progressive stage chain, terminal physical linkage, exact source-revalidated
-hash/cardinality payload, exact failure stage/error, all success-output zeros,
-ER permission/linkage, and every retained/validator/release/device lock zero.
-It writes and durably reloads `progressive-01-v3-failure-accepted.json` before
-reading the builder.
+The invalid seal may be diagnosed only from its exact in-memory bytes and the
+strict parse failure. The owner must not strip, normalize, prefix-parse, repair,
+rewrite, regenerate, copy-as-input or treat it as a target linkage. It writes
+and durably reloads `progressive-01-c4c1-dual-failure-accepted.json` stating
+`sealed_handoff=false`, `er_append_authorized=false`, both failure owners and
+all downstream locks before reading the controller.
 
-C4 V3 root mutation, reopen, mmap, copy-as-input, repair, and any C3/source/C1/
-C2/retained/decision access are forbidden.
+No C4 V3 root/file, V3 builder, C3/source/C1/C2/retained/decision input may be
+opened, read, hashed, parsed, copied, mmaped or inferred as authorization. The
+paths/hashes mentioned inside progressive evidence are inert provenance text.
 
-## 4. One frozen V3 builder read and exact correction
+## 4. One frozen C4-C1 controller read and exact transform boundary
 
-Exact content input:
-`/Volumes/4T/temp/rgbww-optimizer/p7-td-b-b2-c4-ast-span-successor-builder-v3.py`,
-bytes `21474`, SHA-256
-`df0020d9aa7c902cdd11bb6d5c52b80dabce01b31693808a60035a900dc68e37`.
+Exact controller input:
+`/Volumes/4T/temp/rgbww-optimizer/p7-td-b-b2-c4-c1-byte-span-controller-v1.py`,
+bytes `28701`, SHA-256
+`ba05a533f76dec4e64519b1a76970c791521223c1936ff3cb856222218d45dac`,
+regular non-symlink mode `0644`.
 
-The owner gets one non-following lstat/open/bounded-read/hash with before/after
-identity equality. The same in-memory bytes may be decoded, tokenized and AST
-parsed once. It must structurally prove exactly one faulty block:
+The owner gets one lstat/open/bounded-read/hash and before/after identity proof.
+The same in-memory bytes may be decoded, tokenized and AST parsed once. No
+import, execution, regex, literal-line anchor, first-match selection, mmap,
+copy-as-input or second read may identify the changes.
 
-- an assignment to `containing` whose comprehension iterates direct
-  `main_node.body`;
-- its predicate compares only `lineno/end_lineno` to the selected `mkdir`;
-- the immediately owning validation raises `mkdir statement cardinality` when
-  the result is not one; and
-- the block occurs after writing `progressive-02-source-revalidated.json` and
-  before any successor write/generation counter.
+The transform may alter only these AST-selected semantic regions and minimum
+adjacent definitions/imports mechanically required by them:
 
-No regex, literal-line anchor, first-match selection, import, execution or
-second read may identify the correction site.
+### 4.1 AST ancestor and statement-scope owner
 
-The corrected builder must replace only that structurally selected block plus
-the minimum adjacent definitions required for one pure helper named
-`_select_unique_main_statement_by_byte_span`. The helper receives a sequence of
-already derived statement byte spans and one already derived target byte span;
-selects only records satisfying
-`statement_start <= target_start < target_end <= statement_end`; returns the
-sole match; and fails closed on zero, multiple, reversed, negative or
-non-integer bounds. The real transform path must derive each direct
-`main_node.body` statement's start/end through the existing UTF-8 `bytepos`
-mapping, pass the already accepted `mkdir` physical span into this same helper,
-and use its sole returned AST statement. It may not fall back to line-only
-containment, text search or a second selector.
+1. Select the sole `find_faulty` function and the sole structurally matching
+   `containing` list-comprehension assignment already identified by the frozen
+   predicates. Do not weaken those predicates.
+2. Replace the direct-parent-is-function assumption with an ancestor-edge map
+   that records parent node, field name and list index. Climb from the selected
+   assignment to the nearest enclosing `FunctionDef`/`AsyncFunctionDef`, prove
+   it is the sole function named `main`, and reject any intervening function or
+   lambda scope.
+3. Independently prove the assignment is a direct member of exactly one
+   list-valued statement field of its immediate AST container. Select the
+   cardinality validation only as the immediately following statement in that
+   same list. Zero/multiple containers, no following statement, cross-field or
+   cross-scope matches fail closed.
+4. Preserve the existing structural error-string, iterator and target-base
+   proofs. The returned assignment/validation must therefore belong to one
+   exact nested statement scope under the sole `main`; no line/text fallback or
+   direct-parent assumption remains.
 
-No other root/input/hash/AST/span/transform/successor/lifecycle/matrix/terminal/
-ER behavior may change. Imports may change only if mechanically required by
-this helper; no new third-party dependency is allowed. The corrected builder is
-canonical UTF-8, mode `0600`, parses and compiles in memory, but its `main` and
-real C4 path are never invoked.
+### 4.2 Canonical LF seal writer and strict pre-ER gate
 
-Write and seal `corrected-builder-v4.py`, then write and seal a canonical
-`builder-transform-delta.json` binding source/corrected identities, exact AST
-selector record, changed physical byte ranges, before/after normalized AST
-hashes, import delta, sole-helper definition cardinality, and real-path call
-edge to that helper. All bytes before and after the selected correction region
-must be proven identical.
+1. Select the sole `external_terminal_seal` definition and exactly its success
+   and failure call sites plus the immediately dependent ER append blocks.
+2. The child writer must serialize canonical JSON followed by exactly one byte
+   `0x0a`. Its source must use an unambiguous LF construction such as
+   `chr(10)`; nested raw-string backslash spelling is forbidden.
+3. The parent must non-following-open and bounded-read the returned seal, prove
+   identity/mode, strict-parse the full bytes, require exact canonical-byte
+   equality including one LF, and validate target path, bytes, SHA-256,
+   device and inode against the terminal identity. It returns a gate token only
+   after every check succeeds.
+4. Success and failure paths must both obtain that exact gate token before any
+   ER file open or append. Terminal payloads must state
+   `er_permission_before_validated_seal=false`; no pre-serialized claim may set
+   permission true. Writer failure, strict reload failure or target mismatch
+   must leave ER open/append counters `0/0` and propagate the hard failure.
+5. There is one shared writer/validator/gate path. No success-only validator,
+   catch-and-continue, fallback parser, whitespace stripping, old-seal repair,
+   or duplicate ER path is allowed.
 
-## 5. Content-free selector qualification
+Write mode-`0600` `corrected-controller-v2.py` and its seal, then a sealed
+`controller-transform-delta.json`. The delta binds input/output identities,
+exact AST selectors and physical byte ranges, before/after normalized AST
+hashes, import delta, helper/function cardinalities, call edges, both ER gate
+dominance records, and complement byte equality. Every byte outside the exact
+selected regions and required adjacent definitions/imports must be identical.
+The corrected file must decode, tokenize, parse and compile in memory; real
+`main` remains uninvoked.
 
-The exact helper object compiled from the corrected builder must be loaded into
-an isolated namespace with filesystem, Git, process, network, device,
-validator, release and real-input entry points disabled before any call. The
-corrected builder's `main` and real transform path remain uninvoked.
+## 5. Content-free `16/16` negative qualification
 
-One exact `12/12` matrix must prove:
+Load only the exact corrected selector/validator helper objects into an
+isolated namespace with filesystem, Git, process, network, validator, release,
+real-input and ER entry points disabled. The same callables referenced by the
+corrected real path—not copies, shadows or monkeypatches—must pass deterministic
+in-memory fixtures:
 
-1. corrected source has exactly one helper definition and one real-path call;
-2. the old line-only selector block is absent exactly once, with no fallback;
-3. one ordinary containing byte span returns the corresponding statement;
-4. same-line adjacent statements select only the column-exact containing span;
-5. a target nested within one top-level compound statement selects that owner;
-6. multibyte UTF-8 bytes preceding a target do not turn character columns into
-   byte offsets;
-7. boundary equality at statement start/end is accepted only for non-empty
-   target spans;
-8. zero containing spans fail closed;
-9. multiple containing spans fail closed;
-10. reversed, negative, boolean or non-integer bounds fail closed;
-11. repeated helper calls are deterministic and do not mutate inputs; and
-12. every case leaves root/input/source/C3/retained/validator/release/network/
-   device and corrected-builder-real-main counters at zero.
+1. a faulty assignment directly in `main` selects its same-list validation;
+2. a faulty assignment nested in `try.body` selects `main` plus that exact list;
+3. a doubly nested statement container still selects the nearest statement
+   list and sole enclosing `main`;
+4. an assignment under a non-`main` function fails closed;
+5. zero or multiple faulty assignments fail closed;
+6. zero/multiple direct statement containers fail closed;
+7. validation absent or not immediately adjacent in the same list fails closed;
+8. crossing a nested function/lambda or statement-field boundary fails closed;
+9. one exact canonical-LF seal with correct target linkage is accepted;
+10. the observed literal-backslash-`n` suffix is rejected;
+11. missing LF, CRLF and extra-LF encodings are each rejected;
+12. parseable but noncanonical spacing/key order is rejected;
+13. wrong path/bytes/SHA/device/inode target linkage is rejected;
+14. corrected AST proves exactly two real ER paths and each is dominated by the
+    shared validated-seal gate, with no pre-gate ER open;
+15. an isolated harness using the same validator proves each invalid seal
+    leaves ER open/append counters `0/0`, while one valid seal permits `1/1`;
+16. repeated calls are deterministic/nonmutating and all C4 V3, builder,
+    C3/source/retained/validator/release/network/device and corrected real-main
+    counters remain zero.
 
-Fixtures are deterministic in-memory records only. They may not read C4 files
-again or access any earlier evidence/source. The same callable used by the real
-transform path—not a copied, shadowed or monkeypatched helper—must be exercised.
-Write and seal `byte-span-selector-validation-summary.json`, then write and
-durably reload `progressive-02-corrected-builder-qualified.json`.
+Compound subcases in cases 5, 6, 7, 11, 13 and 15 must all pass; the matrix may
+not collapse them into an unverified aggregate boolean. Write and seal
+`dual-owner-negative-matrix.json`, then write and durably reload
+`progressive-02-corrected-controller-qualified.json` binding exact `16/16`,
+same-callable proofs, corrected identity and every zero lock.
 
 ## 6. Evidence lifecycle and budgets
 
-All outputs use exclusive-create, canonical bytes, file fsync, directory fsync,
-strict reload, mode `0600`, and no-clobber:
+All outputs use exclusive-create, canonical UTF-8/LF bytes, file fsync,
+directory fsync, strict reload, mode `0600` and no-clobber:
 
 1. `progressive-00-root-created.json`;
-2. `progressive-01-v3-failure-accepted.json`;
-3. `corrected-builder-v4.py` and `corrected-builder-v4.sha256.json`;
-4. `builder-transform-delta.json` and its seal;
-5. `byte-span-selector-validation-summary.json` and its seal;
-6. `progressive-02-corrected-builder-qualified.json`;
+2. `progressive-01-c4c1-dual-failure-accepted.json`;
+3. `corrected-controller-v2.py` and `corrected-controller-v2.sha256.json`;
+4. `controller-transform-delta.json` and its seal;
+5. `dual-owner-negative-matrix.json` and its seal;
+6. `progressive-02-corrected-controller-qualified.json`;
 7. `terminal-evidence.json` and `terminal-evidence.sha256.json`.
 
-On post-root exception, preserve prior evidence and write one truthful failure
-terminal plus one non-self-attested physical seal. Terminal payload freezes its
-own write counters before serialization; it must never be rewritten. ER
-permission becomes true only after the seal writer returns and the exact link
-is durably reloaded. Append ER exactly once after that point; persistence
-failure permits no ER append, retry, repair, fallback or alternate root.
+The correction package's own terminal seal must be produced by one external
+physical-seal writer using exact canonical LF, then non-following-opened,
+strictly reloaded, canonical-byte compared and target-linked by the parent
+before ER permission becomes true. On any post-root exception, preserve all
+prior bytes and attempt one truthful failure terminal plus that same seal/gate.
+If terminal or seal persistence/gating fails, append no ER and perform no
+repair, retry, fallback or alternate-root action.
 
 Success budgets:
 
 ```text
 correction owner process/invocation = 1/1
 root create = 1
-C4 V3 root lstat/scandir/direct entries = 1/1/5
-C4 V3 five inputs lstat/open/read/hash/parse = 5/5/5/5/5
-V3 builder lstat/open/read/hash/decode/tokenize/AST parse = 1/1/1/1/1/1/1
-V3 builder import/execute/copy/mmap = 0/0/0/0
-corrected builder generation/write/seal = 1/1/1
-corrected builder parse/in-memory compile = 1/1
-corrected builder real main/real C4 invocation = 0/0
+C4-C1 root lstat/scandir/direct entries = 1/1/4
+C4-C1 four artifacts lstat/open/read/hash = 4/4/4/4
+C4-C1 strict parse attempts = 4; valid parses = 3; expected rejects = 1
+old seal repair/rewrite/regenerate/copy/normalization = 0/0/0/0/0
+frozen controller lstat/open/read/hash/decode/tokenize/AST parse = 1/1/1/1/1/1/1
+frozen controller import/execute/copy/mmap = 0/0/0/0
+corrected controller generation/write/seal = 1/1/1
+corrected controller parse/compile = 1/1
+corrected controller real main/C4/C4-C1 invocations = 0/0/0
 transform delta/seal = 1/1
-selector matrix = 12/12
-validation summary/seal = 1/1
-C3/source/C1/C2/retained/decision reads = 0
+negative matrix = 16/16
+matrix summary/seal = 1/1
+C4 V3 payload/builder and C3/source/C1/C2/retained/decision reads = 0
 canonical validator/helper/consumer/replay = 0
 eligibility/release = 0/0
-retry/fallback/second owner/root/corrected builder = 0/0/0/0/0
+retry/fallback/second owner/root/controller = 0/0/0/0/0
 repository implementation edit/commit = 0/0
-EXECUTION_RESULT append = 1, only after terminal seal
+EXECUTION_RESULT append = 1 only after a valid terminal seal gate; otherwise 0
 ```
 
 Tests, compileall, CodeGraph, repository imports, network/DNS/`.env`/
 credentials, device/camera/Ray/strip/cleanup/capture, FORMAL/public analyzer/
 TD-C/sentinel/P8, firmware/deployment are all zero.
 
-Any activation/input/semantic selection/transform/matrix/budget/persistence
-mismatch hard-fails. After one terminal seal and one ER append, stop exact
-`B2_C4_C1_BYTE_SPAN_SELECTOR_WAITING_PLANNER_REVIEW`.
+Any activation/input/failure-interpretation/AST-scope/transform/matrix/budget/
+persistence mismatch hard-fails. After one valid terminal seal plus at most one
+authorized ER append, stop exact
+`B2_C4_C1_C1_DUAL_OWNER_CORRECTION_WAITING_PLANNER_REVIEW`.
 
 ## 7. Acceptance and future lock
 
-Planner may accept C4-C1 only if independent replay proves the exact V3 failure
-chain, one minimal AST-selected builder correction, one shared byte-span helper,
-the real-path structural call edge, unchanged surrounding builder bytes,
-`12/12`, and all locks/counters.
+Planner may accept this package only if independent replay proves the immutable
+C4-C1 dual failure, exact single controller transform, ancestor plus same-list
+statement-scope ownership, canonical-LF strict reload/linkage gating for both ER
+paths, exact `16/16`, valid new terminal seal, and every lock/counter.
 
-Acceptance would qualify only a disposable corrected C4 builder. A later
-Planner package must define a brand-new root and one actual corrected C4
-attempt; it may not reuse the V3 root or infer permission to read C3/source.
-Real B2, B3, retained R3, canonical validator, eligibility, release consumption,
-devices, FORMAL-R6, strip, TD-C, sentinel and P8 remain hard locked.
+Acceptance qualifies only one disposable corrected controller. A later PLAN
+must authorize a brand-new-root corrected C4-C1 attempt; it may not reuse or
+repair the rejected root and may not infer permission to read C4 V3 payload or
+builder from this correction. C4, B2/B3, retained R3, canonical validator,
+eligibility, release consumption, devices, FORMAL-R6, strip, TD-C, sentinel and
+P8 remain hard locked.
 
 ## 维护性判断
 
-The correction isolates one pure byte-span containment owner and validates the
-same callable used by the future real transform. It does not add a production
-owner or parallel lifecycle. The extra package is justified by the one-shot
-input budgets: it proves the local selector repair without consuming real
-source/C3 again, and a broader refactor is neither needed nor authorized.
+This package keeps the two defects at their existing disposable-controller
+ownership boundaries: AST scope selection and evidence lifecycle gating. One
+correction owner avoids parallel lifecycle machinery, while the exact transform
+delta and shared-callable matrix prevent duplicate selectors or success/failure
+seal drift. No production refactor is authorized or needed.
