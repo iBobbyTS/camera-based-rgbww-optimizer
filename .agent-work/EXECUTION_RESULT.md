@@ -16350,3 +16350,18 @@ C13_IMPLEMENTATION_RESULT {"schema":"c13_implementation_result_v1","timestamp":"
 - Terminal: `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b1a-c3e6f19-corrective-17-offline/20260730T150245.411281Z/terminal-evidence.json`, bytes `8902`, SHA-256 `e46158d6b0dae3ca600113f5a18bba57fbb58356e07769d4c06d9f9cca359d9a`, mode `0600`.
 - Candidate/retained-R3/canonical retained validator/eligibility/release/network/`.env`/device/camera/Ray/strip/cleanup/formal/public analyzer/TD-C/sentinel/P8 calls all `0`; retained R3 remains `RETAINED_UNVALIDATED_UNCONSUMED`.
 - Execution-result append count `1`; this file is intentionally not staged or committed by Executer. Planner decision request: independently verify C17 implementation/evidence and accept or reject it without unlocking any later stage implicitly.
+
+## REF-P7-25-R2-B2 modern manifest-only execution — hard failure
+
+- Contract: `P7-TD-B-RETAINED-R3-OPTION-B-B2-MODERN-MANIFEST-SEAL-V2`.
+- Result: `hard_failure_waiting_for_planner`; Planner stop: `B2_MANIFEST_SEALED_WAITING_PLANNER_REVIEW`. B2 is not accepted; retained R3 is not validated, eligible, consumable, copied, repaired, regenerated, or released.
+- Dispatch HEAD: `995633a3f671acf50f4cbbaa0837ae357ca2d41f`; PLAN SHA-256: `9f14f1c0e4006dfffd6f5bb3b9c070a60e45b39ab6bb7dcad53b5775c5b19cb9`; controller source SHA-256: `c5b5b9ba8f76bd62c479ebfdf29f52b1ea39a7ed262b6470403ad0c7e9911008`.
+- Exact brand-new root: `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-modern-manifest-995633a-20260730T0932Z`; root/controller invocation=`1/1`.
+- First error: frozen exact source path `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-lineage-release-r3/lineage-release-161094f-c1-20260727T2103/current-lineage-candidate.json` returned `ENOENT` at its one allowed `lstat`. The controller stopped immediately; retained artifact lstat/open/read=`1/0/0`, retained bytes read=`0`, retained artifacts completed=`0/3`.
+- Memory-only self/negative checks: `12/12`. Manifest/hash seal writes=`0/0`; no substitute root, path fallback, enumeration, repair, copy, or second read was attempted.
+- Failure terminal: `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-modern-manifest-995633a-20260730T0932Z/terminal-evidence.json`; bytes `1517`; SHA-256 `10aef59d4b2155bf6080a5bde5fcf3925871b592a8f6ddc402358351c5ab87b7`; mode `0600`; schema `p7_retained_r3_option_b_b2_terminal_v2`; status `hard_failure_waiting_for_planner`.
+- Evidence caveat: the physical failure terminal exists and is durably readable, but its embedded pre-write counter reports `terminal_writes=0`; this mismatch is preserved and must be judged by Planner. No sealed manifest or hash seal exists.
+- Retry/fallback/second controller/second root=`0/0/0/0`; repository implementation edits/commits=`0/0`. This is the sole ER append for this execution and is intentionally not staged or committed by Executer.
+- Canonical validator/helper real audit/consumer/replay/eligibility emission/release generation/qualification/copy/consumption/full/focused/targeted/synthetic/CodeGraph all `0`.
+- Network/DNS/`.env`/credential/device/camera/Ray/strip/cleanup/capture/FORMAL/public analyzer/TD-C/sentinel/P8/firmware/deployment all `0`.
+- Planner decision request: reject or branch this B2 package based on the frozen retained-source `ENOENT` and terminal counter evidence gap; do not retry, repair, consume retained R3, or unlock B3 under this execution.
