@@ -1,111 +1,240 @@
-# REF-P7-25-R2-B2-C4-C1-C1：Orchestrator engineering architecture stop
+# REF-P7-25-R2-B2-C4-P1：repo-owned controller preparation owner
 
-**计划状态：** `PLANNER_REVIEW_COMPLETE_WAITING_ORCHESTRATOR_ENGINEERING_DECISION`
+**计划状态：** `ACTIVE_EXECUTION_AUTHORIZED_PURE_OFFLINE_IMPLEMENTATION`
 
 **Planner 日期：** `2026-07-30`
 
-**Reference task：** `REF-P7-25-R2-B2-C4-C1-C1`
+**Reference task：** `REF-P7-25-R2-B2-C4-P1`
 
 **Contract ID：**
-`P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-C1-C1-ARCHITECTURE-STOP-V1`
+`P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-P1-REPO-OWNED-PREPARATION-V1`
 
-**当前唯一动作：** Orchestrator 决定并冻结一个最小、可维护的 enabling
-architecture，用于替代连续失败的 hand-authored external controller correction
-chain。优先选择 repo-owned、dedicated、tested 的 preparation/serialization/AST
-owner；若仍保留 external owner，至少先建立 immutable builder source，并要求其在
-任何 execution activation 前通过 compile 与 content-free matrix gate。
+**当前唯一动作：** 新增一个 repo-owned、pure、typed 的 retained-R3
+controller-preparation helper 及其 dedicated test，完成全部离线验证并形成一个
+exact-two-path focused commit；不得集成或执行任何历史 controller。
 
-**唯一 decision request：**
-`ORCHESTRATOR_FREEZE_MAINTAINABLE_CONTROLLER_PREPARATION_ROUTE`。
+**唯一 Planner stop：**
+`B2_C4_P1_IMPLEMENTATION_COMPLETE_WAITING_PLANNER_REVIEW`。
 
-**Planner stop：**
-`B2_C4_C1_C1_ARCHITECTURE_STOP_WAITING_ORCHESTRATOR`。
+**Superseded architecture-stop archive：**
+`.agent-work/PLANS/20260730-1217-p7-retained-r3-option-b-b2-c4-p1-architecture-route-review.md`
+（bytes `4072`，SHA-256
+`0a7d4a537de43de2369ead2fa4a83438d4ee3e3ad037f4f955e6b825857b258a`）。
 
-本文件当前 `execution_authorized=false`。它不授权 Planner 或 Executer 修补、
-执行、重试或复用 failed owner，不授权创建 package root，也不授权 controller、
-tests、retained evidence、validator、release、network 或 device 操作。
+`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_c4_p1_repo_owned_preparation_v1","reference_task_id":"REF-P7-25-R2-B2-C4-P1","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-P1-REPO-OWNED-PREPARATION-V1","dispatch_state":"dispatchable_after_orchestrator_activation_review","execution_authorized":true,"pure_offline":true,"single_current_action":"implement_test_validate_and_commit_repo_owned_controller_preparation_owner","exact_changed_paths":["src/camera_based_rgbww_optimizer/utils/p7_retained_r3_controller_preparation.py","tests/test_p7_retained_r3_controller_preparation.py"],"expected_initial_path_state":"both_absent","direct_io_allowed_in_helper":false,"canonical_validator_remains_sole_eligibility_owner":true,"old_external_owner_reuse":false,"historical_artifact_reads":0,"retained_r3_reads":0,"canonical_validator_calls":0,"eligibility_emissions":0,"release_operations":0,"device_operations":0,"commit_budget":1,"commit_subject":"feat(p7): add retained r3 controller preparation owner","required_gates":["targeted","focused","full","compileall","codegraph_sync","diff_check","exact_two_path_commit","postcommit_targeted"],"failure_branch":"bounded_p1_correction_waiting_planner_review","planner_stop":"B2_C4_P1_IMPLEMENTATION_COMPLETE_WAITING_PLANNER_REVIEW"}`
 
-**Reviewed archive：**
-`.agent-work/PLANS/20260730-1210-p7-retained-r3-option-b-b2-c4-c1-c1-syntax-failure-review.md`
-（bytes `4665`，SHA-256
-`1b6980ad928b0327a59e31b982153f2d01bc52a2baa9c80b86deef978fd7db2d`）。
+## 1. Frozen start and authorization boundary
 
-`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_c4_c1_c1_architecture_stop_v1","reference_task_id":"REF-P7-25-R2-B2-C4-C1-C1","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-C1-C1-ARCHITECTURE-STOP-V1","dispatch_state":"not_dispatchable_orchestrator_engineering_decision_required","execution_authorized":false,"single_current_action":"orchestrator_freeze_maintainable_controller_preparation_route","single_decision_request":"ORCHESTRATOR_FREEZE_MAINTAINABLE_CONTROLLER_PREPARATION_ROUTE","decision_owner":"Orchestrator","scientific_escalation":false,"human_authorization_required":false,"review_decision":"REJECTED_PRE_ROOT_OWNER_SYNTAX_FAILURE_NO_C4_PROGRESS","review_archive":{"path":".agent-work/PLANS/20260730-1210-p7-retained-r3-option-b-b2-c4-c1-c1-syntax-failure-review.md","bytes":4665,"sha256":"1b6980ad928b0327a59e31b982153f2d01bc52a2baa9c80b86deef978fd7db2d"},"failed_owner":{"path":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-b2-c4-c1-c1-dual-owner-correction-v1.py","bytes":33106,"sha256":"97e649afa018e6884b00eee991939a59aa35e6ee89049652452db4bd5ce93e65","failure":"SyntaxError_line_255_outer_f_string_triple_single_quote_terminated_early","owner_invocations":1,"python_parse_attempts":1,"owner_body_entries":0},"zero_budget":{"dispatch":0,"root_create":0,"input_reads":0,"corrected_controller_generations":0,"matrix_cases":0,"terminal_writes":0,"execution_result_appends":0,"retry":0,"fallback":0},"c4_progress":false,"preferred_enabling_route":"repo_owned_dedicated_tested_preparation_serialization_ast_owner","minimum_external_route":"immutable_builder_source_plus_pre_activation_compile_and_content_free_matrix_gate","future_planner_package_required":true,"failed_owner_repair_or_reuse":false,"canonical_validator_calls":0,"eligibility_emissions":0,"release_operations":0,"device_operations":0,"planner_stop":"B2_C4_C1_C1_ARCHITECTURE_STOP_WAITING_ORCHESTRATOR"}`
+At planning time the worktree was clean at
+`253567fe9c92a43046d46a07e21752d8f30f7a23`, and both target paths were absent.
+The Orchestrator may commit this PLAN/archive before dispatch. Therefore the
+Executer must, before editing:
 
-## 1. Planner review decision
+1. record the dispatch-time full HEAD as `implementation_parent`;
+2. require a clean worktree;
+3. require both exact target paths still absent;
+4. require the active PLAN reference task and contract ID above;
+5. stop without editing if any condition differs.
 
-1. C4-C1-C1 is rejected as
-   `REJECTED_PRE_ROOT_OWNER_SYNTAX_FAILURE_NO_C4_PROGRESS`.
-2. The immutable owner is `33106` bytes with SHA-256
-   `97e649afa018e6884b00eee991939a59aa35e6ee89049652452db4bd5ce93e65`.
-   At source line `255`, a triple-single-quoted `_child` literal appears inside an
-   outer f-string using the same delimiter, so Python parsing terminates the outer
-   string early and raises `SyntaxError`.
-3. The only owner invocation performed Python parsing. Owner-body entry, dispatch,
-   root creation, input access, corrected output, matrix, terminal and ER append
-   are all `0`; retry and fallback are `0/0`.
-4. A parse failure before root and dispatch cannot satisfy or partially satisfy any
-   C4 transform, qualification, evidence lifecycle or terminal criterion. C4 has
-   made no progress under this package.
-5. The detailed reviewed scope, evidence quality, decision and residual risk are
-   preserved in the immutable archive named above.
+This PLAN authorizes only local repository source/test work, offline tests,
+CodeGraph sync, one focused commit and an `EXECUTION_RESULT.md` handoff. It does
+not authorize a package/evidence root, external controller, retained evidence,
+release, validator, analyzer, network or device operation.
 
-## 2. Maintainability finding
+## 2. Exact repository scope
 
-The current corrective route repeatedly hand-authors disposable external programs
-that combine nested generated Python, AST selection and rewriting, canonical JSON
-serialization, subprocess lifecycle, physical sealing and ER gating. The line-255
-delimiter collision is not an isolated scientific failure; it is direct evidence
-that the controller-preparation boundary lacks a parser/test gate before immutable
-one-shot activation.
+The only files that may be created or changed by the implementation commit are:
 
-Another deeper one-shot correction would continue a fragile hand-built state
-machine and make ownership harder to audit. Planner therefore does not issue or
-pre-authorize a successor package.
+```text
+src/camera_based_rgbww_optimizer/utils/p7_retained_r3_controller_preparation.py
+tests/test_p7_retained_r3_controller_preparation.py
+```
 
-## 3. Orchestrator engineering decision boundary
+No package export, production runner, validator, audit helper, wrapper, docs,
+skill, config, PLAN, FULL reference or archive may be changed by the Executer.
+The Executer may append its truthful handoff to
+`.agent-work/EXECUTION_RESULT.md`; that Planner evidence append is not part of
+the implementation commit.
 
-The Orchestrator must choose and freeze one minimal enabling route:
+Before implementation, use CodeGraph to inspect the repo-owned convention in
+`p7_retained_r3_exact_five_controller` and its dedicated test. The new helper
+must be a separate, narrow source-preparation owner rather than expanding the
+canonical lineage validator or introducing a second eligibility owner.
 
-1. **Preferred:** a repo-owned, dedicated, tested
-   preparation/serialization/AST owner. Generated-source quoting, AST selection,
-   canonical serialization and gate dominance should have explicit unit boundaries
-   and regression tests before the eventual execution package is activated.
-2. **Minimum external alternative:** an immutable builder source separate from the
-   one-shot execution owner. Before activation, its frozen bytes must pass Python
-   compile and a content-free matrix that exercises nested-source serialization,
-   AST selector cardinality, canonical LF, terminal linkage and both ER paths.
+## 3. Pure helper contract
 
-The Orchestrator owns this engineering choice, exact repository scope, provenance
-design and Git topology. This is not a color-science or measurement-science branch,
-so Advisor escalation is forbidden. It performs no dangerous device operation, so
-Human authorization is not required.
+Implement the smallest typed boundary that proves all of the following without
+direct I/O:
 
-After the Orchestrator updates `FULL_PLAN_REFERENCE.md` and freezes one route, a
-future Planner must create exactly one next work package. That package must name one
-current action, explicit regression coverage, frozen inputs/outputs, a single stop
-and fail-closed budgets. Nothing in this PLAN pre-authorizes that package.
+### 3.1 AST/source preparation
 
-## 4. Hard locks
+- Parse supplied source bytes/text with Python AST and preserve an explicit
+  parent-edge map.
+- Locate the unique enclosing function owner through ancestor edges; reject
+  cross-function, lambda, async/alternate owner, zero-owner and multiple-owner
+  ambiguity.
+- Require the target assignment and its cardinality/validation statement to be
+  adjacent members of the same immediate AST list field. A direct-parent
+  `FunctionDef` assumption is forbidden.
+- Select/replace by validated UTF-8 byte spans, including same-line columns and
+  non-ASCII prefixes; reject invalid, reversed, overlapping, out-of-range,
+  zero-match or multiple-match spans.
+- If the helper emits prepared source, it must be deterministic and must pass
+  both `ast.parse` and `compile` before it can be returned. Do not generate or
+  embed another large/nested one-shot Python program.
 
-Until a future PLAN is independently activated:
+### 3.2 Canonical terminal bytes and linkage
 
-- do not edit, execute, import, compile, retry, repair or reuse the failed owner;
-- do not create or reuse any package root or corrected controller;
-- do not read C4/C4-C1 payloads, builders, controllers, retained R3 or release
-  evidence;
-- do not call the canonical validator, emit eligibility or consume a release;
-- do not run tests, CodeGraph, public analyzer or any controller;
-- do not access network, `.env`, credentials, device, camera, Ray, strip, cleanup,
-  capture, FORMAL-R6, TD-C, sentinel or P8.
+- Canonical JSON is UTF-8, duplicate-key/non-finite rejecting on strict reload,
+  deterministically serialized, and terminated by exactly one byte `LF`.
+- Reject literal `\\n`, CRLF, missing LF, extra LF, invalid UTF-8,
+  noncanonical key/spacing/number representation and bytes that do not
+  round-trip to the same canonical payload.
+- Model target identity explicitly with exact path, bytes, SHA-256, device and
+  inode fields. A valid seal must link to all expected target fields; any wrong,
+  absent or rebound field rejects the gate.
+- Hashing/parsing/serialization may operate only on caller-supplied in-memory
+  values. The helper must not stat, open, read, write, rename or fsync paths.
 
-The retained release remains unvalidated and unconsumed. The unique stop is
-`B2_C4_C1_C1_ARCHITECTURE_STOP_WAITING_ORCHESTRATOR`.
+### 3.3 ER gate dominance
+
+- Represent successful seal validation with a typed, non-forgeable-in-normal-use
+  gate/result object created only by the validation path.
+- Success and failure terminal flows must both require that valid gate before an
+  injected ER callback can be invoked.
+- Invalid terminal bytes, canonical mismatch, target mismatch, callback setup
+  error before the gate, or seal-validation failure must leave ER callback call
+  count at `0`.
+- The helper must preserve the primary exception/result semantics; a callback
+  must not turn a rejected seal into success.
+
+The module may import pure standard-library facilities such as `ast`,
+`dataclasses`, `hashlib`, `json` and typing helpers. Direct filesystem, Git,
+subprocess, socket/network, environment, camera, device, release, validator or
+analyzer imports/calls are forbidden.
+
+## 4. Dedicated regression contract
+
+The dedicated test file must assert behavior, not merely execute lines. At a
+minimum cover:
+
+1. direct, nested and double-nested valid AST ownership;
+2. cross-function, lambda, async/alternate, zero and multiple owner rejection;
+3. same-list adjacency success and different-list/non-adjacent rejection;
+4. same-line columns, UTF-8 byte offsets, boundary spans, overlap, reversed,
+   out-of-range, zero and multiple matches;
+5. deterministic prepared output plus `ast.parse` and `compile` success;
+6. canonical success with exactly one final LF;
+7. literal-backslash-n, CRLF, missing/extra LF, invalid UTF-8,
+   duplicate-key, non-finite and noncanonical JSON rejection;
+8. wrong path, bytes, SHA-256, device or inode rejection;
+9. valid success-terminal and failure-terminal ER callback sequencing;
+10. invalid-seal paths with ER callback count exactly `0`;
+11. static source assertion that the helper has no direct I/O or forbidden
+    imports and does not contain a nested large generated program.
+
+Tests must use only synthetic in-memory fixtures. They must not read old C4
+controllers/artifacts, retained R3 or release evidence.
+
+## 5. Ordered validation gates
+
+Run each gate once in this order; retry and fallback are `0`. Record exact
+command, exit code and test count in `EXECUTION_RESULT.md`.
+
+1. **Targeted:**
+
+   ```sh
+   .venv/bin/python -m unittest discover -s tests -p 'test_p7_retained_r3_controller_preparation.py' -v
+   ```
+
+2. **Related focused:** run the targeted command plus each existing related
+   suite exactly once:
+
+   ```sh
+   .venv/bin/python -m unittest discover -s tests -p 'test_p7_retained_r3_exact_five_controller.py' -v
+   .venv/bin/python -m unittest discover -s tests -p 'test_p7_retained_release_audit.py' -v
+   ```
+
+3. **Full suite:**
+
+   ```sh
+   .venv/bin/python -m unittest discover -s tests -p 'test_*.py' -v
+   ```
+
+4. **Compile:**
+
+   ```sh
+   .venv/bin/python -m compileall -q src/camera_based_rgbww_optimizer tests
+   ```
+
+5. **CodeGraph:** run `codegraph sync` at repository root and require success.
+6. **Repository checks:** run `git diff --check`; require the unstaged/staged
+   implementation path set to equal the exact two-path set and no other path.
+
+Any gate failure stops immediately. Do not repair during the same execution,
+rerun a failed gate, relax a test, add a third path or continue to commit.
+
+## 6. Focused commit and postcommit gate
+
+Only after all precommit gates pass:
+
+1. stage exactly the two implementation paths;
+2. require the staged path set equals the exact sorted two-path set;
+3. create exactly one commit with exact subject
+   `feat(p7): add retained r3 controller preparation owner`;
+4. require the commit parent equals the recorded `implementation_parent`;
+5. require the commit changed-path set equals the exact two paths and each is a
+   new regular repository file;
+6. require no amend, rebase, second commit or unrelated staged change;
+7. rerun the targeted command exactly once against committed bytes;
+8. run `git diff --check` and require no implementation-scope worktree drift.
+
+If commit creation or any postcommit check fails, preserve the commit if one was
+created, do not amend it, and stop for Planner review.
+
+## 7. Required handoff
+
+Append one bounded section to `.agent-work/EXECUTION_RESULT.md` containing:
+
+- reference task, contract ID, implementation parent and child full SHA;
+- exact changed paths and commit subject;
+- concise API/ownership description;
+- dedicated test case inventory;
+- each precommit/postcommit command, exit code and exact test count;
+- compileall, CodeGraph sync and diff-check results;
+- static forbidden-I/O/import result;
+- explicit zero counters for old C4/retained-R3 reads, external controller,
+  canonical validator, eligibility, release, public analyzer, network, `.env`,
+  device, camera, Ray, strip, cleanup, capture and formal;
+- residual maintainability judgment and exact Planner stop.
+
+Do not edit either plan file or any archive. After the handoff, stop at
+`B2_C4_P1_IMPLEMENTATION_COMPLETE_WAITING_PLANNER_REVIEW`; P1 success does not
+authorize C4 integration, real B2, retained-R3 audit, B3, eligibility, release
+consumption or device work.
+
+## 8. Failure branches and hard locks
+
+On any precondition, implementation, test, static, CodeGraph, diff, commit or
+postcommit failure, append truthful failure facts if possible and stop at the
+same unique Planner stop. The next package, if any, is a bounded P1 correction;
+the failed external-owner chain must remain closed.
+
+Throughout this package, do not read, import, compile, execute, repair or reuse:
+
+- any C4, C4-C1 or C4-C1-C1 external source, builder, root or artifact;
+- retained-R3 candidates/artifacts or any release/evidence root;
+- Advisor decision payloads or historical GUIDE evidence not already frozen in
+  this PLAN.
+
+Do not invoke the canonical lineage validator, emit eligibility, create/validate/
+consume a release, run the public analyzer, access network/`.env`/credentials or
+touch any device, camera, Ray, strip, cleanup, capture, FORMAL-R6, TD-C, sentinel
+or P8 route.
 
 ## 维护性判断
 
-Planner has stopped the repeated external-controller correction chain at its
-ownership boundary. The next route should separate preparation from one-shot
-execution and make syntax, serialization and AST behavior testable before
-activation; no additional correction layer is justified without that enabling
-architecture.
+This package creates one narrow pure owner and one dedicated regression owner;
+it does not modify production execution, validation or eligibility boundaries.
+The callback/seal API must stay small and typed, with historical integration
+deferred to a separate provenance-bound package after Planner acceptance.
