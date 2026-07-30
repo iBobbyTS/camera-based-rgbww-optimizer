@@ -16,9 +16,9 @@
 
 **当前可执行任务数：** `1`
 
-**当前 active task：** `REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-10 preserved-draft implementation and validation`
+**当前 active task：** `REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-11 historical-checkpoint and ambient-HEAD seam correction`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-10","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-10-DRAFT-BASELINE","next_reference_task":"REF-P7-25-R2-B2","next_reference_status":"BLOCKED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"B1A_C3E6F19_CORRECTIVE_9_REJECTED_PRECOMMIT_COMPILE_DRAFT_CC37DA5_PRESERVED_C10_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"3c5847fcbe0af85833c901f6f01058d000a3cecdc0f84e6ae331ed24e138c225","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-11","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-11-HISTORICAL-CHECKPOINT-SEAM","next_reference_task":"REF-P7-25-R2-B2","next_reference_status":"BLOCKED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"B1A_C3E6F19_CORRECTIVE_10_REJECTED_TARGETED_SEAMS_BASE_0682CD8_RETAINED_C11_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"3c5847fcbe0af85833c901f6f01058d000a3cecdc0f84e6ae331ed24e138c225","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -2730,7 +2730,9 @@ SHA-256 `b5cb63fdbe9f51c22f582616eb7494b845ca55122575da415a96a501a4da5847`；该
 
 ### REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-10：Preserved-draft implementation and validation
 
-**状态：** `ACTIVE_WAITING_PLANNER_EXECUTABLE_PACKAGE`。
+**状态：** `REJECTED_TARGETED_AMBIENT_HEAD_AND_HISTORICAL_CHECKPOINT_SEAMS`。Planner archive：
+`.agent-work/PLANS/20260730-0715-p7-retained-r3-option-b-b1a-c3e6f19-corrective-10-review.md`，SHA-256
+`5e9eedd2adcfb284ee26991fc247c5a465d0b5587dafaa792d0e5e273a37826d`。
 
 Orchestrator已按C9 review将未验证草稿独立保存为commit
 `cc37da5664f50cdb5a2c7f3cc77b1f88728c4bf6`，parent
@@ -2753,6 +2755,31 @@ C9 root与compile结果不得复用；full suite必须exit 0。
 旧policy/workflow/public-default payload保持逐字节不变，canonical candidate builder仍是唯一eligibility owner。Candidate、retained R3、
 canonical retained validator、eligibility、release、network、`.env`、device、camera、Ray、strip、cleanup、FORMAL-R6、public analyzer、
 TD-C、sentinel与P8继续全部锁0；retained R3仍为`RETAINED_UNVALIDATED_UNCONSUMED`。
+
+C10创建唯一implementation commit `0682cd8763516dfb19a8e1ad48c53cb9934b9d19`，parent `4316d0c...`，subject
+`fix(p7): validate exact governance lineage successor`，exact config/source/test三路径。Config SHA-256
+`69bbbb369e776e1aa11a227ecf3432de44bc517c7eb25828094f4820df45042e`；两个新governance tests均pass，compileall pass。
+Targeted为`9/12`：一个failure来自ambient HEAD changed-path count硬编码59而实际265；两个errors来自历史qualification checkpoint
+错误读取当前working skill bytes。Focused/full/CodeGraph/diff因fail-fast为0。Terminal SHA-256
+`644439af182a007e88e6978aaecc8c6ec2e820add732c56b9e74716bce6bcbd5`。该commit仅作为
+`retained_unaccepted_governance_successor_implementation_base_v1`，不可消费、不得产生eligibility。
+
+### REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-11：Historical-checkpoint and ambient-HEAD seam correction
+
+**状态：** `ACTIVE_WAITING_PLAN_ONLY_ACTIVATION_FREEZE`。
+
+只允许修改source/test两路径；上述config必须byte-exact不变。Source须把historical requested checkpoint与ambient current HEAD owner分离：
+历史checkpoint只验证checkpoint bytes，不读取working path；只有requested checkpoint解析为当前HEAD且HEAD包含3e2ebed时，旧public-default
+payload先完成验证，再调用governance subordinate一次验证working/current bytes。不得fallback、跳过旧payload或新增eligibility owner。
+
+Test须移除ambient HEAD changed-path总数的瞬时常量，改为sorted/unique、输入输出path一一对应、canonical classification、exact post-EQ
+mapping与prohibited空集；新增historical qualification regression，证明working skill read漂移/禁止时仍以checkpoint bytes通过且subordinate不调用。
+Current HEAD分支仍须证明subordinate恰调用一次与working drift fail closed。
+
+下一Planner activation须从Orchestrator reviewed-state clean commit冻结PLAN-only parent；后继implementation subject exact为
+`fix(p7): separate historical lineage checkpoint ownership`，changed paths exact source/test，additional0。Brand-new C11 root依次一次
+compileall、原十二selector加historical regression、focused、full、CodeGraph、diff，fail-fast、retry/fallback0。所有R3/release/device/
+scientific锁继续为0；无需Advisor或Human授权。
 
 ### REF-P7-25-R2-B2：唯一repair commit与immutable manifest seal
 
@@ -3379,7 +3406,7 @@ Option A owner prerequisite = accepted complete
 Advisor lineage owner decision = Option B subordinate exact provenance manifest
 Human engineering governance override = Orchestrator owns files/code/provenance/execution/Git
 helper v1 disposition = retained_release_audit_prerequisite_v1_superseded_before_real_validation
-repair v2 status = B1A-C3E6F19-CORRECTIVE-9 rejected precommit compile; draft cc37da5 preserved; corrective-10 active
+repair v2 status = B1A-C3E6F19-CORRECTIVE-10 rejected targeted seams; base 0682cd8 retained unaccepted; corrective-11 active
 accepted B1 result = ACCEPTED_BLOCKED_CONTRACT_CONFLICT
 accepted B1A result = HARD_FAILURE_PRE_ACQUISITION_LIFECYCLE; implementation progress 0
 accepted B1A-C1 result = HARD_FAILURE_BEFORE_TEST_EXEC; candidate carry-forward only
@@ -3437,8 +3464,9 @@ accepted B1A-C3E6F19-CORRECTIVE-6 result = UNAUTHORIZED_WHOLE_RECORD_KEY_SET; sc
 accepted B1A-C3E6F19-CORRECTIVE-7 result = LOG_NOCLOBBER_REOPEN_CONFLICT; test edit accepted; validation0
 accepted B1A-C3E6F19-CORRECTIVE-8 result = FULL_SUITE_AMBIENT_GOVERNANCE_LINEAGE_DRIFT; targeted11/11; focused43/43; full1 failure9 errors
 accepted B1A-C3E6F19-CORRECTIVE-9 result = FORMAL_COMPILEALL_CONSUMED_BEFORE_IMPLEMENTATION_COMMIT; draft preserved cc37da5; test unchanged
-active task = REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-10 preserved-draft implementation and validation
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-10-DRAFT-BASELINE
+accepted B1A-C3E6F19-CORRECTIVE-10 result = TARGETED_AMBIENT_HEAD_AND_HISTORICAL_CHECKPOINT_SEAMS; new tests pass; targeted9/12
+active task = REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-11 historical-checkpoint and ambient-HEAD seam correction
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-11-HISTORICAL-CHECKPOINT-SEAM
 active executable task count = 1
 next reference task = REF-P7-25-R2-B2 BLOCKED
 selected state C shutter = 1/2500
@@ -3465,8 +3493,8 @@ JavaScript SyntaxError 未启动 Python；C4 随后仅 8/12，C5 又因正文 ma
 但 Executer scanner 将 PLAN candidate 错计为0；C12 的更精确文字合同仍因临时实现转录漂移错报0/0。当前 C13 将 scanner
 收敛到一个validation-only helper与一个dedicated test并获Planner接受，避免继续复制实现；它不拥有eligibility或retained-release语义。
 后继另包才可冻结新controller并建立 fresh bootstrap container；不得重跑F14、提前修改production或输出eligibility。retained R3继续为
-`REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-10`从未验证draft commit cc37da5继续，只补齐或精确修正config/source/test；
-在新的implementation commit后才使用brand-new root各运行一次正式验证链；旧freeze/manifest不改写，canonical validator仍是唯一eligibility owner；
+`REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-11`只修source/test两个owner seam；config 69bbbb...保持byte-exact；
+历史checkpoint不读取ambient working bytes，current HEAD才消费subordinate；新commit后brand-new root运行one-shot完整链；
 canonical validator call、eligibility emission、retained R3/release/device访问仍为0；
 retained R3 仍为 `RETAINED_UNVALIDATED_UNCONSUMED`。
 
