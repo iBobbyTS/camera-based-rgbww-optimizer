@@ -16,9 +16,9 @@
 
 **当前可执行任务数：** `0`
 
-**当前 active task：** `REF-P7-25-R2-B2-C4-P2-C1 pretest scope gate correction`
+**当前 active task：** `REF-P7-25-R2-B2-C4-P2-C2 parser-free pretest gate correction`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-C4-P2-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-P2-C1-PRETEST-SCOPE-GATE-CORRECTION-V1","next_reference_task":"REF-P7-25-R2-B2-C4-P2-C1","next_reference_status":"ACTIVE","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P2_REJECTED_SCOPE_GATE_DEFECT_P2_C1_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"91165b72d928f422c1efb98f326b232942b59c096b92b7f8f87ec874829fc537","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-C4-P2-C2","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-P2-C2-PARSER-FREE-PRETEST-GATE-V1","next_reference_task":"REF-P7-25-R2-B2-C4-P2-C2","next_reference_status":"ACTIVE","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P2_C1_REJECTED_GATE_PARSER_DEFECT_P2_C2_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"af20065a26493d2616742a6bd4814bb22bd9f81df0c60912a6a20fa82ed30b7d","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -288,7 +288,8 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-B2-C4-P1` | `REJECTED_BOUNDED_P1_CORRECTION_REQUIRED` | repo-owned、dedicated、tested preparation/serialization/AST owner | C4-C1-C1 architecture stop | Planner/Executer |
 | `REF-P7-25-R2-B2-C4-P1-C1` | `ACCEPTED_COMPLETE` | exact identity、unique owner、deep immutable gate、typed malformed replacement correction | P1 review findings | Planner/Executer |
 | `REF-P7-25-R2-B2-C4-P2` | `REJECTED_GATE_DEFECT_IMPLEMENTATION_NOT_EVALUATED` | bind accepted helper commit into smallest repo-owned C4 integration/qualification package | P1-C1 accepted | Planner/Executer |
-| `REF-P7-25-R2-B2-C4-P2-C1` | `ACTIVE` | NUL-safe tracked/untracked singleton gate then resume unrun qualification gates | P2 pretest scope failure | Planner/Executer |
+| `REF-P7-25-R2-B2-C4-P2-C1` | `REJECTED_EXECUTION_GATE_OWNER_PARSER_DEFECT` | NUL-safe tracked/untracked singleton gate then resume unrun qualification gates | P2 pretest scope failure | Planner/Executer |
+| `REF-P7-25-R2-B2-C4-P2-C2` | `ACTIVE` | activation-topology plus parser-free frozen-file/scope gate, then resume tests | P2-C1 parser failure | Planner/Executer |
 | `REF-P7-25-R2-B3` | `BLOCKED` | Manifest自校验后执行postcommit focused、durable full、synthetic terminal/replay | `REF-P7-25-R2-B2` accepted | Planner/Executer |
 | `REF-P7-25-R2-B4` | `BLOCKED` | 对原retained R3三件套做首次真实audit并由canonical validator唯一判定eligibility | `REF-P7-25-R2-B3` accepted | Planner/Executer |
 | `REF-P7-25-R2-B5` | `BLOCKED` | 独立验收validated-unconsumed状态、manifest与rollback provenance | `REF-P7-25-R2-B4` pass | Planner/Orchestrator |
@@ -3163,15 +3164,25 @@ Orchestrator，不升级Advisor。
 
 ### REF-P7-25-R2-B2-C4-P2-C1：pretest scope gate correction
 
-**状态：** `ACTIVE`。Planner review archive：
+**状态：** `REJECTED_EXECUTION_GATE_OWNER_PARSER_DEFECT_IMPLEMENTATION_NOT_EVALUATED`。Planner review archive：
 `.agent-work/PLANS/20260730-1303-p7-retained-r3-option-b-b2-c4-p2-pretest-gate-failure-review.md`，bytes `6333`，SHA-256
 `a4f584e8de4a92e034424fd8d801a50ec32837f51e0530c499c8b9e453a41857`。
 
 保留上述test exact untracked bytes且edit/recreate budget0。一次性corrected gate分别NUL-safe解析porcelain status、tracked diff、cached diff与
 `ls-files --others`，要求tracked/index empty、untracked exact singleton、union exact singleton；用`git diff --no-index --check`检查新文件，
-禁止`git add -N`。通过后从首次targeted继续P2尚未执行的owner/focused/full/compileall/CodeGraph/commit/postcommit gates；所有历史、retained、
-actual validator、release、network/device预算继续0。唯一stop为
-`B2_C4_P2_C1_INTEGRATION_QUALIFICATION_COMPLETE_WAITING_PLANNER_REVIEW`。
+禁止`git add -N`。Executer在正式lstat/status gate前错误以无反引号prefix读取Markdown machine row并触发`StopIteration`；所有测试、compileall、
+CodeGraph、stage、commit仍0，测试exact identity不变。转P2-C2。
+
+### REF-P7-25-R2-B2-C4-P2-C2：parser-free pretest gate correction
+
+**状态：** `ACTIVE`。Planner review archive：
+`.agent-work/PLANS/20260730-1311-p7-retained-r3-option-b-b2-c4-p2-c1-parser-failure-review.md`，bytes `5912`，SHA-256
+`e20834857bcf7061b9d3ed3a2b4c8599d4245d89704b1d5a7fa2509e60fbb481`。
+
+删除Executer对PLAN/FULL machine rows、task/status/hash/archive rows的重复解析。Orchestrator的exact activation commit与dispatch是唯一activation
+证明；Executer只验证一次HEAD/parent/subject、冻结test lstat/bytes/SHA、NUL-safe status/union与no-index whitespace gate，随后从首次targeted
+继续原P2未执行gates。Test edit/recreate仍0；所有historical/retained/actual validator/release/network/device预算0。唯一stop为
+`B2_C4_P2_C2_INTEGRATION_QUALIFICATION_COMPLETE_WAITING_PLANNER_REVIEW`。
 
 > 以下旧two-path执行细节已由Human engineering-governance override与B1A exact-five contract supersede，不得作为未来
 > PLAN输入；B1A-C2/后续Planner验收冻结的five-path child与manifest facts才是B2的新工程基线。本段保留仅作旧合同历史。
@@ -3792,7 +3803,7 @@ Option A owner prerequisite = accepted complete
 Advisor lineage owner decision = Option B subordinate exact provenance manifest
 Human engineering governance override = Orchestrator owns files/code/provenance/execution/Git
 helper v1 disposition = retained_release_audit_prerequisite_v1_superseded_before_real_validation
-repair v2 status = P2 rejected untracked scope gate; P2-C1 active with preserved test
+repair v2 status = P2-C1 rejected machine-row parser defect; P2-C2 parser-free gate active
 accepted B1 result = ACCEPTED_BLOCKED_CONTRACT_CONFLICT
 accepted B1A result = HARD_FAILURE_PRE_ACQUISITION_LIFECYCLE; implementation progress 0
 accepted B1A-C1 result = HARD_FAILURE_BEFORE_TEST_EXEC; candidate carry-forward only
@@ -3871,10 +3882,11 @@ rejected B2-C4-C1-C1 result = PRE_ROOT_OWNER_SYNTAX_FAILURE_NO_C4_PROGRESS; pars
 rejected B2-C4-P1 result = SEMANTIC_INVARIANT_GAPS; commit ce09615 retained; tests708/708
 accepted B2-C4-P1-C1 result = ACCEPTED_COMPLETE; successor4678a3e; tests712/712; five findings closed
 rejected B2-C4-P2 result = PRETEST_UNTRACKED_SCOPE_GATE_DEFECT; test preserved; tests0; commit0
-active task = REF-P7-25-R2-B2-C4-P2-C1 pretest scope gate correction
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-P2-C1-PRETEST-SCOPE-GATE-CORRECTION-V1
+rejected B2-C4-P2-C1 result = MACHINE_ROW_MARKDOWN_PARSER_STOPITERATION; test preserved; tests0; commit0
+active task = REF-P7-25-R2-B2-C4-P2-C2 parser-free pretest gate correction
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-P2-C2-PARSER-FREE-PRETEST-GATE-V1
 active executable task count = 1
-next reference task = REF-P7-25-R2-B2-C4-P2-C1 ACTIVE
+next reference task = REF-P7-25-R2-B2-C4-P2-C2 ACTIVE
 selected state C shutter = 1/2500
 device/network/camera/light = forbidden by active PLAN
 release qualification/generation/copy/consumption = forbidden
