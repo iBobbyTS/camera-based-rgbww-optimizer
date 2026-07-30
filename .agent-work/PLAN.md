@@ -19,7 +19,7 @@
 `.agent-work/PLANS/20260730-1547-p7-retained-r3-option-b-b2-modern-manifest-failure-review.md`，bytes `5916`，SHA-256
 `1c0cf905e468bad0a3349fe884775aa70ffb5201af74cddce8c4a770007e3c50`。
 
-`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_c1_path_owner_plan_v1","reference_task_id":"REF-P7-25-R2-B2-C1","parent_reference_task_id":"REF-P7-25-R2-B2","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C1-PATH-OWNER-INDEX-V1","dispatch_state":"execution_authorized","execution_authorized":true,"single_current_action":"single_controller_exact_directory_chain_path_owner_index","evidence_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c1-path-owner-27aacbf-20260730T1547Z","controller_invocations":1,"evidence_root_creations":1,"directory_lstat":3,"directory_scandir":3,"artifact_content_open":0,"artifact_content_read":0,"artifact_content_hash":0,"artifact_content_parse":0,"path_owner_index_writes":1,"index_seal_writes":1,"terminal_writes":1,"terminal_seal_writes":1,"retry":0,"fallback":0,"canonical_validator_calls":0,"audit_calls":0,"manifest_seal_calls":0,"er_appends":1,"planner_stop":"B2_C1_PATH_OWNER_INDEX_WAITING_PLANNER_REVIEW"}`
+`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_c1_path_owner_plan_v1","reference_task_id":"REF-P7-25-R2-B2-C1","parent_reference_task_id":"REF-P7-25-R2-B2","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C1-PATH-OWNER-INDEX-V1","dispatch_state":"execution_authorized","execution_authorized":true,"single_current_action":"single_controller_exact_directory_chain_path_owner_index","activation_parent":"ada8a6f3ce9806879e27031f4b2386f16182e424","activation_subject":"chore(plan): activate b2 c1 path owner index","activation_changed_paths":[".agent-work/PLAN.md"],"activation_additional_paths":0,"activation_commit_count":1,"evidence_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c1-path-owner-27aacbf-20260730T1547Z","controller_invocations":1,"evidence_root_creations":1,"directory_lstat":3,"directory_scandir":3,"artifact_content_open":0,"artifact_content_read":0,"artifact_content_hash":0,"artifact_content_parse":0,"path_owner_index_writes":1,"index_seal_writes":1,"terminal_writes":1,"terminal_seal_writes":1,"retry":0,"fallback":0,"canonical_validator_calls":0,"audit_calls":0,"manifest_seal_calls":0,"er_appends":1,"planner_stop":"B2_C1_PATH_OWNER_INDEX_WAITING_PLANNER_REVIEW"}`
 
 ## 1. Frozen review inputs and disposition
 
@@ -38,13 +38,17 @@
 
 ## 2. Dispatch and fresh evidence owner
 
-1. Executer 开始时只读取一次 symbolic `git rev-parse HEAD` 并绑定 full SHA。工作区必须 staged/unstaged/untracked 均为 `0`；否则在 evidence root 创建前停止并向 Planner 报告，不得自行提交、清理或修改任何用户/Orchestrator work。
-2. Active PLAN 必须是本 contract，且 `git show HEAD:.agent-work/PLAN.md` 与 working bytes 一致。Executer不得手工冻结或猜测 activation child SHA；programmatic dispatch HEAD 是唯一 dispatch owner。
-3. Exact brand-new evidence root：
+1. 本次 PLAN-only activation 的 direct parent 必须 exact
+   `ada8a6f3ce9806879e27031f4b2386f16182e424`，subject exact
+   `chore(plan): activate b2 c1 path owner index`，changed paths exact
+   `.agent-work/PLAN.md`，additional paths `0`，activation commit count `1`。
+2. Executer 开始时只读取一次 symbolic `git rev-parse HEAD` 并绑定 full SHA；该 programmatic HEAD 必须是上述 parent 的 direct child，并由 Git object 独立验证 subject/path topology exact。工作区必须 staged/unstaged/untracked 均为 `0`；否则在 evidence root 创建前停止并向 Planner 报告，不得自行提交、清理或修改任何用户/Orchestrator work。
+3. Active PLAN 必须是本 contract，且 `git show HEAD:.agent-work/PLAN.md` 与 working bytes 一致。Executer不得手工冻结或猜测 activation child SHA；programmatic dispatch HEAD 是唯一 dispatch owner。
+4. Exact brand-new evidence root：
    `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c1-path-owner-27aacbf-20260730T1547Z`。
    Controller invocation 前必须 absent；只允许 controller 以一次 `os.mkdir(mode=0700)` 创建。禁止预创建、复用、删除、repair、rename、second root 或 timestamp fallback。
-4. 只允许一个本地 Python controller process/invocation。禁止第二 Python/shell controller、inline probe、preflight path listing、manual path test、retry 或 fallback。Executer可在 dispatch 后构造并一次启动 inline controller；不得把 controller source 写入 repository 或创建 Git commit。
-5. Repository 唯一允许的执行后变更是 terminal seal durable 后向 `.agent-work/EXECUTION_RESULT.md` append exactly once。Executer不得编辑 PLAN、FULL、archive、GUIDE、source、test、config、docs、skill 或 wrapper；repository implementation edit/commit=`0/0`。
+5. 只允许一个本地 Python controller process/invocation。禁止第二 Python/shell controller、inline probe、preflight path listing、manual path test、retry 或 fallback。Executer可在 dispatch 后构造并一次启动 inline controller；不得把 controller source 写入 repository 或创建 Git commit。
+6. Repository 唯一允许的执行后变更是 terminal seal durable 后向 `.agent-work/EXECUTION_RESULT.md` append exactly once。Executer不得编辑 PLAN、FULL、archive、GUIDE、source、test、config、docs、skill 或 wrapper；repository implementation edit/commit=`0/0`。
 
 ## 3. Exact retained path-owner chain
 
