@@ -18,7 +18,7 @@
 
 **当前 active task：** `REF-P7-25-R2-B2-C4 AST/span successor qualification`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":0,"active_task":"REF-P7-25-R2-B2-C4","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-AST-SPAN-SUCCESSOR-QUALIFICATION-V2","next_reference_task":"REF-P7-25-R2-B2","next_reference_status":"BLOCKED_ON_C4_ACCEPTANCE","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"B2_C4_V1_REJECTED_PRE_ROOT_ZSH_STATUS_V2_WAITING_REACTIVATION","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"1e17df7041106bf28df3ce83e571c8d18c03440dc277a1e8c911c33fcbf076df","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":0,"active_task":"REF-P7-25-R2-B2-C4","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-AST-SPAN-SUCCESSOR-QUALIFICATION-V3","next_reference_task":"REF-P7-25-R2-B2","next_reference_status":"BLOCKED_ON_C4_ACCEPTANCE","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"B2_C4_V2_REJECTED_PRE_HEAD_GLOB_SELFCHECK_V3_WAITING_REACTIVATION","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"59af9b2715afd8804a99ec63e6404652a34bee377a05ce286f413447d3a30dde","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -282,7 +282,7 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-B2-C1` | `ACCEPTED_COMPLETE` | 只验证exact retained directory chain及artifact name/type/path | B2 wrong frozen path failure | Planner/Executer |
 | `REF-P7-25-R2-B2-C2` | `REJECTED_TRANSFORM_ANCHOR_UNPROVEN_FAILURE_LIFECYCLE_ACCEPTED` | content-free exact resolved-record owner与progressive failure terminal lifecycle | corrected B2 controller failure | Planner/Executer |
 | `REF-P7-25-R2-B2-C3` | `ACCEPTED_EXACT_SOURCE_STRUCTURE_INDEX_ONLY` | immutable AST/source-structure index与12-case selector matrix | C2 transform anchor failure | Planner/Executer |
-| `REF-P7-25-R2-B2-C4` | `ACTIVE_WAITING_SHELL_SAFE_REACTIVATION` | AST/span-selected successor与shared lifecycle 12-case qualification | C3 accepted；V1 pre-root dispatch rejected | Planner/Executer |
+| `REF-P7-25-R2-B2-C4` | `ACTIVE_WAITING_DETERMINISTIC_REACTIVATION` | AST/span-selected successor与shared lifecycle 12-case qualification | C3 accepted；V1/V2 pre-root rejected | Planner/Executer |
 | `REF-P7-25-R2-B3` | `BLOCKED` | Manifest自校验后执行postcommit focused、durable full、synthetic terminal/replay | `REF-P7-25-R2-B2` accepted | Planner/Executer |
 | `REF-P7-25-R2-B4` | `BLOCKED` | 对原retained R3三件套做首次真实audit并由canonical validator唯一判定eligibility | `REF-P7-25-R2-B3` accepted | Planner/Executer |
 | `REF-P7-25-R2-B5` | `BLOCKED` | 独立验收validated-unconsumed状态、manifest与rollback provenance | `REF-P7-25-R2-B4` pass | Planner/Orchestrator |
@@ -3012,7 +3012,7 @@ physical terminal/seal由seal返回事实独立证明。C3只冻结结构证据�
 
 ### REF-P7-25-R2-B2-C4：AST/span successor transform qualification
 
-**状态：** `ACTIVE_WAITING_SHELL_SAFE_REACTIVATION`。V1 pre-root failure Planner archive：
+**状态：** `ACTIVE_WAITING_DETERMINISTIC_REACTIVATION`。V1 pre-root failure Planner archive：
 `.agent-work/PLANS/20260730-1104-p7-retained-r3-option-b-b2-c4-pre-root-dispatch-failure-review.md`，bytes `4552`，SHA-256
 `05e8ec155c487a01ccd3ce5ace8a690005ba678500cfa4450870af99f9393463`。
 
@@ -3026,6 +3026,13 @@ V1唯一symbolic HEAD read后，zsh脚本向只读特殊参数`status`赋值而p
 builder/root/C3/source/successor/ER全部0。原future root虽报告未创建也永久supersede且不得probe/reuse。V2保持同一C4语义但使用
 brand-new root，并冻结单一`zsh -f` dispatch owner：HEAD read前对同一capture/validation/output helper做6/6 content-free self-check，
 禁止`status`及其他zsh特殊参数名；唯一HEAD值须由普通`dispatch_head_value`变量一次捕获、验证、输出并原值传给builder。
+
+V2又在pre-HEAD self-check case1失败：`[a-z_][a-z0-9_]#`依赖未启用的zsh pattern option，self-check0/6，HEAD/root/builder/
+C3/source/ER仍全0。Planner archive
+`.agent-work/PLANS/20260730-1119-p7-retained-r3-option-b-b2-c4-v2-wrapper-selfcheck-failure-review.md`，bytes `5224`，SHA-256
+`8ba3187e08f3af280f2c49d615683704c24eb77de2ae000debbcf40a33998c25`。V3继续使用single`zsh -f`，但只静态声明
+`dispatch_head_value`；HEAD前由Python纯内存bytewise validator完成8/8，禁止shell glob option、动态变量名与`eval`，并使用第三个
+brand-new root。V1/V2 roots永久superseded/unprobed。
 
 > 以下旧two-path执行细节已由Human engineering-governance override与B1A exact-five contract supersede，不得作为未来
 > PLAN输入；B1A-C2/后续Planner验收冻结的five-path child与manifest facts才是B2的新工程基线。本段保留仅作旧合同历史。
@@ -3646,7 +3653,7 @@ Option A owner prerequisite = accepted complete
 Advisor lineage owner decision = Option B subordinate exact provenance manifest
 Human engineering governance override = Orchestrator owns files/code/provenance/execution/Git
 helper v1 disposition = retained_release_audit_prerequisite_v1_superseded_before_real_validation
-repair v2 status = B2-C4 V1 pre-root zsh status failure; V2 waiting shell-safe reactivation
+repair v2 status = B2-C4 V2 pre-HEAD glob self-check failure; V3 waiting deterministic reactivation
 accepted B1 result = ACCEPTED_BLOCKED_CONTRACT_CONFLICT
 accepted B1A result = HARD_FAILURE_PRE_ACQUISITION_LIFECYCLE; implementation progress 0
 accepted B1A-C1 result = HARD_FAILURE_BEFORE_TEST_EXEC; candidate carry-forward only
@@ -3718,8 +3725,9 @@ rejected corrected B2 result = C1_RESOLVED_PATH_STRUCTURE_AND_FAILURE_LIFECYCLE_
 rejected B2-C2 result = SOURCE_TRANSFORM_ANCHOR_UNPROVEN; progressive failure lifecycle accepted; matrices0
 accepted B2-C3 result = ACCEPTED_EXACT_SOURCE_STRUCTURE_INDEX_ONLY; selector12/12; candidates unambiguous
 rejected B2-C4 V1 result = PRE_ROOT_DISPATCH_WRAPPER_FAILURE; HEAD read1; builder/root/source0
+rejected B2-C4 V2 result = PRE_HEAD_WRAPPER_SELFCHECK_FAILURE; selfcheck0/6; HEAD/root/builder0
 active task = REF-P7-25-R2-B2-C4 AST/span successor qualification
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-AST-SPAN-SUCCESSOR-QUALIFICATION-V2
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-AST-SPAN-SUCCESSOR-QUALIFICATION-V3
 active executable task count = 0
 next reference task = REF-P7-25-R2-B2 BLOCKED_ON_C4_ACCEPTANCE
 selected state C shutter = 1/2500

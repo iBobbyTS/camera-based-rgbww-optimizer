@@ -1,46 +1,47 @@
-# REF-P7-25-R2-B2-C4：AST/span successor transform qualification dispatch correction
+# REF-P7-25-R2-B2-C4：deterministic pre-HEAD dispatch correction
 
-**计划状态：** `EXECUTION_AUTHORIZED`
+**计划状态：** `PLANNER_COMPLETE_WAITING_ORCHESTRATOR_REVIEW`
 
 **Planner 日期：** `2026-07-30`
 
 **Reference task：** `REF-P7-25-R2-B2-C4`
 
-**Contract ID：**
-`P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-AST-SPAN-SUCCESSOR-QUALIFICATION-V2`
-
 **预计时长：** `4–9 分钟`；纯离线，不属于预计超过10分钟的长任务。
 
-**当前唯一动作：** Executer 以冻结的 shell-safe `zsh -f` dispatch wrapper
-运行原 C4 science-free package 的一次新 external builder。builder 仍只消费
-accepted C3 structure index、重新读取 frozen rejected controller 一次、使用
-已证明的 AST selector 与物理 span 做一个最小 successor transform，并仅在
-content-free synthetic inputs 上证明 successor 的真实 `main` post-root 路径
-和 fixtures 调用同一个 lifecycle owner。
+**Contract ID：**
+`P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-AST-SPAN-SUCCESSOR-QUALIFICATION-V3`
+
+**当前唯一动作：** Orchestrator review 并提交本 V2 rejection、review
+archive 与 C4 V3 candidate PLAN；随后 Planner 只能通过一个 exact
+PLAN-only direct-child commit 填入 activation parent 并设置
+`execution_authorized=true`。V3 仍是原 C4 science-free package，但 pre-HEAD
+wrapper 使用固定 ordinary variable 与 Python 纯内存 bytewise validator，
+不依赖任何 zsh pattern option。
 
 **Planner stop：**
-`B2_C4_AST_SPAN_SUCCESSOR_WAITING_PLANNER_REVIEW`。
+`B2_C4_V2_SELFCHECK_FAILURE_REVIEWED_WAITING_PLAN_ONLY_ACTIVATION`。
 
-本文件当前 `execution_authorized=true`，仅放行本计划冻结的单次 shell-safe
-dispatch、builder、C3/source 有界读取、future root 创建、successor 生成和
-content-free qualification。real B2、retained-R3 access、validator、release、
-device 或 scientific operation 仍未放行。
+本文件当前 `execution_authorized=false`，Executer 不得运行 wrapper、
+HEAD read、builder、root、C3/source 读取、successor 生成或任何后续阶段。
+real B2、retained-R3 access、validator、release、device 或 scientific operation
+仍未放行。
 
 **Reviewed archive：**
-`.agent-work/PLANS/20260730-1104-p7-retained-r3-option-b-b2-c4-pre-root-dispatch-failure-review.md`，bytes `4552`，SHA-256 `05e8ec155c487a01ccd3ce5ace8a690005ba678500cfa4450870af99f9393463`。
+`.agent-work/PLANS/20260730-1119-p7-retained-r3-option-b-b2-c4-v2-wrapper-selfcheck-failure-review.md`，bytes `5224`，SHA-256 `8ba3187e08f3af280f2c49d615683704c24eb77de2ae000debbcf40a33998c25`。
 
-`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_c4_ast_span_successor_plan_v2","reference_task_id":"REF-P7-25-R2-B2-C4","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-AST-SPAN-SUCCESSOR-QUALIFICATION-V2","dispatch_state":"execution_authorized","execution_authorized":true,"single_current_action":"single_shell_safe_dispatch_for_same_c4","activation_parent":"a95a0bf61c13b98a465104b857569df49d51633a","activation_subject":"chore(plan): reactivate b2 c4 shell safe dispatch","activation_changed_paths":[".agent-work/PLAN.md"],"activation_additional_paths":0,"activation_commit_count":1,"programmatic_dispatch_head_reads":1,"second_dispatch_head_reads":0,"dispatch_plan_sha256_owner":"sha256_of_exact_plan_blob_at_programmatic_dispatch_head","hand_transcribed_child_sha":false,"review_archive":{"path":".agent-work/PLANS/20260730-1104-p7-retained-r3-option-b-b2-c4-pre-root-dispatch-failure-review.md","bytes":4552,"sha256":"05e8ec155c487a01ccd3ce5ace8a690005ba678500cfa4450870af99f9393463"},"superseded_unused_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-ast-span-successor-da90556-20260730T1700Z","c3_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c3-source-structure-da90556-20260730T1645Z","c3_input_reads_each":1,"source":{"path":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-b2-corrected-controller-cb38ac5.py","bytes":29841,"sha256":"da9055626eac266f0eb983e713f246b18bdf26f7443a30d2a6f2ddb503cf3ba4","new_read_budget":1},"future_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-ast-span-successor-da90556-r2-20260730T1710Z","dispatch_wrapper_self_checks":"6/6","builder_invocations":1,"successor_generation":1,"successor_real_b2_invocations":0,"content_free_shared_lifecycle_matrix":"12/12","c1_c2_retained_decision_reads":0,"canonical_validator_calls":0,"eligibility_emissions":0,"release_operations":0,"retry":0,"fallback":0,"planner_stop":"B2_C4_AST_SPAN_SUCCESSOR_WAITING_PLANNER_REVIEW"}`
+`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_c4_ast_span_successor_plan_v3","reference_task_id":"REF-P7-25-R2-B2-C4","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-AST-SPAN-SUCCESSOR-QUALIFICATION-V3","dispatch_state":"waiting_orchestrator_review_then_plan_only_activation","execution_authorized":false,"single_current_action":"orchestrator_review_then_exact_plan_only_activation_of_c4_v3","activation_parent":null,"activation_parent_freeze_pending":true,"activation_subject":"chore(plan): reactivate b2 c4 deterministic dispatch","activation_changed_paths":[".agent-work/PLAN.md"],"activation_additional_paths":0,"activation_commit_count":1,"programmatic_dispatch_head_reads":1,"second_dispatch_head_reads":0,"dispatch_plan_sha256_owner":"sha256_of_exact_plan_blob_at_programmatic_dispatch_head","hand_transcribed_child_sha":false,"review_archive":{"path":".agent-work/PLANS/20260730-1119-p7-retained-r3-option-b-b2-c4-v2-wrapper-selfcheck-failure-review.md","bytes":5224,"sha256":"8ba3187e08f3af280f2c49d615683704c24eb77de2ae000debbcf40a33998c25"},"superseded_unused_roots":["/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-ast-span-successor-da90556-20260730T1700Z","/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-ast-span-successor-da90556-r2-20260730T1710Z"],"c3_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c3-source-structure-da90556-20260730T1645Z","c3_input_reads_each":1,"source":{"path":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-b2-corrected-controller-cb38ac5.py","bytes":29841,"sha256":"da9055626eac266f0eb983e713f246b18bdf26f7443a30d2a6f2ddb503cf3ba4","new_read_budget":1},"future_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-ast-span-successor-da90556-r3-20260730T1730Z","dispatch_wrapper_self_checks":"8/8","shell_pattern_option_dependencies":0,"dynamic_shell_variable_names":0,"builder_invocations":1,"successor_generation":1,"successor_real_b2_invocations":0,"content_free_shared_lifecycle_matrix":"12/12","c1_c2_retained_decision_reads":0,"canonical_validator_calls":0,"eligibility_emissions":0,"release_operations":0,"retry":0,"fallback":0,"planner_stop":"B2_C4_V2_SELFCHECK_FAILURE_REVIEWED_WAITING_PLAN_ONLY_ACTIVATION"}`
 
 ## 1. Planner decision and authority boundary
 
-1. The first C4 dispatch is rejected as
-   `REJECTED_PRE_ROOT_DISPATCH_WRAPPER_FAILURE`. Its sole symbolic HEAD read
-   completed, but zsh rejected assignment to its read-only special parameter
-   `status` before the captured value was emitted. Builder/root/C3/source/
-   successor/ER counts are all zero, so it proves no C4 acceptance condition.
-2. A standalone C4-C1 qualification is not required. The failure is isolated
-   to the pre-root shell wrapper and can be corrected by one PLAN-only
-   reactivation with a frozen shell-safe self-check/capture/output contract.
+1. C4 V2 is rejected as `REJECTED_PRE_HEAD_WRAPPER_SELFCHECK_FAILURE`.
+   Its only `zsh -f` invocation exited `42` in self-check case one because
+   `[a-z_][a-z0-9_]#` depended on shell pattern-option semantics that were not
+   enabled. Self-check was `0/6`; HEAD read/emission, builder/root/C3/source/
+   successor/terminal/ER counts are all zero.
+2. A standalone C4 corrective stage is not required. The failure is isolated
+   to the pre-HEAD wrapper and can be corrected as C4 V3 by one later PLAN-only
+   activation with a fixed ordinary variable and a Python pure-memory bytewise
+   validator. V3 may not depend on any shell pattern option.
 3. C3 is accepted only as
    `ACCEPTED_EXACT_SOURCE_STRUCTURE_INDEX_ONLY`. Its archive and physical
    evidence prove the frozen source has one unambiguous top-level `main`, one
@@ -58,28 +59,33 @@ device 或 scientific operation 仍未放行。
    remain read-only. Executer may append only the final handoff to ER after the
    terminal seal.
 
-## 2. Activation and immutable root
+## 2. Pending activation and immutable root
 
-1. This direct-child activation changes only `.agent-work/PLAN.md` from exact
-   parent `a95a0bf61c13b98a465104b857569df49d51633a`, with exact subject
-   `chore(plan): reactivate b2 c4 shell safe dispatch`. The child SHA is not
+1. This candidate is non-executable. After Orchestrator review/commit, one
+   direct-child activation may change only `.agent-work/PLAN.md`, must freeze
+   that exact parent, and must use exact subject
+   `chore(plan): reactivate b2 c4 deterministic dispatch`. The child SHA is not
    hand-transcribed into its own PLAN blob: the corrected wrapper captures the
    programmatic dispatch HEAD once and owns the exact PLAN-blob SHA-256 at that
    HEAD, avoiding circular self-identity while proving the direct-child
    topology, sole changed path, `execution_authorized=true`, and final review
-   stop.
+   stop `B2_C4_AST_SPAN_SUCCESSOR_WAITING_PLANNER_REVIEW`.
 2. Activation freezes only the actual parent, programmatically owned child and
    PLAN blob identity, dispatch state, and final review stop. It does not widen
    inputs, budgets, transforms, matrices, roots, locks, or successor authority.
-3. The corrected dispatch must be one `zsh -f` owner. Before any symbolic HEAD
-   read, it runs an exact `6/6` content-free self-check through the same
-   capture-validation-output helper: safe local-variable assignment, rejection
-   of `status`, rejection of another declared zsh special/read-only name,
-   acceptance of one lowercase 40-hex value, rejection of malformed/cardinality
-   values, and exactly-one output event. Self-check output remains in memory and
-   cannot invoke Git, the builder, root creation, C3, or source access.
+3. The corrected dispatch must be one `zsh -f` owner. It contains one
+   statically written ordinary variable named exactly `dispatch_head_value`.
+   No external, generated, or dynamically expanded variable name may reach
+   `typeset`, assignment, indirection, or `eval`. Before any symbolic HEAD read,
+   an embedded Python pure-memory validator must pass an exact `8/8` matrix
+   through the same byte-validation/accounting path: accept the exact allowed
+   name; reject `safe_local_value`; reject `status`; reject `pipestatus`; accept
+   one lowercase 40-hex line; reject uppercase/malformed length; reject zero or
+   multiple lines; and prove exactly one output event. It may inspect only
+   injected bytes and in-memory counters and may not access filesystem, Git,
+   builder, root, C3, source, network, or devices.
 4. Exact future root:
-   `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-ast-span-successor-da90556-r2-20260730T1710Z`.
+   `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-ast-span-successor-da90556-r3-20260730T1730Z`.
    It must be absent immediately before one builder creates it mode `0700`.
    No precreation, alternate root, reuse, repair, delete, rename, retry,
    fallback, second builder, or second successor is allowed.
@@ -88,18 +94,18 @@ device 或 scientific operation 仍未放行。
    invocation, and may not read or reuse the rejected C2/C3 builders as source.
 6. After the self-check passes, the same wrapper executes exactly one
    `git rev-parse HEAD`, captures its stdout into the ordinary local variable
-   `dispatch_head_value`, validates exactly one lowercase 40-hex line, binds it
-   to the activated direct-child topology and exact PLAN blob, emits that value
-   exactly once, and passes the same in-memory value to the sole builder. It may
-   not assign to `status`, `pipestatus`, `argv`, `path`, `fpath`, `commands`, or
-   any zsh special/read-only parameter. It may not perform a second HEAD read,
-   transcribe/reconstruct the value, retry the wrapper, use fallback capture,
-   or launch an alternate dispatch.
-7. The superseded root
-   `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-ast-span-successor-da90556-20260730T1700Z`
-   is accepted only as reported unused (`root creates=0`). It must remain
-   unprobed, uncreated, unreused, undeleted and unrenamed; it is not evidence or
-   an available fallback namespace.
+   `dispatch_head_value`, sends its bytes through the same Python validator,
+   binds the returned exact value to activated direct-child topology and exact
+   PLAN blob, emits that value exactly once, and passes the same in-memory value
+   to the sole builder. It may not use `setopt`, `extendedglob`, `kshglob`,
+   `bareglobqual`, `shglob`, any shell glob operator for validation, dynamic
+   variable assignment, `eval`, or any zsh special/read-only parameter. It may
+   not perform a second HEAD read, transcribe/reconstruct the value, retry the
+   wrapper, use fallback capture, or launch an alternate dispatch.
+7. Both V1 and V2 roots listed in `superseded_unused_roots` are accepted only as
+   reported unused (`root creates=0`). They must remain unprobed, uncreated,
+   unreused, undeleted and unrenamed; neither is evidence or a fallback
+   namespace.
 
 ## 3. Exact accepted C3 inputs
 
