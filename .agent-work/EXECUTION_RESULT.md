@@ -16308,3 +16308,16 @@ C13_IMPLEMENTATION_RESULT {"schema":"c13_implementation_result_v1","timestamp":"
 - Repo implementation edits/staged paths/implementation commits: 0/0/0. C12 supersession only references authoritative C13 append; C14 new supersession append 0.
 - All candidate/R3/validator/eligibility/release/network/env/device/camera/Ray/strip/cleanup/formal/analyzer/TD-C/sentinel/P8 calls 0. Retained R3 remains RETAINED_UNVALIDATED_UNCONSUMED.
 - Planner decision request: validate C14 topology and one-shot evidence; do not infer eligibility or unlock retained-R3 consumption.
+
+## F19 C15 EQ-R6 metadata boundary — Executer hard failure before validation
+
+- Planner stop: `F19_CORRECTIVE_15_TERMINAL_WAITING_PLANNER`
+- Status: `hard_failure_prevalidation_evidence_order`
+- Dispatch HEAD: `431d9d8dd58a6c0df7fb0b225ce206d2e8c57f53` (programmatic single read; second read `0`)
+- Implementation commit: `3a14fe0bd663250dd48c65e71f1a6550df89267f`; exact source+test paths; parent/subject/path topology passed.
+- Failure: edits occurred before the brand-new C15 root and before-identities were frozen. Parent identities were reconstructed only for audit and are explicitly not claimed as pre-edit frozen evidence.
+- Validation calls: compileall/targeted/focused/full/CodeGraph/diff all `0`; retry/fallback `0/0`.
+- Locked operations: retained R3/canonical validator/eligibility/release/network/`.env`/device/camera/Ray/strip/cleanup/formal/public analyzer/TD-C/sentinel/P8 all `0`.
+- Retained R3: `RETAINED_UNVALIDATED_UNCONSUMED`.
+- Terminal: `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b1a-c3e6f19-corrective-15-offline/20260730T143516Z/terminal-evidence.json`; bytes `3693`; SHA-256 `507747e10989e4acd57274a013d512c21015a7bd05607deba17a3a61716a406e`.
+- Decision request: Planner must reject this execution evidence and decide a bounded successor that can validate the already-created exact implementation commit without representing reconstructed identities as pre-edit freezes.

@@ -16,9 +16,9 @@
 
 **当前可执行任务数：** `1`
 
-**当前 active task：** `REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-15 EQ-R6 non-evidence macOS metadata boundary`
+**当前 active task：** `REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-16 retained metadata-boundary validation-only successor`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-15","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-15-EQ-R6-METADATA-BOUNDARY","next_reference_task":"REF-P7-25-R2-B2","next_reference_status":"BLOCKED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"B1A_C3E6F19_CORRECTIVE_14_REJECTED_EQ_R6_METADATA_DRIFT_C15_WAITING_ACTIVATION","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"49b5585d2cc48468cbff1af91dc9da48d4b7ec9fa5708494d6bc1287f524f2a6","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-16","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-16-RETAINED-METADATA-BOUNDARY-VALIDATION","next_reference_task":"REF-P7-25-R2-B2","next_reference_status":"BLOCKED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"B1A_C3E6F19_CORRECTIVE_15_REJECTED_PREVALIDATION_EVIDENCE_ORDER_C16_WAITING_ORCHESTRATOR","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"40446c7d535c1323a35d641f9dbc6cbfa38f5bed57537940a98a2c257151f324","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -2848,15 +2848,29 @@ accepted EQ-R6 root顶层新增6148-byte regular `.DS_Store`，令整树manifest
 
 ### REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-15：EQ-R6 non-evidence macOS metadata boundary
 
-**状态：** `ACTIVE_WAITING_PLAN_ONLY_ACTIVATION_FREEZE`。
+**状态：** `REJECTED_PREVALIDATION_EVIDENCE_ORDER`。Planner archive：
+`.agent-work/PLANS/20260730-0837-p7-retained-r3-option-b-b1a-c3e6f19-corrective-15-review.md`，bytes `5301`，SHA-256
+`f1a5f7300248aa74176c363f0d128bfb2214890572a16019b3d4e2ca5464afd3`。
 
 仅允许在既有`build_planner_eq_family_manifest`owner与`tests/test_p7_td_b_r6_contract.py`dedicated tests内纠偏：先按现有
 `lstat`安全分类，只将root-relative exact `.DS_Store`的regular file排除于rows/counters/payload；root symlink/directory/unsupported
 type、嵌套`subdir/.DS_Store`、`._*`及任何其他未知路径继续fail closed或进入manifest造成drift。禁止generic basename/glob allowlist，
 禁止读取或绑定该metadata payload，禁止修改accepted root、frozen 47-entry SHA、四个artifact hashes、qualification checkpoint或canonical
-eligibility owner。Meaningful tests必须证明root regular metadata不影响manifest、unsafe/nested同名不被隐藏、真实accepted root恢复原digest且
+eligibility owner。C15实现commit `3a14fe0bd663250dd48c65e71f1a6550df89267f` 的exact source+test topology通过，但修改/commit先于
+brand-new root和before identities创建，故未运行任何validation；terminal SHA-256
+`507747e10989e4acd57274a013d512c21015a7bd05607deba17a3a61716a406e`，retry/fallback与所有locks均为0。不得将事后重建
+identity冒充预冻结证据。Meaningful tests必须证明root regular metadata不影响manifest、unsafe/nested同名不被隐藏、真实accepted root恢复原digest且
 artifact-drift负例重新到达准确错误。Brand-new C15 root按exact one implementation commit执行compileall、6 targeted、focused、full、
 CodeGraph与diff one-shot链，retry/fallback0。所有retained-R3、release、network/device/scientific route保持锁定；成功也只回Planner验收门。
+
+### REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-16：retained metadata-boundary validation-only successor
+
+**状态：** `ACTIVE_PLANNER_REVIEWED_WAITING_ORCHESTRATOR`。
+
+保留`3a14fe0bd663250dd48c65e71f1a6550df89267f`，不重做实现、不新增source/test/config commit。新C16 root必须先从
+activation parent `431d9d8dd58a6c0df7fb0b225ce206d2e8c57f53`与实现commit的精确Git objects派生before/after identities，再验证
+exact parent、subject与two-path topology，之后才可运行C15规定的6 targeted、focused、full、CodeGraph与diff one-shot链。
+validation-only成功也只表示实现可验收，不授权retained-R3、canonical eligibility、release或任何设备/科学阶段。
 
 ### REF-P7-25-R2-B2：唯一repair commit与immutable manifest seal
 
@@ -3483,7 +3497,7 @@ Option A owner prerequisite = accepted complete
 Advisor lineage owner decision = Option B subordinate exact provenance manifest
 Human engineering governance override = Orchestrator owns files/code/provenance/execution/Git
 helper v1 disposition = retained_release_audit_prerequisite_v1_superseded_before_real_validation
-repair v2 status = B1A-C3E6F19-CORRECTIVE-14 rejected EQ-R6 metadata drift; corrective-15 waiting activation
+repair v2 status = B1A-C3E6F19-CORRECTIVE-15 rejected prevalidation evidence order; corrective-16 waiting Orchestrator
 accepted B1 result = ACCEPTED_BLOCKED_CONTRACT_CONFLICT
 accepted B1A result = HARD_FAILURE_PRE_ACQUISITION_LIFECYCLE; implementation progress 0
 accepted B1A-C1 result = HARD_FAILURE_BEFORE_TEST_EXEC; candidate carry-forward only
@@ -3546,8 +3560,9 @@ accepted B1A-C3E6F19-CORRECTIVE-11 result = TARGETED_AMBIENT_FULL_SET_EXPECTATIO
 accepted B1A-C3E6F19-CORRECTIVE-12 result = POSTCOMMIT_EXPECTED_CHILD_SHA_TRANSCRIPTION_ONLY; test commit exact; validation0
 accepted B1A-C3E6F19-CORRECTIVE-13 result = SOURCE_TOPOLOGY_CONTRACT_MISMATCH; programmatic HEAD pass; validation0
 accepted B1A-C3E6F19-CORRECTIVE-14 result = FULL_SUITE_EQ_R6_MANIFEST_METADATA_DRIFT; targeted13/13; focused125/125; full687 failures2
-active task = REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-15 EQ-R6 non-evidence macOS metadata boundary
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-15-EQ-R6-METADATA-BOUNDARY
+accepted B1A-C3E6F19-CORRECTIVE-15 result = PREVALIDATION_EVIDENCE_ORDER; implementation3a14fe0 retained; validation0
+active task = REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-16 retained metadata-boundary validation-only successor
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-16-RETAINED-METADATA-BOUNDARY-VALIDATION
 active executable task count = 1
 next reference task = REF-P7-25-R2-B2 BLOCKED
 selected state C shutter = 1/2500
@@ -3576,7 +3591,8 @@ JavaScript SyntaxError 未启动 Python；C4 随后仅 8/12，C5 又因正文 ma
 后继另包才可冻结新controller并建立 fresh bootstrap container；不得重跑F14、提前修改production或输出eligibility。retained R3继续为
 `REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-14`已证明retained topology、targeted与focused均通过，但full被accepted EQ-R6 root
 顶层非证据`.DS_Store`污染整树manifest而拒绝；`REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-15`仅在既有manifest owner内加入
-root-relative exact regular `.DS_Store`边界并用dedicated tests锁定，随后在brand-new root运行one-shot完整链；
+root-relative exact regular `.DS_Store`边界并用dedicated tests锁定；C15实现已形成但因prevalidation evidence order拒收，
+`REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-16`只验证该既有实现，先从Git objects派生before/after identities再在brand-new root运行one-shot完整链；
 canonical validator call、eligibility emission、retained R3/release/device访问仍为0；
 retained R3 仍为 `RETAINED_UNVALIDATED_UNCONSUMED`。
 
