@@ -127,8 +127,22 @@ class _ValidatedSealGate:
     ) -> None:
         if token is not _GATE_TOKEN:
             raise ControllerPreparationError("seal_gate_is_internal")
-        object.__setattr__(self, "payload", MappingProxyType(dict(payload)))
+        object.__setattr__(self, "payload", _freeze_json(payload))
         object.__setattr__(self, "target", target)
+
+
+def _freeze_json(value: object) -> object:
+    """Return an immutable, detached snapshot of a strict-JSON value."""
+
+    if type(value) is dict:
+        return MappingProxyType(
+            {key: _freeze_json(item) for key, item in value.items()}
+        )
+    if type(value) is list:
+        return tuple(_freeze_json(item) for item in value)
+    if type(value) in (str, int, float, bool) or value is None:
+        return value
+    raise ControllerPreparationError("terminal_not_json")
 
 
 def _parent_edges(tree: ast.AST) -> dict[ast.AST, ParentEdge]:
@@ -147,14 +161,19 @@ def _parent_edges(tree: ast.AST) -> dict[ast.AST, ParentEdge]:
 def _regular_function_owner(
     node: ast.AST, edges: Mapping[ast.AST, ParentEdge]
 ) -> ast.FunctionDef:
+    owners: list[ast.FunctionDef] = []
     current = node
     while current in edges:
         current = edges[current].parent
         if isinstance(current, ast.FunctionDef):
-            return current
-        if isinstance(current, (ast.AsyncFunctionDef, ast.Lambda)):
+            owners.append(current)
+        elif isinstance(current, (ast.AsyncFunctionDef, ast.Lambda)):
             raise ControllerPreparationError("alternate_function_owner")
-    raise ControllerPreparationError("function_owner_not_found")
+    if not owners:
+        raise ControllerPreparationError("function_owner_not_found")
+    if len(owners) != 1:
+        raise ControllerPreparationError("function_owner_ambiguous")
+    return owners[0]
 
 
 def _assigned_name(node: ast.AST) -> str | None:
@@ -254,11 +273,15 @@ def replace_byte_spans(
 
     if type(source) is not bytes:
         raise ControllerPreparationError("source_not_bytes")
-    if not replacements:
+    try:
+        replacement_items = tuple(replacements)
+    except TypeError as exc:
+        raise ControllerPreparationError("invalid_replacement") from exc
+    if not replacement_items:
         raise ControllerPreparationError("replacement_set_empty")
-    ordered = sorted(replacements, key=lambda item: item.span.start)
-    if any(type(item) is not SourceReplacement for item in ordered):
+    if any(type(item) is not SourceReplacement for item in replacement_items):
         raise ControllerPreparationError("invalid_replacement")
+    ordered = sorted(replacement_items, key=lambda item: item.span.start)
     cursor = 0
     pieces: list[bytes] = []
     for item in ordered:
@@ -395,7 +418,16 @@ def validate_terminal_seal(
         raise ControllerPreparationError("invalid_expected_target")
     payload = _strict_terminal_payload(data)
     target = payload.get("target")
-    if type(target) is not dict or target != dict(expected_target.as_mapping()):
+    expected_mapping = dict(expected_target.as_mapping())
+    if (
+        type(target) is not dict
+        or set(target) != set(expected_mapping)
+        or any(
+            type(target[key]) is not type(expected_value)
+            or target[key] != expected_value
+            for key, expected_value in expected_mapping.items()
+        )
+    ):
         raise ControllerPreparationError("terminal_target_mismatch")
     return _ValidatedSealGate(_GATE_TOKEN, payload, expected_target)
 

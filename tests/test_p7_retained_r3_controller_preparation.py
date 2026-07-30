@@ -79,6 +79,22 @@ class ControllerPreparationTests(unittest.TestCase):
             subject._regular_function_owner(name, edges)
         self.assertEqual(raised.exception.code, "alternate_function_owner")
 
+    def test_regular_function_nested_in_regular_function_is_ambiguous(self):
+        value = b"""\
+def outer():
+    def inner():
+        if True:
+            payload = 1
+            require_payload(payload)
+"""
+        with self.assertRaises(subject.ControllerPreparationError) as raised:
+            subject.locate_owned_statement_pair(
+                value,
+                assignment_name="payload",
+                validation_function="require_payload",
+            )
+        self.assertEqual(raised.exception.code, "function_owner_ambiguous")
+
     def test_same_list_adjacency_is_required(self):
         invalid = (
             "    payload = 1\n    marker = 2\n    require_payload(payload)\n",
@@ -128,6 +144,22 @@ class ControllerPreparationTests(unittest.TestCase):
         for replacements in cases:
             with self.subTest(replacements=replacements), self.assertRaises(subject.ControllerPreparationError):
                 subject.replace_byte_spans(value, replacements)
+
+    def test_malformed_replacements_fail_with_stable_error_before_sorting(self):
+        malformed_sets = (
+            (object(),),
+            (None,),
+            (
+                subject.SourceReplacement(subject.ByteSpan(0, 1), b"x"),
+                {"span": subject.ByteSpan(2, 3), "replacement": b"y"},
+            ),
+            None,
+        )
+        for replacements in malformed_sets:
+            with self.subTest(replacements=replacements):
+                with self.assertRaises(subject.ControllerPreparationError) as raised:
+                    subject.replace_byte_spans(b"x = 1\n", replacements)
+                self.assertEqual(raised.exception.code, "invalid_replacement")
 
     def test_prepared_source_is_deterministic_parseable_and_compilable(self):
         value = source("    payload = {'old': 1}\n    require_payload(payload)\n")
@@ -208,6 +240,54 @@ class ControllerPreparationTests(unittest.TestCase):
         with self.assertRaises(subject.ControllerPreparationError):
             subject.validate_terminal_seal(subject.canonical_terminal_bytes(payload), target())
 
+    def test_target_schema_and_runtime_types_are_exact(self):
+        substitutions = {
+            "bytes_bool": ("bytes", True),
+            "bytes_float": ("bytes", 123.0),
+            "bytes_string": ("bytes", "123"),
+            "device_float": ("device", 7.0),
+            "inode_float": ("inode", 11.0),
+            "path_number": ("path", 1),
+            "sha_number": ("sha256", 1),
+        }
+        for name, (key, value) in substitutions.items():
+            payload = json.loads(terminal().decode())
+            payload["target"][key] = value
+            with self.subTest(name=name):
+                with self.assertRaises(subject.ControllerPreparationError) as raised:
+                    subject.validate_terminal_seal(
+                        subject.canonical_terminal_bytes(payload), target()
+                    )
+                self.assertEqual(raised.exception.code, "terminal_target_mismatch")
+
+        payload = json.loads(terminal().decode())
+        payload["target"]["extra"] = "not-allowed"
+        with self.assertRaises(subject.ControllerPreparationError) as raised:
+            subject.validate_terminal_seal(
+                subject.canonical_terminal_bytes(payload), target()
+            )
+        self.assertEqual(raised.exception.code, "terminal_target_mismatch")
+
+    def test_validated_gate_payload_is_recursively_immutable_and_detached(self):
+        payload = json.loads(terminal().decode())
+        payload["details"] = {"attempts": [{"name": "one"}], "counts": [1, 2]}
+        data = subject.canonical_terminal_bytes(payload)
+        identity = target()
+        gate = subject.validate_terminal_seal(data, identity)
+
+        payload["details"]["attempts"][0]["name"] = "caller-mutated"
+        self.assertEqual(gate.payload["details"]["attempts"][0]["name"], "one")
+        self.assertIsInstance(gate.payload["details"]["attempts"], tuple)
+        with self.assertRaises(TypeError):
+            gate.payload["status"] = "MUTATED"
+        with self.assertRaises(TypeError):
+            gate.payload["details"]["attempts"][0]["name"] = "MUTATED"
+        with self.assertRaises(AttributeError):
+            gate.payload["details"]["counts"].append(3)
+        with self.assertRaises(AttributeError):
+            gate.target.path = "other"
+        self.assertEqual(dict(gate.target.as_mapping()), dict(identity.as_mapping()))
+
     def test_success_and_failure_terminal_both_dominate_er_callback(self):
         calls = []
         for status in ("PASS", "FAIL"):
@@ -264,12 +344,12 @@ class ControllerPreparationTests(unittest.TestCase):
     def test_static_source_has_no_io_forbidden_imports_or_large_nested_program(self):
         source_text = Path(subject.__file__).read_text(encoding="utf-8")
         tree = ast.parse(source_text)
-        imported = {
-            alias.name.split(".")[0]
-            for node in ast.walk(tree)
-            if isinstance(node, (ast.Import, ast.ImportFrom))
-            for alias in node.names
-        }
+        imported = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                imported.update(alias.name.split(".")[0] for alias in node.names)
+            elif isinstance(node, ast.ImportFrom) and node.module is not None:
+                imported.add(node.module.split(".")[0])
         self.assertFalse(imported & {
             "os", "pathlib", "subprocess", "socket", "requests", "camera",
             "measurement", "release", "git",
