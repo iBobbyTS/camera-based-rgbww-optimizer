@@ -1,63 +1,83 @@
-# REF-P7-25-R2-B2-C4-P2：repo-owned controller integration qualification
+# REF-P7-25-R2-B2-C4-P2-C1：pretest scope gate correction
 
 **计划状态：** `EXECUTION_AUTHORIZED_AFTER_ORCHESTRATOR_ACTIVATION_COMMIT`
 
 **Planner 日期：** `2026-07-30`
 
-**Reference task：** `REF-P7-25-R2-B2-C4-P2`
+**Reference task：** `REF-P7-25-R2-B2-C4-P2-C1`
 
 **Contract ID：**
-`P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-P2-INTEGRATION-QUALIFICATION-V1`
+`P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-P2-C1-PRETEST-SCOPE-GATE-CORRECTION-V1`
 
-**当前唯一动作：** 新增一个专用、纯 synthetic 的 integration test owner，直接组合
-现有 exact-five callback lifecycle 与 accepted controller-preparation helper，证明
-source preparation、terminal seal、exact target validation 与 ER gate 可以在现有 owner
-边界内 fail closed；不得新增 production adapter、generated external controller、第二
-validator 或 eligibility owner。
+**当前唯一动作：** 保留现有未跟踪 integration test 的精确字节，使用一个可审计、
+NUL-safe 的 tracked-plus-untracked Git classification owner 修正 pretest singleton
+scope gate；gate 通过后从首次 targeted test 继续原 P2 尚未执行的 ordered gates。
+不得重新创建、编辑或提前 stage 该测试，不得重跑已通过的 preconditions。
 
 **唯一 Planner stop：**
-`B2_C4_P2_INTEGRATION_QUALIFICATION_COMPLETE_WAITING_PLANNER_REVIEW`。
+`B2_C4_P2_C1_INTEGRATION_QUALIFICATION_COMPLETE_WAITING_PLANNER_REVIEW`。
 
-**上一 gate archive：**
-`.agent-work/PLANS/20260730-1253-p7-retained-r3-option-b-b2-c4-p1-c1-orchestrator-gate-archive.md`
-（bytes 和 SHA-256 由本次 Planner 完成后冻结在本 PLAN 第 2 节；Orchestrator 激活前必须
-独立复算一致）。
+**本次 review archive：**
+`.agent-work/PLANS/20260730-1303-p7-retained-r3-option-b-b2-c4-p2-pretest-gate-failure-review.md`，
+bytes `6333`，SHA-256
+`a4f584e8de4a92e034424fd8d801a50ec32837f51e0530c499c8b9e453a41857`。
 
-`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_c4_p2_integration_qualification_v1","reference_task_id":"REF-P7-25-R2-B2-C4-P2","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-P2-INTEGRATION-QUALIFICATION-V1","execution_authorized":true,"dispatch_state":"ready_after_orchestrator_activation_commit","single_current_action":"add_one_pure_synthetic_existing_owner_integration_qualification_test","architecture_decision":"existing_exact_five_callbacks_directly_compose_accepted_preparation_helper_no_adapter","orchestrator_activation":{"expected_base":"3458b4b60c49328703a6e2bc95a62f33e13cdfe8","required_subject":"chore(plan): activate retained r3 integration qualification","implementation_parent":"full_activation_commit_sha_frozen_at_dispatch"},"accepted_preparation_commit":"4678a3e6f93704912952776bc11fa2b0945d80b1","exact_changed_paths":["tests/test_p7_retained_r3_controller_integration.py"],"implementation_commit_subject":"test(p7): qualify retained r3 controller composition","historical_c4_reads":0,"retained_r3_reads":0,"actual_canonical_validator_calls":0,"eligibility_emissions":0,"release_operations":0,"network_operations":0,"device_operations":0,"commit_budget":1,"retry_budget":0,"planner_stop":"B2_C4_P2_INTEGRATION_QUALIFICATION_COMPLETE_WAITING_PLANNER_REVIEW"}`
+`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_c4_p2_c1_pretest_scope_gate_correction_v1","reference_task_id":"REF-P7-25-R2-B2-C4-P2-C1","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-P2-C1-PRETEST-SCOPE-GATE-CORRECTION-V1","execution_authorized":true,"dispatch_state":"ready_after_orchestrator_activation_commit","single_current_action":"validate_preserved_untracked_singleton_then_resume_unrun_p2_gates","preserved_test":{"path":"tests/test_p7_retained_r3_controller_integration.py","bytes":13147,"sha256":"106ddcafddbc31d8172b3f6a3a2557830f5581bad56b8fda50a6c2e86820ca5d","git_state":"untracked_regular_file","edit_budget":0,"recreate_budget":0},"scope_owner":"nul_safe_tracked_plus_untracked_union_without_intent_to_add","orchestrator_activation":{"expected_base":"e45cf6a70204d87a5b4b47f19149e80e087cb634","required_subject":"chore(plan): activate retained r3 pretest gate correction","test_must_remain_exact_untracked":true,"implementation_parent":"full_activation_commit_sha_frozen_at_dispatch"},"exact_changed_paths":["tests/test_p7_retained_r3_controller_integration.py"],"implementation_commit_subject":"test(p7): qualify retained r3 controller composition","historical_c4_reads":0,"retained_r3_reads":0,"actual_canonical_validator_calls":0,"eligibility_emissions":0,"release_operations":0,"network_operations":0,"device_operations":0,"commit_budget":1,"retry_budget":0,"planner_stop":"B2_C4_P2_C1_INTEGRATION_QUALIFICATION_COMPLETE_WAITING_PLANNER_REVIEW"}`
 
-## 1. Frozen architecture decision
+## 1. Planner decision and bounded correction
 
-CodeGraph current-source evidence shows that no new adapter is justified:
+The reviewed P2 result is
+`REJECTED_GATE_DEFECT_IMPLEMENTATION_NOT_EVALUATED`. The test implementation
+did not fail: no test was invoked. The failed gate required ordinary
+`git diff --name-only` to list a newly created untracked path, which Git does not
+do. Ordinary `git diff --check` likewise does not inspect that untracked file.
 
-- `p7_retained_r3_exact_five_controller.ExactFiveControllerCallbacks` already
-  injects the fixed acquire/materialize/gate/commit/manifest/validator/terminal
-  sequence, enforces exact-bool pass results, seals every pre-terminal failure
-  once and owns no consumer/eligibility/device/release surface.
-- accepted
-  `p7_retained_r3_controller_preparation` already owns the AST-edge statement
-  selector, deterministic byte replacement, canonical JSON plus exact LF,
-  exact path/bytes/SHA/device/inode target validation, deep immutable seal gate
-  and ER callback admission only after seal validation.
-- A callback supplied by a caller can invoke those pure helper APIs directly;
-  neither owner needs runtime I/O or a new orchestration state machine.
+P2-C1 changes only the observation contract:
 
-P2 therefore adds exactly one dedicated integration qualification test and no
-production code. A test-only path is substantive here: it must execute the real
-public APIs of both owners together, verify ordered cross-owner behavior and
-prove the failure boundaries below. Assertions that merely restate fixtures or
-only execute code are not acceptable.
+- tracked index/worktree paths and untracked paths are classified separately
+  with NUL-delimited Git output and combined as an exact set;
+- the sole untracked file is validated by lstat, bytes, SHA-256 and a no-index
+  whitespace check without `git add -N`;
+- after this corrected gate, execution resumes at the original first targeted
+  test and retains all subsequent P2 requirements and budgets.
 
-## 2. Frozen repository inputs and activation topology
+This package must not repair test behavior speculatively. If the first targeted
+test fails, preserve the exact file, append one truthful failure handoff and
+stop. No retry or edit is authorized.
 
-The Orchestrator activation commit must have exact parent
-`3458b4b60c49328703a6e2bc95a62f33e13cdfe8` and exact subject
-`chore(plan): activate retained r3 integration qualification`. At dispatch, its
-full SHA becomes the immutable implementation parent. If HEAD does not match
-that topology, PLAN/FULL machine-contract identity, or a clean implementation
-scope, stop before editing.
+## 2. Frozen preserved implementation and activation topology
 
-Committed implementation inputs are read only from Git, not copied from the
-worktree or any external controller:
+The preserved implementation path is exactly:
+
+```text
+tests/test_p7_retained_r3_controller_integration.py
+```
+
+At Planner review it is an untracked regular file, bytes `13147`, SHA-256
+`106ddcafddbc31d8172b3f6a3a2557830f5581bad56b8fda50a6c2e86820ca5d`.
+It must remain byte-for-byte unchanged through activation, the corrected gate,
+all precommit tests and CodeGraph. Its edit, recreation, delete/restore,
+formatter and generation budgets are all `0`.
+
+Orchestrator activation must have exact parent
+`e45cf6a70204d87a5b4b47f19149e80e087cb634` and exact subject
+`chore(plan): activate retained r3 pretest gate correction`. The activation may
+commit only Orchestrator/Planner-owned planning and evidence metadata required
+to cleanly activate this correction; it must not stage or commit the test or
+change any production/test source. Immediately after activation, the test must
+still be the exact sole untracked path and the tracked/index worktree must be
+clean. The full activation SHA is the immutable implementation parent.
+
+The following already-passed P2 facts are accepted evidence and must not be
+re-executed:
+
+- activation/precondition check of the original P2 parent;
+- PLAN/FULL/input SHA/accepted-commit ancestry preflight;
+- initial clean-worktree check;
+- creation of the integration test.
+
+The accepted production/test owners remain read-only at their frozen committed
+identities:
 
 | Path | Required SHA-256 |
 | --- | --- |
@@ -66,181 +86,156 @@ worktree or any external controller:
 | `tests/test_p7_retained_r3_exact_five_controller.py` | `19858a64fb760c112783b176822e7dabf72dce1b0cf9fb21e3a4738b83cebc3d` |
 | `tests/test_p7_retained_r3_controller_preparation.py` | `80ef2bead548856031c6d6f07f4ee0b6c74b8b917a45787e9f96fbf57b4d4527` |
 
-The accepted preparation commit is
-`4678a3e6f93704912952776bc11fa2b0945d80b1`; the activation commit must retain
-it as an exact ancestor. The archive identity for this transition is:
+These hashes are frozen inputs, not a license to rerun the previous full
+preflight. A mismatch observed incidentally is a hard stop, not a repair branch.
 
-- path:
-  `.agent-work/PLANS/20260730-1253-p7-retained-r3-option-b-b2-c4-p1-c1-orchestrator-gate-archive.md`;
-- bytes: `3403`;
-- SHA-256:
-  `22fdef333af39fe13719cc06951f285071d932a6da20b3de35b06e03681df6ab`.
+## 3. Corrected pretest scope owner
 
-Orchestrator must independently recompute the two values above before committing
-activation. No PLAN content may change without another Planner review.
+Before any test, perform this gate exactly once without modifying the index:
 
-## 3. Exact implementation scope
+1. Read the current HEAD once and require the frozen Orchestrator activation
+   topology and active P2-C1 machine contract. Do not repeat the superseded P2
+   FULL/input/precondition suite.
+2. Use `lstat` without following symlinks and require the preserved path to be a
+   regular file with exact bytes and SHA-256 from section 2.
+3. Parse `git status --porcelain=v1 -z --untracked-files=all` as NUL-delimited
+   bytes. Require exactly one record, `?? ` plus the exact test path. Reject
+   renames, quoting ambiguity, additional records and any tracked/index change.
+4. Independently parse `git diff --name-only -z --` and
+   `git diff --cached --name-only -z --`; require both tracked sets empty. Parse
+   `git ls-files --others --exclude-standard -z --`; require its untracked set
+   to equal the exact singleton test. The union must equal the singleton and the
+   classifications must be disjoint.
+5. Run
+   `git diff --no-index --check -- /dev/null tests/test_p7_retained_r3_controller_integration.py`
+   once. Because the file is new, require exit `1` with no whitespace-error
+   output. Any other exit or diagnostic fails closed. Do not use ordinary
+   `git diff --check` as evidence for the untracked content.
 
-Only create:
+`git add -N`, intent-to-add, staging, stash, checkout, reset, clean, formatter,
+content rewrite and alternate scope commands are prohibited at this gate. On a
+mismatch, append one truthful P2-C1 failure handoff without editing the test and
+stop.
 
-```text
-tests/test_p7_retained_r3_controller_integration.py
-```
+## 4. Frozen integration behavior
 
-Do not modify either production owner, their existing dedicated tests, package
-exports, docs, skill, wrapper, GUIDE, FULL, PLAN, archives or any other path.
-The new test must use only in-memory synthetic bytes and deterministic fake
-identities. It must not read any historical/external evidence root, retained R3
-artifact or runtime secret.
+The preserved test must still substantively exercise the actual public APIs of
+the existing exact-five lifecycle and accepted preparation owner. Acceptance
+requires observable assertions for:
 
-The test owner must exercise at least these behaviors through the actual public
-APIs:
+1. success composition with exact callback order, five materializations,
+   prepared-source identity, canonical terminal target validation, immutable
+   gate payload, synthetic validator call and one post-seal ER admission;
+2. preparation failure before all lifecycle/terminal/ER callbacks;
+3. one pre-terminal lifecycle failure, later-phase suppression, exactly one
+   canonical failure terminal and ER admission only after target validation;
+4. wrong type or value in the seal target failing before ER with no fallback;
+5. no import/call of the real canonical validator, retained/release owner,
+   filesystem/process/network/environment or device owner.
 
-1. **Success composition:** prepare an in-memory controller source containing
-   one uniquely owned adjacent assignment/validation pair; execute one prepared
-   exact-five lifecycle; have injected callbacks consume the prepared source,
-   create a canonical terminal payload with a synthetic exact
-   `SealTargetIdentity`, validate it, and admit exactly one synthetic ER callback
-   only after the lifecycle's synthetic validator callback and terminal seal.
-   Assert the exact callback order, five materialize calls, one terminal, one ER
-   gate, prepared source SHA, target identity and immutable gate payload.
-2. **Preparation failure:** malformed/ambiguous in-memory source must fail before
-   lifecycle dispatch; every lifecycle callback count, terminal count and ER
-   callback count remains zero.
-3. **Lifecycle failure:** one injected pre-terminal phase must fail; the existing
-   lifecycle must stop later phases and invoke terminal exactly once. The failure
-   terminal must still pass canonical serialization and exact-target validation
-   before the synthetic ER callback is admitted; it must not become eligibility.
-4. **Seal-target tamper:** wrong type or value in any one target field must fail
-   closed before the ER callback; no workaround or fallback terminal is allowed.
-5. **Ownership/static boundary:** imports and runtime calls in the integration
-   test must not import or invoke the real canonical validator, retained-release
-   consumer, filesystem/process/network/environment/device/camera/Ray/strip
-   owner. The callback named `canonical_validator` is an in-memory synthetic
-   exact-bool stub only; assert it is invoked once on success, while actual
-   canonical-validator import/call count remains zero.
+The callback field named `canonical_validator` must remain an inline in-memory
+exact-bool stub. Its invocation count is recorded separately; actual canonical
+validator import/call count remains `0`. The test must not reproduce either
+production owner implementation.
 
-Do not reproduce either module's implementation inside the test. Small local
-fixture builders and callback fakes are allowed only to connect public APIs and
-record observable order/counts.
+## 5. Zero budgets and hard locks
 
-## 4. Zero budgets and hard locks
+The original P2 preconditions and source creation already occurred once; their
+rerun budgets are `0`. This correction has retry/fallback/edit/recreation
+budgets `0`.
 
-All budgets are cumulative for this package; retry/fallback is `0`:
-
-| Operation | Budget |
+| Operation | Remaining budget |
 | --- | ---: |
-| historical C3/C4 source/evidence/root reads | 0 |
-| old failed-root inspect/repair/reuse | 0 |
+| corrected pretest scope gate | 1 |
+| new targeted test, precommit | 1 |
+| existing two-owner combined suite | 1 |
+| focused retained-controller group | 1 |
+| full unittest suite | 1 |
+| compileall | 1 |
+| CodeGraph sync | 1 |
+| implementation commit | 1 |
+| new targeted test, postcommit | 1 |
+| test edit/recreate/delete-restore/formatter | 0 |
+| amend/rebase/fixup/second commit | 0 |
+| historical C3/C4/failed-root reads | 0 |
 | retained R3 candidate/artifact reads | 0 |
 | real B2/controller dispatch | 0 |
 | actual canonical validator import/call | 0 |
 | eligibility emission/consumer | 0 |
 | lineage/release create/validate/replay/consume | 0 |
-| network, DNS, `.env`, credential access | 0 |
+| external root or temporary evidence file | 0 |
+| network, DNS, `.env`, credentials | 0 |
 | device/camera/Ray/strip/cleanup/capture/FORMAL | 0 |
-| public analyzer, TD-C, sentinel, P8 | 0 |
-| external output root or temporary evidence file | 0 |
-| implementation commit | 1 |
-| amend/rebase/fixup/second commit | 0 |
+| public analyzer, TD-C, sentinel, P8, firmware/deployment | 0 |
 
-The synthetic callback bearing the lifecycle field name `canonical_validator`
-does not consume the actual-validator budget: it must be an inline, in-memory
-stub with no validator import or eligibility surface. Any need for a historical
-C3/C4 artifact, retained input, actual validator, second production path or new
-adapter is a contradiction; stop and return to Orchestrator rather than widening
-scope or asking Advisor/Human.
+This remains a local sub-10-minute code/test package. Visible Terminal,
+automation, device authorization and Advisor input are not implicated.
 
-This package is expected to remain below 10 minutes, so it uses the normal local
-execution owner. Visible Terminal, automation and long-task polling are not
-authorized.
+## 6. Ordered continuation gates
 
-## 5. Ordered execution and validation gates
+After section 3 passes, execute exactly once in this order. Any failure stops
+without test repair, retry, fallback or commit:
 
-Execute exactly once in this order; any failure stops the package with no edit,
-test or commit retry:
-
-1. Parse the single PLAN machine contract and FULL machine state. Require FULL
-   `active_task_count=1`, `active_task=REF-P7-25-R2-B2-C4-P2`, matching
-   `active_plan_contract_id`, retained status
-   `RETAINED_UNVALIDATED_UNCONSUMED`, P1-C1 accepted/provenance-bound status and
-   canonical validator sole-owner state. Verify activation topology, clean
-   implementation scope, exact committed input hashes and accepted-commit
-   ancestry.
-2. Create the exact one test path with the behaviors in section 3. Before tests,
-   require `git diff --name-only` to equal that singleton path and
-   `git diff --check` to pass.
-3. Run the new integration test alone once.
-4. Run the two existing owner suites together once:
-   `tests.test_p7_retained_r3_exact_five_controller` and
-   `tests.test_p7_retained_r3_controller_preparation`.
-5. Run the focused retained-controller group once: the new integration test,
-   the two suites above and `tests.test_p7_retained_release_audit`.
-6. Run the full unittest suite once.
-7. Run compileall once over `src/camera_based_rgbww_optimizer` and `tests`.
-8. Run CodeGraph sync once and require success. Recheck singleton path and
-   `git diff --check`.
-9. Freeze implementation parent full SHA, exact singleton changed-path set,
-   absent-before/new-after Git blob OIDs, new-file SHA-256, canonical binary Git
-   patch SHA-256 and exact subject. Create exactly one commit with subject
+1. Run the new integration test alone:
+   `.venv/bin/python -m unittest tests.test_p7_retained_r3_controller_integration -v`.
+2. Run the two existing owner suites together:
+   `.venv/bin/python -m unittest tests.test_p7_retained_r3_exact_five_controller tests.test_p7_retained_r3_controller_preparation -v`.
+3. Run the focused group once:
+   `.venv/bin/python -m unittest tests.test_p7_retained_r3_controller_integration tests.test_p7_retained_r3_exact_five_controller tests.test_p7_retained_r3_controller_preparation tests.test_p7_retained_release_audit -v`.
+4. Run the full suite once:
+   `.venv/bin/python -m unittest discover -s tests -p 'test_*.py' -v`.
+5. Run compileall once:
+   `.venv/bin/python -m compileall -q src/camera_based_rgbww_optimizer tests`.
+6. Run `codegraph sync` once and require success. Recompute lstat/bytes/SHA and
+   the corrected tracked-plus-untracked gate; the test must still be the exact
+   unchanged singleton. Repeat the no-index whitespace check once as this
+   post-validation scope check, not as a retry.
+7. Freeze implementation parent full SHA, absent-before/new-after Git blob OIDs,
+   file SHA-256 and canonical binary Git patch SHA-256. Only now run
+   `git add -- tests/test_p7_retained_r3_controller_integration.py`. Require the
+   staged NUL-delimited path set to equal the singleton, unstaged path set empty,
+   `git diff --cached --check` success, and the staged blob/patch identities to
+   match the frozen values.
+8. Create exactly one commit with subject
    `test(p7): qualify retained r3 controller composition` and a concise detail
-   explaining existing-owner callback composition.
-10. Verify the child has the frozen parent, exact subject, exact singleton tree
-    change, after blob/file/patch identities and no implementation drift. Rerun
-    the new integration test alone once as the sole postcommit test.
-11. Append one truthful handoff to `.agent-work/EXECUTION_RESULT.md` only after
-    terminal validation. Record all identities, ordered gate counts/results,
-    explicit zero-budget counters, actual-validator call count `0`, synthetic
-    validator-stub count, commit SHA and the unique stop. Do not edit PLAN/FULL
-    or any archive.
+   describing existing-owner callback composition.
+9. Verify exact direct parent, subject, singleton tree change, absent-before and
+   after blob, file and patch identities, plus zero implementation drift. Run
+   the new targeted test alone once as the sole postcommit test.
+10. Append one truthful P2-C1 handoff to `.agent-work/EXECUTION_RESULT.md`.
+    Record preserved identity, corrected union classification, every ordered
+    count/result, synthetic-stub and actual-validator counts, commit identity,
+    explicit zero budgets and the unique stop. Do not edit PLAN/FULL/archive.
 
-`EXECUTION_RESULT.md` is evidence-only and is excluded from the implementation
-commit/path set. If any precommit gate fails, do not commit. If commit or
-postcommit verification fails, do not amend, repair or make a second commit;
-record the exact terminal state if the seal gate permits and stop.
+If a precommit gate fails, do not stage or commit. If staging, commit or
+postcommit verification fails, do not amend, repair or create a second commit.
+In every terminal branch, preserve the test/commit state, append at most one
+truthful handoff and stop.
 
-## 6. Acceptance criteria and failure branches
+## 7. Acceptance and stop
 
-Planner may accept P2 only if all of the following are independently reviewable:
+Planner may accept P2-C1 only if:
 
-- exact activation and one-child topology; exact singleton implementation path,
-  blob/file/patch identities and subject;
-- substantive success, preparation-failure, lifecycle-failure, target-tamper
-  and static-boundary integration tests through both existing public owners;
-- new targeted, existing-owner, focused, full, compileall, CodeGraph, diff and
-  postcommit gates each pass at their exact invocation budgets;
-- actual canonical validator/eligibility/release/historical/retained/network/
-  device/external-root counters all remain zero;
-- the canonical validator remains the sole eligibility owner and no production
-  adapter, external generated controller or parallel execution framework exists;
-- one valid ER handoff records the unique stop
-  `B2_C4_P2_INTEGRATION_QUALIFICATION_COMPLETE_WAITING_PLANNER_REVIEW`.
+- activation preserved the exact untracked test and the corrected NUL-safe
+  tracked-plus-untracked singleton gate passed without intent-to-add;
+- the test remained at exact bytes/SHA until its one authorized staging step;
+- all substantive integration behaviors in section 4 passed through both real
+  public owners;
+- targeted, owner, focused, full, compileall, CodeGraph, diff/staging and
+  postcommit gates passed at exact budgets;
+- the child has the frozen parent, exact subject, singleton tree change and
+  exact file/blob/patch identities;
+- actual validator, eligibility, release, historical, retained, network,
+  device and external-root counters remain zero;
+- one ER handoff records the unique stop
+  `B2_C4_P2_C1_INTEGRATION_QUALIFICATION_COMPLETE_WAITING_PLANNER_REVIEW`.
 
-Failure routes are exact:
-
-- architecture/input/FULL/topology contradiction: stop pre-edit and return to
-  Orchestrator;
-- implementation or validation failure before commit: preserve the one-path
-  diff, append a sealed failure handoff if permitted, and wait for Planner;
-- commit/postcommit mismatch: preserve immutable commit evidence, no amend or
-  second commit, and wait for Planner;
-- scientific interpretation and Human device authorization are not implicated.
-
-P2 acceptance unlocks only the Orchestrator's next provenance-bound C4 package.
-It does not unlock retained R3, the actual canonical validator, eligibility,
-release consumption or any device work.
-
-## 7. Stop and handoff
-
-After exactly one success or failure attempt, stop at
-`B2_C4_P2_INTEGRATION_QUALIFICATION_COMPLETE_WAITING_PLANNER_REVIEW` and hand
-the implementation/evidence identities to Planner. Planner must archive this
-package before rewriting PLAN; Orchestrator alone may update FULL.
+Success unlocks only Orchestrator review for the next provenance-bound C4
+package. It does not unlock retained R3, real B2, the canonical validator,
+eligibility, release consumption or device/scientific work.
 
 ## 维护性判断
 
-This package adds only one dedicated cross-owner test and reuses the existing
-fixed lifecycle plus accepted pure preparation owner. Ownership remains
-separate and explicit: lifecycle sequencing stays in exact-five, source/seal/ER
-admission stays in preparation, and eligibility stays exclusively in the
-canonical validator. No cleanup refactor is recommended.
+The correction changes no implementation and adds no owner. It replaces an
+inapplicable Git observation with one explicit path-classification boundary,
+then reuses the original validation sequence. No follow-up refactor is needed.
