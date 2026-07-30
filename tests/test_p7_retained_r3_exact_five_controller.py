@@ -257,20 +257,87 @@ class ExactFiveControllerTests(unittest.TestCase):
         })
         prohibited_calls = {"open", "read_text", "read_bytes", "write_text", "write_bytes",
                             "unlink", "mkdir", "system", "run", "Popen"}
-        called = {
-            node.func.id if isinstance(node.func, ast.Name) else node.func.attr
+        name_calls = {
+            node.func.id
             for node in ast.walk(tree)
-            if isinstance(node, ast.Call)
-            and isinstance(node.func, (ast.Name, ast.Attribute))
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
         }
-        self.assertFalse(called & prohibited_calls)
-        instructions = {
-            instruction.argval
+        attribute_calls = {
+            node.func.attr
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+        }
+        self.assertFalse(name_calls & (prohibited_calls - {"run"}))
+        self.assertFalse(attribute_calls & prohibited_calls)
+
+        execute = next(
+            node for node in tree.body
+            if isinstance(node, ast.FunctionDef)
+            and node.name == "execute_prepared_exact_five_controller"
+        )
+        nested_run_definitions = [
+            node for node in execute.body
+            if isinstance(node, ast.FunctionDef) and node.name == "run"
+        ]
+        self.assertEqual(
+            [node for node in ast.walk(tree)
+             if isinstance(node, ast.FunctionDef) and node.name == "run"],
+            nested_run_definitions,
+        )
+        self.assertEqual(len(nested_run_definitions), 1)
+        parents = {
+            child: node
+            for node in ast.walk(tree)
+            for child in ast.iter_child_nodes(node)
+        }
+        run_calls = [
+            node for node in ast.walk(tree)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "run"
+        ]
+        self.assertTrue(run_calls)
+        for call in run_calls:
+            owner = parents[call]
+            while not isinstance(owner, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                owner = parents[owner]
+            self.assertIs(owner, execute)
+
+        def code_objects(code):
+            yield code
+            for constant in code.co_consts:
+                if inspect.iscode(constant):
+                    yield from code_objects(constant)
+
+        instructions = [
+            (code.co_name, instruction)
             for value in vars(subject).values()
             if inspect.isfunction(value)
-            for instruction in dis.get_instructions(value)
+            for code in code_objects(value.__code__)
+            for instruction in dis.get_instructions(code)
+        ]
+        global_or_name_loads = {
+            instruction.argval
+            for _owner, instruction in instructions
+            if instruction.opname in {"LOAD_GLOBAL", "LOAD_NAME"}
         }
-        self.assertFalse(instructions & prohibited_calls)
+        attribute_or_method_loads = {
+            instruction.argval
+            for _owner, instruction in instructions
+            if instruction.opname in {"LOAD_ATTR", "LOAD_METHOD"}
+        }
+        self.assertFalse(global_or_name_loads & prohibited_calls)
+        self.assertFalse(attribute_or_method_loads & prohibited_calls)
+        run_loads = [
+            (owner, instruction.opname)
+            for owner, instruction in instructions
+            if instruction.argval == "run"
+        ]
+        self.assertTrue(run_loads)
+        self.assertEqual(
+            set(run_loads),
+            {("execute_prepared_exact_five_controller", "LOAD_FAST")},
+        )
 
     def test_success_terminal_follows_validator_and_owns_no_authorization(self):
         fake = FakeCallbacks()
