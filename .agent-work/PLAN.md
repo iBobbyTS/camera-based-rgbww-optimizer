@@ -1,6 +1,6 @@
 # REF-P7-25-R2-B2-C4-P2-C4：observable quiet full-suite validation continuation
 
-**计划状态：** `WAITING_ORCHESTRATOR_EXACT_ACTIVATION`
+**计划状态：** `ACTIVE_EXECUTION_AUTHORIZED_AFTER_EXACT_ORCHESTRATOR_ACTIVATION`
 
 **Planner 日期：** `2026-07-30`
 
@@ -23,7 +23,7 @@ session 可观测真实 exit 与完整 terminal summary 的 full suite；仅在�
 bytes `6985`，SHA-256
 `a76dc1be89ba2e2bed3ca6baef8a11ac3b2e9583be5aef23687407017cd9e4be`。
 
-`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_c4_p2_c4_observable_full_validation_v1","reference_task_id":"REF-P7-25-R2-B2-C4-P2-C4","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-P2-C4-OBSERVABLE-FULL-VALIDATION-V1","execution_authorized":false,"dispatch_state":"waiting_orchestrator_exact_activation","single_current_action":"run_one_quiet_full_suite_with_observable_terminal_exit_then_finish_original_p2_gates","preserved_test":{"path":"tests/test_p7_retained_r3_controller_integration.py","bytes":13148,"sha256":"740652267178e3225edf03efacc293cfbdfb7c18efb749b6cd9aee281a728366","git_state":"untracked_regular_file","edit_budget":0,"recreate_budget":0},"accepted_no_rerun":{"corrected_targeted":"5/5","existing_owner":"32/32","focused":"58/58"},"full_command":".venv/bin/python -m unittest discover -s tests -p 'test_*.py' -q","full_invocation_budget":1,"full_expected_test_count":717,"orchestrator_activation":{"expected_parent":"full_orchestrator_review_commit_sha_to_be_frozen_at_activation","required_subject":"chore(plan): activate retained r3 observable full validation","implementation_parent":"full_activation_commit_sha_frozen_at_dispatch"},"exact_changed_paths":["tests/test_p7_retained_r3_controller_integration.py"],"implementation_commit_subject":"test(p7): qualify retained r3 controller composition","historical_c4_reads":0,"retained_r3_reads":0,"actual_canonical_validator_calls":0,"eligibility_emissions":0,"release_operations":0,"network_operations":0,"device_operations":0,"commit_budget":1,"retry_budget":0,"planner_stop":"B2_C4_P2_C4_INTEGRATION_QUALIFICATION_COMPLETE_WAITING_PLANNER_REVIEW"}`
+`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_c4_p2_c4_observable_full_validation_v1","reference_task_id":"REF-P7-25-R2-B2-C4-P2-C4","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-P2-C4-OBSERVABLE-FULL-VALIDATION-V1","execution_authorized":true,"dispatch_state":"active_after_exact_orchestrator_activation","single_current_action":"run_one_quiet_full_suite_with_observable_terminal_exit_then_finish_original_p2_gates","preserved_test":{"path":"tests/test_p7_retained_r3_controller_integration.py","bytes":13148,"sha256":"740652267178e3225edf03efacc293cfbdfb7c18efb749b6cd9aee281a728366","git_state":"untracked_regular_file","edit_budget":0,"recreate_budget":0},"accepted_no_rerun":{"corrected_targeted":"5/5","existing_owner":"32/32","focused":"58/58"},"full_command":".venv/bin/python -m unittest discover -s tests -p 'test_*.py' -q","full_invocation_budget":1,"full_expected_test_count":717,"orchestrator_activation":{"expected_parent":"52c087c2ed0f4d177388329397f77b442bfe5848","required_subject":"chore(plan): activate retained r3 observable full validation","implementation_parent":"full_activation_commit_sha_frozen_at_dispatch"},"exact_changed_paths":["tests/test_p7_retained_r3_controller_integration.py"],"implementation_commit_subject":"test(p7): qualify retained r3 controller composition","historical_c4_reads":0,"retained_r3_reads":0,"actual_canonical_validator_calls":0,"eligibility_emissions":0,"release_operations":0,"network_operations":0,"device_operations":0,"commit_budget":1,"retry_budget":0,"planner_stop":"B2_C4_P2_C4_INTEGRATION_QUALIFICATION_COMPLETE_WAITING_PLANNER_REVIEW"}`
 
 ## 1. Planner decision and exact finding
 
@@ -75,15 +75,15 @@ Test edit/recreate/delete/restore/formatter budgets 全部为 `0`。
 Orchestrator activation 必须：
 
 1. 先独立 review 本 PLAN/archive/ER，并创建 focused review commit；
-2. 把该 review commit 的 full SHA 冻结为 activation direct parent；
+2. review commit full SHA 已冻结为 activation direct parent
+   `52c087c2ed0f4d177388329397f77b442bfe5848`；
 3. activation commit exact subject 为
    `chore(plan): activate retained r3 observable full validation`；
 4. activation 不 stage/commit/修改冻结 test 或 production/existing-test source；
 5. activation 后该 test 仍为 exact untracked singleton；
 6. activation full SHA 作为 immutable implementation parent 交给 Executer。
 
-在 Orchestrator 完成以上冻结并把 `execution_authorized` 改为 `true` 前，Executer 不得
-dispatch。Executer dispatch 后只验证 HEAD/direct parent/subject 与本节 file identities，
+Orchestrator 已完成以上冻结并把 `execution_authorized` 改为 `true`。Executer dispatch 后只验证 HEAD/direct parent/subject 与本节 file identities，
 不得重读历史 C3/C4 roots、外部 evidence、retained R3 或旧 test output。
 
 ## 3. Exact quiet full-suite output and exit ownership
