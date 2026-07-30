@@ -16293,3 +16293,18 @@ C13_IMPLEMENTATION_RESULT {"schema":"c13_implementation_result_v1","timestamp":"
 - supersedes_c12_precommit_sha256_misrecord=true; old recorded C12 precommit SHA-256 4f557d6d0d9cdcc2fdd7a48e7c968d6284e5d21ef9e9d65f96394be49e0f03a9; authoritative C12 artifact SHA-256 5821ab5d2b4d25cf218933c208b128854149150473c604a24131262ec0b6361a. Historical ER/C12 artifacts were not rewritten.
 - Candidate/R3/canonical validator/eligibility/release/network/.env/device/camera/Ray/strip/cleanup/formal/public analyzer/TD-C/sentinel/P8 calls all 0; retained R3 remains RETAINED_UNVALIDATED_UNCONSUMED.
 - Failure: RuntimeError: source topology mismatch; fail-fast stopped later validation items; no retry.
+
+## F19 C14 retained source topology validation-only execution — 20260730T141613Z
+
+- Contract: P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F19-CORRECTIVE-14-SOURCE-TOPOLOGY-VALIDATION
+- Result: FAIL_WAITING_PLANNER; stop F19_CORRECTIVE_14_TERMINAL_WAITING_PLANNER.
+- Programmatic frozen dispatch HEAD: d61accd5b1eac975874a128db949fddb594d34e8; direct read calls 1; human-transcribed expected child SHA 0; second dispatch HEAD read 0.
+- Activation exact: parent 5e55c3f8e3d5c862f05d317cdccc57b453b4e4d0, PLAN-only path, additional 0, commit count 1.
+- Retained production ba816216af9d37397873e054f44dbb7eea0f9b10: exact source+test two-path topology, additional 0; no source-only inference.
+- Retained source/test/config identities passed independently, including test canonical patch.
+- Validation: compileall pass; targeted 13/13; focused 125/125; full failed; CodeGraph not-run/fail; diff not-run/fail.
+- Root: /Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b1a-c3e6f19-corrective-14-offline/20260730T141613Z; mode 0700; retry 0; fallback 0.
+- Terminal: /Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b1a-c3e6f19-corrective-14-offline/20260730T141613Z/terminal-evidence.json; bytes 9185; SHA-256 0439ff6136737d41b168409a113f7df12e0794638eed39777cdfdf6f8b27e8fe; mode 0600.
+- Repo implementation edits/staged paths/implementation commits: 0/0/0. C12 supersession only references authoritative C13 append; C14 new supersession append 0.
+- All candidate/R3/validator/eligibility/release/network/env/device/camera/Ray/strip/cleanup/formal/analyzer/TD-C/sentinel/P8 calls 0. Retained R3 remains RETAINED_UNVALIDATED_UNCONSUMED.
+- Planner decision request: validate C14 topology and one-shot evidence; do not infer eligibility or unlock retained-R3 consumption.
