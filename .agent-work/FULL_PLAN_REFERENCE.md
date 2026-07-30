@@ -16,9 +16,9 @@
 
 **当前可执行任务数：** `0`
 
-**当前 active task：** `REF-P7-25-R2-B2-C1 retained R3 exact path-owner index`
+**当前 active task：** `REF-P7-25-R2-B2 corrected exact-path modern manifest seal`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":0,"active_task":"REF-P7-25-R2-B2-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C1-PATH-OWNER-INDEX-V1","next_reference_task":"REF-P7-25-R2-B2","next_reference_status":"BLOCKED_ON_C1_PATH_OWNER_INDEX","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"B2_REJECTED_FROZEN_PATH_ENOENT_C1_WAITING_ACTIVATION","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"5300e79c77ca95a62716b35d892664ea3849932a125777d33baec3cf5133795e","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":0,"active_task":"REF-P7-25-R2-B2","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-CORRECTED-PATH-MANIFEST-SEAL-V3","next_reference_task":"REF-P7-25-R2-B3","next_reference_status":"BLOCKED_ON_B2_ACCEPTANCE","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"B2_C1_ACCEPTED_B2_CORRECTED_WAITING_ACTIVATION","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"64a5b144faaa9b07f2e24d40a17b4b5938dada88f919136404b9da3d91a7fdac","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -92,7 +92,7 @@ Orchestrator 在新 GUIDE、Human 决定、Planner review 或 Executer terminal 
 | `advisor/3/1.GUIDE.md` | `92f766da523c40ff49c228c996dffd6d3839552f70bbd79aa7627485dd749be1` | TD-A/B/C thermal/reference 基线；未被 4.GUIDE 替代的部分继续有效。 |
 | `advisor/4/4.GUIDE.md` | `659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35` | R5 clipping 处置、EQ-R6、Ray R6、conditional strip、combined TD-B 与 TD-C 新合同。 |
 | `/Users/ibobby/.codex/attachments/cba7928d-712a-441e-a708-4301ee32bd66/pasted-text.txt` | `91a88e5467e13c811794c2149b6a8d5669e613c3e259d8f4091ba08c048733d6` | Advisor 对 retained-R3 helper lineage owner 的后续显式决定：Option B subordinate exact provenance manifest。 |
-| `conversation://human/2026-07-29/orchestrator-engineering-owner` | `52394bcd3fa819fcb83c82c50a89d0b9c4aaa53a41eca18bb953c174787b259d` | Human覆盖Advisor工程限制：Advisor仅指导色彩/测量科学；Orchestrator统筹实验、文件、代码与Git，仅科学问题或高风险设备操作停下。 |
+| `3e2ebed132b6d4338bfa324bfc42c3565d2eeb3c:AGENTS.md` | blob `58bfacb5fc46fcb42bf643d12974063533a684eb`；file SHA-256 `604b10bedeac6c9285f6448f94323521bf021a58275cce84d64163e16a2f07a0` | 可由Git独立重放的Human工程治理落盘证据：Advisor仅指导色彩/测量科学；Orchestrator统筹实验、文件、代码与Git，仅科学问题或高风险设备操作停下。 |
 | `advisor/4/0.AUDIT/03-human-decision-no-extension.md` | `c917c54473aa3c5cc4da9098ddeb81fb109fe9a4186fb71e994c447c63d0454a` | Human 拒绝 900/1200 秒；600 秒是 operational time limit，不是 settled。 |
 
 Human 已在先前 thread 中解除设备暂停并允许有界设备调用。该决定不使 FULL 可执行，也不跨过
@@ -278,8 +278,8 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-B1A-C3E6F11` | `REJECTED_CONTROLLER_LIFECYCLE_AND_ACCOUNTING` | exact nested-AST prerequisite + successor seal | KeyError；same-root retry；5 reads与zero counters矛盾 | Planner/Executer |
 | `REF-P7-25-R2-B1A-C3E6F12` | `REJECTED_WORKTREE_BLOB_ORACLE_FALSE_REJECTION` | direct-root single-controller prerequisite + truthful accounting | atomic replace exact；index parent blob误作worktree blob | Planner/Executer |
 | `REF-P7-25-R2-B1A-C3E6F13` | `ACTIVE` | split index/worktree blob identity prerequisite + successor seal | C3E6F12 review archive SHA 81ddc4ce；matching PLAN active | Planner/Executer |
-| `REF-P7-25-R2-B2` | `REJECTED_FROZEN_RETAINED_SOURCE_PATH_ENOENT` | 对accepted integration chain与原三件套seal immutable subordinate manifest v2 | C1 path-owner index accepted | Planner/Executer |
-| `REF-P7-25-R2-B2-C1` | `ACTIVE_WAITING_PLAN_ONLY_ACTIVATION_FREEZE` | 只验证exact retained directory chain及artifact name/type/path | B2 wrong frozen path failure | Planner/Executer |
+| `REF-P7-25-R2-B2` | `ACTIVE_CORRECTED_PATH_WAITING_PLAN_ONLY_ACTIVATION_FREEZE` | 由accepted C1 exact path-owner index驱动modern immutable subordinate manifest v2 | C1 path-owner index accepted | Planner/Executer |
+| `REF-P7-25-R2-B2-C1` | `ACCEPTED_COMPLETE` | 只验证exact retained directory chain及artifact name/type/path | B2 wrong frozen path failure | Planner/Executer |
 | `REF-P7-25-R2-B3` | `BLOCKED` | Manifest自校验后执行postcommit focused、durable full、synthetic terminal/replay | `REF-P7-25-R2-B2` accepted | Planner/Executer |
 | `REF-P7-25-R2-B4` | `BLOCKED` | 对原retained R3三件套做首次真实audit并由canonical validator唯一判定eligibility | `REF-P7-25-R2-B3` accepted | Planner/Executer |
 | `REF-P7-25-R2-B5` | `BLOCKED` | 独立验收validated-unconsumed状态、manifest与rollback provenance | `REF-P7-25-R2-B4` pass | Planner/Orchestrator |
@@ -2898,14 +2898,15 @@ exact R6 validation path classification，canonical candidate/eligibility owner�
 
 ### REF-P7-25-R2-B2：modern accepted-integration immutable manifest seal
 
-**状态：** `REJECTED_FROZEN_RETAINED_SOURCE_PATH_ENOENT`。Planner archive：
+**状态：** `ACTIVE_CORRECTED_PATH_WAITING_PLAN_ONLY_ACTIVATION_FREEZE`。首次失败的Planner archive：
 `.agent-work/PLANS/20260730-1547-p7-retained-r3-option-b-b2-modern-manifest-failure-review.md`，bytes `5916`，SHA-256
 `1c0cf905e468bad0a3349fe884775aa70ffb5201af74cddce8c4a770007e3c50`。
 
 B1A及C17已accepted，现代manifest-only基线继续有效；首次B2 controller在错误冻结的首个artifact path `lstat`处ENOENT并
 fail closed：R3 lstat/open/read=`1/0/0`、bytes0、manifest/seal0、retry/fallback0，terminal SHA-256
 `10aef59d4b2155bf6080a5bde5fcf3925871b592a8f6ddc402358351c5ab87b7`。实体terminal存在但内嵌pre-write
-`terminal_writes=0`，该caveat原样保留。不得重试旧root或寻找替代路径；B2先转C1 path-owner index。
+`terminal_writes=0`，该caveat原样保留。不得重试旧root或寻找替代路径。C1现已独立验收exact path-owner index；corrected B2
+只能由新的PLAN-only activation提交冻结parent/PLAN hash后执行，当前`active_task_count=0`。
 
 **现代B2目标：** 不再创建、amend、cherry-pick或重做repository implementation commit。B2只在brand-new external root中
 exclusive-create并seal一个`retained-r3-audit-provenance-manifest-v2.json`，schema
@@ -2933,9 +2934,12 @@ exclusive-create并seal一个`retained-r3-audit-provenance-manifest-v2.json`，s
   的accepted constants/identities；
 - GUIDE SHA、Advisor decision evidence SHA `842cfad090549ebf6379df4551bd4f051267e4bf93014f899c5e329c57085620`、
   attachment SHA `91a88e5467e13c811794c2149b6a8d5669e613c3e259d8f4091ba08c048733d6`与Human engineering-governance override；
-- 原retained R3 source root exact
-  `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-lineage-release-r3/lineage-release-161094f-c1-20260727T2103`及原三artifact
-  paths/hashes。B2只允许对三件套各一次lstat/open/read并做before/after identity，读取不等于audit、validation或consumption。
+- C1 sealed path-owner index exact
+  `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c1-path-owner-27aacbf-20260730T1547Z/path-owner-index.json`
+  SHA-256 `b189117fdd0a9a65ca80660245ec84b7f2f533c3e496c96e76eb48a4666feb35`，机械解析出的retained R3 source
+  root exact `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-lineage-release-r3/lineage-release-32b9e67-r2-20260727T2227/child-output/lineage-release-r3`
+  及原三artifact paths/hashes。B2对四个C1 evidence各一次lstat/open/read/hash，对三件套各一次lstat/open/read/hash并做
+  before/after identity；读取不等于audit、validation或consumption。
 
 **Persistence与验证边界：** Planner须冻结一个single-process/single-root controller、exact input/read budgets、strict duplicate-key和
 non-finite拒绝、canonical compact sorted UTF-8 JSON+LF、`O_EXCL|O_NOFOLLOW`、0600、file+directory fsync、strict reload、独立hash
@@ -2945,13 +2949,20 @@ camera、Ray、strip、cleanup、FORMAL、public analyzer、TD-C、sentinel、P8
 
 ### REF-P7-25-R2-B2-C1：retained R3 exact path-owner index
 
-**状态：** `ACTIVE_WAITING_PLAN_ONLY_ACTIVATION_FREEZE`。
+**状态：** `ACCEPTED_COMPLETE`。Planner archive：
+`.agent-work/PLANS/20260730-1000-p7-retained-r3-option-b-b2-c1-path-owner-index-review.md`，bytes `7795`，SHA-256
+`d9fdec1891c9e251df2fa264eda615abbabe5d6b0a9bde2be67b650652917f34`。
 
 只验证历史archives无歧义绑定的exact chain：
 `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-lineage-release-r3/lineage-release-32b9e67-r2-20260727T2227/child-output/lineage-release-r3`。
 三层directory各只允许一次non-following lstat与一次direct-entry scandir；只记录name/type/stat并机械构造三个artifact absolute paths。
 Artifact separate lstat与content open/read/hash/parse/mmap/copy全部0；禁止parent/sibling search、递归、alternate root、B2 manifest seal、validator、
-audit、eligibility、release或设备。成功只seal path-owner index/index-seal/terminal/terminal-seal并回Planner，不验证artifact bytes。
+audit、eligibility、release或设备。执行结果为directory lstat/scandir `3/3`、artifact content access全零、resolved paths `3`；
+path-owner index/index-seal/terminal/terminal-seal SHA-256依次为
+`b189117fdd0a9a65ca80660245ec84b7f2f533c3e496c96e76eb48a4666feb35`、
+`867d1ffad5bd29f24dc81b24a58ce66393dd688833d3a4516fe7f45ef50875e9`、
+`c21a691272ca7466271349daa5b10236c9f36dfeb481d592e9c368a87e7a4763`、
+`4bfebf4ad40e8c2e65ad2470faaed184f21d39eda73c13e689b09769d280752f`。该接受只确认path ownership，不验证artifact bytes。
 
 > 以下旧two-path执行细节已由Human engineering-governance override与B1A exact-five contract supersede，不得作为未来
 > PLAN输入；B1A-C2/后续Planner验收冻结的five-path child与manifest facts才是B2的新工程基线。本段保留仅作旧合同历史。
@@ -3572,7 +3583,7 @@ Option A owner prerequisite = accepted complete
 Advisor lineage owner decision = Option B subordinate exact provenance manifest
 Human engineering governance override = Orchestrator owns files/code/provenance/execution/Git
 helper v1 disposition = retained_release_audit_prerequisite_v1_superseded_before_real_validation
-repair v2 status = B2 frozen retained source path ENOENT; B2-C1 path-owner index waiting activation
+repair v2 status = B2-C1 path-owner index accepted; corrected B2 waiting PLAN-only activation
 accepted B1 result = ACCEPTED_BLOCKED_CONTRACT_CONFLICT
 accepted B1A result = HARD_FAILURE_PRE_ACQUISITION_LIFECYCLE; implementation progress 0
 accepted B1A-C1 result = HARD_FAILURE_BEFORE_TEST_EXEC; candidate carry-forward only
@@ -3639,10 +3650,11 @@ accepted B1A-C3E6F19-CORRECTIVE-15 result = PREVALIDATION_EVIDENCE_ORDER; implem
 accepted B1A-C3E6F19-CORRECTIVE-16 result = FOCUSED_POST_EQ_VALIDATION_SUCCESSOR_MISSING; targeted6/6; focused193 failures1 errors2
 accepted B1A-C3E6F19-CORRECTIVE-17 result = ACCEPTED_COMPLETE_POST_EQ_VALIDATION_SUCCESSOR; targeted5/5; focused195/195; full691/691
 accepted B2 result = FROZEN_RETAINED_SOURCE_PATH_ENOENT; lstat/open/read1/0/0; manifest0; retry0
-active task = REF-P7-25-R2-B2-C1 retained R3 exact path-owner index
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-C1-PATH-OWNER-INDEX-V1
+accepted B2-C1 result = ACCEPTED_EXACT_PATH_OWNER_INDEX_ONLY; resolved paths3; artifact content reads0
+active task = REF-P7-25-R2-B2 corrected exact-path modern manifest seal
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-CORRECTED-PATH-MANIFEST-SEAL-V3
 active executable task count = 0
-next reference task = REF-P7-25-R2-B2 BLOCKED_ON_C1_PATH_OWNER_INDEX
+next reference task = REF-P7-25-R2-B3 BLOCKED_ON_B2_ACCEPTANCE
 selected state C shutter = 1/2500
 device/network/camera/light = forbidden by active PLAN
 release qualification/generation/copy/consumption = forbidden
@@ -3673,7 +3685,8 @@ root-relative exact regular `.DS_Store`边界并用dedicated tests锁定；C15�
 `REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-16`证明metadata实现targeted通过，但focused暴露post-EQ历史blob缺少exact successor；
 `REF-P7-25-R2-B1A-C3E6F19-CORRECTIVE-17`在同一lineage owner内绑定`3a14fe0`exact subordinate successor并以full691/691获接受；
 `REF-P7-25-R2-B2`首次manifest-only执行因stale frozen source path在首个lstat处拒绝；`REF-P7-25-R2-B2-C1`只验证历史命名的
-exact三层directory chain及artifact name/type/path，content reads保持0；C1 accepted后才可另包恢复manifest-only seal；
+exact三层directory chain及artifact name/type/path，content reads保持0，并已获Planner接受；corrected B2须在独立PLAN-only activation后
+从sealed C1 evidence读取exact paths，旧root与旧路径不得重试；
 canonical validator call、eligibility emission、retained R3/release/device访问仍为0；
 retained R3 仍为 `RETAINED_UNVALIDATED_UNCONSUMED`。
 
