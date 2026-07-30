@@ -305,6 +305,28 @@ TD_B_PUBLIC_DEFAULT_SUCCESSOR_SCOPES = MappingProxyType({
         "payload, timeout, or cleanup widening"
     ),
 })
+TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_PATH = (
+    PROJECT_ROOT / "config/hsi/p7-governance-lineage-successor-v1.json"
+)
+TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_SHA256 = (
+    "7ff96378e76c5b450c44db55d5b5eee922afe084bb0ea37d837a6f12db928795"
+)
+TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_COMMIT = (
+    "3e2ebed132b6d4338bfa324bfc42c3565d2eeb3c"
+)
+TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_PARENT = (
+    "9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e"
+)
+TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_CLASSIFICATIONS = MappingProxyType({
+    ".agents/skills/camera-based-rgbww-optimizer/SKILL.md":
+        "bounded_validation_or_documentation",
+    "AGENTS.md": "bounded_validation_or_documentation",
+})
+TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_CURRENT_SHA256 = MappingProxyType({
+    ".agents/skills/camera-based-rgbww-optimizer/SKILL.md":
+        "3a77c8a0f7b02b0c8b15d31b625273e88a0ee38fca5bb739dbdaaacb40dfe81e",
+    "AGENTS.md": "604b10bedeac6c9285f6448f94323521bf021a58275cce84d64163e16a2f07a0",
+})
 TD_B_QUALIFICATION_PREPARATION_R1_PATH = Path(
     "/Volumes/4T/temp/rgbww-optimizer/"
     "p7-td-b-ray-public-default-lineage-c3-r1-offline-correction/"
@@ -2061,6 +2083,16 @@ def _validate_td_b_agents_policy_lineage(
 ) -> None:
     """Validate the one Human-policy AGENTS.md lineage exception fail-closed."""
     root = Path(project_root).resolve()
+    governance_successor = _td_b_checkpoint_contains(
+        new_checkpoint,
+        TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_COMMIT,
+        project_root=root,
+    )
+    historical_new_checkpoint = (
+        TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_PARENT
+        if governance_successor
+        else new_checkpoint
+    )
     policy_requested = Path(policy_freeze_path)
     if policy_requested.is_symlink():
         raise ValueError("TD-B AGENTS policy freeze cannot be a symlink")
@@ -2108,18 +2140,25 @@ def _validate_td_b_agents_policy_lineage(
     agents_path = root / "AGENTS.md"
     if agents_path.is_symlink() or not agents_path.is_file():
         raise ValueError("TD-B AGENTS policy owner differs")
-    if hashlib.sha256(agents_path.read_bytes()).hexdigest() != TD_B_AGENTS_CURRENT_SHA256:
+    if governance_successor:
+        successor = _validate_td_b_governance_lineage_successor(
+            new_checkpoint=new_checkpoint,
+            project_root=root,
+        )
+        if successor.get("AGENTS.md") != "bounded_validation_or_documentation":
+            raise ValueError("TD-B AGENTS governance successor classification differs")
+    elif hashlib.sha256(agents_path.read_bytes()).hexdigest() != TD_B_AGENTS_CURRENT_SHA256:
         raise ValueError("TD-B AGENTS current bytes differ")
     previous = subprocess.run(
         ["git", "show", f"{old_checkpoint}:AGENTS.md"], cwd=root, check=True,
         capture_output=True,
     ).stdout
     current = subprocess.run(
-        ["git", "show", f"{new_checkpoint}:AGENTS.md"], cwd=root, check=True,
+        ["git", "show", f"{historical_new_checkpoint}:AGENTS.md"], cwd=root, check=True,
         capture_output=True,
     ).stdout
     diff = subprocess.run(
-        ["git", "diff", old_checkpoint, new_checkpoint, "--", "AGENTS.md"],
+        ["git", "diff", old_checkpoint, historical_new_checkpoint, "--", "AGENTS.md"],
         cwd=root, check=True, capture_output=True,
     ).stdout
     if hashlib.sha256(previous).hexdigest() != TD_B_AGENTS_PREVIOUS_SHA256:
@@ -2293,6 +2332,241 @@ def _td_b_checkpoint_contains(
     ).returncode == 0
 
 
+def _validate_td_b_governance_lineage_successor(
+    *,
+    new_checkpoint: str,
+    project_root: str | Path = PROJECT_ROOT,
+    manifest_path: str | Path = TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_PATH,
+    require_canonical_manifest_owner: bool = True,
+    expected_manifest_sha256: str | None = None,
+) -> Mapping[str, str]:
+    """Validate the exact subordinate governance provenance layer fail-closed."""
+    root = Path(project_root).resolve()
+    requested = Path(manifest_path)
+    if requested.is_symlink():
+        raise ValueError("TD-B governance successor manifest cannot be a symlink")
+    path = requested.resolve()
+    if (
+        require_canonical_manifest_owner
+        and path != TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_PATH.resolve()
+    ):
+        raise ValueError("TD-B governance successor manifest owner differs")
+    if not path.exists():
+        raise ValueError("TD-B governance successor manifest is missing")
+    if not path.is_file() or not stat.S_ISREG(path.stat().st_mode):
+        raise ValueError("TD-B governance successor manifest is non-regular")
+    payload = path.read_bytes()
+    expected_payload_sha256 = (
+        TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_SHA256
+        if expected_manifest_sha256 is None
+        else expected_manifest_sha256
+    )
+    if hashlib.sha256(payload).hexdigest() != expected_payload_sha256:
+        raise ValueError("TD-B governance successor manifest hash differs")
+    try:
+        manifest = json.loads(payload)
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise ValueError("TD-B governance successor manifest JSON differs") from exc
+
+    if not isinstance(manifest, Mapping):
+        raise ValueError("TD-B governance successor manifest contract differs")
+    required = {
+        "schema", "status", "owner", "scope", "eligibility_owner", "commit",
+        "parent_commit", "changed_path_ledger", "selected_path_count",
+        "selected_paths", "selected_binary_diff_sha256", "rollback",
+        "extra_paths", "operation_counters",
+    }
+    counters = {
+        "candidate_reads", "retained_r3_reads", "canonical_retained_validator_calls",
+        "eligibility_emissions", "release_calls", "network_calls", "env_reads",
+        "device_calls", "camera_calls", "ray_calls", "strip_calls", "cleanup_calls",
+        "formal_calls", "public_analyzer_calls", "td_c_calls", "sentinel_calls",
+        "p8_calls",
+    }
+    ledger = manifest.get("changed_path_ledger")
+    selected = manifest.get("selected_paths")
+    operation_counters = manifest.get("operation_counters")
+    if (
+        set(manifest) != required
+        or manifest.get("schema") != "p7_td_b_governance_lineage_successor_v1"
+        or manifest.get("status") != "pass"
+        or manifest.get("owner") != "subordinate_exact_governance_provenance_only"
+        or manifest.get("scope") != "validation_only_no_eligibility_emission"
+        or manifest.get("eligibility_owner")
+        != "build_td_b_setup_release_lineage_candidate"
+        or manifest.get("commit") != TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_COMMIT
+        or manifest.get("parent_commit") != TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_PARENT
+        or manifest.get("selected_path_count") != 2
+        or manifest.get("selected_binary_diff_sha256")
+        != "5a6cd050cd1d096e0894508aec338f7249679810bea63626acdcff63df9d17c8"
+        or manifest.get("rollback")
+        != (
+            "restore only the two selected parent blobs; do not alter the other "
+            "179 paths or any historical manifest"
+        )
+        or manifest.get("extra_paths") != []
+        or not isinstance(operation_counters, Mapping)
+        or set(operation_counters) != counters
+        or any(type(operation_counters[name]) is not int or operation_counters[name] != 0
+               for name in counters)
+    ):
+        raise ValueError("TD-B governance successor manifest contract differs")
+    expected_ledger_command = [
+        "git", "diff", "--name-only", TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_PARENT,
+        TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_COMMIT,
+    ]
+    if (
+        not isinstance(ledger, Mapping)
+        or set(ledger) != {"command", "count", "lf_sha256"}
+        or ledger.get("command") != expected_ledger_command
+        or type(ledger.get("count")) is not int
+        or ledger.get("count") != 181
+        or ledger.get("lf_sha256")
+        != "9596c3fa8aee58259aff13b44badcc7d448e0555c80f166b20706dcd1e321118"
+    ):
+        raise ValueError("TD-B governance successor changed-path ledger differs")
+
+    entry_fields = {
+        "path", "classification", "scope", "before_blob_oid", "after_blob_oid",
+        "before_sha256", "after_sha256", "binary_diff_sha256", "rollback",
+        "extra_paths",
+    }
+    expected_entries = {
+        ".agents/skills/camera-based-rgbww-optimizer/SKILL.md": {
+            "before_blob_oid": "1f8bf2a7f568de77f0fa4290d18e300f0e48047e",
+            "after_blob_oid": "4d7dfe66c73036cb87e199c322f9344863f8c64e",
+            "before_sha256": "c8dd57a23ad684b4f7001f342ed3413a1abf4349bc6aeb90dbee7f5158139607",
+            "after_sha256": "3a77c8a0f7b02b0c8b15d31b625273e88a0ee38fca5bb739dbdaaacb40dfe81e",
+            "binary_diff_sha256": "7127dfdfb608b7de284a181afcca704c36b107aa3859e2fecea059ae47af3049",
+        },
+        "AGENTS.md": {
+            "before_blob_oid": "440956792bf843c15b2f315e66e16826305d2154",
+            "after_blob_oid": "58bfacb5fc46fcb42bf643d12974063533a684eb",
+            "before_sha256": "a035e6955ea113100031bf411f30abad3b84a9dd260fde848f1b1cfbd194c8a5",
+            "after_sha256": "604b10bedeac6c9285f6448f94323521bf021a58275cce84d64163e16a2f07a0",
+            "binary_diff_sha256": "5736f6992d6882b1012a26ae5123892674d1f88cde0fee6ad98a5d33f78f5066",
+        },
+    }
+    ordered_paths = list(TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_CLASSIFICATIONS)
+    if not isinstance(selected, list) or len(selected) != 2:
+        raise ValueError("TD-B governance successor selected path count differs")
+    if any(not isinstance(entry, Mapping) or set(entry) != entry_fields for entry in selected):
+        raise ValueError("TD-B governance successor selected entry schema differs")
+    actual_paths = [entry.get("path") for entry in selected]
+    if actual_paths != ordered_paths or len(actual_paths) != len(set(actual_paths)):
+        raise ValueError("TD-B governance successor selected path set differs")
+    for entry in selected:
+        entry_path = str(entry["path"])
+        expected = expected_entries[entry_path]
+        if (
+            entry.get("classification") != "bounded_validation_or_documentation"
+            or entry.get("scope") != "exact_authorized_governance_successor_only"
+            or entry.get("rollback")
+            != (
+                f"restore {entry_path} from parent "
+                f"{TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_PARENT} without changing any other path"
+            )
+            or entry.get("extra_paths") != []
+            or any(entry.get(name) != value for name, value in expected.items())
+        ):
+            raise ValueError(
+                f"TD-B governance successor selected entry differs: {entry_path}"
+            )
+
+    if (
+        not isinstance(new_checkpoint, str)
+        or len(new_checkpoint) != 40
+        or any(character not in "0123456789abcdef" for character in new_checkpoint)
+    ):
+        raise ValueError("TD-B governance successor checkpoint is invalid")
+    try:
+        resolved = subprocess.run(
+            ["git", "rev-parse", new_checkpoint], cwd=root, check=True,
+            capture_output=True, text=True,
+        ).stdout.strip()
+        parent = subprocess.run(
+            ["git", "rev-parse", f"{TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_COMMIT}^"],
+            cwd=root, check=True, capture_output=True, text=True,
+        ).stdout.strip()
+        ledger_bytes = subprocess.run(
+            expected_ledger_command, cwd=root, check=True, capture_output=True,
+        ).stdout
+    except subprocess.CalledProcessError as exc:
+        raise ValueError("TD-B governance successor Git owner differs") from exc
+    if (
+        resolved != new_checkpoint
+        or not _td_b_checkpoint_contains(
+            resolved, TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_COMMIT, project_root=root,
+        )
+    ):
+        raise ValueError("TD-B governance successor checkpoint ancestry differs")
+    ledger_paths = ledger_bytes.decode("utf-8").splitlines()
+    if (
+        parent != TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_PARENT
+        or len(ledger_paths) != 181
+        or len(ledger_paths) != len(set(ledger_paths))
+        or any(not item for item in ledger_paths)
+        or hashlib.sha256(ledger_bytes).hexdigest() != ledger["lf_sha256"]
+    ):
+        raise ValueError("TD-B governance successor historical owner differs")
+
+    try:
+        for entry in selected:
+            entry_path = str(entry["path"])
+            before_oid = subprocess.run(
+                ["git", "rev-parse", f"{TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_PARENT}:{entry_path}"],
+                cwd=root, check=True, capture_output=True, text=True,
+            ).stdout.strip()
+            after_oid = subprocess.run(
+                ["git", "rev-parse", f"{TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_COMMIT}:{entry_path}"],
+                cwd=root, check=True, capture_output=True, text=True,
+            ).stdout.strip()
+            before = subprocess.run(
+                ["git", "show", f"{TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_PARENT}:{entry_path}"],
+                cwd=root, check=True, capture_output=True,
+            ).stdout
+            after = subprocess.run(
+                ["git", "show", f"{TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_COMMIT}:{entry_path}"],
+                cwd=root, check=True, capture_output=True,
+            ).stdout
+            checkpoint = subprocess.run(
+                ["git", "show", f"{new_checkpoint}:{entry_path}"],
+                cwd=root, check=True, capture_output=True,
+            ).stdout
+            single_diff = subprocess.run(
+                ["git", "diff", "--binary", TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_PARENT,
+                 TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_COMMIT, "--", entry_path],
+                cwd=root, check=True, capture_output=True,
+            ).stdout
+            working = root / entry_path
+            if working.is_symlink() or not working.is_file():
+                raise ValueError(
+                    f"TD-B governance successor working owner differs: {entry_path}"
+                )
+            if (
+                before_oid != entry["before_blob_oid"]
+                or after_oid != entry["after_blob_oid"]
+                or hashlib.sha256(before).hexdigest() != entry["before_sha256"]
+                or hashlib.sha256(after).hexdigest() != entry["after_sha256"]
+                or hashlib.sha256(checkpoint).hexdigest() != entry["after_sha256"]
+                or hashlib.sha256(working.read_bytes()).hexdigest() != entry["after_sha256"]
+                or hashlib.sha256(single_diff).hexdigest() != entry["binary_diff_sha256"]
+            ):
+                raise ValueError(
+                    f"TD-B governance successor path identity differs: {entry_path}"
+                )
+        combined_diff = subprocess.run(
+            ["git", "diff", "--binary", TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_PARENT,
+             TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_COMMIT, "--", *ordered_paths],
+            cwd=root, check=True, capture_output=True,
+        ).stdout
+    except subprocess.CalledProcessError as exc:
+        raise ValueError("TD-B governance successor Git path owner differs") from exc
+    if hashlib.sha256(combined_diff).hexdigest() != manifest["selected_binary_diff_sha256"]:
+        raise ValueError("TD-B governance successor combined diff differs")
+    return TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_CLASSIFICATIONS
+
+
 def _validate_td_b_public_default_successor_lineage(
     *,
     new_checkpoint: str,
@@ -2302,6 +2576,18 @@ def _validate_td_b_public_default_successor_lineage(
 ) -> Mapping[str, str]:
     """Validate the exact public-default successor commit and current path owners."""
     root = Path(project_root).resolve()
+    governance_classifications = (
+        _validate_td_b_governance_lineage_successor(
+            new_checkpoint=new_checkpoint,
+            project_root=root,
+        )
+        if _td_b_checkpoint_contains(
+            new_checkpoint,
+            TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_COMMIT,
+            project_root=root,
+        )
+        else {}
+    )
     requested = Path(manifest_path)
     if requested.is_symlink():
         raise ValueError("TD-B public-default successor manifest cannot be a symlink")
@@ -2388,6 +2674,11 @@ def _validate_td_b_public_default_successor_lineage(
 
     for entry_path, classification in TD_B_PUBLIC_DEFAULT_SUCCESSOR_CLASSIFICATIONS.items():
         entry = by_path[entry_path]
+        current_owner_sha256 = (
+            TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_CURRENT_SHA256[entry_path]
+            if entry_path in governance_classifications
+            else entry.get("current_blob_sha256")
+        )
         rollback = (
             f"restore {entry_path} from parent {TD_B_PUBLIC_DEFAULT_SUCCESSOR_PARENT} "
             "and remove only this exact successor manifest entry"
@@ -2439,13 +2730,12 @@ def _validate_td_b_public_default_successor_lineage(
                 f"TD-B public-default successor Git owner differs: {entry_path}"
             ) from exc
         if (
-            hashlib.sha256(working.read_bytes()).hexdigest()
-            != entry.get("current_blob_sha256")
+            hashlib.sha256(working.read_bytes()).hexdigest() != current_owner_sha256
             or hashlib.sha256(old).hexdigest() != entry.get("old_blob_sha256")
             or hashlib.sha256(current).hexdigest()
             != entry.get("current_blob_sha256")
             or hashlib.sha256(checkpoint).hexdigest()
-            != entry.get("current_blob_sha256")
+            != current_owner_sha256
             or hashlib.sha256(diff).hexdigest() != entry.get("diff_sha256")
         ):
             raise ValueError(
