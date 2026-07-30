@@ -16240,3 +16240,5 @@ git_status=M .agent-work/EXECUTION_RESULT.md
 - retained_r3_status: expected 'RETAINED_UNVALIDATED_UNCONSUMED', got '<missing>'
 - candidate_contract_orchestrator_verified: expected True, got '<missing>'
 - zero_budget_fields: expected 'list of 19 unique field names', got '<PLAN object unavailable>'
+
+C12_QUALIFICATION_RESULT {"append_count":1,"c12_offline_qualification":"FAIL","candidate_counts":{"FULL":0,"PLAN":0},"errors":["PLAN_marker_count=0","FULL_marker_count=0"],"exit":1,"full_sha256":"4149897d26685c65b2dca8ea262c753126c18f0811bc93964fbbebfea91c266c","plan_sha256":"6cd894ef408a2c0af4b17b4224f02288126be93186463b9096a2ab06086a0b37","required_subset":{"FULL":0,"PLAN":0},"zero_budgets":"0/19"}
