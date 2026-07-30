@@ -1,6 +1,6 @@
 # REF-P7-25-R2-B2-C4：AST/span successor transform qualification
 
-**计划状态：** `PLANNER_COMPLETE_WAITING_ORCHESTRATOR_REVIEW`
+**计划状态：** `ACTIVE_EXECUTION_AUTHORIZED`
 
 **Planner 日期：** `2026-07-30`
 
@@ -11,17 +11,17 @@
 
 **预计时长：** `4–9 分钟`；纯离线，不属于预计超过10分钟的长任务。
 
-**当前唯一动作：** Orchestrator 验收 C3 review 和本 PLAN 后，先提交已审查状态，再由 Planner 仅修改本文件制作一个 direct-child PLAN-only activation commit。激活后的 Executer 才可运行一次新的 external builder：消费 accepted C3 structure index，重新读取 frozen rejected controller 一次，使用已证明的 AST selector 与物理 span 做一个最小 successor transform，并仅在 content-free synthetic inputs 上证明 successor 的真实 `main` post-root 路径和 fixtures 调用同一个 lifecycle owner。
+**当前唯一动作：** Executer 运行一次新的 external builder：消费 accepted C3 structure index，重新读取 frozen rejected controller 一次，使用已证明的 AST selector 与物理 span 做一个最小 successor transform，并仅在 content-free synthetic inputs 上证明 successor 的真实 `main` post-root 路径和 fixtures 调用同一个 lifecycle owner。
 
 **Planner stop：**
-`B2_C4_AST_SPAN_SUCCESSOR_WAITING_ORCHESTRATOR_ACTIVATION`。
+`B2_C4_AST_SPAN_SUCCESSOR_WAITING_PLANNER_REVIEW`。
 
-本文件当前 `execution_authorized=false`。任何 builder、source/C3 artifact 读取、root 创建、successor 生成/运行、real B2、retained-R3 access、validator、release、device 或 scientific operation 均未放行。
+本文件当前 `execution_authorized=true`。仅本 PLAN 明确界定的一次 builder、C3/source 读取、future root 创建、successor 生成和 content-free qualification 获得放行；real B2、retained-R3 access、validator、release、device 或 scientific operation 仍未放行。
 
 **Reviewed archive：**
 `.agent-work/PLANS/20260730-1054-p7-retained-r3-option-b-b2-c3-source-structure-index-review.md`，bytes `6695`，SHA-256 `694eb8a26b073d471035312c0c078c0b10912ef5f3eaa9f28d60534c8b74585f`。
 
-`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_c4_ast_span_successor_plan_v1","reference_task_id":"REF-P7-25-R2-B2-C4","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-AST-SPAN-SUCCESSOR-QUALIFICATION-V1","dispatch_state":"waiting_orchestrator_activation","execution_authorized":false,"single_current_action":"generate_one_ast_span_selected_successor_and_qualify_shared_real_fixture_lifecycle_without_real_b2","activation_parent":"ORCHESTRATOR_REVIEW_COMMIT_TO_BE_FROZEN_BY_PLAN_ONLY_ACTIVATION","activation_subject":"chore(plan): activate b2 c4 ast span successor","activation_changed_paths":[".agent-work/PLAN.md"],"activation_additional_paths":0,"activation_commit_count":1,"programmatic_dispatch_head_reads":1,"second_dispatch_head_reads":0,"dispatch_plan_sha256_owner":"sha256_of_exact_plan_blob_at_programmatic_dispatch_head","review_archive":{"path":".agent-work/PLANS/20260730-1054-p7-retained-r3-option-b-b2-c3-source-structure-index-review.md","bytes":6695,"sha256":"694eb8a26b073d471035312c0c078c0b10912ef5f3eaa9f28d60534c8b74585f"},"c3_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c3-source-structure-da90556-20260730T1645Z","c3_input_reads_each":1,"source":{"path":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-b2-corrected-controller-cb38ac5.py","bytes":29841,"sha256":"da9055626eac266f0eb983e713f246b18bdf26f7443a30d2a6f2ddb503cf3ba4","new_read_budget":1},"future_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-ast-span-successor-da90556-20260730T1700Z","builder_invocations":1,"successor_generation":1,"successor_real_b2_invocations":0,"content_free_shared_lifecycle_matrix":"12/12","c1_c2_retained_decision_reads":0,"canonical_validator_calls":0,"eligibility_emissions":0,"release_operations":0,"retry":0,"fallback":0,"planner_stop":"B2_C4_AST_SPAN_SUCCESSOR_WAITING_ORCHESTRATOR_ACTIVATION"}`
+`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_c4_ast_span_successor_plan_v1","reference_task_id":"REF-P7-25-R2-B2-C4","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C4-AST-SPAN-SUCCESSOR-QUALIFICATION-V1","dispatch_state":"execution_authorized","execution_authorized":true,"single_current_action":"generate_one_ast_span_selected_successor_and_qualify_shared_real_fixture_lifecycle_without_real_b2","activation_parent":"b4a3ad513f3bbca55f0c38c08fde2d3aa06aa29b","activation_subject":"chore(plan): activate b2 c4 ast span successor","activation_changed_paths":[".agent-work/PLAN.md"],"activation_additional_paths":0,"activation_commit_count":1,"programmatic_dispatch_head_reads":1,"second_dispatch_head_reads":0,"dispatch_plan_sha256_owner":"sha256_of_exact_plan_blob_at_programmatic_dispatch_head","review_archive":{"path":".agent-work/PLANS/20260730-1054-p7-retained-r3-option-b-b2-c3-source-structure-index-review.md","bytes":6695,"sha256":"694eb8a26b073d471035312c0c078c0b10912ef5f3eaa9f28d60534c8b74585f"},"c3_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c3-source-structure-da90556-20260730T1645Z","c3_input_reads_each":1,"source":{"path":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-b2-corrected-controller-cb38ac5.py","bytes":29841,"sha256":"da9055626eac266f0eb983e713f246b18bdf26f7443a30d2a6f2ddb503cf3ba4","new_read_budget":1},"future_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c4-ast-span-successor-da90556-20260730T1700Z","builder_invocations":1,"successor_generation":1,"successor_real_b2_invocations":0,"content_free_shared_lifecycle_matrix":"12/12","c1_c2_retained_decision_reads":0,"canonical_validator_calls":0,"eligibility_emissions":0,"release_operations":0,"retry":0,"fallback":0,"planner_stop":"B2_C4_AST_SPAN_SUCCESSOR_WAITING_PLANNER_REVIEW"}`
 
 ## 1. Planner decision and authority boundary
 
@@ -44,9 +44,11 @@
 
 ## 2. Activation and immutable root
 
-1. Orchestrator must first commit the reviewed C3 ER/archive/PLAN/FULL state.
-   Planner then changes only `.agent-work/PLAN.md` in one direct-child commit
-   with exact subject `chore(plan): activate b2 c4 ast span successor`.
+1. The reviewed C3 ER/archive/PLAN/FULL state is frozen at activation parent
+   `b4a3ad513f3bbca55f0c38c08fde2d3aa06aa29b`, subject
+   `chore(orch): accept b2 source structure index`. This direct-child activation
+   changes only `.agent-work/PLAN.md` with exact subject
+   `chore(plan): activate b2 c4 ast span successor`.
 2. Activation may only freeze the actual parent/child, PLAN blob identity,
    dispatch state, and final review stop. It may not widen inputs, budgets,
    transforms, matrices, roots, locks, or successor authority.
