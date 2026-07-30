@@ -16,9 +16,9 @@
 
 **当前可执行任务数：** `1`
 
-**当前 active task：** `REF-P7-25-R2-B1A-C3E6F18 committed-helper fixed-container bootstrap prerequisite`
+**当前 active task：** `REF-P7-25-R2-B1A-C3E6F18-CORRECTIVE-1 repo-local import and terminal evidence correction`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B1A-C3E6F18","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F18-BOOTSTRAP-PREREQUISITE","next_reference_task":"REF-P7-25-R2-B2","next_reference_status":"BLOCKED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"B1A_C3E6F17_C13_LINEAGE_SEAL_ACCEPTED_C3E6F18_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"3c5847fcbe0af85833c901f6f01058d000a3cecdc0f84e6ae331ed24e138c225","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B1A-C3E6F18-CORRECTIVE-1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F18-CORRECTIVE-1","next_reference_task":"REF-P7-25-R2-B2","next_reference_status":"BLOCKED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"B1A_C3E6F18_REJECTED_IMPORT_OWNER_TERMINAL_EVIDENCE_CORRECTIVE_1_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"3c5847fcbe0af85833c901f6f01058d000a3cecdc0f84e6ae331ed24e138c225","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -2517,12 +2517,26 @@ validation helper与治理证据，不产生eligibility，也不解锁bootstrap�
 
 ### REF-P7-25-R2-B1A-C3E6F18：Committed-helper fixed-container bootstrap prerequisite
 
-**状态：** `ACTIVE_PLANNER_PREPARED_WAITING_SHA_ACTIVATION`。
+**状态：** `REJECTED_IMPORT_OWNER_AND_TERMINAL_EVIDENCE_CONTRACT`。Planner archive：
+`.agent-work/PLANS/20260730-0234-p7-retained-r3-option-b-b1a-c3e6f18-import-failure-review.md`，SHA-256
+`732a279e908e26ad7b397b55d16e39527a0bedcffae1460245c82c8b79a31dd3`。
 
 复用已提交 helper，仅创建一个全新empty fixed container及deterministic record/seal；不运行后继controller，不创建candidate root，
 不读取retained R3，不调用canonical validator、不发出eligibility。允许的四条外置路径由PLAN exact冻结，执行前必须全部absent；
 单进程/单调用，container `mkdir`一次，record/seal各exclusive create一次，任一失败最多写一次fixed fallback并停止。成功只证明
 bootstrap prerequisite，不解锁release、R3 audit、consumer、network或device。Planner activation须先绑定更新后的FULL SHA与dispatch HEAD。
+
+唯一Python进程在helper import时因`ModuleNotFoundError`停止；PLAN/FULL parse、Git/path gate、四路径create/fallback与ER append均为0，
+四条路径仍absent，所有hard locks为0。本包不可重试。
+
+### REF-P7-25-R2-B1A-C3E6F18-CORRECTIVE-1：Repo-local import and terminal evidence correction
+
+**状态：** `ACTIVE_PLANNER_CORRECTIVE_WAITING_SHA_ACTIVATION`。
+
+冻结repo `/Users/ibobby/Projects/WLED-RGBWW/src`一次插入`sys.path[0]`后按完整模块名import并验证`__file__`/blob/SHA；
+禁止source loader、editable-install猜测、复制scanner或fallback parser。单进程在import前建立stdlib single-use ER writer与outer exception
+boundary；writer ready后的PASS/FAIL均append一次，payload未启动或writer未建立则仅tool terminal取证，不虚报ER。其余F18路径、预算、
+bootstrap语义与retained/release/device硬锁不变。
 
 ### REF-P7-25-R2-B2：唯一repair commit与immutable manifest seal
 
@@ -3149,7 +3163,7 @@ Option A owner prerequisite = accepted complete
 Advisor lineage owner decision = Option B subordinate exact provenance manifest
 Human engineering governance override = Orchestrator owns files/code/provenance/execution/Git
 helper v1 disposition = retained_release_audit_prerequisite_v1_superseded_before_real_validation
-repair v2 status = B1A-C3E6F17-C13 lineage seal accepted; C3E6F18 active
+repair v2 status = B1A-C3E6F18 rejected import owner/terminal evidence; corrective-1 active
 accepted B1 result = ACCEPTED_BLOCKED_CONTRACT_CONFLICT
 accepted B1A result = HARD_FAILURE_PRE_ACQUISITION_LIFECYCLE; implementation progress 0
 accepted B1A-C1 result = HARD_FAILURE_BEFORE_TEST_EXEC; candidate carry-forward only
@@ -3195,8 +3209,9 @@ accepted B1A-C3E6F17-CORRECTIVE-11 result = PLAN_SCANNER_FALSE_NEGATIVE; actual 
 accepted B1A-C3E6F17-CORRECTIVE-12 result = REPEATED_SCANNER_FALSE_NEGATIVE; actual candidates1/1; reported0/0; counters0/0; ER appended
 accepted B1A-C3E6F17-CORRECTIVE-13 result = VALIDATION_ONLY_SCANNER_OWNER_ACCEPTED; Executer11/11; Planner11/11; eligibility0
 accepted B1A-C3E6F17-C13-LINEAGE-SEAL result = EXACT_SIX_PATH_COMMIT_ACCEPTED; commit64c34ad; retainedR3 untouched
-active task = REF-P7-25-R2-B1A-C3E6F18 committed-helper fixed-container bootstrap prerequisite
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F18-BOOTSTRAP-PREREQUISITE
+accepted B1A-C3E6F18 result = IMPORT_OWNER_AND_TERMINAL_EVIDENCE_FAILURE; external paths untouched; ER0
+active task = REF-P7-25-R2-B1A-C3E6F18-CORRECTIVE-1 repo-local import and terminal evidence correction
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F18-CORRECTIVE-1
 active executable task count = 1
 next reference task = REF-P7-25-R2-B2 BLOCKED
 selected state C shutter = 1/2500
@@ -3223,7 +3238,7 @@ JavaScript SyntaxError 未启动 Python；C4 随后仅 8/12，C5 又因正文 ma
 但 Executer scanner 将 PLAN candidate 错计为0；C12 的更精确文字合同仍因临时实现转录漂移错报0/0。当前 C13 将 scanner
 收敛到一个validation-only helper与一个dedicated test并获Planner接受，避免继续复制实现；它不拥有eligibility或retained-release语义。
 后继另包才可冻结新controller并建立 fresh bootstrap container；不得重跑F14、提前修改production或输出eligibility。retained R3继续为
-`REF-P7-25-R2-B1A-C3E6F18`复用已提交helper，仅建立一次empty fixed-container prerequisite及record/seal；
+`REF-P7-25-R2-B1A-C3E6F18-CORRECTIVE-1`修正repo-local import与import前terminal writer后，仍仅建立一次empty fixed-container prerequisite及record/seal；
 canonical validator call、eligibility emission、retained R3/release/device访问仍为0；
 retained R3 仍为 `RETAINED_UNVALIDATED_UNCONSUMED`。
 
