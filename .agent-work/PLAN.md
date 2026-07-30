@@ -1,6 +1,6 @@
 # REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-4：调用层封装最小纠偏
 
-**计划状态：** `planner_ready_waiting_orchestrator_full_sync`
+**计划状态：** `active_planner_corrective_only`
 
 **Planner 日期：** `2026-07-29`
 
@@ -10,9 +10,9 @@
 
 **active_plan_contract_id：** `P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F17-CORRECTIVE-4`
 
-**只读 FULL SHA-256（待 Orchestrator 将 active task 同步为 C4 后刷新）：** `553de9e0e0b3b56a844fbf196357fedf27af4635a2406b0e71f73327b3ca8467`
+**只读 FULL SHA-256：** `359e12bdd766a2360a5349dd90dd49119acf2ac800401dcba81e6a41df756c49`
 
-`PLAN_MACHINE_CONTRACT={"schema":"planner_execution_contract_v1","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F17-CORRECTIVE-4","task_id":"REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-4","parent_reference_task_id":"REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-3","package_kind":"bounded_offline_invocation_layer_wrapper_only","single_current_action":"direct_exec_command_start_one_python_stdlib_script_then_append_one_execution_result_and_stop","expected_full_sha256":"553de9e0e0b3b56a844fbf196357fedf27af4635a2406b0e71f73327b3ca8467","full_owner_field":"active_task","canonical_identity_field":"task_id","full_identity_binding":"must_equal_after_orchestrator_full_sync","body_marker_examples_forbidden":true,"empty_payload_marker_examples_forbidden":true,"exact_plan_marker_count":1,"exact_full_marker_count_required":1,"gate_before_path_operations":true,"artifact_operations":0,"path_operations":0,"fallback":0,"retry":0,"reuse":0,"rewrite":0,"alternate_path":0,"old_root_touch":0,"controller_access":0,"source_access":0,"test_execution":0,"git_mutation":0,"release_access":0,"network_access":0,"env_access":0,"device_access":0,"camera_access":0,"ray_access":0,"strip_access":0,"execution_result_append_cap":1,"append_once_on_gate_pass_or_fail":true,"planner_stop_required":true}`
+`PLAN_MACHINE_CONTRACT={"schema":"planner_execution_contract_v1","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F17-CORRECTIVE-4","task_id":"REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-4","parent_reference_task_id":"REF-P7-25-R2-B1A-C3E6F17-CORRECTIVE-3","package_kind":"bounded_offline_invocation_layer_wrapper_only","single_current_action":"direct_exec_command_start_one_python_stdlib_script_then_append_one_execution_result_and_stop","expected_full_sha256":"359e12bdd766a2360a5349dd90dd49119acf2ac800401dcba81e6a41df756c49","full_owner_field":"active_task","canonical_identity_field":"task_id","full_identity_binding":"must_equal","body_marker_examples_forbidden":true,"empty_payload_marker_examples_forbidden":true,"exact_plan_marker_count":1,"exact_full_marker_count_required":1,"gate_before_path_operations":true,"artifact_operations":0,"path_operations":0,"fallback":0,"retry":0,"reuse":0,"rewrite":0,"alternate_path":0,"old_root_touch":0,"controller_access":0,"source_access":0,"test_execution":0,"git_mutation":0,"release_access":0,"network_access":0,"env_access":0,"device_access":0,"camera_access":0,"ray_access":0,"strip_access":0,"execution_result_append_cap":1,"append_once_on_gate_pass_or_fail":true,"planner_stop_required":true}`
 
 ## 唯一 executable action（Orchestrator 同步 FULL 后才可 dispatch）
 
