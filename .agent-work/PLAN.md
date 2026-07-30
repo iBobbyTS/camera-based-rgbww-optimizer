@@ -1,6 +1,6 @@
 # REF-P7-25-R2-B2-C2：content-free controller 与 failure lifecycle 纠偏
 
-**计划状态：** `PLANNER_COMPLETE_WAITING_ORCHESTRATOR_REVIEW`
+**计划状态：** `EXECUTION_AUTHORIZED`
 
 **Planner 日期：** `2026-07-30`
 
@@ -11,20 +11,17 @@
 
 **预计时长：** `3–8 分钟`；纯离线，不属于预计超过10分钟的长任务。
 
-**当前唯一动作：** 在 Orchestrator 独立接受失败 review、更新 FULL 并由 Planner 另行做一次 PLAN-only activation 后，Executer 才可用一次本地 builder invocation，在一个 brand-new external correction root 中消费冻结的失败 controller source，生成一个 immutable successor controller；仅用 content-free in-memory fixtures 与 correction-root 内的 injected-writer fixtures 验证 exact resolved-record owner、progressive failure terminal/seal 和 seal-before-ER sequencing，然后 durably seal C2 evidence 并 append 一次 ER。
+**当前唯一动作：** Executer 可用一次本地 builder invocation，在一个 brand-new external correction root 中消费冻结的失败 controller source，生成一个 immutable successor controller；仅用 content-free in-memory fixtures 与 correction-root 内的 injected-writer fixtures 验证 exact resolved-record owner、progressive failure terminal/seal 和 seal-before-ER sequencing，然后 durably seal C2 evidence 并 append 一次 ER。
 
-**当前 Planner stop：**
-`B2_CORRECTED_FAILURE_REVIEWED_WAITING_ORCHESTRATOR_REVIEW`。
-
-**未来 C2 execution stop：**
+**Planner stop：**
 `B2_C2_CONTROLLER_CORRECTION_WAITING_PLANNER_REVIEW`。
 
-本文件当前 `execution_authorized=false`。不得据此创建 root、写 builder/source、运行 self-check，或执行任何 controller。只有未来 exact PLAN-only activation commit 把状态改为 `EXECUTION_AUTHORIZED` 并冻结 dispatch parent/subject/path topology 后，Executer 才可执行一次。
+本文件当前 `execution_authorized=true`。Executer 只可执行本 PLAN 冻结的一次 C2 content-free controller correction；不得读取 C1/retained/decision sources、运行 real-input successor、进入 B2/B3、调用 canonical validator、产生 eligibility/release，或进入任何设备/scientific route。
 
 **Reviewed archive：**
 `.agent-work/PLANS/20260730-1021-p7-retained-r3-option-b-b2-corrected-manifest-failure-review.md`，bytes `9782`，SHA-256 `9317f2953b39cab6d847728fb14e69516481376283fc90b4a2b8fee0dbb39ed0`。
 
-`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_c2_controller_correction_plan_v1","reference_task_id":"REF-P7-25-R2-B2-C2","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C2-CONTENT-FREE-CONTROLLER-LIFECYCLE-CORRECTION-V1","dispatch_state":"waiting_orchestrator_review","execution_authorized":false,"single_current_action":"build_and_validate_content_free_successor_controller_and_failure_lifecycle","activation":"pending_future_plan_only_commit","review_archive":{"path":".agent-work/PLANS/20260730-1021-p7-retained-r3-option-b-b2-corrected-manifest-failure-review.md","bytes":9782,"sha256":"9317f2953b39cab6d847728fb14e69516481376283fc90b4a2b8fee0dbb39ed0"},"rejected_controller":{"path":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-b2-corrected-controller-cb38ac5.py","bytes":29841,"sha256":"da9055626eac266f0eb983e713f246b18bdf26f7443a30d2a6f2ddb503cf3ba4"},"failed_root":{"path":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-corrected-manifest-b189117-20260730T1600Z","expected_direct_entries":0,"reuse":false},"future_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c2-controller-correction-da90556-20260730T1621Z","builder_invocations":1,"successor_real_input_invocations":0,"c1_evidence_reads":0,"retained_artifact_reads":0,"decision_source_reads":0,"retry":0,"fallback":0,"planner_stop":"B2_C2_CONTROLLER_CORRECTION_WAITING_PLANNER_REVIEW"}`
+`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_c2_controller_correction_plan_v1","reference_task_id":"REF-P7-25-R2-B2-C2","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-C2-CONTENT-FREE-CONTROLLER-LIFECYCLE-CORRECTION-V1","dispatch_state":"execution_authorized","execution_authorized":true,"single_current_action":"build_and_validate_content_free_successor_controller_and_failure_lifecycle","activation_parent":"6a20100f4d57a6a3abf21110d249df2a4f959f14","activation_subject":"chore(plan): activate b2 c2 controller correction","activation_changed_paths":[".agent-work/PLAN.md"],"activation_additional_paths":0,"activation_commit_count":1,"programmatic_dispatch_head_reads":1,"second_dispatch_head_reads":0,"dispatch_plan_sha256_owner":"sha256_of_exact_plan_blob_at_programmatic_dispatch_head","hand_transcribed_child_sha":false,"review_archive":{"path":".agent-work/PLANS/20260730-1021-p7-retained-r3-option-b-b2-corrected-manifest-failure-review.md","bytes":9782,"sha256":"9317f2953b39cab6d847728fb14e69516481376283fc90b4a2b8fee0dbb39ed0"},"rejected_controller":{"path":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-b2-corrected-controller-cb38ac5.py","bytes":29841,"sha256":"da9055626eac266f0eb983e713f246b18bdf26f7443a30d2a6f2ddb503cf3ba4"},"failed_root":{"path":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-corrected-manifest-b189117-20260730T1600Z","expected_direct_entries":0,"reuse":false},"future_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c2-controller-correction-da90556-20260730T1621Z","builder_invocations":1,"successor_real_input_invocations":0,"c1_evidence_reads":0,"retained_artifact_reads":0,"decision_source_reads":0,"retry":0,"fallback":0,"planner_stop":"B2_C2_CONTROLLER_CORRECTION_WAITING_PLANNER_REVIEW"}`
 
 ## 1. Review decision and authority boundary
 
@@ -51,7 +48,7 @@
 
 ## 2. Frozen inputs and zero-content boundary
 
-After future activation, the sole builder may consume exactly these inputs:
+After activation, the sole builder may consume exactly these inputs:
 
 1. Rejected controller source:
    `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-b2-corrected-controller-cb38ac5.py`,
@@ -64,7 +61,7 @@ After future activation, the sole builder may consume exactly these inputs:
    non-following directory `lstat` and one direct `scandir`; it must remain
    mode `0700`, inode `2188351`, and have zero direct entries. No child path is
    opened and the directory is not mutated.
-3. Active PLAN/Git dispatch metadata required by the future activation. The
+3. Active PLAN/Git dispatch metadata frozen by this activation. The
    builder may use read-only Git plumbing to prove exact activation parent,
    subject, sole changed path `.agent-work/PLAN.md`, active PLAN blob hash, and
    clean worktree before root creation.
@@ -85,21 +82,33 @@ fixtures; they do not authorize reading the C1 payload again. Any future real
 B2 invocation needs a newly explicit one-time C1 evidence read budget in a new
 PLAN after C2 acceptance.
 
-## 3. Brand-new correction root and single builder
+## 3. Activated dispatch, brand-new correction root, and single builder
 
-1. Exact future root:
+1. Activation direct parent is exact
+   `6a20100f4d57a6a3abf21110d249df2a4f959f14`; subject is exact
+   `chore(plan): activate b2 c2 controller correction`; changed paths are exact
+   `.agent-work/PLAN.md`, additional paths `0`, activation commit count `1`.
+   Executer must read symbolic HEAD exactly once and verify from Git objects
+   that the programmatic dispatch HEAD is that parent's direct child with the
+   exact subject/path topology. The exact active PLAN SHA-256 is derived
+   non-circularly from the `.agent-work/PLAN.md` blob at that programmatic
+   dispatch HEAD and must equal working bytes; no PLAN-embedded expected hash,
+   hand-transcribed child SHA, or second HEAD read is allowed.
+2. Worktree must be clean before root creation. If not, stop before source or
+   failed-root access; Executer may not commit, repair, or clean it.
+3. Exact future root:
    `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c2-controller-correction-da90556-20260730T1621Z`.
    It must be absent immediately before one builder creates it mode `0700`.
    No precreation, alternate timestamp/root, reuse, delete, rename, repair,
    second root, retry, fallback, or second builder is allowed.
-2. Executer may author one disposable builder source outside the repository and
+4. Executer may author one disposable builder source outside the repository and
    under `/Volumes/4T/temp/rgbww-optimizer`; freeze its exact bytes/SHA before
    the single invocation. The builder and output successor are evidence, not
    repository production code.
-3. The builder owns input read, exact source transformation, syntax compile,
+5. The builder owns input read, exact source transformation, syntax compile,
    content-free self-checks, fixture subprocesses, canonical no-clobber writes,
    fsyncs, strict reloads, correction terminal, and terminal seal.
-4. Repository source/tests/config/docs/skills/wrappers/GUIDE/FULL/archives/PLAN
+6. Repository source/tests/config/docs/skills/wrappers/GUIDE/FULL/archives/PLAN
    are read-only. After the physical C2 terminal seal, Executer may append one
    C2 handoff to `.agent-work/EXECUTION_RESULT.md`; implementation edit and Git
    commit remain `0/0`.
