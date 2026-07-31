@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import ast
-from dataclasses import fields, replace
+from dataclasses import FrozenInstanceError, fields, replace
 import hashlib
 import inspect
 import unittest
@@ -174,12 +174,176 @@ class ControllerConformanceTests(unittest.TestCase):
         self.assertFalse(any(isinstance(node, ast.Import) and any(alias.name in {"os", "pathlib", "subprocess", "socket", "requests"} for alias in node.names) for node in ast.walk(tree)))
         self.assertEqual(subject.__all__, [
             "ControllerConformanceError", "ControllerConformanceReport",
-            "ControllerConformanceRequirements", "LifecycleCallbacks",
+            "ControllerConformanceRequirements", "ControllerTransportReport",
+            "LifecycleCallbacks",
             "LifecycleRequirements", "LifecycleResult", "RootIdentityChain",
             "analyze_controller_source", "execute_controller_lifecycle",
             "validate_root_identity_chain",
         ])
-        self.assertEqual(len([name for name in dir(self) if name.startswith("test_")]), 14)
+        self.assertEqual(len([name for name in dir(self) if name.startswith("test_")]), 20)
+
+    def test_15_transport_report_classifies_effect_and_fixture_bindings(self):
+        report = subject.analyze_controller_source(runtime(
+            "live_root = create_exclusive_root(path)\n"
+            "live_file = read_exact_file(child, root=live_root)\n"
+            "fixture_root = DirectoryIdentity(path='/fixture', device=7, inode=9, mode=448)\n"
+            "fixture_file = FileIdentity(path='/fixture/a', data=b'x', byte_count=1, "
+            "sha256='0', device=7, inode=10, mode=384, root=fixture_root)\n"
+            "assert live_file.root == live_root"
+        ))
+        self.assertEqual(report.transport.effect_bindings, (
+            ("live_file", "FileIdentity", "read_exact_file"),
+            ("live_root", "DirectoryIdentity", "create_exclusive_root"),
+        ))
+        self.assertEqual(report.transport.fixture_bindings, (
+            ("fixture_file", "FileIdentity", "FileIdentity"),
+            ("fixture_root", "DirectoryIdentity", "DirectoryIdentity"),
+        ))
+        self.assertEqual(
+            report.transport.fixture_constructor_edges,
+            (("fixture_file", "root", "fixture_root"),),
+        )
+        self.assertEqual(report.transport.effect_transport_uses, ())
+
+    def test_16_fixture_file_root_composition_is_not_live_transport(self):
+        report = subject.analyze_controller_source(runtime(
+            "drift_root = DirectoryIdentity(path='/fixture', device=7, inode=9, mode=448)\n"
+            "drift_file = FileIdentity(path='/fixture/a', data=b'x', byte_count=1, "
+            "sha256='0', device=7, inode=10, mode=384, root=drift_root)"
+        ))
+        self.assertEqual(report.transport.effect_bindings, ())
+        self.assertEqual(report.transport.fixture_bindings, (
+            ("drift_file", "FileIdentity", "FileIdentity"),
+            ("drift_root", "DirectoryIdentity", "DirectoryIdentity"),
+        ))
+        self.assertEqual(
+            report.transport.fixture_constructor_edges,
+            (("drift_file", "root", "drift_root"),),
+        )
+        self.assertEqual(report.transport.effect_transport_uses, ())
+
+    def test_17_effect_identity_cannot_masquerade_as_fixture(self):
+        source = runtime(
+            "live_root = create_exclusive_root(path)\n"
+            "forged = FileIdentity(path='/fixture/a', data=b'x', byte_count=1, "
+            "sha256='0', device=7, inode=10, mode=384, root=live_root)"
+        )
+        with self.assertRaises(subject.ControllerConformanceError) as raised:
+            subject.analyze_controller_source(source)
+        self.assertEqual(raised.exception.code, "effect_fixture_constructor_transport")
+
+    def test_18_effect_alias_container_and_generic_helper_transport_rejected(self):
+        cases = {
+            "alias": (
+                "live = create_exclusive_root(path)\nalias = live",
+                "effect_alias_transport",
+            ),
+            "container": (
+                "live = create_exclusive_root(path)\nitems = [live]",
+                "effect_container_transport",
+            ),
+            "generic_helper_argument": (
+                "live = create_exclusive_root(path)\nconsume(live)",
+                "effect_generic_helper_transport",
+            ),
+            "callback_return": (
+                "live = create_exclusive_root(path)\nreturn live",
+                "effect_callback_return",
+            ),
+            "closure_return": (
+                "live = create_exclusive_root(path)\ndef inner():\n    return live\ninner()",
+                "effect_closure_return",
+            ),
+        }
+        for name, (body, code) in cases.items():
+            with self.subTest(name=name):
+                with self.assertRaises(subject.ControllerConformanceError) as raised:
+                    subject.analyze_controller_source(runtime(body))
+                self.assertEqual(raised.exception.code, code)
+
+    def test_19_exact_root_identity_chain_composition_only_exception(self):
+        prefix = (
+            "before = create_exclusive_root(path)\n"
+            "item = read_exact_file(child, root=before)\n"
+            "after = create_exclusive_root(path)\n"
+        )
+        report = subject.analyze_controller_source(runtime(
+            prefix
+            + "chain = RootIdentityChain(before=before, files=(item,), after=after)\n"
+            + "validated = validate_root_identity_chain(chain)"
+        ))
+        self.assertEqual(
+            report.transport.root_chain_compositions,
+            (("chain", "before", ("item",), "after"),),
+        )
+        self.assertEqual(
+            report.transport.root_chain_validations,
+            (("chain", "validate_root_identity_chain"),),
+        )
+        self.assertEqual(report.transport.effect_transport_uses, ())
+
+        near_misses = {
+            "positional": (
+                "chain = RootIdentityChain(before, (item,), after)\n"
+                "validated = validate_root_identity_chain(chain)",
+                "root_chain_shape_invalid",
+            ),
+            "list_files": (
+                "chain = RootIdentityChain(before=before, files=[item], after=after)\n"
+                "validated = validate_root_identity_chain(chain)",
+                "root_chain_shape_invalid",
+            ),
+            "missing": (
+                "chain = RootIdentityChain(before=before, files=(item,))\n"
+                "validated = validate_root_identity_chain(chain)",
+                "root_chain_shape_invalid",
+            ),
+            "extra": (
+                "chain = RootIdentityChain(before=before, files=(item,), after=after, extra=1)\n"
+                "validated = validate_root_identity_chain(chain)",
+                "root_chain_shape_invalid",
+            ),
+            "wrong_validator": (
+                "chain = RootIdentityChain(before=before, files=(item,), after=after)\n"
+                "validated = validate_other(chain)",
+                "root_chain_unvalidated",
+            ),
+            "alias": (
+                "chain = RootIdentityChain(before=before, files=(item,), after=after)\n"
+                "validated = validate_root_identity_chain(chain)\nalias = chain",
+                "owner_alias_escape",
+            ),
+        }
+        for name, (tail, code) in near_misses.items():
+            with self.subTest(name=name):
+                with self.assertRaises(subject.ControllerConformanceError) as raised:
+                    subject.analyze_controller_source(runtime(prefix + tail))
+                self.assertEqual(raised.exception.code, code)
+
+    def test_20_transport_report_is_deterministic_and_exports_exact(self):
+        source = runtime(
+            "live = create_exclusive_root(path)\n"
+            "value = live.path\n"
+            "fixture = DirectoryIdentity(path='/fixture', device=7, inode=9, mode=448)"
+        )
+        first = subject.analyze_controller_source(source).transport
+        second = subject.analyze_controller_source(source).transport
+        self.assertEqual(first, second)
+        self.assertTrue(all(isinstance(getattr(first, field.name), tuple) for field in fields(first)))
+        with self.assertRaises(FrozenInstanceError):
+            first.effect_bindings = ()
+        self.assertIn("ControllerTransportReport", subject.__all__)
+        module_tree = ast.parse(inspect.getsource(subject))
+        analyzers = [
+            node.name for node in ast.walk(module_tree)
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+            and "analyze" in node.name and "controller" in node.name
+        ]
+        self.assertEqual(analyzers, ["analyze_controller_source"])
+        self.assertEqual(
+            [name for name in subject.__all__ if "analyze" in name],
+            ["analyze_controller_source"],
+        )
 
 
 if __name__ == "__main__":

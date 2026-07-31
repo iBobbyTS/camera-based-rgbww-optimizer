@@ -28,6 +28,7 @@ __all__ = [
     "ControllerConformanceError",
     "ControllerConformanceReport",
     "ControllerConformanceRequirements",
+    "ControllerTransportReport",
     "LifecycleCallbacks",
     "LifecycleRequirements",
     "LifecycleResult",
@@ -105,6 +106,7 @@ _CALL_OWNERS = MappingProxyType(
         "SealTargetIdentity": "SealTargetIdentity",
     }
 )
+_OWNER_CONSTRUCTORS = frozenset(owner.__name__ for owner in _OWNER_TYPES)
 _OPAQUE_CALLS = frozenset(("validate_terminal_seal",))
 _REFLECTION_CALLS = frozenset(
     ("getattr", "setattr", "delattr", "vars", "dir", "globals", "locals", "eval", "exec")
@@ -119,6 +121,16 @@ class ControllerConformanceRequirements:
 
 
 @dataclass(frozen=True)
+class ControllerTransportReport:
+    effect_bindings: tuple[tuple[str, str, str], ...]
+    fixture_bindings: tuple[tuple[str, str, str], ...]
+    fixture_constructor_edges: tuple[tuple[str, str, str], ...]
+    root_chain_compositions: tuple[tuple[str, str, tuple[str, ...], str], ...]
+    root_chain_validations: tuple[tuple[str, str], ...]
+    effect_transport_uses: tuple[tuple[str, str], ...]
+
+
+@dataclass(frozen=True)
 class ControllerConformanceReport:
     source_sha256: str
     owner_fields: tuple[tuple[str, tuple[str, ...]], ...]
@@ -126,6 +138,7 @@ class ControllerConformanceReport:
     bound_results: tuple[tuple[str, str], ...]
     attribute_uses: tuple[tuple[str, str], ...]
     root_reads: tuple[tuple[str, str], ...]
+    transport: ControllerTransportReport
 
 
 def _call_name(node: ast.Call) -> str | None:
@@ -144,6 +157,34 @@ def _direct_assignment(call: ast.Call, parents: Mapping[ast.AST, ast.AST]) -> st
     if isinstance(parent, ast.AnnAssign) and parent.value is call:
         return parent.target.id if isinstance(parent.target, ast.Name) else None
     return None
+
+
+def _nearest_function(
+    node: ast.AST, parents: Mapping[ast.AST, ast.AST]
+) -> ast.FunctionDef | ast.AsyncFunctionDef | ast.Lambda | None:
+    current = parents.get(node)
+    while current is not None:
+        if isinstance(current, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
+            return current
+        current = parents.get(current)
+    return None
+
+
+def _keyword_map(call: ast.Call) -> dict[str, ast.expr] | None:
+    if any(keyword.arg is None for keyword in call.keywords):
+        return None
+    return {keyword.arg: keyword.value for keyword in call.keywords if keyword.arg is not None}
+
+
+def _name_tuple(node: ast.AST) -> tuple[str, ...] | None:
+    if not isinstance(node, ast.Tuple):
+        return None
+    names: list[str] = []
+    for element in node.elts:
+        if not isinstance(element, ast.Name):
+            return None
+        names.append(element.id)
+    return tuple(names)
 
 
 def _current_owner_surface() -> tuple[
@@ -199,6 +240,9 @@ def analyze_controller_source(
         for child in ast.iter_child_nodes(parent)
     }
     bindings: dict[str, str] = {}
+    effect_bindings: dict[str, tuple[str, str]] = {}
+    fixture_bindings: dict[str, tuple[str, str]] = {}
+    binding_functions: dict[str, ast.AST | None] = {}
     opaque: set[str] = set()
     root_names: set[str] = set()
     root_reads: list[tuple[str, str]] = []
@@ -217,7 +261,13 @@ def analyze_controller_source(
             if assigned in bindings or assigned in opaque:
                 raise ControllerConformanceError("owner_result_rebound")
             bindings[assigned] = owner
-            if owner == "DirectoryIdentity":
+            binding_functions[assigned] = _nearest_function(node, parents)
+            provenance = (owner, name or "")
+            if name in _OWNER_CONSTRUCTORS:
+                fixture_bindings[assigned] = provenance
+            else:
+                effect_bindings[assigned] = provenance
+            if owner == "DirectoryIdentity" and assigned in effect_bindings:
                 root_names.add(assigned)
         elif name in _OPAQUE_CALLS:
             assigned = _direct_assignment(node, parents)
@@ -239,6 +289,73 @@ def analyze_controller_source(
 
     if len({root_name for _assigned, root_name in root_reads}) > 1:
         raise ControllerConformanceError("read_root_identity_not_shared")
+
+    fixture_constructor_edges: list[tuple[str, str, str]] = []
+    root_chain_compositions: dict[str, tuple[str, tuple[str, ...], str]] = {}
+    root_chain_validations: list[tuple[str, str]] = []
+
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        name = _call_name(node)
+        assigned = _direct_assignment(node, parents)
+        if name in _OWNER_CONSTRUCTORS and assigned is not None:
+            keywords = _keyword_map(node)
+            for argument in (*node.args, *(node.keywords)):
+                value = argument.value if isinstance(argument, ast.keyword) else argument
+                if isinstance(value, ast.Name) and value.id in effect_bindings:
+                    raise ControllerConformanceError("effect_fixture_constructor_transport")
+            if keywords is None:
+                if any(
+                    isinstance(argument, ast.Name) and argument.id in fixture_bindings
+                    for argument in node.args
+                ):
+                    raise ControllerConformanceError("fixture_constructor_edge_not_named")
+                continue
+            allowed_fields = set(dict(requirements.owner_fields)[name or ""])
+            for field_name, value in keywords.items():
+                if isinstance(value, ast.Name) and value.id in fixture_bindings:
+                    if field_name not in allowed_fields:
+                        raise ControllerConformanceError("fixture_constructor_edge_unknown_field")
+                    fixture_constructor_edges.append((assigned, field_name, value.id))
+
+        if name == "RootIdentityChain":
+            if assigned is None or node.args:
+                raise ControllerConformanceError("root_chain_shape_invalid")
+            keywords = _keyword_map(node)
+            if keywords is None or set(keywords) != {"before", "files", "after"}:
+                raise ControllerConformanceError("root_chain_shape_invalid")
+            before = keywords["before"]
+            files = _name_tuple(keywords["files"])
+            after = keywords["after"]
+            if not isinstance(before, ast.Name) or not isinstance(after, ast.Name) or files is None:
+                raise ControllerConformanceError("root_chain_shape_invalid")
+            if (
+                effect_bindings.get(before.id, (None,))[0] != "DirectoryIdentity"
+                or effect_bindings.get(after.id, (None,))[0] != "DirectoryIdentity"
+                or any(effect_bindings.get(item, (None,))[0] != "FileIdentity" for item in files)
+            ):
+                raise ControllerConformanceError("root_chain_effect_identity_required")
+            if assigned in bindings or assigned in opaque or assigned in root_chain_compositions:
+                raise ControllerConformanceError("owner_result_rebound")
+            root_chain_compositions[assigned] = (before.id, files, after.id)
+
+        if name == "validate_root_identity_chain":
+            if (
+                len(node.args) != 1
+                or node.keywords
+                or not isinstance(node.args[0], ast.Name)
+                or node.args[0].id not in root_chain_compositions
+            ):
+                raise ControllerConformanceError("root_chain_validation_invalid")
+            chain_name = node.args[0].id
+            if any(existing == chain_name for existing, _validator in root_chain_validations):
+                raise ControllerConformanceError("root_chain_validation_duplicate")
+            root_chain_validations.append((chain_name, "validate_root_identity_chain"))
+
+    for chain_name in root_chain_compositions:
+        if not any(existing == chain_name for existing, _validator in root_chain_validations):
+            raise ControllerConformanceError("root_chain_unvalidated")
 
     field_map = dict(requirements.owner_fields)
     method_map = dict(requirements.public_methods)
@@ -266,8 +383,98 @@ def analyze_controller_source(
         if not isinstance(node, (ast.Assign, ast.AnnAssign)):
             continue
         value = node.value
-        if isinstance(value, ast.Name) and (value.id in bindings or value.id in opaque):
+        if isinstance(value, ast.Name) and value.id in effect_bindings:
+            raise ControllerConformanceError("effect_alias_transport")
+        if isinstance(value, ast.Name) and (
+            value.id in fixture_bindings or value.id in opaque or value.id in root_chain_compositions
+        ):
             raise ControllerConformanceError("owner_alias_escape")
+
+    exact_root_chain_nodes: set[ast.AST] = set()
+    exact_validator_nodes: set[ast.AST] = set()
+    exact_read_root_nodes: set[ast.AST] = set()
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        name = _call_name(node)
+        if name == "RootIdentityChain" and _direct_assignment(node, parents) in root_chain_compositions:
+            exact_root_chain_nodes.add(node)
+        elif name == "validate_root_identity_chain":
+            exact_validator_nodes.add(node)
+        elif name == "read_exact_file":
+            exact_read_root_nodes.add(node)
+
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Name) or node.id not in effect_bindings or not isinstance(node.ctx, ast.Load):
+            continue
+        parent = parents.get(node)
+        if isinstance(parent, ast.Attribute) and parent.value is node:
+            continue
+        if isinstance(parent, ast.Compare):
+            continue
+        if isinstance(parent, ast.Call):
+            if parent in exact_validator_nodes:
+                continue
+            if parent in exact_read_root_nodes and any(
+                keyword.arg == "root" and keyword.value is node for keyword in parent.keywords
+            ):
+                continue
+            if parent in exact_root_chain_nodes:
+                continue
+            raise ControllerConformanceError("effect_generic_helper_transport")
+        if isinstance(parent, ast.keyword):
+            call = parents.get(parent)
+            if isinstance(call, ast.Call) and call in exact_root_chain_nodes:
+                continue
+            if isinstance(call, ast.Call) and call in exact_read_root_nodes and parent.arg == "root":
+                continue
+            if isinstance(call, ast.Call) and _call_name(call) in _OWNER_CONSTRUCTORS:
+                continue
+            raise ControllerConformanceError("effect_generic_helper_transport")
+        if isinstance(parent, (ast.Tuple, ast.List, ast.Set, ast.Dict)):
+            ancestor = parents.get(parent)
+            if isinstance(parent, ast.Tuple) and isinstance(ancestor, ast.keyword):
+                call = parents.get(ancestor)
+                if isinstance(call, ast.Call) and call in exact_root_chain_nodes and ancestor.arg == "files":
+                    continue
+            raise ControllerConformanceError("effect_container_transport")
+        if isinstance(parent, ast.Return):
+            return_function = _nearest_function(parent, parents)
+            code = (
+                "effect_callback_return"
+                if return_function is binding_functions.get(node.id)
+                else "effect_closure_return"
+            )
+            raise ControllerConformanceError(code)
+        if isinstance(parent, (ast.Assign, ast.AnnAssign)):
+            continue
+        raise ControllerConformanceError("effect_indirect_transport")
+
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Name) or node.id not in root_chain_compositions or not isinstance(node.ctx, ast.Load):
+            continue
+        parent = parents.get(node)
+        if isinstance(parent, ast.Call) and parent in exact_validator_nodes:
+            continue
+        raise ControllerConformanceError("root_chain_transport_invalid")
+
+    transport = ControllerTransportReport(
+        effect_bindings=tuple(
+            sorted((bound, owner, call) for bound, (owner, call) in effect_bindings.items())
+        ),
+        fixture_bindings=tuple(
+            sorted((bound, owner, call) for bound, (owner, call) in fixture_bindings.items())
+        ),
+        fixture_constructor_edges=tuple(sorted(fixture_constructor_edges)),
+        root_chain_compositions=tuple(
+            sorted(
+                (chain, before, files, after)
+                for chain, (before, files, after) in root_chain_compositions.items()
+            )
+        ),
+        root_chain_validations=tuple(sorted(root_chain_validations)),
+        effect_transport_uses=(),
+    )
 
     return ControllerConformanceReport(
         source_sha256=hashlib.sha256(source).hexdigest(),
@@ -276,6 +483,7 @@ def analyze_controller_source(
         bound_results=tuple(sorted(bindings.items())),
         attribute_uses=tuple(sorted(attribute_uses)),
         root_reads=tuple(sorted(root_reads)),
+        transport=transport,
     )
 
 
