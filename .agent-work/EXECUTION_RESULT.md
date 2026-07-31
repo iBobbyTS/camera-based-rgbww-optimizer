@@ -16945,3 +16945,16 @@ __P3_C2_C1_FULL_EXIT__=0
 - Retry, fallback, second source, second root, second controller process, tests, compileall, CodeGraph sync, stage, commit, code/test/PLAN/FULL/archive/debug/GUIDE/RESEARCH writes were all `0`. The sole repository write is this one EOF ER append.
 - Every hard lock remained `0`: old failed controller/root/evidence reads; retained R3/candidate payload reads; Git provenance replay; real B2; subordinate manifest; actual canonical validator; eligibility; retained audit; release generation/qualification/copy/consumption; network; DNS; `.env`; credentials; device; camera; Ray; strip; cleanup; capture; FORMAL; public analyzer; TD-C; sentinel; P8; firmware; deployment.
 - Result: `rejected_outer_launcher_mutually_exclusive_stdin_input_failure_waiting_for_planner`. This package does not qualify the repo-owned transport/machine-contract integration, does not consume retained R3, and unlocks no later task.
+\n+## REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1-C1-C1 Executer failure handoff（2026-07-31）
+
+- Contract: `P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-C1-C1-C1-I1-C1-C1-C1-C1-LAUNCHER-ARGUMENT-CORRECTION-V1`
+- Planner stop: `B2_P4_C1_C1_C1_I1_C1_C1_C1_C1_LAUNCHER_ARGUMENT_CORRECTION_WAITING_PLANNER_REVIEW`
+- Activation HEAD: `e400262773263c955876978157ab70e15e54fa97`；outer 第一个实际工具调用为 exact `/usr/bin/git rev-parse HEAD`，exit `0`、stdout exact SHA+LF。
+- Fresh source: `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-p4-c1-c1-c1-i1-c1-c1-c1-c1-controller-e400262.py`；bytes `26947`；SHA-256 `d2ac192c25068065a1de0c08d06499f4652b23e0df930460bfac865b90eb56d5`；mode `0600`；exclusive writer/read `1/1`。
+- Launcher correction contract passed before dispatch：pure in-memory assertion `1`；real mapping 使用 `input=<exact frozen source bytes>` 且 `stdin` key absent；negative simultaneous `stdin+input` mapping 被拒；controller process `1`。
+- Controller terminal：exit `1`；exact primary type `builtins.SyntheticControllerError`；stable code `semantic_matrix_failed`；retry/fallback/second source/root/process `0/0/0/0/0`。
+- 已确定的直接原因：matrix 的 `git_returncode_rejected` 以 `b".returncode" not in RUNTIME_SOURCE_BYTES` 自检；该 forbidden token 字面量自身属于 runtime source bytes，因此 case false。该结论由本次 frozen source composition 与 terminal stable code直接确定，未重新读取 fresh/old source/root/evidence。
+- Controller 在 failure 前已创建 fresh root，并持久化 4 个 synthetic input；qualification target 未产生；top-level 仅输出一条 `CONTROLLER_PRIMARY_FAILURE_JSON`，无 traceback。
+- Repo 唯一写入为本 failure handoff append；未改 code/test/PLAN/FULL/archive/debug，未 stage/commit。
+- Hard locks：所有旧 failed source/root/evidence、retained R3/candidate、real B2、subordinate manifest、actual validator、eligibility、release、network/DNS/environment/credentials、device/camera/Ray/strip/cleanup/capture/formal/public analyzer、TD-C/sentinel/P8、tests/compileall/CodeGraph sync 均为 `0`。
+- Result: `REJECTED_SELF_REFERENTIAL_FORBIDDEN_TOKEN_MATRIX_CHECK`；本轮不得 retry、不得复用 failed source/root、不得进入 retained validation 或后续阶段；等待 Planner 决定新的 bounded corrective package。
