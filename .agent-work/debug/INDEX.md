@@ -2,6 +2,7 @@
 
 | file | summary |
 | --- | --- |
+| active/20260731-p7-retained-r3-b2-controller-contract-drift.md | Repeated offline B2 qualification controllers failed on copied activation identity, logical mode, missing root binding, and now a guessed `GitLedger.returncode`; require source-backed owner API checks before another dispatch. |
 | active/20260727-p7-r3-lineage-path-classification.md | C3E6F11 failed on an unpassed fresh-root value, then contaminated the root by retrying and serialized contradictory content-read counters; C3E6F12 must unify lifecycle and accounting ownership. |
 | active/20260725-platform-cyber-risk-false-positive.md | Platform flagged the authorized local calibration chat; highest-impact suspects are a hard-coded Ray OpenAPI key and oversized remote/rejection-heavy project context. |
 | active/20260722-p7-td-b-prerequisite-path-identity.md | PATH-R1 owns the raw relative/absolute operating-envelope identity mismatch; canonical producer, setup gate, and analyzer replay must close it before the single authorized setup retry. |
