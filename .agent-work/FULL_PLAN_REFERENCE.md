@@ -16,9 +16,9 @@
 
 **当前可执行任务数：** `1`
 
-**当前 active task：** `REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1 outer-preflight owner correction`
+**当前 active task：** `REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1 machine-row and pre-root evidence correction`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-31","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-C1-C1-C1-I1-C1-OUTER-PREFLIGHT-OWNER-CORRECTION-V1","next_reference_task":"REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P4_C1_C1_C1_I1_C1_OUTER_PREFLIGHT_OWNER_CORRECTION_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-31","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-C1-C1-C1-I1-C1-C1-MACHINE-ROW-AND-PRE-ROOT-EVIDENCE-CORRECTION-V1","next_reference_task":"REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P4_C1_C1_C1_I1_C1_C1_MACHINE_ROW_AND_PRE_ROOT_EVIDENCE_CORRECTION_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -303,7 +303,8 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-B2-P4-C1-C1` | `REJECTED_PREWRITE_CONTROLLER_SHELL_SPECIAL_PARAMETER_COLLISION` | bind truthful committed topology and append supersession evidence without history rewrite | C1-C1-C1 shell-only correction | Orchestrator/Planner/Executer |
 | `REF-P7-25-R2-B2-P4-C1-C1-C1` | `ACCEPTED_VALIDATION_ONLY_PROVENANCE_CLOSURE` | rerun validation-only closure with zsh-safe controller variable names | I1 repo-owned synthetic integration | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-C1-C1-C1-I1` | `REJECTED_PRE_SOURCE_OUTER_GIT_BUDGET_VIOLATION` | fresh synthetic integration consuming the single accepted conformance/transport owner | I1-C1 outer-preflight correction | Planner/Executer |
-| `REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1` | `ACTIVE_EXECUTION_AUTHORIZED` | single outer HEAD read; topology verification remains inside controller Git6 | I1 pre-source discipline failure | Planner/Executer |
+| `REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1` | `REJECTED_DISPOSABLE_CONTROLLER_COMPOSITION` | single outer HEAD read; topology verification remains inside controller Git6 | I1-C1-C1 row/lifecycle correction | Planner/Executer |
+| `REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1` | `ACTIVE_EXECUTION_AUTHORIZED` | exact Markdown row extraction and structured pre-root failure lifecycle | I1-C1 controller composition failure | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-V1` | `ACCEPTED_COMPLETE` | one final-source full suite with retained terminal exit/count | 755/755 accepted | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-I1` | `REJECTED_PRE_EFFECT_OWNER_ALIAS_ESCAPE` | fresh synthetic external integration of accepted repo owner | I1-C1 correction | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-I1-C1` | `REJECTED_PRE_EFFECT_LIVE_OWNER_CONTAINER_WRITE_FIELD_ONLY_CORRECTION_REQUIRED` | direct/nonlocal live owner bindings with plain-projection transport | I1-C1-C1 correction | Planner/Executer |
@@ -3515,7 +3516,7 @@ source create/read/process与root create均exact1，retry/fallback0。Activation
 
 ### REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1：outer-preflight owner correction
 
-**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。Contract为
+**状态：** `REJECTED_DISPOSABLE_CONTROLLER_COMPOSITION`。Contract为
 `P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-C1-C1-C1-I1-C1-OUTER-PREFLIGHT-OWNER-CORRECTION-V1`。只允许outer执行一次
 `git rev-parse HEAD`并由其stdout派生fresh path；activation topology/path/blob校验保留在唯一controller原Git6预算内。其余repo analyzer、embedded
 transport report、18 bindings、same-root4、matrix16、exact9、terminal/seal/admission与所有hard locks完全继承I1，不得放宽。Fresh I1-C1
@@ -3523,6 +3524,21 @@ source/root必须不存在且不得复用I1未创建的路径；source/read/proc
 `.agent-work/PLANS/20260731-1410-p7-retained-r3-b2-p4-c1-c1-c1-i1-outer-git-failure-review.md`，bytes `4533`，SHA-256
 `54833633d0640af6c46446a418c3105c586d1f30a71d02048b29f33bc1d2cb82`。Exact stop为
 `B2_P4_C1_C1_C1_I1_C1_OUTER_PREFLIGHT_OWNER_CORRECTION_WAITING_PLANNER_REVIEW`。
+
+I1-C1的repo analyzer通过18 bindings与empty effect transport，但activation parser错误要求raw marker而未剥离Markdown外层反引号/LF，
+在Git6前以`machine_row_count`失败；writer最终报告缺`json` import，pre-root terminal又以missing qualification target遮蔽结构化primary。Root/Git6/
+matrix/exact9均0，旧fresh source保留不可复用。Evidence commit `169e786d724c2f7064906957272b35096f7cc43a`只追加ER。
+
+### REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1：machine-row and pre-root evidence correction
+
+**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。Contract为
+`P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-C1-C1-C1-I1-C1-C1-MACHINE-ROW-AND-PRE-ROOT-EVIDENCE-CORRECTION-V1`。
+Fresh controller只对两个frozen marker执行exact backtick+LF strip；不得调用会把owner bindings从18增到20的generic/repo parser。Writer引入所需`json`
+report依赖；任何pre-root primary必须以内存structured terminal/seal/admission保留，禁止因qualification target尚不存在而遮蔽primary。其余outer HEAD1、
+controller Git6、repo analyzer18、same-root4、matrix16、exact9与hard locks完全不变，retry/fallback0。Review archive：
+`.agent-work/PLANS/20260731-1426-p7-retained-r3-b2-p4-c1-c1-c1-i1-c1-activation-row-failure-review.md`，bytes `7026`，SHA-256
+`38f626dfd7e43c6b934834c0b7946c13d19f20660b12e8e3e90eb31eab100268`。Exact stop为
+`B2_P4_C1_C1_C1_I1_C1_C1_MACHINE_ROW_AND_PRE_ROOT_EVIDENCE_CORRECTION_WAITING_PLANNER_REVIEW`。
 
 ### REF-P7-25-R2-B2-P3：repo-owned provenance I/O boundary
 
@@ -4307,10 +4323,11 @@ rejected B2-P4-C1 result = ACTIVATION_SUBJECT_AND_ER_PROVENANCE_MISMATCH; implem
 rejected B2-P4-C1-C1 result = PREWRITE_CONTROLLER_SHELL_SPECIAL_PARAMETER_COLLISION; git127; ER/write/external0
 accepted B2-P4-C1-C1-C1 result = VALIDATION_ONLY_PROVENANCE_CLOSURE; evidence baa14d1; originalP4-C1 remains rejected
 rejected B2-P4-C1-C1-C1-I1 result = PRE_SOURCE_OUTER_GIT_BUDGET_VIOLATION; source/root/controller0
-active task = REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1 outer-preflight owner correction
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-C1-C1-C1-I1-C1-OUTER-PREFLIGHT-OWNER-CORRECTION-V1
+rejected B2-P4-C1-C1-C1-I1-C1 result = MACHINE_ROW_DELIMITER_AND_PRE_ROOT_EVIDENCE_FAILURE; analyzer18 pass; Git6/root0
+active task = REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1 machine-row and pre-root evidence correction
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-C1-C1-C1-I1-C1-C1-MACHINE-ROW-AND-PRE-ROOT-EVIDENCE-CORRECTION-V1
 active executable task count = 1
-next reference task = REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1 ACTIVE_EXECUTION_AUTHORIZED
+next reference task = REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1 ACTIVE_EXECUTION_AUTHORIZED
 selected state C shutter = 1/2500
 device/network/camera/light = forbidden by active PLAN
 release qualification/generation/copy/consumption = forbidden
