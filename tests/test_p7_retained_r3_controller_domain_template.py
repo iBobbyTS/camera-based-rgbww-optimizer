@@ -80,6 +80,53 @@ class ControllerDomainTemplateTests(unittest.TestCase):
         self.assertIn(b'"\\x00".join(ACTIVATION_PATHS) + "\\x00"', composed.source)
         self.assertIn(b'not value or "\\x00" in value or "\\n" in value or "\\r" in value', composed.source)
 
+        activation_commit_boundary = b'activation_commit_ledger.stdout == (ACTIVATION_COMMIT + "\\n").encode("utf-8")'
+        activation_metadata_boundary = b'activation_metadata_ledger.stdout == (ACTIVATION_COMMIT + "\\x00" + ACTIVATION_PARENT + "\\x00" + ACTIVATION_SUBJECT + "\\n").encode("utf-8")'
+        runtime_metadata_boundary = b'runtime_metadata_ledger.stdout == (RUNTIME_COMMIT + "\\x00" + RUNTIME_PARENT + "\\x00feat(p7): own retained controller runtime\\n").encode("utf-8")'
+        self.assertEqual(composed.source.count(activation_commit_boundary), 1)
+        self.assertEqual(composed.source.count(activation_metadata_boundary), 1)
+        self.assertEqual(composed.source.count(runtime_metadata_boundary), 1)
+
+        generated_tree = ast.parse(composed.source.decode("utf-8", errors="strict"))
+        compile(generated_tree, "<generated-newline-regression>", "exec")
+        phase_assignments = {
+            node.targets[0].slice.value: node.value
+            for node in ast.walk(generated_tree)
+            if isinstance(node, ast.Assign)
+            and len(node.targets) == 1
+            and isinstance(node.targets[0], ast.Subscript)
+            and isinstance(node.targets[0].value, ast.Name)
+            and node.targets[0].value.id == "phase_state"
+            and isinstance(node.targets[0].slice, ast.Constant)
+        }
+        self.assertEqual(
+            [node.value for node in ast.walk(phase_assignments["activation_commit"]) if isinstance(node, ast.Constant) and node.value == "\n"],
+            ["\n"],
+        )
+        self.assertEqual(
+            [node.value for node in ast.walk(phase_assignments["activation_metadata"]) if isinstance(node, ast.Constant) and node.value == "\n"],
+            ["\n"],
+        )
+        self.assertEqual(
+            [node.value for node in ast.walk(phase_assignments["runtime_metadata"]) if isinstance(node, ast.Constant) and isinstance(node.value, str) and node.value.endswith("\n")],
+            ["\x00feat(p7): own retained controller runtime\n"],
+        )
+
+        commit_offset = composed.source.index(activation_commit_boundary)
+        broken_commit = composed.source[:commit_offset] + activation_commit_boundary.replace(b'"\\n"', b'"\n"', 1) + composed.source[commit_offset + len(activation_commit_boundary):]
+        with self.assertRaises(SyntaxError):
+            ast.parse(broken_commit.decode("utf-8", errors="strict"))
+
+        activation_offset = composed.source.index(activation_metadata_boundary)
+        broken_activation = composed.source[:activation_offset] + activation_metadata_boundary.replace(b'"\\n"', b'"\n"', 1) + composed.source[activation_offset + len(activation_metadata_boundary):]
+        with self.assertRaises(SyntaxError):
+            ast.parse(broken_activation.decode("utf-8", errors="strict"))
+
+        runtime_offset = composed.source.index(runtime_metadata_boundary)
+        broken_runtime = composed.source[:runtime_offset] + runtime_metadata_boundary.replace(b' runtime\\n"', b' runtime\n"', 1) + composed.source[runtime_offset + len(runtime_metadata_boundary):]
+        with self.assertRaises(SyntaxError):
+            ast.parse(broken_runtime.decode("utf-8", errors="strict"))
+
     def test_04_existing_analyzer_accepts_golden_eighteen_binding_report(self):
         report = analyze_controller_source(compose_controller_source(subject.build_controller_domain_template(spec()).runtime_request).source)
         self.assertEqual(report.bound_results, (
