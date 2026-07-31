@@ -142,10 +142,10 @@ def controller():
         runtime_paths_ledger = run_read_only_git(REPO_ROOT, ("git", "diff-tree", "--no-commit-id", "--name-only", "-r", "-z", RUNTIME_COMMIT))
         runtime_patch_ledger = run_read_only_git(REPO_ROOT, ("git", "diff", "--binary", "--full-index", "--no-ext-diff", RUNTIME_PARENT, RUNTIME_COMMIT, "--", RUNTIME_PATHS[0], RUNTIME_PATHS[1]))
         phase_state["activation_commit"] = activation_commit_ledger.exit_code == 0 and activation_commit_ledger.stdout == (ACTIVATION_COMMIT + "\n").encode("utf-8") and activation_commit_ledger.stderr == b""
-        phase_state["activation_metadata"] = activation_metadata_ledger.exit_code == 0 and activation_metadata_ledger.stdout == (ACTIVATION_COMMIT + "\x00" + ACTIVATION_PARENT + "\x00" + ACTIVATION_SUBJECT + "\n").encode("utf-8") and activation_metadata_ledger.stderr == b""
-        phase_state["activation_paths"] = activation_paths_ledger.exit_code == 0 and activation_paths_ledger.stdout == ("\x00".join(ACTIVATION_PATHS) + "\x00").encode("utf-8") and activation_paths_ledger.stderr == b""
-        phase_state["runtime_metadata"] = runtime_metadata_ledger.exit_code == 0 and runtime_metadata_ledger.stdout == (RUNTIME_COMMIT + "\x00" + RUNTIME_PARENT + "\x00feat(p7): own retained controller runtime\n").encode("utf-8") and runtime_metadata_ledger.stderr == b""
-        phase_state["runtime_paths"] = runtime_paths_ledger.exit_code == 0 and runtime_paths_ledger.stdout == ("\x00".join(RUNTIME_PATHS) + "\x00").encode("utf-8") and runtime_paths_ledger.stderr == b""
+        phase_state["activation_metadata"] = activation_metadata_ledger.exit_code == 0 and activation_metadata_ledger.stdout == (ACTIVATION_COMMIT + "\\x00" + ACTIVATION_PARENT + "\\x00" + ACTIVATION_SUBJECT + "\n").encode("utf-8") and activation_metadata_ledger.stderr == b""
+        phase_state["activation_paths"] = activation_paths_ledger.exit_code == 0 and activation_paths_ledger.stdout == ("\\x00".join(ACTIVATION_PATHS) + "\\x00").encode("utf-8") and activation_paths_ledger.stderr == b""
+        phase_state["runtime_metadata"] = runtime_metadata_ledger.exit_code == 0 and runtime_metadata_ledger.stdout == (RUNTIME_COMMIT + "\\x00" + RUNTIME_PARENT + "\\x00feat(p7): own retained controller runtime\n").encode("utf-8") and runtime_metadata_ledger.stderr == b""
+        phase_state["runtime_paths"] = runtime_paths_ledger.exit_code == 0 and runtime_paths_ledger.stdout == ("\\x00".join(RUNTIME_PATHS) + "\\x00").encode("utf-8") and runtime_paths_ledger.stderr == b""
         phase_state["runtime_patch"] = runtime_patch_ledger.exit_code == 0 and runtime_patch_ledger.stdout.startswith(b"diff --git ") and runtime_patch_ledger.stderr == b""
         if not all(phase_state[name] for name in ("activation_commit", "activation_metadata", "activation_paths", "runtime_metadata", "runtime_paths", "runtime_patch")):
             raise RuntimeError("git_identity_mismatch")
@@ -240,7 +240,7 @@ if __name__ == "__main__":
 
 
 def _plain(value: object, code: str) -> str:
-    if type(value) is not str or not value or "\x00" in value or "\n" in value or "\r" in value:
+    if type(value) is not str or not value or "\\x00" in value or "\n" in value or "\r" in value:
         raise ControllerDomainTemplateError(code)
     return value
 

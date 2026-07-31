@@ -71,6 +71,14 @@ class ControllerDomainTemplateTests(unittest.TestCase):
         self.assertEqual(request.process_argv, (spec().repo_root + "/.venv/bin/python", "-"))
         composed = compose_controller_source(request)
         self.assertEqual(composed.source_sha256, hashlib.sha256(composed.source).hexdigest())
+        self.assertEqual(bundle.template_source.count(b"\x00"), 0)
+        self.assertEqual(composed.source.count(b"\x00"), 0)
+        self.assertIn(
+            b'ACTIVATION_COMMIT + "\\x00" + ACTIVATION_PARENT + "\\x00" + ACTIVATION_SUBJECT',
+            composed.source,
+        )
+        self.assertIn(b'"\\x00".join(ACTIVATION_PATHS) + "\\x00"', composed.source)
+        self.assertIn(b'not value or "\\x00" in value or "\\n" in value or "\\r" in value', composed.source)
 
     def test_04_existing_analyzer_accepts_golden_eighteen_binding_report(self):
         report = analyze_controller_source(compose_controller_source(subject.build_controller_domain_template(spec()).runtime_request).source)
