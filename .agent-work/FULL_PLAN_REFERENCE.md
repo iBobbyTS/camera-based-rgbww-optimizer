@@ -2,7 +2,7 @@
 
 **文档状态：** `orchestrator_reference_current`
 
-**快照日期：** `2026-07-30`
+**快照日期：** `2026-07-31`
 
 **Owner：** Orchestrator（唯一写入者）
 
@@ -14,11 +14,11 @@
 
 **当前代码 checkpoint：** `9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e`
 
-**当前可执行任务数：** `0`
+**当前可执行任务数：** `1`
 
-**当前 active task：** `none`（`REF-P7-25-R2-B2-R2`仅`READY_FOR_PLANNING`）
+**当前 active task：** `REF-P7-25-R2-B2-R2 fresh real-B2 manifest-only seal`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":0,"active_task":null,"active_plan_contract_id":null,"next_reference_task":"REF-P7-25-R2-B2-R2","next_reference_status":"READY_FOR_PLANNING","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P3_PROVENANCE_IO_CORRECTION_ACCEPTED_COMPLETE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-31","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-R2","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-R2-REAL-MANIFEST-ONLY-V2","next_reference_task":"REF-P7-25-R2-B2-R2","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P3_PROVENANCE_IO_CORRECTION_ACCEPTED_R2_REAL_MANIFEST_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -292,7 +292,7 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-B2-C4-P2-C2` | `REJECTED_STATIC_GUARD_FALSE_POSITIVE` | activation-topology plus parser-free frozen-file/scope gate, then resume tests | P2-C1 parser failure | Planner/Executer |
 | `REF-P7-25-R2-B2-C4-P2-C3` | `REJECTED_FULL_SUITE_TERMINAL_EVIDENCE_UNAVAILABLE` | exact `camera` to `.camera` static-token correction then full qualification | P2-C2 targeted 4/5 | Planner/Executer |
 | `REF-P7-25-R2-B2-C4-P2-C4` | `ACCEPTED_INTEGRATION_QUALIFICATION_COMPLETE` | one quiet full suite with observable terminal exit, then remaining gates | P2-C3 output truncation | Orchestrator/Executer |
-| `REF-P7-25-R2-B2-R2` | `READY_FOR_PLANNING` | use accepted repo owners for one fresh real-input manifest-only B2 re-entry | P3-C2-C1 accepted | Planner/Executer |
+| `REF-P7-25-R2-B2-R2` | `ACTIVE_EXECUTION_AUTHORIZED` | use accepted repo owners for one fresh real-input manifest-only B2 re-entry | P3-C2-C1 accepted | Planner/Executer |
 | `REF-P7-25-R2-B2-P3` | `ACCEPTED_COMPLETE_VIA_P3_C1_AND_P3_C2_C1` | repo-owned tested provenance file/Git I/O boundary reused by B2/B3/B4 | R2 maintainability rejection | Planner/Executer |
 | `REF-P7-25-R2-B2-P3-C1` | `ACCEPTED_CODE_FINDINGS_CLOSED_VIA_P3_C2_C1` | fail-closed capability/direct-child correction and missing negative matrix | P3 Planner rejection | Planner/Executer |
 | `REF-P7-25-R2-B2-P3-C2` | `REJECTED_PLAN_PIPELINE_ZSH_STATUS_READONLY_CHILD_RESULT_UNPROVEN` | one low-output full suite with observable exit, exact count and terminal summary | P3-C1 validation evidence gap | Planner/Executer |
@@ -3223,8 +3223,8 @@ bytes `6920`，SHA-256 `73fb12fd71589d478c5379c182af7fdb976ac05ddec6b4482d83a87a
 
 ### REF-P7-25-R2-B2-R2：repo-owned real B2 manifest-only re-entry
 
-**状态：** `READY_FOR_PLANNING`。此前maintainability rejection已由accepted repo-owned provenance I/O owner与完整
-validation闭环解除；本状态只允许Planner制定新包，不授权读取real inputs或执行B2。此前Planner transition archive：
+**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。此前maintainability rejection已由accepted repo-owned provenance I/O owner与完整
+validation闭环解除；active contract为`P7-TD-B-RETAINED-R3-OPTION-B-B2-R2-REAL-MANIFEST-ONLY-V2`。此前Planner transition archive：
 `.agent-work/PLANS/20260730-1352-p7-retained-r3-option-b-b2-r2-real-manifest-transition.md`，bytes `4410`，SHA-256
 `9e255b0dbe9a8f4cbb431906d65ce396601469c21f1b3cae60cd814edc2c859a`。
 
@@ -3240,9 +3240,15 @@ preparation commit `4678a3e6f93704912952776bc11fa2b0945d80b1`、integration comm
 `c21a691272ca7466271349daa5b10236c9f36dfeb481d592e9c368a87e7a4763`、
 `4bfebf4ad40e8c2e65ad2470faaed184f21d39eda73c13e689b09769d280752f`；验证后才各读取resolved retained artifact一次并重算冻结SHA。
 
-Planner draft要求未冻结的external source同时实现7个输入的fd identity、read-only Git object重算、canonical JSON、partial write/fsync/reload、
-manifest/terminal seals与ER ordering。虽然phase transitions仍调用exact-five，这些callbacks本身已构成新的高风险I/O state owner；source bytes又要
-由Executer现场author，无法在activation前单测。Orchestrator拒绝激活，未读C1/retained、未建root、未执行launcher。
+当前Planner package归档此前acceptance transition stop：
+`.agent-work/PLANS/20260730-2254-p7-retained-r3-provenance-io-acceptance-transition-stop.md`，SHA-256
+`f6663ac6adfa63f4fc485cbd49e6adf021a770b4eb48bc7d972d71843906e045`。本包只在brand-new external root中运行一次single-process
+manifest-only composition：C1四件套各exact read一次，随后三件retained R3各exact read一次，read-only Git exact `56`次；以accepted
+provenance I/O owner封存manifest/seal、terminal/seal与ER admission。Actual canonical validator、eligibility、release和device均保持0。
+
+Outer source只做field mapping与callback composition，所有physical I/O、Git、phase/cardinality及terminal/ER职责分别由已接受owner独占；
+source须exclusive write、冻结、AST parse与compile后才允许创建root或读取real inputs。Pass或fail都停在
+`B2_R2_REAL_MANIFEST_TERMINAL_WAITING_PLANNER_REVIEW`，不得自行进入B3/B4。
 
 ### REF-P7-25-R2-B2-P3：repo-owned provenance I/O boundary
 
@@ -4012,10 +4018,10 @@ accepted B2-C4-P2-C4 result = INTEGRATION_QUALIFICATION_COMPLETE; commit4e82a7d;
 rejected B2-R2 plan = UNFROZEN_EXTERNAL_IO_STATE_OWNER; execution0; retained reads0; root0
 rejected B2-P3-C2 result = PLAN_PIPELINE_ZSH_STATUS_READONLY_CHILD_RESULT_UNPROVEN; unittest child outcome unknown
 accepted B2-P3-C2-C1 result = PROVENANCE_IO_CORRECTION_FULL_VALIDATION_COMPLETE; full741/741; marker0; OK
-active task = none
-active contract = none
-active executable task count = 0
-next reference task = REF-P7-25-R2-B2-R2 READY_FOR_PLANNING
+active task = REF-P7-25-R2-B2-R2 fresh real-B2 manifest-only seal
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-R2-REAL-MANIFEST-ONLY-V2
+active executable task count = 1
+next reference task = REF-P7-25-R2-B2-R2 ACTIVE_EXECUTION_AUTHORIZED
 selected state C shutter = 1/2500
 device/network/camera/light = forbidden by active PLAN
 release qualification/generation/copy/consumption = forbidden
