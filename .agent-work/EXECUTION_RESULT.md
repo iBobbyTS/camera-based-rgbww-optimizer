@@ -16672,3 +16672,73 @@ zsh:4: read-only variable: status
 - Every machine-contract zero budget remained `0`: external evidence reads and external root creation; retained release audit; canonical validator; eligibility; release operation; network/environment; device/camera/Ray/strip/cleanup/capture; FORMAL/public analyzer; TD-C/sentinel/P8; firmware/deployment. The paths printed by tests came only from the suite's existing disposable test-directory behavior and were not read by the Executer as external evidence.
 - Retained R3 remains `RETAINED_UNVALIDATED_UNCONSUMED`; real B2/B3/B4, validator, eligibility, and release consumption remain locked. Planner decision is required because the exact authorized zsh pipeline is internally invalid at its read-only `status` assignment; Executer did not repair or reinterpret the PLAN.
 - Result: `pipeline_contract_zsh_status_readonly_failure_waiting_for_planner`. This handoff authorizes only independent Planner/Orchestrator review; it does not authorize retry, a corrected pipeline, code/test edits, real B2, retained artifact access, validator, eligibility, release, or device/scientific work.
+
+## REF-P7-25-R2-B2-P3-C2-C1 Executer handoff — corrected_observable_full_pass_waiting_for_planner
+
+- Contract: `P7-TD-B-RETAINED-R3-PROVENANCE-IO-OBSERVABLE-FULL-VALIDATION-V2`; exact stop: `B2_P3_C2_C1_CORRECTED_OBSERVABLE_FULL_VALIDATION_WAITING_PLANNER_REVIEW`.
+- Activation/frozen preflight passed before the only validation invocation. Activation HEAD was `cc45d68dbfb78df00433afdfc225116ea3e1f2ea`, direct parent `05495ae6e07a8b3ae3a2a2bc899590dbcb68a119`, subject `chore(plan): activate corrected retained r3 observable full validation`, with exact changed paths `.agent-work/FULL_PLAN_REFERENCE.md`, `.agent-work/PLAN.md`, and `.agent-work/PLANS/20260730-2213-p7-retained-r3-provenance-io-p3-c2-pipeline-review.md`. Worktree, stage, and untracked sets were clean/empty immediately before invocation.
+- Implementation identity passed: commit `1f88cf42d95c00c7db5692e78ed1d663732d5701`, direct parent `a736e95b968ffef813024a67c0cbcfbd67e971e4`, subject `fix(p7): harden retained r3 provenance io boundary`, exact two changed paths. Helper identity was bytes `18853`, SHA-256 `f603721fb8b90510e2a09b199701c3f3358574d1247b5883ebdccc6f585b0a48`, blob `492f31f5f6999e28a1f0eb60240780e2c4826f4f`; test identity was bytes `28525`, SHA-256 `59a6d87164abf6abc89c50ab7d899f94126fc949512d38b34967cae8f4e6d4e9`, blob `a796e1ac336d58a0120dd6b99a3842c5c7b03a6b`.
+- Canonical exact-two-path binary patch was independently recomputed with `git diff --binary --full-index --no-ext-diff 1f88cf42d95c00c7db5692e78ed1d663732d5701^ 1f88cf42d95c00c7db5692e78ed1d663732d5701 -- <exact sorted two paths>` and matched SHA-256 `df29a921b774010db020fdebfc12809feb2c92c293c247b14733a6e39e8595e1`. The P3-C2 review archive matched bytes `8122` and SHA-256 `4541967011d103c763fd80ae273285a7611308df6d9f3a510f39881b22708052`; active PLAN matched SHA-256 `e2b7d09dea3b49f908735123013ba5c226bea7009b63d179e32161c4b043c372`.
+- FULL preflight showed exact one active task/contract for `REF-P7-25-R2-B2-P3-C2-C1` / `P7-TD-B-RETAINED-R3-PROVENANCE-IO-OBSERVABLE-FULL-VALIDATION-V2`; `REF-P7-25-R2-B2-P3-C2` is rejected for the zsh read-only `status` pipeline defect; P3-C1 code findings are closed and acceptance lacked only corrected observable full terminal evidence; `retained_r3_status=RETAINED_UNVALIDATED_UNCONSUMED`; real B2/B3/B4, canonical validator, eligibility, and release consumption remained locked.
+- The exact PLAN pipeline was invoked exactly once in one zsh shell/session owner (unified exec session `80789`), with no `tee`, file redirect, second reader, new log/evidence root, detached process, background owner, external wrapper, retry, fallback, alternate full, or count probe:
+
+```zsh
+set -o pipefail
+{
+  PYTHONUNBUFFERED=1 .venv/bin/python -m unittest discover -s tests -p 'test_*.py'
+  child_exit_code=$?
+  print -r -- "__P3_C2_C1_FULL_EXIT__=${child_exit_code}"
+  exit "${child_exit_code}"
+} 2>&1 | tail -n 40
+```
+
+- The invocation used `PYTHONUNBUFFERED=1` and ordinary variable `child_exit_code`; it made no assignment to or reference to the forbidden zsh special parameter `status`. Unittest invocation count was `1`.
+- Structured shell terminal exit was `0`; marker was exact `__P3_C2_C1_FULL_EXIT__=0`; unittest terminal summary was exact one line `Ran 741 tests in 166.704s`, followed by final `OK`. No `FAILED`, `ERROR` summary, traceback, broken pipe, read-only-variable error, missing/truncated marker, or count mismatch occurred.
+- Complete retained tail from the same session:
+
+```text
+                          [--lineage-candidate LINEAGE_CANDIDATE]
+                          [--qualification-preparation QUALIFICATION_PREPARATION]
+                          [--finalize-setup-run FINALIZE_SETUP_RUN]
+                          [--orchestrate-setup]
+                          [--code-checkpoint CODE_CHECKPOINT] (--dry-run |
+                          --execute | --qualify-lineage-release |
+                          --prepare-lineage-qualification-evidence)
+                          [--eq-r6-prelaunch | --eq-r6-orchestrate |
+                          --eq-r6-single-candidate {1,2}]
+                          [--eq-r6-live-plan EQ_R6_LIVE_PLAN]
+                          [--eq-r6-outer-pid EQ_R6_OUTER_PID]
+                          [--allow-device-control]
+                          [--human-authorization HUMAN_AUTHORIZATION]
+                          [--camera-backend {local,remote}]
+                          [--remote-env-file REMOTE_ENV_FILE]
+                          [--remote-base-url REMOTE_BASE_URL]
+                          [--remote-timeout REMOTE_TIMEOUT]
+python -m unittest: error: argument --qualify-lineage-release: not allowed with argument --prepare-lineage-qualification-evidence
+..............provisional
+formal
+.../Volumes/4T/temp/rgbww-optimizer/p7-td-b-path-r1-offline/test-runtime/tmp68hh2wq3/relative-cli/setup.json
+...canonical
+resolved
+release
+....................................................................................................usage: python -m unittest [-h] (--dry-run | --execute)
+                          [--allow-device-control]
+                          [--named-experiment NAMED_EXPERIMENT]
+                          --output-dir OUTPUT_DIR --run-name RUN_NAME
+python -m unittest: error: --execute requires --allow-device-control
+usage: python -m unittest [-h] (--dry-run | --execute)
+                          [--allow-device-control]
+                          [--named-experiment NAMED_EXPERIMENT]
+                          --output-dir OUTPUT_DIR --run-name RUN_NAME
+python -m unittest: error: --execute requires --named-experiment p7_strip_state_readback_preflight
+..................................
+----------------------------------------------------------------------
+Ran 741 tests in 166.704s
+
+OK
+__P3_C2_C1_FULL_EXIT__=0
+```
+
+- Write counters before this required ER append: source/test/PLAN/FULL/archive/stage/commit `0/0/0/0/0/0/0`. After the suite and before this ER append, worktree/stage/untracked sets were again verified clean/empty. Targeted/focused/compileall/CodeGraph sync/postcommit-targeted rerun counts were `0/0/0/0/0`; retry/fallback/alternate full/count probe were `0/0/0/0`.
+- Every machine-contract zero budget remained `0`: external evidence reads; external root creation; retained release audit; canonical validator; eligibility; release operation; network; environment; device; camera; Ray; strip; cleanup; capture; FORMAL; public analyzer; TD-C; sentinel; P8; firmware; deployment. Paths printed by the suite came only from its existing disposable test-directory lifecycle and were not separately read or consumed by the Executer.
+- Retained R3 remains `RETAINED_UNVALIDATED_UNCONSUMED`; external retained evidence and real B2/B3/B4 remain untouched and locked. Result: `corrected_observable_full_pass_waiting_for_planner`. This handoff authorizes only independent Planner review and subsequent Orchestrator disposition; it does not authorize real B2, retained artifact access, validator, eligibility, release, network/device, or any later task.

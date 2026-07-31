@@ -14,11 +14,11 @@
 
 **当前代码 checkpoint：** `9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e`
 
-**当前可执行任务数：** `1`
+**当前可执行任务数：** `0`
 
-**当前 active task：** `REF-P7-25-R2-B2-P3-C2-C1 corrected observable full validation`
+**当前 active task：** `none`（`REF-P7-25-R2-B2-R2`仅`READY_FOR_PLANNING`）
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-P3-C2-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-PROVENANCE-IO-OBSERVABLE-FULL-VALIDATION-V2","next_reference_task":"REF-P7-25-R2-B2-P3-C2-C1","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P3_C2_PLAN_PIPELINE_REJECTED_C2_C1_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"e2b7d09dea3b49f908735123013ba5c226bea7009b63d179e32161c4b043c372","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":0,"active_task":null,"active_plan_contract_id":null,"next_reference_task":"REF-P7-25-R2-B2-R2","next_reference_status":"READY_FOR_PLANNING","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P3_PROVENANCE_IO_CORRECTION_ACCEPTED_COMPLETE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -292,11 +292,11 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-B2-C4-P2-C2` | `REJECTED_STATIC_GUARD_FALSE_POSITIVE` | activation-topology plus parser-free frozen-file/scope gate, then resume tests | P2-C1 parser failure | Planner/Executer |
 | `REF-P7-25-R2-B2-C4-P2-C3` | `REJECTED_FULL_SUITE_TERMINAL_EVIDENCE_UNAVAILABLE` | exact `camera` to `.camera` static-token correction then full qualification | P2-C2 targeted 4/5 | Planner/Executer |
 | `REF-P7-25-R2-B2-C4-P2-C4` | `ACCEPTED_INTEGRATION_QUALIFICATION_COMPLETE` | one quiet full suite with observable terminal exit, then remaining gates | P2-C3 output truncation | Orchestrator/Executer |
-| `REF-P7-25-R2-B2-R2` | `REJECTED_MAINTAINABILITY_UNFROZEN_EXTERNAL_IO_OWNER` | use accepted repo owners for one fresh real-input manifest-only B2 re-entry | P2 accepted | Planner/Executer |
-| `REF-P7-25-R2-B2-P3` | `REJECTED_NONFOLLOW_ROOT_LINKAGE_AND_NEGATIVE_MATRIX_GAPS` | repo-owned tested provenance file/Git I/O boundary reused by B2/B3/B4 | R2 maintainability rejection | Planner/Executer |
-| `REF-P7-25-R2-B2-P3-C1` | `REJECTED_ONLY_FULL_SUITE_TERMINAL_EVIDENCE_UNAVAILABLE` | fail-closed capability/direct-child correction and missing negative matrix | P3 Planner rejection | Planner/Executer |
+| `REF-P7-25-R2-B2-R2` | `READY_FOR_PLANNING` | use accepted repo owners for one fresh real-input manifest-only B2 re-entry | P3-C2-C1 accepted | Planner/Executer |
+| `REF-P7-25-R2-B2-P3` | `ACCEPTED_COMPLETE_VIA_P3_C1_AND_P3_C2_C1` | repo-owned tested provenance file/Git I/O boundary reused by B2/B3/B4 | R2 maintainability rejection | Planner/Executer |
+| `REF-P7-25-R2-B2-P3-C1` | `ACCEPTED_CODE_FINDINGS_CLOSED_VIA_P3_C2_C1` | fail-closed capability/direct-child correction and missing negative matrix | P3 Planner rejection | Planner/Executer |
 | `REF-P7-25-R2-B2-P3-C2` | `REJECTED_PLAN_PIPELINE_ZSH_STATUS_READONLY_CHILD_RESULT_UNPROVEN` | one low-output full suite with observable exit, exact count and terminal summary | P3-C1 validation evidence gap | Planner/Executer |
-| `REF-P7-25-R2-B2-P3-C2-C1` | `ACTIVE_EXECUTION_AUTHORIZED` | one corrected unbuffered low-output full suite with ordinary exit variable and observable terminal summary | P3-C2 pipeline-contract rejection | Planner/Executer |
+| `REF-P7-25-R2-B2-P3-C2-C1` | `ACCEPTED_COMPLETE` | one corrected unbuffered low-output full suite with ordinary exit variable and observable terminal summary | P3-C2 pipeline-contract rejection | Planner/Executer |
 | `REF-P7-25-R2-B3` | `BLOCKED` | Manifest自校验后执行postcommit focused、durable full、synthetic terminal/replay | `REF-P7-25-R2-B2` accepted | Planner/Executer |
 | `REF-P7-25-R2-B4` | `BLOCKED` | 对原retained R3三件套做首次真实audit并由canonical validator唯一判定eligibility | `REF-P7-25-R2-B3` accepted | Planner/Executer |
 | `REF-P7-25-R2-B5` | `BLOCKED` | 独立验收validated-unconsumed状态、manifest与rollback provenance | `REF-P7-25-R2-B4` pass | Planner/Orchestrator |
@@ -3223,7 +3223,8 @@ bytes `6920`，SHA-256 `73fb12fd71589d478c5379c182af7fdb976ac05ddec6b4482d83a87a
 
 ### REF-P7-25-R2-B2-R2：repo-owned real B2 manifest-only re-entry
 
-**状态：** `REJECTED_MAINTAINABILITY_UNFROZEN_EXTERNAL_IO_OWNER`。Planner transition archive：
+**状态：** `READY_FOR_PLANNING`。此前maintainability rejection已由accepted repo-owned provenance I/O owner与完整
+validation闭环解除；本状态只允许Planner制定新包，不授权读取real inputs或执行B2。此前Planner transition archive：
 `.agent-work/PLANS/20260730-1352-p7-retained-r3-option-b-b2-r2-real-manifest-transition.md`，bytes `4410`，SHA-256
 `9e255b0dbe9a8f4cbb431906d65ce396601469c21f1b3cae60cd814edc2c859a`。
 
@@ -3245,8 +3246,9 @@ manifest/terminal seals与ER ordering。虽然phase transitions仍调用exact-fi
 
 ### REF-P7-25-R2-B2-P3：repo-owned provenance I/O boundary
 
-**状态：** `REJECTED_NONFOLLOW_ROOT_LINKAGE_AND_NEGATIVE_MATRIX_GAPS`。Implementation commit
-`77b9e85c1064cb6ba8d3a8fe0932b7eae488c945`保留为rejected candidate ancestor；Planner review archive
+**状态：** `ACCEPTED_COMPLETE_VIA_P3_C1_AND_P3_C2_C1`。初始implementation commit
+`77b9e85c1064cb6ba8d3a8fe0932b7eae488c945`保留为rejected candidate ancestor；successor correction
+`1f88cf42d95c00c7db5692e78ed1d663732d5701`已由P3-C2-C1完整验证并由Planner接受。初始Planner review archive
 `.agent-work/PLANS/20260730-2128-p7-retained-r3-provenance-io-p3-review-rejection.md`，SHA-256
 `8e31d05374a0fc7ff4e10f648fc470239f1259add7d9bc15e921b6aa5cf73793`。
 
@@ -3270,7 +3272,7 @@ CodeGraph、exact-two-path commit与Planner独立review通过后，R2才重新RE
 
 ### REF-P7-25-R2-B2-P3-C1：provenance I/O fail-closed linkage correction
 
-**状态：** `REJECTED_ONLY_FULL_SUITE_TERMINAL_EVIDENCE_UNAVAILABLE`。Successor repair commit
+**状态：** `ACCEPTED_CODE_FINDINGS_CLOSED_VIA_P3_C2_C1`。Successor repair commit
 `1f88cf42d95c00c7db5692e78ed1d663732d5701`以exact two-path关闭`REV-P3-001/002/003`；Planner review archive
 `.agent-work/PLANS/20260730-2148-p7-retained-r3-provenance-io-p3-c1-review.md`，SHA-256
 `ddb8167ef108d1043cadce621873b560874214da891f515ee2e9d96dbe3223a8`。
@@ -3278,7 +3280,7 @@ CodeGraph、exact-two-path commit与Planner独立review通过后，R2才重新RE
 **纠偏边界：** 必须在open前验证`O_NOFOLLOW`与root-directory所需flag能力，缺失时typed fail closed；当`root`存在时target必须是其absolute lexical direct child，拒绝outside、nested、dot/parent与alternate spelling；补齐read/target/root/reload失败时close-once、call ordering、stable code与physical-target preservation负例。不得新增第三owner、读取external evidence、运行real B2或调用validator/release/device。
 
 **验证与stop：** targeted `24/24`、focused `71/71`、compileall、CodeGraph、pre/postcommit checks和postcommit targeted
-`24/24`已接受；唯一缺口是full suite同会话未保留`Ran 741 tests ...`、`OK`与显式child exit，故不得接受P3-C1或解锁R2。
+`24/24`已接受；此前full terminal缺口已由P3-C2-C1的exact `741/741`、`OK`与child marker `0`关闭。
 
 ### REF-P7-25-R2-B2-P3-C2：provenance I/O observable full validation
 
@@ -3292,17 +3294,18 @@ unittest失败，也不证明通过；retained tail缺少marker、`Ran 741 tests
 
 ### REF-P7-25-R2-B2-P3-C2-C1：corrected observable full validation
 
-**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。Active PLAN SHA-256
-`e2b7d09dea3b49f908735123013ba5c226bea7009b63d179e32161c4b043c372`已由Orchestrator独立审核；本包不修改code/test，
-仅执行一次同一shell/session owner的corrected low-output full suite。
+**状态：** `ACCEPTED_COMPLETE`。Activation commit `cc45d68dbfb78df00433afdfc225116ea3e1f2ea`与frozen identities
+全部通过；同一shell/session owner的唯一corrected low-output full suite得到structured exit `0`、marker
+`__P3_C2_C1_FULL_EXIT__=0`、exact `Ran 741 tests in 166.704s`及final `OK`。
 
 **执行与证据边界：** exact pipeline使用`PYTHONUNBUFFERED=1`与普通变量`child_exit_code`，必须保留structured shell
 exit、`__P3_C2_C1_FULL_EXIT__=<n>`、exact一行`Ran 741 tests in ...s`及其后`OK`或真实failure。corrected unittest
 invocation `1`，retry/fallback/alternate/count probe `0`；不得重跑已接受gate、编辑、stage、commit或创建外部evidence root。
 
-**锁与stop：** C1/retained/release evidence、real B2/B3/B4、validator、eligibility、release、network和device全部锁0；
-唯一stop为`B2_P3_C2_C1_CORRECTED_OBSERVABLE_FULL_VALIDATION_WAITING_PLANNER_REVIEW`。通过后也只允许Planner验收，
-再由Orchestrator把`REF-P7-25-R2-B2-R2`恢复为`READY_FOR_PLANNING`。
+**验收与锁：** Planner acceptance archive
+`.agent-work/PLANS/20260730-2228-p7-retained-r3-provenance-io-p3-c2-c1-acceptance-review.md`，SHA-256
+`71bf6f9734013f5bc6dfea19595a8e8c005d897b50f8dd7458eef857c826151f`。该验收只使R2恢复
+`READY_FOR_PLANNING`；C1/retained/release evidence、real B2/B3/B4、validator、eligibility、release、network和device仍锁0。
 
 > 以下旧two-path执行细节已由Human engineering-governance override与B1A exact-five contract supersede，不得作为未来
 > PLAN输入；B1A-C2/后续Planner验收冻结的five-path child与manifest facts才是B2的新工程基线。本段保留仅作旧合同历史。
@@ -4008,10 +4011,11 @@ rejected B2-C4-P2-C3 result = FULL_TERMINAL_EVIDENCE_UNAVAILABLE; targeted5/5; o
 accepted B2-C4-P2-C4 result = INTEGRATION_QUALIFICATION_COMPLETE; commit4e82a7d; full717/717; postcommit5/5
 rejected B2-R2 plan = UNFROZEN_EXTERNAL_IO_STATE_OWNER; execution0; retained reads0; root0
 rejected B2-P3-C2 result = PLAN_PIPELINE_ZSH_STATUS_READONLY_CHILD_RESULT_UNPROVEN; unittest child outcome unknown
-active task = REF-P7-25-R2-B2-P3-C2-C1 corrected observable full validation
-active contract = P7-TD-B-RETAINED-R3-PROVENANCE-IO-OBSERVABLE-FULL-VALIDATION-V2
-active executable task count = 1
-next reference task = REF-P7-25-R2-B2-P3-C2-C1 ACTIVE_EXECUTION_AUTHORIZED
+accepted B2-P3-C2-C1 result = PROVENANCE_IO_CORRECTION_FULL_VALIDATION_COMPLETE; full741/741; marker0; OK
+active task = none
+active contract = none
+active executable task count = 0
+next reference task = REF-P7-25-R2-B2-R2 READY_FOR_PLANNING
 selected state C shutter = 1/2500
 device/network/camera/light = forbidden by active PLAN
 release qualification/generation/copy/consumption = forbidden
