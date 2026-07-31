@@ -10,6 +10,7 @@
 - The committed owner defines `GitLedger.exit_code`; `run_read_only_git` returns that dataclass. The current controller source is bytes `23629`, SHA-256 `0fbda54d91a6941782ea0470100ab55ca66811ca6e31a3463523be5ff0bd9c93`, mode `0600`, device `16777240`, inode `2218110`.
 - No current-package source root, C1, retained, manifest, validator, release, network, or device budget was consumed.
 - The owner-API successor then failed its own pre-dispatch gate with `RuntimeError:returncode_occurrence`: the gate correctly parsed an isolated negative specimen containing `ledger.returncode`, but later counted the specimen's source text as if it were dispatched runtime attribute usage. Git/root/C1 remained zero. Controller bytes/SHA are `21024`/`703e813f09c543a654c64423fd09c6c527211b87bb3045c8aa7ed1e1969d2078`.
+- Repo-owned P4 commit `83bb193...` and final-source full `755/755` are accepted. Its first synthetic integration correctly rejected the runtime source pre-effect with `owner_alias_escape` because direct owner results were stored in a mutable `state` container. Git/root/inputs remained zero. The immutable source is bytes `20586`, SHA-256 `8c4cb131ed97bc38f5ff72947000d3b7932574759483b4172cd9fbfd992ea904`.
 
 ## Failed approaches
 
@@ -17,14 +18,15 @@
 - Treating a semantic matrix PASS as sufficient when the physical root ownership call was omitted.
 - Correcting one observed field while leaving the generated controller's other owner interfaces unverified.
 - Mixing negative-test fixture text into the same AST/text domain used to certify dispatched runtime code.
+- Passing live owner objects between lifecycle callbacks through a generic mutable state container instead of keeping direct-bound names and storing only plain serialized projections.
 
 ## Current hypothesis
 
-Root cause is now broader than one field: repeated one-off controllers combine runtime logic, static conformance, negative fixtures, evidence serialization, and lifecycle orchestration in one source domain. Fixing another local predicate would preserve the fragile state owner. The next engineering step should separate and test the reusable controller-conformance/qualification composition in repository-owned code, or otherwise establish disjoint runtime and negative-fixture AST domains before any further real external dispatch.
+The repo-owned conformance boundary now works and catches composition drift before effects. Remaining integration root cause is transport of accepted owner return objects across callbacks: runtime objects must stay in direct-bound/non-aliased names, while only plain projections may enter mutable evidence state. No production-owner change is indicated.
 
 ## Next diagnostic and acceptance surface
 
-- Planner must reassess ownership and should not authorize another hand-written external-controller retry that merely adjusts the `returncode` counter.
+- Planner should authorize only a fresh synthetic integration source that uses direct/nonlocal owner bindings and stores plain projections rather than live owner objects.
 - Any successor must independently compare every runtime controller attribute access on accepted owner return types against current committed dataclass fields, while parsing negative fixtures in a separate AST that is excluded from runtime-occurrence assertions.
 - The regression surface must prove a negative `GitLedger.returncode` specimen is rejected, the actual runtime AST has no `returncode`, all six ledgers use `exit_code == 0` with empty stderr, and four root negative cases remain pure in-memory without consuming an extra owner root lstat.
 - The old controller/source/root remain immutable and must not be rerun or repaired.
