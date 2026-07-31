@@ -16,7 +16,9 @@ from camera_based_rgbww_optimizer.utils.p7_retained_r3_provenance_io import (
     DirectoryIdentity,
     FileIdentity,
     GitLedger,
+    ProvenanceIOError,
     canonical_json_bytes,
+    decode_canonical_json,
 )
 from camera_based_rgbww_optimizer.utils.p7_retained_r3_controller_runtime import (
     ControllerRuntimeRequest,
@@ -78,7 +80,7 @@ class ControllerDomainTemplateTests(unittest.TestCase):
             composed.source,
         )
         self.assertIn(b'"\\x00".join(ACTIVATION_PATHS) + "\\x00"', composed.source)
-        self.assertIn(b'not value or "\\x00" in value or "\\n" in value or "\\r" in value', composed.source)
+        self.assertIn(b'"\\x00".join(RUNTIME_PATHS) + "\\x00"', composed.source)
 
         activation_commit_boundary = b'activation_commit_ledger.stdout == (ACTIVATION_COMMIT + "\\n").encode("utf-8")'
         activation_metadata_boundary = b'activation_metadata_ledger.stdout == (ACTIVATION_COMMIT + "\\x00" + ACTIVATION_PARENT + "\\x00" + ACTIVATION_SUBJECT + "\\n").encode("utf-8")'
@@ -233,13 +235,24 @@ class ControllerDomainTemplateTests(unittest.TestCase):
         generated_calls = {
             "ByteSpan", "DirectoryIdentity", "FileIdentity", "LifecycleCallbacks",
             "LifecycleRequirements", "PersistRootIdentity", "RootIdentityChain", "RuntimeError", "SealTargetIdentity",
-            "_main", "all", "canonical_json_bytes", "contract_value", "controller",
+            "_main", "all", "any", "canonical_json_bytes", "contract_value", "controller",
             "create_exclusive_root", "encode", "execute_controller_lifecycle", "len",
             "persist_canonical_json", "read_exact_file", "require_activation_contract",
-            "run_read_only_git", "startswith", "tuple", "type",
+            "run_read_only_git", "join", "startswith", "tuple", "type",
             "validate_root_identity_chain", "write",
         }
         self.assertEqual(inventory(generated, allowed_imports=generated_imports, allowed_calls=generated_calls), set())
+        generated_tree = ast.parse(generated)
+        generated_call_names = [
+            node.func.id if isinstance(node.func, ast.Name) else node.func.attr
+            for node in ast.walk(generated_tree)
+            if isinstance(node, ast.Call)
+        ]
+        self.assertEqual(generated_call_names.count("any"), 1)
+        self.assertEqual(generated_call_names.count("join"), 2)
+        self.assertEqual(generated.count("any(type(item) is not tuple or len(item) != 2 or type(item[0]) is not str for item in value)"), 1)
+        self.assertEqual(generated.count('"\\x00".join(ACTIVATION_PATHS)'), 1)
+        self.assertEqual(generated.count('"\\x00".join(RUNTIME_PATHS)'), 1)
 
         self.assertIn("retained", subject.__doc__.lower())
         self.assertIn(
@@ -291,6 +304,7 @@ class ControllerDomainTemplateTests(unittest.TestCase):
         calls = []
         lifecycle_orders = []
         files = {}
+        persisted_values = {}
         root_identity = DirectoryIdentity(path=spec().output_root, device=17, inode=23, mode=0o700)
         sentinel = RuntimeError("pre_root_failure")
 
@@ -329,6 +343,7 @@ class ControllerDomainTemplateTests(unittest.TestCase):
             identity = FileIdentity(path=root.path + "/" + child_name, data=payload, byte_count=len(payload), sha256=hashlib.sha256(payload).hexdigest(), device=root.device, inode=100 + len(files), mode=0o600, root=root)
             self.assertNotIn(identity.path, files)
             files[identity.path] = identity
+            persisted_values[child_name] = value
             return identity
 
         def fake_read(path, *, root):
@@ -358,10 +373,10 @@ class ControllerDomainTemplateTests(unittest.TestCase):
             execute_controller_lifecycle=tracked_lifecycle,
             sys=fake_sys,
         )
-        return namespace, calls, lifecycle_orders, fake_sys, sentinel
+        return namespace, calls, lifecycle_orders, fake_sys, sentinel, persisted_values
 
     def test_10_in_memory_owner_harness_proves_persist_read_order_and_success_envelope(self):
-        namespace, calls, lifecycle_orders, fake_sys, _sentinel = self._fake_owner_harness()
+        namespace, calls, lifecycle_orders, fake_sys, _sentinel, persisted_values = self._fake_owner_harness()
         self.assertEqual(calls, [])
         namespace["_main"]()
         self.assertEqual(lifecycle_orders, [("conformance", "activation", "root", "inputs", "evaluate", "terminal", "terminal_seal", "admission")])
@@ -374,9 +389,32 @@ class ControllerDomainTemplateTests(unittest.TestCase):
         for name in read:
             self.assertLess(next(index for index, entry in enumerate(calls) if entry[:2] == ("persist", name)), next(index for index, entry in enumerate(calls) if entry[:2] == ("read", name)))
         self.assertTrue(all(entry[-1].path == spec().output_root for entry in calls if entry[0] in {"persist", "read"}))
+        expected_matrix = [
+            [name, True]
+            for name in (
+                "activation_commit", "activation_metadata", "activation_paths",
+                "runtime_metadata", "runtime_paths", "runtime_patch",
+                "plan_same_root", "full_same_root", "lineage_same_root",
+                "seal_same_root", "fixture_root_mode", "fixture_file_hash",
+                "fixture_span_exact", "qualification_nonempty",
+                "terminal_nonempty", "admission_nonempty",
+            )
+        ]
+        matrix = persisted_values["integration-qualification.json"]["matrix"]
+        self.assertIs(type(matrix), list)
+        self.assertEqual(len(matrix), 16)
+        self.assertTrue(all(type(entry) is list and len(entry) == 2 for entry in matrix))
+        self.assertEqual(matrix, expected_matrix)
+        qualification_payload = canonical_json_bytes({"matrix": matrix})
+        decoded = decode_canonical_json(qualification_payload)
+        self.assertEqual(decoded["matrix"], tuple(tuple(entry) for entry in expected_matrix))
+        self.assertEqual(canonical_json_bytes({"matrix": matrix}), qualification_payload)
+        with self.assertRaises(ProvenanceIOError) as raised:
+            canonical_json_bytes({"matrix": tuple(tuple(entry) for entry in expected_matrix)})
+        self.assertEqual(raised.exception.code, "json_unsupported_value")
 
     def test_11_pre_root_failure_remains_primary_and_terminal_does_not_touch_missing_root(self):
-        namespace, calls, lifecycle_orders, _fake_sys, sentinel = self._fake_owner_harness(fail_root=True)
+        namespace, calls, lifecycle_orders, _fake_sys, sentinel, _persisted_values = self._fake_owner_harness(fail_root=True)
         with self.assertRaises(RuntimeError) as raised:
             namespace["controller"]()
         self.assertIs(raised.exception, sentinel)

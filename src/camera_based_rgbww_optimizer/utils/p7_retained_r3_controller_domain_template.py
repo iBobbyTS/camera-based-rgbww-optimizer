@@ -186,7 +186,7 @@ def controller():
         phase_state["fixture_root_mode"] = fixture_root.mode == 448
         phase_state["fixture_file_hash"] = fixture_file.sha256 == fixture_target.sha256
         phase_state["fixture_span_exact"] = fixture_span.end > fixture_span.start
-        semantic_matrix = tuple((name, phase_state[name]) for name in ("activation_commit", "activation_metadata", "activation_paths", "runtime_metadata", "runtime_paths", "runtime_patch", "plan_same_root", "full_same_root", "lineage_same_root", "seal_same_root", "fixture_root_mode", "fixture_file_hash", "fixture_span_exact")) + (("qualification_nonempty", True), ("terminal_nonempty", True), ("admission_nonempty", True))
+        semantic_matrix = [[name, phase_state[name]] for name in ("activation_commit", "activation_metadata", "activation_paths", "runtime_metadata", "runtime_paths", "runtime_patch", "plan_same_root", "full_same_root", "lineage_same_root", "seal_same_root", "fixture_root_mode", "fixture_file_hash", "fixture_span_exact")] + [["qualification_nonempty", True], ["terminal_nonempty", True], ["admission_nonempty", True]]
         if len(semantic_matrix) != 16 or not all(value for _name, value in semantic_matrix):
             raise RuntimeError("semantic_matrix_failed")
         qualification_written = persist_canonical_json(persist_root_identity, artifact_names[4], {"matrix": semantic_matrix})
