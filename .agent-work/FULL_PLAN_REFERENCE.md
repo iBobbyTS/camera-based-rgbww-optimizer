@@ -16,9 +16,9 @@
 
 **当前可执行任务数：** `1`
 
-**当前 active task：** `REF-P7-25-R2-B2-P6-C1-C1-C1 exact generated guard-call correction`
+**当前 active task：** `REF-P7-25-R2-B2-P6-C1-C1-C1-V1 deterministic validation-only closure`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-31","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-P6-C1-C1-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P6-C1-C1-C1-EXACT-GENERATED-GUARD-CALL-ALLOWLIST-CORRECTION-V1","next_reference_task":"REF-P7-25-R2-B2-P6-C1-C1-C1","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P6_C1_C1_C1_EXACT_GENERATED_GUARD_CALL_CORRECTION_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":true,"device_authorized_by_this_file":false,"rejected_candidate_commit":"66532b5adef27de3c7839c5a7c783ebd7a053d38","rejected_candidate_consumable":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-31","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-P6-C1-C1-C1-V1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P6-C1-C1-C1-V1-DETERMINISTIC-VALIDATION-CLOSURE-V1","next_reference_task":"REF-P7-25-R2-B2-P6-C1-C1-C1-V1","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P6_C1_C1_C1_V1_DETERMINISTIC_VALIDATION_CLOSURE_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_commit":"48b3979d6c0df5f488cd500597e26dc4c38877dd","candidate_consumable":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -313,7 +313,8 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-B2-P6` | `REJECTED_TARGETED_REPLACEMENT_INDENT_AND_STATIC_ASSERTION_CONTRACT` | deterministic canonical 18-binding domain-template builder | P6-C1 correction | Planner/Executer |
 | `REF-P7-25-R2-B2-P6-C1` | `REJECTED_TARGETED_TEST_RUNTIME_REQUEST_IMPORT_OMISSION` | zero-indent replacement and meaningful semantic static boundary | P6-C1-C1 import-only correction | Planner/Executer |
 | `REF-P7-25-R2-B2-P6-C1-C1` | `REJECTED_TARGETED_GENERATED_RUNTIME_ERROR_AND_TYPE_CALL_ALLOWLIST_GAP` | add the single missing explicit runtime-request test import | P6-C1-C1-C1 exact guard-call correction | Planner/Executer |
-| `REF-P7-25-R2-B2-P6-C1-C1-C1` | `ACTIVE_EXECUTION_AUTHORIZED` | admit exact canonical pre-effect guard calls in test08 | P6-C1-C1 targeted failure | Planner/Executer |
+| `REF-P7-25-R2-B2-P6-C1-C1-C1` | `REJECTED_POST_FULL_VALIDATION_HARNESS_STOPITERATION_CANDIDATE_REGRESSION_GREEN_NON_CONSUMABLE` | admit exact canonical pre-effect guard calls in test08 | V1 deterministic validation closure | Planner/Executer |
+| `REF-P7-25-R2-B2-P6-C1-C1-C1-V1` | `ACTIVE_EXECUTION_AUTHORIZED` | validate committed guard candidate with exact-name AST walk | P6-C1-C1-C1 harness failure | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-V1` | `ACCEPTED_COMPLETE` | one final-source full suite with retained terminal exit/count | 755/755 accepted | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-I1` | `REJECTED_PRE_EFFECT_OWNER_ALIAS_ESCAPE` | fresh synthetic external integration of accepted repo owner | I1-C1 correction | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-I1-C1` | `REJECTED_PRE_EFFECT_LIVE_OWNER_CONTAINER_WRITE_FIELD_ONLY_CORRECTION_REQUIRED` | direct/nonlocal live owner bindings with plain-projection transport | I1-C1-C1 correction | Planner/Executer |
@@ -3669,7 +3670,7 @@ non-consumable，后续验证及external/retained/device effects全0。
 
 ### REF-P7-25-R2-B2-P6-C1-C1-C1：exact generated guard-call allowlist correction
 
-**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。Contract为
+**状态：** `REJECTED_POST_FULL_VALIDATION_HARNESS_STOPITERATION_CANDIDATE_REGRESSION_GREEN_NON_CONSUMABLE`。Contract为
 `P7-TD-B-RETAINED-R3-OPTION-B-B2-P6-C1-C1-C1-EXACT-GENERATED-GUARD-CALL-ALLOWLIST-CORRECTION-V1`。Exact one test path；
 只允许在test08静态`generated_calls` expected set加入exact `RuntimeError`与`type`，不得动态派生或泛化allowlist，不得改其他test body或
 production source。Fresh targeted8、focused90、compileall、unique full775、CodeGraph、single test-only commit
@@ -3677,6 +3678,22 @@ production source。Fresh targeted8、focused90、compileall、unique full775、
 全0。Review archive `.agent-work/PLANS/20260731-1622-p7-retained-r3-b2-p6-c1-c1-generated-call-review.md`，bytes`5477`，SHA-256
 `5e84944d40520e659bcd3db6ccbcc7163917f7d9de526dccb1c060080b804e01`。Exact stop
 `B2_P6_C1_C1_C1_GENERATED_CALL_ALLOWLIST_CORRECTION_WAITING_PLANNER_REVIEW`。
+
+Candidate `48b3979d6c0df5f488cd500597e26dc4c38877dd`的exact two-name correction通过targeted8、focused90、compileall、full775与
+CodeGraph，但临时gate只查`method.body`直层，未用`ast.walk`定位嵌套assignment而`StopIteration`。Evidence commit
+`2fc509b02fd8be0fee05653e5875709f0d05a141`；候选仍non-consumable，commit/posttarget均0，external/retained/device全0。
+
+### REF-P7-25-R2-B2-P6-C1-C1-C1-V1：deterministic validation-only closure
+
+**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。Contract为
+`P7-TD-B-RETAINED-R3-OPTION-B-B2-P6-C1-C1-C1-V1-DETERMINISTIC-VALIDATION-CLOSURE-V1`。Code/test writes与implementation
+commit均0；绑定已提交candidate `48b3979d...`的parent/subject/path/2-insertions/2-deletions/canonical binary diff identity，先按exact class/test name
+选择test08，再以`ast.walk(selected_test08)`确认唯一literal `generated_calls` assignment、exact names、runtime imports、八方法与immutable source/test
+identities；随后fresh targeted8、focused90、compileall、unique full775、CodeGraph query。仅ER append1，retry/fallback0；retained/validator/release/
+external/network/device/formal全0。Review archive
+`.agent-work/PLANS/20260731-1634-p7-retained-r3-b2-p6-c1-c1-c1-harness-failure-review.md`，bytes`6389`，SHA-256
+`db6545c82e4be051c4536d0cd2e47fcf8f0f6b4f3ff62c5117f59a4ffec3c6ad`。Exact stop
+`B2_P6_C1_C1_C1_V1_DETERMINISTIC_VALIDATION_CLOSURE_WAITING_PLANNER_REVIEW`。
 
 ### REF-P7-25-R2-B2-P3：repo-owned provenance I/O boundary
 
@@ -4471,10 +4488,11 @@ rejected B2-P5-I1 result = CANONICAL_DOMAIN_TEMPLATE_NOT_FROZEN; effects0
 rejected B2-P6 result = REPLACEMENT_INDENT_AND_STATIC_ASSERTION_CONTRACT; targeted8 exit1
 rejected B2-P6-C1 result = TEST_RUNTIME_REQUEST_IMPORT_OMISSION; targeted7/8; candidate73e2f2c nonconsumable
 rejected B2-P6-C1-C1 result = GENERATED_RUNTIME_ERROR_AND_TYPE_CALL_ALLOWLIST_GAP; targeted7/8; candidate66532b5 nonconsumable
-active task = REF-P7-25-R2-B2-P6-C1-C1-C1 exact generated guard-call allowlist correction
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-P6-C1-C1-C1-EXACT-GENERATED-GUARD-CALL-ALLOWLIST-CORRECTION-V1
+rejected B2-P6-C1-C1-C1 result = POST_FULL_HARNESS_STOPITERATION; candidate48b3979 regression-green nonconsumable
+active task = REF-P7-25-R2-B2-P6-C1-C1-C1-V1 deterministic validation-only closure
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-P6-C1-C1-C1-V1-DETERMINISTIC-VALIDATION-CLOSURE-V1
 active executable task count = 1
-next reference task = REF-P7-25-R2-B2-P6-C1-C1-C1 ACTIVE_EXECUTION_AUTHORIZED
+next reference task = REF-P7-25-R2-B2-P6-C1-C1-C1-V1 ACTIVE_EXECUTION_AUTHORIZED
 selected state C shutter = 1/2500
 device/network/camera/light = forbidden by active PLAN
 release qualification/generation/copy/consumption = forbidden
