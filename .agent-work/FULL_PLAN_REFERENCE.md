@@ -16,9 +16,9 @@
 
 **当前可执行任务数：** `1`
 
-**当前 active task：** `REF-P7-25-R2-B2-P5-I1 repo-runtime fresh synthetic integration`
+**当前 active task：** `REF-P7-25-R2-B2-P6 repo-owned deterministic domain template`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-31","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-P5-I1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P5-I1-REPO-RUNTIME-FRESH-SYNTHETIC-INTEGRATION-V1","next_reference_task":"REF-P7-25-R2-B2-P5-I1","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P5_I1_REPO_RUNTIME_FRESH_SYNTHETIC_INTEGRATION_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-31","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-P6","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P6-REPO-OWNED-DETERMINISTIC-DOMAIN-TEMPLATE-V1","next_reference_task":"REF-P7-25-R2-B2-P6","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P6_DOMAIN_TEMPLATE_OWNER_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -309,7 +309,8 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1-C1-C1` | `REJECTED_SELF_REFERENTIAL_FORBIDDEN_TOKEN_MATRIX_CHECK` | single subprocess input channel before unique controller process | runtime-token fixture separation | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1-C1-C1-C1` | `REJECTED_PRE_EFFECT_REFLECTION_AND_SOURCE_WRITER_PROOF_GAP` | separate negative token fixture data from scanned runtime source | P5 repo-owned runtime owner | Planner/Executer |
 | `REF-P7-25-R2-B2-P5` | `ACCEPTED_COMPLETE_REPO_OWNED_CONTROLLER_RUNTIME_OWNER` | single repo-owned controller source/writer/launcher runtime owner | P5-I1 fresh integration | Planner/Executer |
-| `REF-P7-25-R2-B2-P5-I1` | `ACTIVE_EXECUTION_AUTHORIZED` | one fresh synthetic integration via execute_controller_runtime | accepted P5 owner | Planner/Executer |
+| `REF-P7-25-R2-B2-P5-I1` | `REJECTED_PRE_EFFECT_CANONICAL_DOMAIN_TEMPLATE_NOT_FROZEN` | one fresh synthetic integration via execute_controller_runtime | P6 template owner | Planner/Executer |
+| `REF-P7-25-R2-B2-P6` | `ACTIVE_EXECUTION_AUTHORIZED` | deterministic canonical 18-binding domain-template builder | P5-I1 plan-contract gap | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-V1` | `ACCEPTED_COMPLETE` | one final-source full suite with retained terminal exit/count | 755/755 accepted | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-I1` | `REJECTED_PRE_EFFECT_OWNER_ALIAS_ESCAPE` | fresh synthetic external integration of accepted repo owner | I1-C1 correction | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-I1-C1` | `REJECTED_PRE_EFFECT_LIVE_OWNER_CONTAINER_WRITE_FIELD_ONLY_CORRECTION_REQUIRED` | direct/nonlocal live owner bindings with plain-projection transport | I1-C1-C1 correction | Planner/Executer |
@@ -3610,11 +3611,25 @@ bytes `7508`，SHA-256 `22fee71a6da19ac17f067faec506b3a31ba62371a931c9a0bee2726f
 
 ### REF-P7-25-R2-B2-P5-I1：repo-runtime fresh synthetic integration
 
-**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。Contract为
+**状态：** `REJECTED_PRE_EFFECT_CANONICAL_DOMAIN_TEMPLATE_NOT_FROZEN`。Contract为
 `P7-TD-B-RETAINED-R3-OPTION-B-B2-P5-I1-REPO-RUNTIME-FRESH-SYNTHETIC-INTEGRATION-V1`。Outer只构造immutable domain template/request并
 调用`execute_controller_runtime` exact1；禁止手写external writer/read/launcher、第二analyzer/classifier/lifecycle。Fresh source/root不可复用旧失败路径，
 仍完成Git6/same-root4/matrix16/exact9/terminal/seal/admission，retry0。Retained/validator/release/network/device全0。Exact stop为
 `B2_P5_I1_REPO_RUNTIME_FRESH_SYNTHETIC_INTEGRATION_WAITING_PLANNER_REVIEW`。
+
+Outer HEAD通过但在任何fresh effect前停止：PLAN只有语义/计数，没有冻结可唯一重建的18-binding template或single physical root下
+RootIdentityChain before/after策略。Evidence commit `4af057e0cd5f62d18a02cf02e088c1f293bddc4d`只追加ER，effects0。
+
+### REF-P7-25-R2-B2-P6：repo-owned deterministic domain template
+
+**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。Contract为
+`P7-TD-B-RETAINED-R3-OPTION-B-B2-P6-REPO-OWNED-DETERMINISTIC-DOMAIN-TEMPLATE-V1`。Exact双路径新增pure builder module
+`p7_retained_r3_controller_domain_template.py`与dedicated test；existing runtime不改。Builder输出immutable deterministic template/replacement/request inputs，
+冻结exact18 bindings、Git6、single physical root的before/after identity策略、same-root4、matrix16、exact9/lifecycle source shape；复用runtime/conformance/
+provenance/lifecycle，不含I/O、process、retained语义或第二analyzer。Exact8 tests，focused90、full775、compileall、CodeGraph、exact commit与posttest。
+External/retained/device全0。Archive `.agent-work/PLANS/20260731-1549-p7-retained-r3-b2-p5-i1-domain-template-gap-review.md`，bytes `19160`，
+SHA-256 `65cdb8326a4f02656ccfd25fd962b2a19721d97bda4fb4b504398cbf04d24b91`。Exact stop为
+`B2_P6_REPO_OWNED_DETERMINISTIC_DOMAIN_TEMPLATE_WAITING_PLANNER_REVIEW`。
 
 ### REF-P7-25-R2-B2-P3：repo-owned provenance I/O boundary
 
@@ -4405,10 +4420,11 @@ rejected B2-P4-C1-C1-C1-I1-C1-C1-C1 result = LAUNCHER_STDIN_INPUT_MUTUAL_EXCLUSI
 rejected B2-P4-C1-C1-C1-I1-C1-C1-C1-C1 result = SELF_REFERENTIAL_FORBIDDEN_TOKEN_MATRIX_CHECK; process1; root+inputs present
 rejected B2-P4 runtime-token successor = PRE_EFFECT_REFLECTION_AND_SOURCE_WRITER_PROOF_GAP; effects0
 accepted B2-P5 result = REPO_OWNED_CONTROLLER_RUNTIME_OWNER; implementation37f7d00; full767
-active task = REF-P7-25-R2-B2-P5-I1 repo-runtime fresh synthetic integration
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-P5-I1-REPO-RUNTIME-FRESH-SYNTHETIC-INTEGRATION-V1
+rejected B2-P5-I1 result = CANONICAL_DOMAIN_TEMPLATE_NOT_FROZEN; effects0
+active task = REF-P7-25-R2-B2-P6 repo-owned deterministic domain template
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-P6-REPO-OWNED-DETERMINISTIC-DOMAIN-TEMPLATE-V1
 active executable task count = 1
-next reference task = REF-P7-25-R2-B2-P5-I1 ACTIVE_EXECUTION_AUTHORIZED
+next reference task = REF-P7-25-R2-B2-P6 ACTIVE_EXECUTION_AUTHORIZED
 selected state C shutter = 1/2500
 device/network/camera/light = forbidden by active PLAN
 release qualification/generation/copy/consumption = forbidden
