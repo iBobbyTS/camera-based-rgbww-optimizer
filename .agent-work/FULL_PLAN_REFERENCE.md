@@ -18,7 +18,7 @@
 
 **当前 active task：** `REF-P7-25-R2-B2-P3 repo-owned provenance I/O boundary`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":0,"active_task":"REF-P7-25-R2-B2-P3","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-R2-REAL-MANIFEST-ONLY-V1","next_reference_task":"REF-P7-25-R2-B2-P3","next_reference_status":"READY_FOR_PLANNING","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"R2_PLAN_REJECTED_UNFROZEN_EXTERNAL_IO_OWNER_P3_READY","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"65e4788f0ac17575e9d4077085fb6f34f81358aa3236eaeb847c3e70da60c89c","candidate_contract_orchestrator_verified":false}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-P3","active_plan_contract_id":"P7-TD-B-RETAINED-R3-PROVENANCE-IO-BOUNDARY-V1","next_reference_task":"REF-P7-25-R2-B2-P3","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P3_PROVENANCE_IO_IMPLEMENTATION_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"1e33ed30b38345ef53aa0fd5cb44336fd106e753c74272671dabfdb77dab51f8","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -293,7 +293,7 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-B2-C4-P2-C3` | `REJECTED_FULL_SUITE_TERMINAL_EVIDENCE_UNAVAILABLE` | exact `camera` to `.camera` static-token correction then full qualification | P2-C2 targeted 4/5 | Planner/Executer |
 | `REF-P7-25-R2-B2-C4-P2-C4` | `ACCEPTED_INTEGRATION_QUALIFICATION_COMPLETE` | one quiet full suite with observable terminal exit, then remaining gates | P2-C3 output truncation | Orchestrator/Executer |
 | `REF-P7-25-R2-B2-R2` | `REJECTED_MAINTAINABILITY_UNFROZEN_EXTERNAL_IO_OWNER` | use accepted repo owners for one fresh real-input manifest-only B2 re-entry | P2 accepted | Planner/Executer |
-| `REF-P7-25-R2-B2-P3` | `READY_FOR_PLANNING` | repo-owned tested provenance file/Git I/O boundary reused by B2/B3/B4 | R2 maintainability rejection | Planner/Executer |
+| `REF-P7-25-R2-B2-P3` | `ACTIVE_EXECUTION_AUTHORIZED` | repo-owned tested provenance file/Git I/O boundary reused by B2/B3/B4 | R2 maintainability rejection | Planner/Executer |
 | `REF-P7-25-R2-B3` | `BLOCKED` | Manifest自校验后执行postcommit focused、durable full、synthetic terminal/replay | `REF-P7-25-R2-B2` accepted | Planner/Executer |
 | `REF-P7-25-R2-B4` | `BLOCKED` | 对原retained R3三件套做首次真实audit并由canonical validator唯一判定eligibility | `REF-P7-25-R2-B3` accepted | Planner/Executer |
 | `REF-P7-25-R2-B5` | `BLOCKED` | 独立验收validated-unconsumed状态、manifest与rollback provenance | `REF-P7-25-R2-B4` pass | Planner/Orchestrator |
@@ -3242,7 +3242,8 @@ manifest/terminal seals与ER ordering。虽然phase transitions仍调用exact-fi
 
 ### REF-P7-25-R2-B2-P3：repo-owned provenance I/O boundary
 
-**状态：** `READY_FOR_PLANNING`。
+**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。Planner PLAN SHA-256
+`1e33ed30b38345ef53aa0fd5cb44336fd106e753c74272671dabfdb77dab51f8` 已由Orchestrator独立审核；activation仅授权本节exact-two-path实现、测试与单一commit。
 
 **实现范围：** exact two-path owner：
 
@@ -3260,7 +3261,7 @@ existing target、mode/dev/inode mismatch、fsync/close failure、Git argv allow
 CodeGraph、exact-two-path commit与Planner独立review通过后，R2才重新READY；本包不访问C1/retained或建立external root。
 
 **锁与stop：** actual audit/validator/eligibility/release/network/device全部0。唯一当前stop为
-`B2_P3_WAITING_PLANNER_PROVENANCE_IO_PLAN`。
+`B2_P3_IMPLEMENTATION_WAITING_PLANNER_REVIEW`。
 
 > 以下旧two-path执行细节已由Human engineering-governance override与B1A exact-five contract supersede，不得作为未来
 > PLAN输入；B1A-C2/后续Planner验收冻结的five-path child与manifest facts才是B2的新工程基线。本段保留仅作旧合同历史。
@@ -3881,7 +3882,7 @@ Option A owner prerequisite = accepted complete
 Advisor lineage owner decision = Option B subordinate exact provenance manifest
 Human engineering governance override = Orchestrator owns files/code/provenance/execution/Git
 helper v1 disposition = retained_release_audit_prerequisite_v1_superseded_before_real_validation
-repair v2 status = real B2 launcher plan rejected maintainability; P3 repo-owned provenance I/O ready
+repair v2 status = P3 repo-owned provenance I/O implementation active
 accepted B1 result = ACCEPTED_BLOCKED_CONTRACT_CONFLICT
 accepted B1A result = HARD_FAILURE_PRE_ACQUISITION_LIFECYCLE; implementation progress 0
 accepted B1A-C1 result = HARD_FAILURE_BEFORE_TEST_EXEC; candidate carry-forward only
@@ -3966,9 +3967,9 @@ rejected B2-C4-P2-C3 result = FULL_TERMINAL_EVIDENCE_UNAVAILABLE; targeted5/5; o
 accepted B2-C4-P2-C4 result = INTEGRATION_QUALIFICATION_COMPLETE; commit4e82a7d; full717/717; postcommit5/5
 rejected B2-R2 plan = UNFROZEN_EXTERNAL_IO_STATE_OWNER; execution0; retained reads0; root0
 active task = REF-P7-25-R2-B2-P3 repo-owned provenance I/O boundary
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-R2-REAL-MANIFEST-ONLY-V1
-active executable task count = 0
-next reference task = REF-P7-25-R2-B2-P3 READY_FOR_PLANNING
+active contract = P7-TD-B-RETAINED-R3-PROVENANCE-IO-BOUNDARY-V1
+active executable task count = 1
+next reference task = REF-P7-25-R2-B2-P3 ACTIVE_EXECUTION_AUTHORIZED
 selected state C shutter = 1/2500
 device/network/camera/light = forbidden by active PLAN
 release qualification/generation/copy/consumption = forbidden
