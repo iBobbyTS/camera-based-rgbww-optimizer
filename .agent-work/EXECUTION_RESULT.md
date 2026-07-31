@@ -16602,3 +16602,73 @@ C13_IMPLEMENTATION_RESULT {"schema":"c13_implementation_result_v1","timestamp":"
 - All machine-contract zero budgets remained `0`: no external/C1/retained-R3/candidate/release/run artifact read or external root creation; no retained audit, canonical validator, eligibility or release operation; no network/DNS/`.env`/credentials, device, camera, Ray, strip, cleanup, capture, FORMAL, public analyzer, TD-C, sentinel, P8, firmware or deployment. Retained R3 remains `RETAINED_UNVALIDATED_UNCONSUMED`; real B2/B3/B4 remain locked.
 - Maintainability: the correction remains inside one high-risk filesystem helper and its dedicated behavioral test owner; it introduces one flag capability guard and one lexical linkage invariant, with no parallel controller/manifest/validator/release ownership. No refactor is recommended before a third stable consumer.
 - Result: `full_summary_fragment_unavailable_waiting_for_planner`. Planner must independently decide whether the structured successful terminal state suffices or whether a bounded observable-full-validation continuation is required. This handoff does not authorize a rerun, real B2, retained artifact access, validator, eligibility, release or device work.
+
+## REF-P7-25-R2-B2-P3-C2 Executer handoff — pipeline_contract_zsh_status_readonly_failure_waiting_for_planner
+
+- Contract: `P7-TD-B-RETAINED-R3-PROVENANCE-IO-OBSERVABLE-FULL-VALIDATION-V1`; exact stop: `B2_P3_C2_OBSERVABLE_FULL_VALIDATION_WAITING_PLANNER_REVIEW`.
+- Frozen preflight passed before invocation. Activation HEAD was `4725c6545e414c55ef7e9bf86fe1381782035039`, direct parent `c0e20d1afe9e363f646fc5723be721d3b907deeb`, subject `chore(plan): activate retained r3 observable full validation`, with exact changed paths `.agent-work/FULL_PLAN_REFERENCE.md`, `.agent-work/PLAN.md`, and `.agent-work/PLANS/20260730-2148-p7-retained-r3-provenance-io-p3-c1-review.md`. Worktree, stage, and untracked sets were clean/empty.
+- Implementation identity passed: commit `1f88cf42d95c00c7db5692e78ed1d663732d5701`, direct parent `a736e95b968ffef813024a67c0cbcfbd67e971e4`, subject `fix(p7): harden retained r3 provenance io boundary`, exact two changed paths. Helper identity was bytes `18853`, SHA-256 `f603721fb8b90510e2a09b199701c3f3358574d1247b5883ebdccc6f585b0a48`, blob `492f31f5f6999e28a1f0eb60240780e2c4826f4f`; test identity was bytes `28525`, SHA-256 `59a6d87164abf6abc89c50ab7d899f94126fc949512d38b34967cae8f4e6d4e9`, blob `a796e1ac336d58a0120dd6b99a3842c5c7b03a6b`.
+- Canonical exact-two-path binary patch was independently recomputed with `git diff --binary --full-index --no-ext-diff 1f88cf42d95c00c7db5692e78ed1d663732d5701^ 1f88cf42d95c00c7db5692e78ed1d663732d5701 -- <exact sorted two paths>` and matched SHA-256 `df29a921b774010db020fdebfc12809feb2c92c293c247b14733a6e39e8595e1`. The P3-C1 archive matched bytes `7898` and SHA-256 `ddb8167ef108d1043cadce621873b560874214da891f515ee2e9d96dbe3223a8`; active PLAN matched SHA-256 `607f0115876dbda21c6241130b05795cd28027fa116314eb54aed923ae6d8f22`.
+- FULL preflight showed exact one active task/contract for P3-C2, `repair_v2_status=P3_C1_CODE_FINDINGS_CLOSED_FULL_TERMINAL_EVIDENCE_GAP_C2_ACTIVE`, and `retained_r3_status=RETAINED_UNVALIDATED_UNCONSUMED`; real B2/B3/B4, validator, eligibility, and release consumption remained locked.
+- The exact PLAN pipeline was invoked once in one zsh shell/session owner, with no `tee`, redirect, second reader, evidence root, wrapper, detached process, or background owner:
+
+```zsh
+set -o pipefail
+{
+  .venv/bin/python -m unittest discover -s tests -p 'test_*.py'
+  status=$?
+  print -r -- "__P3_C2_FULL_EXIT__=${status}"
+  exit "${status}"
+} 2>&1 | tail -n 40
+```
+
+- The unique unittest invocation count was `1`. The same session was polled until structured terminal completion. Structured shell exit was `1`. The retained tail contained no `__P3_C2_FULL_EXIT__=<n>` marker, no `Ran 741 tests in ...s` line, and no subsequent `OK`; it ended with exact diagnostic `zsh:4: read-only variable: status`. The PLAN pipeline assigns to zsh's read-only special parameter `status`, so the shell failed at the marker-producing assignment after the unittest command returned. No claim is made about the unittest child exit or count because the required observable marker and terminal summary are absent.
+- Retained same-session tail was:
+
+```text
+  feedback 5: feedback-0 cct_error=-46.72K duv_error=-0.000872 goal=4.672
+  exposure warning: rgbww_low_signal_at_reference_exposure
+  feedback 6: feedback-1 cct_error=0.00K duv_error=0.000000 goal=0.000
+  exposure warning: rgbww_low_signal_at_reference_exposure
+  feedback 7: confirm-0-0 cct_error=0.00K duv_error=0.000000 goal=0.000
+  exposure warning: rgbww_low_signal_at_reference_exposure
+  feedback 8: confirm-0-1 cct_error=0.00K duv_error=0.000000 goal=0.000
+  exposure warning: rgbww_low_signal_at_reference_exposure
+target 1/2: Ray 3200K gm=100 at 100%
+  ray exposure: start=1/30 final=1/1000
+  inside_cw_ww_ray_matched_range rgb_penalty=r:0.450/g:0.450/b:0.450 command: cw=0 ww=4095 r=0 g=576 b=384
+  feedback 0: initial cct_error=0.00K duv_error=0.000000 goal=0.000
+  exposure warning: rgbww_low_signal_at_reference_exposure
+  feedback 1: confirm-0-0 cct_error=0.00K duv_error=0.000000 goal=0.000
+  exposure warning: rgbww_low_signal_at_reference_exposure
+  feedback 2: confirm-0-1 cct_error=0.00K duv_error=0.000000 goal=0.000
+  exposure warning: rgbww_low_signal_at_reference_exposure
+  strip exposure: start=1/30 final=1/125
+target 2/2: Ray 20000K gm=100 at 100%
+  ray exposure: start=1/1000 final=1/1250
+  above_cw_ww_ray_matched_range rgb_penalty=r:0.450/g:0.450/b:0.020 command: cw=0 ww=1408 r=0 g=1792 b=4095
+  feedback 0: initial cct_error=0.00K duv_error=0.000000 goal=0.000
+  exposure warning: rgbww_low_signal_at_reference_exposure
+  feedback 1: confirm-0-0 cct_error=0.00K duv_error=0.000000 goal=0.000
+  exposure warning: rgbww_low_signal_at_reference_exposure
+  feedback 2: confirm-0-1 cct_error=0.00K duv_error=0.000000 goal=0.000
+  exposure warning: rgbww_low_signal_at_reference_exposure
+  strip exposure: start=1/125 final=1/160
+/Volumes/4T/temp/rgbww-optimizer/tmpkdc77mry/fake-manifest.json
+fake-run
+/offline/formal-run
+/offline/setup-lineage-release.json
+/Volumes/4T/temp/rgbww-optimizer/p7-td-a-w0-offline/test-runtime/tmpnmjujsh_/cli/evidence/qualification-evidence.json
+provisional
+formal
+/Volumes/4T/temp/rgbww-optimizer/p7-td-b-path-r1-offline/test-runtime/tmp2o47o7o9/relative-cli/setup.json
+canonical
+resolved
+release
+zsh:4: read-only variable: status
+```
+
+- Per hard-failure rules, retry/fallback/second full invocation/alternate command/count probe were `0/0/0/0/0`. Targeted, focused, compileall, CodeGraph sync, and postcommit targeted rerun counts were all `0`. Source/test/PLAN/FULL/archive/stage/commit writes were all `0`; after the failed pipeline and before this ER append, worktree/stage/untracked sets were again verified clean/empty.
+- Every machine-contract zero budget remained `0`: external evidence reads and external root creation; retained release audit; canonical validator; eligibility; release operation; network/environment; device/camera/Ray/strip/cleanup/capture; FORMAL/public analyzer; TD-C/sentinel/P8; firmware/deployment. The paths printed by tests came only from the suite's existing disposable test-directory behavior and were not read by the Executer as external evidence.
+- Retained R3 remains `RETAINED_UNVALIDATED_UNCONSUMED`; real B2/B3/B4, validator, eligibility, and release consumption remain locked. Planner decision is required because the exact authorized zsh pipeline is internally invalid at its read-only `status` assignment; Executer did not repair or reinterpret the PLAN.
+- Result: `pipeline_contract_zsh_status_readonly_failure_waiting_for_planner`. This handoff authorizes only independent Planner/Orchestrator review; it does not authorize retry, a corrected pipeline, code/test edits, real B2, retained artifact access, validator, eligibility, release, or device/scientific work.
