@@ -16,9 +16,9 @@
 
 **当前可执行任务数：** `1`
 
-**当前 active task：** `REF-P7-25-R2-B2-R2-C1-C1-C1-C1-C1 owner-API/source-root qualification`
+**当前 active task：** `REF-P7-25-R2-B2-P4 repo-owned controller conformance/composition owner`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-31","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-R2-C1-C1-C1-C1-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-R2-C1-C1-C1-C1-C1-OWNER-API-CONFORMANCE-SOURCE-ROOT-QUALIFICATION-V1","next_reference_task":"REF-P7-25-R2-B2-R2-C1-C1-C1-C1-C1","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"R2_C1_C1_C1_C1_REJECTED_GIT_LEDGER_API_C1_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-31","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-P4","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-CONTROLLER-CONFORMANCE-COMPOSITION-OWNER-V1","next_reference_task":"REF-P7-25-R2-B2-P4","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"R2_EXTERNAL_CONTROLLER_REJECTED_P4_REPO_OWNER_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -297,7 +297,8 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-B2-R2-C1-C1` | `REJECTED_ACTIVATION_IDENTITY_DOMAIN_MIXUP_PRE_ROOT` | qualify exact logical mode mapping and root-first FAIL evidence lifecycle | C1-C1-C1 correction accepted | Planner/Executer |
 | `REF-P7-25-R2-B2-R2-C1-C1-C1` | `REJECTED_SOURCE_ROOT_IDENTITY_UNBOUND` | single-source current activation binding plus preserved logical-mode qualification | C1-C1-C1-C1 correction accepted | Planner/Executer |
 | `REF-P7-25-R2-B2-R2-C1-C1-C1-C1` | `REJECTED_GIT_LEDGER_OWNER_INTERFACE_DRIFT` | bind live source-root DirectoryIdentity to every exact direct-child read | owner-API correction accepted | Planner/Executer |
-| `REF-P7-25-R2-B2-R2-C1-C1-C1-C1-C1` | `ACTIVE_EXECUTION_AUTHORIZED` | source-backed owner API gate plus preserved root-bound qualification | GitLedger failure review accepted | Planner/Executer |
+| `REF-P7-25-R2-B2-R2-C1-C1-C1-C1-C1` | `REJECTED_RUNTIME_NEGATIVE_AST_DOMAIN_COLLISION_ARCHITECTURE_STOP` | source-backed owner API gate plus preserved root-bound qualification | P4 repo-owner implementation | Planner/Executer |
+| `REF-P7-25-R2-B2-P4` | `ACTIVE_EXECUTION_AUTHORIZED` | repo-owned pure in-memory controller conformance/composition owner | architecture reassessment accepted | Planner/Executer |
 | `REF-P7-25-R2-B2-P3` | `ACCEPTED_COMPLETE_VIA_P3_C1_AND_P3_C2_C1` | repo-owned tested provenance file/Git I/O boundary reused by B2/B3/B4 | R2 maintainability rejection | Planner/Executer |
 | `REF-P7-25-R2-B2-P3-C1` | `ACCEPTED_CODE_FINDINGS_CLOSED_VIA_P3_C2_C1` | fail-closed capability/direct-child correction and missing negative matrix | P3 Planner rejection | Planner/Executer |
 | `REF-P7-25-R2-B2-P3-C2` | `REJECTED_PLAN_PIPELINE_ZSH_STATUS_READONLY_CHILD_RESULT_UNPROVEN` | one low-output full suite with observable exit, exact count and terminal summary | P3-C1 validation evidence gap | Planner/Executer |
@@ -3342,7 +3343,7 @@ SHA-256 `35995c4fd83d5529a8d0372bd19d1133cd90ddda84422c2db9d88210e673016d`。
 
 ### REF-P7-25-R2-B2-R2-C1-C1-C1-C1-C1：owner-API/source-root qualification
 
-**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。Active contract为
+**状态：** `REJECTED_RUNTIME_NEGATIVE_AST_DOMAIN_COLLISION_ARCHITECTURE_STOP`。本次contract为
 `P7-TD-B-RETAINED-R3-OPTION-B-B2-R2-C1-C1-C1-C1-C1-OWNER-API-CONFORMANCE-SOURCE-ROOT-QUALIFICATION-V1`。
 Dispatch前必须从committed owner source冻结9个accepted return types的exact field registry，静态核对controller所有owner-return attribute access；
 dynamic/unknown/opaque-gate introspection fail closed，dispatched source中`returncode` occurrence必须0。六个GitLedger逐一验证exact type、
@@ -3351,6 +3352,25 @@ dynamic/unknown/opaque-gate introspection fail closed，dispatched source中`ret
 保留single-source activation、root-first、live source-root pre/post、四次DirectoryIdentity-bound reads、logical`"0600"`、24/24 matrix与
 sealed PASS/FAIL admission。所有旧source/root/evidence、retained、real B2、manifest、validator、eligibility、release及network/device/scientific
 继续0；exact stop为`B2_R2_C1_C1_C1_C1_C1_OWNER_API_QUALIFICATION_WAITING_PLANNER_REVIEW`。
+
+该外置controller的source-backed gate又把isolated negative `ledger.returncode` fixture文本计入runtime source occurrence，
+以`RuntimeError:returncode_occurrence`在Git/root/C1前fail closed。Repeated one-off source已同时承担runtime、negative fixture、静态
+conformance、evidence与lifecycle，继续局部修补会恶化fragile state owner；Orchestrator按second-pass与maintainability guardrail停止该路线。
+Planner architecture review archive：`.agent-work/PLANS/20260731-1106-p7-retained-r3-b2-owner-api-controller-architecture-review.md`，
+bytes `6686`，SHA-256 `feb896f822efc57f796730ca330f37b1109c51b4dcc2533e757d19e6d1f3d3c9`。
+
+### REF-P7-25-R2-B2-P4：repo-owned controller conformance/composition owner
+
+**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。Active contract为
+`P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-CONTROLLER-CONFORMANCE-COMPOSITION-OWNER-V1`。
+Exact two-path implementation：`src/camera_based_rgbww_optimizer/utils/p7_retained_r3_controller_conformance.py`与
+`tests/test_p7_retained_r3_controller_conformance.py`。Owner只负责pure-in-memory runtime AST/negative fixture分域、accepted return-type
+schema conformance、root identity chain与injected-callback lifecycle composition；不拥有I/O、manifest、validator、eligibility、release或science。
+
+Dedicated exact 14 methods覆盖GitLedger `exit_code` positive/`returncode` isolated negative、unknown/alias/reflection拒绝、root-bound AST、
+pre/read/post DirectoryIdentity chain、pure-memory root negatives、success/failure seal/admission ordering及static no-I/O/authority。Targeted14、focused、
+compileall、full exact755、CodeGraph、diff check、exact two-path commit与postcommit focused均通过后才回Planner。External controller/root/retained/
+real B2/validator/release/device全部0；exact stop为`B2_P4_CONTROLLER_CONFORMANCE_OWNER_WAITING_PLANNER_REVIEW`。
 
 ### REF-P7-25-R2-B2-P3：repo-owned provenance I/O boundary
 
@@ -4125,10 +4145,11 @@ rejected B2-R2-C1 result = INDEX_SEAL_IDENTITY_LOGICAL_MODE_INT384_VS_STRING0600
 rejected B2-R2-C1-C1 result = ACTIVATION_IDENTITY_DOMAIN_MIXUP_OLD_HEAD_WITH_CURRENT_METADATA; Git2/6; C1/root0
 rejected B2-R2-C1-C1-C1 result = SOURCE_ROOT_IDENTITY_UNBOUND; artifacts sealed; matrix20/20 but root owner not passed
 rejected B2-R2-C1-C1-C1-C1 result = GIT_LEDGER_RETURN_CODE_INTERFACE_DRIFT; Git6 returned; root/C1/artifacts0
-active task = REF-P7-25-R2-B2-R2-C1-C1-C1-C1-C1 owner-API/source-root qualification
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-R2-C1-C1-C1-C1-C1-OWNER-API-CONFORMANCE-SOURCE-ROOT-QUALIFICATION-V1
+rejected B2-R2-C1-C1-C1-C1-C1 result = RUNTIME_NEGATIVE_AST_DOMAIN_COLLISION; Git/root/C1/artifacts0; external route stopped
+active task = REF-P7-25-R2-B2-P4 repo-owned controller conformance/composition owner
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-CONTROLLER-CONFORMANCE-COMPOSITION-OWNER-V1
 active executable task count = 1
-next reference task = REF-P7-25-R2-B2-R2-C1-C1-C1-C1-C1 ACTIVE_EXECUTION_AUTHORIZED
+next reference task = REF-P7-25-R2-B2-P4 ACTIVE_EXECUTION_AUTHORIZED
 selected state C shutter = 1/2500
 device/network/camera/light = forbidden by active PLAN
 release qualification/generation/copy/consumption = forbidden

@@ -1,113 +1,124 @@
-# REF-P7-25-R2-B2-R2-C1-C1-C1-C1-C1：owner API conformance + source-root 离线纠偏资格包
+# REF-P7-25-R2-B2-P4：repo-owned controller conformance/composition owner
 
 **计划状态：** `ACTIVE_EXECUTION_AUTHORIZED`
 
 **Planner 日期：** `2026-07-31`
 
-**Reference task：** `REF-P7-25-R2-B2-R2-C1-C1-C1-C1-C1`
+**Reference task：** `REF-P7-25-R2-B2-P4`
 
 **Contract ID：**
-`P7-TD-B-RETAINED-R3-OPTION-B-B2-R2-C1-C1-C1-C1-C1-OWNER-API-CONFORMANCE-SOURCE-ROOT-QUALIFICATION-V1`
+`P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-CONTROLLER-CONFORMANCE-COMPOSITION-OWNER-V1`
 
-**当前唯一动作：** Orchestrator独立审核本review与PLAN、更新FULL并创建exact activation commit；activation后，Executer只运行一次fresh pure-offline owner-API-conformance/source-root qualification。不得读取或运行任何旧controller/source/root/evidence，不得读取retained R3、重跑real B2、写subordinate manifest或调用validator。
+**当前唯一动作：** Orchestrator独立审核本review与PLAN、更新FULL并创建exact
+activation commit；activation后，Executer只在exact两个repo paths实现并验证一个
+pure-in-memory controller conformance/composition owner，然后创建一个focused repair
+commit。不得生成或运行external controller，不得创建qualification/evidence root。
 
 **唯一 Planner stop：**
-`B2_R2_C1_C1_C1_C1_C1_OWNER_API_QUALIFICATION_WAITING_PLANNER_REVIEW`。
+`B2_P4_CONTROLLER_CONFORMANCE_OWNER_WAITING_PLANNER_REVIEW`。
 
 **本轮新归档：**
-`.agent-work/PLANS/20260731-1052-p7-retained-r3-b2-r2-c1-c1-c1-c1-git-ledger-interface-failure-review.md`，bytes `6576`，SHA-256
-`35995c4fd83d5529a8d0372bd19d1133cd90ddda84422c2db9d88210e673016d`。
+`.agent-work/PLANS/20260731-1106-p7-retained-r3-b2-owner-api-controller-architecture-review.md`。
+bytes `6686`，SHA-256
+`feb896f822efc57f796730ca330f37b1109c51b4dcc2533e757d19e6d1f3d3c9`。
 
-`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_r2_c1_c1_c1_c1_c1_owner_api_conformance_source_root_qualification_v1","reference_task_id":"REF-P7-25-R2-B2-R2-C1-C1-C1-C1-C1","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-R2-C1-C1-C1-C1-C1-OWNER-API-CONFORMANCE-SOURCE-ROOT-QUALIFICATION-V1","execution_authorized_after_orchestrator_activation":true,"activation_commit":{"expected_parent":"c48d8dd7bf648a2e59ce4f79fd1cb9a929c7461a","expected_subject":"chore(plan): activate b2 owner api correction qualification","expected_changed_paths":[".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/PLANS/20260731-1052-p7-retained-r3-b2-r2-c1-c1-c1-c1-git-ledger-interface-failure-review.md"],"clean_porcelain_required_after_activation":true},"required_full_machine_state":{"active_task_count":1,"active_task":"REF-P7-25-R2-B2-R2-C1-C1-C1-C1-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-R2-C1-C1-C1-C1-C1-OWNER-API-CONFORMANCE-SOURCE-ROOT-QUALIFICATION-V1","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true,"executer_dispatched":true,"device_authorized_by_this_file":false},"reviewed_failure":{"activation_commit":"486ae9274c3a670463b8bcece258fcb22ec7cc97","evidence_commit":"67a5579382d1a52ce6de3d287cf57a70868c0c75","controller_path":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-r2-c1-c1-c1-c1-source-root-binding-controller-486ae92-20260731T1639Z.py","controller_bytes":23629,"controller_sha256":"0fbda54d91a6941782ea0470100ab55ca66811ca6e31a3463523be5ff0bd9c93","controller_mode":"0600","controller_device":16777240,"controller_inode":2218110,"process_count":1,"process_exit":1,"read_only_git_calls_returned":6,"stable_code":"AttributeError:GitLedger.returncode","root_create":0,"source_root_reads":0,"c1_reads":0,"matrix_completed":0,"artifacts":0,"disposition":"immutable_rejected_do_not_read_rerun_repair_rewrite_reuse_or_delete"},"controller_source":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-r2-c1-c1-c1-c1-c1-owner-api-controller-c48d8dd-20260731T1052Z.py","output_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-r2-c1-c1-c1-c1-c1-owner-api-qualification-c48d8dd-20260731T1052Z","output_root_required_absent":true,"source_root":{"path":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-b2-c1-path-owner-27aacbf-20260730T1547Z","device":16777240,"inode":2188341,"physical_mode":448,"logical_mode":"0700"},"owner_api_contract":{"unknown_attribute_policy":"reject_before_dispatch","dynamic_attribute_access_rejected":true,"opaque_seal_gate_introspection_rejected":true,"git_ledger_fields":["argv","cwd","exit_code","stdout","stderr","stdout_sha256","stderr_sha256"],"git_success_field":"exit_code","git_success_value":0,"git_stderr_bytes":0,"git_stderr_sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","all_six_ledgers_checked":true,"forbidden_dispatched_attribute":"returncode","accepted_return_type_count":9,"static_negative_unknown_attribute_cases":1,"static_positive_controller_cases":1},"source_root_binding_contract":{"pre_root_lstat_count":1,"post_root_lstat_count":1,"root_bound_read_count":4,"total_live_root_identity_observations":6,"all_c1_reads_require_root_keyword":true,"all_file_identity_root_fields_equal_expected":true,"literal_only_root_identity_rejected":true,"rootless_read_rejected":true,"direct_child_required":true,"pre_post_identity_exact":true},"logical_mode_contract":{"physical_mode_type":"integer","physical_mode_value":384,"logical_mode_type":"string","logical_mode_value":"0600","mapping":"format_physical_mode_as_exact_four_digit_lowercase_octal_without_prefix","alternate_representations_rejected":[384,true,"0o600","600","00600"]},"owners":{"machine_contract_sha256":"743e2948f6c30a31fde5d072c8effa8b1365d321b303d61e9899ad18ac41825f","machine_contract_blob":"5c581f9b502bcab1809b6a61a082a47f4150e09f","preparation_sha256":"882f3819d161369012ce7fcd52cb1de1b9c56e4e1f821ff4554f6a1d8340738b","preparation_blob":"ecfa62a37bb33cf23743fcb8d0bba706f8795458","provenance_io_sha256":"f603721fb8b90510e2a09b199701c3f3358574d1247b5883ebdccc6f585b0a48","provenance_io_blob":"492f31f5f6999e28a1f0eb60240780e2c4826f4f"},"input_budgets":{"plan_reads":1,"full_reads":1,"controller_source_writes":1,"controller_source_reads":1,"old_source_reads":0,"old_root_reads":0,"old_evidence_reads":0,"source_root_explicit_lstat":2,"source_root_owner_lstat":4,"c1_lstat_open_read_hash_each":1,"c1_file_count":4,"retained_reads":0,"read_only_git_invocations":6},"execution_budgets":{"python_controller_process":1,"owner_api_predispatch_gate":1,"root_create":1,"qualification_write":1,"qualification_seal_write":1,"terminal_write":1,"terminal_seal_write":1,"er_admission_write":1,"execution_result_append":1,"matrix_case_count":24,"retry":0,"fallback":0,"alternate_source":0,"second_root":0,"second_process":0,"test_invocations":0,"compileall_invocations":0,"codegraph_sync":0,"git_stage":0,"git_commit":0},"zero_budgets":{"old_source_reads":0,"old_root_reads":0,"old_evidence_reads":0,"retained_artifact_reads":0,"git_provenance_replay":0,"real_b2_dispatch":0,"subordinate_manifest_writes":0,"actual_canonical_validator_calls":0,"eligibility_emissions":0,"retained_release_audit":0,"release_generation":0,"release_qualification":0,"release_copy":0,"release_consumption":0,"network":0,"dns":0,"environment":0,"credentials":0,"device":0,"camera":0,"ray":0,"strip":0,"cleanup":0,"capture":0,"formal":0,"public_analyzer":0,"td_c":0,"sentinel":0,"p8":0,"firmware":0,"deployment":0},"expected_duration":"under_10_minutes","visible_terminal_required":false,"planner_stop":"B2_R2_C1_C1_C1_C1_C1_OWNER_API_QUALIFICATION_WAITING_PLANNER_REVIEW"}`
+`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_p4_controller_conformance_composition_owner_v1","reference_task_id":"REF-P7-25-R2-B2-P4","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-CONTROLLER-CONFORMANCE-COMPOSITION-OWNER-V1","execution_authorized_after_orchestrator_activation":true,"activation_commit":{"expected_parent":"102c625eb73cf49d7e14af12663f967397e28fa2","expected_subject":"chore(plan): activate b2 controller conformance owner","expected_changed_paths":[".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/PLANS/20260731-1106-p7-retained-r3-b2-owner-api-controller-architecture-review.md"],"clean_porcelain_required_after_activation":true},"implementation_commit":{"expected_parent_source":"current_activation_head_runtime","activation_head_must_match_frozen_activation_tuple":true,"expected_subject":"feat(p7): add retained controller conformance owner","expected_changed_paths":["src/camera_based_rgbww_optimizer/utils/p7_retained_r3_controller_conformance.py","tests/test_p7_retained_r3_controller_conformance.py"],"single_commit":true,"clean_porcelain_required_after_commit":true},"required_full_machine_state":{"active_task_count":1,"active_task":"REF-P7-25-R2-B2-P4","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-CONTROLLER-CONFORMANCE-COMPOSITION-OWNER-V1","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true,"executer_dispatched":true,"device_authorized_by_this_file":false},"exact_write_paths":["src/camera_based_rgbww_optimizer/utils/p7_retained_r3_controller_conformance.py","tests/test_p7_retained_r3_controller_conformance.py"],"accepted_owner_types":{"DirectoryIdentity":["path","device","inode","mode"],"FileIdentity":["path","data","byte_count","sha256","device","inode","mode","root"],"GitLedger":["argv","cwd","exit_code","stdout","stderr","stdout_sha256","stderr_sha256"],"MachineContractEvidence":["schema","owner","marker_ascii","source_bytes","source_sha256","candidate_count","candidate_lines","line_number","raw_row_bytes","raw_row_sha256","payload_bytes","payload_sha256","line_ending"],"ParsedMachineContract":["value","evidence"],"ByteSpan":["start","end"],"OwnedStatementPair":["assignment_span","validation_span","function_name"],"PreparedControllerSource":["source","source_sha256","pair"],"SealTargetIdentity":["path","byte_count","sha256","device","inode"]},"required_public_methods":{"MachineContractEvidence":["to_mapping"],"SealTargetIdentity":["as_mapping"]},"runtime_ast_contract":{"runtime_and_negative_fixture_parse_calls_are_disjoint":true,"unknown_owner_attribute_rejected":true,"alias_escape_rejected":true,"dynamic_getattr_vars_dict_reflection_rejected":true,"opaque_validated_seal_gate_not_introspected":true,"git_success_field":"exit_code","forbidden_runtime_attribute":"returncode","read_exact_file_requires_live_root_binding":true,"literal_root_rejected":true},"root_chain_contract":{"pure_in_memory":true,"pre_post_directory_identity_exact":true,"every_file_identity_root_equals_pre":true,"every_file_path_exact_direct_child":true,"device_inode_mode_and_sibling_escape_negatives":true},"lifecycle_contract":{"all_effects_injected_callbacks":true,"conformance_before_effect_callbacks":true,"success_order":["conformance","activation","root","inputs","evaluate","terminal","terminal_seal","admission"],"failure_terminal_attempted_once":true,"seal_dominates_admission":true,"valid_fail_admission_preserves_primary_error":true,"retry":0,"fallback":0},"test_contract":{"dedicated_test_methods":14,"targeted_command":".venv/bin/python -m unittest tests.test_p7_retained_r3_controller_conformance","focused_command":".venv/bin/python -m unittest tests.test_p7_retained_r3_controller_conformance tests.test_p7_retained_r3_controller_preparation tests.test_p7_retained_r3_provenance_io tests.test_agent_work_machine_contract","full_command":"PYTHONUNBUFFERED=1 .venv/bin/python -m unittest discover -s tests -p 'test_*.py'","baseline_full_tests":741,"expected_full_tests_after_exact_14_methods":755,"compileall_command":".venv/bin/python -m compileall -q src tests","codegraph_sync_required":true,"git_diff_check_required":true},"execution_budgets":{"implementation_commits":1,"controller_processes":0,"external_controller_writes":0,"evidence_root_creates":0,"qualification_writes":0,"execution_result_appends":1,"test_invocations":4,"codegraph_sync":1,"retry":0,"fallback":0},"zero_budgets":{"plan_writes_by_executer":0,"full_writes_by_executer":0,"archive_writes_by_executer":0,"debug_writes":0,"guide_writes":0,"research_writes":0,"old_controller_reads":0,"old_root_reads":0,"old_evidence_reads":0,"retained_artifact_reads":0,"git_provenance_replay":0,"real_b2_dispatch":0,"subordinate_manifest_writes":0,"actual_canonical_validator_calls":0,"eligibility_emissions":0,"retained_release_audit":0,"release_generation":0,"release_qualification":0,"release_copy":0,"release_consumption":0,"network":0,"dns":0,"environment":0,"credentials":0,"device":0,"camera":0,"ray":0,"strip":0,"cleanup":0,"capture":0,"formal":0,"public_analyzer":0,"td_c":0,"sentinel":0,"p8":0,"firmware":0,"deployment":0},"expected_duration":"under_10_minutes","visible_terminal_required":false,"planner_stop":"B2_P4_CONTROLLER_CONFORMANCE_OWNER_WAITING_PLANNER_REVIEW"}`
 
-## 1. Activation 与 immutable boundaries
+## 1. Activation、scope 与 immutable inputs
 
 本PLAN只有Orchestrator创建activation commit后才可执行。Activation必须是
-`c48d8dd7bf648a2e59ce4f79fd1cb9a929c7461a`的direct child，subject和exact
-三路径必须与machine row一致，commit后worktree/stage/untracked均为空。Executer
-各读取PLAN/FULL一次；accepted Git owner call 1取得current full HEAD，calls 2-6
-复用同一SHA并核对parent、subject、exact paths和三个owner blobs。
+`102c625eb73cf49d7e14af12663f967397e28fa2`的direct child，subject和exact三路径
+必须与machine row一致；commit后worktree/stage/untracked均为空。不得在同一activation
+commit内预写其自身SHA，也不得为填充SHA而第二次修改PLAN。
 
-所有旧controller/source/root/evidence均为immutable rejected，read/exec/import/
-stat/list/repair/rewrite/reuse/delete计数严格`0`。本PLAN中的旧身份仅是冻结literal，
-不能变成I/O目标。任一pre-dispatch gate失败时fresh root、source-root及C1访问保持`0`，
-launcher仅以首次controller source read保留的in-memory `FileIdentity`向ER append一次FAIL。
+Executer preflight从clean current HEAD读取full SHA，作为implementation commit的runtime
+parent；随后必须证明该HEAD的parent、subject与exact changed paths逐项匹配machine row冻结的
+activation object。任一不匹配在code edit与test前fail closed。该runtime HEAD只作为
+implementation direct-parent identity，不增加新的授权或可变PLAN输入。
 
-## 2. Source-backed owner API conformance gate（dispatch前）
+Executer只可写machine row的exact两个code/test paths。不得修改现有 preparation、
+provenance I/O、machine-contract、validator、release、runner、docs、skill、wrapper或plan
+owner。旧external controllers、roots、evidence及retained R3全部read/stat/list/execute/
+import/repair/reuse/delete `0`。
 
-Fresh controller source exclusive写一次、mode `0600`，由provenance owner读回一次，
-strict UTF-8、AST parse、builtin compile。Outer launcher随后必须在**dispatch前**完成
-一次source-backed gate：三个owner blob OID/SHA已由active Git tuple绑定，运行时只从这些
-accepted imported classes的`dataclasses.fields`与明确public methods构造字段registry，
-不得手抄或猜测接口。
+## 2. 新 owner 的职责与禁止边界
 
-Exact registry如下：
+新增`p7_retained_r3_controller_conformance.py`必须是pure in-memory owner。它以repo
+现有accepted classes为schema source，使用`dataclasses.fields`取得current field tuples，
+同时与machine row冻结tuple exact比较；任何新增、缺失、重排或类型owner漂移均fail
+closed。只允许`MachineContractEvidence.to_mapping`与`SealTargetIdentity.as_mapping`两个
+冻结public methods。内部validated seal gate只能opaque传递，不得反射或读取其属性。
 
-- `DirectoryIdentity`: `path,device,inode,mode`；
-- `FileIdentity`: `path,data,byte_count,sha256,device,inode,mode,root`；
-- `GitLedger`: `argv,cwd,exit_code,stdout,stderr,stdout_sha256,stderr_sha256`；
-- `MachineContractEvidence`: `schema,owner,marker_ascii,source_bytes,source_sha256,candidate_count,candidate_lines,line_number,raw_row_bytes,raw_row_sha256,payload_bytes,payload_sha256,line_ending`，仅public method `to_mapping`；
-- `ParsedMachineContract`: `value,evidence`；
-- `ByteSpan`: `start,end`；`OwnedStatementPair`: `assignment_span,validation_span,function_name`；
-- `PreparedControllerSource`: `source,source_sha256,pair`；
-- `SealTargetIdentity`: `path,byte_count,sha256,device,inode`，仅public method `as_mapping`。
+Public API须保持最小且exact覆盖以下能力：
 
-Gate须把controller每个accepted-owner call的assigned name绑定到exact return type，枚举
-该name的所有direct attribute access并逐一核对registry。Unknown field、unbound result、
-alias escape、dynamic `getattr`、`vars`、`__dict__`、reflection或内部seal gate属性访问均
-fail closed。内部validated seal gate只可opaque传给callback。Negative specimen对
-`GitLedger.returncode`必须被拒绝；实际dispatched AST内`returncode` occurrences必须为`0`。
+1. stable-code exception；
+2. immutable conformance requirements/report types；
+3. runtime controller AST analyzer；
+4. pure-in-memory root identity-chain validator；
+5. injected-callback lifecycle requirements/result types及executor。
 
-六次Git调用返回后、root前，每个ledger必须逐一验证type exact、`exit_code == 0`、
-`stderr == b""`、stderr SHA为machine row冻结值，并核对其余使用字段都在registry；不得
-读取`returncode`。API gate及任一ledger失败均pre-root hard fail。
+具体public名字可由Executer在上述单一owner内选择，但dedicated test必须冻结`__all__`
+exact集合，禁止出现manifest、validator、eligibility、release、network、device、camera、
+Ray、strip、formal或scientific authority。
 
-## 3. Root-first、C1 reads 与 exact 24-case matrix
+Runtime analyzer每次只接受一份runtime `bytes`并独立UTF-8 decode/AST parse/compile。
+Negative fixture必须由独立调用、独立AST、独立result/error对象验证，禁止拼接、嵌入或
+以whole-module text count参与runtime acceptance。Analyzer须将accepted owner-call的
+direct assignment绑定到exact return type，枚举该name的attribute use；unknown field、
+unbound result、alias escape、dynamic `getattr`、`vars`、`__dict__`或reflection全部拒绝。
+`GitLedger.exit_code`是唯一process success field；runtime `returncode`必须拒绝。
 
-API/activation gate全部通过后，先用`create_exclusive_root`创建唯一fresh root mode
-`0700`，再访问source root。Source root冻结为machine row身份；允许stdlib `os.lstat`
-exact pre/post各一次。由pre observation构造accepted `DirectoryIdentity`；四个accepted
-C1文件各经`read_exact_file(..., root=same_identity)`exact一次，owner内部root lstat
-共4次、direct-child gate必过，返回的四个`FileIdentity.root`与pre/post identity全等。
-除两次root-only lstat外，不得builtin open/pathlib read/glob/listdir/resolve/enumeration。
+所有`read_exact_file` runtime calls必须显式使用同一live `DirectoryIdentity` assigned
+name作为`root=`；缺失root、literal root、不同root name或alias均拒绝。Pure-memory chain
+validator须证明pre/post root全等、每个`FileIdentity.root`全等、path为exact direct child，
+并在device、inode、mode和sibling/escape drift上fail closed；不得自己lstat/open/read。
 
-四个C1冻结文件及身份、schema/status与上一PLAN完全不变：
+Lifecycle executor只组合injected callbacks。Conformance必须先于任何effect callback；
+success exact顺序为machine row。任一primary phase失败后terminal与terminal seal各最多
+一次；seal成功才可admission一次，admission后重新抛原primary；seal失败则admission为0。
+不得实现retry、fallback、第二root/process或任何实际I/O。
 
-| File | Bytes | Device | Inode | SHA-256 | Schema | Status |
-| --- | ---: | ---: | ---: | --- | --- | --- |
-| `path-owner-index.json` | `12195` | `16777240` | `2188342` | `b189117fdd0a9a65ca80660245ec84b7f2f533c3e496c96e76eb48a4666feb35` | `p7_retained_r3_path_owner_index_v1` | `path_owner_resolved_waiting_for_planner` |
-| `path-owner-index.sha256.json` | `682` | `16777240` | `2188343` | `867d1ffad5bd29f24dc81b24a58ce66393dd688833d3a4516fe7f45ef50875e9` | `p7_retained_r3_path_owner_index_seal_v1` | `sealed_waiting_for_planner` |
-| `terminal-evidence.json` | `13455` | `16777240` | `2188344` | `c21a691272ca7466271349daa5b10236c9f36dfeb481d592e9c368a87e7a4763` | `p7_retained_r3_b2_c1_path_owner_terminal_v1` | `pass_waiting_for_planner` |
-| `terminal-evidence.sha256.json` | `772` | `16777240` | `2188345` | `4bfebf4ad40e8c2e65ad2470faaed184f21d39eda73c13e689b09769d280752f` | `p7_retained_r3_b2_c1_path_owner_terminal_seal_v1` | `pass_waiting_for_planner` |
+## 3. Dedicated regression surface
 
-Strict canonical JSON/schema/status/type exact；logical record mode仅接受string `"0600"`，
-physical mode为integer `384`。不得读取index内retained paths。
+Dedicated test exact `14` methods，至少覆盖：
 
-Matrix必须原样保留已规划的exact `24` cases：原20个linkage/logical-mode/FAIL
-admission/hash cases，加root device drift、inode drift、mode drift、sibling/escape path
-四个in-memory negatives。不得以owner API cases替换或增删这24项；owner API gate是
-独立pre-dispatch acceptance surface。Real case仍要求4个root-bound identities和pre/post
-全等。
+1. 九个accepted owner schemas与两个public methods exact；
+2. `GitLedger.exit_code` runtime-positive；
+3. isolated `GitLedger.returncode` negative被拒且不污染positive report；
+4. unknown attribute及unbound owner result拒绝；
+5. alias、`getattr`、`vars`、`__dict__`、reflection拒绝；
+6. root-bound `read_exact_file` positive；
+7. rootless/literal/different-root AST negatives；
+8. exact pre/read/post in-memory identity-chain positive；
+9. device/inode/mode/sibling/escape in-memory negatives；
+10. success lifecycle exact ordering/counts；
+11. conformance/activation/root/input/evaluate各phase failure ordering；
+12. terminal或seal failure阻止admission；
+13. valid FAIL admission后保留原primary exception identity；
+14. source/bytecode静态证明无forbidden I/O/import、无validator/release/science authority，
+    并冻结exact public exports。
 
-## 4. Evidence lifecycle、acceptance 与 locks
+先跑targeted exact `14/14`，再跑focused全部通过，再运行compileall，再运行一次quiet
+unbuffered full suite。当前baseline为`741`，新增exact 14 methods后必须为`755/755`；若
+discovery count不是755，不得以“all pass”替代，须停下报告Planner。最后运行
+`codegraph sync`与`git diff --check`。所有命令、exit、count、source/test SHA写入ER。
 
-允许direct-child artifacts exact为qualification、qualification seal、terminal、terminal
-seal、ER admission五个。全部由`persist_canonical_json` exclusive/no-follow/fsync/reload。
-PASS写qualification+seal；root后FAIL的qualification targets为null。PASS/FAIL均写terminal
-和独立seal，并调用`validate_and_emit_execution_result` exact一次；valid FAIL admission后
-重新抛primary error。Seal失败则admission `0`。Admission成功后才append ER一次。
+## 4. Commit、acceptance 与 stop
 
-PASS要求owner API gate `1/1`；unknown `returncode` negative拒绝且dispatched source occurrence
-`0`；六个Git ledgers均使用`exit_code==0`与empty stderr；process/root `1/1`；root-first；
-source-root observations `1+4+1`；C1 reads `4/4`；matrix `24/24`；五artifact physical/logical
-linkage exact；所有旧I/O、retained、real B2、manifest、validator、eligibility、release、
-network/device/scientific budgets全`0`。
+验证全部通过后只stage exact两个write paths，创建一个direct-child implementation commit，
+subject exact `feat(p7): add retained controller conformance owner`。Commit前后均核对exact
+paths；不得amend其他commit，不得push。Commit后focused tests再跑一次，计入第四次test
+invocation，必须通过；在ER handoff前worktree/stage/untracked必须为空。
 
-任一失败不得retry/fallback/alternate source/root/second process、repair、overwrite或删除。
-PASS/FAIL均停在唯一Planner stop，不得自行运行real B2。Retained R3持续
-`RETAINED_UNVALIDATED_UNCONSUMED`。
+Acceptance要求：exact两路径、14/14 targeted、focused pass、compileall pass、755/755 full、
+postcommit focused pass、CodeGraph sync、diff check、single commit与clean tree全部成立；
+static ownership和所有zero budgets成立。Executer最后仅向ER追加一次handoff，最终
+porcelain只允许`.agent-work/EXECUTION_RESULT.md`一个unstaged modification，stage与
+untracked必须为空，然后停在Planner门。
 
-预计低于10分钟，不使用visible Terminal或automation。
+P4成功也不授权external qualification、retained reads、real B2、manifest、canonical
+validator、eligibility、release、网络或设备工作。后续integration必须由Planner另写新PLAN。
 
-维护性判断：新增gate直接绑定accepted owner dataclass字段并覆盖全部controller return-type
-属性访问，从根因阻断猜接口；不修改production/test owner，不新增validator、release或科学路径。
+维护性判断：这是反复external controller漂移后的最小 enabling refactor；新模块只拥有
+pure-in-memory conformance/composition，复用既有I/O与preparation owners，不建立平行
+validator/release/scientific owner。14个dedicated regression methods和full suite保护边界。
