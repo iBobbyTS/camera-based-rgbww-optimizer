@@ -146,6 +146,118 @@ class ProvenanceIOTests(unittest.TestCase):
         self.assertEqual(calls["close"], 1)
         self.assertGreaterEqual(calls["read"], 5)
 
+    def test_required_open_capabilities_and_exact_flags(self):
+        root = self.root()
+        source = Path(root.path) / "source"
+        source.write_bytes(b"x")
+        opened = []
+
+        def opener(path, flags, mode):
+            opened.append((Path(path), flags, mode))
+            return os.open(path, flags, mode)
+
+        subject.read_exact_file(source, root=root, dependencies={"open_fd": opener})
+        self.assertEqual(opened, [(source, os.O_RDONLY | os.O_NOFOLLOW, 0)])
+        opened.clear()
+        subject.persist_canonical_json(
+            root, "target.json", {"x": 1}, dependencies={"open_fd": opener}
+        )
+        self.assertEqual(
+            opened,
+            [
+                (Path(root.path) / "target.json",
+                 os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600),
+                (Path(root.path), os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, 0),
+                (Path(root.path) / "target.json", os.O_RDONLY | os.O_NOFOLLOW, 0),
+            ],
+        )
+
+        for name, value in (("O_NOFOLLOW", None), ("O_NOFOLLOW", 0),
+                            ("O_NOFOLLOW", "flag"), ("O_DIRECTORY", None),
+                            ("O_DIRECTORY", 0), ("O_DIRECTORY", "flag")):
+            with self.subTest(name=name, value=value):
+                calls = mock.Mock()
+                fresh_root = subject.create_exclusive_root(
+                    self.case / f"cap-{name}-{type(value).__name__}-{value}"
+                )
+                with mock.patch.object(os, name, value, create=True):
+                    if name == "O_NOFOLLOW":
+                        self.assert_code(
+                            f"required_open_flag_unavailable:{name}",
+                            subject.read_exact_file, source,
+                            dependencies={"open_fd": calls},
+                        )
+                    else:
+                        self.assert_code(
+                            f"required_open_flag_unavailable:{name}",
+                            subject.persist_canonical_json, fresh_root, "x.json", {},
+                            dependencies={"open_fd": calls},
+                        )
+                calls.assert_not_called()
+                self.assertFalse((Path(fresh_root.path) / "x.json").exists())
+
+    def test_root_bound_read_requires_exact_lexical_direct_child_pre_lstat(self):
+        root = self.root()
+        legal = Path(root.path) / "legal"
+        legal.write_bytes(b"ok")
+        self.assertEqual(subject.read_exact_file(legal, root=root).data, b"ok")
+        cases = (
+            self.case / "outside",
+            Path(root.path) / "nested" / "x",
+            str(root.path) + "/./x",
+            str(root.path) + "/../x",
+            str(root.path) + "//x",
+            str(root.path) + "/x\\y",
+            "relative",
+        )
+        for index, candidate in enumerate(cases):
+            with self.subTest(candidate=candidate):
+                seen = []
+
+                def lstat(path):
+                    seen.append(os.fspath(path))
+                    return os.lstat(path)
+
+                self.assert_code(
+                    "target_not_absolute" if candidate == "relative" else "target_not_direct_child",
+                    subject.read_exact_file, candidate, root=root,
+                    dependencies={"lstat": lstat},
+                )
+                self.assertEqual(seen, [root.path])
+
+    def test_failed_read_closes_once_and_close_failure_remains_visible(self):
+        path = self.case / "source-failure"
+        path.write_bytes(b"abc")
+        closes = 0
+
+        def closer(fd):
+            nonlocal closes
+            closes += 1
+            os.close(fd)
+
+        self.assert_code(
+            "read_failed", subject.read_exact_file, path,
+            dependencies={
+                "read_fd": lambda _fd, _count: (_ for _ in ()).throw(OSError("read")),
+                "close_fd": closer,
+            },
+        )
+        self.assertEqual(closes, 1)
+
+        def failed_close(fd):
+            os.close(fd)
+            raise OSError("close")
+
+        error = self.assert_code(
+            "close_failed", subject.read_exact_file, path,
+            dependencies={
+                "read_fd": lambda _fd, _count: (_ for _ in ()).throw(OSError("read")),
+                "close_fd": failed_close,
+            },
+        )
+        self.assertIsInstance(error.__cause__, subject.ProvenanceIOError)
+        self.assertEqual(error.__cause__.code, "read_failed")
+
     def test_read_growth_truncation_fstat_drift_and_close_failure_are_visible(self):
         path = self.case / "source"
         path.write_bytes(b"abc")
@@ -297,6 +409,127 @@ class ProvenanceIOTests(unittest.TestCase):
             "file_mode_mismatch", subject.persist_canonical_json, root, "mode.json", {},
             dependencies={"fstat": wrong_mode},
         )
+
+    def test_target_open_and_identity_failures_preserve_physical_state(self):
+        root = self.root()
+        target = Path(root.path) / "open.json"
+        self.assert_code(
+            "target_open_failed", subject.persist_canonical_json, root, target.name, {},
+            dependencies={"open_fd": lambda *_args: (_ for _ in ()).throw(OSError("open"))},
+        )
+        self.assertFalse(target.exists())
+
+        for field in ("st_dev", "st_ino"):
+            with self.subTest(field=field):
+                branch_root = subject.create_exclusive_root(self.case / f"drift-{field}")
+                branch_target = Path(branch_root.path) / "target.json"
+                real_fstat = os.fstat
+                count = 0
+
+                def drifting(fd):
+                    nonlocal count
+                    count += 1
+                    value = real_fstat(fd)
+                    if count == 2:
+                        values = dict(st_mode=value.st_mode, st_dev=value.st_dev,
+                                      st_ino=value.st_ino, st_size=value.st_size)
+                        values[field] += 1
+                        return SimpleNamespace(**values)
+                    return value
+
+                self.assert_code(
+                    "target_identity_drift", subject.persist_canonical_json,
+                    branch_root, branch_target.name, {"a": 1},
+                    dependencies={"fstat": drifting},
+                )
+                self.assertEqual(branch_target.read_bytes(), b'{"a":1}\n')
+
+    def test_root_lifecycle_failures_preserve_fsynced_target(self):
+        for stage in ("open", "fsync", "close"):
+            with self.subTest(stage=stage):
+                root = subject.create_exclusive_root(self.case / f"root-stage-{stage}")
+                target = Path(root.path) / "target.json"
+                opens = 0
+                fsyncs = 0
+                closes = 0
+
+                def opener(path, flags, mode):
+                    nonlocal opens
+                    opens += 1
+                    if stage == "open" and opens == 2:
+                        raise OSError("root open")
+                    return os.open(path, flags, mode)
+
+                def fsyncer(fd):
+                    nonlocal fsyncs
+                    fsyncs += 1
+                    if stage == "fsync" and fsyncs == 2:
+                        raise OSError("root fsync")
+                    os.fsync(fd)
+
+                def closer(fd):
+                    nonlocal closes
+                    closes += 1
+                    os.close(fd)
+                    if stage == "close" and closes == 2:
+                        raise OSError("root close")
+
+                codes = {"open": "root_open_failed", "fsync": "root_fsync_failed",
+                         "close": "close_failed"}
+                self.assert_code(
+                    codes[stage], subject.persist_canonical_json, root, target.name,
+                    {"a": 1}, dependencies={"open_fd": opener, "fsync_fd": fsyncer,
+                                                "close_fd": closer},
+                )
+                self.assertEqual(target.read_bytes(), b'{"a":1}\n')
+                self.assertGreaterEqual(closes, 1)
+
+    def test_reload_failures_preserve_target_without_second_write(self):
+        for stage in ("lstat", "open", "read", "decode"):
+            with self.subTest(stage=stage):
+                root = subject.create_exclusive_root(self.case / f"reload-{stage}")
+                target = Path(root.path) / "target.json"
+                real_lstat = os.lstat
+                opens = 0
+                writes = 0
+
+                def lstat(path):
+                    if stage == "lstat" and Path(path) == target and target.exists():
+                        raise OSError("reload lstat")
+                    return real_lstat(path)
+
+                def opener(path, flags, mode):
+                    nonlocal opens
+                    opens += 1
+                    if stage == "open" and opens == 3:
+                        raise OSError("reload open")
+                    return os.open(path, flags, mode)
+
+                def writer(fd, value):
+                    nonlocal writes
+                    writes += 1
+                    return os.write(fd, value)
+
+                dependencies = {"lstat": lstat, "open_fd": opener, "write_fd": writer}
+                expected = {"lstat": "file_lstat_failed", "open": "file_open_failed",
+                            "read": "read_failed", "decode": "decode_failed"}[stage]
+                if stage == "read":
+                    dependencies["read_fd"] = lambda _fd, _count: (
+                        _ for _ in ()
+                    ).throw(OSError("reload read"))
+                decode = mock.patch.object(
+                    subject, "decode_canonical_json",
+                    side_effect=subject.ProvenanceIOError("decode_failed"),
+                ) if stage == "decode" else mock.patch.object(
+                    subject, "decode_canonical_json", wraps=subject.decode_canonical_json,
+                )
+                with decode:
+                    self.assert_code(
+                        expected, subject.persist_canonical_json, root, target.name,
+                        {"a": 1}, dependencies=dependencies,
+                    )
+                self.assertEqual(target.read_bytes(), b'{"a":1}\n')
+                self.assertEqual(writes, 1)
 
     def test_target_linkage_binds_every_field_and_is_immutable(self):
         root = self.root()

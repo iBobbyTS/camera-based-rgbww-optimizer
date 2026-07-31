@@ -118,6 +118,42 @@ def _path(value: os.PathLike[str] | str) -> Path:
     return path
 
 
+def _required_open_flag(name: str) -> int:
+    value = getattr(os, name, None)
+    if type(value) is not int or value == 0:
+        raise ProvenanceIOError(f"required_open_flag_unavailable:{name}")
+    return value
+
+
+def _require_direct_child(
+    value: os.PathLike[str] | str, root: DirectoryIdentity
+) -> Path:
+    """Prove one lexical, absolute, exact direct-child relationship."""
+
+    try:
+        text = os.fspath(value)
+    except (TypeError, ValueError, OSError) as exc:
+        raise ProvenanceIOError("invalid_path") from exc
+    if type(text) is not str or not text.startswith("/"):
+        raise ProvenanceIOError("target_not_absolute")
+    if "\\" in text:
+        raise ProvenanceIOError("target_not_direct_child")
+    parts = text.split("/")
+    if len(parts) < 2 or parts[0] != "" or any(
+        part in {"", ".", ".."} for part in parts[1:]
+    ):
+        raise ProvenanceIOError("target_not_direct_child")
+    parent, _separator, child = text.rpartition("/")
+    if not parent:
+        parent = "/"
+    if parent != root.path or not child:
+        raise ProvenanceIOError("target_not_direct_child")
+    target = _path(value)
+    if str(target) != text:
+        raise ProvenanceIOError("target_not_direct_child")
+    return target
+
+
 def _directory_from_stat(path: Path, value: os.stat_result) -> DirectoryIdentity:
     if stat.S_ISLNK(value.st_mode) or not stat.S_ISDIR(value.st_mode):
         raise ProvenanceIOError("root_not_directory")
@@ -217,6 +253,7 @@ def read_exact_file(
     target = _path(path)
     if root is not None:
         _require_root(root, deps)
+        target = _require_direct_child(path, root)
     try:
         before_path = deps.lstat(target)
         path_tuple = _file_stat_identity(target, before_path, expected_mode=expected_mode)
@@ -224,7 +261,7 @@ def read_exact_file(
         raise
     except OSError as exc:
         raise ProvenanceIOError("file_lstat_failed") from exc
-    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
+    flags = os.O_RDONLY | _required_open_flag("O_NOFOLLOW")
     try:
         fd = deps.open_fd(target, flags, 0)
     except OSError as exc:
@@ -351,7 +388,10 @@ def persist_canonical_json(
     root_path = _require_root(root, deps)
     target = root_path / _direct_child(child_name)
     payload = canonical_json_bytes(value)
-    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
+    nofollow = _required_open_flag("O_NOFOLLOW")
+    directory = _required_open_flag("O_DIRECTORY")
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | nofollow
+    root_flags = os.O_RDONLY | directory | nofollow
     try:
         fd = deps.open_fd(target, flags, 0o600)
     except FileExistsError as exc:
@@ -388,7 +428,6 @@ def persist_canonical_json(
     finally:
         _close(deps, fd, primary)
 
-    root_flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0)
     try:
         root_fd = deps.open_fd(root_path, root_flags, 0)
     except OSError as exc:
