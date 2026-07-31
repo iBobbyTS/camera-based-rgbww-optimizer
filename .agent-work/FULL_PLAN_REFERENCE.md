@@ -14,11 +14,11 @@
 
 **当前代码 checkpoint：** `9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e`
 
-**当前可执行任务数：** `1`
+**当前可执行任务数：** `0`
 
-**当前 active task：** `REF-P7-25-R2-B2-P4-C1 transport-domain owner correction`
+**当前 active task：** `none`（Planner stop；下一 reference 为 `REF-P7-25-R2-B2-P4-C1-C1`）
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-31","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-P4-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-C1-TRANSPORT-DOMAIN-OWNER-CORRECTION-V1","next_reference_task":"REF-P7-25-R2-B2-P4-C1","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P4_TRANSPORT_DOMAIN_OWNER_CORRECTION_PENDING","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-31","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":0,"active_task":null,"active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-C1-C1-ACTIVATION-PROVENANCE-DISPOSITION-STOP-V1","next_reference_task":"REF-P7-25-R2-B2-P4-C1-C1","next_reference_status":"READY_FOR_PLANNING_VALIDATION_ONLY_SUCCESSOR","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P4_C1_VALIDATION_ONLY_SUCCESSOR_READY_FOR_PLANNING","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -299,7 +299,8 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-B2-R2-C1-C1-C1-C1` | `REJECTED_GIT_LEDGER_OWNER_INTERFACE_DRIFT` | bind live source-root DirectoryIdentity to every exact direct-child read | owner-API correction accepted | Planner/Executer |
 | `REF-P7-25-R2-B2-R2-C1-C1-C1-C1-C1` | `REJECTED_RUNTIME_NEGATIVE_AST_DOMAIN_COLLISION_ARCHITECTURE_STOP` | source-backed owner API gate plus preserved root-bound qualification | P4 repo-owner implementation | Planner/Executer |
 | `REF-P7-25-R2-B2-P4` | `ACCEPTED_BASE_REOPENED_FOR_TRANSPORT_DOMAIN_SUCCESSOR` | repo-owned pure in-memory controller conformance/composition owner | C1 transport-domain owner correction | Planner/Executer |
-| `REF-P7-25-R2-B2-P4-C1` | `ACTIVE_EXECUTION_AUTHORIZED` | add tested effect-vs-fixture transport-domain ownership | duplicated external classifier rejection | Planner/Executer |
+| `REF-P7-25-R2-B2-P4-C1` | `REJECTED_ACTIVATION_SUBJECT_AND_ER_PROVENANCE_MISMATCH` | add tested effect-vs-fixture transport-domain ownership | C1-C1 validation-only provenance successor | Planner/Executer |
+| `REF-P7-25-R2-B2-P4-C1-C1` | `READY_FOR_PLANNING_VALIDATION_ONLY_SUCCESSOR` | bind truthful committed topology and append supersession evidence without history rewrite | P4-C1 provenance mismatch | Orchestrator/Planner/Executer |
 | `REF-P7-25-R2-B2-P4-V1` | `ACCEPTED_COMPLETE` | one final-source full suite with retained terminal exit/count | 755/755 accepted | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-I1` | `REJECTED_PRE_EFFECT_OWNER_ALIAS_ESCAPE` | fresh synthetic external integration of accepted repo owner | I1-C1 correction | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-I1-C1` | `REJECTED_PRE_EFFECT_LIVE_OWNER_CONTAINER_WRITE_FIELD_ONLY_CORRECTION_REQUIRED` | direct/nonlocal live owner bindings with plain-projection transport | I1-C1-C1 correction | Planner/Executer |
@@ -3450,15 +3451,31 @@ bytes `9916`，SHA-256 `7a88cc6e889772c70da6c8ca09e747034c675724f9a1fb16f2cfa3f2
 
 ### REF-P7-25-R2-B2-P4-C1：transport-domain owner correction
 
-**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。Active contract为
+**状态：** `REJECTED_ACTIVATION_SUBJECT_AND_ER_PROVENANCE_MISMATCH`。Reviewed contract为
 `P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-C1-TRANSPORT-DOMAIN-OWNER-CORRECTION-V1`。
 Exact existing two paths内扩展accepted conformance owner，使其按call provenance区分effect-owned live identities、direct-constructor pure
 in-memory fixtures与repo-required immutable `RootIdentityChain` composition；拒绝真实alias/container/helper transport，并输出单一exact
 transport report，后续external source不得实现第二classifier。
 
-新增exact6 test methods，总targeted20、focused76、full761；compileall、CodeGraph、diff check、exact2-path commit与postcommit targeted全部通过才
-回Planner。External source/root、retained/real B2/validator/release/network/device/scientific全0；exact stop为
-`B2_P4_C1_TRANSPORT_DOMAIN_OWNER_WAITING_PLANNER_REVIEW`。
+实现提交 `0ec12f2de91b84f4379d64437170fa53c3ae4a28` 的 exact two paths、最终 blob/SHA、20 methods、targeted20、focused76、
+full761、compileall、CodeGraph 与 postcommit targeted 均核对一致；但 activation commit `48adfd6...` 的真实 subject 是
+`chore(plan): activate p4 transport domain correction`，与冻结 expected subject（多出 `owner`）不一致，且 evidence commit
+`bd9d205...` 中 ER 把真实 subject 误记成 expected subject。Planner 因 strict activation/evidence truthfulness gate 拒绝本包。
+Review archive：`.agent-work/PLANS/20260731-1326-p7-retained-r3-b2-p4-c1-transport-domain-owner-correction-review.md`，bytes
+`21675`，SHA-256 `d4c82e8479668db8bfce750e2f851bf8486db24f2c2c510ae56d00735e5997fd`。
+
+### REF-P7-25-R2-B2-P4-C1-C1：validation-only activation provenance successor
+
+**状态：** `READY_FOR_PLANNING_VALIDATION_ONLY_SUCCESSOR`。Orchestrator disposition：禁止 amend、rebase、reset、cherry-pick、重建或
+删除既有提交；保留 `48adfd669dc8d49fe11c983a4ca36e928bef6c22` 为真实 activation、`0ec12f2de91b84f4379d64437170fa53c3ae4a28`
+为实现、`bd9d205cf7a4385d202666f87d225739e57c970c` 为含错误 activation-subject 陈述且被 successor 明确 supersede 的 evidence prerequisite。
+
+Planner 下一包必须只做 validation-only provenance closure：精确绑定上述 full commits/parents/subjects/changed paths、最终 source/test blob OID 与
+SHA-256、P4-C1 review archive identity，并由 Executer 只读重放 Git/file identities、追加一次 truthful ER supersession record、创建一个 focused
+evidence commit。不得修改 code/test、旧 ER 行、历史提交或 analyzer；不得运行 tests/compileall/CodeGraph/external integration，也不得读取
+retained R3。验收要求新记录明确指出旧错误字段、真实值、被取代范围以及实现验证事实不等同于原合同通过；Git topology 与工作区必须 clean。
+失败时只允许新的 bounded offline evidence correction，不得扩大到 implementation lineage。External source/root、retained/real B2/validator/
+eligibility/release/network/device/scientific继续全0；Planner写出唯一 executable package 前 Executer 不得派遣。
 
 ### REF-P7-25-R2-B2-P3：repo-owned provenance I/O boundary
 
@@ -4239,10 +4256,11 @@ accepted B2-P4-V1 result = FINAL_SOURCE_FULL_VALIDATION_COMPLETE; session86444; 
 rejected B2-P4-I1 result = OWNER_ALIAS_ESCAPE_PRE_EFFECT; conformance1; Git/root/inputs/matrix/artifacts0
 rejected B2-P4-I1-C1 result = LIVE_OWNER_CONTAINER_WRITE_PRE_EFFECT; analyzer18 pass; transport16 rejected; effects0
 rejected B2-P4-I1-C1-C1 result = DUPLICATED_TRANSPORT_CLASSIFIER_FIXTURE_FALSE_POSITIVE; analyzer18 pass; effects0
-active task = REF-P7-25-R2-B2-P4-C1 transport-domain owner correction
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-C1-TRANSPORT-DOMAIN-OWNER-CORRECTION-V1
-active executable task count = 1
-next reference task = REF-P7-25-R2-B2-P4-C1 ACTIVE_EXECUTION_AUTHORIZED
+rejected B2-P4-C1 result = ACTIVATION_SUBJECT_AND_ER_PROVENANCE_MISMATCH; implementation0ec12f2 retained unaccepted; tests761 recorded
+active task = none; Planner provenance-disposition stop
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-C1-C1-ACTIVATION-PROVENANCE-DISPOSITION-STOP-V1
+active executable task count = 0
+next reference task = REF-P7-25-R2-B2-P4-C1-C1 READY_FOR_PLANNING_VALIDATION_ONLY_SUCCESSOR
 selected state C shutter = 1/2500
 device/network/camera/light = forbidden by active PLAN
 release qualification/generation/copy/consumption = forbidden

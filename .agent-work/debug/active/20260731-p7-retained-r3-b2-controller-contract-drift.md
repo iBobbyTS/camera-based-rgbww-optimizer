@@ -13,6 +13,7 @@
 - Repo-owned P4 commit `83bb193...` and final-source full `755/755` are accepted. Its first synthetic integration correctly rejected the runtime source pre-effect with `owner_alias_escape` because direct owner results were stored in a mutable `state` container. Git/root/inputs remained zero. The immutable source is bytes `20586`, SHA-256 `8c4cb131ed97bc38f5ff72947000d3b7932574759483b4172cd9fbfd992ea904`.
 - The alias-safe successor passed the accepted analyzer with 18 bound results, then its additional transport gate rejected 16 live-object container/call occurrences before effects. The source still grouped Git ledgers in a tuple for checking, passed live objects to projection helpers, collected artifacts in a list, and grouped input identities. Controller bytes/SHA are `33510`/`de2038f4d520febb0984e6b8ff6a73c293a46503ee1d6f07118036343aff2f29`; Git/root/inputs remained zero.
 - The field-only successor passed the accepted analyzer with 18 bindings, then its one-off transport gate rejected the required pure in-memory case-11 negative `FileIdentity(root=drift_root)` as `live_owner_transport:drift_root:Call`. Controller bytes/SHA are `32216`/`a9d982f88bc75ef09e029ce4311a46f3e9f59264fed86c98e1bb5fc284122010`; all effects remained zero.
+- Repo-owned P4-C1 transport classification was implemented in `0ec12f2...` with exact two paths and recorded 20 targeted / 76 focused / 761 full tests passing. Planner could not accept the package because activation `48adfd6...` has actual subject `chore(plan): activate p4 transport domain correction`, while the frozen PLAN and ER asserted `chore(plan): activate p4 transport domain owner correction`. The implementation remains a validation candidate, but provenance closure is required before synthetic integration.
 
 ## Failed approaches
 
@@ -26,7 +27,7 @@
 
 ## Current hypothesis
 
-The repo-owned analyzer correctly catches its implemented boundary, but transport-domain classification remains outside it and has now produced two different pre-effect false/over-broad rejections. Another one-off allowlist would preserve duplicated AST ownership. The next step should extend the repo-owned conformance module and dedicated tests with an exact transport report that distinguishes effect-owned live identities, required immutable `RootIdentityChain` composition, and isolated pure in-memory fixture identities; external sources should consume that single owner rather than implement a second classifier.
+The transport-domain implementation is now inside the repo-owned analyzer and its local regression surface passed. The remaining blocker is not controller semantics: it is a truthful, immutable Git/evidence chain for the already-committed implementation. The next step is a validation-only successor that binds the actual activation subject and existing commit/file identities, supersedes the incorrect ER assertion without rewriting it, and preserves all external/retained effects at zero. Only after Planner accepts that provenance closure should a fresh synthetic integration consume the single repo owner.
 
 ## Next diagnostic and acceptance surface
 
