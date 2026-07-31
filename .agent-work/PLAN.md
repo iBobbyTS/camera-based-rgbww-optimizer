@@ -1,137 +1,131 @@
-# REF-P7-25-R2-B2-P4-I1-C1-C1：field-only fresh synthetic integration correction
+# REF-P7-25-R2-B2-P4-C1：repo-owned transport-domain correction
 
 **计划状态：** `ACTIVE_EXECUTION_AUTHORIZED`
 
 **Planner 日期：** `2026-07-31`
 
-**Reference task：** `REF-P7-25-R2-B2-P4-I1-C1-C1`
+**Reference task：** `REF-P7-25-R2-B2-P4-C1`
 
 **Contract ID：**
-`P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-I1-C1-C1-FIELD-ONLY-FRESH-SYNTHETIC-INTEGRATION-QUALIFICATION-V1`
+`P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-C1-TRANSPORT-DOMAIN-OWNER-CORRECTION-V1`
 
-**当前唯一动作：** Orchestrator独立审核本review与PLAN、更新FULL并创建exact activation commit；activation
-后，Executer创建并运行唯一fresh external controller。Final source必须先通过accepted repo analyzer，再通过
-bounded field-transport gate；只有两个pre-effect gates都通过后，才可执行原synthetic Git/root/inputs/
-16-case/lifecycle qualification。不得读取或修复失败P4-I1-C1 source/root，不得读取retained R3或进入real B2。
+**当前唯一动作：** Orchestrator独立审核本review与PLAN、更新FULL并创建exact activation commit；activation后，
+Executer只在现有conformance owner及其dedicated test两个repo paths内实现、验证并提交一个bounded successor。
+Accepted owner必须在同一次runtime-source analysis中输出exact transport-domain report；不得生成或读取external
+controller/root，不得再次实现one-off AST classifier。
 
 **唯一 Planner stop：**
-`B2_P4_I1_C1_C1_FIELD_ONLY_SYNTHETIC_INTEGRATION_WAITING_PLANNER_REVIEW`。
+`B2_P4_C1_TRANSPORT_DOMAIN_OWNER_CORRECTION_WAITING_PLANNER_REVIEW`。
 
 **本轮新归档：**
-`.agent-work/PLANS/20260731-1252-p7-retained-r3-b2-p4-i1-c1-transport-failure-review.md`，bytes `8654`，
-SHA-256 `b6a15ca203f9f79188c200ac0b20c4b2e638c6d2b82a781afe8ca644882bcf54`。
+`.agent-work/PLANS/20260731-1308-p7-retained-r3-b2-p4-i1-c1-c1-fixture-classification-failure-review.md`，
+bytes `9916`，SHA-256 `7a88cc6e889772c70da6c8ca09e747034c675724f9a1fb16f2cfa3f291f2c947`。
 
-`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_p4_i1_c1_c1_field_only_fresh_synthetic_integration_qualification_v1","reference_task_id":"REF-P7-25-R2-B2-P4-I1-C1-C1","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-I1-C1-C1-FIELD-ONLY-FRESH-SYNTHETIC-INTEGRATION-QUALIFICATION-V1","execution_authorized_after_orchestrator_activation":true,"activation_commit":{"expected_parent":"972f82465fa5d9671dba12a0570103bd1b9fb6af","expected_subject":"chore(plan): activate p4 field-only transport correction","expected_changed_paths":[".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/PLANS/20260731-1252-p7-retained-r3-b2-p4-i1-c1-transport-failure-review.md"],"clean_porcelain_required_after_activation":true},"required_full_machine_state":{"active_task_count":1,"active_task":"REF-P7-25-R2-B2-P4-I1-C1-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-I1-C1-C1-FIELD-ONLY-FRESH-SYNTHETIC-INTEGRATION-QUALIFICATION-V1","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true,"executer_dispatched":true,"device_authorized_by_this_file":false},"accepted_owner":{"implementation_commit":"83bb193259fcf1de5b3f78798001e83496c2daae","implementation_parent":"5f2483c319b395b2aef2a43f4827b4c150f3f3fd","implementation_subject":"feat(p7): add retained controller conformance owner","source_path":"src/camera_based_rgbww_optimizer/utils/p7_retained_r3_controller_conformance.py","source_blob_oid":"52fcdc73c69e367cd1b046b52d83ffc555a6d496","source_sha256":"94a0992d662005df177b422d83fc1cefdd2cf7d43472571a27061df2bc7efeb7","test_path":"tests/test_p7_retained_r3_controller_conformance.py","test_blob_oid":"28a58c6051de378fbcc6485c316df9ff10d3a90c","test_sha256":"447bf13cb61e5b34ef6637e926a499e63b5b3393aa29e0d5fca205a96d180726","dedicated_test_methods":14,"final_full_tests":755,"final_full_evidence_commit":"c89b2914af44eb3d10f4dc8b347340d86abc5756"},"reviewed_failure":{"activation_commit":"30e913d96d7485de64548dfbeff0f2e47619e903","evidence_commit":"0fd144ab2749ce731e36926e140b6723f7a44122","debug_commit":"972f82465fa5d9671dba12a0570103bd1b9fb6af","stable_code":"live_owner_container_write","controller_source":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-p4-i1-c1-controller-f1b64db.py","source_bytes":33510,"source_sha256":"de2038f4d520febb0984e6b8ff6a73c293a46503ee1d6f07118036343aff2f29","source_mode":"0600","source_device":16777240,"source_inode":2225015,"processes":1,"exit_code":1,"accepted_analyzer_attempts":1,"accepted_analyzer_bound_results":18,"transport_gate_attempts":1,"transport_gate_occurrences":16,"effect_attempts":0,"root_absent":true,"immutable_no_read":true},"fresh_paths":{"controller_source":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-p4-i1-c1-c1-controller-972f824.py","output_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-p4-i1-c1-c1-qualification-972f824","must_be_absent_before_start":true,"source_mode":"0600","root_mode":"0700"},"controller_contract":{"source_create_once":true,"source_read_once":true,"strict_utf8_ast_compile":true,"controller_processes":1,"actual_runtime_source_owner_analysis_before_effects":true,"expected_bound_results":18,"bounded_transport_gate_after_owner_analysis_before_effects":true,"owner_call_result_direct_binding_only":true,"cross_callback_live_transport":"explicit_nonlocal_direct_names","git_ledger_checks_unrolled":6,"git_ledger_field_projections_unrolled":6,"input_identity_field_projections_unrolled":4,"artifact_identity_field_projections_unrolled":9,"generic_live_projection_helper_calls":0,"live_owner_artifact_collections":0,"live_owner_object_container_writes":0,"live_owner_alias_assignments":0,"opaque_gate_container_writes":0,"transport_exact_identity_composition":{"constructor":"RootIdentityChain","fields":["before","files","after"],"immutable":true,"validator":"validate_root_identity_chain"},"transport_exact_seal_calls":{"target_identity_direct":true,"validate_terminal_seal_direct":true,"opaque_gate_original_name_to_admission_only":true},"mutable_state_plain_projections_only":true,"callback_returns_plain_projections_only":true,"negative_fixture_ast_domains_disjoint":true,"activation_git_ledgers":6,"git_success_field":"exit_code","runtime_returncode_uses":0,"root_create_once":true,"synthetic_inputs":4,"synthetic_input_names":["synthetic-plan.json","synthetic-full.json","synthetic-lineage.json","synthetic-seal.json"],"all_reads_use_same_direct_live_root_name":true,"pre_post_root_identity_exact":true,"semantic_matrix_cases":16,"qualification_files":["integration-qualification.json","integration-qualification.sha256.json"],"terminal_files":["terminal-evidence.json","terminal-evidence.sha256.json","execution-result-admission.json"],"final_root_file_count":9,"retry":0,"fallback":0,"second_source":0,"second_root":0,"second_process":0},"lifecycle_semantics":{"conformance_is_pre_effect_gate":true,"owner_analysis_precedes_transport_gate":true,"gate_failure_effect_attempts":0,"gate_failure_terminal_attempts":0,"sealed_primary_phases":["activation","root","inputs","evaluate"],"sealed_primary_failure_terminal_attempts":1,"terminal_success_seal_attempts":1,"seal_success_admission_attempts":1,"valid_fail_admission_preserves_primary_error":true,"success_order":["conformance","activation","root","inputs","evaluate","terminal","terminal_seal","admission"]},"execution_budgets":{"controller_source_writes":1,"controller_source_reads":1,"controller_processes":1,"output_roots":1,"synthetic_input_writes":4,"read_only_git_invocations":6,"qualification_writes":2,"terminal_writes":2,"admission_writes":1,"execution_result_appends":1,"retry":0,"fallback":0},"zero_budgets":{"code_writes":0,"test_writes":0,"plan_writes_by_executer":0,"full_writes_by_executer":0,"archive_writes_by_executer":0,"debug_writes":0,"guide_writes":0,"research_writes":0,"tests":0,"compileall":0,"codegraph_sync":0,"git_stage":0,"git_commit":0,"failed_controller_reads":0,"failed_root_reads":0,"old_controller_reads":0,"old_root_reads":0,"old_evidence_reads":0,"accepted_c1_reads":0,"retained_artifact_reads":0,"git_provenance_replay":0,"real_b2_dispatch":0,"subordinate_manifest_writes":0,"actual_canonical_validator_calls":0,"eligibility_emissions":0,"retained_release_audit":0,"release_generation":0,"release_qualification":0,"release_copy":0,"release_consumption":0,"network":0,"dns":0,"environment":0,"credentials":0,"device":0,"camera":0,"ray":0,"strip":0,"cleanup":0,"capture":0,"formal":0,"public_analyzer":0,"td_c":0,"sentinel":0,"p8":0,"firmware":0,"deployment":0},"expected_duration":"under_10_minutes","visible_terminal_required":false,"planner_stop":"B2_P4_I1_C1_C1_FIELD_ONLY_SYNTHETIC_INTEGRATION_WAITING_PLANNER_REVIEW"}`
+`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_p4_c1_transport_domain_owner_correction_v1","reference_task_id":"REF-P7-25-R2-B2-P4-C1","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-C1-TRANSPORT-DOMAIN-OWNER-CORRECTION-V1","execution_authorized_after_orchestrator_activation":true,"activation_commit":{"expected_parent":"781e410c43774c20da9f00e8c9e0f5bfd27b1f66","expected_subject":"chore(plan): activate p4 transport domain owner correction","expected_changed_paths":[".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/PLANS/20260731-1308-p7-retained-r3-b2-p4-i1-c1-c1-fixture-classification-failure-review.md"],"clean_porcelain_required_after_activation":true},"implementation_commit":{"expected_parent_source":"current_activation_head_runtime","activation_head_must_match_frozen_activation_tuple":true,"expected_subject":"fix(p7): own retained controller transport domains","expected_changed_paths":["src/camera_based_rgbww_optimizer/utils/p7_retained_r3_controller_conformance.py","tests/test_p7_retained_r3_controller_conformance.py"],"single_commit":true,"clean_porcelain_required_after_commit":true},"required_full_machine_state":{"active_task_count":1,"active_task":"REF-P7-25-R2-B2-P4-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-C1-TRANSPORT-DOMAIN-OWNER-CORRECTION-V1","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true,"executer_dispatched":true,"device_authorized_by_this_file":false},"exact_write_paths":["src/camera_based_rgbww_optimizer/utils/p7_retained_r3_controller_conformance.py","tests/test_p7_retained_r3_controller_conformance.py"],"accepted_baseline":{"implementation_commit":"83bb193259fcf1de5b3f78798001e83496c2daae","implementation_parent":"5f2483c319b395b2aef2a43f4827b4c150f3f3fd","source_blob_oid":"52fcdc73c69e367cd1b046b52d83ffc555a6d496","source_sha256":"94a0992d662005df177b422d83fc1cefdd2cf7d43472571a27061df2bc7efeb7","test_blob_oid":"28a58c6051de378fbcc6485c316df9ff10d3a90c","test_sha256":"447bf13cb61e5b34ef6637e926a499e63b5b3393aa29e0d5fca205a96d180726","dedicated_test_methods":14,"focused_tests":70,"full_tests":755,"full_evidence_commit":"c89b2914af44eb3d10f4dc8b347340d86abc5756"},"reviewed_failure":{"activation_commit":"53df8ca0611b05819e500c9376c6f150b48511cd","evidence_commit":"697f9f1800a91442695f23d551a8d1a5f5cb9624","debug_commit":"781e410c43774c20da9f00e8c9e0f5bfd27b1f66","stable_code":"live_owner_transport:drift_root:Call","controller_source":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-p4-i1-c1-c1-controller-972f824.py","source_bytes":32216,"source_sha256":"a9d982f88bc75ef09e029ce4311a46f3e9f59264fed86c98e1bb5fc284122010","accepted_analyzer_status":"PASS","accepted_analyzer_bound_results":18,"failed_fixture_shape":"FileIdentity(root=drift_root)","effect_attempts":0,"root_absent":true,"immutable_no_read":true},"transport_owner_contract":{"single_ast_owner":"analyze_controller_source","single_parse_binding_pass":true,"report_type":"ControllerTransportReport","report_embedded_in":"ControllerConformanceReport.transport","binding_domains":["effect_owned","pure_fixture"],"effect_origin":"non_constructor_owner_call","fixture_origin":"direct_exact_owner_dataclass_constructor","classification_by_variable_name":false,"classification_by_path":false,"generic_call_allowlist":false,"report_fields":["effect_bindings","fixture_bindings","fixture_constructor_edges","root_chain_compositions","root_chain_validations","effect_transport_uses"],"effect_transport_uses_on_pass":0,"fixture_to_exact_constructor_edge_allowed":true,"effect_to_fixture_constructor_edge_allowed":false,"effect_alias_allowed":false,"effect_container_allowed":false,"effect_generic_helper_argument_allowed":false,"effect_callback_or_closure_return_allowed":false,"exact_root_chain_exception":{"constructor":"RootIdentityChain","named_fields":["before","files","after"],"files_container":"tuple_literal","direct_validator":"validate_root_identity_chain","effect_identity_grouping":true},"external_transport_ast_classifier_allowed":false,"deterministic_sorted_immutable_report":true},"regression_contract":{"new_test_methods":6,"exact_method_names":["test_15_transport_report_classifies_effect_and_fixture_bindings","test_16_fixture_file_root_composition_is_not_live_transport","test_17_effect_identity_cannot_masquerade_as_fixture","test_18_effect_alias_container_and_generic_helper_transport_rejected","test_19_exact_root_identity_chain_composition_only_exception","test_20_transport_report_is_deterministic_and_exports_exact"],"case11_positive":"FileIdentity(root=drift_root)","effect_negative_kinds":["alias","container","generic_helper_argument","callback_return","closure_return"],"exact_root_chain_positive":true,"near_miss_root_chain_negatives":true,"stable_error_codes_required":true},"test_contract":{"targeted_command":".venv/bin/python -m unittest tests.test_p7_retained_r3_controller_conformance","targeted_expected":20,"focused_command":".venv/bin/python -m unittest tests.test_p7_retained_r3_controller_conformance tests.test_p7_retained_r3_controller_preparation tests.test_p7_retained_r3_provenance_io tests.test_agent_work_machine_contract","focused_expected":76,"full_command":"PYTHONUNBUFFERED=1 .venv/bin/python -m unittest discover -s tests -p 'test_*.py'","baseline_full_tests":755,"new_test_methods":6,"full_expected":761,"compileall_command":".venv/bin/python -m compileall -q src tests","codegraph_sync_required":true,"git_diff_check_required":true,"postcommit_targeted_expected":20},"execution_budgets":{"implementation_commits":1,"execution_result_appends":1,"test_invocations":4,"compileall_invocations":1,"codegraph_sync":1,"retry":0,"fallback":0},"zero_budgets":{"third_code_test_path_writes":0,"external_controller_writes":0,"external_controller_reads":0,"external_root_creates":0,"external_root_reads":0,"synthetic_integration_runs":0,"plan_writes_by_executer":0,"full_writes_by_executer":0,"archive_writes_by_executer":0,"debug_writes":0,"guide_writes":0,"research_writes":0,"failed_source_reads":0,"failed_root_reads":0,"accepted_c1_reads":0,"retained_artifact_reads":0,"git_provenance_replay":0,"real_b2_dispatch":0,"subordinate_manifest_writes":0,"actual_canonical_validator_calls":0,"eligibility_emissions":0,"retained_release_audit":0,"release_generation":0,"release_qualification":0,"release_copy":0,"release_consumption":0,"network":0,"dns":0,"environment":0,"credentials":0,"device":0,"camera":0,"ray":0,"strip":0,"cleanup":0,"capture":0,"formal":0,"public_analyzer":0,"td_c":0,"sentinel":0,"p8":0,"firmware":0,"deployment":0},"expected_duration":"under_10_minutes","visible_terminal_required":false,"planner_stop":"B2_P4_C1_TRANSPORT_DOMAIN_OWNER_CORRECTION_WAITING_PLANNER_REVIEW"}`
 
-## 1. Frozen activation and source ownership
+## 1. Activation, exact scope and immutable baseline
 
-Orchestrator activation必须以current clean HEAD
-`972f82465fa5d9671dba12a0570103bd1b9fb6af`为direct parent，subject exact为machine row，changed paths
-exact为FULL、PLAN与本轮review archive。Activation后worktree必须clean；FULL必须只有本task/contract active，
-保留candidate hash与retained状态，并显式记录Orchestrator verification、Executer dispatch true及device
-authorization false。任一preflight不匹配即stop，不得创建external source/root。
+Orchestrator activation必须以clean HEAD
+`781e410c43774c20da9f00e8c9e0f5bfd27b1f66`为direct parent，subject与exact三路径必须匹配machine row。
+Activation后worktree/stage/untracked必须clean；FULL必须exact一个active task/contract，保留candidate hash、retained
+state、Orchestrator verification、dispatch true和device authorization false。任一gate不匹配即stop，不得改code/test。
 
-Fresh source/root必须先确认均absent。Source exclusive创建一次、mode `0600`，由accepted provenance owner exact
-读取一次；同一首次 `FileIdentity.data`完成strict UTF-8 decode、AST parse、builtin compile与唯一process
-dispatch。Outer launcher不得二读补hash或修复source。Root只由accepted `create_exclusive_root`创建一次、mode
-`0700`，return value direct-bind唯一live name。
+Executer以activation runtime HEAD作为唯一implementation parent，先冻结existing two files的blob/SHA并与machine row
+accepted baseline一致。写路径exact为现有source和dedicated test；不得新增module、fixture file、wrapper、doc或artifact。
+不得读取failed external source/root来推断实现；committed ER、archive、PLAN及debug的冻结事实已足够。
 
-## 2. Two exact pre-effect gates
+Maintainability gate：现有module已拥有owner schemas、AST parse/bindings、root-chain validation与lifecycle composition，
+transport classification属于同一semantic boundary；应扩展该owner，而不是新增service或external classifier。若实现需要第三
+repo path、generic plugin registry、path/callee allowlist或复制第二AST traversal owner，必须在edit前stop回Planner。
 
-Lifecycle `conformance` callback先对exact dispatched in-memory source运行accepted
-`analyze_controller_source`。报告须PASS并冻结exact `18` bound results、source SHA、owner fields/methods、attribute
-uses与root reads；所有owner call results unique direct-bound，shared root reads引用同一direct root name，
-`returncode`、reflection、unknown attributes、unbound/alias results与opaque introspection均为零。
+## 2. Single-owner transport report
 
-Accepted analyzer通过后，对same already-parsed AST运行bounded transport gate；两个gate通过前Git/root/inputs/
-evaluate/terminal/seal/admission attempts必须全零。Transport gate必须证明：
+在现有 `analyze_controller_source` 的同一次strict UTF-8 parse/compile、parents map、binding registry和attribute/root-read
+analysis中加入transport provenance；不得让caller对source再次AST parse或扫描。新增frozen
+`ControllerTransportReport`，并作为 `ControllerConformanceReport.transport` 返回。Report及其所有nested fields必须是
+deterministic sorted tuples，不含mutable collection、AST node、path object或live owner object。
 
-- 六个 `run_read_only_git` calls、success checks与plain dict projections逐项展开；不得用tuple/list/comprehension/
-  loop收集或运输live ledger；
-- 每个input与artifact identity direct binding后，在同一callback中以explicit accepted fields立即构造plain dict；
-  不得先放入collection，不得传入`projection(identity)`或任何generic helper；
-- 除exact owner-required形状外，bound live name不得成为普通call argument、container constructor/mutator
-  argument、subscript/attribute assignment value、callback return、closure return或second alias；
-- 唯一identity grouping exception是immutable
-  `RootIdentityChain(before=<direct root>, files=(<direct files>...), after=<direct root>)`及其direct
-  `validate_root_identity_chain` call；必须按callee和named field exact匹配，不得实现generic path/call allowlist；
-- seal阶段只允许repo-required target identity direct construction/use、`validate_terminal_seal`的exact direct call，
-  以及其opaque gate原name传给唯一admission callback；opaque gate不可introspect、serialize、alias或进入container；
-- 跨callback live owner仅保留在explicit enclosing direct names并用`nonlocal`直接赋值；mutable state与callback
-  returns只能含递归plain projection。每次state写入后都运行recursive plain-type assertion。
+Report exact fields：
 
-Negative fixtures是independent bytes/AST domains，只交给各自analyzer/gate调用；不得exec、拼接actual source或
-参与actual whole-source occurrence counting。任一gate失败即pre-effect hard failure，terminal attempts仍为零；
-controller exit非零并保留source immutable，retry/fallback/第二source/root/process为零。
+- `effect_bindings`：所有non-constructor owner call直接绑定的name/type/call provenance；
+- `fixture_bindings`：exact owner dataclass constructor直接绑定的name/type provenance；
+- `fixture_constructor_edges`：pure fixture name进入另一个exact owner constructor的direct field edge；
+- `root_chain_compositions`：exact `RootIdentityChain` direct binding及named before/files/after names；
+- `root_chain_validations`：该chain direct传给exact `validate_root_identity_chain`的配对；
+- `effect_transport_uses`：accepted report必须exact empty；发现prohibited use时先以stable code fail closed，不返回PASS。
 
-## 3. Effects and exact 16-case matrix
+Domain只能由call provenance和exact AST shape决定，不能由变量名、path literal、function/callback名字或generic callee
+allowlist决定。Non-constructor owner call result属于effect-owned live domain；直接exact owner dataclass constructor result属于
+pure-fixture domain。`DirectoryIdentity(...)`直接构造的`drift_root`进入
+`FileIdentity(..., root=drift_root)`是合法fixture constructor edge，必须报告而非拒绝。任何effect-owned name进入fixture
+constructor必须stable reject，防止以constructor伪装live transport。
 
-两个gate通过后activation才运行exact六个read-only Git owner calls。每个ledger以`exit_code == 0`与empty
-stderr独立验证，并立即写入只含argv/cwd/exit_code/stdout/stderr hashes的plain dict；六个dict可随后组成plain
-list。Root callback创建唯一fresh root。Inputs callback写四个canonical synthetic JSON direct children，payload
-仅含固定synthetic schema/id/hash/link fields，不复制或推断retained、accepted C1、candidate或release payload。
+Effect-owned identity仍可进行accepted字段读取/比较、existing exact shared-root `read_exact_file(root=<live root>)`和
+inline plain field projection；不得成为第二alias、ordinary list/tuple/set/dict/container元素、subscript/attribute assignment
+value、generic helper/call argument、callback return或closure return。不得通过comprehension、lambda、`*args`、`**kwargs`、
+reflection或opaque indirection逃逸。每类negative必须返回明确stable code，不能只依赖generic exception。
 
-四个files各由accepted `read_exact_file(..., root=<same direct live root name>)` exact读取一次。每个identity逐项
-验证并立即inline field-project。Reads前后root identities保持direct names；exact immutable
-`RootIdentityChain(before, files, after)`由repo validator通过。不得额外lstat/read/count probe。
+唯一effect identity grouping exception是direct assigned
+`RootIdentityChain(before=<direct effect root>, files=(<direct effect files>...), after=<direct effect root>)`：callee、named
+fields、tuple literal和direct names都必须exact；该chain只可direct传给一次
+`validate_root_identity_chain(chain_name)`。Positional/extra/missing fields、list files、nested helper、wrong validator、alias、
+container或unvalidated chain均stable reject。禁止generic path/call allowlist。Existing opaque terminal-seal规则继续原样由
+owner处理，不因本patch放宽。
 
-Evaluate callback运行原exact `16/16` cases并冻结case id/status/stable code：
+External consumers之后只能调用 `analyze_controller_source` 并比较embedded transport report；本包不得创建consumer，
+但source/test中必须以static assertion防止公开或内部出现第二个transport analyzer入口。
 
-1. actual dispatched source analyzer positive、18 bindings及SHA exact；
-2. isolated `GitLedger.exit_code` positive；
-3. isolated `GitLedger.returncode` negative → `git_returncode_rejected`；
-4. isolated unknown owner attribute/unbound result negative；
-5. isolated alias/reflection/opaque introspection negative；
-6. isolated rootless read negative；
-7. isolated literal-root read negative；
-8. isolated different-live-root read negative；
-9. actual four-file root identity chain positive；
-10. pre/post root drift negative → `root_identity_drift`；
-11. file-root mismatch negative → `file_root_mismatch`；
-12. non-direct-child/sibling escape negative → `file_not_direct_child`；
-13. file device drift negative → `file_device_mismatch`；
-14. file mode drift negative → `file_mode_mismatch`；
-15. in-memory primary-failure lifecycle在valid admission后保持original exception identity；
-16. terminal/seal failure阻止admission并返回accepted stable lifecycle code。
+## 3. Exact six-method regression surface
 
-每个negative匹配exact stable code或exception identity，不能只断言raised。Root negatives仅用already-held
-identities与pure in-memory replacement，不额外调用I/O owner。Matrix外不得加case、test suite、count probe、
-manual source fix或second analyzer domain。任一case失败即sealed primary failure，retry/fallback为零。
+在existing 14 methods后新增exact六个method，方法名与machine row完全一致：
 
-## 4. Qualification, terminal seal and ER admission
+1. `test_15...`：一个source同时含effect calls与fixture constructors，report按provenance exact分类且prohibited空；
+2. `test_16...`：复现required `drift_root = DirectoryIdentity(...)`、
+   `drift_file = FileIdentity(..., root=drift_root)`，assert fixture edge exact且不被记为effect transport；
+3. `test_17...`：effect root被送入fixture `FileIdentity` constructor必须stable reject，证明不能masquerade；
+4. `test_18...`：以subTest分别验证effect alias、container、generic helper argument、callback return、closure return均按
+   exact stable code拒绝；不得只断言raised；
+5. `test_19...`：exact immutable RootIdentityChain composition+direct validator PASS；positional/list/missing/extra/
+   wrong-validator/alias near misses逐项stable reject；
+6. `test_20...`：同bytes两次analysis report完全相同、tuple/frozen结构与exact exports成立，并静态证明module只有
+   `analyze_controller_source`一个transport analysis owner。
 
-Matrix `16/16`后才exclusive写：四个inputs既有文件之外，
-`integration-qualification.json`及其seal、`terminal-evidence.json`及其seal、最后
-`execution-result-admission.json`，root总数exact `9`。所有文件canonical JSON、mode `0600`、同一root direct
-children，记录path/bytes/SHA/device/inode/mode/root identity。Qualification记录两个gate报告、unrolled six Git
-plain projections、four input projections、root chain、16 cases、field-only transport assertions及全部counter。
+不得删除、合并或重命名原14 methods；test method总数exact `20`。测试必须验证report内容和stable codes，不能只执行
+代码。不得为了迎合计数添加空断言或重复方法。
 
-Terminal target exact绑定qualification identity；terminal seal exact绑定terminal identity。Opaque gate direct
-bind唯一nonlocal name且只传给exact一次admission callback。Admission后不把gate写入ER，只记录admission
-artifact plain physical identity。
+## 4. Ordered validation, commit and evidence
 
-Lifecycle success order exact为machine row。Accepted analyzer/transport failure不进入terminal；其后仅
-`activation/root/inputs/evaluate`是sealed primary phases。Primary failure后terminal attempt exact `1`；terminal
-成功后seal exact `1`；seal成功后admission exact `1`；valid FAIL admission后仍重新抛original primary error。
+Edits完成后按序exact各一次：
 
-Process terminal后独立验证root exact9 files、strict JSON/hash/linkage/root identities、source/root identities、
-counter与process exit `0`。Executer只append一次ER，记录actual gate reports、18 bindings、unrolled projections、
-16 cases、artifact identities、lifecycle/counters及全部zero budgets。最终porcelain仅ER一个unstaged modification，
-stage和untracked为空。
+1. targeted command，必须exit `0`且`20/20`；
+2. focused command，existing baseline 70加六方法，必须exit `0`且`76/76`；
+3. compileall command，exit `0`；
+4. unique unbuffered full command，actual baseline 755加六方法，必须完整terminal `761/761`、`OK`、failures/errors `0`；
+5. `codegraph sync` exact一次并确认index current，随后focused query证明single transport owner与source/test call path；
+6. `git diff --check`及path set检查，diff exact两个write paths，stage仍为空。
+
+任一失败立即stop，不得retry、fallback、第二full、count probe、临时fix或partial commit。Full预计约三分钟，整个package
+under 10 minutes，不使用visible Terminal/automation。
+
+全部通过后只stage exact两个paths，创建一个implementation commit，direct parent为activation runtime HEAD，subject exact
+`fix(p7): own retained controller transport domains`。Commit changed paths必须exact two，禁止amend/rebase/merge/tag/push。
+Commit后worktree/stage/untracked必须clean，再运行machine row exact postcommit targeted一次，必须`20/20`。最后Executer只向
+ER append一次，记录before/after/final blob OID与SHA、report API、stable-code matrix、四次test invocation完整exit/count、
+compileall、CodeGraph、diff/commit topology及全部zero budgets；append后porcelain只允许ER一个unstaged modification。
 
 ## 5. Acceptance, locks and stop
 
-Acceptance要求：accepted owner identity不漂移；唯一fresh source/root/process；actual final bytes依次通过accepted
-analyzer与bounded field-transport gate；18 bindings；六个Git、四个inputs、九个artifacts逐项direct binding后
-inline projection；generic live projection helper、live collection/container writes、aliases与opaque writes均为
-`0`；唯一RootIdentityChain/seal shape exceptions exact；negative domains分离；Git `6/6`；root chain与matrix
-`16/16`；exact9 files；terminal/seal/admission全部链接；process exit `0`；retry/fallback `0`；仅ER append。
+Acceptance要求：activation exact；two-path scope；single AST owner；report domains/fields exact；case-11 fixture PASS；effect
+masquerade及alias/container/helper/return negatives exact reject；唯一RootIdentityChain exception exact；no generic allowlist；
+existing14+new6=`20` methods；targeted `20/20`、focused `76/76`、full `761/761`、compileall、CodeGraph、diff与postcommit
+targeted全部通过；single exact commit；clean tree；ER sole append。
 
-本包通过只证明repo owner可完成field-only fresh synthetic integration。失败P4-I1-C1 source/root、其它旧
-controller/root/evidence、accepted C1、retained reads、Git provenance replay、real B2、subordinate manifest、
-canonical validator、eligibility、retained audit、全部release、network、DNS、environment、credentials、device、
-camera、Ray、strip、cleanup、capture、FORMAL、public analyzer、TD-C、sentinel、P8、firmware及deployment继续
-hard locked `0`。Planner验收并由Orchestrator更新FULL前不得进入下一阶段。
+本包通过只修复repo conformance owner，不自动证明synthetic consumer、retained R3、real B2或eligibility。External
+controller/source/root写读、failed source/root、accepted C1、retained artifact、Git provenance replay、real B2、subordinate
+manifest、canonical validator、eligibility、retained audit、全部release、network/DNS/environment/credentials、device/camera/
+Ray/strip/cleanup/capture、FORMAL/public analyzer/TD-C/sentinel/P8/firmware/deployment继续hard locked `0`。Planner验收并由
+Orchestrator更新FULL前不得规划或运行consumer integration。
 
-维护性判断：本包不修改repo owner或新增抽象，只把外置controller transport收敛为逐项field projection；唯一
-composition例外精确对应既有RootIdentityChain与seal owners，复杂度局限在一次性synthetic source。
+维护性判断：本包触及shared AST/conformance owner，风险集中在classification provenance与exact exceptions；修改仍严格
+限制于现有owner和专属测试，不新增并行owner或I/O依赖。六个meaningful regression methods及761 full suite覆盖source of
+truth、false-positive复现、真实transport negatives和唯一composition exception；通过后无需进一步架构重构。
