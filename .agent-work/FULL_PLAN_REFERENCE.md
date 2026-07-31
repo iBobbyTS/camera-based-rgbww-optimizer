@@ -16,9 +16,9 @@
 
 **当前可执行任务数：** `1`
 
-**当前 active task：** `REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1-C1-C1-C1 runtime-token fixture separation`
+**当前 active task：** `REF-P7-25-R2-B2-P5 repo-owned controller runtime owner`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-31","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1-C1-C1-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-C1-C1-C1-I1-C1-C1-C1-C1-C1-RUNTIME-TOKEN-FIXTURE-SEPARATION-CORRECTION-V1","next_reference_task":"REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1-C1-C1-C1","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P4_C1_C1_C1_I1_C1_C1_C1_C1_REJECTED_MATRIX_SELF_REFERENCE_C1_RUNTIME_TOKEN_FIXTURE_SEPARATION_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-31","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-P5","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P5-REPO-OWNED-CONTROLLER-RUNTIME-OWNER-V1","next_reference_task":"REF-P7-25-R2-B2-P5","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P5_REPO_OWNED_CONTROLLER_RUNTIME_OWNER_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -307,7 +307,8 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1` | `REJECTED_PRE_SOURCE_OUTER_GIT_BUDGET_VIOLATION` | exact Markdown row extraction and structured pre-root failure lifecycle | I1-C1-C1-C1 outer first-command correction | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1-C1` | `REJECTED_OUTER_LAUNCHER_MUTUALLY_EXCLUSIVE_STDIN_INPUT` | absolute first/sole outer Git command, preserving row/lifecycle correction | launcher-argument correction | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1-C1-C1` | `REJECTED_SELF_REFERENTIAL_FORBIDDEN_TOKEN_MATRIX_CHECK` | single subprocess input channel before unique controller process | runtime-token fixture separation | Planner/Executer |
-| `REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1-C1-C1-C1` | `ACTIVE_EXECUTION_AUTHORIZED` | separate negative token fixture data from scanned runtime source | self-referential matrix failure | Planner/Executer |
+| `REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1-C1-C1-C1` | `REJECTED_PRE_EFFECT_REFLECTION_AND_SOURCE_WRITER_PROOF_GAP` | separate negative token fixture data from scanned runtime source | P5 repo-owned runtime owner | Planner/Executer |
+| `REF-P7-25-R2-B2-P5` | `ACTIVE_EXECUTION_AUTHORIZED` | single repo-owned controller source/writer/launcher runtime owner | repeated disposable-controller drift | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-V1` | `ACCEPTED_COMPLETE` | one final-source full suite with retained terminal exit/count | 755/755 accepted | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-I1` | `REJECTED_PRE_EFFECT_OWNER_ALIAS_ESCAPE` | fresh synthetic external integration of accepted repo owner | I1-C1 correction | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-I1-C1` | `REJECTED_PRE_EFFECT_LIVE_OWNER_CONTAINER_WRITE_FIELD_ONLY_CORRECTION_REQUIRED` | direct/nonlocal live owner bindings with plain-projection transport | I1-C1-C1 correction | Planner/Executer |
@@ -3577,7 +3578,7 @@ Evidence commit `b28d5377682c0f2da71ecb078d1817591f6d19c3`保存原状。
 
 ### REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1-C1-C1-C1：runtime-token fixture separation
 
-**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。Contract为
+**状态：** `REJECTED_PRE_EFFECT_REFLECTION_AND_SOURCE_WRITER_PROOF_GAP`。Contract为
 `P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-C1-C1-C1-I1-C1-C1-C1-C1-C1-RUNTIME-TOKEN-FIXTURE-SEPARATION-CORRECTION-V1`。
 Fresh controller必须将negative token作为与actual runtime-source scan分离的构造数据，或使用existing repo analyzer拥有的AST attribute语义；禁止第二classifier、
 generic allowlist或在被扫描bytes中放完整forbidden token。首命令、launcher、analyzer18、Git6、same-root4、matrix16、exact9、lifecycle与retry0保持不变。
@@ -3585,6 +3586,22 @@ generic allowlist或在被扫描bytes中放完整forbidden token。首命令、l
 `.agent-work/PLANS/20260731-1508-p7-retained-r3-b2-p4-c1-c1-c1-i1-c1-c1-c1-c1-matrix-self-reference-failure-review.md`，bytes
 `16268`，SHA-256 `50dd758d2055419a12b80c9577b52274a267f74771207a4c8959286e8b586e1c`。Exact stop为
 `B2_P4_C1_C1_C1_I1_C1_C1_C1_C1_C1_RUNTIME_TOKEN_FIXTURE_SEPARATION_WAITING_PLANNER_REVIEW`。
+
+Token分离与authoritative ER supersession通过，但fresh runtime仍含generic reflection syntax，被repo analyzer以`reflection_rejected`在effects前拒绝；
+source又由patch+chmod创建，缺少O_EXCL/O_NOFOLLOW/file+parent fsync证明。连续disposable controller漂移已触发架构收敛，不再授权另一份one-off source。
+Evidence commit `ec2dd705fbcf3349297fb141b732ebc9b61aaf94`只追加ER。
+
+### REF-P7-25-R2-B2-P5：repo-owned controller runtime owner
+
+**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。Contract为
+`P7-TD-B-RETAINED-R3-OPTION-B-B2-P5-REPO-OWNED-CONTROLLER-RUNTIME-OWNER-V1`。Exact双路径新增
+`src/camera_based_rgbww_optimizer/utils/p7_retained_r3_controller_runtime.py`与dedicated test。Owner只负责deterministic source bytes、conformance-before-write、
+exclusive O_EXCL/O_NOFOLLOW 0600 write + EINTR/full-write/fsync/parent-fsync identity proof、single accepted read、single-input/no-stdin launcher和deterministic report；
+复用现有preparation/conformance/provenance_io，不新增analyzer、lifecycle、plan-specific matrix或retained语义。Exact6 meaningful tests，targeted6、focused76、
+full767、compileall、CodeGraph、exact双路径commit与postcommit targeted。External controller/root、retained/validator/release/network/device全0。Review archive：
+`.agent-work/PLANS/20260731-1521-p7-retained-r3-b2-p4-runtime-token-successor-architecture-review.md`，SHA-256
+`f597278dc37bffc5e557846815e49349a67e93e2a26e1eceef44cb9934ab94d7`。Exact stop为
+`B2_P5_REPO_OWNED_CONTROLLER_RUNTIME_OWNER_WAITING_PLANNER_REVIEW`。
 
 ### REF-P7-25-R2-B2-P3：repo-owned provenance I/O boundary
 
@@ -4373,10 +4390,11 @@ rejected B2-P4-C1-C1-C1-I1-C1 result = MACHINE_ROW_DELIMITER_AND_PRE_ROOT_EVIDEN
 rejected B2-P4-C1-C1-C1-I1-C1-C1 result = PRE_SOURCE_OUTER_STATUS_BUDGET_VIOLATION; source/root/process0
 rejected B2-P4-C1-C1-C1-I1-C1-C1-C1 result = LAUNCHER_STDIN_INPUT_MUTUAL_EXCLUSION; source read1; process/root0
 rejected B2-P4-C1-C1-C1-I1-C1-C1-C1-C1 result = SELF_REFERENTIAL_FORBIDDEN_TOKEN_MATRIX_CHECK; process1; root+inputs present
-active task = REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1-C1-C1-C1 runtime-token fixture separation
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-C1-C1-C1-I1-C1-C1-C1-C1-C1-RUNTIME-TOKEN-FIXTURE-SEPARATION-CORRECTION-V1
+rejected B2-P4 runtime-token successor = PRE_EFFECT_REFLECTION_AND_SOURCE_WRITER_PROOF_GAP; effects0
+active task = REF-P7-25-R2-B2-P5 repo-owned controller runtime owner
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-P5-REPO-OWNED-CONTROLLER-RUNTIME-OWNER-V1
 active executable task count = 1
-next reference task = REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1-C1-C1-C1 ACTIVE_EXECUTION_AUTHORIZED
+next reference task = REF-P7-25-R2-B2-P5 ACTIVE_EXECUTION_AUTHORIZED
 selected state C shutter = 1/2500
 device/network/camera/light = forbidden by active PLAN
 release qualification/generation/copy/consumption = forbidden
