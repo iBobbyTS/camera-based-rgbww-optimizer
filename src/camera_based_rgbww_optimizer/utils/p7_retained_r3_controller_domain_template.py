@@ -222,7 +222,7 @@ def build_controller_domain_template(spec: ControllerDomainTemplateSpec) -> Cont
         ("runtime_source_sha256", source_sha), ("runtime_test_blob_oid", test_blob),
         ("runtime_test_sha256", test_sha), ("source_path", source_path),
     ), key=lambda item: item[0].encode("utf-8")))
-    replacement = ("    ACTIVATION_CONTRACT = " + _literal(facts) + "\n").encode("utf-8")
+    replacement = ("ACTIVATION_CONTRACT = " + _literal(facts) + "\n").encode("utf-8")
     try:
         text = _CANONICAL_TEMPLATE.decode("utf-8", errors="strict")
         compile(ast.parse(text), "<controller-domain-template>", "exec")

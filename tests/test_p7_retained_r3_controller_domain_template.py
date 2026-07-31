@@ -48,7 +48,10 @@ class ControllerDomainTemplateTests(unittest.TestCase):
         assignments = [n for n in ast.walk(tree) if isinstance(n, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "ACTIVATION_CONTRACT" for t in n.targets)]
         self.assertEqual(len(assignments), 1)
         self.assertEqual(prepared.source.count(b"ACTIVATION_CONTRACT ="), 1)
+        self.assertTrue(bundle.replacement_statement.startswith(b"ACTIVATION_CONTRACT ="))
+        self.assertFalse(bundle.replacement_statement.startswith((b" ", b"\t")))
         self.assertTrue(bundle.replacement_statement.endswith(b"\n"))
+        self.assertFalse(bundle.replacement_statement.endswith(b"\n\n"))
 
     def test_03_runtime_request_inputs_are_exact_and_compose_without_effect(self):
         bundle = subject.build_controller_domain_template(spec()); request = bundle.runtime_request
@@ -95,11 +98,93 @@ class ControllerDomainTemplateTests(unittest.TestCase):
 
     def test_08_static_owner_boundary_has_no_effect_retained_or_parallel_owner(self):
         self.assertEqual(subject.__all__, ["ControllerDomainTemplateError", "ControllerDomainTemplateSpec", "ControllerDomainTemplateBundle", "build_controller_domain_template"])
-        source = inspect.getsource(subject); tree = ast.parse(source)
-        calls = [n.func.id if isinstance(n.func, ast.Name) else n.func.attr for n in ast.walk(tree) if isinstance(n, ast.Call)]
-        for forbidden in ("execute_controller_runtime", "analyze_controller_source", "compose_controller_source", "open", "run", "Popen"):
-            self.assertNotIn(forbidden, calls)
-        self.assertNotIn("retained", " ".join(n.value for n in ast.walk(tree) if isinstance(n, ast.Constant) and isinstance(n.value, str)).lower())
+        def inventory(source_text, *, allowed_imports, allowed_calls, payload_fields=()):
+            tree = ast.parse(source_text)
+            imports = set()
+            calls = set()
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Import):
+                    imports.update(alias.name for alias in node.names)
+                elif isinstance(node, ast.ImportFrom):
+                    imports.add(node.module or "")
+                elif isinstance(node, ast.Call):
+                    if isinstance(node.func, ast.Name):
+                        calls.add(node.func.id)
+                    elif isinstance(node.func, ast.Attribute):
+                        calls.add(node.func.attr)
+            forbidden_payload_fields = {
+                "retained_artifacts", "candidate_payload", "eligibility",
+                "release_payload", "device_payload",
+            }
+            return {
+                *("unexpected_import:" + name for name in imports - set(allowed_imports)),
+                *("unexpected_call:" + name for name in calls - set(allowed_calls)),
+                *("forbidden_payload:" + name for name in set(payload_fields) & forbidden_payload_fields),
+            }
+
+        module_source = inspect.getsource(subject)
+        module_tree = ast.parse(module_source)
+        module_imports = {
+            "__future__", "ast", "dataclasses", "hashlib", "pathlib", "re",
+            "camera_based_rgbww_optimizer.utils.p7_retained_r3_controller_runtime",
+        }
+        module_calls = {
+            node.func.id if isinstance(node.func, ast.Name) else node.func.attr
+            for node in ast.walk(module_tree)
+            if isinstance(node, ast.Call)
+        }
+        forbidden_module_calls = {
+            "execute_controller_runtime", "analyze_controller_source", "compose_controller_source",
+            "read_exact_file", "run_read_only_git", "persist_canonical_json",
+            "validate_retained_artifacts", "validate_canonical_lineage", "emit_eligibility",
+            "consume_release", "open", "run", "Popen", "socket", "urlopen",
+        }
+        self.assertEqual(inventory(module_source, allowed_imports=module_imports, allowed_calls=module_calls), set())
+        self.assertTrue(forbidden_module_calls.isdisjoint(module_calls))
+
+        public_payload_fields = {
+            *subject.ControllerDomainTemplateSpec.__dataclass_fields__,
+            *subject.ControllerDomainTemplateBundle.__dataclass_fields__,
+            *ControllerRuntimeRequest.__dataclass_fields__,
+        }
+        self.assertTrue({"retained_artifacts", "candidate_payload", "eligibility", "release_payload", "device_payload"}.isdisjoint(public_payload_fields))
+
+        generated = compose_controller_source(subject.build_controller_domain_template(spec()).runtime_request).source.decode("utf-8")
+        generated_imports = {
+            "camera_based_rgbww_optimizer.utils.p7_retained_r3_controller_conformance",
+            "camera_based_rgbww_optimizer.utils.p7_retained_r3_controller_preparation",
+            "camera_based_rgbww_optimizer.utils.p7_retained_r3_provenance_io",
+        }
+        generated_calls = {
+            "ByteSpan", "DirectoryIdentity", "FileIdentity", "LifecycleCallbacks",
+            "LifecycleRequirements", "RootIdentityChain", "SealTargetIdentity",
+            "create_exclusive_root", "execute_controller_lifecycle", "len",
+            "persist_canonical_json", "read_exact_file", "require_activation_contract",
+            "run_read_only_git", "validate_root_identity_chain",
+        }
+        self.assertEqual(inventory(generated, allowed_imports=generated_imports, allowed_calls=generated_calls), set())
+
+        self.assertIn("retained", subject.__doc__.lower())
+        self.assertIn(
+            "unexpected_import:camera_based_rgbww_optimizer.utils.p7_retained_r3_canonical_validator",
+            inventory(
+                "from camera_based_rgbww_optimizer.utils.p7_retained_r3_canonical_validator import validate\n",
+                allowed_imports=generated_imports,
+                allowed_calls=generated_calls,
+            ),
+        )
+        self.assertIn(
+            "unexpected_call:emit_eligibility",
+            inventory("emit_eligibility()\n", allowed_imports=set(), allowed_calls=set()),
+        )
+        self.assertIn(
+            "forbidden_payload:retained_artifacts",
+            inventory("value = 1\n", allowed_imports=set(), allowed_calls=set(), payload_fields={"retained_artifacts"}),
+        )
+        self.assertIn(
+            "unexpected_call:analyze_controller_source",
+            inventory(generated + "\nanalyze_controller_source(b'x')\n", allowed_imports=generated_imports, allowed_calls=generated_calls),
+        )
 
 
 if __name__ == "__main__": unittest.main()
