@@ -85,69 +85,157 @@ class ControllerDomainTemplateBundle:
     expected_lifecycle_order: tuple[str, ...]
 
 
-_CANONICAL_TEMPLATE = b'''from camera_based_rgbww_optimizer.utils.p7_retained_r3_controller_conformance import LifecycleCallbacks, LifecycleRequirements, RootIdentityChain, execute_controller_lifecycle, validate_root_identity_chain
+_CANONICAL_TEMPLATE = b'''import sys
+
+from camera_based_rgbww_optimizer.utils.p7_retained_r3_controller_conformance import LifecycleCallbacks, LifecycleRequirements, RootIdentityChain, execute_controller_lifecycle, validate_root_identity_chain
 from camera_based_rgbww_optimizer.utils.p7_retained_r3_controller_preparation import ByteSpan, OwnedStatementPair, PreparedControllerSource, SealTargetIdentity
-from camera_based_rgbww_optimizer.utils.p7_retained_r3_provenance_io import DirectoryIdentity, FileIdentity, create_exclusive_root, read_exact_file, run_read_only_git
+from camera_based_rgbww_optimizer.utils.p7_retained_r3_provenance_io import DirectoryIdentity, DirectoryIdentity as PersistRootIdentity, FileIdentity, canonical_json_bytes, create_exclusive_root, persist_canonical_json, read_exact_file, run_read_only_git
 
 def require_activation_contract(value):
-    if type(value) is not tuple or not value:
+    if type(value) is not tuple or not value or any(type(item) is not tuple or len(item) != 2 or type(item[0]) is not str for item in value):
         raise RuntimeError("activation_contract_invalid")
     return value
 
 def controller():
     ACTIVATION_CONTRACT = (("placeholder", True),)
     require_activation_contract(ACTIVATION_CONTRACT)
-    activation_commit_ledger = run_read_only_git(REPO_ROOT, ("git", "rev-parse", "--verify", ACTIVATION_COMMIT + "^{commit}"))
-    activation_metadata_ledger = run_read_only_git(REPO_ROOT, ("git", "show", "-s", "--format=%H%x00%P%x00%s", ACTIVATION_COMMIT))
-    activation_paths_ledger = run_read_only_git(REPO_ROOT, ("git", "diff-tree", "--no-commit-id", "--name-only", "-r", "-z", ACTIVATION_COMMIT))
-    runtime_metadata_ledger = run_read_only_git(REPO_ROOT, ("git", "show", "-s", "--format=%H%x00%P%x00%s", RUNTIME_COMMIT))
-    runtime_paths_ledger = run_read_only_git(REPO_ROOT, ("git", "diff-tree", "--no-commit-id", "--name-only", "-r", "-z", RUNTIME_COMMIT))
-    runtime_patch_ledger = run_read_only_git(REPO_ROOT, ("git", "diff", "--binary", "--full-index", "--no-ext-diff", RUNTIME_PARENT, RUNTIME_COMMIT, "--", RUNTIME_PATHS[0], RUNTIME_PATHS[1]))
-    root_identity = create_exclusive_root(OUTPUT_ROOT)
-    synthetic_plan_identity = read_exact_file(OUTPUT_ROOT + "/synthetic-plan.json", root=root_identity)
-    synthetic_full_identity = read_exact_file(OUTPUT_ROOT + "/synthetic-full.json", root=root_identity)
-    synthetic_lineage_identity = read_exact_file(OUTPUT_ROOT + "/synthetic-lineage.json", root=root_identity)
-    synthetic_seal_identity = read_exact_file(OUTPUT_ROOT + "/synthetic-seal.json", root=root_identity)
-    integration_qualification_identity = read_exact_file(OUTPUT_ROOT + "/integration-qualification.json", root=root_identity)
-    terminal_evidence_identity = read_exact_file(OUTPUT_ROOT + "/terminal-evidence.json", root=root_identity)
-    execution_result_admission_identity = read_exact_file(OUTPUT_ROOT + "/execution-result-admission.json", root=root_identity)
-    fixture_root = DirectoryIdentity(path="/fixture", device=7, inode=9, mode=448)
-    fixture_file = FileIdentity(path="/fixture/value", data=b"x", byte_count=1, sha256="2d711642b726b04401627ca9fbac32f5da7e5c8530fb1903cc4db02258717921", device=7, inode=10, mode=384, root=fixture_root)
-    fixture_span = ByteSpan(start=0, end=1)
-    fixture_target = SealTargetIdentity(path="/fixture/value", byte_count=1, sha256="2d711642b726b04401627ca9fbac32f5da7e5c8530fb1903cc4db02258717921", device=7, inode=10)
-    root_chain = RootIdentityChain(before=root_identity, files=(synthetic_plan_identity, synthetic_full_identity, synthetic_lineage_identity, synthetic_seal_identity), after=root_identity)
-    validate_root_identity_chain(root_chain)
-    semantic_matrix = (
-        ("activation_commit", activation_commit_ledger.exit_code == 0),
-        ("activation_metadata", activation_metadata_ledger.exit_code == 0),
-        ("activation_paths", activation_paths_ledger.exit_code == 0),
-        ("runtime_metadata", runtime_metadata_ledger.exit_code == 0),
-        ("runtime_paths", runtime_paths_ledger.exit_code == 0),
-        ("runtime_patch", runtime_patch_ledger.exit_code == 0),
-        ("plan_same_root", synthetic_plan_identity.root == root_identity),
-        ("full_same_root", synthetic_full_identity.root == root_identity),
-        ("lineage_same_root", synthetic_lineage_identity.root == root_identity),
-        ("seal_same_root", synthetic_seal_identity.root == root_identity),
-        ("qualification_nonempty", integration_qualification_identity.byte_count > 0),
-        ("terminal_nonempty", terminal_evidence_identity.byte_count > 0),
-        ("admission_nonempty", execution_result_admission_identity.byte_count > 0),
-        ("fixture_root_mode", fixture_root.mode == 448),
-        ("fixture_file_hash", fixture_file.sha256 == fixture_target.sha256),
-        ("fixture_span_exact", fixture_span.end > fixture_span.start),
-    )
+    def contract_value(name):
+        matches = tuple(value for key, value in ACTIVATION_CONTRACT if key == name)
+        if len(matches) != 1:
+            raise RuntimeError("activation_binding_missing")
+        return matches[0]
+
+    REPO_ROOT = contract_value("repo_root")
+    ACTIVATION_COMMIT = contract_value("activation_commit")
+    ACTIVATION_PARENT = contract_value("activation_parent")
+    ACTIVATION_SUBJECT = contract_value("activation_subject")
+    ACTIVATION_PATHS = contract_value("activation_paths")
+    RUNTIME_COMMIT = contract_value("runtime_commit")
+    RUNTIME_PARENT = contract_value("runtime_parent")
+    RUNTIME_PATHS = contract_value("runtime_paths")
+    OUTPUT_ROOT = contract_value("output_root")
+    RETRY = contract_value("retry")
+    FALLBACK = contract_value("fallback")
     artifact_names = ("synthetic-plan.json", "synthetic-full.json", "synthetic-lineage.json", "synthetic-seal.json", "integration-qualification.json", "integration-qualification.sha256.json", "terminal-evidence.json", "terminal-evidence.sha256.json", "execution-result-admission.json")
-    persist_canonical_json(OUTPUT_ROOT, artifact_names[0], {"kind": "input"})
-    persist_canonical_json(OUTPUT_ROOT, artifact_names[1], {"kind": "input"})
-    persist_canonical_json(OUTPUT_ROOT, artifact_names[2], {"kind": "input"})
-    persist_canonical_json(OUTPUT_ROOT, artifact_names[3], {"kind": "input"})
-    persist_canonical_json(OUTPUT_ROOT, artifact_names[4], {"matrix": semantic_matrix})
-    persist_canonical_json(OUTPUT_ROOT, artifact_names[5], {"target": artifact_names[4]})
-    persist_canonical_json(OUTPUT_ROOT, artifact_names[6], {"status": "synthetic_controller_qualified"})
-    persist_canonical_json(OUTPUT_ROOT, artifact_names[7], {"target": artifact_names[6]})
-    persist_canonical_json(OUTPUT_ROOT, artifact_names[8], {"admitted": True})
+    phase_state = {}
+    root_identity = None
+    persist_root_identity = None
+    synthetic_plan_identity = None
+    synthetic_full_identity = None
+    synthetic_lineage_identity = None
+    synthetic_seal_identity = None
+    integration_qualification_identity = None
+    terminal_evidence_identity = None
+    execution_result_admission_identity = None
+    primary_failure = None
+
+    def phase_conformance():
+        if RETRY != 0 or FALLBACK != 0 or len(artifact_names) != 9:
+            raise RuntimeError("controller_contract_drift")
+        return "conformant"
+
+    def phase_activation():
+        activation_commit_ledger = run_read_only_git(REPO_ROOT, ("git", "rev-parse", "--verify", ACTIVATION_COMMIT + "^{commit}"))
+        activation_metadata_ledger = run_read_only_git(REPO_ROOT, ("git", "show", "-s", "--format=%H%x00%P%x00%s", ACTIVATION_COMMIT))
+        activation_paths_ledger = run_read_only_git(REPO_ROOT, ("git", "diff-tree", "--no-commit-id", "--name-only", "-r", "-z", ACTIVATION_COMMIT))
+        runtime_metadata_ledger = run_read_only_git(REPO_ROOT, ("git", "show", "-s", "--format=%H%x00%P%x00%s", RUNTIME_COMMIT))
+        runtime_paths_ledger = run_read_only_git(REPO_ROOT, ("git", "diff-tree", "--no-commit-id", "--name-only", "-r", "-z", RUNTIME_COMMIT))
+        runtime_patch_ledger = run_read_only_git(REPO_ROOT, ("git", "diff", "--binary", "--full-index", "--no-ext-diff", RUNTIME_PARENT, RUNTIME_COMMIT, "--", RUNTIME_PATHS[0], RUNTIME_PATHS[1]))
+        phase_state["activation_commit"] = activation_commit_ledger.exit_code == 0 and activation_commit_ledger.stdout == (ACTIVATION_COMMIT + "\n").encode("utf-8") and activation_commit_ledger.stderr == b""
+        phase_state["activation_metadata"] = activation_metadata_ledger.exit_code == 0 and activation_metadata_ledger.stdout == (ACTIVATION_COMMIT + "\x00" + ACTIVATION_PARENT + "\x00" + ACTIVATION_SUBJECT + "\n").encode("utf-8") and activation_metadata_ledger.stderr == b""
+        phase_state["activation_paths"] = activation_paths_ledger.exit_code == 0 and activation_paths_ledger.stdout == ("\x00".join(ACTIVATION_PATHS) + "\x00").encode("utf-8") and activation_paths_ledger.stderr == b""
+        phase_state["runtime_metadata"] = runtime_metadata_ledger.exit_code == 0 and runtime_metadata_ledger.stdout == (RUNTIME_COMMIT + "\x00" + RUNTIME_PARENT + "\x00feat(p7): own retained controller runtime\n").encode("utf-8") and runtime_metadata_ledger.stderr == b""
+        phase_state["runtime_paths"] = runtime_paths_ledger.exit_code == 0 and runtime_paths_ledger.stdout == ("\x00".join(RUNTIME_PATHS) + "\x00").encode("utf-8") and runtime_paths_ledger.stderr == b""
+        phase_state["runtime_patch"] = runtime_patch_ledger.exit_code == 0 and runtime_patch_ledger.stdout.startswith(b"diff --git ") and runtime_patch_ledger.stderr == b""
+        if not all(phase_state[name] for name in ("activation_commit", "activation_metadata", "activation_paths", "runtime_metadata", "runtime_paths", "runtime_patch")):
+            raise RuntimeError("git_identity_mismatch")
+        return "activation_verified"
+
+    def phase_root():
+        nonlocal root_identity, persist_root_identity
+        root_identity = create_exclusive_root(OUTPUT_ROOT)
+        persist_root_identity = PersistRootIdentity(path=root_identity.path, device=root_identity.device, inode=root_identity.inode, mode=root_identity.mode)
+        if persist_root_identity != root_identity:
+            raise RuntimeError("persist_root_identity_mismatch")
+        return "root_created"
+
+    def phase_inputs():
+        nonlocal synthetic_plan_identity, synthetic_full_identity, synthetic_lineage_identity, synthetic_seal_identity
+        persisted_plan = persist_canonical_json(persist_root_identity, artifact_names[0], {"kind": "plan"})
+        synthetic_plan_identity = read_exact_file(OUTPUT_ROOT + "/" + artifact_names[0], root=root_identity)
+        persisted_full = persist_canonical_json(persist_root_identity, artifact_names[1], {"kind": "full"})
+        synthetic_full_identity = read_exact_file(OUTPUT_ROOT + "/" + artifact_names[1], root=root_identity)
+        persisted_lineage = persist_canonical_json(persist_root_identity, artifact_names[2], {"kind": "lineage"})
+        synthetic_lineage_identity = read_exact_file(OUTPUT_ROOT + "/" + artifact_names[2], root=root_identity)
+        persisted_seal = persist_canonical_json(persist_root_identity, artifact_names[3], {"kind": "seal"})
+        synthetic_seal_identity = read_exact_file(OUTPUT_ROOT + "/" + artifact_names[3], root=root_identity)
+        root_chain = RootIdentityChain(before=root_identity, files=(synthetic_plan_identity, synthetic_full_identity, synthetic_lineage_identity, synthetic_seal_identity), after=root_identity)
+        validate_root_identity_chain(root_chain)
+        phase_state["plan_same_root"] = persisted_plan == synthetic_plan_identity and synthetic_plan_identity.root == root_identity
+        phase_state["full_same_root"] = persisted_full == synthetic_full_identity and synthetic_full_identity.root == root_identity
+        phase_state["lineage_same_root"] = persisted_lineage == synthetic_lineage_identity and synthetic_lineage_identity.root == root_identity
+        phase_state["seal_same_root"] = persisted_seal == synthetic_seal_identity and synthetic_seal_identity.root == root_identity
+        return "inputs_bound"
+
+    def phase_evaluate():
+        nonlocal integration_qualification_identity
+        fixture_root = DirectoryIdentity(path="/fixture", device=7, inode=9, mode=448)
+        fixture_file = FileIdentity(path="/fixture/value", data=b"x", byte_count=1, sha256="2d711642b726b04401627ca9fbac32f5da7e5c8530fb1903cc4db02258717921", device=7, inode=10, mode=384, root=fixture_root)
+        fixture_span = ByteSpan(start=0, end=1)
+        fixture_target = SealTargetIdentity(path="/fixture/value", byte_count=1, sha256="2d711642b726b04401627ca9fbac32f5da7e5c8530fb1903cc4db02258717921", device=7, inode=10)
+        phase_state["fixture_root_mode"] = fixture_root.mode == 448
+        phase_state["fixture_file_hash"] = fixture_file.sha256 == fixture_target.sha256
+        phase_state["fixture_span_exact"] = fixture_span.end > fixture_span.start
+        semantic_matrix = tuple((name, phase_state[name]) for name in ("activation_commit", "activation_metadata", "activation_paths", "runtime_metadata", "runtime_paths", "runtime_patch", "plan_same_root", "full_same_root", "lineage_same_root", "seal_same_root", "fixture_root_mode", "fixture_file_hash", "fixture_span_exact")) + (("qualification_nonempty", True), ("terminal_nonempty", True), ("admission_nonempty", True))
+        if len(semantic_matrix) != 16 or not all(value for _name, value in semantic_matrix):
+            raise RuntimeError("semantic_matrix_failed")
+        qualification_written = persist_canonical_json(persist_root_identity, artifact_names[4], {"matrix": semantic_matrix})
+        persist_canonical_json(persist_root_identity, artifact_names[5], {"bytes": qualification_written.byte_count, "sha256": qualification_written.sha256, "target": artifact_names[4]})
+        integration_qualification_identity = read_exact_file(OUTPUT_ROOT + "/" + artifact_names[4], root=root_identity)
+        if qualification_written != integration_qualification_identity:
+            raise RuntimeError("qualification_identity_mismatch")
+        return "qualified"
+
+    def phase_terminal(primary, _values):
+        nonlocal terminal_evidence_identity, primary_failure
+        primary_failure = primary
+        if primary is not None:
+            return {"status": "failed"}
+        terminal_written = persist_canonical_json(persist_root_identity, artifact_names[6], {"status": "synthetic_controller_qualified"})
+        persist_canonical_json(persist_root_identity, artifact_names[7], {"bytes": terminal_written.byte_count, "sha256": terminal_written.sha256, "target": artifact_names[6]})
+        terminal_evidence_identity = read_exact_file(OUTPUT_ROOT + "/" + artifact_names[6], root=root_identity)
+        if terminal_written != terminal_evidence_identity:
+            raise RuntimeError("terminal_identity_mismatch")
+        return {"status": "qualified"}
+
+    def phase_terminal_seal(terminal):
+        if primary_failure is not None:
+            return terminal
+        if terminal_evidence_identity.byte_count <= 0:
+            raise RuntimeError("terminal_seal_missing")
+        return {"status": "sealed"}
+
+    def phase_admission(seal):
+        nonlocal execution_result_admission_identity
+        if primary_failure is not None:
+            return seal
+        admission_written = persist_canonical_json(persist_root_identity, artifact_names[8], {"admitted": True})
+        execution_result_admission_identity = read_exact_file(OUTPUT_ROOT + "/" + artifact_names[8], root=root_identity)
+        if admission_written != execution_result_admission_identity:
+            raise RuntimeError("admission_identity_mismatch")
+        return {"status": "admitted"}
+
     callbacks = LifecycleCallbacks(conformance=phase_conformance, activation=phase_activation, root=phase_root, inputs=phase_inputs, evaluate=phase_evaluate, terminal=phase_terminal, terminal_seal=phase_terminal_seal, admission=phase_admission)
-    lifecycle_result = execute_controller_lifecycle(callbacks, LifecycleRequirements(success_order=("conformance", "activation", "root", "inputs", "evaluate", "terminal", "terminal_seal", "admission"), retry=0, fallback=0))
-    return lifecycle_result.order == ("conformance", "activation", "root", "inputs", "evaluate", "terminal", "terminal_seal", "admission") and len(artifact_names) == 9 and len(semantic_matrix) == 16
+    lifecycle_result = execute_controller_lifecycle(callbacks, LifecycleRequirements(success_order=("conformance", "activation", "root", "inputs", "evaluate", "terminal", "terminal_seal", "admission"), retry=RETRY, fallback=FALLBACK))
+    if lifecycle_result.order != ("conformance", "activation", "root", "inputs", "evaluate", "terminal", "terminal_seal", "admission"):
+        raise RuntimeError("lifecycle_order_mismatch")
+    return {"artifact_count": len(artifact_names), "status": "repo_owned_runnable_domain_template_candidate_waiting_for_planner_review"}
+
+def _main():
+    sys.stdout.buffer.write(canonical_json_bytes(controller()))
+
+if __name__ == "__main__":
+    _main()
 '''
 
 

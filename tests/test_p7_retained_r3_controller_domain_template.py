@@ -7,8 +7,17 @@ import inspect
 import unittest
 
 from camera_based_rgbww_optimizer.utils import p7_retained_r3_controller_domain_template as subject
-from camera_based_rgbww_optimizer.utils.p7_retained_r3_controller_conformance import analyze_controller_source
+from camera_based_rgbww_optimizer.utils.p7_retained_r3_controller_conformance import (
+    analyze_controller_source,
+    execute_controller_lifecycle,
+)
 from camera_based_rgbww_optimizer.utils.p7_retained_r3_controller_preparation import prepare_controller_source
+from camera_based_rgbww_optimizer.utils.p7_retained_r3_provenance_io import (
+    DirectoryIdentity,
+    FileIdentity,
+    GitLedger,
+    canonical_json_bytes,
+)
 from camera_based_rgbww_optimizer.utils.p7_retained_r3_controller_runtime import (
     ControllerRuntimeRequest,
     compose_controller_source,
@@ -89,7 +98,14 @@ class ControllerDomainTemplateTests(unittest.TestCase):
         self.assertEqual(calls.count("persist_canonical_json"), 9); self.assertEqual(calls.count("execute_controller_lifecycle"), 1)
         self.assertEqual(len(bundle.expected_artifact_names), 9); self.assertEqual(bundle.expected_lifecycle_order, ("conformance", "activation", "root", "inputs", "evaluate", "terminal", "terminal_seal", "admission"))
         matrix = next(n.value for n in ast.walk(tree) if isinstance(n, ast.Assign) and isinstance(n.targets[0], ast.Name) and n.targets[0].id == "semantic_matrix")
-        self.assertEqual(len(matrix.elts), 16)
+        matrix_names = {
+            "activation_commit", "activation_metadata", "activation_paths",
+            "runtime_metadata", "runtime_paths", "runtime_patch", "plan_same_root",
+            "full_same_root", "lineage_same_root", "seal_same_root",
+            "qualification_nonempty", "terminal_nonempty", "admission_nonempty",
+            "fixture_root_mode", "fixture_file_hash", "fixture_span_exact",
+        }
+        self.assertEqual({n.value for n in ast.walk(matrix) if isinstance(n, ast.Constant) and n.value in matrix_names}, matrix_names)
 
     def test_07_invalid_specs_and_literal_values_fail_closed_with_stable_codes(self):
         cases = (("reference_task_id", "wrong", "reference_task_mismatch"), ("activation_commit", "x", "activation_commit_invalid"), ("source_path", "relative", "source_path_invalid"), ("process_argv", ("python", "-"), "process_argv_mismatch"))
@@ -154,16 +170,19 @@ class ControllerDomainTemplateTests(unittest.TestCase):
 
         generated = compose_controller_source(subject.build_controller_domain_template(spec()).runtime_request).source.decode("utf-8")
         generated_imports = {
+            "sys",
             "camera_based_rgbww_optimizer.utils.p7_retained_r3_controller_conformance",
             "camera_based_rgbww_optimizer.utils.p7_retained_r3_controller_preparation",
             "camera_based_rgbww_optimizer.utils.p7_retained_r3_provenance_io",
         }
         generated_calls = {
             "ByteSpan", "DirectoryIdentity", "FileIdentity", "LifecycleCallbacks",
-            "LifecycleRequirements", "RootIdentityChain", "RuntimeError", "SealTargetIdentity",
-            "create_exclusive_root", "execute_controller_lifecycle", "len",
+            "LifecycleRequirements", "PersistRootIdentity", "RootIdentityChain", "RuntimeError", "SealTargetIdentity",
+            "_main", "all", "canonical_json_bytes", "contract_value", "controller",
+            "create_exclusive_root", "encode", "execute_controller_lifecycle", "len",
             "persist_canonical_json", "read_exact_file", "require_activation_contract",
-            "run_read_only_git", "type", "validate_root_identity_chain",
+            "run_read_only_git", "startswith", "tuple", "type",
+            "validate_root_identity_chain", "write",
         }
         self.assertEqual(inventory(generated, allowed_imports=generated_imports, allowed_calls=generated_calls), set())
 
@@ -188,6 +207,126 @@ class ControllerDomainTemplateTests(unittest.TestCase):
             "unexpected_call:analyze_controller_source",
             inventory(generated + "\nanalyze_controller_source(b'x')\n", allowed_imports=generated_imports, allowed_calls=generated_calls),
         )
+
+    def test_09_composed_runtime_names_bind_and_guarded_entrypoint_calls_controller_once(self):
+        source = compose_controller_source(subject.build_controller_domain_template(spec()).runtime_request).source
+        tree = ast.parse(source.decode("utf-8")); compile(tree, "<generated>", "exec")
+        namespace = {"__name__": "import_only"}
+        exec(compile(tree, "<generated>", "exec"), namespace)
+        self.assertTrue(callable(namespace["controller"]))
+        bindings = {
+            target.id
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Assign)
+            for target in node.targets
+            if isinstance(target, ast.Name)
+        }
+        self.assertTrue({"REPO_ROOT", "ACTIVATION_COMMIT", "RUNTIME_COMMIT", "RUNTIME_PARENT", "RUNTIME_PATHS", "OUTPUT_ROOT"}.issubset(bindings))
+        controller_calls = [node for node in ast.walk(tree) if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "controller"]
+        self.assertEqual(len(controller_calls), 1)
+        guard = next(node for node in tree.body if isinstance(node, ast.If))
+        self.assertEqual(ast.unparse(guard.test), "__name__ == '__main__'")
+        self.assertEqual(len(guard.body), 1)
+
+    def _fake_owner_harness(self, *, fail_root=False):
+        bundle = subject.build_controller_domain_template(spec())
+        source = compose_controller_source(bundle.runtime_request).source
+        namespace = {"__name__": "import_only"}
+        exec(compile(source, "<generated>", "exec"), namespace)
+        calls = []
+        lifecycle_orders = []
+        files = {}
+        root_identity = DirectoryIdentity(path=spec().output_root, device=17, inode=23, mode=0o700)
+        sentinel = RuntimeError("pre_root_failure")
+
+        def git_stdout(argv):
+            if argv[:3] == ("git", "rev-parse", "--verify"):
+                return (spec().activation_commit + "\n").encode("utf-8")
+            if argv[:4] == ("git", "show", "-s", "--format=%H%x00%P%x00%s"):
+                if argv[4] == spec().activation_commit:
+                    return (spec().activation_commit + "\x00" + spec().activation_parent + "\x00" + spec().activation_subject + "\n").encode("utf-8")
+                return (spec().runtime_commit + "\x00" + spec().runtime_parent + "\x00feat(p7): own retained controller runtime\n").encode("utf-8")
+            if argv[:6] == ("git", "diff-tree", "--no-commit-id", "--name-only", "-r", "-z"):
+                paths = spec().activation_paths if argv[6] == spec().activation_commit else (
+                    "src/camera_based_rgbww_optimizer/utils/p7_retained_r3_controller_runtime.py",
+                    "tests/test_p7_retained_r3_controller_runtime.py",
+                )
+                return ("\x00".join(paths) + "\x00").encode("utf-8")
+            return b"diff --git a/runtime.py b/runtime.py\n"
+
+        def fake_git(repo, argv):
+            self.assertEqual(repo, spec().repo_root)
+            calls.append(("git", argv))
+            stdout = git_stdout(argv)
+            return GitLedger(argv=argv, cwd=repo, exit_code=0, stdout=stdout, stderr=b"", stdout_sha256=hashlib.sha256(stdout).hexdigest(), stderr_sha256=hashlib.sha256(b"").hexdigest())
+
+        def fake_create(path):
+            self.assertEqual(path, spec().output_root)
+            calls.append(("root", path))
+            if fail_root:
+                raise sentinel
+            return root_identity
+
+        def fake_persist(root, child_name, value):
+            self.assertEqual(root, root_identity)
+            calls.append(("persist", child_name, root))
+            payload = canonical_json_bytes(value)
+            identity = FileIdentity(path=root.path + "/" + child_name, data=payload, byte_count=len(payload), sha256=hashlib.sha256(payload).hexdigest(), device=root.device, inode=100 + len(files), mode=0o600, root=root)
+            self.assertNotIn(identity.path, files)
+            files[identity.path] = identity
+            return identity
+
+        def fake_read(path, *, root):
+            self.assertIs(root, root_identity)
+            calls.append(("read", path.rsplit("/", 1)[-1], root))
+            return files[path]
+
+        def tracked_lifecycle(callbacks, requirements):
+            result = execute_controller_lifecycle(callbacks, requirements)
+            lifecycle_orders.append(result.order)
+            return result
+
+        class Buffer:
+            def __init__(self): self.data = b""
+            def write(self, payload): self.data += payload; return len(payload)
+        class Stdout:
+            def __init__(self): self.buffer = Buffer()
+        class Sys:
+            def __init__(self): self.stdout = Stdout()
+
+        fake_sys = Sys()
+        namespace.update(
+            run_read_only_git=fake_git,
+            create_exclusive_root=fake_create,
+            persist_canonical_json=fake_persist,
+            read_exact_file=fake_read,
+            execute_controller_lifecycle=tracked_lifecycle,
+            sys=fake_sys,
+        )
+        return namespace, calls, lifecycle_orders, fake_sys, sentinel
+
+    def test_10_in_memory_owner_harness_proves_persist_read_order_and_success_envelope(self):
+        namespace, calls, lifecycle_orders, fake_sys, _sentinel = self._fake_owner_harness()
+        self.assertEqual(calls, [])
+        namespace["_main"]()
+        self.assertEqual(lifecycle_orders, [("conformance", "activation", "root", "inputs", "evaluate", "terminal", "terminal_seal", "admission")])
+        self.assertEqual(fake_sys.stdout.buffer.data, canonical_json_bytes({"artifact_count": 9, "status": "repo_owned_runnable_domain_template_candidate_waiting_for_planner_review"}))
+        self.assertEqual([entry[0] for entry in calls[:7]], ["git"] * 6 + ["root"])
+        persisted = [entry[1] for entry in calls if entry[0] == "persist"]
+        read = [entry[1] for entry in calls if entry[0] == "read"]
+        self.assertEqual(persisted, list(subject.build_controller_domain_template(spec()).expected_artifact_names))
+        self.assertEqual(read, ["synthetic-plan.json", "synthetic-full.json", "synthetic-lineage.json", "synthetic-seal.json", "integration-qualification.json", "terminal-evidence.json", "execution-result-admission.json"])
+        for name in read:
+            self.assertLess(next(index for index, entry in enumerate(calls) if entry[:2] == ("persist", name)), next(index for index, entry in enumerate(calls) if entry[:2] == ("read", name)))
+        self.assertTrue(all(entry[-1].path == spec().output_root for entry in calls if entry[0] in {"persist", "read"}))
+
+    def test_11_pre_root_failure_remains_primary_and_terminal_does_not_touch_missing_root(self):
+        namespace, calls, lifecycle_orders, _fake_sys, sentinel = self._fake_owner_harness(fail_root=True)
+        with self.assertRaises(RuntimeError) as raised:
+            namespace["controller"]()
+        self.assertIs(raised.exception, sentinel)
+        self.assertEqual(lifecycle_orders, [])
+        self.assertEqual([entry[0] for entry in calls], ["git"] * 6 + ["root"])
 
 
 if __name__ == "__main__": unittest.main()
