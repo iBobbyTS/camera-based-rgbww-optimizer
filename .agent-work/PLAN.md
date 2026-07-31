@@ -1,85 +1,147 @@
-# REF-P7-25-R2-B2-P5：repo-owned controller runtime owner
+# REF-P7-25-R2-B2-P5-I1：repo runtime fresh synthetic integration
 
 **计划状态：** `WAITING_ORCHESTRATOR_ACTIVATION`
 
 **Planner 日期：** `2026-07-31`
 
-**Reference task：** `REF-P7-25-R2-B2-P5`
+**Reference task：** `REF-P7-25-R2-B2-P5-I1`
 
 **Contract ID：**
-`P7-TD-B-RETAINED-R3-OPTION-B-B2-P5-REPO-OWNED-CONTROLLER-RUNTIME-OWNER-V1`
+`P7-TD-B-RETAINED-R3-OPTION-B-B2-P5-I1-REPO-RUNTIME-FRESH-SYNTHETIC-INTEGRATION-V1`
 
-**Planner decision：** evidence commit
-`ec2dd705fbcf3349297fb141b732ebc9b61aaf94` 被拒绝为
-`REJECTED_PRE_EFFECT_REFLECTION_AND_SOURCE_WRITER_PROOF_GAP`。Runtime-token fixture separation与 single-input launcher 已局部成功，但 disposable controller仍被 repo analyzer 以 `reflection_rejected` 在 effect 前拒绝，且 patch+chmod writer没有 exclusive/no-follow/fsync 证明。自 I1 起连续失败已经证明继续修补一次性 source 会恶化脆弱 controller state machine，因此本轮不授权任何新 external source/root/controller；先建立唯一 repo-owned outer-runtime owner。
+**Planner decision：** implementation `37f7d0021c7a81a9d6680815bc51c305cf807a7b` 与 evidence
+`2cb1f2c6538d44d9bf002a570e2852b763feae07` 已被接受为
+`ACCEPTED_COMPLETE_REPO_OWNED_CONTROLLER_RUNTIME_OWNER`。P5 关闭了 repeated disposable controller 的 source
+composition/persistence/launch owner 缺口，但尚未证明完整 synthetic Git6/four-input/matrix16/exact9/terminal lifecycle 能消费该 owner；retained
+R3 仍是 `RETAINED_UNVALIDATED_UNCONSUMED`。
 
-**当前唯一动作：** Orchestrator审核本 PLAN、更新 FULL，并以
-`ec2dd705fbcf3349297fb141b732ebc9b61aaf94` 为 direct parent 创建 exact activation commit。Activation后，Executer只在 exact two paths 中实现和测试一个新 `p7_retained_r3_controller_runtime` owner；它组合既有 preparation、conformance和 provenance-I/O owners，负责 deterministic source composition、exclusive source persistence proof与 single-input process launch，不复制 analyzer、physical read、lifecycle或 eligibility逻辑。
+**当前唯一动作：** Orchestrator 审核本 PLAN、更新 FULL，并以
+`2cb1f2c6538d44d9bf002a570e2852b763feae07` 为 direct parent 创建 exact activation commit。Activation 后，Executer 运行唯一
+fresh synthetic integration：外层只构造 immutable request/template domain inputs 并调用 repo-owned
+`execute_controller_runtime` exact once；source preparation、existing conformance、exclusive persistence/readback与 single-input
+process launch全部由该 owner完成。Controller 复用既有 Git/provenance/conformance/lifecycle owners完成 Git6、four inputs、matrix16、exact9、
+terminal/seal/admission。不得再手写 external source writer/reader/launcher、第二 analyzer/classifier 或平行 lifecycle。
 
 **唯一 Planner stop：**
-`B2_P5_REPO_OWNED_CONTROLLER_RUNTIME_OWNER_WAITING_PLANNER_REVIEW`。
+`B2_P5_I1_REPO_RUNTIME_FRESH_SYNTHETIC_INTEGRATION_WAITING_PLANNER_REVIEW`。
 
 **本轮新归档：**
-`.agent-work/PLANS/20260731-1521-p7-retained-r3-b2-p4-runtime-token-successor-architecture-review.md`；activation前由 Orchestrator记录其 final bytes/SHA-256到 FULL/commit handoff。
+`.agent-work/PLANS/20260731-1537-p7-retained-r3-b2-p5-runtime-owner-review.md`；bytes `7508`，SHA-256
+`22fee71a6da19ac17f067faec506b3a31ba62371a931c9a0bee2726f6f07915a`。
 
-`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_p5_repo_owned_controller_runtime_owner_v1","reference_task_id":"REF-P7-25-R2-B2-P5","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P5-REPO-OWNED-CONTROLLER-RUNTIME-OWNER-V1","execution_authorized_after_orchestrator_activation":true,"activation_commit":{"expected_parent":"ec2dd705fbcf3349297fb141b732ebc9b61aaf94","expected_subject":"chore(plan): activate p5 controller runtime owner","expected_changed_paths":[".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/PLANS/20260731-1521-p7-retained-r3-b2-p4-runtime-token-successor-architecture-review.md"],"clean_porcelain_required_after_activation":true},"required_full_machine_state":{"active_task_count":1,"active_task":"REF-P7-25-R2-B2-P5","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P5-REPO-OWNED-CONTROLLER-RUNTIME-OWNER-V1","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true,"executer_dispatched":true,"device_authorized_by_this_file":false},"implementation":{"new_module":"src/camera_based_rgbww_optimizer/utils/p7_retained_r3_controller_runtime.py","dedicated_test":"tests/test_p7_retained_r3_controller_runtime.py","changed_paths_exact":2,"expected_subject":"feat(p7): own retained controller runtime","existing_preparation_owner":"camera_based_rgbww_optimizer.utils.p7_retained_r3_controller_preparation","existing_conformance_owner":"camera_based_rgbww_optimizer.utils.p7_retained_r3_controller_conformance.analyze_controller_source","existing_provenance_owner":"camera_based_rgbww_optimizer.utils.p7_retained_r3_provenance_io","new_analyzer":false,"new_lifecycle":false,"plan_specific_matrix":false,"retained_interpretation":false},"owner_contract":{"deterministic_source_bytes":true,"deterministic_report":true,"source_type":"bytes","strict_utf8_ast_compile":true,"conformance_before_writer":true,"analyzer_calls_per_attempt":1,"source_writes_per_attempt_max":1,"source_reads_per_written_attempt":1,"source_mode":"0600","writer_flags":["O_WRONLY","O_CREAT","O_EXCL","O_NOFOLLOW"],"complete_write_with_eintr_handling":true,"file_fsync":true,"parent_directory_fsync":true,"regular_nonsymlink_identity":true,"launcher_processes_per_accepted_attempt":1,"launcher_input":"exact_verified_source_bytes","launcher_stdin_keyword_present":false,"shell":false,"check":false,"result_success_field":"exit_code","reflection_helpers":false,"returncode_attribute_in_controller_source":false,"second_classifier":false,"generic_allowlist":false},"tests":{"targeted_expected":"6/6","focused_expected":"76/76","full_expected":"767/767","postcommit_targeted_expected":"6/6"},"execution_budgets":{"code_paths":2,"test_methods_added":6,"targeted_runs":1,"focused_runs":1,"compileall_runs":1,"full_runs":1,"codegraph_sync_runs":1,"codegraph_owner_queries":1,"git_commits":1,"postcommit_targeted_runs":1,"execution_result_appends":1},"zero_budgets":{"external_controller_source_writes":0,"external_controller_processes":0,"external_output_roots":0,"old_failed_source_reads":0,"old_failed_root_reads":0,"old_external_evidence_reads":0,"retained_artifact_reads":0,"candidate_payload_reads":0,"git_provenance_replay":0,"real_b2_dispatch":0,"subordinate_manifest_writes":0,"actual_canonical_validator_calls":0,"eligibility_emissions":0,"retained_release_audit":0,"release_generation":0,"release_qualification":0,"release_copy":0,"release_consumption":0,"network":0,"dns":0,"environment":0,"credentials":0,"device":0,"camera":0,"ray":0,"strip":0,"cleanup":0,"capture":0,"formal":0,"public_analyzer":0,"td_c":0,"sentinel":0,"p8":0,"firmware":0,"deployment":0,"plan_writes_by_executer":0,"full_writes_by_executer":0,"archive_writes_by_executer":0,"debug_writes":0},"expected_duration":"under_10_minutes","visible_terminal_required":false,"planner_stop":"B2_P5_REPO_OWNED_CONTROLLER_RUNTIME_OWNER_WAITING_PLANNER_REVIEW"}`
+`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_p5_i1_repo_runtime_fresh_synthetic_integration_v1","reference_task_id":"REF-P7-25-R2-B2-P5-I1","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P5-I1-REPO-RUNTIME-FRESH-SYNTHETIC-INTEGRATION-V1","execution_authorized_after_orchestrator_activation":true,"activation_commit":{"expected_parent":"2cb1f2c6538d44d9bf002a570e2852b763feae07","expected_subject":"chore(plan): activate p5 synthetic integration","expected_changed_paths":[".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/PLANS/20260731-1537-p7-retained-r3-b2-p5-runtime-owner-review.md"],"clean_porcelain_required_after_activation":true},"required_full_machine_state":{"active_task_count":1,"active_task":"REF-P7-25-R2-B2-P5-I1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P5-I1-REPO-RUNTIME-FRESH-SYNTHETIC-INTEGRATION-V1","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true,"executer_dispatched":true,"device_authorized_by_this_file":false},"accepted_runtime_owner":{"commit":"37f7d0021c7a81a9d6680815bc51c305cf807a7b","parent":"099d1ad833c3e73b7dc157f5786ad66bb6718f5e","source_blob":"075face6fd7453236affa303640b91eb16a42a9b","source_sha256":"07eaeac615ea79db45afad91ce4c82e28c1cdcb66b6119b5cdca6462d7c091d2","test_blob":"a6aa7d7caf015e2eb858830dc89aaedaeb51aafa","test_sha256":"66b1806f68f110280da519e2376de8de7d03ebe6c262af67d9ea589fd51d3782","entrypoint":"camera_based_rgbww_optimizer.utils.p7_retained_r3_controller_runtime.execute_controller_runtime","calls":1,"second_analyzer":false,"second_lifecycle":false},"fresh_paths":{"activation_short_sha_source":"outer_head_stdout_first_seven_hex","controller_source_template":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-p5-i1-controller-{activation_short_sha}.py","output_root_template":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-p5-i1-qualification-{activation_short_sha}","must_be_absent_before_start":true,"source_mode":"0600","root_mode":"0700"},"runtime_contract":{"immutable_requests":1,"compose_calls":1,"existing_analyzer_calls":1,"source_open_writes":1,"source_readbacks":1,"runtime_launches":1,"controller_processes":1,"launcher_input":"exact_verified_source_bytes","launcher_stdin_key":false,"shell":false,"check":false,"report_success_field":"exit_code","outer_handwritten_source_writer":false,"outer_handwritten_source_reader":false,"outer_handwritten_launcher":false,"external_classifier_calls":0,"generic_allowlist":false},"controller_contract":{"outer_git_invocations":1,"outer_git_argv":["/usr/bin/git","rev-parse","HEAD"],"outer_first_external_command_required":true,"controller_activation_git_ledgers":6,"git_success_field":"exit_code","runtime_returncode_uses":0,"expected_bound_results":18,"embedded_transport_report":true,"effect_transport_uses_on_pass":0,"root_create_once":true,"synthetic_inputs":4,"same_root_reads":4,"semantic_matrix_cases":16,"exact_artifact_names":["synthetic-plan.json","synthetic-full.json","synthetic-lineage.json","synthetic-seal.json","integration-qualification.json","integration-qualification.sha256.json","terminal-evidence.json","terminal-evidence.sha256.json","execution-result-admission.json"],"final_root_file_count":9,"retry":0,"fallback":0,"second_source":0,"second_root":0,"second_process":0},"execution_budgets":{"outer_read_only_git_invocations":1,"runtime_owner_calls":1,"controller_source_writes":1,"controller_source_readbacks":1,"controller_processes":1,"output_roots":1,"synthetic_input_writes":4,"qualification_writes":2,"terminal_writes":2,"admission_writes":1,"execution_result_appends":1,"retry":0,"fallback":0},"zero_budgets":{"manual_external_source_open":0,"manual_external_source_chmod":0,"manual_external_source_read":0,"manual_controller_subprocess_launch":0,"second_analyzer":0,"second_classifier":0,"generic_allowlist":0,"parallel_lifecycle":0,"code_writes":0,"test_writes":0,"plan_writes_by_executer":0,"full_writes_by_executer":0,"archive_writes_by_executer":0,"debug_writes":0,"tests":0,"compileall":0,"codegraph_sync":0,"git_stage":0,"git_commit":0,"old_failed_controller_reads":0,"old_failed_root_reads":0,"old_external_evidence_reads":0,"retained_artifact_reads":0,"candidate_payload_reads":0,"git_provenance_replay":0,"real_b2_dispatch":0,"subordinate_manifest_writes":0,"actual_canonical_validator_calls":0,"eligibility_emissions":0,"retained_release_audit":0,"release_generation":0,"release_qualification":0,"release_copy":0,"release_consumption":0,"network":0,"dns":0,"environment":0,"credentials":0,"device":0,"camera":0,"ray":0,"strip":0,"cleanup":0,"capture":0,"formal":0,"public_analyzer":0,"td_c":0,"sentinel":0,"p8":0,"firmware":0,"deployment":0},"expected_duration":"under_10_minutes","visible_terminal_required":false,"planner_stop":"B2_P5_I1_REPO_RUNTIME_FRESH_SYNTHETIC_INTEGRATION_WAITING_PLANNER_REVIEW"}`
 
-## 1. Activation 与 frozen baseline
+## 1. Activation、frozen owner 与 first command
 
-Activation commit必须满足 machine row 的 direct parent、subject、exact three paths，之后 porcelain clean。FULL只允许本 task/contract active，保持 retained `RETAINED_UNVALIDATED_UNCONSUMED`、candidate hash/verification、Executer dispatched true、device authorization false，并将全部 I1 disposable-controller successor标为 rejected/superseded，不得将 token separation局部成功解释为 integration qualification。
+Activation commit 必须满足 machine row 的 direct parent、subject、exact three paths，之后 porcelain clean。FULL 只允许本 task/contract
+active，保持 candidate hash/verification、retained `RETAINED_UNVALIDATED_UNCONSUMED`、Executer dispatched true 与 device authorization false；P5
+必须标为 accepted complete，但 synthetic integration 尚未 qualified。
 
-Executer可执行普通只读 repository preflight；本 package不保留 I1 的 first-command/outer-Git budget，因为它不创建或启动 external controller。冻结 baseline：implementation parent exact activation HEAD；现有 accepted owners与 tests不得修改；implementation exact two new paths initially absent。若任一路径已存在、worktree有越界改动或 activation不匹配，fail closed并仅写 ER。
+Executer 不得先做通用 worktree/Git preflight。第一条 tool call/外部命令必须且只能是：
 
-不得读取、探测、修复、删除、复用或 rerun任何旧 I1 source/root/evidence，尤其是 `1bc089e` attempt。不得访问 retained R3、candidate或 real-B2 external roots。
+```text
+/usr/bin/git rev-parse HEAD
+```
 
-## 2. 单一 owner 边界
+它也是 controller 外唯一 Git invocation，必须 exit `0`、stderr empty、stdout exact activation full SHA 加单一 LF。前七位派生本包唯一
+fresh source/root；二者必须 initially absent、位于 exact `/Volumes/4T/temp/rgbww-optimizer` parent、非 symlink/alternate spelling/escape。
 
-新增 `p7_retained_r3_controller_runtime.py`，只拥有 controller outer runtime envelope：
+Outer HEAD 确认后不得新增 Git 或 code/test inspection command；accepted runtime owner 的 commit ancestry、blob/bytes/SHA 由 controller Git6
+统一证明，模块只通过正常 Python import消费，不重新验证或修改 code/test。所有旧 I1 source/root/evidence 不得读、探测、修复、删除、复用或
+rerun。不得读取 retained R3/candidate/old external evidence。
 
-1. 接收严格、immutable、bytes-based composition request；调用既有 `prepare_controller_source` 或其更底层 pure byte primitives生成唯一 deterministic bytes和 SHA-256；相同输入必须得到逐字节相同结果与 frozen report。
-2. 在任何 filesystem/process effect前，将 exact prepared bytes交给既有 `analyze_controller_source` exact once。它是 reflection、owner binding、transport与 forbidden `returncode` 的唯一 analyzer；新 module不得添加第二 AST walker、regex/token classifier、generic allowlist、path allowlist或 token编码逃逸。
-3. Analyzer通过后，owner以 exact `O_WRONLY|O_CREAT|O_EXCL|O_NOFOLLOW`、mode `0600` 创建 caller明确给出的绝对 source path；处理 partial write和 `EINTR`，file fsync、close、parent directory以 no-follow directory descriptor fsync，并核对 regular/non-symlink/mode/device/inode/bytes/SHA。
-4. 写后读取与 immutable physical identity必须复用 `p7_retained_r3_provenance_io.read_exact_file`，不得复制 accepted read implementation；读取 bytes必须与 prepared bytes exact相等。任何 existing path、symlink、short/no-progress write、fsync、close、parent或 identity drift均 stable fail closed，不 rewrite、delete、repair或 launch。
-5. 只有 analyzer、writer、readback全部通过后才可 launch exact one Python controller process。真实 mapping必须使用 `input=<exact verified source bytes>`，不得传 `stdin` key，且 `shell=False`、`check=False`、stdout/stderr为 bytes。结果立即转换为 immutable repo report，成功字段命名 `exit_code`；不得让 consumer依赖 `CompletedProcess.returncode`。
+## 2. Runtime-owner-only external controller boundary
 
-新 owner不得包含 PLAN/FULL parser、Git topology、matrix16、retained artifact schema、exact-five lifecycle、terminal/seal/admission、canonical validator、eligibility、release或device逻辑。Preparation仍为 pure byte owner；conformance仍为唯一 source eligibility owner；provenance I/O仍为 physical identity/read owner；lifecycle仍为阶段/terminal owner。新 module只是明确的 composition/persistence/launch adapter，不得成为第二 analyzer或 god helper。
+Outer 执行材料只允许一个 immutable `ControllerRuntimeRequest`、默认 dependencies 与一次
+`execute_controller_runtime(request)`：
 
-## 3. Exact six dedicated regressions
+- `template_source` 是本次 fresh controller 的 deterministic in-memory domain template；仅承载 Git6、synthetic inputs、matrix16、exact9 与
+  lifecycle 领域逻辑，不得自带 source file open/write/chmod/readback、subprocess launcher、AST walker、token/regex classifier或 allowlist；
+- template 中必须有唯一 `ACTIVATION_CONTRACT = {"placeholder": True}` assignment，下一条同-list statement必须 exact 为
+  `require_activation_contract(ACTIVATION_CONTRACT)`；request 的 `assignment_name` exact `ACTIVATION_CONTRACT`、
+  `validation_function` exact `require_activation_contract`；
+- `replacement_statement` 是单一 `ACTIVATION_CONTRACT = <immutable literal>`，只冻结 activation HEAD/parent/subject/exact paths、accepted
+  runtime commit/blob/SHA、fresh source/root与本包 counters/budgets；其 bytes/SHA须在 effect前记录到 in-memory envelope，不得 patch external file；
+- `source_path` exact 等于 fresh source path；`process_argv` exact 指向项目 `.venv` Python 加 `-`，由 runtime owner 使用 verified bytes 作为
+  sole `input`；
+- outer caller 不得直接 `open`/`Path.write_*`/`chmod`/`read_*` source，不得自行调用 `analyze_controller_source`，不得直接
+  `subprocess.run/Popen` controller；唯一 filesystem/process effects 必须来自 accepted runtime owner；
+- dependencies 不得 override。Runtime report 必须证明 compose1、existing analyzer1、exclusive source write1、accepted readback1、process1，
+  source identity/path/mode/bytes/SHA exact，process argv/input contract、bytes stdout/stderr与 truthful `exit_code`。
 
-新增 dedicated test exact `6` methods，覆盖：
+Runtime source 中不得使用 reflection、`.returncode`、owner alias/container/helper escape、generic transport或 duplicated classifier。Repo
+`analyze_controller_source` 是 actual source 的唯一 semantic owner；controller只消费其 immutable report。Conformance/write/readback/launch
+任一失败即保留 fresh source（若已产生）并 stop，不创建第二 source/process/root，不 fallback/retry/repair/delete。
 
-1. identical immutable request两次 composition产生 exact相同 source bytes、SHA-256与 deterministic report，且 strict UTF-8、AST和 builtin compile通过；
-2. 含 reflection的 source被 existing analyzer stable拒绝，writer/read/launcher counters均 `0`，证明 conformance-before-effect；
-3. success writer证明 exact flags、mode、partial-write/EINTR恢复、file fsync→close→parent open/fsync顺序以及 returned physical identity/readback exact；
-4. existing target、symlink、write no progress、file/parent fsync failure、readback identity/hash drift子矩阵全部 fail closed，launch `0`，target不被 rewrite/delete/repair；
-5. success launcher exact one process、`input`为 verified bytes、`stdin` key absent、`shell=False`、`check=False`，stdout/stderr/exit code被 immutable report承接；invalid process result或 launch exception stable fail，retry/second process `0`；
-6. token-domain/source contract证明合法 source只用 `GitLedger.exit_code`且报告 analyzer调用 exact1；含 `.returncode` attribute或 generic reflection的 negative source只由 existing analyzer拒绝，不以 literal string self-scan、第二 classifier或 allowlist判断。
+## 3. Controller Git6、same-root four inputs 与 matrix16
 
-Tests必须检查 public exports与 static ownership boundary，确保新 module只导入/调用 existing owners和最小标准库 I/O/process primitives，无 network/device/camera/Ray/release/validator imports。不得用只执行不断言的 tests。
+Controller 启动后使用 accepted `run_read_only_git` exact six ledgers，仅以 `GitLedger.exit_code` 判定成功，证明：
 
-## 4. Validation、commit 与 evidence
+1. activation full HEAD；
+2. activation direct parent `2cb1f2c6538d44d9bf002a570e2852b763feae07`；
+3. activation subject `chore(plan): activate p5 synthetic integration`；
+4. activation exact FULL/PLAN/archive changed-path set；
+5. accepted implementation `37f7d0021c7a81a9d6680815bc51c305cf807a7b` 为 ancestor且 exact two paths；
+6. exact runtime/test blob OIDs与 committed bytes/SHA 没有漂移。
 
-按唯一顺序执行：
+不得在 Git6 外增加 controller Git；outer 也不得增加 first/sole invocation以外的 Git。Git facts必须保持 immutable ledger，不得用 raw
+`CompletedProcess`、reflection、dict/container或 helper transport绕过 owner contract。
 
-1. targeted：新 dedicated test exact `6/6`；
-2. focused：controller runtime/preparation/conformance/provenance I/O/integration tests exact `76/76`；
-3. `.venv/bin/python -m compileall -q` exact new module；
-4. unique full suite `python -m unittest discover -s tests` exact `767/767`、exit `0`、`OK`；不得用第二 full或其它测试替代；
-5. `codegraph sync` exact once，然后 query证明 runtime唯一调用 preparation/conformance/provenance owners且无第二 analyzer/lifecycle；
-6. `git diff --check`、exact two-path gate、source/test bytes+SHA-256、staged exact two paths；
-7. 创建唯一 commit，subject exact `feat(p7): own retained controller runtime`，changed paths exact two；
-8. commit后 targeted exact `6/6`，HEAD/parent/subject/path/blob/SHA gate，最后只 append ER once。
+Conformance与activation通过后，controller用 accepted provenance-I/O owner创建唯一 fresh root mode `0700`。在该 same-root 下写入并 exact read
+四个 canonical synthetic inputs：`synthetic-plan.json`、`synthetic-full.json`、`synthetic-lineage.json`、`synthetic-seal.json`；每个 regular、
+non-symlink、mode `0600`、strict canonical JSON/exact LF、physical identity/hash稳定。四个 reads必须绑定同一 live root并组成 exact
+`RootIdentityChain(before, files=(four direct identities), after)`，随后 exact once `validate_root_identity_chain`；不得 alias、containerize或传入
+generic helper。
 
-ER必须记录 activation、implementation commit、exact paths/blob OIDs/bytes/SHA、每个 test/static gate的真实 count/exit、CodeGraph结果、owner边界、failure branch及全部 zero budgets。测试产生的 test-owned temporary files不是 external controller dispatch，但必须在 test temp-directory lifecycle内，不能写固定 `/Volumes/4T` controller path。
+Semantic matrix exact `16/16`，至少保留并独立报告：actual runtime source positive、GitLedger `exit_code` positive、forbidden attribute negative、
+unknown/unbound owner、alias/reflection/opaque、rootless/literal/different live root、actual four-file chain、root drift、pure in-memory mismatch fixture、
+child escape、device/mode drift、original primary identity、terminal/seal before admission。Negative fixture不得把完整 forbidden token自指注入受检
+runtime source；actual source判断只使用 runtime owner返回的 existing conformance report，不得再次调用 analyzer或另写 classifier。
 
-## 5. Acceptance、failure branches 与 locks
+## 4. Exact9 lifecycle、terminal seal 与 admission
 
-Acceptance要求 exact two-path implementation；单一 runtime owner边界；deterministic bytes/report；strict source validation；existing analyzer exact once pre-effect；exclusive/no-follow/0600/complete-write/file+parent fsync/readback proof；single-input exact-one launcher；exit_code report；six regressions、focused/full/compileall/CodeGraph/diff/commit/postcommit全部通过；无第二 analyzer、generic allowlist、PLAN-specific state machine或 retained/device behavior。
+成功 lifecycle order exact：
 
-任何 analyzer、writer、readback、launcher、test、CodeGraph、path或 commit gate失败均 fail closed：保留 repo changes/evidence，不以 fallback隐藏 primary，不启动第二 process，不创建 external qualification root，不 retry；append truthful ER并停在同一 Planner stop。若实现发现必须修改第三个 production/test path，停止并请求 Planner/Orchestrator重新界定 owner，不得自行扩 scope。
+```text
+conformance -> activation -> root -> inputs -> evaluate -> terminal -> terminal_seal -> admission
+```
 
-旧 external source/root/evidence、retained R3/candidate、Git provenance replay、real B2、subordinate manifest、actual canonical validator、eligibility、retained audit、release、network、DNS、environment、credentials、device、camera、Ray、strip、cleanup、capture、FORMAL、public analyzer、TD-C、sentinel、P8、firmware、deployment全部 hard locked `0`。
+Root 最终 exact九个 artifact：four synthetic inputs，加
+`integration-qualification.json`、`integration-qualification.sha256.json`、`terminal-evidence.json`、
+`terminal-evidence.sha256.json`、`execution-result-admission.json`。Qualification须记录 runtime owner commit/blob/SHA、source physical identity/SHA、
+embedded conformance/transport report、Git6、same-root4、matrix16与all counters；sidecar绑定exact target bytes/hash。Terminal、seal、admission依次调用
+既有 accepted lifecycle/terminal owners，证明 primary success、exact9、target/seal physical linkage、terminal dominance和 admission true。
 
-本 PLAN只授权 repo-owned runtime owner implementation，不授权 fresh synthetic integration、retained validation、release consumption、设备或 scientific stage。所有分支均停在唯一 Planner stop。
+Controller stdout 只能输出一个 canonical machine-readable success envelope；stderr empty、exit `0`。Outer 必须从 immutable
+`ControllerRuntimeReport.process`读取 `exit_code/stdout/stderr`，不得读取 raw process `returncode`。Postflight只消费报告与本次 root exact9，不得用
+额外 Git/analyzer/source read。Success也只能称 `FRESH_SYNTHETIC_INTEGRATION_QUALIFIED`，不得称 retained validated/eligible/release usable。
 
-维护性判断：这是连续 disposable-controller failure后的最小 enabling refactor。新 module只拥有 outer composition/write/launch envelope，复用并保持 preparation、conformance、provenance-I/O与 lifecycle边界；exact six回归保护高风险 source persistence和process启动语义。若未来出现第三种 controller envelope，应复用本 owner，不应再生成平行一次性实现。
+## 5. Failure lifecycle 与 evidence
+
+Runtime owner返回前的 composition/conformance/persistence/readback/launch failure保留 typed primary及已有 physical source evidence；root不得创建。
+Controller已启动但 root前失败时，stdout输出 exact one canonical primary envelope、无 traceback，不用 terminal callback 的
+`qualification_target_missing` 覆盖 primary。Root创建后的 failure按既有 progressive physical evidence/file-based terminal contract seal，保留全部已有
+artifacts且不修复、删除或重用。
+
+任何失败均：retry/fallback/second source/root/process `0`；不得用 success terminal掩盖 primary；outer记录 runtime exception/report、source/root existence、
+exact counters与hard locks。Repository唯一写入是 `.agent-work/EXECUTION_RESULT.md` EOF append once，记录 activation、fresh paths、runtime report、
+Git6/same-root4/matrix16/exact9/lifecycle真实进度、failure/success、artifact bytes/SHA和所有 zero budgets。Executer不得写 PLAN/FULL/archive/debug。
+
+## 6. Acceptance、validation quality 与 hard locks
+
+Acceptance必须同时满足：activation/first command exact；accepted runtime code/blob/SHA不漂移；fresh source/root initially absent；runtime owner call1；
+outer manual writer/read/launcher/analyzer0；prepared/conformance/exclusive write/readback/process各1；source mode/identity/bytes/SHA exact；controller
+Git6；same-root4；matrix16；exact9；terminal/seal/admission linkage；stdout canonical、stderr empty、exit_code0；retry/fallback/second
+source/root/process0；ER append1。
+
+本包不运行 tests、compileall、CodeGraph sync，不改 code/test，不 stage/commit。Synthetic成功只关闭 integration residual risk；retained artifact/candidate
+reads、Git provenance replay、real B2、subordinate manifest、actual canonical validator、eligibility emission、retained release audit、release
+generation/qualification/copy/consumption、network、DNS、environment、credentials、device、camera、Ray、strip、cleanup、capture、FORMAL、public
+analyzer、TD-C、sentinel、P8、firmware、deployment全部 hard locked exact `0`。
+
+任何 path/hash/counter/semantic/lifecycle/terminal discrepancy均 fail closed并停在唯一 Planner stop；不得自行进入 retained validation、B3、release、设备或
+scientific stage。
+
+维护性判断：本包不新增 repo 文件或 execution framework。它首次让 fresh external consumer只调用已接受的 runtime owner，并继续复用 Git、
+provenance-I/O、conformance 与 lifecycle 单一 owner；允许手写的仅是 immutable synthetic domain template，source persistence/readback/launch与
+semantic analysis均禁止在 outer 重复实现。
