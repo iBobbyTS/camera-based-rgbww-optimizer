@@ -16,9 +16,9 @@
 
 **当前可执行任务数：** `1`
 
-**当前 active task：** `REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1-C1 outer-first-command correction`
+**当前 active task：** `REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1-C1-C1 launcher-argument correction`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-31","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-C1-C1-C1-I1-C1-C1-C1-OUTER-FIRST-COMMAND-CORRECTION-V1","next_reference_task":"REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1-C1","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P4_C1_C1_C1_I1_C1_C1_C1_OUTER_FIRST_COMMAND_CORRECTION_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-31","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1-C1-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-C1-C1-C1-I1-C1-C1-C1-C1-LAUNCHER-ARGUMENT-CORRECTION-V1","next_reference_task":"REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1-C1-C1","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P4_C1_C1_C1_I1_C1_C1_C1_C1_LAUNCHER_ARGUMENT_CORRECTION_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -305,7 +305,8 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-B2-P4-C1-C1-C1-I1` | `REJECTED_PRE_SOURCE_OUTER_GIT_BUDGET_VIOLATION` | fresh synthetic integration consuming the single accepted conformance/transport owner | I1-C1 outer-preflight correction | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1` | `REJECTED_DISPOSABLE_CONTROLLER_COMPOSITION` | single outer HEAD read; topology verification remains inside controller Git6 | I1-C1-C1 row/lifecycle correction | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1` | `REJECTED_PRE_SOURCE_OUTER_GIT_BUDGET_VIOLATION` | exact Markdown row extraction and structured pre-root failure lifecycle | I1-C1-C1-C1 outer first-command correction | Planner/Executer |
-| `REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1-C1` | `ACTIVE_EXECUTION_AUTHORIZED` | absolute first/sole outer Git command, preserving row/lifecycle correction | I1-C1-C1 execution discipline failure | Planner/Executer |
+| `REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1-C1` | `REJECTED_OUTER_LAUNCHER_MUTUALLY_EXCLUSIVE_STDIN_INPUT` | absolute first/sole outer Git command, preserving row/lifecycle correction | launcher-argument correction | Planner/Executer |
+| `REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1-C1-C1` | `ACTIVE_EXECUTION_AUTHORIZED` | single subprocess input channel before unique controller process | prior launcher ValueError | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-V1` | `ACCEPTED_COMPLETE` | one final-source full suite with retained terminal exit/count | 755/755 accepted | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-I1` | `REJECTED_PRE_EFFECT_OWNER_ALIAS_ESCAPE` | fresh synthetic external integration of accepted repo owner | I1-C1 correction | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-I1-C1` | `REJECTED_PRE_EFFECT_LIVE_OWNER_CONTAINER_WRITE_FIELD_ONLY_CORRECTION_REQUIRED` | direct/nonlocal live owner bindings with plain-projection transport | I1-C1-C1 correction | Planner/Executer |
@@ -3546,7 +3547,7 @@ Evidence commit `0e9af614ad6a3212f80d6f5bdbf1c16db768e18a`只追加ER。
 
 ### REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1-C1：outer-first-command correction
 
-**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。Contract为
+**状态：** `REJECTED_OUTER_LAUNCHER_MUTUALLY_EXCLUSIVE_STDIN_INPUT`。Contract为
 `P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-C1-C1-C1-I1-C1-C1-C1-OUTER-FIRST-COMMAND-CORRECTION-V1`。Executer的首个
 controller-external Git命令必须且只能是绝对路径`/usr/bin/git rev-parse HEAD`；禁止任何通用worktree preflight以及status/log/show/diff/rev-list。
 Activation clean与topology只由Orchestrator activation事实和controller内Git6证明。其余I1-C1-C1 row/lifecycle/analyzer/matrix/exact9合同完全不变；
@@ -3554,6 +3555,20 @@ fresh suffix新派生，retry/fallback0。Review archive：
 `.agent-work/PLANS/20260731-1436-p7-retained-r3-b2-p4-c1-c1-c1-i1-c1-c1-outer-status-violation-review.md`，bytes `16341`，SHA-256
 `4512f83d5225132af0b90b59c93f3ea33fa8eac6d18316b0ac3c23ed2d2ed73b`。Exact stop为
 `B2_P4_C1_C1_C1_I1_C1_C1_C1_OUTER_FIRST_COMMAND_CORRECTION_WAITING_PLANNER_REVIEW`。
+
+首/唯一outer Git与fresh source writer/read/UTF8/AST/compile均通过，但launcher同时向`subprocess.run`传`stdin`与`input`，在controller process
+创建前触发`ValueError`。Frozen source bytes `35425`、SHA-256 `95c6e4cab1b53cb833a71b3a379c806a7c4c9751dd9bc314854904161039349b`
+不可复用；root/Git6/matrix/exact9均0。Evidence commit `62f91f431bcf38a4f100ae53567db8e40f94dc65`只追加ER。
+
+### REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1-C1-C1：launcher-argument correction
+
+**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。Contract为
+`P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-C1-C1-C1-I1-C1-C1-C1-C1-LAUNCHER-ARGUMENT-CORRECTION-V1`。Fresh launcher必须只用
+`input=<exact frozen in-memory source bytes>`且完全不传`stdin`；dispatch前用纯内存断言证明mutual exclusion，不增加source read或process。首命令、
+row/lifecycle、analyzer18、Git6、same-root4、matrix16、exact9与hard locks不变，fresh source/root换新且retry0。Review archive：
+`.agent-work/PLANS/20260731-1457-p7-retained-r3-b2-p4-c1-c1-c1-i1-c1-c1-c1-launcher-argument-failure-review.md`，bytes `17464`，
+SHA-256 `86ef9085ebb712e4a254b403d87fdb13538c4f3f450866b0fa6ca82f433e0e46`。Exact stop为
+`B2_P4_C1_C1_C1_I1_C1_C1_C1_C1_LAUNCHER_ARGUMENT_CORRECTION_WAITING_PLANNER_REVIEW`。
 
 ### REF-P7-25-R2-B2-P3：repo-owned provenance I/O boundary
 
@@ -4340,10 +4355,11 @@ accepted B2-P4-C1-C1-C1 result = VALIDATION_ONLY_PROVENANCE_CLOSURE; evidence ba
 rejected B2-P4-C1-C1-C1-I1 result = PRE_SOURCE_OUTER_GIT_BUDGET_VIOLATION; source/root/controller0
 rejected B2-P4-C1-C1-C1-I1-C1 result = MACHINE_ROW_DELIMITER_AND_PRE_ROOT_EVIDENCE_FAILURE; analyzer18 pass; Git6/root0
 rejected B2-P4-C1-C1-C1-I1-C1-C1 result = PRE_SOURCE_OUTER_STATUS_BUDGET_VIOLATION; source/root/process0
-active task = REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1-C1 outer-first-command correction
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-C1-C1-C1-I1-C1-C1-C1-OUTER-FIRST-COMMAND-CORRECTION-V1
+rejected B2-P4-C1-C1-C1-I1-C1-C1-C1 result = LAUNCHER_STDIN_INPUT_MUTUAL_EXCLUSION; source read1; process/root0
+active task = REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1-C1-C1 launcher-argument correction
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-P4-C1-C1-C1-I1-C1-C1-C1-C1-LAUNCHER-ARGUMENT-CORRECTION-V1
 active executable task count = 1
-next reference task = REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1-C1 ACTIVE_EXECUTION_AUTHORIZED
+next reference task = REF-P7-25-R2-B2-P4-C1-C1-C1-I1-C1-C1-C1-C1 ACTIVE_EXECUTION_AUTHORIZED
 selected state C shutter = 1/2500
 device/network/camera/light = forbidden by active PLAN
 release qualification/generation/copy/consumption = forbidden
