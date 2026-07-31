@@ -16,9 +16,9 @@
 
 **当前可执行任务数：** `1`
 
-**当前 active task：** `REF-P7-25-R2-B2-P7-C1-C1 generated-source NUL escape correction`
+**当前 active task：** `REF-P7-25-R2-B2-P7-C1-C1-C1 generated-source newline escape correction`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-31","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-P7-C1-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P7-C1-C1-GENERATED-NUL-ESCAPE-CORRECTION-V1","next_reference_task":"REF-P7-25-R2-B2-P7-C1-C1","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P7_C1_C1_GENERATED_NUL_ESCAPE_CORRECTION_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","p6_domain_template_owner_status":"ACCEPTED_COMPLETE_DETERMINISTIC_DOMAIN_TEMPLATE_OWNER_WITH_RUNNABLE_CONTRACT_RESIDUAL","p6_candidate_commit":"48b3979d6c0df5f488cd500597e26dc4c38877dd","p6_candidate_consumable":true,"p5_runtime_owner_status":"ACCEPTED_COMPLETE_REPO_OWNED_CONTROLLER_RUNTIME_OWNER","p7_status":"REJECTED_TARGETED_CANONICAL_TEMPLATE_PHYSICAL_NUL","p7_rejected_candidate_commit":"96b15f4d7e000cb2f2276f069ad92832226b1afd","p7_rejected_candidate_consumable":false,"p7_implementation_commits":0,"executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-31","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-P7-C1-C1-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P7-C1-C1-C1-GENERATED-NEWLINE-ESCAPE-CORRECTION-V1","next_reference_task":"REF-P7-25-R2-B2-P7-C1-C1-C1","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P7_C1_C1_C1_GENERATED_NEWLINE_ESCAPE_CORRECTION_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","p6_domain_template_owner_status":"ACCEPTED_COMPLETE_DETERMINISTIC_DOMAIN_TEMPLATE_OWNER_WITH_RUNNABLE_CONTRACT_RESIDUAL","p6_candidate_commit":"48b3979d6c0df5f488cd500597e26dc4c38877dd","p6_candidate_consumable":true,"p5_runtime_owner_status":"ACCEPTED_COMPLETE_REPO_OWNED_CONTROLLER_RUNTIME_OWNER","p7_status":"REJECTED_PRE_GATE_GENERATED_NEWLINE_ESCAPE","p7_rejected_candidate_commit":"443e470dbb28a83daf7f7fa33135e03861f871b8","p7_rejected_candidate_consumable":false,"p7_implementation_commits":0,"executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -317,7 +317,8 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-B2-P6-C1-C1-C1-V1` | `ACCEPTED_COMPLETE_DETERMINISTIC_DOMAIN_TEMPLATE_OWNER_WITH_RUNNABLE_CONTRACT_RESIDUAL` | validate committed guard candidate with exact-name AST walk | P7 runnable correction | Planner/Executer |
 | `REF-P7-25-R2-B2-P7` | `REJECTED_PRE_EDIT_CODEGRAPH_QUERY_BEFORE_REQUIRED_SYNC` | make accepted deterministic template runnable via existing owners | P7-C1 ordering correction | Planner/Executer |
 | `REF-P7-25-R2-B2-P7-C1` | `REJECTED_TARGETED_CANONICAL_TEMPLATE_PHYSICAL_NUL` | run CodeGraph sync/query before source understanding, then execute unchanged P7 contract | P7-C1-C1 NUL escape correction | Planner/Executer |
-| `REF-P7-25-R2-B2-P7-C1-C1` | `ACTIVE_EXECUTION_AUTHORIZED` | preserve generated NUL separator syntax without physical NUL bytes | P7-C1 targeted failure | Planner/Executer |
+| `REF-P7-25-R2-B2-P7-C1-C1` | `REJECTED_PRE_GATE_GENERATED_NEWLINE_ESCAPE` | preserve generated NUL separator syntax without physical NUL bytes | P7-C1-C1-C1 newline correction | Planner/Executer |
+| `REF-P7-25-R2-B2-P7-C1-C1-C1` | `ACTIVE_EXECUTION_AUTHORIZED` | preserve exact three generated LF suffix tokens | P7-C1-C1 pre-gate failure | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-V1` | `ACCEPTED_COMPLETE` | one final-source full suite with retained terminal exit/count | 755/755 accepted | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-I1` | `REJECTED_PRE_EFFECT_OWNER_ALIAS_ESCAPE` | fresh synthetic external integration of accepted repo owner | I1-C1 correction | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-I1-C1` | `REJECTED_PRE_EFFECT_LIVE_OWNER_CONTAINER_WRITE_FIELD_ONLY_CORRECTION_REQUIRED` | direct/nonlocal live owner bindings with plain-projection transport | I1-C1-C1 correction | Planner/Executer |
@@ -3736,7 +3737,7 @@ bytes template把generated-source `\x00` separator提前解释为physical NUL。
 
 ### REF-P7-25-R2-B2-P7-C1-C1：generated-source NUL escape correction
 
-**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。Contract为
+**状态：** `REJECTED_PRE_GATE_GENERATED_NEWLINE_ESCAPE`。Contract为
 `P7-TD-B-RETAINED-R3-OPTION-B-B2-P7-C1-C1-GENERATED-NUL-ESCAPE-CORRECTION-V1`。Exact same two paths；只修outer template的
 escape layer，使owner generated source含physical NUL bytes exact0但runtime NUL-separator语义不变，并加入/保持meaningful byte-level regression；
 禁止broad replacement、raw-template conversion、generic escape helper及unrelated backslash变更。继承已合规P7-C1 CodeGraph证据，本包CodeGraph0。
@@ -3745,6 +3746,22 @@ retry/fallback0，external/retained/validator/release/network/device/formal全0�
 `.agent-work/PLANS/20260731-1711-p7-retained-r3-b2-p7-c1-nul-failure-review.md`，bytes`5755`，SHA-256
 `1e1c7e0866f3186eb25c2c8b40f19c40a6b549eaf02f5c8c4e157512e777625b`。Exact stop
 `B2_P7_C1_C1_NUL_ESCAPE_CORRECTION_WAITING_PLANNER_REVIEW`。
+
+Candidate `443e470dbb28a83daf7f7fa33135e03861f871b8`完成exact五个NUL token纠偏，但pre-gate在generated source line57因
+exact三个LF suffix token提前物化而unterminated string；targeted及后续0，evidence `4af21403d047139a9261e010ac1d9ccc92b77f8a`，
+candidate non-consumable且external/retained/device0。
+
+### REF-P7-25-R2-B2-P7-C1-C1-C1：generated-source newline escape correction
+
+**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。Contract为
+`P7-TD-B-RETAINED-R3-OPTION-B-B2-P7-C1-C1-C1-GENERATED-NEWLINE-ESCAPE-CORRECTION-V1`。Exact two paths；逐项纠正冻结的
+三个generated-source LF tokens：activation commit stdout suffix、activation metadata stdout suffix、runtime metadata subject suffix；禁止NUL/CR token
+改动、broad replacement、raw conversion、generic helper或unrelated backslash变化。Byte+AST pre-gate后fresh targeted11、focused93、compileall、
+full778、single exact-two-path commit `fix(p7): preserve generated newline source syntax`与posttarget11。CodeGraph0继承；retry0；external/retained/
+validator/release/network/device/formal0。Archive
+`.agent-work/PLANS/20260731-1720-p7-retained-r3-b2-p7-c1-c1-newline-escape-failure-review.md`，bytes`6325`，SHA-256
+`d47ce2f7915f5d306780b448e37bf3b951b6b7e4fa31ecaa2cfac904d5cb5a92`。Exact stop
+`B2_P7_C1_C1_C1_NEWLINE_ESCAPE_CORRECTION_WAITING_PLANNER_REVIEW`。
 
 ### REF-P7-25-R2-B2-P3：repo-owned provenance I/O boundary
 
@@ -4543,10 +4560,11 @@ rejected B2-P6-C1-C1-C1 result = POST_FULL_HARNESS_STOPITERATION; candidate48b39
 accepted B2-P6-C1-C1-C1-V1 result = DETERMINISTIC_DOMAIN_TEMPLATE_OWNER_WITH_RUNNABLE_CONTRACT_RESIDUAL; candidate48b3979 consumable
 rejected B2-P7 result = PRE_EDIT_CODEGRAPH_QUERY_BEFORE_REQUIRED_SYNC; code/test/effects0
 rejected B2-P7-C1 result = TARGETED_CANONICAL_TEMPLATE_PHYSICAL_NUL; targeted1/11; candidate96b15f4 nonconsumable
-active task = REF-P7-25-R2-B2-P7-C1-C1 generated-source NUL escape correction
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-P7-C1-C1-GENERATED-NUL-ESCAPE-CORRECTION-V1
+rejected B2-P7-C1-C1 result = PRE_GATE_GENERATED_NEWLINE_ESCAPE; tests0; candidate443e470 nonconsumable
+active task = REF-P7-25-R2-B2-P7-C1-C1-C1 generated-source newline escape correction
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-P7-C1-C1-C1-GENERATED-NEWLINE-ESCAPE-CORRECTION-V1
 active executable task count = 1
-next reference task = REF-P7-25-R2-B2-P7-C1-C1 ACTIVE_EXECUTION_AUTHORIZED
+next reference task = REF-P7-25-R2-B2-P7-C1-C1-C1 ACTIVE_EXECUTION_AUTHORIZED
 selected state C shutter = 1/2500
 device/network/camera/light = forbidden by active PLAN
 release qualification/generation/copy/consumption = forbidden
