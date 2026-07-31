@@ -16,9 +16,9 @@
 
 **当前可执行任务数：** `1`
 
-**当前 active task：** `REF-P7-25-R2-B2-P7 repo-owned runnable domain-template correction`
+**当前 active task：** `REF-P7-25-R2-B2-P7-C1 CodeGraph preflight ordering correction`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-31","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-P7","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P7-REPO-OWNED-RUNNABLE-DOMAIN-TEMPLATE-CORRECTION-V1","next_reference_task":"REF-P7-25-R2-B2-P7","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P7_RUNNABLE_DOMAIN_TEMPLATE_CORRECTION_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","p6_domain_template_owner_status":"ACCEPTED_COMPLETE_DETERMINISTIC_DOMAIN_TEMPLATE_OWNER_WITH_RUNNABLE_CONTRACT_RESIDUAL","p6_candidate_commit":"48b3979d6c0df5f488cd500597e26dc4c38877dd","p6_candidate_consumable":true,"p5_runtime_owner_status":"ACCEPTED_COMPLETE_REPO_OWNED_CONTROLLER_RUNTIME_OWNER","executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-31","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-P7-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P7-C1-CODEGRAPH-PREFLIGHT-ORDER-CORRECTION-V1","next_reference_task":"REF-P7-25-R2-B2-P7-C1","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P7_C1_CODEGRAPH_PREFLIGHT_ORDER_CORRECTION_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","p6_domain_template_owner_status":"ACCEPTED_COMPLETE_DETERMINISTIC_DOMAIN_TEMPLATE_OWNER_WITH_RUNNABLE_CONTRACT_RESIDUAL","p6_candidate_commit":"48b3979d6c0df5f488cd500597e26dc4c38877dd","p6_candidate_consumable":true,"p5_runtime_owner_status":"ACCEPTED_COMPLETE_REPO_OWNED_CONTROLLER_RUNTIME_OWNER","p7_status":"REJECTED_PRE_EDIT_CODEGRAPH_QUERY_BEFORE_REQUIRED_SYNC","p7_implementation_commits":0,"executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -315,7 +315,8 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-B2-P6-C1-C1` | `REJECTED_TARGETED_GENERATED_RUNTIME_ERROR_AND_TYPE_CALL_ALLOWLIST_GAP` | add the single missing explicit runtime-request test import | P6-C1-C1-C1 exact guard-call correction | Planner/Executer |
 | `REF-P7-25-R2-B2-P6-C1-C1-C1` | `REJECTED_POST_FULL_VALIDATION_HARNESS_STOPITERATION_CANDIDATE_REGRESSION_GREEN_NON_CONSUMABLE` | admit exact canonical pre-effect guard calls in test08 | V1 deterministic validation closure | Planner/Executer |
 | `REF-P7-25-R2-B2-P6-C1-C1-C1-V1` | `ACCEPTED_COMPLETE_DETERMINISTIC_DOMAIN_TEMPLATE_OWNER_WITH_RUNNABLE_CONTRACT_RESIDUAL` | validate committed guard candidate with exact-name AST walk | P7 runnable correction | Planner/Executer |
-| `REF-P7-25-R2-B2-P7` | `ACTIVE_EXECUTION_AUTHORIZED` | make accepted deterministic template runnable via existing owners | accepted P6 owner + P5 runtime owner | Planner/Executer |
+| `REF-P7-25-R2-B2-P7` | `REJECTED_PRE_EDIT_CODEGRAPH_QUERY_BEFORE_REQUIRED_SYNC` | make accepted deterministic template runnable via existing owners | P7-C1 ordering correction | Planner/Executer |
+| `REF-P7-25-R2-B2-P7-C1` | `ACTIVE_EXECUTION_AUTHORIZED` | run CodeGraph sync/query before source understanding, then execute unchanged P7 contract | P7 ordering failure | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-V1` | `ACCEPTED_COMPLETE` | one final-source full suite with retained terminal exit/count | 755/755 accepted | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-I1` | `REJECTED_PRE_EFFECT_OWNER_ALIAS_ESCAPE` | fresh synthetic external integration of accepted repo owner | I1-C1 correction | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-I1-C1` | `REJECTED_PRE_EFFECT_LIVE_OWNER_CONTAINER_WRITE_FIELD_ONLY_CORRECTION_REQUIRED` | direct/nonlocal live owner bindings with plain-projection transport | I1-C1-C1 correction | Planner/Executer |
@@ -3705,13 +3706,28 @@ runnable contract residual。Acceptance review archive
 
 ### REF-P7-25-R2-B2-P7：repo-owned runnable domain-template correction
 
-**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。Contract为
+**状态：** `REJECTED_PRE_EDIT_CODEGRAPH_QUERY_BEFORE_REQUIRED_SYNC`。Contract为
 `P7-TD-B-RETAINED-R3-OPTION-B-B2-P7-REPO-OWNED-RUNNABLE-DOMAIN-TEMPLATE-CORRECTION-V1`。Exact existing module+dedicated
 test two paths；不新增helper/framework。保持builder pure/deterministic/effect-free及public API，补齐replacement-derived runtime bindings、existing
 provenance owner imports、exact one guarded `controller()` entrypoint、eight lifecycle callbacks、persist-before-read与qualification→terminal→seal→admission
 顺序、Git6/root1/inputs4/matrix16/artifacts9/root-bound reads7、primary-failure dominance和single canonical stdout envelope。Dedicated tests exact11，
 focused93、full778、compileall、CodeGraph、single exact-two-path commit与posttarget11。External controller/root/process、synthetic integration、retained/
 validator/release/network/device/formal全0。Exact stop `B2_P7_REPO_OWNED_RUNNABLE_DOMAIN_TEMPLATE_CORRECTION_WAITING_PLANNER_REVIEW`。
+
+Activation与P5/P6/baseline identity通过后，Executer为遵守repo CodeGraph-before-source规则先执行唯一query并成功；但P7 PLAN要求唯一query只能在
+validation期的sync之后，故在任何source/test读取或写入前fail closed。Evidence commit
+`778576e1bc1df797e0293d52fa58dfe4fc385744`；implementation/test/sync/external/retained/device全0。
+
+### REF-P7-25-R2-B2-P7-C1：CodeGraph preflight ordering correction
+
+**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。Contract为
+`P7-TD-B-RETAINED-R3-OPTION-B-B2-P7-C1-CODEGRAPH-PREFLIGHT-ORDER-CORRECTION-V1`。在source/test内容读取、理解或编辑前，先exact
+`codegraph sync`一次并紧随exact `codegraph explore`一次；该query同时作为最终ownership证据，post-edit sync/query均0。之后执行未变的P7
+exact-two-path runnable-template合同、dedicated11、focused93、full778、compileall、single commit与posttarget11。Retry/fallback0；external controller/
+root/process、synthetic integration、retained/validator/release/network/device/formal全0。Review archive
+`.agent-work/PLANS/20260731-1656-p7-retained-r3-b2-p7-codegraph-ordering-failure-review.md`，bytes`5389`，SHA-256
+`f81f9a4c5e7cd153b99431799aa59a21520b436d397201e904cb3f6b0d631fbc`。Exact stop
+`B2_P7_C1_CODEGRAPH_PREFLIGHT_ORDER_CORRECTION_WAITING_PLANNER_REVIEW`。
 
 ### REF-P7-25-R2-B2-P3：repo-owned provenance I/O boundary
 
@@ -4508,10 +4524,11 @@ rejected B2-P6-C1 result = TEST_RUNTIME_REQUEST_IMPORT_OMISSION; targeted7/8; ca
 rejected B2-P6-C1-C1 result = GENERATED_RUNTIME_ERROR_AND_TYPE_CALL_ALLOWLIST_GAP; targeted7/8; candidate66532b5 nonconsumable
 rejected B2-P6-C1-C1-C1 result = POST_FULL_HARNESS_STOPITERATION; candidate48b3979 regression-green nonconsumable
 accepted B2-P6-C1-C1-C1-V1 result = DETERMINISTIC_DOMAIN_TEMPLATE_OWNER_WITH_RUNNABLE_CONTRACT_RESIDUAL; candidate48b3979 consumable
-active task = REF-P7-25-R2-B2-P7 repo-owned runnable domain-template correction
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-P7-REPO-OWNED-RUNNABLE-DOMAIN-TEMPLATE-CORRECTION-V1
+rejected B2-P7 result = PRE_EDIT_CODEGRAPH_QUERY_BEFORE_REQUIRED_SYNC; code/test/effects0
+active task = REF-P7-25-R2-B2-P7-C1 CodeGraph preflight ordering correction
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-P7-C1-CODEGRAPH-PREFLIGHT-ORDER-CORRECTION-V1
 active executable task count = 1
-next reference task = REF-P7-25-R2-B2-P7 ACTIVE_EXECUTION_AUTHORIZED
+next reference task = REF-P7-25-R2-B2-P7-C1 ACTIVE_EXECUTION_AUTHORIZED
 selected state C shutter = 1/2500
 device/network/camera/light = forbidden by active PLAN
 release qualification/generation/copy/consumption = forbidden
