@@ -9,7 +9,10 @@ import unittest
 from camera_based_rgbww_optimizer.utils import p7_retained_r3_controller_domain_template as subject
 from camera_based_rgbww_optimizer.utils.p7_retained_r3_controller_conformance import analyze_controller_source
 from camera_based_rgbww_optimizer.utils.p7_retained_r3_controller_preparation import prepare_controller_source
-from camera_based_rgbww_optimizer.utils.p7_retained_r3_controller_runtime import compose_controller_source
+from camera_based_rgbww_optimizer.utils.p7_retained_r3_controller_runtime import (
+    ControllerRuntimeRequest,
+    compose_controller_source,
+)
 
 
 def spec() -> subject.ControllerDomainTemplateSpec:
