@@ -1,0 +1,416 @@
+"""Pure in-memory conformance and composition for retained-R3 controllers."""
+
+from __future__ import annotations
+
+import ast
+from dataclasses import dataclass, fields
+import hashlib
+from types import MappingProxyType
+from typing import Callable, Mapping, Sequence
+
+from camera_based_rgbww_optimizer.utils.agent_work_machine_contract import (
+    MachineContractEvidence,
+    ParsedMachineContract,
+)
+from camera_based_rgbww_optimizer.utils.p7_retained_r3_controller_preparation import (
+    ByteSpan,
+    OwnedStatementPair,
+    PreparedControllerSource,
+    SealTargetIdentity,
+)
+from camera_based_rgbww_optimizer.utils.p7_retained_r3_provenance_io import (
+    DirectoryIdentity,
+    FileIdentity,
+    GitLedger,
+)
+
+__all__ = [
+    "ControllerConformanceError",
+    "ControllerConformanceReport",
+    "ControllerConformanceRequirements",
+    "LifecycleCallbacks",
+    "LifecycleRequirements",
+    "LifecycleResult",
+    "RootIdentityChain",
+    "analyze_controller_source",
+    "execute_controller_lifecycle",
+    "validate_root_identity_chain",
+]
+
+
+class ControllerConformanceError(RuntimeError):
+    """Fail-closed error carrying one stable machine-readable code."""
+
+    def __init__(self, code: str) -> None:
+        self.code = code
+        super().__init__(code)
+
+
+_OWNER_TYPES = (
+    DirectoryIdentity,
+    FileIdentity,
+    GitLedger,
+    MachineContractEvidence,
+    ParsedMachineContract,
+    ByteSpan,
+    OwnedStatementPair,
+    PreparedControllerSource,
+    SealTargetIdentity,
+)
+_OWNER_FIELDS = (
+    ("DirectoryIdentity", ("path", "device", "inode", "mode")),
+    (
+        "FileIdentity",
+        ("path", "data", "byte_count", "sha256", "device", "inode", "mode", "root"),
+    ),
+    (
+        "GitLedger",
+        ("argv", "cwd", "exit_code", "stdout", "stderr", "stdout_sha256", "stderr_sha256"),
+    ),
+    (
+        "MachineContractEvidence",
+        (
+            "schema", "owner", "marker_ascii", "source_bytes", "source_sha256",
+            "candidate_count", "candidate_lines", "line_number", "raw_row_bytes",
+            "raw_row_sha256", "payload_bytes", "payload_sha256", "line_ending",
+        ),
+    ),
+    ("ParsedMachineContract", ("value", "evidence")),
+    ("ByteSpan", ("start", "end")),
+    ("OwnedStatementPair", ("assignment_span", "validation_span", "function_name")),
+    ("PreparedControllerSource", ("source", "source_sha256", "pair")),
+    ("SealTargetIdentity", ("path", "byte_count", "sha256", "device", "inode")),
+)
+_PUBLIC_METHODS = (
+    ("MachineContractEvidence", ("to_mapping",)),
+    ("SealTargetIdentity", ("as_mapping",)),
+)
+_CALL_OWNERS = MappingProxyType(
+    {
+        "create_exclusive_root": "DirectoryIdentity",
+        "read_exact_file": "FileIdentity",
+        "run_read_only_git": "GitLedger",
+        "parse_plan_machine_contract": "ParsedMachineContract",
+        "parse_full_plan_machine_state": "ParsedMachineContract",
+        "locate_owned_statement_pair": "OwnedStatementPair",
+        "prepare_controller_source": "PreparedControllerSource",
+        "DirectoryIdentity": "DirectoryIdentity",
+        "FileIdentity": "FileIdentity",
+        "GitLedger": "GitLedger",
+        "MachineContractEvidence": "MachineContractEvidence",
+        "ParsedMachineContract": "ParsedMachineContract",
+        "ByteSpan": "ByteSpan",
+        "OwnedStatementPair": "OwnedStatementPair",
+        "PreparedControllerSource": "PreparedControllerSource",
+        "SealTargetIdentity": "SealTargetIdentity",
+    }
+)
+_OPAQUE_CALLS = frozenset(("validate_terminal_seal",))
+_REFLECTION_CALLS = frozenset(
+    ("getattr", "setattr", "delattr", "vars", "dir", "globals", "locals", "eval", "exec")
+)
+
+
+@dataclass(frozen=True)
+class ControllerConformanceRequirements:
+    owner_fields: tuple[tuple[str, tuple[str, ...]], ...] = _OWNER_FIELDS
+    public_methods: tuple[tuple[str, tuple[str, ...]], ...] = _PUBLIC_METHODS
+    git_success_field: str = "exit_code"
+
+
+@dataclass(frozen=True)
+class ControllerConformanceReport:
+    source_sha256: str
+    owner_fields: tuple[tuple[str, tuple[str, ...]], ...]
+    public_methods: tuple[tuple[str, tuple[str, ...]], ...]
+    bound_results: tuple[tuple[str, str], ...]
+    attribute_uses: tuple[tuple[str, str], ...]
+    root_reads: tuple[tuple[str, str], ...]
+
+
+def _call_name(node: ast.Call) -> str | None:
+    if isinstance(node.func, ast.Name):
+        return node.func.id
+    if isinstance(node.func, ast.Attribute):
+        return node.func.attr
+    return None
+
+
+def _direct_assignment(call: ast.Call, parents: Mapping[ast.AST, ast.AST]) -> str | None:
+    parent = parents.get(call)
+    if isinstance(parent, ast.Assign) and parent.value is call and len(parent.targets) == 1:
+        target = parent.targets[0]
+        return target.id if isinstance(target, ast.Name) else None
+    if isinstance(parent, ast.AnnAssign) and parent.value is call:
+        return parent.target.id if isinstance(parent.target, ast.Name) else None
+    return None
+
+
+def _current_owner_surface() -> tuple[
+    tuple[tuple[str, tuple[str, ...]], ...], tuple[tuple[str, tuple[str, ...]], ...]
+]:
+    owner_fields = tuple((owner.__name__, tuple(field.name for field in fields(owner))) for owner in _OWNER_TYPES)
+    public_methods = tuple(
+        (
+            owner.__name__,
+            tuple(
+                name
+                for name, value in vars(owner).items()
+                if not name.startswith("_") and callable(value)
+            ),
+        )
+        for owner in _OWNER_TYPES
+        if any(owner.__name__ == name for name, _methods in _PUBLIC_METHODS)
+    )
+    return owner_fields, public_methods
+
+
+def analyze_controller_source(
+    source: bytes,
+    requirements: ControllerConformanceRequirements = ControllerConformanceRequirements(),
+) -> ControllerConformanceReport:
+    """Parse, compile and certify one runtime source domain independently."""
+
+    if type(source) is not bytes:
+        raise ControllerConformanceError("source_not_bytes")
+    if type(requirements) is not ControllerConformanceRequirements:
+        raise ControllerConformanceError("invalid_requirements")
+    if (
+        requirements.owner_fields != _OWNER_FIELDS
+        or requirements.public_methods != _PUBLIC_METHODS
+        or requirements.git_success_field != "exit_code"
+    ):
+        raise ControllerConformanceError("requirements_drift")
+    current_fields, current_methods = _current_owner_surface()
+    if current_fields != requirements.owner_fields:
+        raise ControllerConformanceError("owner_schema_drift")
+    if current_methods != requirements.public_methods:
+        raise ControllerConformanceError("owner_method_drift")
+    try:
+        text = source.decode("utf-8", errors="strict")
+        tree = ast.parse(text)
+        compile(tree, "<retained-r3-controller>", "exec")
+    except (UnicodeDecodeError, SyntaxError, ValueError) as exc:
+        raise ControllerConformanceError("source_parse_failed") from exc
+
+    parents = {
+        child: parent
+        for parent in ast.walk(tree)
+        for child in ast.iter_child_nodes(parent)
+    }
+    bindings: dict[str, str] = {}
+    opaque: set[str] = set()
+    root_names: set[str] = set()
+    root_reads: list[tuple[str, str]] = []
+
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        name = _call_name(node)
+        if name in _REFLECTION_CALLS:
+            raise ControllerConformanceError("reflection_rejected")
+        owner = _CALL_OWNERS.get(name or "")
+        if owner is not None:
+            assigned = _direct_assignment(node, parents)
+            if assigned is None:
+                raise ControllerConformanceError("owner_result_unbound")
+            if assigned in bindings or assigned in opaque:
+                raise ControllerConformanceError("owner_result_rebound")
+            bindings[assigned] = owner
+            if owner == "DirectoryIdentity":
+                root_names.add(assigned)
+        elif name in _OPAQUE_CALLS:
+            assigned = _direct_assignment(node, parents)
+            if assigned is None:
+                raise ControllerConformanceError("opaque_result_unbound")
+            opaque.add(assigned)
+
+        if name == "read_exact_file":
+            roots = [keyword.value for keyword in node.keywords if keyword.arg == "root"]
+            if len(roots) != 1 or not isinstance(roots[0], ast.Name):
+                raise ControllerConformanceError("read_root_not_live_name")
+            root_name = roots[0].id
+            if root_name not in root_names or bindings.get(root_name) != "DirectoryIdentity":
+                raise ControllerConformanceError("read_root_not_live_identity")
+            assigned = _direct_assignment(node, parents)
+            if assigned is None:
+                raise ControllerConformanceError("owner_result_unbound")
+            root_reads.append((assigned, root_name))
+
+    if len({root_name for _assigned, root_name in root_reads}) > 1:
+        raise ControllerConformanceError("read_root_identity_not_shared")
+
+    field_map = dict(requirements.owner_fields)
+    method_map = dict(requirements.public_methods)
+    attribute_uses: list[tuple[str, str]] = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Attribute):
+            continue
+        if node.attr == "returncode":
+            raise ControllerConformanceError("git_returncode_rejected")
+        if node.attr == "__dict__":
+            raise ControllerConformanceError("reflection_rejected")
+        if not isinstance(node.value, ast.Name):
+            if isinstance(node.value, ast.Call) and _call_name(node.value) in _CALL_OWNERS:
+                raise ControllerConformanceError("owner_result_unbound")
+            continue
+        owner = bindings.get(node.value.id)
+        if owner is not None:
+            if node.attr not in field_map[owner] and node.attr not in method_map.get(owner, ()):
+                raise ControllerConformanceError("unknown_owner_attribute")
+            attribute_uses.append((node.value.id, node.attr))
+        elif node.value.id in opaque:
+            raise ControllerConformanceError("opaque_gate_introspection")
+
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.Assign, ast.AnnAssign)):
+            continue
+        value = node.value
+        if isinstance(value, ast.Name) and (value.id in bindings or value.id in opaque):
+            raise ControllerConformanceError("owner_alias_escape")
+
+    return ControllerConformanceReport(
+        source_sha256=hashlib.sha256(source).hexdigest(),
+        owner_fields=current_fields,
+        public_methods=current_methods,
+        bound_results=tuple(sorted(bindings.items())),
+        attribute_uses=tuple(sorted(attribute_uses)),
+        root_reads=tuple(sorted(root_reads)),
+    )
+
+
+@dataclass(frozen=True)
+class RootIdentityChain:
+    before: DirectoryIdentity
+    files: tuple[FileIdentity, ...]
+    after: DirectoryIdentity
+
+
+def _is_direct_child(path: str, root: str) -> bool:
+    if type(path) is not str or type(root) is not str or not path.startswith("/") or not root.startswith("/"):
+        return False
+    if "\\" in path or "\\" in root or root == "/":
+        return False
+    parent, separator, child = path.rpartition("/")
+    return bool(
+        separator and parent == root and child not in {"", ".", ".."}
+        and "/" not in child and all(part not in {"", ".", ".."} for part in path.split("/")[1:])
+    )
+
+
+def validate_root_identity_chain(chain: RootIdentityChain) -> RootIdentityChain:
+    """Validate already-read identities without touching the filesystem."""
+
+    if type(chain) is not RootIdentityChain:
+        raise ControllerConformanceError("invalid_root_chain")
+    if type(chain.before) is not DirectoryIdentity or type(chain.after) is not DirectoryIdentity:
+        raise ControllerConformanceError("invalid_root_identity")
+    if chain.before != chain.after:
+        raise ControllerConformanceError("root_identity_drift")
+    if chain.before.mode != 0o700:
+        raise ControllerConformanceError("root_mode_mismatch")
+    if type(chain.files) is not tuple:
+        raise ControllerConformanceError("invalid_file_identities")
+    for identity in chain.files:
+        if type(identity) is not FileIdentity:
+            raise ControllerConformanceError("invalid_file_identity")
+        if identity.root != chain.before:
+            raise ControllerConformanceError("file_root_mismatch")
+        if not _is_direct_child(identity.path, chain.before.path):
+            raise ControllerConformanceError("file_not_direct_child")
+        if identity.device != chain.before.device:
+            raise ControllerConformanceError("file_device_mismatch")
+        if identity.mode != 0o600:
+            raise ControllerConformanceError("file_mode_mismatch")
+    return chain
+
+
+@dataclass(frozen=True)
+class LifecycleRequirements:
+    success_order: tuple[str, ...] = (
+        "conformance", "activation", "root", "inputs", "evaluate",
+        "terminal", "terminal_seal", "admission",
+    )
+    retry: int = 0
+    fallback: int = 0
+
+
+LifecycleCallback = Callable[..., object]
+
+
+@dataclass(frozen=True)
+class LifecycleCallbacks:
+    conformance: LifecycleCallback
+    activation: LifecycleCallback
+    root: LifecycleCallback
+    inputs: LifecycleCallback
+    evaluate: LifecycleCallback
+    terminal: LifecycleCallback
+    terminal_seal: LifecycleCallback
+    admission: LifecycleCallback
+
+
+@dataclass(frozen=True)
+class LifecycleResult:
+    order: tuple[str, ...]
+    values: tuple[tuple[str, object], ...]
+
+
+def _callback(callbacks: LifecycleCallbacks, phase: str) -> LifecycleCallback:
+    callback = getattr(callbacks, phase)
+    if not callable(callback):
+        raise ControllerConformanceError(f"missing_callback:{phase}")
+    return callback
+
+
+def execute_controller_lifecycle(
+    callbacks: LifecycleCallbacks,
+    requirements: LifecycleRequirements = LifecycleRequirements(),
+) -> LifecycleResult:
+    """Compose injected callbacks with a sealed, retry-free terminal lifecycle."""
+
+    if type(callbacks) is not LifecycleCallbacks or type(requirements) is not LifecycleRequirements:
+        raise ControllerConformanceError("invalid_lifecycle")
+    if requirements.retry != 0 or requirements.fallback != 0 or requirements.success_order != LifecycleRequirements().success_order:
+        raise ControllerConformanceError("invalid_lifecycle_requirements")
+    order: list[str] = []
+    values: list[tuple[str, object]] = []
+    primary: BaseException | None = None
+
+    try:
+        order.append("conformance")
+        values.append(("conformance", _callback(callbacks, "conformance")()))
+    except BaseException:
+        raise
+
+    for phase in ("activation", "root", "inputs", "evaluate"):
+        try:
+            order.append(phase)
+            values.append((phase, _callback(callbacks, phase)()))
+        except BaseException as exc:
+            primary = exc
+            break
+
+    try:
+        order.append("terminal")
+        terminal = _callback(callbacks, "terminal")(primary, tuple(values))
+        values.append(("terminal", terminal))
+    except BaseException as exc:
+        raise ControllerConformanceError("terminal_failed") from exc
+    try:
+        order.append("terminal_seal")
+        seal = _callback(callbacks, "terminal_seal")(terminal)
+        values.append(("terminal_seal", seal))
+    except BaseException as exc:
+        raise ControllerConformanceError("terminal_seal_failed") from exc
+    try:
+        order.append("admission")
+        admission = _callback(callbacks, "admission")(seal)
+        values.append(("admission", admission))
+    except BaseException as exc:
+        if primary is not None:
+            raise primary from exc
+        raise
+    if primary is not None:
+        raise primary
+    return LifecycleResult(tuple(order), tuple(values))
