@@ -11,6 +11,7 @@
 - No current-package source root, C1, retained, manifest, validator, release, network, or device budget was consumed.
 - The owner-API successor then failed its own pre-dispatch gate with `RuntimeError:returncode_occurrence`: the gate correctly parsed an isolated negative specimen containing `ledger.returncode`, but later counted the specimen's source text as if it were dispatched runtime attribute usage. Git/root/C1 remained zero. Controller bytes/SHA are `21024`/`703e813f09c543a654c64423fd09c6c527211b87bb3045c8aa7ed1e1969d2078`.
 - Repo-owned P4 commit `83bb193...` and final-source full `755/755` are accepted. Its first synthetic integration correctly rejected the runtime source pre-effect with `owner_alias_escape` because direct owner results were stored in a mutable `state` container. Git/root/inputs remained zero. The immutable source is bytes `20586`, SHA-256 `8c4cb131ed97bc38f5ff72947000d3b7932574759483b4172cd9fbfd992ea904`.
+- The alias-safe successor passed the accepted analyzer with 18 bound results, then its additional transport gate rejected 16 live-object container/call occurrences before effects. The source still grouped Git ledgers in a tuple for checking, passed live objects to projection helpers, collected artifacts in a list, and grouped input identities. Controller bytes/SHA are `33510`/`de2038f4d520febb0984e6b8ff6a73c293a46503ee1d6f07118036343aff2f29`; Git/root/inputs remained zero.
 
 ## Failed approaches
 
@@ -19,10 +20,11 @@
 - Correcting one observed field while leaving the generated controller's other owner interfaces unverified.
 - Mixing negative-test fixture text into the same AST/text domain used to certify dispatched runtime code.
 - Passing live owner objects between lifecycle callbacks through a generic mutable state container instead of keeping direct-bound names and storing only plain serialized projections.
+- Retaining temporary tuples/lists of live owner objects and generic `projection(identity)` calls after introducing direct/nonlocal bindings; field extraction must be unrolled at each binding, with only the repo-required immutable `RootIdentityChain` composition explicitly allowed.
 
 ## Current hypothesis
 
-The repo-owned conformance boundary now works and catches composition drift before effects. Remaining integration root cause is transport of accepted owner return objects across callbacks: runtime objects must stay in direct-bound/non-aliased names, while only plain projections may enter mutable evidence state. No production-owner change is indicated.
+The repo-owned conformance boundary now works and catches composition drift before effects. Remaining integration root cause is mechanical transport: each owner result must be checked and projected field-by-field without temporary live-object collections or helper-call aliasing; only the immutable `RootIdentityChain(before, files, after)` owner-required composition may group identities. No production-owner change is indicated.
 
 ## Next diagnostic and acceptance surface
 
