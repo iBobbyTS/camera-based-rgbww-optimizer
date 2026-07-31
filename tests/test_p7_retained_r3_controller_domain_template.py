@@ -160,10 +160,10 @@ class ControllerDomainTemplateTests(unittest.TestCase):
         }
         generated_calls = {
             "ByteSpan", "DirectoryIdentity", "FileIdentity", "LifecycleCallbacks",
-            "LifecycleRequirements", "RootIdentityChain", "SealTargetIdentity",
+            "LifecycleRequirements", "RootIdentityChain", "RuntimeError", "SealTargetIdentity",
             "create_exclusive_root", "execute_controller_lifecycle", "len",
             "persist_canonical_json", "read_exact_file", "require_activation_contract",
-            "run_read_only_git", "validate_root_identity_chain",
+            "run_read_only_git", "type", "validate_root_identity_chain",
         }
         self.assertEqual(inventory(generated, allowed_imports=generated_imports, allowed_calls=generated_calls), set())
 
