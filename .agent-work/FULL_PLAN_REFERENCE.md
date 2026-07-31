@@ -16,9 +16,9 @@
 
 **当前可执行任务数：** `1`
 
-**当前 active task：** `REF-P7-25-R2-B2-P3-C2 provenance I/O observable full validation`
+**当前 active task：** `REF-P7-25-R2-B2-P3-C2-C1 corrected observable full validation`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-P3-C2","active_plan_contract_id":"P7-TD-B-RETAINED-R3-PROVENANCE-IO-OBSERVABLE-FULL-VALIDATION-V1","next_reference_task":"REF-P7-25-R2-B2-P3-C2","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P3_C1_CODE_FINDINGS_CLOSED_FULL_TERMINAL_EVIDENCE_GAP_C2_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"607f0115876dbda21c6241130b05795cd28027fa116314eb54aed923ae6d8f22","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-30","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-P3-C2-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-PROVENANCE-IO-OBSERVABLE-FULL-VALIDATION-V2","next_reference_task":"REF-P7-25-R2-B2-P3-C2-C1","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P3_C2_PLAN_PIPELINE_REJECTED_C2_C1_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"e2b7d09dea3b49f908735123013ba5c226bea7009b63d179e32161c4b043c372","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -295,7 +295,8 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-B2-R2` | `REJECTED_MAINTAINABILITY_UNFROZEN_EXTERNAL_IO_OWNER` | use accepted repo owners for one fresh real-input manifest-only B2 re-entry | P2 accepted | Planner/Executer |
 | `REF-P7-25-R2-B2-P3` | `REJECTED_NONFOLLOW_ROOT_LINKAGE_AND_NEGATIVE_MATRIX_GAPS` | repo-owned tested provenance file/Git I/O boundary reused by B2/B3/B4 | R2 maintainability rejection | Planner/Executer |
 | `REF-P7-25-R2-B2-P3-C1` | `REJECTED_ONLY_FULL_SUITE_TERMINAL_EVIDENCE_UNAVAILABLE` | fail-closed capability/direct-child correction and missing negative matrix | P3 Planner rejection | Planner/Executer |
-| `REF-P7-25-R2-B2-P3-C2` | `ACTIVE_EXECUTION_AUTHORIZED` | one low-output full suite with observable exit, exact count and terminal summary | P3-C1 validation evidence gap | Planner/Executer |
+| `REF-P7-25-R2-B2-P3-C2` | `REJECTED_PLAN_PIPELINE_ZSH_STATUS_READONLY_CHILD_RESULT_UNPROVEN` | one low-output full suite with observable exit, exact count and terminal summary | P3-C1 validation evidence gap | Planner/Executer |
+| `REF-P7-25-R2-B2-P3-C2-C1` | `ACTIVE_EXECUTION_AUTHORIZED` | one corrected unbuffered low-output full suite with ordinary exit variable and observable terminal summary | P3-C2 pipeline-contract rejection | Planner/Executer |
 | `REF-P7-25-R2-B3` | `BLOCKED` | Manifest自校验后执行postcommit focused、durable full、synthetic terminal/replay | `REF-P7-25-R2-B2` accepted | Planner/Executer |
 | `REF-P7-25-R2-B4` | `BLOCKED` | 对原retained R3三件套做首次真实audit并由canonical validator唯一判定eligibility | `REF-P7-25-R2-B3` accepted | Planner/Executer |
 | `REF-P7-25-R2-B5` | `BLOCKED` | 独立验收validated-unconsumed状态、manifest与rollback provenance | `REF-P7-25-R2-B4` pass | Planner/Orchestrator |
@@ -3281,17 +3282,27 @@ CodeGraph、exact-two-path commit与Planner独立review通过后，R2才重新RE
 
 ### REF-P7-25-R2-B2-P3-C2：provenance I/O observable full validation
 
-**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。Active PLAN SHA-256
-`607f0115876dbda21c6241130b05795cd28027fa116314eb54aed923ae6d8f22`已由Orchestrator独立审核；本包不修改code/test，
-仅执行一次同一shell/session owner的低输出full suite。
+**状态：** `REJECTED_PLAN_PIPELINE_ZSH_STATUS_READONLY_CHILD_RESULT_UNPROVEN`。Exact PLAN pipeline把unittest
+返回值赋给zsh只读特殊参数`status`，因此在marker与显式exit前以structured shell exit `1`终止。该外层失败既不证明
+unittest失败，也不证明通过；retained tail缺少marker、`Ran 741 tests ...`和`OK`，不得推断或重解释。
 
-**执行与证据边界：** exact pipeline必须保留structured shell exit、`__P3_C2_FULL_EXIT__=<n>`、exact一行
-`Ran 741 tests in ...s`及其后`OK`或真实failure；unittest invocation `1`，retry/fallback `0`。不得重跑targeted、focused、
-compileall、CodeGraph或postcommit targeted，不得编辑、stage、commit或创建外部evidence root。
+**验收与stop：** Planner review archive
+`.agent-work/PLANS/20260730-2213-p7-retained-r3-provenance-io-p3-c2-pipeline-review.md`，SHA-256
+`4541967011d103c763fd80ae273285a7611308df6d9f3a510f39881b22708052`。唯一旧stop已到达；P3-C2不得重跑。
+
+### REF-P7-25-R2-B2-P3-C2-C1：corrected observable full validation
+
+**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。Active PLAN SHA-256
+`e2b7d09dea3b49f908735123013ba5c226bea7009b63d179e32161c4b043c372`已由Orchestrator独立审核；本包不修改code/test，
+仅执行一次同一shell/session owner的corrected low-output full suite。
+
+**执行与证据边界：** exact pipeline使用`PYTHONUNBUFFERED=1`与普通变量`child_exit_code`，必须保留structured shell
+exit、`__P3_C2_C1_FULL_EXIT__=<n>`、exact一行`Ran 741 tests in ...s`及其后`OK`或真实failure。corrected unittest
+invocation `1`，retry/fallback/alternate/count probe `0`；不得重跑已接受gate、编辑、stage、commit或创建外部evidence root。
 
 **锁与stop：** C1/retained/release evidence、real B2/B3/B4、validator、eligibility、release、network和device全部锁0；
-唯一stop为`B2_P3_C2_OBSERVABLE_FULL_VALIDATION_WAITING_PLANNER_REVIEW`。通过后也只允许Planner验收，再由Orchestrator把
-`REF-P7-25-R2-B2-R2`恢复为`READY_FOR_PLANNING`。
+唯一stop为`B2_P3_C2_C1_CORRECTED_OBSERVABLE_FULL_VALIDATION_WAITING_PLANNER_REVIEW`。通过后也只允许Planner验收，
+再由Orchestrator把`REF-P7-25-R2-B2-R2`恢复为`READY_FOR_PLANNING`。
 
 > 以下旧two-path执行细节已由Human engineering-governance override与B1A exact-five contract supersede，不得作为未来
 > PLAN输入；B1A-C2/后续Planner验收冻结的five-path child与manifest facts才是B2的新工程基线。本段保留仅作旧合同历史。
@@ -3996,10 +4007,11 @@ rejected B2-C4-P2-C2 result = TARGETED_STATIC_GUARD_FALSE_POSITIVE; pretest pass
 rejected B2-C4-P2-C3 result = FULL_TERMINAL_EVIDENCE_UNAVAILABLE; targeted5/5; owners32/32; focused58/58; commit0
 accepted B2-C4-P2-C4 result = INTEGRATION_QUALIFICATION_COMPLETE; commit4e82a7d; full717/717; postcommit5/5
 rejected B2-R2 plan = UNFROZEN_EXTERNAL_IO_STATE_OWNER; execution0; retained reads0; root0
-active task = REF-P7-25-R2-B2-P3-C2 provenance I/O observable full validation
-active contract = P7-TD-B-RETAINED-R3-PROVENANCE-IO-OBSERVABLE-FULL-VALIDATION-V1
+rejected B2-P3-C2 result = PLAN_PIPELINE_ZSH_STATUS_READONLY_CHILD_RESULT_UNPROVEN; unittest child outcome unknown
+active task = REF-P7-25-R2-B2-P3-C2-C1 corrected observable full validation
+active contract = P7-TD-B-RETAINED-R3-PROVENANCE-IO-OBSERVABLE-FULL-VALIDATION-V2
 active executable task count = 1
-next reference task = REF-P7-25-R2-B2-P3-C2 ACTIVE_EXECUTION_AUTHORIZED
+next reference task = REF-P7-25-R2-B2-P3-C2-C1 ACTIVE_EXECUTION_AUTHORIZED
 selected state C shutter = 1/2500
 device/network/camera/light = forbidden by active PLAN
 release qualification/generation/copy/consumption = forbidden
