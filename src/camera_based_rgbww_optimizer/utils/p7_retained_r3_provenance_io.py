@@ -30,6 +30,7 @@ __all__ = [
     "decode_canonical_json",
     "persist_canonical_json",
     "read_exact_file",
+    "read_existing_root",
     "require_same_target",
     "run_read_only_git",
 ]
@@ -202,6 +203,33 @@ def create_exclusive_root(
         raise ProvenanceIOError("root_exists") from exc
     except OSError as exc:
         raise ProvenanceIOError("root_mkdir_failed") from exc
+    return _directory_identity(target, deps)
+
+
+def read_existing_root(
+    path: os.PathLike[str] | str,
+    *,
+    dependencies: Mapping[str, Callable[..., Any]] | None = None,
+) -> DirectoryIdentity:
+    """Acquire one no-follow identity for an existing canonical 0700 root."""
+
+    deps = _dependencies(dependencies)
+    target = _path(path)
+    try:
+        text = os.fspath(path)
+    except (TypeError, ValueError, OSError) as exc:
+        raise ProvenanceIOError("invalid_path") from exc
+    if type(text) is not str:
+        raise ProvenanceIOError("invalid_path")
+    if not text.startswith("/"):
+        raise ProvenanceIOError("root_not_absolute")
+    parts = text.split("/")
+    if (
+        "\\" in text
+        or (text != "/" and any(part in {"", ".", ".."} for part in parts[1:]))
+        or str(target) != text
+    ):
+        raise ProvenanceIOError("root_not_canonical")
     return _directory_identity(target, deps)
 
 

@@ -4,6 +4,7 @@ import ast
 from dataclasses import replace
 import errno
 import hashlib
+import inspect
 import json
 import os
 from pathlib import Path
@@ -625,6 +626,113 @@ class ProvenanceIOTests(unittest.TestCase):
         self.assertEqual(overrides, {"read_fd": os.read})
         self.assert_code("unknown_dependency", subject.read_exact_file, path, dependencies={"unknown": lambda: None})
         self.assert_code("noncallable_dependency", subject.read_exact_file, path, dependencies={"read_fd": None})
+
+    def test_existing_root_public_signature_export_and_exact_identity(self):
+        signature = inspect.signature(subject.read_existing_root)
+        self.assertEqual(tuple(signature.parameters), ("path", "dependencies"))
+        self.assertEqual(signature.parameters["dependencies"].kind, inspect.Parameter.KEYWORD_ONLY)
+        self.assertIn("read_existing_root", subject.__all__)
+
+        calls = {name: mock.Mock() for name in (
+            "mkdir", "open_fd", "fstat", "read_fd", "write_fd", "fsync_fd",
+            "close_fd", "run_process",
+        )}
+        observed = SimpleNamespace(
+            st_mode=stat.S_IFDIR | 0o700, st_dev=17, st_ino=29, st_size=0,
+        )
+        lstat = mock.Mock(return_value=observed)
+        identity = subject.read_existing_root(
+            "/evidence/root", dependencies={"lstat": lstat, **calls}
+        )
+        self.assertEqual(
+            identity, subject.DirectoryIdentity("/evidence/root", 17, 29, 0o700)
+        )
+        self.assertIs(type(identity), subject.DirectoryIdentity)
+        lstat.assert_called_once_with(Path("/evidence/root"))
+        for capability in calls.values():
+            capability.assert_not_called()
+
+    def test_existing_root_invalid_absolute_and_canonical_matrix_pre_lstat(self):
+        cases = (
+            (object(), "invalid_path"),
+            (b"/bytes", "invalid_path"),
+            ("/root\x00tail", "invalid_path"),
+            ("relative", "root_not_absolute"),
+            ("//root", "root_not_canonical"),
+            ("/root/", "root_not_canonical"),
+            ("/root/.", "root_not_canonical"),
+            ("/root/..", "root_not_canonical"),
+            ("/root//child", "root_not_canonical"),
+            ("/root\\child", "root_not_canonical"),
+        )
+        for candidate, code in cases:
+            with self.subTest(candidate=candidate):
+                lstat = mock.Mock()
+                self.assert_code(
+                    code, subject.read_existing_root, candidate,
+                    dependencies={"lstat": lstat},
+                )
+                lstat.assert_not_called()
+
+    def test_existing_root_lstat_type_and_mode_failures_are_exact_and_read_only(self):
+        failures = (
+            (FileNotFoundError("missing"), "root_lstat_failed"),
+            (PermissionError("denied"), "root_lstat_failed"),
+            (SimpleNamespace(st_mode=stat.S_IFLNK | 0o700, st_dev=1, st_ino=2), "root_not_directory"),
+            (SimpleNamespace(st_mode=stat.S_IFREG | 0o700, st_dev=1, st_ino=2), "root_not_directory"),
+            (SimpleNamespace(st_mode=stat.S_IFIFO | 0o700, st_dev=1, st_ino=2), "root_not_directory"),
+            (SimpleNamespace(st_mode=stat.S_IFDIR | 0o755, st_dev=1, st_ino=2), "root_mode_mismatch"),
+        )
+        for index, (result, code) in enumerate(failures):
+            with self.subTest(index=index, code=code):
+                lstat = mock.Mock(
+                    side_effect=result if isinstance(result, OSError) else None,
+                    return_value=None if isinstance(result, OSError) else result,
+                )
+                forbidden = {name: mock.Mock() for name in (
+                    "mkdir", "open_fd", "fstat", "read_fd", "write_fd",
+                    "fsync_fd", "close_fd", "run_process",
+                )}
+                self.assert_code(
+                    code, subject.read_existing_root, f"/evidence/root-{index}",
+                    dependencies={"lstat": lstat, **forbidden},
+                )
+                lstat.assert_called_once_with(Path(f"/evidence/root-{index}"))
+                for capability in forbidden.values():
+                    capability.assert_not_called()
+
+    def test_existing_root_identity_feeds_direct_read_and_fresh_drift_revalidation(self):
+        target = self.case / "existing-root"
+        target.mkdir(mode=0o700)
+        target.chmod(0o700)
+        child = target / "artifact.json"
+        child.write_bytes(b'{}\n')
+        child.chmod(0o600)
+        identity = subject.read_existing_root(target)
+        value = subject.read_exact_file(child, expected_mode=0o600, root=identity)
+        self.assertEqual((value.data, value.root), (b'{}\n', identity))
+
+        observed = os.lstat(target)
+        failures = (
+            (SimpleNamespace(st_mode=observed.st_mode, st_dev=observed.st_dev + 1,
+                             st_ino=observed.st_ino, st_size=observed.st_size), "root_identity_drift"),
+            (SimpleNamespace(st_mode=observed.st_mode, st_dev=observed.st_dev,
+                             st_ino=observed.st_ino + 1, st_size=observed.st_size), "root_identity_drift"),
+            (SimpleNamespace(st_mode=stat.S_IFDIR | 0o755, st_dev=observed.st_dev,
+                             st_ino=observed.st_ino, st_size=observed.st_size), "root_mode_mismatch"),
+            (SimpleNamespace(st_mode=stat.S_IFLNK | 0o700, st_dev=observed.st_dev,
+                             st_ino=observed.st_ino, st_size=observed.st_size), "root_not_directory"),
+        )
+        for replacement, code in failures:
+            with self.subTest(code=code, replacement=replacement):
+                opened = mock.Mock()
+                lstats = mock.Mock(return_value=replacement)
+                self.assert_code(
+                    code, subject.read_exact_file, child, root=identity,
+                    dependencies={"lstat": lstats, "open_fd": opened},
+                )
+                lstats.assert_called_once_with(Path(identity.path))
+                opened.assert_not_called()
 
     def test_ast_import_and_capability_guard(self):
         source_path = Path(subject.__file__)

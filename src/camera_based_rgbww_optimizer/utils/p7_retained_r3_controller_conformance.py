@@ -89,6 +89,7 @@ _PUBLIC_METHODS = (
 _CALL_OWNERS = MappingProxyType(
     {
         "create_exclusive_root": "DirectoryIdentity",
+        "read_existing_root": "DirectoryIdentity",
         "read_exact_file": "FileIdentity",
         "run_read_only_git": "GitLedger",
         "parse_plan_machine_contract": "ParsedMachineContract",
@@ -110,6 +111,9 @@ _OWNER_CONSTRUCTORS = frozenset(owner.__name__ for owner in _OWNER_TYPES)
 _OPAQUE_CALLS = frozenset(("validate_terminal_seal",))
 _REFLECTION_CALLS = frozenset(
     ("getattr", "setattr", "delattr", "vars", "dir", "globals", "locals", "eval", "exec")
+)
+_EXISTING_ROOT_OWNER_MODULE = (
+    "camera_based_rgbww_optimizer.utils.p7_retained_r3_provenance_io"
 )
 
 
@@ -206,6 +210,92 @@ def _current_owner_surface() -> tuple[
     return owner_fields, public_methods
 
 
+def _validate_existing_root_owner(tree: ast.Module) -> None:
+    owner_imports = 0
+    invalid_import = False
+    owner_calls: list[ast.Call] = []
+    parents = {
+        child: parent
+        for parent in ast.walk(tree)
+        for child in ast.iter_child_nodes(parent)
+    }
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ImportFrom):
+            for alias in node.names:
+                mentions_owner = alias.name == "read_existing_root" or (
+                    node.module == _EXISTING_ROOT_OWNER_MODULE and alias.name == "*"
+                )
+                if not mentions_owner:
+                    continue
+                if (
+                    node.level != 0
+                    or node.module != _EXISTING_ROOT_OWNER_MODULE
+                    or alias.name != "read_existing_root"
+                    or alias.asname is not None
+                ):
+                    invalid_import = True
+                else:
+                    owner_imports += 1
+        if isinstance(node, ast.Call) and _call_name(node) == "read_existing_root":
+            owner_calls.append(node)
+
+    if not owner_calls and not invalid_import and owner_imports == 0:
+        return
+    if invalid_import or owner_imports != 1:
+        raise ControllerConformanceError("existing_root_owner_import_invalid")
+
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.Import, ast.ImportFrom)):
+            for alias in node.names:
+                bound_name = alias.asname or alias.name.split(".", 1)[0]
+                if (
+                    bound_name == "read_existing_root"
+                    and not (
+                        isinstance(node, ast.ImportFrom)
+                        and node.level == 0
+                        and node.module == _EXISTING_ROOT_OWNER_MODULE
+                        and alias.name == "read_existing_root"
+                        and alias.asname is None
+                    )
+                ):
+                    raise ControllerConformanceError("existing_root_owner_import_invalid")
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            if node.name == "read_existing_root":
+                raise ControllerConformanceError("existing_root_owner_import_invalid")
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                arguments = (
+                    *node.args.posonlyargs,
+                    *node.args.args,
+                    *node.args.kwonlyargs,
+                )
+                if any(argument.arg == "read_existing_root" for argument in arguments):
+                    raise ControllerConformanceError("existing_root_owner_import_invalid")
+                if (
+                    node.args.vararg is not None
+                    and node.args.vararg.arg == "read_existing_root"
+                ) or (
+                    node.args.kwarg is not None
+                    and node.args.kwarg.arg == "read_existing_root"
+                ):
+                    raise ControllerConformanceError("existing_root_owner_import_invalid")
+        if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store):
+            if node.id == "read_existing_root":
+                raise ControllerConformanceError("existing_root_owner_import_invalid")
+        if isinstance(node, ast.ExceptHandler) and node.name == "read_existing_root":
+            raise ControllerConformanceError("existing_root_owner_import_invalid")
+        if isinstance(node, (ast.Global, ast.Nonlocal)) and "read_existing_root" in node.names:
+            raise ControllerConformanceError("existing_root_owner_import_invalid")
+
+    for call in owner_calls:
+        if (
+            not isinstance(call.func, ast.Name)
+            or call.func.id != "read_existing_root"
+            or _direct_assignment(call, parents) is None
+        ):
+            raise ControllerConformanceError("existing_root_owner_call_invalid")
+
+
 def analyze_controller_source(
     source: bytes,
     requirements: ControllerConformanceRequirements = ControllerConformanceRequirements(),
@@ -234,6 +324,8 @@ def analyze_controller_source(
     except (UnicodeDecodeError, SyntaxError, ValueError) as exc:
         raise ControllerConformanceError("source_parse_failed") from exc
 
+    _validate_existing_root_owner(tree)
+
     parents = {
         child: parent
         for parent in ast.walk(tree)
@@ -246,6 +338,7 @@ def analyze_controller_source(
     opaque: set[str] = set()
     root_names: set[str] = set()
     root_reads: list[tuple[str, str]] = []
+    existing_root_bindings: set[str] = set()
 
     for node in ast.walk(tree):
         if not isinstance(node, ast.Call):
@@ -257,7 +350,12 @@ def analyze_controller_source(
         if owner is not None:
             assigned = _direct_assignment(node, parents)
             if assigned is None:
-                raise ControllerConformanceError("owner_result_unbound")
+                code = (
+                    "existing_root_owner_call_invalid"
+                    if name == "read_existing_root"
+                    else "owner_result_unbound"
+                )
+                raise ControllerConformanceError(code)
             if assigned in bindings or assigned in opaque:
                 raise ControllerConformanceError("owner_result_rebound")
             bindings[assigned] = owner
@@ -269,6 +367,8 @@ def analyze_controller_source(
                 effect_bindings[assigned] = provenance
             if owner == "DirectoryIdentity" and assigned in effect_bindings:
                 root_names.add(assigned)
+                if name == "read_existing_root":
+                    existing_root_bindings.add(assigned)
         elif name in _OPAQUE_CALLS:
             assigned = _direct_assignment(node, parents)
             if assigned is None:
@@ -287,8 +387,16 @@ def analyze_controller_source(
                 raise ControllerConformanceError("owner_result_unbound")
             root_reads.append((assigned, root_name))
 
-    if len({root_name for _assigned, root_name in root_reads}) > 1:
-        raise ControllerConformanceError("read_root_identity_not_shared")
+    for bound in existing_root_bindings:
+        stores = [
+            node
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Name)
+            and isinstance(node.ctx, ast.Store)
+            and node.id == bound
+        ]
+        if len(stores) != 1:
+            raise ControllerConformanceError("owner_result_rebound")
 
     fixture_constructor_edges: list[tuple[str, str, str]] = []
     root_chain_compositions: dict[str, tuple[str, tuple[str, ...], str]] = {}

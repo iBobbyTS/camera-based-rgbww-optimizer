@@ -13,6 +13,12 @@ from camera_based_rgbww_optimizer.utils.p7_retained_r3_provenance_io import (
 )
 
 
+OWNER_IMPORT = (
+    "from camera_based_rgbww_optimizer.utils.p7_retained_r3_provenance_io "
+    "import read_existing_root\n"
+)
+
+
 def runtime(body: str) -> bytes:
     return ("def controller():\n" + "".join(f"    {line}\n" for line in body.splitlines())).encode()
 
@@ -180,7 +186,7 @@ class ControllerConformanceTests(unittest.TestCase):
             "analyze_controller_source", "execute_controller_lifecycle",
             "validate_root_identity_chain",
         ])
-        self.assertEqual(len([name for name in dir(self) if name.startswith("test_")]), 20)
+        self.assertEqual(len([name for name in dir(self) if name.startswith("test_")]), 25)
 
     def test_15_transport_report_classifies_effect_and_fixture_bindings(self):
         report = subject.analyze_controller_source(runtime(
@@ -344,6 +350,190 @@ class ControllerConformanceTests(unittest.TestCase):
             [name for name in subject.__all__ if "analyze" in name],
             ["analyze_controller_source"],
         )
+
+    def test_21_existing_root_exact_import_direct_call_and_read_positive(self):
+        source = runtime(
+            OWNER_IMPORT
+            + "existing = read_existing_root(source_root)\n"
+            + "item = read_exact_file(source_path, root=existing)\n"
+            + "assert item.root == existing"
+        )
+        report = subject.analyze_controller_source(source)
+        self.assertEqual(
+            report.bound_results,
+            (("existing", "DirectoryIdentity"), ("item", "FileIdentity")),
+        )
+        self.assertEqual(report.root_reads, (("item", "existing"),))
+        self.assertEqual(
+            report.transport.effect_bindings,
+            (
+                ("existing", "DirectoryIdentity", "read_existing_root"),
+                ("item", "FileIdentity", "read_exact_file"),
+            ),
+        )
+        self.assertEqual(report.transport.effect_transport_uses, ())
+
+    def test_22_multiple_existing_and_created_roots_are_reported_deterministically(self):
+        source = runtime(
+            OWNER_IMPORT
+            + "alpha = read_existing_root(alpha_path)\n"
+            + "alpha_file = read_exact_file(alpha_child, root=alpha)\n"
+            + "beta = read_existing_root(beta_path)\n"
+            + "beta_file = read_exact_file(beta_child, root=beta)\n"
+            + "output = create_exclusive_root(output_path)\n"
+            + "output_file = read_exact_file(output_child, root=output)"
+        )
+        first = subject.analyze_controller_source(source)
+        second = subject.analyze_controller_source(source)
+        self.assertEqual(first, second)
+        self.assertEqual(
+            first.root_reads,
+            (
+                ("alpha_file", "alpha"),
+                ("beta_file", "beta"),
+                ("output_file", "output"),
+            ),
+        )
+        self.assertEqual(
+            tuple(item for item in first.transport.effect_bindings if item[1] == "DirectoryIdentity"),
+            (
+                ("alpha", "DirectoryIdentity", "read_existing_root"),
+                ("beta", "DirectoryIdentity", "read_existing_root"),
+                ("output", "DirectoryIdentity", "create_exclusive_root"),
+            ),
+        )
+
+    def test_23_existing_root_import_and_call_provenance_near_misses_rejected(self):
+        cases = {
+            "missing": (
+                "existing = read_existing_root(path)",
+                "existing_root_owner_import_invalid",
+            ),
+            "wrong_module": (
+                "from elsewhere import read_existing_root\nexisting = read_existing_root(path)",
+                "existing_root_owner_import_invalid",
+            ),
+            "duplicate": (
+                OWNER_IMPORT + OWNER_IMPORT + "existing = read_existing_root(path)",
+                "existing_root_owner_import_invalid",
+            ),
+            "alias": (
+                OWNER_IMPORT.replace("read_existing_root", "read_existing_root as acquire")
+                + "existing = acquire(path)",
+                "existing_root_owner_import_invalid",
+            ),
+            "wildcard": (
+                OWNER_IMPORT.replace("read_existing_root", "*")
+                + "existing = read_existing_root(path)",
+                "existing_root_owner_import_invalid",
+            ),
+            "attribute": (
+                OWNER_IMPORT
+                + "import camera_based_rgbww_optimizer.utils.p7_retained_r3_provenance_io as provenance\n"
+                + "existing = provenance.read_existing_root(path)",
+                "existing_root_owner_call_invalid",
+            ),
+            "local_shadow": (
+                OWNER_IMPORT
+                + "def read_existing_root(value):\n"
+                + "    return value\n"
+                + "existing = read_existing_root(path)",
+                "existing_root_owner_import_invalid",
+            ),
+            "argument_shadow": (
+                OWNER_IMPORT
+                + "def helper(read_existing_root):\n"
+                + "    return read_existing_root\n"
+                + "existing = read_existing_root(path)",
+                "existing_root_owner_import_invalid",
+            ),
+        }
+        for name, (body, code) in cases.items():
+            with self.subTest(name=name):
+                with self.assertRaises(subject.ControllerConformanceError) as raised:
+                    subject.analyze_controller_source(runtime(body))
+                self.assertEqual(raised.exception.code, code)
+
+    def test_24_existing_root_transport_and_read_shape_negatives_remain_closed(self):
+        prefix = OWNER_IMPORT + "existing = read_existing_root(path)\n"
+        cases = {
+            "constructor": (
+                "fixture = DirectoryIdentity(path='/x', device=1, inode=2, mode=448)\n"
+                "item = read_exact_file(child, root=fixture)",
+                "read_root_not_live_identity",
+            ),
+            "nested_owner": (
+                OWNER_IMPORT + "item = read_exact_file(child, root=read_existing_root(path))",
+                "existing_root_owner_call_invalid",
+            ),
+            "alias": (prefix + "alias = existing", "effect_alias_transport"),
+            "rebind": (prefix + "existing = other", "owner_result_rebound"),
+            "container": (prefix + "roots = [existing]", "effect_container_transport"),
+            "reflection": (prefix + "value = getattr(existing, 'path')", "reflection_rejected"),
+            "generic_helper": (prefix + "consume(existing)", "effect_generic_helper_transport"),
+            "rootless": (prefix + "item = read_exact_file(child)", "read_root_not_live_name"),
+            "positional": (
+                prefix + "item = read_exact_file(child, existing)",
+                "read_root_not_live_name",
+            ),
+            "non_name": (
+                prefix + "item = read_exact_file(child, root=(existing,))",
+                "read_root_not_live_name",
+            ),
+        }
+        for name, (body, code) in cases.items():
+            with self.subTest(name=name):
+                with self.assertRaises(subject.ControllerConformanceError) as raised:
+                    subject.analyze_controller_source(runtime(body))
+                self.assertEqual(raised.exception.code, code)
+
+    def test_25_created_existing_chain_schema_and_effect_escape_regressions(self):
+        positive = runtime(
+            OWNER_IMPORT
+            + "before = read_existing_root(source_root)\n"
+            + "item = read_exact_file(source_child, root=before)\n"
+            + "after = read_existing_root(source_root)\n"
+            + "chain = RootIdentityChain(before=before, files=(item,), after=after)\n"
+            + "validated = validate_root_identity_chain(chain)\n"
+            + "output = create_exclusive_root(output_root)\n"
+            + "output_item = read_exact_file(output_child, root=output)"
+        )
+        report = subject.analyze_controller_source(positive)
+        self.assertEqual(len(report.owner_fields), 9)
+        self.assertEqual(
+            report.transport.root_chain_compositions,
+            (("chain", "before", ("item",), "after"),),
+        )
+        self.assertEqual(
+            report.transport.root_chain_validations,
+            (("chain", "validate_root_identity_chain"),),
+        )
+        self.assertEqual(report.transport.effect_transport_uses, ())
+
+        tree = ast.parse(positive.decode("utf-8"))
+        imports = [
+            (node.module, tuple((alias.name, alias.asname) for alias in node.names))
+            for node in ast.walk(tree)
+            if isinstance(node, ast.ImportFrom) and any(
+                alias.name == "read_existing_root" for alias in node.names
+            )
+        ]
+        self.assertEqual(
+            imports,
+            [(
+                "camera_based_rgbww_optimizer.utils.p7_retained_r3_provenance_io",
+                (("read_existing_root", None),),
+            )],
+        )
+        self.assertEqual(subject._CALL_OWNERS["read_existing_root"], "DirectoryIdentity")
+
+        with self.assertRaises(subject.ControllerConformanceError) as raised:
+            subject.analyze_controller_source(runtime(
+                OWNER_IMPORT
+                + "existing = read_existing_root(path)\n"
+                + "leaked = helper(existing)"
+            ))
+        self.assertEqual(raised.exception.code, "effect_generic_helper_transport")
 
 
 if __name__ == "__main__":
