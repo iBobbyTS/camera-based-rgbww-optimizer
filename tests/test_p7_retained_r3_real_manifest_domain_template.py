@@ -92,7 +92,7 @@ class RealManifestDomainTemplateTests(unittest.TestCase):
             subject.RealManifestGitPathIdentity: ("repo_path", "before_blob_oid", "after_blob_oid", "before_sha256", "after_sha256", "binary_patch_sha256"),
             subject.RealManifestCommitIdentity: ("commit", "parent", "subject", "changed_paths", "full_patch_sha256"),
             subject.RealManifestInputIdentity: ("label", "path", "byte_count", "sha256", "device", "inode", "mode", "root_path", "root_device", "root_inode", "root_mode"),
-            subject.RealManifestBaselineIdentity: ("release_checkpoint", "helper_v1", "integration", "helper_path", "test_path", "seam_chain", "governance_manifest_sha256", "guide_sha256", "advisor_decision_sha256", "advisor_attachment_sha256", "human_governance_override", "helper_disposition"),
+            subject.RealManifestBaselineIdentity: ("release_checkpoint", "helper_v1", "integration", "helper_path", "test_path", "seam_chain", "governance_manifest_sha256", "guide_sha256", "lineage_owner_decision_evidence_sha256", "advisor_attachment_sha256", "human_governance_override", "helper_disposition"),
             subject.RealManifestDomainTemplateSpec: ("reference_task_id", "contract_id", "activation", "baseline", "c1_inputs", "retained_inputs", "source_path", "output_root", "repo_root", "process_argv"),
             subject.RealManifestDomainTemplateBundle: ("template_source", "template_sha256", "replacement_statement", "replacement_sha256", "runtime_request", "expected_bound_results", "expected_artifact_names", "expected_lifecycle_order"),
         }
@@ -161,6 +161,10 @@ class RealManifestDomainTemplateTests(unittest.TestCase):
         for path in (spec().baseline.helper_path, spec().baseline.test_path):
             self.assertIn(path, replacement)
         self.assertNotIn("allowlist", inspect.getsource(subject).lower())
+        self.assertEqual(len(fields(subject.RealManifestBaselineIdentity)), 12)
+        self.assertNotIn("advisor_decision_sha256", inspect.getsource(subject))
+        self.assertEqual(bundle.template_sha256, subject._CANONICAL_TEMPLATE_SHA256)
+        self.assertEqual(bundle.replacement_sha256, subject._GOLDEN_REPLACEMENT_SHA256)
         self.assert_code("baseline_identity_invalid", replace(spec(), baseline=replace(spec().baseline, seam_chain=spec().baseline.seam_chain[:1])))
 
     def test_07_c1_exact_four_labels_order_children_uniqueness_and_hashes(self):
@@ -369,7 +373,7 @@ class RealManifestDomainTemplateTests(unittest.TestCase):
                     seam.before_sha256, seam.after_sha256, seam.binary_patch_sha256,
                 ] for seam in baseline.seam_chain],
                 baseline.governance_manifest_sha256, baseline.guide_sha256,
-                baseline.advisor_decision_sha256, baseline.advisor_attachment_sha256,
+                baseline.lineage_owner_decision_evidence_sha256, baseline.advisor_attachment_sha256,
                 baseline.human_governance_override, baseline.helper_disposition,
             ],
             "c1": [[

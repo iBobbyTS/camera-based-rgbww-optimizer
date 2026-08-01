@@ -101,7 +101,7 @@ class RealManifestBaselineIdentity:
     seam_chain: tuple[RealManifestGitPathIdentity, ...]
     governance_manifest_sha256: str
     guide_sha256: str
-    advisor_decision_sha256: str
+    lineage_owner_decision_evidence_sha256: str
     advisor_attachment_sha256: str
     human_governance_override: str
     helper_disposition: str
@@ -415,7 +415,7 @@ def build_real_manifest_domain_template(
         _repo_path(baseline.helper_path), _repo_path(baseline.test_path), seam,
         _sha(baseline.governance_manifest_sha256, _SHA64, "sha256_invalid"),
         _sha(baseline.guide_sha256, _SHA64, "sha256_invalid"),
-        _sha(baseline.advisor_decision_sha256, _SHA64, "sha256_invalid"),
+        _sha(baseline.lineage_owner_decision_evidence_sha256, _SHA64, "sha256_invalid"),
         _sha(baseline.advisor_attachment_sha256, _SHA64, "sha256_invalid"),
         _plain(baseline.human_governance_override, "baseline_identity_invalid"),
         _plain(baseline.helper_disposition, "baseline_identity_invalid"),
