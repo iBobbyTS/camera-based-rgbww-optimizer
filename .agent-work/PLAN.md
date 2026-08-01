@@ -1,63 +1,50 @@
-# P7 retained-R3 Option B：B3-C3-C4-R1 repo-owned offline patch preflight owner
+# P7 retained-R3 Option B：B3-C3-C4-R1-I1 stable offline patch diagnostic
 
 **计划状态：** `WAITING_ORCHESTRATOR_ACTIVATION`
 
 **Planner 日期：** `2026-08-01`
 
-**Reference task：** `REF-P7-25-R2-B3-C3-C4-R1`
+**Reference task：** `REF-P7-25-R2-B3-C3-C4-R1-I1`
 
 **Contract：**
-`P7-TD-B-RETAINED-R3-OPTION-B-B3-C3-C4-R1-OFFLINE-PATCH-PREFLIGHT-OWNER-V1`
+`P7-TD-B-RETAINED-R3-OPTION-B-B3-C3-C4-R1-I1-STABLE-OFFLINE-PATCH-DIAGNOSTIC-V1`
 
-**当前唯一动作：** 新增一个repo-owned、pure-offline PLAN/FULL machine-row preflight + canonical patch diagnostic owner及其dedicated tests；本包只实现、
-测试并提交owner，不运行真实diagnostic。后续另起PLAN调用accepted stable entry。
+**当前唯一动作：** Orchestrator建立activation后，Executer以一个最小non-shell launcher读取activation commit中的PLAN/FULL bytes，构造冻结spec并调用
+accepted `run_offline_patch_preflight` exact一次；不实现parser/controller、不建root。Single canonical report + ER EOF handoff后停Planner。
 
 **唯一 Planner stop：**
-`B3_C3_C4_R1_OFFLINE_PATCH_PREFLIGHT_OWNER_WAITING_PLANNER_REVIEW`。
+`B3_C3_C4_R1_I1_STABLE_OFFLINE_PATCH_DIAGNOSTIC_WAITING_PLANNER_REVIEW`。
 
-**本轮新归档：** `.agent-work/PLANS/20260801-0806-p7-retained-r3-b3-c3-c4-c2-incomplete-full-preflight-review.md`；bytes
-`5123`，SHA-256 `57dd1e043c073fa98b8c89d739e1202eb1255bf5b5627b9232ada2bbf2b032c0`。
+**本轮新归档：** `.agent-work/PLANS/20260801-0824-p7-retained-r3-b3-c3-c4-r1-owner-acceptance-review.md`；bytes `4872`，SHA-256
+`89d9d139715c7eabe8d5cce5042a0fce2e0b8ca1c3bddca6e6f54321927bd4b1`。
 
-`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b3_c3_c4_r1_offline_patch_preflight_owner_v1","reference_task_id":"REF-P7-25-R2-B3-C3-C4-R1","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B3-C3-C4-R1-OFFLINE-PATCH-PREFLIGHT-OWNER-V1","execution_authorized_after_orchestrator_activation":true,"reviewed_c2":{"activation":"aa87fad66463fcb50da92c22e0b45460f5a8ab20","evidence_commit":"9e865683b718d1954582bc6ca17489d4582572a4","decision":"REJECTED_PHASE1_FALSE_SUCCESS_PLAN_ONLY_FULL_AND_REQUIRED_SUBSET_OMITTED","phase1_plan_parse_successes":1,"phase1_full_parse_attempts":0,"required_full_subset_exact_performed":false,"phase2_invocations":0,"root_creates":0,"canonical_git_diff_invocations":0,"retry":0,"fallback":0},"activation_commit":{"expected_parent":"9e865683b718d1954582bc6ca17489d4582572a4","expected_subject":"chore(plan): activate offline patch preflight owner","expected_changed_paths":[".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/PLANS/20260801-0806-p7-retained-r3-b3-c3-c4-c2-incomplete-full-preflight-review.md"],"clean_porcelain_required_after_activation":true},"implementation_commit":{"expected_parent_source":"current_activation_head_runtime","expected_subject":"feat(p7): own offline patch preflight diagnostic","expected_changed_paths":["src/camera_based_rgbww_optimizer/utils/p7_retained_r3_offline_patch_preflight.py","tests/test_p7_retained_r3_offline_patch_preflight.py"],"single_commit":true,"clean_porcelain_required_after_commit":true},"exact_write_paths":["src/camera_based_rgbww_optimizer/utils/p7_retained_r3_offline_patch_preflight.py","tests/test_p7_retained_r3_offline_patch_preflight.py"],"owner_contract":{"module":"camera_based_rgbww_optimizer.utils.p7_retained_r3_offline_patch_preflight","exports":["OfflinePatchPreflightError","MachineRowPreflightResult","CanonicalPatchDiagnosticSpec","OfflinePatchPreflightResult","run_offline_patch_preflight"],"entrypoint":"run_offline_patch_preflight","inputs":["plan_bytes","full_bytes","diagnostic_spec"],"dependencies":["run_git"],"default_run_git":"p7_retained_r3_provenance_io.run_read_only_git","canonical_report_encoder":"p7_retained_r3_provenance_io.canonical_json_bytes","frozen_dataclasses":true,"pure_offline":true,"filesystem_writes":0,"external_root_operations":0,"network_device_capability":false,"validator_eligibility_authority":false},"machine_row_contract":{"plan_inner_prefix":"PLAN_MACHINE_CONTRACT=","full_inner_prefix":"FULL_PLAN_MACHINE_STATE=","boundary_algorithm":["len(row) >= 2","row[0] == '`'","row[-1] == '`'","inner = row[1:-1]","inner.startswith(expected_prefix)","payload = inner[len(expected_prefix):]"],"row_count_each":1,"internal_backtick_scans":0,"strip":false,"regex":false,"duplicate_keys_rejected":true,"nonfinite_rejected":true,"required_full_subset_exact":true,"git_calls_before_preflight_success":0},"patch_contract":{"helper_compatible_argv_prefix":["git","diff","--binary","--full-index","--no-ext-diff"],"parent_child_sha40":true,"separator":"--","paths_utf8_sorted_unique":true,"git_invocations":1,"shell":false,"classification_exact_match":"CANONICAL_PATCH_EXACT_MATCH","classification_output_mismatch":"CANONICAL_PATCH_OUTPUT_MISMATCH","classification_git_failure":"CANONICAL_PATCH_GIT_FAILURE","canonical_report_bytes":true,"persist":false},"stable_error_codes":["invalid_plan_bytes","invalid_full_bytes","machine_row_utf8_invalid","machine_row_cr_invalid","plan_row_count_invalid","full_row_count_invalid","machine_row_json_invalid","machine_row_duplicate_key","machine_row_nonfinite","required_full_state_invalid","required_full_subset_mismatch","diagnostic_spec_invalid","patch_argv_invalid","patch_expectation_invalid","git_result_invalid"],"test_contract":{"new_test_methods":10,"targeted_command":".venv/bin/python -m unittest tests.test_p7_retained_r3_offline_patch_preflight","targeted_expected":10,"focused_command":".venv/bin/python -m unittest tests.test_p7_retained_r3_provenance_io tests.test_p7_retained_r3_offline_patch_preflight","focused_expected":38,"compileall_command":".venv/bin/python -m compileall -q src tests","full_command":"PYTHONUNBUFFERED=1 .venv/bin/python -m unittest discover -s tests -p 'test_*.py'","full_baseline":800,"full_expected":810,"postcommit_targeted_expected":10},"codegraph_contract":{"pre_edit_sync":1,"pre_edit_query":1,"post_edit_sync":1,"post_edit_query":1,"sync_before_query":true,"query_before_source_test_read_or_edit":true},"execution_budgets":{"implementation_commits":1,"execution_result_appends":1,"test_invocations":4,"compileall_invocations":1,"codegraph_sync":2,"codegraph_queries":2,"retry":0,"fallback":0},"required_full_machine_state":{"active_task_count":1,"active_task":"REF-P7-25-R2-B3-C3-C4-R1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B3-C3-C4-R1-OFFLINE-PATCH-PREFLIGHT-OWNER-V1","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","b3_c3_c4_status":"ACTIVE_OFFLINE_PATCH_PREFLIGHT_OWNER_IMPLEMENTATION","offline_patch_preflight_owner_status":"ACTIVE_IMPLEMENTATION","executer_dispatched":true,"device_authorized_by_this_file":false},"zero_budgets":{"third_code_test_path_writes":0,"p3_edits":0,"other_production_test_writes":0,"real_git_diagnostic_invocations":0,"external_root_operations":0,"failed_root_reads":0,"real_manifest_reads":0,"c1_input_reads":0,"retained_artifact_reads":0,"remaining_manifest_self_checks":0,"synthetic_runs":0,"actual_canonical_validator_calls":0,"canonical_validator_callbacks":0,"retained_release_audit":0,"eligibility_emissions":0,"release_generation":0,"release_qualification":0,"release_copy":0,"release_consumption":0,"network":0,"dns":0,"environment":0,"credentials":0,"device":0,"camera":0,"ray":0,"strip":0,"cleanup":0,"capture":0,"formal":0,"public_analyzer":0,"td_c":0,"sentinel":0,"p8":0,"firmware":0,"deployment":0,"plan_writes_by_executer":0,"full_writes_by_executer":0,"archive_writes_by_executer":0,"guide_writes":0,"research_writes":0},"expected_duration":"under_10_minutes","visible_terminal_required":false,"archive":{"path":".agent-work/PLANS/20260801-0806-p7-retained-r3-b3-c3-c4-c2-incomplete-full-preflight-review.md","bytes":5123,"sha256":"57dd1e043c073fa98b8c89d739e1202eb1255bf5b5627b9232ada2bbf2b032c0"},"planner_stop":"B3_C3_C4_R1_OFFLINE_PATCH_PREFLIGHT_OWNER_WAITING_PLANNER_REVIEW"}`
+`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b3_c3_c4_r1_i1_stable_offline_patch_diagnostic_v1","reference_task_id":"REF-P7-25-R2-B3-C3-C4-R1-I1","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B3-C3-C4-R1-I1-STABLE-OFFLINE-PATCH-DIAGNOSTIC-V1","execution_authorized_after_orchestrator_activation":true,"accepted_owner":{"activation":"a91b1ca059ab0265678e2bd64c1447c90f67e59a","implementation":"b929582521aa9e35a3bc1dcf163f1c22f1b7e2ae","evidence":"22712bf901da2ad1002514363796cf38ba941507","module":"camera_based_rgbww_optimizer.utils.p7_retained_r3_offline_patch_preflight","entrypoint":"run_offline_patch_preflight","source_blob":"f310d108872724ab07870696528706878e42e5dc","source_sha256":"ba5b9c178238ea70a07013aecfcf38888b207812a8972d7bfaaa1aef170a92f4","test_blob":"b4b43edfbcd17bc3c870d4735e768207120f26c3","test_sha256":"a0320587dd38ec15bf6e09477111760c095e03be7d80c75f15cc330d500d9529","status":"ACCEPTED_COMPLETE_REPO_OWNED_OFFLINE_PATCH_PREFLIGHT_OWNER"},"activation_commit":{"expected_parent":"22712bf901da2ad1002514363796cf38ba941507","expected_subject":"chore(plan): activate stable offline patch diagnostic","expected_changed_paths":[".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/PLANS/20260801-0824-p7-retained-r3-b3-c3-c4-r1-owner-acceptance-review.md"],"clean_porcelain_required_after_activation":true},"committed_inputs":{"plan_object":"<activation_commit>:.agent-work/PLAN.md","full_object":"<activation_commit>:.agent-work/FULL_PLAN_REFERENCE.md","git_show_invocations":2,"working_tree_plan_reads":0,"working_tree_full_reads":0},"diagnostic_spec":{"repo":"/Users/ibobby/Projects/WLED-RGBWW","parent_sha":"f2b38c530a6cbac5c29d761036eb3cd2a159f3b9","child_sha":"0f4c09e1b2b2afbf627f6f36d57a1a65847ab4a8","paths":["src/camera_based_rgbww_optimizer/utils/p7_retained_r3_real_manifest_domain_template.py","tests/test_p7_retained_r3_real_manifest_domain_template.py"],"expected_exit_code":0,"expected_stdout_bytes":6006,"expected_stdout_sha256":"4044c62434109516e16e1fe3daad5c56d1f3ea4558f092f2976aaaec02fc94c5","expected_stderr_bytes":0,"expected_stderr_sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","argv":["git","diff","--binary","--full-index","--no-ext-diff","f2b38c530a6cbac5c29d761036eb3cd2a159f3b9","0f4c09e1b2b2afbf627f6f36d57a1a65847ab4a8","--","src/camera_based_rgbww_optimizer/utils/p7_retained_r3_real_manifest_domain_template.py","tests/test_p7_retained_r3_real_manifest_domain_template.py"],"authoritative_identity_owner":"Planner read-only Git object audit at 22712bf","worktree_independent":true},"execution_budgets":{"launcher_process_invocations":1,"committed_object_git_show_invocations":2,"stable_owner_invocations":1,"canonical_patch_git_invocations":1,"canonical_report_stdout_envelopes":1,"process_table_scans":1,"execution_result_tail_reads":1,"execution_result_apply_patch_appends":1,"execution_result_appends":1,"postappend_operations":0,"retry":0,"fallback":0},"success_contract":{"owner_classification":"CANONICAL_PATCH_EXACT_MATCH","owner_report_canonical":true,"observed_argv_exact":true,"observed_exit_code":0,"observed_stdout_bytes":6006,"observed_stdout_sha256":"4044c62434109516e16e1fe3daad5c56d1f3ea4558f092f2976aaaec02fc94c5","observed_stderr_bytes":0,"observed_stderr_sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","success_label":"STABLE_OWNER_CANONICAL_PATCH_EXACT_MATCH"},"required_full_machine_state":{"active_task_count":1,"active_task":"REF-P7-25-R2-B3-C3-C4-R1-I1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B3-C3-C4-R1-I1-STABLE-OFFLINE-PATCH-DIAGNOSTIC-V1","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","b3_c3_c4_status":"ACTIVE_STABLE_OWNER_PATCH_DIAGNOSTIC","offline_patch_preflight_owner_status":"ACCEPTED_COMPLETE","executer_dispatched":true,"device_authorized_by_this_file":false},"orchestrator_commit_after_handoff":{"owner":"ORCHESTRATOR","executer_must_not_commit":true,"expected_subject":"chore(evidence): record stable offline patch diagnostic","expected_changed_paths":[".agent-work/EXECUTION_RESULT.md"]},"zero_budgets":{"code_writes":0,"test_writes":0,"implementation_commits":0,"one_off_parser_implementations":0,"one_off_controller_files":0,"external_root_operations":0,"failed_root_reads":0,"working_tree_plan_reads":0,"working_tree_full_reads":0,"working_tree_source_reads":0,"working_tree_test_reads":0,"tests":0,"compileall":0,"codegraph_sync":0,"codegraph_queries":0,"real_manifest_reads":0,"c1_input_reads":0,"retained_artifact_reads":0,"remaining_manifest_self_checks":0,"synthetic_runs":0,"actual_canonical_validator_calls":0,"canonical_validator_callbacks":0,"retained_release_audit":0,"eligibility_emissions":0,"release_generation":0,"release_qualification":0,"release_copy":0,"release_consumption":0,"network":0,"dns":0,"environment":0,"credentials":0,"device":0,"camera":0,"ray":0,"strip":0,"cleanup":0,"capture":0,"formal":0,"public_analyzer":0,"td_c":0,"sentinel":0,"p8":0,"firmware":0,"deployment":0,"plan_writes_by_executer":0,"full_writes_by_executer":0,"archive_writes_by_executer":0,"guide_writes":0,"research_writes":0},"authorization":{"classification":"PURE_OFFLINE_REPO_GIT_OBJECT_DIAGNOSTIC","human_device_authorization_required":false,"advisor_scientific_decision_required":false},"expected_duration":"under_10_minutes","visible_terminal_required":false,"archive":{"path":".agent-work/PLANS/20260801-0824-p7-retained-r3-b3-c3-c4-r1-owner-acceptance-review.md","bytes":4872,"sha256":"89d9d139715c7eabe8d5cce5042a0fce2e0b8ca1c3bddca6e6f54321927bd4b1"},"planner_stop":"B3_C3_C4_R1_I1_STABLE_OFFLINE_PATCH_DIAGNOSTIC_WAITING_PLANNER_REVIEW"}`
 
-## 1. Activation与scope
+## 1. Activation与stable-owner gate
 
-Activation必须是`9e865683b718d1954582bc6ca17489d4582572a4`的direct child，subject/path set与machine row exact、porcelain clean。
-Pre-edit CodeGraph sync/query必须先于source/test read/edit，确认P3 `canonical_json_bytes`与`run_read_only_git` contracts、new paths absent及baseline tests
-P3=28/full=800；不符即edits/tests/commit0并single ER。
+Activation必须是`22712bf...`direct child，subject/path set与PLAN/FULL strict machine subset exact、porcelain clean；accepted owner source/test
+blob/SHA与commit topology必须匹配machine row。任一失败则committed reads/owner/Git0，single ER后停。
 
-Exact write paths仅：
+## 2. 唯一stable invocation
 
-- `src/camera_based_rgbww_optimizer/utils/p7_retained_r3_offline_patch_preflight.py`；
-- `tests/test_p7_retained_r3_offline_patch_preflight.py`。
+Executer只启动一个minimal non-shell Python launcher。Launcher不得实现machine-row parsing、subset comparison、Git classification、canonical serializer或persist；它只：
 
-不得编辑P3/P4/P5、real-manifest owner、FULL/GUIDE或增加CLI/controller/root framework。
+1. 以`git show <activation>:PLAN`与`git show <activation>:FULL`各exact一次取得raw committed bytes，exit/stderr异常即停；
+2. 构造machine row exact `CanonicalPatchDiagnosticSpec`；
+3. 调用accepted `run_offline_patch_preflight(plan_bytes, full_bytes, spec)` exact一次，使用default P3 Git helper；
+4. 将returned canonical `report_bytes`原样写stdout一次；classification非exact match时launcher nonzero，但仍保留report供ER记录。
 
-## 2. Small owner API与reuse boundary
+不得生成source/controller文件、root或diagnostic artifact。Owner内部必须先验证PLAN+FULL+required subset，随后以helper-compatible argv运行Git exact一次。Expected
+identity来自Planner在HEAD `22712bf...`对相同immutable commit/path argv的single read-only Git object audit：stdout6006/SHA `4044c624...`，stderr empty。
 
-实现machine row冻结的5项exports与frozen dataclasses。`run_offline_patch_preflight(plan_bytes, full_bytes, diagnostic_spec, *,
-dependencies=None)`必须先完整解析PLAN与FULL、验证required subset，再调用`run_git` exact一次；preflight任何failure时Git calls0。
+## 3. EOF stop与locks
 
-Parser严格使用固定首尾索引、`row[1:-1]`与inner prefix；内部backtick不扫描。Strict UTF-8、无CR、row count1/1、duplicate/nonfinite rejection及
-required FULL exact subset全部属于同一owner，不允许caller跳过FULL。
+Launcher terminal后owned-process scan1并排除scan自身；不kill/cleanup。Executer tail-read ER1，以single apply_patch在physical EOF追加heading+strict JSON，包含
+activation/owner identities、committed object reads、owner canonical report完整facts、argv/expected/observed/classification、counts与locks；append后operations0、不commit。
 
-Patch argv必须是P3 `run_read_only_git`已allowlist的
-`git diff --binary --full-index --no-ext-diff <parent> <child> -- <sorted unique paths>`；旧one-off缺flag argv不进入owner。Default runner直接复用
-`run_read_only_git`，report bytes直接复用`canonical_json_bytes`；不得复制generic Git runner或canonical serializer。Owner只返回immutable typed result与
-canonical report bytes，不persist、不建root、无external/device/validator/eligibility能力。
+Mismatch/Git failure/preflight error均不retry、不fallback、不改owner，single ER后停；exact match也只停Planner，不恢复remaining checks。
 
-## 3. Dedicated tests与validation
+代码/测试/one-off parser/controller/root/worktree reads、real manifest/C1/retained、tests/CodeGraph/synthetic、validator/audit/eligibility/release、network/device/
+science/firmware/deployment全部0。Retained R3保持`RETAINED_UNVALIDATED_UNCONSUMED`。
 
-Dedicated exact10 methods覆盖：exports/frozen fields；valid PLAN+FULL/subset；embedded backticks不扫描；UTF-8/CR/row count；duplicate/nonfinite；missing或
-mismatched FULL subset且Git0；spec/hash/argv fail closed；exact Git match；output mismatch/Git failure；canonical report/no-I/O并验证run_git exact once。
-
-验证顺序各exact一次：targeted10、focused38、compileall、full810、post-edit CodeGraph sync/query、`git diff --check`、exact two-path commit
-`feat(p7): own offline patch preflight diagnostic`、postcommit targeted10。任一失败立即停，不retry/fallback/second commit；single ER EOF append记录topology、
-API、tests、CodeGraph、blobs/patch与locks。
-
-## 4. Locks
-
-本实现包真实Git diagnostic、external roots/failed roots、real manifest/C1/retained、remaining checks/synthetic、validator/audit/eligibility/release、network/device/
-science/firmware/deployment全部0。Retained R3保持`RETAINED_UNVALIDATED_UNCONSUMED`。无Advisor或Human授权需求。
-
-维护性判断：两路径owner将重复失败的parser+diagnostic收敛为单一typed、专测边界，并复用P3 canonical JSON/Git helpers；接受后下一包只调用稳定入口。
+维护性判断：本包只有薄launcher调用accepted typed owner；解析、subset、Git与canonical report职责不再散落，且无新增持久化框架。
