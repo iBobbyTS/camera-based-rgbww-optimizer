@@ -21,6 +21,7 @@ from camera_based_rgbww_optimizer.utils.p7_retained_r3_provenance_io import (
     FileIdentity,
     GitLedger,
     canonical_json_bytes,
+    run_read_only_git,
 )
 
 
@@ -210,6 +211,28 @@ class RealManifestDomainTemplateTests(unittest.TestCase):
         self.assertEqual(calls.count("read_exact_file"), 12)
         self.assertEqual(source.count(b".exit_code"), 56)
         self.assertNotIn(b".returncode", source)
+        git_calls = [
+            node for node in ast.walk(tree)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "run_read_only_git"
+        ]
+        self.assertEqual(len(git_calls), 56)
+        for index, call in enumerate(git_calls):
+            self.assertEqual(len(call.args), 2)
+            self.assertIsInstance(call.args[0], ast.Name)
+            self.assertEqual(call.args[0].id, "REPO_ROOT")
+            self.assertIsInstance(call.args[1], ast.Tuple)
+            argv = call.args[1].elts
+            self.assertEqual(tuple(ast.literal_eval(item) for item in argv[:4]), (
+                "git", "show", "-s", "--format=%H%x00%P%x00%s",
+            ))
+            self.assertEqual(len(argv), 5)
+            self.assertIsInstance(argv[4], ast.Subscript)
+            self.assertIsInstance(argv[4].value, ast.Name)
+            self.assertEqual(argv[4].value.id, "GIT_TARGETS")
+            self.assertIsInstance(argv[4].slice, ast.Constant)
+            self.assertEqual(argv[4].slice.value, index % 7)
 
     def test_11_p4_report_live_roots_reads_chain_and_effect_transport_are_exact(self):
         source = compose_controller_source(subject.build_real_manifest_domain_template(spec()).runtime_request).source
@@ -266,6 +289,8 @@ class RealManifestDomainTemplateTests(unittest.TestCase):
         namespace: dict[str, object] = {"__name__": "fake_controller"}
         exec(source, namespace)
         stored: dict[str, FileIdentity] = {}
+        recorded_argv: list[tuple[str, ...]] = []
+        git_ledgers: list[GitLedger] = []
         root_counter = 0
 
         def existing(path: str) -> DirectoryIdentity:
@@ -291,10 +316,41 @@ class RealManifestDomainTemplateTests(unittest.TestCase):
             create_exclusive_root=create,
             read_exact_file=read,
             persist_canonical_json=persist,
-            run_read_only_git=lambda *_args: GitLedger(("git",), "/repo", 0, b"", b"", SHA64, SHA64),
+            run_read_only_git=lambda repo, argv: (
+                recorded_argv.append(argv),
+                git_ledgers.append(run_read_only_git(
+                    repo,
+                    argv,
+                    dependencies={"run_process": lambda *_args, **_kwargs: SimpleNamespace(
+                        returncode=0, stdout=b"verified\n", stderr=b"",
+                    )},
+                )),
+                git_ledgers[-1],
+            )[-1],
         )
         self.assertEqual(namespace["controller"]()["artifact_count"], 5)  # type: ignore[index,operator]
         current = spec()
+        expected_targets = (
+            current.activation.commit,
+            current.activation.parent,
+            current.baseline.release_checkpoint,
+            current.baseline.helper_v1,
+            current.baseline.integration,
+            current.baseline.seam_chain[0].before_blob_oid,
+            current.baseline.seam_chain[1].before_blob_oid,
+        )
+        self.assertEqual(len(recorded_argv), 56)
+        self.assertEqual(tuple(argv[-1] for argv in recorded_argv), tuple(
+            expected_targets[index % 7] for index in range(56)
+        ))
+        for index, (argv, ledger) in enumerate(zip(recorded_argv, git_ledgers, strict=True)):
+            self.assertEqual(argv, (
+                "git", "show", "-s", "--format=%H%x00%P%x00%s",
+                expected_targets[index % 7],
+            ))
+            self.assertEqual(ledger.argv, argv)
+            self.assertEqual(ledger.exit_code, 0)
+            self.assertEqual(ledger.stderr, b"")
         activation = current.activation
         baseline = current.baseline
         manifest_path = current.output_root + "/" + bundle.expected_artifact_names[0]

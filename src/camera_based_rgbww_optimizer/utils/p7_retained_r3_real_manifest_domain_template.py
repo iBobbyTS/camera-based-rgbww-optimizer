@@ -134,7 +134,7 @@ class RealManifestDomainTemplateBundle:
 
 
 _GIT_LINES = "\n".join(
-    f'        git_{index:02d} = run_read_only_git(REPO_ROOT, ("git", "show", "-s", "--format=%H", GIT_TARGETS[{index % 7}]))\n'
+    f'        git_{index:02d} = run_read_only_git(REPO_ROOT, ("git", "show", "-s", "--format=%H%x00%P%x00%s", GIT_TARGETS[{index % 7}]))\n'
     f'        phase_state["git_{index:02d}"] = git_{index:02d}.exit_code == 0 and git_{index:02d}.stderr == b""'
     for index in range(56)
 )
@@ -288,7 +288,7 @@ if __name__ == "__main__":
 '''
 
 _CANONICAL_TEMPLATE = (_TEMPLATE_PREFIX + _GIT_LINES + _TEMPLATE_SUFFIX).encode("utf-8")
-_CANONICAL_TEMPLATE_SHA256 = "4819a57be714bf0cd8760d3bc9f59b7d92d889b0fc1ee802e2b9a092ea14ce32"
+_CANONICAL_TEMPLATE_SHA256 = "a83804d299c747c485dda86eecd3bcb576a90bb2be3c2ae03fe77951ed404ad6"
 _GOLDEN_REPLACEMENT_SHA256 = "55c43ad338a83c11a2b2c8d2c5714a9efaf75ec4215dd30e103d540b0c6502ec"
 
 
