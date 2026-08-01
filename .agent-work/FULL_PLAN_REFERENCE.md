@@ -14,11 +14,11 @@
 
 **当前代码 checkpoint：** `9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e`
 
-**当前可执行任务数：** `0`
+**当前可执行任务数：** `1`
 
-**当前 active task：** `无；REF-P7-25-R2-B2-M1 等待 Planner executable package`
+**当前 active task：** `REF-P7-25-R2-B2-M1 repo-owned real-manifest-v2 domain-template owner`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-31","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":0,"active_task":null,"active_plan_contract_id":null,"next_reference_task":"REF-P7-25-R2-B2-M1","next_reference_status":"PLANNER_PACKAGE_REQUIRED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P7_I1_ACCEPTED_REAL_MANIFEST_DOMAIN_OWNER_PENDING_PLANNER_PACKAGE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","p6_domain_template_owner_status":"ACCEPTED_COMPLETE_DETERMINISTIC_DOMAIN_TEMPLATE_OWNER_WITH_RUNNABLE_CONTRACT_RESIDUAL","p6_candidate_commit":"48b3979d6c0df5f488cd500597e26dc4c38877dd","p6_candidate_consumable":true,"p5_runtime_owner_status":"ACCEPTED_COMPLETE_REPO_OWNED_CONTROLLER_RUNTIME_OWNER","p7_status":"ACCEPTED_COMPLETE_REPO_OWNED_RUNNABLE_DOMAIN_TEMPLATE_OWNER","p7_candidate_commit":"864f08cc5436519a37e41d553e49ebde4a3c8bb2","p7_candidate_consumable":true,"p7_candidate_consumable_scope":"PURE_OFFLINE_SYNTHETIC_INTEGRATION_INPUT_ONLY","p7_synthetic_integration_qualified":true,"p7_i1_status":"ACCEPTED_COMPLETE_FRESH_SYNTHETIC_INTEGRATION_QUALIFIED_NOT_RETAINED_ELIGIBLE","real_manifest_domain_owner_status":"MISSING_PLANNER_PACKAGE_REQUIRED","executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-31","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-M1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-REAL-MANIFEST-DOMAIN-TEMPLATE-V1","next_reference_task":"REF-P7-25-R2-B2-M1","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"M1_REAL_MANIFEST_DOMAIN_OWNER_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","p6_domain_template_owner_status":"ACCEPTED_COMPLETE_DETERMINISTIC_DOMAIN_TEMPLATE_OWNER_WITH_RUNNABLE_CONTRACT_RESIDUAL","p6_candidate_commit":"48b3979d6c0df5f488cd500597e26dc4c38877dd","p6_candidate_consumable":true,"p5_runtime_owner_status":"ACCEPTED_COMPLETE_REPO_OWNED_CONTROLLER_RUNTIME_OWNER","p7_status":"ACCEPTED_COMPLETE_REPO_OWNED_RUNNABLE_DOMAIN_TEMPLATE_OWNER","p7_candidate_commit":"864f08cc5436519a37e41d553e49ebde4a3c8bb2","p7_candidate_consumable":true,"p7_candidate_consumable_scope":"PURE_OFFLINE_SYNTHETIC_INTEGRATION_INPUT_ONLY","p7_synthetic_integration_qualified":true,"p7_i1_status":"ACCEPTED_COMPLETE_FRESH_SYNTHETIC_INTEGRATION_QUALIFIED_NOT_RETAINED_ELIGIBLE","real_manifest_domain_owner_status":"ACTIVE_IMPLEMENTATION","executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -328,7 +328,7 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-B2-P7-I1` | `REJECTED_TERMINAL_COUNT_SNAPSHOT_INCONSISTENCY_INTEGRATION_SEMANTICS_PROVISIONALLY_PROVEN` | one fresh pure-offline synthetic integration composing accepted P5/P6/P7 owners | E1 evidence supersession | Planner/Executer |
 | `REF-P7-25-R2-B2-P7-I1-E1` | `REJECTED_TRANSIENT_AUDIT_DOMAIN_ASSERTION` | append-only supersession of two terminal cumulative counts | E1-C1 data-owner correction | Planner/Executer |
 | `REF-P7-25-R2-B2-P7-I1-E1-C1` | `ACCEPTED_COMPLETE_FRESH_SYNTHETIC_INTEGRATION_QUALIFIED_NOT_RETAINED_ELIGIBLE` | bounded audit with exact process/root evidence-owner mapping, then append-only supersession | M1 real-manifest domain owner | Planner/Executer |
-| `REF-P7-25-R2-B2-M1` | `PLANNER_PACKAGE_REQUIRED` | implement repo-owned deterministic real-manifest-v2 domain template owner | P7-I1 accepted; CodeGraph proves owner missing | Planner/Executer |
+| `REF-P7-25-R2-B2-M1` | `ACTIVE_EXECUTION_AUTHORIZED` | implement repo-owned deterministic real-manifest-v2 domain template owner | P7-I1 accepted; CodeGraph proves owner missing | Planner/Executer |
 | `REF-P7-25-R2-B2-M1-I1` | `BLOCKED_ON_M1_ACCEPTANCE` | fresh pure-offline integration of real-manifest template with synthetic fixtures | M1 accepted | Planner/Executer |
 | `REF-P7-25-R2-B2-M1-R1` | `BLOCKED_ON_M1_I1_ACCEPTANCE` | one fresh real-input manifest-only B2 execution | M1-I1 accepted | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-V1` | `ACCEPTED_COMPLETE` | one final-source full suite with retained terminal exit/count | 755/755 accepted | Planner/Executer |
@@ -3932,7 +3932,7 @@ source/root exact identities与exact9/matrix16保持。Planner acceptance archiv
 
 ### REF-P7-25-R2-B2-M1：repo-owned real-manifest-v2 domain-template owner
 
-**状态：** `PLANNER_PACKAGE_REQUIRED`。Orchestrator以CodeGraph核对current source：P7 owner的artifact names与payload固定为`synthetic-*`、
+**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。Orchestrator以CodeGraph核对current source：P7 owner的artifact names与payload固定为`synthetic-*`、
 `integration-qualification`与synthetic terminal；existing exact-five owner属于五文件commit/validator callback lifecycle；current repository没有任何
 production public owner构建或持久化schema `p7_retained_r3_audit_provenance_manifest_v2`。因此不得把P7 synthetic template直接用于real retained
 execution，也不得恢复一次性external controller。
@@ -3946,7 +3946,12 @@ root、before/after identities、strict canonical manifest/seal/terminal/admissi
 spec注入并exact验证。Canonical validator callback/call、eligibility、release、network/device/science surface必须不存在。Dedicated tests至少覆盖
 determinism、exact bytes/hash、API/type/path/hash validation、schema/status、owner import/call inventory、C1/retained cardinality、Git56、lifecycle,
 failure dominance、no-I/O/no-authority和runnable compile；禁止generic allowlist与parallel owner。M1实现自身retained reads、external root/process、validator/
-release/network/device全部0；Planner须冻结exact scope、test counts、CodeGraph sync/query、commit与stop。当前reference不授权执行。
+release/network/device全部0。此前reference本身不授权执行；现仅由active PLAN授权下述exact implementation package。
+Active PLAN已冻结exact public dataclasses/API、generated-source inventory、stable validation codes、targeted13/focused74/full791、CodeGraph pre/post
+sync+query、exact two-path implementation commit `feat(p7): own real manifest domain template`与posttarget13。Activation archive
+`.agent-work/PLANS/20260731-2057-p7-retained-r3-b2-p7-i1-acceptance-route-transition.md`，bytes`2871`，SHA-256
+`3d5b8934cd03ce94fb164c9693fb361da251a64ccc3ed06ae573f461e953e0cc`；exact stop
+`B2_M1_REAL_MANIFEST_DOMAIN_TEMPLATE_OWNER_WAITING_PLANNER_REVIEW`。
 
 ### REF-P7-25-R2-B2-M1-I1：real-manifest template pure-offline integration
 
@@ -4769,10 +4774,10 @@ accepted B2-P7-C1-C1-C1-C1-V1-C1-V1-C1-C1 result = REPO_OWNED_RUNNABLE_DOMAIN_TE
 rejected B2-P7-I1 result = TERMINAL_COUNT_SNAPSHOT_INCONSISTENCY; integration semantics provisionally proven
 rejected B2-P7-I1-E1 result = TRANSIENT_AUDIT_DOMAIN_ASSERTION; source/root/ER immutable
 accepted B2-P7-I1-E1-C1 result = FRESH_SYNTHETIC_INTEGRATION_QUALIFIED_NOT_RETAINED_ELIGIBLE
-active task = none; Planner stop awaiting REF-P7-25-R2-B2-M1 executable package
-active contract = none
-active executable task count = 0
-next reference task = REF-P7-25-R2-B2-M1 PLANNER_PACKAGE_REQUIRED
+active task = REF-P7-25-R2-B2-M1 repo-owned real-manifest-v2 domain-template owner
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-REAL-MANIFEST-DOMAIN-TEMPLATE-V1
+active executable task count = 1
+next reference task = REF-P7-25-R2-B2-M1 ACTIVE_EXECUTION_AUTHORIZED
 selected state C shutter = 1/2500
 device/network/camera/light = forbidden by active PLAN
 release qualification/generation/copy/consumption = forbidden
