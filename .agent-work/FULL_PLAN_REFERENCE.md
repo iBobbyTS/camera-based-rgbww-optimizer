@@ -14,11 +14,11 @@
 
 **当前代码 checkpoint：** `9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e`
 
-**当前可执行任务数：** `1`
+**当前可执行任务数：** `0`
 
-**当前 active task：** `REF-P7-25-R2-B2-P7-C1-C1-C1-C1-V1-C1-V1-C1-C1 Markdown machine-row delimiter validation closure`
+**当前 active task：** `无；REF-P7-25-R2-B2-P7-I1 等待 Planner executable package`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-31","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-P7-C1-C1-C1-C1-V1-C1-V1-C1-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P7-C1-C1-C1-C1-V1-C1-V1-C1-C1-MARKDOWN-MACHINE-ROW-DELIMITER-VALIDATION-CLOSURE-V1","next_reference_task":"REF-P7-25-R2-B2-P7-C1-C1-C1-C1-V1-C1-V1-C1-C1","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P7_C1_C1_C1_C1_V1_C1_V1_C1_C1_MARKDOWN_MACHINE_ROW_DELIMITER_VALIDATION_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","p6_domain_template_owner_status":"ACCEPTED_COMPLETE_DETERMINISTIC_DOMAIN_TEMPLATE_OWNER_WITH_RUNNABLE_CONTRACT_RESIDUAL","p6_candidate_commit":"48b3979d6c0df5f488cd500597e26dc4c38877dd","p6_candidate_consumable":true,"p5_runtime_owner_status":"ACCEPTED_COMPLETE_REPO_OWNED_CONTROLLER_RUNTIME_OWNER","p7_status":"REJECTED_GATE_HARNESS_MARKDOWN_MACHINE_ROW_REGEX_DEFECT_CANDIDATE_IMMUTABLE_NON_CONSUMABLE","p7_candidate_commit":"864f08cc5436519a37e41d553e49ebde4a3c8bb2","p7_candidate_consumable":false,"p7_implementation_commits":0,"executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-31","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":0,"active_task":null,"active_plan_contract_id":null,"next_reference_task":"REF-P7-25-R2-B2-P7-I1","next_reference_status":"PLANNER_PACKAGE_REQUIRED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P7_ACCEPTED_FRESH_SYNTHETIC_INTEGRATION_ROUTE_PENDING_PLANNER_PACKAGE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","p6_domain_template_owner_status":"ACCEPTED_COMPLETE_DETERMINISTIC_DOMAIN_TEMPLATE_OWNER_WITH_RUNNABLE_CONTRACT_RESIDUAL","p6_candidate_commit":"48b3979d6c0df5f488cd500597e26dc4c38877dd","p6_candidate_consumable":true,"p5_runtime_owner_status":"ACCEPTED_COMPLETE_REPO_OWNED_CONTROLLER_RUNTIME_OWNER","p7_status":"ACCEPTED_COMPLETE_REPO_OWNED_RUNNABLE_DOMAIN_TEMPLATE_OWNER","p7_candidate_commit":"864f08cc5436519a37e41d553e49ebde4a3c8bb2","p7_candidate_consumable":true,"p7_candidate_consumable_scope":"FUTURE_PURE_OFFLINE_SYNTHETIC_INTEGRATION_INPUT_ONLY","p7_synthetic_integration_qualified":false,"executer_dispatched":false,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -324,7 +324,8 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-B2-P7-C1-C1-C1-C1-V1-C1` | `REJECTED_PRE_GATE_LOGICAL_EXIT_PERSISTENCE_WRAPPER_FAILURE_CANDIDATE_IMMUTABLE_NON_CONSUMABLE` | reject physical NUL at outer plain spec boundary while preserving template bytes | V1 wrapper closure | Planner/Executer |
 | `REF-P7-25-R2-B2-P7-C1-C1-C1-C1-V1-C1-V1` | `REJECTED_PRE_GATE_INITIAL_CLEAN_SELF_CONTAMINATION_CANDIDATE_IMMUTABLE_NON_CONSUMABLE` | validate immutable outer-NUL candidate with ordinary pregate_exit wrapper | deferred append closure | Planner/Executer |
 | `REF-P7-25-R2-B2-P7-C1-C1-C1-C1-V1-C1-V1-C1` | `REJECTED_GATE_HARNESS_MARKDOWN_MACHINE_ROW_REGEX_DEFECT_CANDIDATE_IMMUTABLE_NON_CONSUMABLE` | defer all ER bytes until full terminal validation completes | Markdown machine-row delimiter closure | Planner/Executer |
-| `REF-P7-25-R2-B2-P7-C1-C1-C1-C1-V1-C1-V1-C1-C1` | `ACTIVE_EXECUTION_AUTHORIZED` | validate exact backtick-wrapped Markdown machine rows without changing the candidate | gate delimiter defect | Planner/Executer |
+| `REF-P7-25-R2-B2-P7-C1-C1-C1-C1-V1-C1-V1-C1-C1` | `ACCEPTED_COMPLETE_REPO_OWNED_RUNNABLE_DOMAIN_TEMPLATE_OWNER` | validate exact backtick-wrapped Markdown machine rows without changing the candidate | P7-I1 fresh synthetic integration | Planner/Executer |
+| `REF-P7-25-R2-B2-P7-I1` | `PLANNER_PACKAGE_REQUIRED` | one fresh pure-offline synthetic integration composing accepted P5/P6/P7 owners | P7 acceptance | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-V1` | `ACCEPTED_COMPLETE` | one final-source full suite with retained terminal exit/count | 755/755 accepted | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-I1` | `REJECTED_PRE_EFFECT_OWNER_ALIAS_ESCAPE` | fresh synthetic external integration of accepted repo owner | I1-C1 correction | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-I1-C1` | `REJECTED_PRE_EFFECT_LIVE_OWNER_CONTAINER_WRITE_FIELD_ONLY_CORRECTION_REQUIRED` | direct/nonlocal live owner bindings with plain-projection transport | I1-C1-C1 correction | Planner/Executer |
@@ -3853,13 +3854,36 @@ commit及external/retained/device调用均为0。Archive
 
 ### REF-P7-25-R2-B2-P7-C1-C1-C1-C1-V1-C1-V1-C1-C1：Markdown machine-row delimiter validation closure
 
-**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。Contract为
+**状态：** `ACCEPTED_COMPLETE_REPO_OWNED_RUNNABLE_DOMAIN_TEMPLATE_OWNER`。Contract为
 `P7-TD-B-RETAINED-R3-OPTION-B-B2-P7-C1-C1-C1-C1-V1-C1-V1-C1-C1-MARKDOWN-MACHINE-ROW-DELIMITER-VALIDATION-CLOSURE-V1`。
 Code/test/commit0，candidate `864f08c...` immutable/non-consumable pending Planner review。Gate只允许对PLAN与FULL各匹配恰好一条line-anchored、literal
 opening/trailing backtick包裹的machine row，并strict JSON decode；generic parser、fallback、row repair/regeneration均禁止。继续遵守deferred ER contract：
 initial clean、完整pre-gate、fresh targeted11、focused93、compileall、full778与final clean全通过后才允许single EOF append，并持久化真实
 `PRE_GATE_LOGICAL_EXIT=0`一次；失败时不得留下ER bytes。CodeGraph0，retry0，external/retained/validator/release/network/device/formal0。Exact stop
 `B2_P7_C1_C1_C1_C1_V1_C1_V1_C1_C1_MARKDOWN_MACHINE_ROW_DELIMITER_VALIDATION_WAITING_PLANNER_REVIEW`。
+
+Validation evidence commit `2e969389ded82fe0e6c3d6d19431c46c8e38cbd3`证明initial-clean、corrected pre-gate、targeted11、
+focused93、compileall、unique full778与final-clean均exact1/exit0；stream reconnect没有重跑已完成stage，ER仅在terminal后single append13行且
+success marker增量1。Planner接受candidate `864f08c...`为repo-owned runnable domain-template owner，仅可作为未来pure-offline synthetic integration
+input；尚未证明synthetic integration，不授权retained/validator/release/device。Acceptance archive
+`.agent-work/PLANS/20260731-1914-p7-retained-r3-b2-p7-machine-row-validation-acceptance-review.md`，bytes`8975`，SHA-256
+`bfee8d096d57e56044f4c143a615118a10a6d58436b3415662193ca594d45be4`。
+
+### REF-P7-25-R2-B2-P7-I1：accepted-owner fresh synthetic integration qualification
+
+**状态：** `PLANNER_PACKAGE_REQUIRED`。Orchestrator选择新的stable successor，不重试或复用旧P5-I1/一次性controller路径。下一Planner包只允许组合
+accepted P5 runtime owner `37f7d0021c7a81a9d6680815bc51c305cf807a7b`、P6 deterministic builder owner
+`48b3979d6c0df5f488cd500597e26dc4c38877dd`和P7 runnable-template owner
+`864f08cc5436519a37e41d553e49ebde4a3c8bb2`；outer只能构造fresh immutable synthetic request并调用既有builder/runtime public owners，禁止第二
+controller writer、analyzer/classifier、serializer或lifecycle state machine。
+
+该包为一次fresh pure-offline qualification：source/root在`/Volumes/4T/temp/rgbww-optimizer`下使用activation-derived唯一新路径，起始必须不存在且
+失败后不可复用；source create/read/process与root create各exact1，retry/fallback0。合同必须冻结Git6、single physical root before/after identity、
+same-root synthetic4 reads、matrix16、exact9 artifacts、qualification→terminal→seal→admission、primary-failure dominance与single canonical stdout
+envelope，并由repo-owned runtime的exclusive O_EXCL/O_NOFOLLOW write/read/launch/report拥有effects。Code/test/production writes与implementation commit0；
+只允许本地synthetic source/root/process及其durable evidence。Retained R3/candidate payload、real B2、subordinate manifest、canonical validator、eligibility、
+retained audit、release、network/DNS/env/credentials/device/camera/Ray/strip/cleanup/capture/FORMAL/public analyzer/TD-C/sentinel/P8/firmware/deployment
+全部保持0。Planner必须给出fresh path derivation、exact invocation/effect budgets、terminal evidence/cleanup ownership和失败stop；当前reference本身不授权执行。
 
 ### REF-P7-25-R2-B2-P3：repo-owned provenance I/O boundary
 
@@ -4665,10 +4689,11 @@ rejected B2-P7-C1-C1-C1-C1-V1 result = OUTER_PLAIN_PHYSICAL_NUL_REJECTION_MISSIN
 rejected B2-P7-C1-C1-C1-C1-V1-C1 result = PRE_GATE_LOGICAL_EXIT_PERSISTENCE_WRAPPER_FAILURE; candidate864f08c nonconsumable
 rejected B2-P7-C1-C1-C1-C1-V1-C1-V1 result = PRE_GATE_INITIAL_CLEAN_SELF_CONTAMINATION; candidate864f08c nonconsumable
 rejected B2-P7-C1-C1-C1-C1-V1-C1-V1-C1 result = GATE_HARNESS_MARKDOWN_MACHINE_ROW_REGEX_DEFECT; candidate864f08c nonconsumable
-active task = REF-P7-25-R2-B2-P7-C1-C1-C1-C1-V1-C1-V1-C1-C1 Markdown machine-row delimiter validation closure
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-P7-C1-C1-C1-C1-V1-C1-V1-C1-C1-MARKDOWN-MACHINE-ROW-DELIMITER-VALIDATION-CLOSURE-V1
-active executable task count = 1
-next reference task = REF-P7-25-R2-B2-P7-C1-C1-C1-C1-V1-C1-V1-C1-C1 ACTIVE_EXECUTION_AUTHORIZED
+accepted B2-P7-C1-C1-C1-C1-V1-C1-V1-C1-C1 result = REPO_OWNED_RUNNABLE_DOMAIN_TEMPLATE_OWNER; candidate864f08c offline-integration-consumable
+active task = none; Planner stop awaiting REF-P7-25-R2-B2-P7-I1 executable package
+active contract = none
+active executable task count = 0
+next reference task = REF-P7-25-R2-B2-P7-I1 PLANNER_PACKAGE_REQUIRED
 selected state C shutter = 1/2500
 device/network/camera/light = forbidden by active PLAN
 release qualification/generation/copy/consumption = forbidden
