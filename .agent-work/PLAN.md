@@ -1,121 +1,125 @@
-# REF-P7-25-R2-B2-P7-I1：accepted-owner fresh synthetic integration qualification
+# REF-P7-25-R2-B2-P7-I1-E1：synthetic integration terminal-count evidence supersession
 
 **计划状态：** `WAITING_ORCHESTRATOR_ACTIVATION`
 
 **Planner 日期：** `2026-07-31`
 
-**Reference task：** `REF-P7-25-R2-B2-P7-I1`
+**Reference task：** `REF-P7-25-R2-B2-P7-I1-E1`
 
 **Contract ID：**
-`P7-TD-B-RETAINED-R3-OPTION-B-B2-P7-I1-ACCEPTED-OWNER-FRESH-SYNTHETIC-INTEGRATION-QUALIFICATION-V1`
+`P7-TD-B-RETAINED-R3-OPTION-B-B2-P7-I1-E1-TERMINAL-COUNT-EVIDENCE-SUPERSESSION-V1`
 
 **当前唯一动作：** Orchestrator审核本PLAN、同步其独占FULL，并以当前clean HEAD
-`9d8573fd4155851adc6e71b3b0ccc50365f6f6d3`为direct parent创建exact activation commit。Activation完成且worktree clean后，Executer只运行一次fresh pure-offline integration：用activation HEAD派生一个从未存在的source/root，构造一个immutable
-`ControllerDomainTemplateSpec`，调用accepted P6/P7 builder exact once，再把其`runtime_request`交给accepted P5 runtime exact once。不得重试旧P5-I1、恢复一次性external controller或进入retained/validator/release/device路线。
+`6c85cdb07a115b16c3879805c0a14f37b866f0df`为direct parent创建exact activation
+commit。Activation完成且worktree clean后，Executer只读重验immutable P7-I1 source、
+root、activation/evidence commit和ER prefix，然后向ER做一次append-only supersession：
+只纠正旧terminal record的两个历史累计计数，不修改任何旧byte，不重跑integration。
 
 **唯一 Planner stop：**
-`B2_P7_I1_ACCEPTED_OWNER_FRESH_SYNTHETIC_INTEGRATION_WAITING_PLANNER_REVIEW`。
+`B2_P7_I1_E1_TERMINAL_COUNT_EVIDENCE_SUPERSESSION_WAITING_PLANNER_REVIEW`。
 
 **本轮新归档：**
-`.agent-work/PLANS/20260731-1921-p7-retained-r3-b2-p7-acceptance-route-review.md`；bytes `3290`，SHA-256
-`e892edcbf301d9222969318970cd5999411df8a07308af9e54686b83319a2d84`；不得覆盖earlier archives。
+`.agent-work/PLANS/20260731-2023-p7-retained-r3-b2-p7-i1-synthetic-integration-review.md`；bytes
+`8853`，SHA-256
+`9a67735eba56f801998b8390add9eb69647df36f787a4f6331c586a12bad277f`；不得覆盖earlier archives。
 
-`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_p7_i1_accepted_owner_fresh_synthetic_integration_qualification_v1","reference_task_id":"REF-P7-25-R2-B2-P7-I1","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P7-I1-ACCEPTED-OWNER-FRESH-SYNTHETIC-INTEGRATION-QUALIFICATION-V1","execution_authorized_after_orchestrator_activation":true,"activation_commit":{"expected_parent":"9d8573fd4155851adc6e71b3b0ccc50365f6f6d3","expected_subject":"chore(plan): activate p7 synthetic integration","expected_changed_paths":[".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/PLANS/20260731-1921-p7-retained-r3-b2-p7-acceptance-route-review.md"],"clean_porcelain_required_after_activation":true},"required_full_machine_state":{"active_task_count":1,"active_task":"REF-P7-25-R2-B2-P7-I1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P7-I1-ACCEPTED-OWNER-FRESH-SYNTHETIC-INTEGRATION-QUALIFICATION-V1","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","p5_runtime_owner_status":"ACCEPTED_COMPLETE_REPO_OWNED_CONTROLLER_RUNTIME_OWNER","p6_domain_template_owner_status":"ACCEPTED_COMPLETE_DETERMINISTIC_DOMAIN_TEMPLATE_OWNER_WITH_RUNNABLE_CONTRACT_RESIDUAL","p7_status":"ACCEPTED_COMPLETE_REPO_OWNED_RUNNABLE_DOMAIN_TEMPLATE_OWNER","p7_candidate_commit":"864f08cc5436519a37e41d553e49ebde4a3c8bb2","p7_candidate_consumable":true,"p7_candidate_consumable_scope":"FUTURE_PURE_OFFLINE_SYNTHETIC_INTEGRATION_INPUT_ONLY","p7_synthetic_integration_qualified":false,"executer_dispatched":true,"device_authorized_by_this_file":false},"accepted_owners":{"runtime":{"commit":"37f7d0021c7a81a9d6680815bc51c305cf807a7b","parent":"099d1ad833c3e73b7dc157f5786ad66bb6718f5e","source_blob":"075face6fd7453236affa303640b91eb16a42a9b","source_sha256":"07eaeac615ea79db45afad91ce4c82e28c1cdcb66b6119b5cdca6462d7c091d2","test_blob":"a6aa7d7caf015e2eb858830dc89aaedaeb51aafa","test_sha256":"66b1806f68f110280da519e2376de8de7d03ebe6c262af67d9ea589fd51d3782","entrypoint":"camera_based_rgbww_optimizer.utils.p7_retained_r3_controller_runtime.execute_controller_runtime"},"builder":{"commit":"48b3979d6c0df5f488cd500597e26dc4c38877dd","parent":"478d8c52e4a21d6628219e27b88b507d736f3aca","entrypoint":"camera_based_rgbww_optimizer.utils.p7_retained_r3_controller_domain_template.build_controller_domain_template"},"runnable_template":{"commit":"864f08cc5436519a37e41d553e49ebde4a3c8bb2","parent":"44fb7295f0f71030833476225350da01ce3c71d3","source_blob":"5529ec27b3893c20995e9a8cb3a9fa5c0a87a3b5","source_sha256":"10969de79f5afece8018f094823efcf6f60237670ed1eeb54135f451ef0425c2","test_blob":"d0f733426673aa9a57fcb1195ecea014f8c48062","test_sha256":"4c3b93d4a2f5967b91cb48a2dea1c0a0f8994fb687f6109830d24602bb93083e"}},"builder_frozen_spec":{"reference_task_id":"REF-P7-25-R2-B2-P6","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P6-REPO-OWNED-DETERMINISTIC-DOMAIN-TEMPLATE-V1","activation_commit":"94ad1c7bf7353480766418a2cffbbf3f581899be","activation_parent":"4af057e0cd5f62d18a02cf02e088c1f293bddc4d","activation_subject":"chore(plan): activate p6 domain template owner","activation_paths":[".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/PLANS/20260731-1549-p7-retained-r3-b2-p5-i1-domain-template-gap-review.md"],"runtime_commit":"37f7d0021c7a81a9d6680815bc51c305cf807a7b","runtime_parent":"099d1ad833c3e73b7dc157f5786ad66bb6718f5e","runtime_source_blob_oid":"075face6fd7453236affa303640b91eb16a42a9b","runtime_source_sha256":"07eaeac615ea79db45afad91ce4c82e28c1cdcb66b6119b5cdca6462d7c091d2","runtime_test_blob_oid":"a6aa7d7caf015e2eb858830dc89aaedaeb51aafa","runtime_test_sha256":"66b1806f68f110280da519e2376de8de7d03ebe6c262af67d9ea589fd51d3782","repo_root":"/Users/ibobby/Projects/WLED-RGBWW","process_argv":["/Users/ibobby/Projects/WLED-RGBWW/.venv/bin/python","-"]},"fresh_paths":{"activation_sha_source":"outer_head_stdout","activation_short_sha_length":12,"source_template":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-p7-i1-source-{activation_short_sha}.py","root_template":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-p7-i1-root-{activation_short_sha}","must_be_absent_before_owner_creation":true,"failed_path_reuse":false,"source_retention":"immutable_durable_evidence","root_retention":"immutable_durable_evidence"},"invocations":{"outer_read_only_git":1,"builder":1,"runtime":1,"runtime_composition":1,"existing_analyzer":1,"source_create":1,"source_readback":1,"controller_process":1,"root_create":1,"controller_git_ledgers":6,"same_root_input_writes":4,"same_root_input_reads":4,"semantic_matrix_cases":16,"qualification_writes":2,"terminal_writes":2,"admission_writes":1,"execution_result_appends":1,"retry":0,"fallback":0},"success_contract":{"expected_bound_results":18,"effect_bindings":14,"fixture_bindings":4,"controller_root_reads":7,"artifact_names":["synthetic-plan.json","synthetic-full.json","synthetic-lineage.json","synthetic-seal.json","integration-qualification.json","integration-qualification.sha256.json","terminal-evidence.json","terminal-evidence.sha256.json","execution-result-admission.json"],"artifact_count":9,"lifecycle_order":["conformance","activation","root","inputs","evaluate","terminal","terminal_seal","admission"],"stdout_envelope":{"artifact_count":9,"status":"repo_owned_runnable_domain_template_candidate_waiting_for_planner_review"},"stderr_bytes":0,"process_exit_code":0,"success_label":"FRESH_SYNTHETIC_INTEGRATION_QUALIFIED_NOT_RETAINED_ELIGIBLE"},"failure_contract":{"primary_failure_dominates":true,"second_source":0,"second_root":0,"second_process":0,"retry":0,"fallback":0,"repair":0,"delete":0,"reuse":0,"preserve_returned_source":true,"preserve_created_root_and_partial_artifacts":true,"er_append_only_after_runtime_terminal_or_typed_exception":true,"stop":"B2_P7_I1_ACCEPTED_OWNER_FRESH_SYNTHETIC_INTEGRATION_WAITING_PLANNER_REVIEW"},"zero_budgets":{"outer_source_writer":0,"outer_source_reader":0,"outer_source_launcher":0,"dependency_overrides":0,"second_writer":0,"second_analyzer":0,"second_classifier":0,"second_serializer":0,"parallel_lifecycle":0,"code_writes":0,"test_writes":0,"production_writes":0,"implementation_commits":0,"tests":0,"compileall":0,"codegraph_sync":0,"codegraph_query":0,"git_stage":0,"git_commit":0,"old_p5_i1_source_reads":0,"old_failed_root_reads":0,"old_external_evidence_reads":0,"retained_artifact_reads":0,"candidate_payload_reads":0,"real_b2_dispatch":0,"subordinate_manifest_writes":0,"canonical_validator_calls":0,"eligibility_emissions":0,"retained_release_audit":0,"release_generation":0,"release_qualification":0,"release_copy":0,"release_consumption":0,"network":0,"dns":0,"environment":0,"credentials":0,"device":0,"camera":0,"ray":0,"strip":0,"cleanup":0,"capture":0,"formal":0,"public_analyzer":0,"td_c":0,"sentinel":0,"p8":0,"firmware":0,"deployment":0},"archive":{"path":".agent-work/PLANS/20260731-1921-p7-retained-r3-b2-p7-acceptance-route-review.md","bytes":3290,"sha256":"e892edcbf301d9222969318970cd5999411df8a07308af9e54686b83319a2d84"},"expected_duration":"under_10_minutes","visible_terminal_required":false,"planner_stop":"B2_P7_I1_ACCEPTED_OWNER_FRESH_SYNTHETIC_INTEGRATION_WAITING_PLANNER_REVIEW"}`
+`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_p7_i1_e1_terminal_count_evidence_supersession_v1","reference_task_id":"REF-P7-25-R2-B2-P7-I1-E1","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P7-I1-E1-TERMINAL-COUNT-EVIDENCE-SUPERSESSION-V1","execution_authorized_after_orchestrator_activation":true,"activation_commit":{"expected_parent":"6c85cdb07a115b16c3879805c0a14f37b866f0df","expected_subject":"chore(plan): activate p7 synthetic evidence supersession","expected_changed_paths":[".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/PLANS/20260731-2023-p7-retained-r3-b2-p7-i1-synthetic-integration-review.md"],"clean_porcelain_required_after_activation":true},"required_full_machine_state":{"active_task_count":1,"active_task":"REF-P7-25-R2-B2-P7-I1-E1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P7-I1-E1-TERMINAL-COUNT-EVIDENCE-SUPERSESSION-V1","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","p5_runtime_owner_status":"ACCEPTED_COMPLETE_REPO_OWNED_CONTROLLER_RUNTIME_OWNER","p6_domain_template_owner_status":"ACCEPTED_COMPLETE_DETERMINISTIC_DOMAIN_TEMPLATE_OWNER_WITH_RUNNABLE_CONTRACT_RESIDUAL","p7_status":"ACCEPTED_COMPLETE_REPO_OWNED_RUNNABLE_DOMAIN_TEMPLATE_OWNER","p7_candidate_commit":"864f08cc5436519a37e41d553e49ebde4a3c8bb2","p7_candidate_consumable":true,"p7_candidate_consumable_scope":"FUTURE_PURE_OFFLINE_SYNTHETIC_INTEGRATION_INPUT_ONLY","p7_synthetic_integration_qualified":false,"p7_i1_status":"REJECTED_TERMINAL_COUNT_SNAPSHOT_INCONSISTENCY_INTEGRATION_SEMANTICS_PROVISIONALLY_PROVEN","executer_dispatched":true,"device_authorized_by_this_file":false},"frozen_integration":{"activation_commit":"c245bbc7d7b120c83dd59b2b2cc87b8f9f01dae2","activation_parent":"9d8573fd4155851adc6e71b3b0ccc50365f6f6d3","activation_subject":"chore(plan): activate p7 synthetic integration","activation_paths":[".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/PLANS/20260731-1921-p7-retained-r3-b2-p7-acceptance-route-review.md"],"evidence_commit":"6c85cdb07a115b16c3879805c0a14f37b866f0df","evidence_parent":"c245bbc7d7b120c83dd59b2b2cc87b8f9f01dae2","evidence_subject":"chore(evidence): record p7 synthetic integration","evidence_paths":[".agent-work/EXECUTION_RESULT.md"],"er_pre_bytes":1133941,"er_pre_sha256":"a60e328ae4c47abd5f56d2116b8239fcb1bb4f23c969001a3b4dde8b1e060f6f","er_evidence_bytes":1140609,"er_evidence_sha256":"85072a33ae2cf9d9074f70ec93263ce36e8ff9a25bf14ba1e1a290088cd2409f","er_added_lines":179,"er_added_bytes":6668,"historical_execution_result_append_actual":1,"historical_outer_shell_commands_final_actual":5,"superseded_snapshot_values":{"execution_result_append":0,"outer_shell_commands_cumulative":4}},"immutable_source":{"path":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-p7-i1-source-c245bbc7d7b1.py","bytes":13946,"sha256":"e66afc9b6d2a8b9092a5d051fc3260a3078cab1d60ea5ceb92baa755bca6bc0a","mode":384,"device":16777240,"inode":2253709},"immutable_root":{"path":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-p7-i1-root-c245bbc7d7b1","mode":448,"device":16777240,"inode":2253710,"artifact_count":9,"artifact_sha256":{"execution-result-admission.json":"ae37face4b811daec3d0c6762e22bb2c99b47ee47e14d2a6d218a20a3afc9908","integration-qualification.json":"1a37676bf034bc575f57570a9532d32db6395d675bb2addf0a7da4242c3768a8","integration-qualification.sha256.json":"9e80d174ad63f8adc4423d0f94c7c249d6f14e7086c678a5ba4498d981c2a257","synthetic-full.json":"b3d452931897ddca36ea73587fc00b3900925fa4d5e7144899c2f88f671d4d9d","synthetic-lineage.json":"c0d4ed42c5435ad2c4595d157c38ef7c961b08f9038c9402b1c7b96624ec987e","synthetic-plan.json":"f235229723506e28e6ea148dd2f80bcc71b4612239f1f6b0009747dd37111702","synthetic-seal.json":"7dc2d9a59478b3daa8f1ba0b506373db33a1cc00e5be4488a90f2e3ea1ac5542","terminal-evidence.json":"16503bcb3d78becd58f9fcbb0f2a67de9f529eeaabce14d9697fe7ee7c1ce937","terminal-evidence.sha256.json":"667ef7b5eb899feea579f2c9a9affa12cf490e67997cd8b46127e8e69049e8b1"}},"supersession":{"scope":["counts.execution_result_append","counts.outer_shell_commands_cumulative"],"old_record_immutable":true,"append_only":true,"single_append":1,"integration_rerun":0,"root_source_mutation":0},"zero_budgets":{"builder":0,"runtime":0,"controller":0,"controller_process":0,"controller_git_ledgers":0,"integration":0,"source_create":0,"root_create":0,"source_root_writes":0,"source_root_delete_repair_rename_reuse":0,"old_er_prefix_writes":0,"tests":0,"compileall":0,"codegraph_sync":0,"codegraph_query":0,"code_writes":0,"test_writes":0,"production_writes":0,"implementation_commits":0,"old_p5_i1_source_reads":0,"old_failed_root_reads":0,"old_external_evidence_reads":0,"retained_artifact_reads":0,"candidate_payload_reads":0,"real_b2_dispatch":0,"subordinate_manifest_writes":0,"canonical_validator_calls":0,"eligibility_emissions":0,"retained_release_audit":0,"release_generation":0,"release_qualification":0,"release_copy":0,"release_consumption":0,"network":0,"dns":0,"environment":0,"credentials":0,"device":0,"camera":0,"ray":0,"strip":0,"cleanup":0,"capture":0,"formal":0,"public_analyzer":0,"td_c":0,"sentinel":0,"p8":0,"firmware":0,"deployment":0,"git_stage":0,"git_commit":0},"archive":{"path":".agent-work/PLANS/20260731-2023-p7-retained-r3-b2-p7-i1-synthetic-integration-review.md","bytes":8853,"sha256":"9a67735eba56f801998b8390add9eb69647df36f787a4f6331c586a12bad277f"},"expected_duration":"under_10_minutes","visible_terminal_required":false,"planner_stop":"B2_P7_I1_E1_TERMINAL_COUNT_EVIDENCE_SUPERSESSION_WAITING_PLANNER_REVIEW"}`
 
-## 1. Activation gate、initial clean 与唯一外层HEAD
+## 1. Activation gate and immutable prefix
 
-Activation commit必须满足machine row的direct parent、subject和exact three changed paths；完成后worktree必须clean。FULL必须把本reference/contract设为唯一active，保持retained
-`RETAINED_UNVALIDATED_UNCONSUMED`、三个accepted owner状态、P7 candidate consumable scope、synthetic integration尚未qualified、Executer dispatched true与device authorization false。
+Activation commit必须满足machine row的direct parent、subject和exact three changed
+paths；完成后worktree必须clean。FULL必须把本reference/contract设为唯一active，保持
+retained `RETAINED_UNVALIDATED_UNCONSUMED`、三个accepted owner状态、candidate的
+synthetic-input-only consumable scope、synthetic integration尚未accepted，以及本次
+rejection状态。该状态只表示terminal count evidence需要closure，不否定已证明的
+integration语义。
 
-Executer在任何fresh path、Python import或integration effect前，严格提取PLAN/FULL各唯一一条literal backtick-wrapped machine row并strict JSON decode，校验上述activation与FULL state。第一条且controller外唯一Git命令必须是：
+Executer在任何external evidence read或ER append前，严格提取PLAN/FULL各唯一一条
+literal backtick-wrapped machine row并strict JSON decode，校验activation和FULL
+subset。随后只读验证当前HEAD、activation/evidence topology、exact paths，以及
+dispatch worktree clean。ER必须仍exact bytes `1140609`、SHA-256
+`85072a33ae2cf9d9074f70ec93263ce36e8ff9a25bf14ba1e1a290088cd2409f`；若不符，
+fail closed且ER写入`0`。不得读取任何旧P5-I1 source/root/external evidence。
 
-```text
-/usr/bin/git rev-parse HEAD
-```
+## 2. Exact read-only evidence audit
 
-它必须exit `0`、stderr empty、stdout为activation full SHA加single LF；该success也证明dispatch时HEAD正是activation commit。取其前12个lowercase hex派生唯一source/root。除这个HEAD读取外，outer Git invocation为0；activation后的clean porcelain由Orchestrator在dispatch前冻结并交接，Executer不得增加第二Git命令来重验。
+只允许一次bounded audit读取machine row中指定的fresh source/root与Git/ER evidence：
 
-Source/root exact parent均为`/Volumes/4T/temp/rgbww-optimizer`，不得alternate spelling、symlink path、escape、旧root或旧source。Outer不得先行创建、打开、读取、修复或删除它们：source的O_EXCL成功与root的exclusive create成功分别是initial absence的effect-owner证明；如任一路径已存在，owner必须fail closed，且不得换名、retry或复用。
+1. Source用`lstat`、`O_NOFOLLOW`只读；必须为regular `0600`，bytes/hash/device/inode
+   exact match。不得import、compile、exec或作为stdin启动。
+2. Root用`lstat`且不跟随symlink；必须为physical `0700`，device/inode exact。
+   direct entries必须exact九个；每项regular `0600`、strict canonical JSON、
+   hash exact、无symlink/path escape。
+3. 两个sidecar必须绑定exact same-root target bytes/SHA；qualification必须exact
+   ordered `16/16` true list-of-lists；terminal status与admission true必须保持。
+4. Source/root audit前后physical identity、file set、bytes/hash必须完全相同。
+5. Git必须证明旧evidence commit是activation的direct child、subject/path exact，且ER
+   change为EOF-only `179` lines / `6668` bytes append；旧prefix bytes/hash exact。
+6. 只复核已有process stdout/stderr/exit hashes和success envelope；不得启动process、
+   builder、runtime、controller或再次运行Git6。
 
-## 2. 唯一immutable spec、builder与runtime调用
+Runtime report未直接展开Git6、root chain、same-root4或matrix16的每个identity不是
+failure：immutable source定义guarded order，qualification保存exact 16 true rows，
+exact9 durable artifacts与success envelope共同提供独立证明。不得为了扩大报告字段而
+修改代码、source/root或重跑integration。
 
-Outer只允许构造一个frozen `ControllerDomainTemplateSpec`，字段exact取自machine row：
+## 3. Single append-only supersession
 
-- builder reference/contract固定为accepted P6 public contract，而不是把新P7-I1 activation伪装成P6 provenance；
-- P6 activation固定为`94ad1c7bf7353480766418a2cffbbf3f581899be`、parent
-  `4af057e0cd5f62d18a02cf02e088c1f293bddc4d`、subject及exact three paths；
-- runtime固定为P5 owner `37f7d002...`、parent、source/test blob OID与SHA；
-- `source_path`/`output_root`为本次activation-derived fresh paths；`repo_root` exact
-  `/Users/ibobby/Projects/WLED-RGBWW`；`process_argv` exact
-  `('/Users/ibobby/Projects/WLED-RGBWW/.venv/bin/python', '-')`。
+只有第2节全部通过后，才允许对`.agent-work/EXECUTION_RESULT.md`做一次single EOF
+append。Append前必须再次验证旧prefix的bytes/SHA，使用append/no-follow语义且不得
+seek、truncate、rewrite、repair或regenerate旧record。新section必须包含一个strict
+JSON supersession record并清楚声明：
 
-调用`build_controller_domain_template(spec)` exact once。不得手写、patch、regenerate或serialize第二份template/request；不得修改bundle。随后把exact
-`bundle.runtime_request`传给`execute_controller_runtime` exact once，`dependencies`不得override。Outer不得直接调用`compose_controller_source`、`analyze_controller_source`、source open/write/chmod/read、`subprocess.run/Popen`或任何第二owner。
+- bind activation `c245bbc7d7b120c83dd59b2b2cc87b8f9f01dae2`、evidence commit
+  `6c85cdb07a115b16c3879805c0a14f37b866f0df`、旧ER before/after identities、
+  exact append delta及source/root identities；
+- supersede scope只能是旧record的
+  `counts.execution_result_append`和`counts.outer_shell_commands_cumulative`；
+- 旧值是record创建时的pre-append snapshot `0`和`4`，不是final cumulative facts；
+- historical integration actual values exact为ER append `1`和final shell commands
+  `5`，其中第五条是唯一terminal ER append；
+- 所有其他旧terminal fields保持authoritative且不被覆盖；integration success仍只能是
+  `FRESH_SYNTHETIC_INTEGRATION_QUALIFIED_NOT_RETAINED_ELIGIBLE`；
+- 本supersession自身的append intent为exact `1`，实际single append由后续Git diff和
+  Planner独立验收证明，不能在写前伪称已完成；
+- source/root/旧ER prefix均未修改，integration/controller/tests/retained/release/
+  network/device等全部hard locks保持`0`。
 
-Accepted runtime必须独占完成compose1、existing analyzer1、0600 O_EXCL/O_NOFOLLOW source create1、fsync/parent identity、exact readback1与process1；process的sole stdin input必须是verified source bytes，`shell=False`、`check=False`。Outer只消费immutable
-`ControllerRuntimeReport`或typed `ControllerRuntimeError`，只用`report.process.exit_code/stdout/stderr`，不得反射raw `returncode`。
+Append后只允许只读确认ER新bytes增加、旧prefix逐byte保持、且新增section位于EOF。
+不得第二次append或自行commit。所有in-memory observations一并写入这一次append；若
+append前任一检查失败，ER writes必须`0`并直接stop，由Orchestrator从terminal输出接管。
 
-## 3. Generated controller success contract
-
-Generated controller只能复用模板已绑定的repo owners。其activation phase运行accepted `run_read_only_git` exact Git6：P6 activation commit、metadata、paths，以及P5 runtime metadata、paths、binary patch。不得追加Git、raw CompletedProcess判断、generic allowlist或第二transport classifier。
-
-Conformance/activation成功后，使用accepted provenance I/O owner创建single 0700 physical root；root before/after保持同一device/inode/mode。写入四个0600 canonical JSON inputs并各做same-root exact read：
-
-1. `synthetic-plan.json`；
-2. `synthetic-full.json`；
-3. `synthetic-lineage.json`；
-4. `synthetic-seal.json`。
-
-四个identity组成唯一`RootIdentityChain(before, files=(four direct identities), after)`并验证。Semantic matrix必须exact `16/16` true；不得新增analyzer/classifier。Success lifecycle exact：
-
-```text
-conformance -> activation -> root -> inputs -> evaluate -> terminal -> terminal_seal -> admission
-```
-
-Final root exact九个artifact：four inputs加`integration-qualification.json`、其SHA sidecar、`terminal-evidence.json`、其SHA sidecar及`execution-result-admission.json`。Qualification先于terminal，terminal先于seal，seal先于admission；sidecar绑定exact target bytes/SHA，admission only after sealed terminal。
-
-Controller stdout必须是single canonical JSON success envelope（exact artifact count `9`与machine row status），stderr empty、exit_code `0`。Success只能标记
-`FRESH_SYNTHETIC_INTEGRATION_QUALIFIED_NOT_RETAINED_ELIGIBLE`；不得称retained validated、eligible、release usable或real B2 admitted。
-
-## 4. Terminal evidence、retention 与 failure branches
-
-Runtime为同步owner；返回report或抛出typed exception即唯一controller process已terminal，不得另做process probe。Source一旦由runtime创建即保留为immutable durable evidence；root一旦由controller创建即保留其全部partial/final artifacts。Success和failure均禁止删除、repair、rename、reuse或自动清理这些paths；后续Planner只可在stop后做独立只读审计，不得重执行。
-
-- Builder在effect前失败：source/root/process均0，保留typed builder code，直接stop。
-- Runtime composition/conformance在source前失败：root/process0，记录typed primary，direct stop。
-- Source persistence/readback/launch失败：保留已创建source及可取得的physical identity；root只在controller实际启动后才可能存在；second source/process0。
-- Controller root前失败：保留process exit/stdout/stderr与primary；root/artifacts0，不得用terminal-missing覆盖primary。
-- Root后失败：保留same root与所有已有artifacts；existing lifecycle terminal handling不得用seal/admission错误覆盖原primary。
-- 任一count/path/hash/mode/identity/Git6/matrix/lifecycle/stdout/stderr/exit discrepancy：hard fail，retry/fallback/second source/root/process均0。
-
-Executer在runtime终止前不得向ER写任何bytes。Terminal后仅允许`.agent-work/EXECUTION_RESULT.md` single EOF append，记录activation SHA、fresh paths、builder/runtime call counts、bundle template/replacement hashes、runtime source identity/report、process exit/stdout/stderr hashes、controller Git6/same-root4/matrix16/lifecycle/exact9的真实到达程度、primary failure或success label、retained path disposition与全部zero budgets。无法从report证明的计数必须写`unproven`，不得推断成pass。ER append后立即停在Planner stop；不得自行做artifact forensic read、retry或进入后续route。
-
-## 5. Acceptance criteria
+## 4. Acceptance criteria
 
 Planner只在以下全部成立时接受：
 
-1. activation/unique machine rows/first-and-sole outer Git exact；dispatch前clean；
-2. fresh source/root由activation前12位派生且owner creation前不存在；旧paths读取0；
-3. immutable spec1、builder1、runtime1，dependency override0；
-4. P5 runtime独占compose/analyzer/source O_EXCL write/readback/process各1；outer writer/read/launcher0；
-5. source regular 0600、physical identity/bytes/SHA exact；controller process terminal且无residual owned process；
-6. controller Git6、single physical root before/after、same-root four writes/reads、matrix16/16；
-7. qualification→terminal→seal→admission与final exact9 artifacts成立；
-8. stdout single canonical envelope、stderr empty、exit_code0；
-9. retry/fallback/second source/root/process、第二writer/analyzer/classifier/serializer/lifecycle全0；
-10. ER pre-terminal bytes0、terminal后single EOF append1；source/root被保留且未复用；
-11. 所有hard locks保持0。
+1. activation/machine rows/FULL subset/current clean exact；
+2. immutable source regular/0600/bytes/hash/device/inode exact且未执行；
+3. root physical 0700、exact9 regular 0600 canonical artifacts及全部hash exact；
+4. sidecars、ordered matrix16、terminal、admission与source/root before/after identity成立；
+5. old activation/evidence topology与EOF-only `179` lines / `6668` bytes delta成立；
+6. old ER prefix `1140609` bytes / frozen SHA逐byte不变；
+7. new record只supersede exact two fields并如实区分snapshot与historical final；
+8. historical actual append `1`、final shell `5`，且其他旧terminal facts不变；
+9. current package只有single EOF append，外加post-append read-only prefix check；
+10. source/root writes与所有rerun/retry/adjacent routes exact `0`。
 
-本包预计低于10分钟，不要求visible Terminal或automation。它是pure-offline integration，code/test/production writes、implementation commit、test、compileall及CodeGraph均为0；不得为了“额外确信”自行扩大验证范围。
+若接受，Planner可将P7-I1标记为synthetic integration qualified，并为Orchestrator提出
+下一reference route；本PLAN本身不解锁retained validation、validator或release。
 
-## 6. Hard locks and stop
+## 5. Hard locks and stop
 
-Retained R3/candidate payload、real B2、subordinate manifest、canonical validator、eligibility、retained audit、release generation/qualification/copy/consumption、network/DNS/environment/credentials、device/camera/Ray/strip/cleanup/capture/FORMAL/public analyzer、TD-C、sentinel、P8、firmware/deployment全部exact `0`。这些锁不需要Advisor或Human checkpoint；它们表示本包不得进入相邻路线。
+Builder、runtime、controller、process、controller Git6、integration、source/root create
+或mutation、tests、compileall、CodeGraph、code/test/production write、implementation
+commit、old paths、retained R3/candidate payload、real B2、subordinate manifest、canonical
+validator、eligibility、retained audit、全部release、network/DNS/environment/credentials、
+device/camera/Ray/strip/cleanup/capture/FORMAL/public analyzer、TD-C、sentinel、P8、
+firmware/deployment全部exact `0`。不需要Advisor或Human checkpoint。
 
-无论success或failure，Executer append一次ER后必须停在：
+无论success或failure，Executer在single append或pre-append fail-closed后必须停在：
 
-`B2_P7_I1_ACCEPTED_OWNER_FRESH_SYNTHETIC_INTEGRATION_WAITING_PLANNER_REVIEW`
+`B2_P7_I1_E1_TERMINAL_COUNT_EVIDENCE_SUPERSESSION_WAITING_PLANNER_REVIEW`
 
-Planner随后只读验收fresh source/root/progressive/terminal evidence；只有Planner接受且Orchestrator更新FULL后，才可能规划retained-validation successor。
-
-维护性判断：本包不改repo代码或测试，只组合P5 runtime、P6 deterministic builder与P7 runnable template三个既有owner；source I/O、semantic analysis、lifecycle和artifact persistence仍由各自单一owner承担，没有新增平行writer、classifier或controller framework。
+维护性判断：本包只为immutable terminal record建立窄范围append-only supersession，
+不新增生产owner、parser、controller或evidence framework；后续由Git delta和Planner
+独立审计闭环，避免修改历史证据。

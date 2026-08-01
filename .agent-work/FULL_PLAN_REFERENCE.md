@@ -16,9 +16,9 @@
 
 **当前可执行任务数：** `1`
 
-**当前 active task：** `REF-P7-25-R2-B2-P7-I1 accepted-owner fresh synthetic integration qualification`
+**当前 active task：** `REF-P7-25-R2-B2-P7-I1-E1 terminal-count evidence supersession`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-31","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-P7-I1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P7-I1-ACCEPTED-OWNER-FRESH-SYNTHETIC-INTEGRATION-QUALIFICATION-V1","next_reference_task":"REF-P7-25-R2-B2-P7-I1","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P7_I1_ACCEPTED_OWNER_FRESH_SYNTHETIC_INTEGRATION_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","p6_domain_template_owner_status":"ACCEPTED_COMPLETE_DETERMINISTIC_DOMAIN_TEMPLATE_OWNER_WITH_RUNNABLE_CONTRACT_RESIDUAL","p6_candidate_commit":"48b3979d6c0df5f488cd500597e26dc4c38877dd","p6_candidate_consumable":true,"p5_runtime_owner_status":"ACCEPTED_COMPLETE_REPO_OWNED_CONTROLLER_RUNTIME_OWNER","p7_status":"ACCEPTED_COMPLETE_REPO_OWNED_RUNNABLE_DOMAIN_TEMPLATE_OWNER","p7_candidate_commit":"864f08cc5436519a37e41d553e49ebde4a3c8bb2","p7_candidate_consumable":true,"p7_candidate_consumable_scope":"FUTURE_PURE_OFFLINE_SYNTHETIC_INTEGRATION_INPUT_ONLY","p7_synthetic_integration_qualified":false,"executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-31","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-P7-I1-E1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-P7-I1-E1-TERMINAL-COUNT-EVIDENCE-SUPERSESSION-V1","next_reference_task":"REF-P7-25-R2-B2-P7-I1-E1","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"P7_I1_E1_TERMINAL_COUNT_EVIDENCE_SUPERSESSION_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","p6_domain_template_owner_status":"ACCEPTED_COMPLETE_DETERMINISTIC_DOMAIN_TEMPLATE_OWNER_WITH_RUNNABLE_CONTRACT_RESIDUAL","p6_candidate_commit":"48b3979d6c0df5f488cd500597e26dc4c38877dd","p6_candidate_consumable":true,"p5_runtime_owner_status":"ACCEPTED_COMPLETE_REPO_OWNED_CONTROLLER_RUNTIME_OWNER","p7_status":"ACCEPTED_COMPLETE_REPO_OWNED_RUNNABLE_DOMAIN_TEMPLATE_OWNER","p7_candidate_commit":"864f08cc5436519a37e41d553e49ebde4a3c8bb2","p7_candidate_consumable":true,"p7_candidate_consumable_scope":"FUTURE_PURE_OFFLINE_SYNTHETIC_INTEGRATION_INPUT_ONLY","p7_synthetic_integration_qualified":false,"p7_i1_status":"REJECTED_TERMINAL_COUNT_SNAPSHOT_INCONSISTENCY_INTEGRATION_SEMANTICS_PROVISIONALLY_PROVEN","executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -325,7 +325,8 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-B2-P7-C1-C1-C1-C1-V1-C1-V1` | `REJECTED_PRE_GATE_INITIAL_CLEAN_SELF_CONTAMINATION_CANDIDATE_IMMUTABLE_NON_CONSUMABLE` | validate immutable outer-NUL candidate with ordinary pregate_exit wrapper | deferred append closure | Planner/Executer |
 | `REF-P7-25-R2-B2-P7-C1-C1-C1-C1-V1-C1-V1-C1` | `REJECTED_GATE_HARNESS_MARKDOWN_MACHINE_ROW_REGEX_DEFECT_CANDIDATE_IMMUTABLE_NON_CONSUMABLE` | defer all ER bytes until full terminal validation completes | Markdown machine-row delimiter closure | Planner/Executer |
 | `REF-P7-25-R2-B2-P7-C1-C1-C1-C1-V1-C1-V1-C1-C1` | `ACCEPTED_COMPLETE_REPO_OWNED_RUNNABLE_DOMAIN_TEMPLATE_OWNER` | validate exact backtick-wrapped Markdown machine rows without changing the candidate | P7-I1 fresh synthetic integration | Planner/Executer |
-| `REF-P7-25-R2-B2-P7-I1` | `ACTIVE_EXECUTION_AUTHORIZED` | one fresh pure-offline synthetic integration composing accepted P5/P6/P7 owners | P7 acceptance | Planner/Executer |
+| `REF-P7-25-R2-B2-P7-I1` | `REJECTED_TERMINAL_COUNT_SNAPSHOT_INCONSISTENCY_INTEGRATION_SEMANTICS_PROVISIONALLY_PROVEN` | one fresh pure-offline synthetic integration composing accepted P5/P6/P7 owners | E1 evidence supersession | Planner/Executer |
+| `REF-P7-25-R2-B2-P7-I1-E1` | `ACTIVE_EXECUTION_AUTHORIZED` | append-only supersession of two terminal cumulative counts | I1 evidence audit | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-V1` | `ACCEPTED_COMPLETE` | one final-source full suite with retained terminal exit/count | 755/755 accepted | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-I1` | `REJECTED_PRE_EFFECT_OWNER_ALIAS_ESCAPE` | fresh synthetic external integration of accepted repo owner | I1-C1 correction | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-I1-C1` | `REJECTED_PRE_EFFECT_LIVE_OWNER_CONTAINER_WRITE_FIELD_ONLY_CORRECTION_REQUIRED` | direct/nonlocal live owner bindings with plain-projection transport | I1-C1-C1 correction | Planner/Executer |
@@ -3871,7 +3872,7 @@ input；尚未证明synthetic integration，不授权retained/validator/release/
 
 ### REF-P7-25-R2-B2-P7-I1：accepted-owner fresh synthetic integration qualification
 
-**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。Orchestrator选择新的stable successor，不重试或复用旧P5-I1/一次性controller路径。Active PLAN只允许组合
+**状态：** `REJECTED_TERMINAL_COUNT_SNAPSHOT_INCONSISTENCY_INTEGRATION_SEMANTICS_PROVISIONALLY_PROVEN`。Orchestrator选择新的stable successor，不重试或复用旧P5-I1/一次性controller路径。该包只允许组合
 accepted P5 runtime owner `37f7d0021c7a81a9d6680815bc51c305cf807a7b`、P6 deterministic builder owner
 `48b3979d6c0df5f488cd500597e26dc4c38877dd`和P7 runnable-template owner
 `864f08cc5436519a37e41d553e49ebde4a3c8bb2`；outer只能构造fresh immutable synthetic request并调用既有builder/runtime public owners，禁止第二
@@ -3887,6 +3888,22 @@ retained audit、release、network/DNS/env/credentials/device/camera/Ray/strip/c
 `.agent-work/PLANS/20260731-1921-p7-retained-r3-b2-p7-acceptance-route-review.md`，bytes`3290`，SHA-256
 `e892edcbf301d9222969318970cd5999411df8a07308af9e54686b83319a2d84`；exact stop
 `B2_P7_I1_ACCEPTED_OWNER_FRESH_SYNTHETIC_INTEGRATION_WAITING_PLANNER_REVIEW`。
+
+Fresh integration成功生成source `13946` bytes/SHA `e66afc9b...`、process exit0、single canonical stdout envelope与exact9 root artifacts；Planner独立
+只读审计确认source regular0600、root0700、九文件regular0600/canonical JSON/hash、sidecars、ordered matrix16、qualification→terminal→seal→
+admission、process hash及无残留。Integration semantics provisionally proven。唯一拒绝点是terminal JSON把写前snapshot
+`execution_result_append=0`和`outer_shell_commands_cumulative=4`误标为final cumulative，真实历史终值为`1/5`。Review archive
+`.agent-work/PLANS/20260731-2023-p7-retained-r3-b2-p7-i1-synthetic-integration-review.md`，bytes`8853`，SHA-256
+`9a67735eba56f801998b8390add9eb69647df36f787a4f6331c586a12bad277f`。
+
+### REF-P7-25-R2-B2-P7-I1-E1：terminal-count evidence supersession
+
+**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。只读绑定activation `c245bbc...`、evidence `6c85cdb...`、immutable source/root exact identities与ER
+prefix `1140609` bytes/SHA `85072a...`；复核exact9/canonical JSON/sidecars/matrix/lifecycle及旧ER EOF-only 179 lines/6668 bytes后，允许single
+EOF append一条strict JSON supersession。Supersede scope仅旧record的`counts.execution_result_append`与
+`counts.outer_shell_commands_cumulative`：明确旧`0/4`为pre-append snapshot、历史final为`1/5`；其余旧字段继续authoritative。旧ER bytes、
+source/root不可修改，integration/controller/process/tests及所有adjacent route0。Archive同上；exact stop
+`B2_P7_I1_E1_TERMINAL_COUNT_EVIDENCE_SUPERSESSION_WAITING_PLANNER_REVIEW`。
 
 ### REF-P7-25-R2-B2-P3：repo-owned provenance I/O boundary
 
@@ -4693,10 +4710,11 @@ rejected B2-P7-C1-C1-C1-C1-V1-C1 result = PRE_GATE_LOGICAL_EXIT_PERSISTENCE_WRAP
 rejected B2-P7-C1-C1-C1-C1-V1-C1-V1 result = PRE_GATE_INITIAL_CLEAN_SELF_CONTAMINATION; candidate864f08c nonconsumable
 rejected B2-P7-C1-C1-C1-C1-V1-C1-V1-C1 result = GATE_HARNESS_MARKDOWN_MACHINE_ROW_REGEX_DEFECT; candidate864f08c nonconsumable
 accepted B2-P7-C1-C1-C1-C1-V1-C1-V1-C1-C1 result = REPO_OWNED_RUNNABLE_DOMAIN_TEMPLATE_OWNER; candidate864f08c offline-integration-consumable
-active task = REF-P7-25-R2-B2-P7-I1 accepted-owner fresh synthetic integration qualification
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-P7-I1-ACCEPTED-OWNER-FRESH-SYNTHETIC-INTEGRATION-QUALIFICATION-V1
+rejected B2-P7-I1 result = TERMINAL_COUNT_SNAPSHOT_INCONSISTENCY; integration semantics provisionally proven
+active task = REF-P7-25-R2-B2-P7-I1-E1 terminal-count evidence supersession
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-P7-I1-E1-TERMINAL-COUNT-EVIDENCE-SUPERSESSION-V1
 active executable task count = 1
-next reference task = REF-P7-25-R2-B2-P7-I1 ACTIVE_EXECUTION_AUTHORIZED
+next reference task = REF-P7-25-R2-B2-P7-I1-E1 ACTIVE_EXECUTION_AUTHORIZED
 selected state C shutter = 1/2500
 device/network/camera/light = forbidden by active PLAN
 release qualification/generation/copy/consumption = forbidden
