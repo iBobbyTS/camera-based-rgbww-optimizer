@@ -16,9 +16,9 @@
 
 **当前可执行任务数：** `1`
 
-**当前 active task：** `REF-P7-25-R2-B2-M1-S1-C1-C1-C1-C1-C1 CodeGraph-free exact-diff correction`
+**当前 active task：** `REF-P7-25-R2-B2-M1-S1-C1-C1-C1-C1-C1-C1 canonical JSON payload correction`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-08-01","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-M1-S1-C1-C1-C1-C1-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-S1-C1-C1-C1-C1-C1-CODEGRAPH-FREE-EXACT-DIFF-CORRECTION-V1","next_reference_task":"REF-P7-25-R2-B2-M1-S1-C1-C1-C1-C1-C1","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"M1_S1_C1_C1_C1_C1_C1_CODEGRAPH_FREE_EXACT_DIFF_CORRECTION_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","p6_domain_template_owner_status":"ACCEPTED_COMPLETE_DETERMINISTIC_DOMAIN_TEMPLATE_OWNER_WITH_RUNNABLE_CONTRACT_RESIDUAL","p6_candidate_commit":"48b3979d6c0df5f488cd500597e26dc4c38877dd","p6_candidate_consumable":true,"p5_runtime_owner_status":"ACCEPTED_COMPLETE_REPO_OWNED_CONTROLLER_RUNTIME_OWNER","p7_status":"ACCEPTED_COMPLETE_REPO_OWNED_RUNNABLE_DOMAIN_TEMPLATE_OWNER","p7_candidate_commit":"864f08cc5436519a37e41d553e49ebde4a3c8bb2","p7_candidate_consumable":true,"p7_candidate_consumable_scope":"PURE_OFFLINE_SYNTHETIC_INTEGRATION_INPUT_ONLY","p7_synthetic_integration_qualified":true,"p7_i1_status":"ACCEPTED_COMPLETE_FRESH_SYNTHETIC_INTEGRATION_QUALIFIED_NOT_RETAINED_ELIGIBLE","real_manifest_domain_owner_status":"ACTIVE_CODEGRAPH_FREE_EXACT_DIFF_CORRECTION","existing_root_identity_owner_status":"ACCEPTED_COMPLETE_COMPOSITE_VALIDATED","m1_existing_root_candidate_commit":"40d92acb77b32f370955d687c74c7ff7077f55e1","m1_existing_root_correction_commit":"ffd1d9bb234c90a28ab497b10a35b08e4478eb1c","m1_existing_root_candidate_consumable":true,"m1_real_manifest_candidate_commit":"cddd23eb4ef53a8f90c9b869f96f84ccfcba36cf","m1_real_manifest_candidate_consumable":false,"executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-08-01","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-M1-S1-C1-C1-C1-C1-C1-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-S1-C1-C1-C1-C1-C1-C1-CANONICAL-JSON-PAYLOAD-CORRECTION-V1","next_reference_task":"REF-P7-25-R2-B2-M1-S1-C1-C1-C1-C1-C1-C1","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"M1_S1_C1_C1_C1_C1_C1_C1_CANONICAL_JSON_PAYLOAD_CORRECTION_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","p6_domain_template_owner_status":"ACCEPTED_COMPLETE_DETERMINISTIC_DOMAIN_TEMPLATE_OWNER_WITH_RUNNABLE_CONTRACT_RESIDUAL","p6_candidate_commit":"48b3979d6c0df5f488cd500597e26dc4c38877dd","p6_candidate_consumable":true,"p5_runtime_owner_status":"ACCEPTED_COMPLETE_REPO_OWNED_CONTROLLER_RUNTIME_OWNER","p7_status":"ACCEPTED_COMPLETE_REPO_OWNED_RUNNABLE_DOMAIN_TEMPLATE_OWNER","p7_candidate_commit":"864f08cc5436519a37e41d553e49ebde4a3c8bb2","p7_candidate_consumable":true,"p7_candidate_consumable_scope":"PURE_OFFLINE_SYNTHETIC_INTEGRATION_INPUT_ONLY","p7_synthetic_integration_qualified":true,"p7_i1_status":"ACCEPTED_COMPLETE_FRESH_SYNTHETIC_INTEGRATION_QUALIFIED_NOT_RETAINED_ELIGIBLE","real_manifest_domain_owner_status":"ACTIVE_CANONICAL_JSON_PAYLOAD_CORRECTION","existing_root_identity_owner_status":"ACCEPTED_COMPLETE_COMPOSITE_VALIDATED","m1_existing_root_candidate_commit":"40d92acb77b32f370955d687c74c7ff7077f55e1","m1_existing_root_correction_commit":"ffd1d9bb234c90a28ab497b10a35b08e4478eb1c","m1_existing_root_candidate_consumable":true,"m1_real_manifest_candidate_commit":"cddd23eb4ef53a8f90c9b869f96f84ccfcba36cf","m1_real_manifest_candidate_consumable":false,"carried_test_status":"UNVALIDATED_CARRY_FORWARD","executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -337,7 +337,8 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-B2-M1-S1-C1-C1` | `REJECTED_PRE_EDIT_CODEGRAPH_DEDICATED_TEST_ROUTING_UNRELIABLE` | use five exact file/symbol CodeGraph groups, then perform unchanged test-only fixture correction | C1-C1-C1 evidence-owner correction | Planner/Executer |
 | `REF-P7-25-R2-B2-M1-S1-C1-C1-C1` | `REJECTED_EVIDENCE_HARNESS_SELF_BLOCKING` | assign production graph to CodeGraph and dedicated-test semantics to Git/AST/tests, then correct fixtures | C1-C1-C1-C1 exact-diff correction | Planner/Executer |
 | `REF-P7-25-R2-B2-M1-S1-C1-C1-C1-C1` | `REJECTED_PRE_EDIT_CODEGRAPH_PRODUCTION_OWNERSHIP_MISMATCH` | use frozen Git identity plus exact diff and standard tests; no ad-hoc evidence harness | C1-C1-C1-C1-C1 CodeGraph-free correction | Planner/Executer |
-| `REF-P7-25-R2-B2-M1-S1-C1-C1-C1-C1-C1` | `ACTIVE_EXECUTION_AUTHORIZED` | correct the exact two dedicated-test fixtures without a CodeGraph semantic query or replacement harness | rejected candidate cddd23e | Planner/Executer |
+| `REF-P7-25-R2-B2-M1-S1-C1-C1-C1-C1-C1` | `REJECTED_TARGETED_PRODUCTION_CANONICAL_JSON_PAYLOAD_VIOLATION` | correct the exact two dedicated-test fixtures without a CodeGraph semantic query or replacement harness | C1-C1-C1-C1-C1-C1 payload correction | Planner/Executer |
+| `REF-P7-25-R2-B2-M1-S1-C1-C1-C1-C1-C1-C1` | `ACTIVE_EXECUTION_AUTHORIZED` | project immutable tuple contract into ordered JSON-native lists only at M1 persistence boundary | rejected candidate cddd23e + unvalidated carried test | Planner/Executer |
 | `REF-P7-25-R2-B2-M1-I1` | `BLOCKED_ON_M1_ACCEPTANCE` | fresh pure-offline integration of real-manifest template with synthetic fixtures | M1 accepted | Planner/Executer |
 | `REF-P7-25-R2-B2-M1-R1` | `BLOCKED_ON_M1_I1_ACCEPTANCE` | one fresh real-input manifest-only B2 execution | M1-I1 accepted | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-V1` | `ACCEPTED_COMPLETE` | one final-source full suite with retained terminal exit/count | 755/755 accepted | Planner/Executer |
@@ -4100,7 +4101,7 @@ test read/edit/tests/commit均0，未形成implementation finding。Evidence com
 
 ### REF-P7-25-R2-B2-M1-S1-C1-C1-C1-C1-C1：CodeGraph-free exact-diff correction
 
-**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。本包取消全部CodeGraph explore/query、coverage assertion与替代evidence harness；pre-edit identity只由冻结
+**状态：** `REJECTED_TARGETED_PRODUCTION_CANONICAL_JSON_PAYLOAD_VIOLATION`。本包取消全部CodeGraph explore/query、coverage assertion与替代evidence harness；pre-edit identity只由冻结
 Git blob/bytes/SHA-256拥有。唯一write path为M1 dedicated test，且只允许修改test07/test13：test07复制first identity并只替换second expected
 label后验证`path_collision`；test13在既有runtime test内用AST exact import/module/alias/call-token集合排除authority tokens，不再以裸substring
 `camera`误伤合法package。
@@ -4110,6 +4111,28 @@ After语义由人工可读exact one-path/two-method diff、既有runtime asserti
 `fix(p7): correct real manifest domain fixtures`，posttarget13；retry/fallback0。Production/retained/external/validator/release/network/device全部0；全绿仍只停
 Planner门，不得进入M1-I1。Planner stop exact
 `B2_M1_S1_C1_C1_C1_C1_C1_CODEGRAPH_FREE_CORRECTION_WAITING_PLANNER_REVIEW`。
+
+Test07/test13 exact diff完成后，唯一targeted运行`13`项为`12 pass / 1 error`。Test13通过compile与authority assertions后进入此前不可达的fake success
+lifecycle，M1 generated `manifest_payload`把tuple-valued activation/baseline/C1/retained直接交给P3 canonical serializer，稳定失败
+`ProvenanceIOError("json_unsupported_value")`。该fake persist忠实复用真实P3 owner，因此finding属于M1 production persistence projection boundary，
+不是测试fixture缺陷。Evidence commit `1b6715a2326d5a8d62d503e34e4cd8da76dfdf67`仅提交ER；carried test blob/bytes/SHA-256为
+`1df5786db37e7bb9cd4d5ffe26e4310d53f700aa` / `18553` /
+`9d6deea37ab7d33748b95fa1dabc1380a3ae9677b4008684387699bc40bd1dd6`，状态`UNVALIDATED_CARRY_FORWARD`。Review archive
+`.agent-work/PLANS/20260801-0043-p7-retained-r3-b2-m1-s1-canonical-json-payload-failure-review.md`，bytes`7356`，SHA-256
+`e15d70b8075384107af48c9c3bf7531212f440916ec1e711d2eda5e4d273f44a`。
+
+### REF-P7-25-R2-B2-M1-S1-C1-C1-C1-C1-C1-C1：canonical JSON payload correction
+
+**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。Fresh activation明确把既有test07/test13 diff作为`UNVALIDATED_CARRY_FORWARD`保留。唯一production修复点为
+M1 `_CANONICAL_TEMPLATE`的`phase_evaluate` persistence boundary：内部immutable tuple contract、字段值与顺序保持不变，只在写manifest时显式投影为
+JSON-native ordered lists；activation changed paths、baseline seam rows、C1 four rows与retained three rows都保留exact shape/value。禁止修改P3、放宽tuple、
+绕过fake persist、引入generic converter/helper或第二payload owner。
+
+Dedicated test保留carried test07/test13，并只补updated template golden与persisted manifest exact JSON-native shape/value assertions。Validation为targeted13、
+focused83、compileall、full800、全绿后无query的`codegraph sync`一次、exact two-path commit
+`fix(p7): project real manifest into canonical JSON`及posttarget13；retry/fallback0。Retained/external/validator/release/network/device全部0，成功仍停
+Planner门且不得进入M1-I1。Planner stop exact
+`B2_M1_S1_C1_C1_C1_C1_C1_C1_CANONICAL_JSON_PAYLOAD_WAITING_PLANNER_REVIEW`。
 
 ### REF-P7-25-R2-B2-M1-I1：real-manifest template pure-offline integration
 
@@ -4941,10 +4964,11 @@ rejected B2-M1-S1-C1 result = PRE_EDIT_CODEGRAPH_SEMANTIC_SCOPE_MISMATCH; test r
 rejected B2-M1-S1-C1-C1 result = PRE_EDIT_CODEGRAPH_DEDICATED_TEST_ROUTING_UNRELIABLE; test reads/writes0
 rejected B2-M1-S1-C1-C1-C1 result = EVIDENCE_HARNESS_SELF_BLOCKING; AST gate bare assertion; edits0
 rejected B2-M1-S1-C1-C1-C1-C1 result = PRE_EDIT_CODEGRAPH_PRODUCTION_OWNERSHIP_MISMATCH; coverage2/4; edits0
-active task = REF-P7-25-R2-B2-M1-S1-C1-C1-C1-C1-C1 CodeGraph-free exact-diff correction
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-S1-C1-C1-C1-C1-C1-CODEGRAPH-FREE-EXACT-DIFF-CORRECTION-V1
+rejected B2-M1-S1-C1-C1-C1-C1-C1 result = TARGETED_PRODUCTION_CANONICAL_JSON_PAYLOAD_VIOLATION; targeted12 pass/1 error
+active task = REF-P7-25-R2-B2-M1-S1-C1-C1-C1-C1-C1-C1 canonical JSON payload correction
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-S1-C1-C1-C1-C1-C1-C1-CANONICAL-JSON-PAYLOAD-CORRECTION-V1
 active executable task count = 1
-next reference task = REF-P7-25-R2-B2-M1-S1-C1-C1-C1-C1-C1 ACTIVE_EXECUTION_AUTHORIZED
+next reference task = REF-P7-25-R2-B2-M1-S1-C1-C1-C1-C1-C1-C1 ACTIVE_EXECUTION_AUTHORIZED
 selected state C shutter = 1/2500
 device/network/camera/light = forbidden by active PLAN
 release qualification/generation/copy/consumption = forbidden

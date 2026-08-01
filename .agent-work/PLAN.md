@@ -1,99 +1,145 @@
-# P7 retained-R3 Option B：M1-S1-C1-C1-C1-C1-C1 CodeGraph-free exact-diff correction
+# P7 retained-R3 Option B：M1-S1 canonical JSON payload correction
 
 **计划状态：** `WAITING_ORCHESTRATOR_ACTIVATION`
 
 **Planner 日期：** `2026-08-01`
 
-**Reference task：** `REF-P7-25-R2-B2-M1-S1-C1-C1-C1-C1-C1`
+**Reference task：** `REF-P7-25-R2-B2-M1-S1-C1-C1-C1-C1-C1-C1`
 
 **Contract：**
-`P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-S1-C1-C1-C1-C1-C1-CODEGRAPH-FREE-EXACT-DIFF-CORRECTION-V1`
+`P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-S1-C1-C1-C1-C1-C1-C1-CANONICAL-JSON-PAYLOAD-CORRECTION-V1`
 
-**当前唯一动作：** Orchestrator先把M1-S1-C1-C1-C1-C1登记为CodeGraph wrong-route rejection并建立fresh activation；Executer随后仅依赖冻结Git object identities读取既有test07/test13，完成exact one-path fixture correction，按顺序运行既有tests，并在测试全绿后仅运行一次无query、非语义门的`codegraph sync`，形成单一候选提交和ER handoff后停止。
+**当前唯一动作：** Orchestrator建立一份同时冻结未验收test07/test13正确diff的fresh activation；Executer仅修M1生成manifest在P3 canonical JSON边界上的tuple payload缺陷，保留内部immutable tuple contract和既有两处测试纠偏，完成ordered offline validation、单一候选提交与ER handoff后停止。
 
 **唯一 Planner stop：**
-`B2_M1_S1_C1_C1_C1_C1_C1_CODEGRAPH_FREE_CORRECTION_WAITING_PLANNER_REVIEW`。
+`B2_M1_S1_C1_C1_C1_C1_C1_C1_CANONICAL_JSON_PAYLOAD_WAITING_PLANNER_REVIEW`。
 
 **本轮新归档：**
-`.agent-work/PLANS/20260801-0026-p7-retained-r3-b2-m1-s1-c1-c1-c1-c1-codegraph-routing-review.md`；bytes `9878`，SHA-256
-`06447d6c7847e5f8ffabba19212be96ac06cd3723ab4c644b2d274fc8ed100f2`；不得覆盖earlier archives。
+`.agent-work/PLANS/20260801-0043-p7-retained-r3-b2-m1-s1-canonical-json-payload-failure-review.md`；bytes `7356`，SHA-256
+`e15d70b8075384107af48c9c3bf7531212f440916ec1e711d2eda5e4d273f44a`；不得覆盖earlier archives。
 
-`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_m1_s1_c1_c1_c1_c1_c1_codegraph_free_exact_diff_correction_v1","reference_task_id":"REF-P7-25-R2-B2-M1-S1-C1-C1-C1-C1-C1","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-S1-C1-C1-C1-C1-C1-CODEGRAPH-FREE-EXACT-DIFF-CORRECTION-V1","execution_authorized_after_orchestrator_activation":true,"activation_commit":{"expected_parent":"540568c84d266c115f2a4fcdf9078fccc4956279","expected_subject":"chore(plan): activate real manifest CodeGraph-free correction","expected_changed_paths":[".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/PLANS/20260801-0026-p7-retained-r3-b2-m1-s1-c1-c1-c1-c1-codegraph-routing-review.md"],"clean_porcelain_required_after_activation":true},"rejected_execution":{"activation_commit":"3c46c3531766576d9f6d7172d12add911f934537","activation_parent":"aae2e5c8d1c87f0f12955d049b7c3c581774680c","activation_subject":"chore(plan): activate real manifest exact diff correction","evidence_commit":"540568c84d266c115f2a4fcdf9078fccc4956279","evidence_parent":"3c46c3531766576d9f6d7172d12add911f934537","evidence_subject":"chore(evidence): record production CodeGraph routing stop","evidence_er_blob":"ea2e26ac24649e284c6e76bc01ebc64a3cc29b57","evidence_er_bytes":1195508,"evidence_er_sha256":"da00b05efcf259f717efdd5a5f9dcdf0df23a0250349da92c9a0ae77940e7966","first_failure":"pre_edit_codegraph_production_ownership_mismatch","pre_edit_codegraph_sync":1,"pre_edit_codegraph_queries":1,"authoritative_production_file_coverage":"2/4","post_edit_codegraph_sync":0,"post_edit_codegraph_queries":0,"test_writes":0,"tests":0,"commits":0,"retry":0},"rejected_candidate":{"candidate_commit":"cddd23eb4ef53a8f90c9b869f96f84ccfcba36cf","candidate_parent":"84b3458765849f9c50515067788af365006cef68","candidate_tree":"ff424f29e6a7a95349500ce356669a754d9ffa14","candidate_consumable":false,"exact_paths":["src/camera_based_rgbww_optimizer/utils/p7_retained_r3_real_manifest_domain_template.py","tests/test_p7_retained_r3_real_manifest_domain_template.py"],"source_blob":"84fcd755225af39eb89459146de282392367b70b","source_bytes":23352,"source_sha256":"5a593fee05eb09e0a3c10d30661e480823baef2876446c25b9fd42e46d70c29d","test_blob":"05db407f9fd6c67bf359f1874cff2f9baaf9564f","test_bytes":17413,"test_sha256":"cee73ccb729ad220f0dad76b54e91fa9c5b73904a262d897bf7b11a284fda4af"},"correction_commit":{"expected_parent_source":"current_activation_head_runtime","expected_subject":"fix(p7): correct real manifest domain fixtures","expected_changed_paths":["tests/test_p7_retained_r3_real_manifest_domain_template.py"],"single_commit":true,"clean_porcelain_required_after_commit":true},"required_full_machine_state":{"active_task_count":1,"active_task":"REF-P7-25-R2-B2-M1-S1-C1-C1-C1-C1-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-S1-C1-C1-C1-C1-C1-CODEGRAPH-FREE-EXACT-DIFF-CORRECTION-V1","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","real_manifest_domain_owner_status":"ACTIVE_CODEGRAPH_FREE_EXACT_DIFF_CORRECTION","existing_root_identity_owner_status":"ACCEPTED_COMPLETE_COMPOSITE_VALIDATED","m1_real_manifest_candidate_commit":"cddd23eb4ef53a8f90c9b869f96f84ccfcba36cf","m1_real_manifest_candidate_consumable":false,"executer_dispatched":true,"device_authorized_by_this_file":false},"exact_write_paths":["tests/test_p7_retained_r3_real_manifest_domain_template.py"],"correction_contract":{"test_methods_changed":["test_07_c1_exact_four_labels_order_children_uniqueness_and_hashes","test_13_generated_compile_fake_success_failure_and_negative_authority_surface"],"production_writes":0,"test_method_additions":0,"test_method_removals":0,"collision_fixture":"copy_first_identity_and_replace_only_label_with_second_expected_label","collision_expected_code":"path_collision","authority_check":"existing_test_runtime_ast_exact_import_alias_and_callable_tokens","raw_source_substring_forbidden":true,"legal_package":"camera_based_rgbww_optimizer"},"production_identity_contract":{"m1":{"blob":"84fcd755225af39eb89459146de282392367b70b","bytes":23352,"sha256":"5a593fee05eb09e0a3c10d30661e480823baef2876446c25b9fd42e46d70c29d"},"p3":{"blob":"d6d6cc628861baf8a95a09f13fa9204989693b5b","bytes":19767,"sha256":"118f8bdd086f3180088c99681e4dfbdfff05613c844a21bd83f3c1dd53c31a3d"},"p4":{"blob":"07f89d15c8288e0d45c495d6d5737bc37427b769","bytes":30424,"sha256":"008d0aac24db8746b4ef7241e0f46091c5854d3a845aa88ceb020dcb64f362ee"},"p5":{"blob":"075face6fd7453236affa303640b91eb16a42a9b","bytes":12320,"sha256":"07eaeac615ea79db45afad91ce4c82e28c1cdcb66b6119b5cdca6462d7c091d2"}},"evidence_owner_contract":{"before_identities_owner":"frozen_git_blob_bytes_sha256_only","after_test_semantics_owners":["exact_diff_limited_to_test07_test13","existing_dedicated_runtime_assertions","targeted_focused_full_tests","postcommit_blob_and_canonical_patch_sha256","planner_independent_committed_diff_review"],"codegraph_role":"post_test_sync_only_nonsemantic","post_test_sync":1,"ad_hoc_ast_static_gates":0,"evidence_helpers":0,"generic_scanner":0,"current_test_blob":"05db407f9fd6c67bf359f1874cff2f9baaf9564f","one_path_diff_required":true,"wrong_route_retry":0,"fallback":0},"test_contract":{"targeted_command":".venv/bin/python -m unittest tests.test_p7_retained_r3_real_manifest_domain_template","targeted_expected":13,"focused_command":".venv/bin/python -m unittest tests.test_p7_retained_r3_provenance_io tests.test_p7_retained_r3_controller_conformance tests.test_p7_retained_r3_controller_runtime tests.test_p7_retained_r3_controller_domain_template tests.test_p7_retained_r3_real_manifest_domain_template","focused_expected":83,"compileall_command":".venv/bin/python -m compileall -q src tests","full_command":"PYTHONUNBUFFERED=1 .venv/bin/python -m unittest discover -s tests -p 'test_*.py'","full_expected":800,"postcommit_targeted_expected":13},"execution_budgets":{"correction_commits":1,"execution_result_appends":1,"test_invocations":4,"compileall_invocations":1,"codegraph_sync":1,"ad_hoc_ast_static_gates":0,"evidence_helpers":0,"retry":0,"fallback":0},"zero_budgets":{"production_writes":0,"second_test_path_writes":0,"source_candidate_writes":0,"p3_owner_edits":0,"p4_owner_edits":0,"p5_owner_edits":0,"p7_owner_edits":0,"ad_hoc_ast_static_gates":0,"evidence_helpers":0,"generic_scanner":0,"external_controller_reads":0,"external_controller_writes":0,"external_controller_processes":0,"external_root_reads":0,"external_root_creates":0,"synthetic_integration_runs":0,"accepted_c1_physical_reads":0,"retained_artifact_physical_reads":0,"git_provenance_replay":0,"real_b2_dispatch":0,"subordinate_manifest_physical_writes":0,"actual_canonical_validator_calls":0,"canonical_validator_callbacks":0,"eligibility_emissions":0,"retained_release_audit":0,"release_generation":0,"release_qualification":0,"release_copy":0,"release_consumption":0,"network":0,"dns":0,"environment":0,"credentials":0,"device":0,"camera":0,"ray":0,"strip":0,"cleanup":0,"capture":0,"formal":0,"public_analyzer":0,"td_c":0,"sentinel":0,"p8":0,"firmware":0,"deployment":0,"plan_writes_by_executer":0,"full_writes_by_executer":0,"archive_writes_by_executer":0,"debug_writes":0,"guide_writes":0,"research_writes":0},"expected_duration":"under_10_minutes","visible_terminal_required":false,"archive":{"path":".agent-work/PLANS/20260801-0026-p7-retained-r3-b2-m1-s1-c1-c1-c1-c1-codegraph-routing-review.md","bytes":9878,"sha256":"06447d6c7847e5f8ffabba19212be96ac06cd3723ab4c644b2d274fc8ed100f2"},"planner_stop":"B2_M1_S1_C1_C1_C1_C1_C1_CODEGRAPH_FREE_CORRECTION_WAITING_PLANNER_REVIEW"}`
+`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_m1_s1_c1_c1_c1_c1_c1_c1_canonical_json_payload_correction_v1","reference_task_id":"REF-P7-25-R2-B2-M1-S1-C1-C1-C1-C1-C1-C1","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-S1-C1-C1-C1-C1-C1-C1-CANONICAL-JSON-PAYLOAD-CORRECTION-V1","execution_authorized_after_orchestrator_activation":true,"activation_commit":{"expected_parent":"1b6715a2326d5a8d62d503e34e4cd8da76dfdf67","expected_subject":"chore(plan): activate real manifest canonical payload correction","expected_changed_paths":[".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/PLANS/20260801-0043-p7-retained-r3-b2-m1-s1-canonical-json-payload-failure-review.md","tests/test_p7_retained_r3_real_manifest_domain_template.py"],"carried_test_status":"UNVALIDATED_CARRY_FORWARD","carried_test_blob":"1df5786db37e7bb9cd4d5ffe26e4310d53f700aa","carried_test_bytes":18553,"carried_test_sha256":"9d6deea37ab7d33748b95fa1dabc1380a3ae9677b4008684387699bc40bd1dd6","carried_binary_diff_bytes":3404,"carried_binary_diff_sha256":"b01f78668e05e709d33d415020dcb388fefe34980f381f823b14e8103e1cf777","clean_porcelain_required_after_activation":true},"rejected_execution":{"activation_commit":"89b9b54f30a698700289a4e9ae006e01c9a6d53f","activation_parent":"540568c84d266c115f2a4fcdf9078fccc4956279","activation_subject":"chore(plan): activate real manifest CodeGraph-free correction","evidence_commit":"1b6715a2326d5a8d62d503e34e4cd8da76dfdf67","evidence_parent":"89b9b54f30a698700289a4e9ae006e01c9a6d53f","evidence_subject":"chore(evidence): record real manifest fake runtime stop","evidence_er_blob":"7a084f14c6e941ca3d899fa4b4932d0080106645","evidence_er_bytes":1202556,"evidence_er_sha256":"171d14a5e6e276be044130c5dbec40490d55aeb9af57d9410c7ba88006b4be65","first_failure":"targeted_production_canonical_json_payload_violation","targeted_total":13,"targeted_pass":12,"targeted_errors":1,"focused":0,"compileall":0,"full":0,"postcommit_targeted":0,"codegraph_sync":0,"commits":0,"retry":0},"rejected_candidate":{"candidate_commit":"cddd23eb4ef53a8f90c9b869f96f84ccfcba36cf","candidate_parent":"84b3458765849f9c50515067788af365006cef68","candidate_tree":"ff424f29e6a7a95349500ce356669a754d9ffa14","candidate_consumable":false},"implementation_commit":{"expected_parent_source":"current_activation_head_runtime","expected_subject":"fix(p7): project real manifest into canonical JSON","expected_changed_paths":["src/camera_based_rgbww_optimizer/utils/p7_retained_r3_real_manifest_domain_template.py","tests/test_p7_retained_r3_real_manifest_domain_template.py"],"single_commit":true,"clean_porcelain_required_after_commit":true},"required_full_machine_state":{"active_task_count":1,"active_task":"REF-P7-25-R2-B2-M1-S1-C1-C1-C1-C1-C1-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-S1-C1-C1-C1-C1-C1-C1-CANONICAL-JSON-PAYLOAD-CORRECTION-V1","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","real_manifest_domain_owner_status":"ACTIVE_CANONICAL_JSON_PAYLOAD_CORRECTION","existing_root_identity_owner_status":"ACCEPTED_COMPLETE_COMPOSITE_VALIDATED","m1_real_manifest_candidate_commit":"cddd23eb4ef53a8f90c9b869f96f84ccfcba36cf","m1_real_manifest_candidate_consumable":false,"carried_test_status":"UNVALIDATED_CARRY_FORWARD","executer_dispatched":true,"device_authorized_by_this_file":false},"exact_write_paths":["src/camera_based_rgbww_optimizer/utils/p7_retained_r3_real_manifest_domain_template.py","tests/test_p7_retained_r3_real_manifest_domain_template.py"],"payload_contract":{"internal_contract_type":"immutable_tuple","persistence_value_domain":"exact_dict_list_finite_scalar_bool_null","schema":"p7_retained_r3_audit_provenance_manifest_v2","status":"sealed_subordinate_provenance_evidence","activation_shape":"ordered_five_item_list_with_changed_paths_list","baseline_shape":"ordered_twelve_item_list_with_two_six_item_seam_lists","c1_shape":"ordered_four_rows_each_eleven_item_list","retained_shape":"ordered_three_rows_each_eleven_item_list","generic_converter":false,"serializer_widening":false,"fake_persist_bypass":false,"field_value_or_order_change":false},"test_contract":{"carried_test_methods":["test_07_c1_exact_four_labels_order_children_uniqueness_and_hashes","test_13_generated_compile_fake_success_failure_and_negative_authority_surface"],"new_test_methods":0,"template_golden_sha_update":true,"persisted_manifest_exact_shape_assertion":true,"tuple_rejection_owner":"frozen_p3_tests","targeted_command":".venv/bin/python -m unittest tests.test_p7_retained_r3_real_manifest_domain_template","targeted_expected":13,"focused_command":".venv/bin/python -m unittest tests.test_p7_retained_r3_provenance_io tests.test_p7_retained_r3_controller_conformance tests.test_p7_retained_r3_controller_runtime tests.test_p7_retained_r3_controller_domain_template tests.test_p7_retained_r3_real_manifest_domain_template","focused_expected":83,"compileall_command":".venv/bin/python -m compileall -q src tests","full_command":"PYTHONUNBUFFERED=1 .venv/bin/python -m unittest discover -s tests -p 'test_*.py'","full_expected":800,"postcommit_targeted_expected":13},"execution_budgets":{"implementation_commits":1,"execution_result_appends":1,"test_invocations":4,"compileall_invocations":1,"codegraph_sync":1,"codegraph_queries":0,"retry":0,"fallback":0},"zero_budgets":{"third_code_test_path_writes":0,"p3_owner_edits":0,"p4_owner_edits":0,"p5_owner_edits":0,"p7_owner_edits":0,"serializer_widening":0,"generic_converter_helpers":0,"fake_persist_bypasses":0,"external_controller_reads":0,"external_controller_writes":0,"external_controller_processes":0,"external_root_reads":0,"external_root_creates":0,"synthetic_integration_runs":0,"accepted_c1_physical_reads":0,"retained_artifact_physical_reads":0,"git_provenance_replay":0,"real_b2_dispatch":0,"subordinate_manifest_physical_writes":0,"actual_canonical_validator_calls":0,"canonical_validator_callbacks":0,"eligibility_emissions":0,"retained_release_audit":0,"release_generation":0,"release_qualification":0,"release_copy":0,"release_consumption":0,"network":0,"dns":0,"environment":0,"credentials":0,"device":0,"camera":0,"ray":0,"strip":0,"cleanup":0,"capture":0,"formal":0,"public_analyzer":0,"td_c":0,"sentinel":0,"p8":0,"firmware":0,"deployment":0,"plan_writes_by_executer":0,"full_writes_by_executer":0,"archive_writes_by_executer":0,"debug_writes":0,"guide_writes":0,"research_writes":0},"expected_duration":"under_10_minutes","visible_terminal_required":false,"archive":{"path":".agent-work/PLANS/20260801-0043-p7-retained-r3-b2-m1-s1-canonical-json-payload-failure-review.md","bytes":7356,"sha256":"e15d70b8075384107af48c9c3bf7531212f440916ec1e711d2eda5e4d273f44a"},"planner_stop":"B2_M1_S1_C1_C1_C1_C1_C1_C1_CANONICAL_JSON_PAYLOAD_WAITING_PLANNER_REVIEW"}`
 
-## 1. Fresh activation and immutable Git gates
+## 1. Fresh activation with exact carry-forward preservation
 
-本包不得复用activation `3c46c3531766576d9f6d7172d12add911f934537`。Executer开始前必须证明当前activation是evidence HEAD
-`540568c84d266c115f2a4fcdf9078fccc4956279`的direct child，subject exact
-`chore(plan): activate real manifest CodeGraph-free correction`，changed paths exact为FULL、PLAN与本轮archive；porcelain clean，PLAN/FULL machine rows strict JSON且required FULL subset exact。
+Orchestrator must create one fresh activation whose parent is exact evidence HEAD
+`1b6715a2326d5a8d62d503e34e4cd8da76dfdf67`, subject exact
+`chore(plan): activate real manifest canonical payload correction`, and changed paths exact:
 
-同时验证reviewed activation/evidence direct-child topology、ER authoritative blob/bytes/SHA-256、rejected candidate topology、本archive identity及所有earlier archives不变。Candidate `cddd23e...`继续`consumable=false`。本包通过也只产生waiting-review one-path correction candidate；Executer不得自称owner accepted或进入M1-I1。
+1. `.agent-work/FULL_PLAN_REFERENCE.md`
+2. `.agent-work/PLAN.md`
+3. `.agent-work/PLANS/20260801-0043-p7-retained-r3-b2-m1-s1-canonical-json-payload-failure-review.md`
+4. `tests/test_p7_retained_r3_real_manifest_domain_template.py`
 
-在任何source read或edit前，仅用Git object命令验证以下identity exact：
+The fourth path is not an accepted implementation. It is an explicit `UNVALIDATED_CARRY_FORWARD` of the
+correct test07/test13 diff left dirty by the stopped execution. Before activation, its blob/bytes/SHA-256 must
+be exact `1df5786db37e7bb9cd4d5ffe26e4310d53f700aa` / `18553` /
+`9d6deea37ab7d33748b95fa1dabc1380a3ae9677b4008684387699bc40bd1dd6` and its binary diff from
+`89b9b54...` must be exact bytes `3404`, SHA-256
+`b01f78668e05e709d33d415020dcb388fefe34980f381f823b14e8103e1cf777`. Orchestrator must not alter,
+reformat, stage separately, or call these changes validated. Activation must leave porcelain clean.
+
+Executer starts only after verifying activation topology, strict PLAN/FULL machine rows and required FULL
+subset. Candidate `cddd23e...` remains non-consumable. Passing this package creates only a waiting-review
+candidate; it does not authorize M1-I1, retained audit, validator, release, or any device route.
+
+## 2. Frozen owners and root-cause boundary
+
+Before edit, verify with Git object identities only:
 
 | Owner | Path | Git blob | Bytes | SHA-256 |
 | --- | --- | --- | ---: | --- |
 | M1 | `src/camera_based_rgbww_optimizer/utils/p7_retained_r3_real_manifest_domain_template.py` | `84fcd755225af39eb89459146de282392367b70b` | `23352` | `5a593fee05eb09e0a3c10d30661e480823baef2876446c25b9fd42e46d70c29d` |
 | P3 | `src/camera_based_rgbww_optimizer/utils/p7_retained_r3_provenance_io.py` | `d6d6cc628861baf8a95a09f13fa9204989693b5b` | `19767` | `118f8bdd086f3180088c99681e4dfbdfff05613c844a21bd83f3c1dd53c31a3d` |
-| P4 | `src/camera_based_rgbww_optimizer/utils/p7_retained_r3_controller_conformance.py` | `07f89d15c8288e0d45c495d6d5737bc37427b769` | `30424` | `008d0aac24db8746b4ef7241e0f46091c5854d3a845aa88ceb020dcb64f362ee` |
-| P5 | `src/camera_based_rgbww_optimizer/utils/p7_retained_r3_controller_runtime.py` | `075face6fd7453236affa303640b91eb16a42a9b` | `12320` | `07eaeac615ea79db45afad91ce4c82e28c1cdcb66b6119b5cdca6462d7c091d2` |
-| dedicated test | `tests/test_p7_retained_r3_real_manifest_domain_template.py` | `05db407f9fd6c67bf359f1874cff2f9baaf9564f` | `17413` | `cee73ccb729ad220f0dad76b54e91fa9c5b73904a262d897bf7b11a284fda4af` |
+| carried test | `tests/test_p7_retained_r3_real_manifest_domain_template.py` | `1df5786db37e7bb9cd4d5ffe26e4310d53f700aa` | `18553` | `9d6deea37ab7d33748b95fa1dabc1380a3ae9677b4008684387699bc40bd1dd6` |
 
-这些冻结Git blob/bytes/SHA-256是全部pre-edit identity owner。禁止CodeGraph explore/query、coverage assertion、inline AST/static gate、helper、scanner、source-shape程序或generic search fallback。Identity mismatch必须write0/tests0停止。
+P3 is frozen and remains the sole canonical serialization owner. Its accepted domain is exact JSON-native
+`dict`、`list`、finite numeric/string、boolean、null; tuple remains fail-closed
+`json_unsupported_value`. Fake `persist()` must continue calling `canonical_json_bytes`; it is not a mock
+escape hatch.
 
-## 2. Direct exact one-path semantic correction
+M1 remains owner of the generated real-manifest payload. Internal `REAL_MANIFEST_CONTRACT`, activation,
+baseline, seam, C1, retained and Git targets remain immutable tuples for validation and deterministic source
+composition. Only the value passed to `persist_canonical_json` at `phase_evaluate` is incorrect.
 
-Identity gate通过后，Executer可直接读取以下两个既有methods并实施correction；无需先用额外程序重新证明旧syntax。唯一write path是
-`tests/test_p7_retained_r3_real_manifest_domain_template.py`。只允许修改：
+## 3. Exact production correction
 
-- `test_07_c1_exact_four_labels_order_children_uniqueness_and_hashes`
-- `test_13_generated_compile_fake_success_failure_and_negative_authority_surface`
+Only in M1 `_CANONICAL_TEMPLATE`'s `phase_evaluate`, replace the tuple-valued manifest fields with an explicit,
+ordered JSON-native projection:
 
-Production、imports（现有`ast`足够）、其余11 methods、fake runtime和所有其他paths冻结；不得新增或删除test method、helper、scanner或production abstraction。
+- `activation`: one five-item list preserving commit、parent、subject、changed-paths、full patch SHA; changed
+  paths becomes one ordered list;
+- `baseline`: one twelve-item list preserving every existing value and order; its seam chain becomes one
+  ordered two-row list, each row an exact six-item list;
+- `c1`: one ordered four-row list, each row an exact eleven-item list;
+- `retained`: one ordered three-row list, each row an exact eleven-item list;
+- `schema` and `status` remain byte-for-byte unchanged.
 
-### 2.1 test07 collision fixture
+The projection may use local list literals/comprehensions directly at `manifest_payload`. It must not add a
+generic recursive converter, helper, serializer, tuple allowlist, fallback, second payload owner, or mutation
+of the internal tuple contract. It must not drop, rename, reorder, normalize, stringify, or infer any value.
+P3/P4/P5/P7 and all other source files are read-only.
 
-构造collision时复制第一条C1完整identity，仅把`label`替换为第二条expected label，语义exact为：
+After changing `_CANONICAL_TEMPLATE`, recompute and replace only the M1
+`_CANONICAL_TEMPLATE_SHA256` golden constant. `_GOLDEN_REPLACEMENT_SHA256` must remain unchanged because the
+replacement contract is unchanged. No public export/dataclass/builder/runtime-request/lifecycle/artifact/
+root/read/Git budget may change.
 
-`replace(spec().c1_inputs[0], label=spec().c1_inputs[1].label)`
+## 4. Dedicated test correction and preserved assertions
 
-这样第二expected label、absolute/direct-child path、root/device/inode/mode与hash均有效，而两条path exact相同；继续断言stable code `path_collision`。不得仅替换第二identity的`path`，不得改production validation order。
+The same dedicated test is the only test write path. Preserve the carried test07 and exact AST authority
+logic in test13 without weakening or reverting either one.
 
-### 2.2 test13 authority-negative assertion
+Permitted additional test edits are only:
 
-在test13既有runtime assertion中strict UTF-8 decode generated source并`ast.parse`；从generated tree收集：
+1. test02 continues to compare the template to the updated production golden SHA; no replacement golden
+   update is allowed;
+2. test13's fake success path inspects the stored first manifest artifact and proves schema/status plus the
+   exact activation/baseline/C1/retained ordered shapes and values described above;
+3. the existing fake `persist()` continues canonical encoding and the existing primary-failure identity
+   assertion remains unchanged.
 
-- `ast.Import`与`ast.ImportFrom`的exact qualified modules及alias names；
-- `ast.Call`中exact `ast.Name.id`与`ast.Attribute.attr` callable tokens。
+No new test method, generic fixture converter, serializer bypass, second fake runtime, helper, scanner, or
+new test path is allowed. The focused P3 suite must continue proving tuple rejection; this package must not
+change P3 or turn its negative assertion into tuple acceptance.
 
-Import modules/aliases只允许generated source既有的`sys`、P4 conformance module与P3 provenance-I/O module及其既有imported symbols。Authority symbols `canonical_validator`、`emit_eligibility`、`consume_release`、`device_authorized`、`camera`、`ray120c`与forbidden modules `socket`、`requests`必须同exact qualified names/aliases/call tokens不相交。合法package `camera_based_rgbww_optimizer`不能因包含字符序列`camera`而失败。删除完整generated source的`lowered` substring all/none判断，不得删除negative coverage或改generated production source迎合test。
+## 5. Ordered validation and candidate commit
 
-这里的AST仅是existing dedicated test的runtime assertion，不是额外static invocation、evidence helper或pre-edit gate。
+After a human-readable Git diff confirms exact two paths, no carried-block regression, no other test method,
+no P3/P4/P5/P7 changes, and `git diff --check` clean, run each exact once and stop on first nonzero/count
+mismatch:
 
-## 3. Exact diff, ordered tests, and maintenance sync
+1. targeted: `.venv/bin/python -m unittest tests.test_p7_retained_r3_real_manifest_domain_template`, exact
+   `13/13` and `OK`;
+2. focused: `.venv/bin/python -m unittest tests.test_p7_retained_r3_provenance_io tests.test_p7_retained_r3_controller_conformance tests.test_p7_retained_r3_controller_runtime tests.test_p7_retained_r3_controller_domain_template tests.test_p7_retained_r3_real_manifest_domain_template`, exact `83/83` and `OK`;
+3. compileall: `.venv/bin/python -m compileall -q src tests`, exit `0`;
+4. full: `PYTHONUNBUFFERED=1 .venv/bin/python -m unittest discover -s tests -p 'test_*.py'`, exact
+   `800/800` and unique `OK`;
+5. only after all validation passes, run `codegraph sync` exact once, exit `0`; no CodeGraph explore/query or
+   semantic claim is permitted;
+6. recheck exact two-path diff and frozen owner identities; stage exact M1 + dedicated test and create one
+   commit with subject `fix(p7): project real manifest into canonical JSON`;
+7. require implementation commit direct child of current activation, exact two changed paths, clean
+   porcelain; record tree, both final blob/bytes/SHA-256 values and canonical binary patch SHA-256;
+8. run postcommit targeted exact once, exact `13/13` and `OK`;
+9. append `.agent-work/EXECUTION_RESULT.md` exact once and stop.
 
-Edit后先以Git原生diff保留并人工检查完整diff：worktree diff exact one dedicated-test path，only changed methods为test07/test13，production identities与before exact相同，`git diff --check` clean。不得通过新脚本/helper/AST gate/scanner判定diff；若可读Git diff出现第三method、import、helper或其他path，立即停止，tests保持0。
+Total budgets: test invocations `4`, compileall `1`, CodeGraph maintenance sync `1`, implementation commit
+`1`, ER append `1`, retry/fallback `0/0`. Any failure before commit leaves the activation's carried test
+content preserved; any additional uncommitted correction must be reported precisely and not called accepted.
 
-通过后严格顺序、每项exact一次；任一nonzero/count/shape mismatch立即停止，后项保持0：
+## 6. Hard locks and stop
 
-1. targeted：`.venv/bin/python -m unittest tests.test_p7_retained_r3_real_manifest_domain_template`，exact `13/13`、`OK`；
-2. focused：`.venv/bin/python -m unittest tests.test_p7_retained_r3_provenance_io tests.test_p7_retained_r3_controller_conformance tests.test_p7_retained_r3_controller_runtime tests.test_p7_retained_r3_controller_domain_template tests.test_p7_retained_r3_real_manifest_domain_template`，exact `83/83`、`OK`；
-3. compileall：`.venv/bin/python -m compileall -q src tests`，exit `0`；
-4. full discovery：`PYTHONUNBUFFERED=1 .venv/bin/python -m unittest discover -s tests -p 'test_*.py'`，exact `800/800`、唯一`OK`；
-5. 仅在上述一path edit与ordered validation全通过后运行`codegraph sync` exact一次，要求exit `0`；禁止`codegraph explore`或任何query。该sync仅满足changed-project maintenance rule，不证明语义、call graph、文件覆盖或owner boundary；nonzero仍须precommit stop，retry `0`；
-6. 再检查完整Git diff exact one test path/only test07+test13、production identities frozen及`git diff --check`；不得运行替代AST/helper/scanner；
-7. stage exact one test path，检查staged diff与unstaged empty；创建single commit，subject exact `fix(p7): correct real manifest domain fixtures`；
-8. commit必须direct child of current activation，changed path exact one test path，porcelain clean；记录tree、test after blob/bytes/SHA-256，以及由`git diff --binary <activation> <commit> -- tests/test_p7_retained_r3_real_manifest_domain_template.py` exact bytes计算的canonical patch SHA-256；
-9. postcommit targeted exact一次，exact `13/13`、`OK`；
-10. append `.agent-work/EXECUTION_RESULT.md` exact一次并停止；该append不得并入implementation commit。
+Exact zero: any third code/test path, P3/P4/P5/P7 edit, serializer widening, generic converter/helper, fake
+persist bypass, CodeGraph query, external controller/root/process, synthetic integration, accepted-C1 or
+retained physical reads, Git provenance replay, real B2, subordinate manifest physical write, actual canonical
+validator/callback/eligibility, retained audit, release generation/qualification/copy/consumption, network,
+DNS, environment, credentials, device, camera, Ray, strip, cleanup, capture, FORMAL, public analyzer, TD-C,
+sentinel, P8, firmware, deployment, and Executer writes to PLAN/FULL/archive/debug/GUIDE/RESEARCH.
 
-总预算：tests `4`、compileall `1`、CodeGraph maintenance sync `1`、ad-hoc AST/static gates `0`、evidence helpers/scanners `0`、correction commit `1`、ER append `1`、retry/fallback `0/0`。本包不存在CodeGraph explore/query阶段或coverage assertion。
+This is a pure offline engineering/provenance correction, expected under ten minutes. It needs no Advisor or
+Human authorization and no visible Terminal. Success or failure stops at the sole Planner stop; M1-I1 remains
+locked until a later Planner review accepts the composite result.
 
-## 4. ER handoff and hard locks
-
-ER必须记录activation/evidence/candidate topology、before/after Git identities、exact unstaged/staged/committed diff scope、完整validation ledger、唯一post-test CodeGraph sync exit、implementation commit topology、canonical binary patch SHA-256、ER immutable-prefix identity、所有zero budgets、first failure或success stop。不得声称CodeGraph证明任何production semantic或owner boundary；不得记录任何CodeGraph query/coverage assertion。test13的AST只作为dedicated runtime test结果报告。
-
-持续硬锁：production与second test path writes；source/P3/P4/P5/P7 edits；所有CodeGraph explore/query/semantic assertions；dedicated-test/finer/additional CodeGraph query；ad-hoc AST/static gate；evidence helper/scanner；generic search fallback；external controller/root/process；synthetic integration；accepted-C1/retained physical reads；Git provenance replay；real B2；subordinate manifest physical writes；canonical validator/callback/eligibility；retained audit；release generation/qualification/copy/consumption；network/DNS/environment/credentials；device/camera/Ray/strip/cleanup/capture/FORMAL/public analyzer/TD-C/sentinel/P8/firmware/deployment；PLAN/FULL/archive/debug/GUIDE/RESEARCH writes by Executer。所有预算exact `0`。
-
-这是一项纯离线、单test-path纠偏，不需要Human或Advisor授权，预计少于10分钟，不使用visible Terminal。Executer成功或失败均停在唯一Planner stop，不得进入M1-I1或任何later stage。
-
-维护性边界：P3仍唯一拥有physical provenance I/O，P4仍唯一拥有static/effect provenance与lifecycle validation，P5仍唯一拥有runtime composition，M1仍是immutable domain-template composition；本包不新增证据框架，只修正两个既有test fixtures。CodeGraph仅保留项目索引同步职责，不参与此test-only correction的语义裁决。
+维护性边界：M1仅在自己的persist boundary做显式JSON-native projection；P3 serializer、P4 lifecycle、
+P5 runtime composition和immutable tuple input contract保持单一owner，不引入共享转换层或并行框架。

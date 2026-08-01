@@ -172,7 +172,7 @@ class RealManifestDomainTemplateTests(unittest.TestCase):
         self.assert_code("c1_label_mismatch", replace(spec(), c1_inputs=swapped))
         bad = replace(spec().c1_inputs[0], path="/elsewhere/value.json")
         self.assert_code("path_not_direct_child", replace(spec(), c1_inputs=(bad,) + spec().c1_inputs[1:]))
-        collision = replace(spec().c1_inputs[1], path=spec().c1_inputs[0].path)
+        collision = replace(spec().c1_inputs[0], label=spec().c1_inputs[1].label)
         self.assert_code("path_collision", replace(spec(), c1_inputs=(spec().c1_inputs[0], collision, *spec().c1_inputs[2:])))
 
     def test_08_retained_exact_three_labels_order_children_and_frozen_hashes(self):
@@ -235,10 +235,34 @@ class RealManifestDomainTemplateTests(unittest.TestCase):
     def test_13_generated_compile_fake_success_failure_and_negative_authority_surface(self):
         bundle = subject.build_real_manifest_domain_template(spec())
         source = compose_controller_source(bundle.runtime_request).source
-        self.assertIsNotNone(compile(ast.parse(source.decode("utf-8", errors="strict")), "<generated>", "exec"))
-        forbidden = ("canonical_validator", "emit_eligibility", "consume_release", "socket", "requests", "device_authorized", "camera", "ray120c")
-        lowered = source.decode().lower()
-        self.assertTrue(all(name not in lowered for name in forbidden))
+        tree = ast.parse(source.decode("utf-8", errors="strict"))
+        self.assertIsNotNone(compile(tree, "<generated>", "exec"))
+        import_modules: set[str] = set()
+        import_aliases: set[str] = set()
+        call_tokens: set[str] = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                import_modules.update(alias.name for alias in node.names)
+                import_aliases.update(alias.asname or alias.name for alias in node.names)
+            elif isinstance(node, ast.ImportFrom):
+                if node.module is not None:
+                    import_modules.add(node.module)
+                import_aliases.update(alias.asname or alias.name for alias in node.names)
+            elif isinstance(node, ast.Call):
+                if isinstance(node.func, ast.Name):
+                    call_tokens.add(node.func.id)
+                elif isinstance(node.func, ast.Attribute):
+                    call_tokens.add(node.func.attr)
+        self.assertLessEqual(import_modules, {
+            "sys",
+            "camera_based_rgbww_optimizer.utils.p7_retained_r3_controller_conformance",
+            "camera_based_rgbww_optimizer.utils.p7_retained_r3_provenance_io",
+        })
+        forbidden = {
+            "canonical_validator", "emit_eligibility", "consume_release",
+            "device_authorized", "camera", "ray120c", "socket", "requests",
+        }
+        self.assertTrue(forbidden.isdisjoint(import_modules | import_aliases | call_tokens))
         namespace: dict[str, object] = {"__name__": "fake_controller"}
         exec(source, namespace)
         stored: dict[str, FileIdentity] = {}
