@@ -17164,3 +17164,182 @@ PRE_GATE_LOGICAL_EXIT=0
 - Evidence ordering held: pre-initial-clean ER bytes written `0`, pre-terminal ER bytes written `0`, in-memory observations were retained across the stream reconnection, and this section is the single terminal EOF append. Initial-clean, pre-gate, targeted, focused, compileall, full, and final-clean were not rerun; retry/fallback are exact `0/0`.
 - Code/test/template/replacement/serializer/matrix/owner/API/helper writes, implementation commits, postcommit tests, third paths, CodeGraph sync/query, PLAN/FULL/archive/debug/GUIDE/RESEARCH writes, external controller/source/root/process work, synthetic integration, old failed controller/root/evidence reads, retained artifacts/candidate payload reads, Git provenance replay, real B2 dispatch, subordinate manifest, canonical validator, eligibility, retained audit, all release operations, network/DNS/environment/credentials/device/camera/Ray/strip/cleanup/capture/FORMAL/public analyzer/TD-C/sentinel/P8/firmware/deployment all remained exact `0`.
 - Result: `markdown_machine_row_delimiter_validation_pass_waiting_for_planner`. This result does not make the candidate consumable and does not unlock integration or any later stage.
+
+
+## 2026-07-31 REF-P7-25-R2-B2-P7-I1 Executer terminal handoff
+
+- Planner stop: `B2_P7_I1_ACCEPTED_OWNER_FRESH_SYNTHETIC_INTEGRATION_WAITING_PLANNER_REVIEW`
+- Result: `SUCCESS`
+- Machine-readable terminal record:
+
+```json
+{
+  "activation_changed_paths": [
+    ".agent-work/FULL_PLAN_REFERENCE.md",
+    ".agent-work/PLAN.md",
+    ".agent-work/PLANS/20260731-1921-p7-retained-r3-b2-p7-acceptance-route-review.md"
+  ],
+  "activation_dispatch_parent": "9d8573fd4155851adc6e71b3b0ccc50365f6f6d3",
+  "activation_outer_stdout_sha256": "2608c4ed995595ca862bd956904676b795090b4a89c0353ff252a7576eb1833b",
+  "activation_sha": "c245bbc7d7b120c83dd59b2b2cc87b8f9f01dae2",
+  "activation_subject": "chore(plan): activate p7 synthetic integration",
+  "builder_bundle": {
+    "expected_artifact_names": [
+      "synthetic-plan.json",
+      "synthetic-full.json",
+      "synthetic-lineage.json",
+      "synthetic-seal.json",
+      "integration-qualification.json",
+      "integration-qualification.sha256.json",
+      "terminal-evidence.json",
+      "terminal-evidence.sha256.json",
+      "execution-result-admission.json"
+    ],
+    "expected_bound_results": 18,
+    "expected_lifecycle_order": [
+      "conformance",
+      "activation",
+      "root",
+      "inputs",
+      "evaluate",
+      "terminal",
+      "terminal_seal",
+      "admission"
+    ],
+    "replacement_bytes": 1993,
+    "replacement_sha256": "2368ec51b8c1a3edc0153dc1c67fd86a5e635d711fcafbe659dd532f2d58aa72",
+    "runtime_request_identity_preserved": true,
+    "template_bytes": 11999,
+    "template_sha256": "0369231f11bc968ebc343bac57acab236d75faf5d5d6e2b9c3d82918df19a467"
+  },
+  "controller_facts": {
+    "artifact_count_from_stdout": 9,
+    "artifact_set": [
+      "synthetic-plan.json",
+      "synthetic-full.json",
+      "synthetic-lineage.json",
+      "synthetic-seal.json",
+      "integration-qualification.json",
+      "integration-qualification.sha256.json",
+      "terminal-evidence.json",
+      "terminal-evidence.sha256.json",
+      "execution-result-admission.json"
+    ],
+    "git_ledgers": "reached by accepted controller source before successful terminal envelope; exact 6 not independently exposed by runtime report",
+    "independent_artifact_forensic_reads": 0,
+    "lifecycle": [
+      "conformance",
+      "activation",
+      "root",
+      "inputs",
+      "evaluate",
+      "terminal",
+      "terminal_seal",
+      "admission"
+    ],
+    "root_identity": "reached by accepted controller source before successful terminal envelope; device/inode/mode not independently exposed by runtime report",
+    "same_root_writes_reads": "reached by accepted controller source before successful terminal envelope; exact identities not independently exposed by runtime report",
+    "semantic_matrix": "reached by accepted controller source before successful terminal envelope; individual 16 rows not independently exposed by runtime report"
+  },
+  "counts": {
+    "builder": 1,
+    "dependency_overrides": 0,
+    "execution_result_append": 0,
+    "fallback": 0,
+    "machine_gate": 1,
+    "outer_git": 1,
+    "outer_shell_commands_cumulative": 4,
+    "outer_source_launcher": 0,
+    "outer_source_reader": 0,
+    "outer_source_writer": 0,
+    "retry": 0,
+    "runtime": 1,
+    "second_process": 0,
+    "second_root": 0,
+    "second_source": 0,
+    "spec": 1
+  },
+  "dispatch_clean_porcelain": true,
+  "er_before": {
+    "bytes": 1133941,
+    "sha256": "a60e328ae4c47abd5f56d2116b8239fcb1bb4f23c969001a3b4dde8b1e060f6f",
+    "writes_before_terminal": 0
+  },
+  "fresh_path_preprobe_by_outer": 0,
+  "fresh_root_path": "/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-p7-i1-root-c245bbc7d7b1",
+  "fresh_source_path": "/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-p7-i1-source-c245bbc7d7b1.py",
+  "machine_rows": {
+    "full": 1,
+    "plan": 1,
+    "required_full_subset": true,
+    "strict_json": true
+  },
+  "primary": null,
+  "retention": {
+    "root": "owner-selected path retained; no delete/repair/reuse",
+    "source": "owner-returned path retained; no delete/repair/reuse"
+  },
+  "runtime_report": {
+    "checks": {
+      "bundle_artifact_count_9": true,
+      "bundle_bound_results_18": true,
+      "bundle_lifecycle_exact": true,
+      "process_argv_exact": true,
+      "process_exit_zero": true,
+      "source_bytes_exact": true,
+      "source_mode_0600": true,
+      "source_path_exact": true,
+      "source_regular_identity": true,
+      "source_sha_exact": true,
+      "stderr_empty": true,
+      "stdout_single_json_envelope": true
+    },
+    "composition": {
+      "byte_count": 13946,
+      "function_name": "controller",
+      "source_path": "/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-p7-i1-source-c245bbc7d7b1.py",
+      "source_sha256": "e66afc9b6d2a8b9092a5d051fc3260a3078cab1d60ea5ceb92baa755bca6bc0a"
+    },
+    "conformance_type": "ControllerConformanceReport",
+    "process": {
+      "argv": [
+        "/Users/ibobby/Projects/WLED-RGBWW/.venv/bin/python",
+        "-"
+      ],
+      "exit_code": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 105,
+      "stdout_payload": {
+        "artifact_count": 9,
+        "status": "repo_owned_runnable_domain_template_candidate_waiting_for_planner_review"
+      },
+      "stdout_sha256": "6a5c5cef84aec4b3bbad2361502756c1c05cf25b0ddddccbb36062185bc82abc"
+    },
+    "source_identity": {
+      "byte_count": 13946,
+      "device": 16777240,
+      "inode": 2253709,
+      "mode": 384,
+      "path": "/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-p7-i1-source-c245bbc7d7b1.py",
+      "sha256": "e66afc9b6d2a8b9092a5d051fc3260a3078cab1d60ea5ceb92baa755bca6bc0a"
+    }
+  },
+  "success_label": "FRESH_SYNTHETIC_INTEGRATION_QUALIFIED_NOT_RETAINED_ELIGIBLE",
+  "zero_budgets": {
+    "code_test_production_plan_full_archive_debug_guide_research_writes": 0,
+    "dependency_overrides": 0,
+    "device_camera_ray_strip_cleanup_capture_formal_public_analyzer": 0,
+    "network_dns_environment_credentials": 0,
+    "old_paths_external_evidence_retained_candidate_reads": 0,
+    "outer_writer_reader_launcher": 0,
+    "real_b2_validator_eligibility_audit_release": 0,
+    "retry_fallback_second_source_root_process": 0,
+    "service_reconnection_duplicate_outer_git": 0,
+    "td_c_sentinel_p8_firmware_deployment": 0,
+    "tests_compileall_codegraph_commit": 0
+  }
+}
+```
+
+Execution stopped immediately after this single EOF append. Planner must independently review retained source/root evidence; no retry, forensic artifact read, retained validation, release, network, or device route was entered.
