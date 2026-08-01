@@ -170,6 +170,12 @@ class ControllerDomainTemplateTests(unittest.TestCase):
             with self.subTest(field=field), self.assertRaises(subject.ControllerDomainTemplateError) as raised:
                 subject.build_controller_domain_template(replace(spec(), **{field: value}))
             self.assertEqual(raised.exception.code, code)
+        with self.assertRaises(subject.ControllerDomainTemplateError) as raised:
+            subject.build_controller_domain_template(replace(spec(), source_path=spec().source_path + "\x00"))
+        self.assertEqual(raised.exception.code, "source_path_invalid")
+        literal_escape_path = spec().source_path + "\\x00"
+        literal_escape_bundle = subject.build_controller_domain_template(replace(spec(), source_path=literal_escape_path))
+        self.assertEqual(literal_escape_bundle.runtime_request.source_path, literal_escape_path)
         with self.assertRaises(FrozenInstanceError): spec().repo_root = "/x"
 
     def test_08_static_owner_boundary_has_no_effect_retained_or_parallel_owner(self):

@@ -240,7 +240,7 @@ if __name__ == "__main__":
 
 
 def _plain(value: object, code: str) -> str:
-    if type(value) is not str or not value or "\\x00" in value or "\n" in value or "\r" in value:
+    if type(value) is not str or not value or "\x00" in value or "\n" in value or "\r" in value:
         raise ControllerDomainTemplateError(code)
     return value
 
