@@ -15,6 +15,8 @@
 - The field-only successor passed the accepted analyzer with 18 bindings, then its one-off transport gate rejected the required pure in-memory case-11 negative `FileIdentity(root=drift_root)` as `live_owner_transport:drift_root:Call`. Controller bytes/SHA are `32216`/`a9d982f88bc75ef09e029ce4311a46f3e9f59264fed86c98e1bb5fc284122010`; all effects remained zero.
 - Repo-owned P4-C1 transport classification was implemented in `0ec12f2...` with exact two paths and recorded 20 targeted / 76 focused / 761 full tests passing. Planner could not accept the package because activation `48adfd6...` has actual subject `chore(plan): activate p4 transport domain correction`, while the frozen PLAN and ER asserted `chore(plan): activate p4 transport domain owner correction`. The implementation remains a validation candidate, but provenance closure is required before synthetic integration.
 - Validation-only successor C1-C1-C1 was accepted. Evidence commit `baa14d1...` preserves the old ER prefix, truthfully supersedes only the false activation-subject/pass assertion, and leaves the original P4-C1 contract rejected. The repo-owned implementation can now be consumed by a fresh synthetic integration qualification without rewriting history.
+- The controller path was subsequently decomposed into accepted single owners: P5 repo-owned runtime `37f7d002...`, P6 deterministic builder `48b3979...`, and P7 runnable template `864f08cc...`. P7 validation passed exact backtick machine-row decoding, targeted `11/11`, focused `93/93`, compileall, full `778/778`, and final-clean with one terminal-only ER append. Planner accepted it as `ACCEPTED_COMPLETE_REPO_OWNED_RUNNABLE_DOMAIN_TEMPLATE_OWNER`.
+- Orchestrator registered new successor `REF-P7-25-R2-B2-P7-I1` for one fresh pure-offline synthetic integration. It must compose the accepted P5/P6/P7 owners and must not revive the disposable controller, second analyzer/classifier, serializer, or lifecycle paths documented below.
 
 ## Failed approaches
 
@@ -26,14 +28,16 @@
 - Retaining temporary tuples/lists of live owner objects and generic `projection(identity)` calls after introducing direct/nonlocal bindings; field extraction must be unrolled at each binding, with only the repo-required immutable `RootIdentityChain` composition explicitly allowed.
 - Maintaining a second, disposable AST transport classifier outside the accepted repo owner; its undifferentiated live-name set cannot distinguish effect-owned identities from pure in-memory negative-fixture identities.
 
-## Current hypothesis
+## Resolution
 
-The transport-domain implementation is now inside the repo-owned analyzer and its local regression surface passed. The remaining blocker is not controller semantics: it is a truthful, immutable Git/evidence chain for the already-committed implementation. The next step is a validation-only successor that binds the actual activation subject and existing commit/file identities, supersedes the incorrect ER assertion without rewriting it, and preserves all external/retained effects at zero. Only after Planner accepts that provenance closure should a fresh synthetic integration consume the single repo owner.
+Repeated failures were caused by copied owner contracts and transient validation harnesses around disposable controller source. The stable correction was architectural but bounded: keep runtime effects, deterministic domain construction, and runnable generated-template semantics in three repository-owned and independently tested owners. Their accepted commits are `37f7d002...`, `48b3979...`, and `864f08cc...`; the final validation evidence is `2e969389...`, and the Planner acceptance archive is `.agent-work/PLANS/20260731-1914-p7-retained-r3-b2-p7-machine-row-validation-acceptance-review.md`.
 
-## Next diagnostic and acceptance surface
+This debug route is resolved at the owner-contract level. Synthetic integration remains a separately planned qualification and is not evidence that retained R3, the canonical validator, eligibility, release, network, or device work is unlocked.
 
-- Planner should authorize only a fresh synthetic integration source that uses direct/nonlocal owner bindings and stores plain projections rather than live owner objects.
-- Any successor must independently compare every runtime controller attribute access on accepted owner return types against current committed dataclass fields, while parsing negative fixtures in a separate AST that is excluded from runtime-occurrence assertions.
+## Reusable acceptance surface
+
+- A fresh synthetic integration must call the accepted P5/P6/P7 public owners and store only their contract-defined immutable/plain projections; it must not reconstruct their logic in an outer controller.
+- Any future source gate must compare runtime attribute access against committed owner dataclasses, while parsing negative fixtures in a separate AST excluded from runtime-occurrence assertions.
 - The regression surface must prove a negative `GitLedger.returncode` specimen is rejected, the actual runtime AST has no `returncode`, all six ledgers use `exit_code == 0` with empty stderr, and four root negative cases remain pure in-memory without consuming an extra owner root lstat.
-- The old controller/source/root remain immutable and must not be rerun or repaired.
-- Success still does not authorize retained reads, real B2, manifest, validator, eligibility, release, network, or device work.
+- Old failed controller/source/root paths remain immutable and must not be rerun, repaired, or reused.
+- P7-I1 success may qualify only the pure-offline owner composition; it does not itself authorize retained reads, real B2, manifest, validator, eligibility, release, network, or device work.
