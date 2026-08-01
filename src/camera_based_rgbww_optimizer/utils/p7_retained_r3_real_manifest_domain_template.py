@@ -220,7 +220,14 @@ _TEMPLATE_SUFFIX = '''
 
     def phase_evaluate():
         nonlocal manifest_identity, manifest_seal_identity
-        manifest_payload = {"schema": "p7_retained_r3_audit_provenance_manifest_v2", "status": "sealed_subordinate_provenance_evidence", "activation": ACTIVATION, "baseline": BASELINE, "c1": C1_INPUTS, "retained": RETAINED_INPUTS}
+        manifest_payload = {
+            "schema": "p7_retained_r3_audit_provenance_manifest_v2",
+            "status": "sealed_subordinate_provenance_evidence",
+            "activation": [ACTIVATION[0], ACTIVATION[1], ACTIVATION[2], list(ACTIVATION[3]), ACTIVATION[4]],
+            "baseline": [BASELINE[0], BASELINE[1], BASELINE[2], BASELINE[3], BASELINE[4], [list(row) for row in BASELINE[5]], BASELINE[6], BASELINE[7], BASELINE[8], BASELINE[9], BASELINE[10], BASELINE[11]],
+            "c1": [list(row) for row in C1_INPUTS],
+            "retained": [list(row) for row in RETAINED_INPUTS],
+        }
         manifest_written = persist_canonical_json(persist_root_identity, artifact_names[0], manifest_payload)
         manifest_identity = read_exact_file(OUTPUT_ROOT + "/" + artifact_names[0], expected_mode=384, expected_size=manifest_written.byte_count, expected_sha256=manifest_written.sha256, root=output_root_identity)
         if manifest_written != manifest_identity:
@@ -281,7 +288,7 @@ if __name__ == "__main__":
 '''
 
 _CANONICAL_TEMPLATE = (_TEMPLATE_PREFIX + _GIT_LINES + _TEMPLATE_SUFFIX).encode("utf-8")
-_CANONICAL_TEMPLATE_SHA256 = "16f7ff136de41fb9e220d48f3d6c4e5de08b95f58b38754fc7faaf9b7e40d147"
+_CANONICAL_TEMPLATE_SHA256 = "4819a57be714bf0cd8760d3bc9f59b7d92d889b0fc1ee802e2b9a092ea14ce32"
 _GOLDEN_REPLACEMENT_SHA256 = "55c43ad338a83c11a2b2c8d2c5714a9efaf75ec4215dd30e103d540b0c6502ec"
 
 

@@ -294,6 +294,39 @@ class RealManifestDomainTemplateTests(unittest.TestCase):
             run_read_only_git=lambda *_args: GitLedger(("git",), "/repo", 0, b"", b"", SHA64, SHA64),
         )
         self.assertEqual(namespace["controller"]()["artifact_count"], 5)  # type: ignore[index,operator]
+        current = spec()
+        activation = current.activation
+        baseline = current.baseline
+        manifest_path = current.output_root + "/" + bundle.expected_artifact_names[0]
+        self.assertEqual(stored[manifest_path].data, canonical_json_bytes({
+            "schema": "p7_retained_r3_audit_provenance_manifest_v2",
+            "status": "sealed_subordinate_provenance_evidence",
+            "activation": [
+                activation.commit, activation.parent, activation.subject,
+                list(activation.changed_paths), activation.full_patch_sha256,
+            ],
+            "baseline": [
+                baseline.release_checkpoint, baseline.helper_v1, baseline.integration,
+                baseline.helper_path, baseline.test_path,
+                [[
+                    seam.repo_path, seam.before_blob_oid, seam.after_blob_oid,
+                    seam.before_sha256, seam.after_sha256, seam.binary_patch_sha256,
+                ] for seam in baseline.seam_chain],
+                baseline.governance_manifest_sha256, baseline.guide_sha256,
+                baseline.advisor_decision_sha256, baseline.advisor_attachment_sha256,
+                baseline.human_governance_override, baseline.helper_disposition,
+            ],
+            "c1": [[
+                item.label, item.path, item.root_path, item.byte_count, item.sha256,
+                item.device, item.mode, item.inode, item.root_device,
+                item.root_inode, item.root_mode,
+            ] for item in current.c1_inputs],
+            "retained": [[
+                item.label, item.path, item.root_path, item.byte_count, item.sha256,
+                item.device, item.mode, item.inode, item.root_device,
+                item.root_inode, item.root_mode,
+            ] for item in current.retained_inputs],
+        }))
         primary = LookupError("input")
         namespace["read_existing_root"] = lambda _path: (_ for _ in ()).throw(primary)
         with self.assertRaises(LookupError) as raised:
