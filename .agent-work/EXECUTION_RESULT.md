@@ -18089,3 +18089,21 @@ Execution stopped before either authorized implementation path was created or ed
 - all zero locks remained zero: fresh-root list/stat/glob/search, terminal and terminal-seal reads, source/other-root reads, artifact writes/reseals, controller/selector/ledger execution, Git-ledger acquisition, real-manifest self-check, physical inputs, repository code/tests reads or writes, tests, compileall, CodeGraph, commits, validator, production-owner/lineage/eligibility emissions, release operations, network, device, camera, Ray120c, strip, cleanup, formal, and public analyzer were all `0`; PLAN/FULL/archive writes by Executer were `0`.
 - no original execution contract is accepted. Synthetic engineering attribution facts were not accepted because the complete 18-row matrix gate did not complete. Production-owner conclusion remains `false`; lineage conclusion remains `false`; eligibility remains `false`; release consumable remains `false`; retained R3 remains `RETAINED_UNVALIDATED_UNCONSUMED`.
 - planner stop: `B3_C3_C4_R5_R1_C1_R2_R1_C2_S1_C1_R1_D1_D2_C1_R2_C1_S1_C1_C1_IDENTITY_OWNER_CORRECTIVE_SUPERSESSION_WAITING_PLANNER_REVIEW`.
+
+## D2-C1-R2-C1-S1-C1-C1-C1-C1-C1-C1-C1 minimal physical-EOF failure exact-offset supersession
+
+- Status: `DURABLE_GLOBAL_INDEX_FAILURE_SEALED_AT_TRUE_PHYSICAL_EOF_WAITING_PLANNER_REVIEW`
+- Corrective activation topology: HEAD `3b53eb9227c2c114ecb0dd85ca99c583c6892e7d`, exact parent `fa51dd0e9bc92671b78c3d964eb4371594015791`, subject and ordered three-path gate PASS.
+- Superseded execution activation: `fa51dd0e9bc92671b78c3d964eb4371594015791`, parent `5e7e91e35f7c72d460c0aa5c6852847cb19372ef`, evidence child: none.
+- Topology and activation/worktree ER identity: PASS at exact `1559501` bytes / SHA-256 `7b771a53aec9b06588398cfa536a8829979759ffc26b73966a01583f5b8ed69b`.
+- Rejected predecessor cause: global `String#index` matched an earlier duplicate heading.
+- Historical exact-offset gate: offset `1546782`, length `96`, per-input constant-time comparison PASS; SHA-256 `d3e26074ad09fecf7d08b1acc6003f004fcb6198a37f36e8c61193442c4436a3`.
+- Complete-tail gate: offset `1555430`, length `4071`, activation/worktree constant-time comparison PASS; SHA-256 `b91a59124220413e1f6037fb8429af934fdf1b53ebd048ab27141c42bd0bf62e`; tail ends at byte `1559501` with a single LF.
+- Prior tail freeze / suffix extraction / patch render / write counts: all `0`.
+- Entire pre-append ER is preserved; this record is appended once at the true physical EOF using the complete verified 4071-byte tail as the sole patch context.
+- Retry: `0`; fallback: `0`.
+- Report and seal remain unread; `$.matrix` remains unfrozen; controller, selector, ledger, validator, tests, CodeGraph, network, device, camera, Ray120c, strip, cleanup, formal execution, and release operations remain unused.
+- Synthetic engineering attribution is not accepted.
+- Production owner conclusion: `false`; lineage conclusion: `false`; eligibility: `false`; release consumable: `false`.
+- Retained R3 remains `RETAINED_UNVALIDATED_UNCONSUMED`.
+- Planner stop: `B3_C3_C4_R5_R1_C1_R2_R1_C2_S1_C1_R1_D1_D2_C1_R2_C1_S1_C1_C1_C1_C1_C1_C1_C1_EXACT_OFFSET_EOF_FAILURE_SUPERSESSION_WAITING_PLANNER_REVIEW`.
