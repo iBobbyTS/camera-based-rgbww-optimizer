@@ -18107,3 +18107,635 @@ Execution stopped before either authorized implementation path was created or ed
 - Production owner conclusion: `false`; lineage conclusion: `false`; eligibility: `false`; release consumable: `false`.
 - Retained R3 remains `RETAINED_UNVALIDATED_UNCONSUMED`.
 - Planner stop: `B3_C3_C4_R5_R1_C1_R2_R1_C2_S1_C1_R1_D1_D2_C1_R2_C1_S1_C1_C1_C1_C1_C1_C1_C1_EXACT_OFFSET_EOF_FAILURE_SUPERSESSION_WAITING_PLANNER_REVIEW`.
+
+## D2-C1-R2-C1-S1-C1-C1-C1-C1-C1-C1-C1-C1-C1-C1 fixed-matrix metadata-budget corrective physical-EOF supersession
+
+Status: SEALED_FIXED_MATRIX_READ_ONLY_ATTRIBUTION_FACTS_AT_TRUE_PHYSICAL_EOF_WAITING_PLANNER_REVIEW.
+Runtime activation: 57ae735e3549c9e906cf87cb9cdf09643c1d131d; parent: 6e6b90583b2be94bdfc26e0e26c93e8e205832ef; subject: chore(plan): fix fixed matrix metadata budget.
+Ordered activation changed paths: ('.agent-work/FULL_PLAN_REFERENCE.md', '.agent-work/PLAN.md', '.agent-work/PLANS/20260801-1736-p7-retained-r3-fixed-matrix-metadata-budget-failure-review.md').
+Core metadata argv executed exactly once: ('/usr/bin/git', '-C', '/Users/ibobby/Projects/WLED-RGBWW', 'show', '-s', '--format=%H%x00%P%x00%s%x00', 'HEAD').
+Changed-path argv executed exactly once: ('/usr/bin/git', '-C', '/Users/ibobby/Projects/WLED-RGBWW', 'diff-tree', '--no-commit-id', '--name-only', '-z', '-r', 'HEAD').
+Metadata subbudgets: core 1, changed-path 1, total 2; no rev-parse, retry, fallback, status, log, or generic repository probe.
+The activation PLAN and FULL raw Git-object bytes were each passed directly once, in the same local Python process, to the accepted parsers; neither raw object was decoded or exposed before parsing.
+Activation/worktree ER identity: 1561559 bytes, SHA-256 6468ae28195ad5ae37bdb7cc4e821905b78467d2bca34b5bd0d8d9d061166b44; complete EOF context tail: offset 1559501, 2058 bytes, SHA-256 183f899049e3294f5f95bf98b8699a7ae04d25c3ff04ad9e537caff7dfdf3b05, constant-time identical.
+Fixed report identity: 01-owner-expectation-attribution.json, 41685 bytes, SHA-256 923f32afae0f375469d03a6b6a18a71261c19e7bcfefcd0bb041bdfde11b849a.
+Fixed seal identity: 01-owner-expectation-attribution.sha256.json, 166 bytes, SHA-256 068ee79657f4765928b80909514d37b431d779fc2a6ccd914c127e1453c08c49; strict seal target/bytes/hash match the report.
+Report collection is exactly $.matrix (report_value['matrix']), exact builtins.list, cardinality 18, frozen once. Every row has the exact required row keys and every match is a JSON boolean.
+ledger_binding_proof.frozen_path is exactly $.ledger_rows, owned by PLAN_MACHINE_ROOT, exact frozen type builtins.tuple, cardinality 18, and binding_identity_same_object=true; the report has no top-level ledger_rows, and no such path was read.
+Matrix canonical JSON: 24981 bytes, SHA-256 4e051f1d8a3e5849d7d0a856f2517371e7cd0d49f6efe192984518ade94e95b5.
+Full ordered 18-row fixed matrix (inline, not a pointer):
+
+~~~json
+[
+  {
+    "argv": [
+      "git",
+      "rev-parse",
+      "--verify",
+      "3e2ebed132b6d4338bfa324bfc42c3565d2eeb3c^{commit}"
+    ],
+    "detail": {
+      "actual_sha256": "63183c231e0b097497d45b12cc7d735c9b683670b2da371052000375e726c17c",
+      "owner_sha256": "63183c231e0b097497d45b12cc7d735c9b683670b2da371052000375e726c17c"
+    },
+    "expected_selection": "activation.commit_exact_lf",
+    "git_exit_code": 0,
+    "git_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "index": 1,
+    "match": true,
+    "owner_returned_kind": "exact",
+    "plan_expected_kind": "exact",
+    "role": "verify_activation_commit"
+  },
+  {
+    "argv": [
+      "git",
+      "rev-parse",
+      "--verify",
+      "9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e^{commit}"
+    ],
+    "detail": {
+      "actual_sha256": "ca2985935a06dad028975510b5160ed8a15b0d4bf93d7d4ca793b03f1bf225d8",
+      "owner_sha256": "ca2985935a06dad028975510b5160ed8a15b0d4bf93d7d4ca793b03f1bf225d8"
+    },
+    "expected_selection": "activation.parent_exact_lf",
+    "git_exit_code": 0,
+    "git_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "index": 2,
+    "match": true,
+    "owner_returned_kind": "exact",
+    "plan_expected_kind": "exact",
+    "role": "verify_activation_parent"
+  },
+  {
+    "argv": [
+      "git",
+      "rev-parse",
+      "--verify",
+      "32b9e670ff3bbea0cd1505528c2ca87c2935446c^{commit}"
+    ],
+    "detail": {
+      "actual_sha256": "ad4a0512bbee168e6341a30b1c946553d420abb086558b6fba91d8df5521a721",
+      "owner_sha256": "ad4a0512bbee168e6341a30b1c946553d420abb086558b6fba91d8df5521a721"
+    },
+    "expected_selection": "baseline.release_checkpoint_exact_lf",
+    "git_exit_code": 0,
+    "git_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "index": 3,
+    "match": true,
+    "owner_returned_kind": "exact",
+    "plan_expected_kind": "exact",
+    "role": "verify_release_checkpoint"
+  },
+  {
+    "argv": [
+      "git",
+      "rev-parse",
+      "--verify",
+      "9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e^{commit}"
+    ],
+    "detail": {
+      "actual_sha256": "ca2985935a06dad028975510b5160ed8a15b0d4bf93d7d4ca793b03f1bf225d8",
+      "owner_sha256": "ca2985935a06dad028975510b5160ed8a15b0d4bf93d7d4ca793b03f1bf225d8"
+    },
+    "expected_selection": "baseline.helper_v1_exact_lf",
+    "git_exit_code": 0,
+    "git_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "index": 4,
+    "match": true,
+    "owner_returned_kind": "exact",
+    "plan_expected_kind": "exact",
+    "role": "verify_helper_v1"
+  },
+  {
+    "argv": [
+      "git",
+      "rev-parse",
+      "--verify",
+      "3e2ebed132b6d4338bfa324bfc42c3565d2eeb3c^{commit}"
+    ],
+    "detail": {
+      "actual_sha256": "63183c231e0b097497d45b12cc7d735c9b683670b2da371052000375e726c17c",
+      "owner_sha256": "63183c231e0b097497d45b12cc7d735c9b683670b2da371052000375e726c17c"
+    },
+    "expected_selection": "baseline.integration_exact_lf",
+    "git_exit_code": 0,
+    "git_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "index": 5,
+    "match": true,
+    "owner_returned_kind": "exact",
+    "plan_expected_kind": "exact",
+    "role": "verify_integration"
+  },
+  {
+    "argv": [
+      "git",
+      "show",
+      "-s",
+      "--format=%H%x00%P%x00%s",
+      "3e2ebed132b6d4338bfa324bfc42c3565d2eeb3c"
+    ],
+    "detail": {
+      "actual_sha256": "8e4ad8adbf4e2b495c2cf8ebf12bf67be914519c3ed1629fdcc59e5b2f4ceded",
+      "owner_sha256": "8e4ad8adbf4e2b495c2cf8ebf12bf67be914519c3ed1629fdcc59e5b2f4ceded"
+    },
+    "expected_selection": "activation.commit_nul_parent_nul_subject_lf",
+    "git_exit_code": 0,
+    "git_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "index": 6,
+    "match": true,
+    "owner_returned_kind": "exact",
+    "plan_expected_kind": "exact",
+    "role": "activation_commit_metadata"
+  },
+  {
+    "argv": [
+      "git",
+      "diff-tree",
+      "--no-commit-id",
+      "--name-only",
+      "-r",
+      "-z",
+      "3e2ebed132b6d4338bfa324bfc42c3565d2eeb3c"
+    ],
+    "detail": {
+      "actual_paths": [
+        ".agent-work/EXECUTION_RESULT.md",
+        ".agent-work/FULL_PLAN_REFERENCE.md",
+        ".agent-work/PLAN.md",
+        ".agent-work/PLANS/20260725-1418-priority-selection-stop-review.md",
+        ".agent-work/PLANS/20260725-1539-p7-baseline-lineage-r1-contract-review.md",
+        ".agent-work/PLANS/20260725-1556-p7-baseline-lineage-c1-validation-review.md",
+        ".agent-work/PLANS/20260725-1605-p7-baseline-lineage-c2-final-review.md",
+        ".agent-work/PLANS/20260725-1622-p7-z0-r2-c1r1-first-gate-review.md",
+        ".agent-work/PLANS/20260725-1630-p7-z0-r2-c1r2-plan-marker-review.md",
+        ".agent-work/PLANS/20260725-1639-p7-z0-r2-c1r3-lifecycle-bootstrap-review.md",
+        ".agent-work/PLANS/20260725-1647-p7-z0-r2-c1r4-seal-owner-review.md",
+        ".agent-work/PLANS/20260725-1656-p7-z0-r2-c1r5-historical-fifo-review.md",
+        ".agent-work/PLANS/20260725-1707-p7-z0-r2-c1r6-signal-accounting-review.md",
+        ".agent-work/PLANS/20260725-1747-p7-z0-r2-c1r7-predecessor-fifo-review.md",
+        ".agent-work/PLANS/20260725-1808-p7-z0-r2-c1r8-signal-writer-review.md",
+        ".agent-work/PLANS/20260725-1825-p7-z0-r2-c1r9-adapter-call-validator-review.md",
+        ".agent-work/PLANS/20260725-1844-p7-z0-r2-c1r10-final-review.md",
+        ".agent-work/PLANS/20260725-1901-p7-z0-r3-runtime-failure-review.md",
+        ".agent-work/PLANS/20260725-1919-p7-z0-r3-c1-editable-owner-review.md",
+        ".agent-work/PLANS/20260725-1934-p7-z0-r3-c2-socket-fixture-review.md",
+        ".agent-work/PLANS/20260725-1949-p7-z0-r3-c3-terminal-socket-review.md",
+        ".agent-work/PLANS/20260725-2015-p7-z0-r3-c4-accounting-oracle-review.md",
+        ".agent-work/PLANS/20260725-2036-p7-z0-r3-c5-final-review.md",
+        ".agent-work/PLANS/20260726-0330-p7-z0-r4-failure-review.md",
+        ".agent-work/PLANS/20260726-0355-p7-z0-r4-c1-contract-parser-review.md",
+        ".agent-work/PLANS/20260726-0430-p7-z0-r4-c1a-acceptance-review.md",
+        ".agent-work/PLANS/20260726-0520-p7-z0-r4-c1b-acceptance-review.md",
+        ".agent-work/PLANS/20260726-0615-p7-z0-r4-c1c-metadata-replay-review.md",
+        ".agent-work/PLANS/20260726-0645-p7-lineage-qualify-r4-consumer-failure-review.md",
+        ".agent-work/PLANS/20260726-0700-p7-lineage-release-acceptance-review.md",
+        ".agent-work/PLANS/20260726-0715-p7-formal-launcher-c1-acceptance-review.md",
+        ".agent-work/PLANS/20260726-0715-p7-z0-r4-c1c1-path-review.md",
+        ".agent-work/PLANS/20260726-0730-p7-formal-r2-predevice-oracle-failure-review.md",
+        ".agent-work/PLANS/20260726-0745-p7-formal-r4-c1-secret-re-review.md",
+        ".agent-work/PLANS/20260726-0800-p7-predevice-oracle-c1-acceptance-review.md",
+        ".agent-work/PLANS/20260726-0815-p7-env-accounting-c1-negative-review.md",
+        ".agent-work/PLANS/20260726-0815-p7-z0-r4-c1c1a-acceptance-review.md",
+        ".agent-work/PLANS/20260726-0830-p7-formal-r3-preexec-failure-review.md",
+        ".agent-work/PLANS/20260726-0835-p7-ray-public-default-c1-review.md",
+        ".agent-work/PLANS/20260726-0900-p7-human-env-stop-superseded.md",
+        ".agent-work/PLANS/20260726-0904-p7-ray-public-default-lineage-c1-evidence-contradiction-review.md",
+        ".agent-work/PLANS/20260726-0915-p7-ray-public-default-lineage-c1-evidence-finalization-review.md",
+        ".agent-work/PLANS/20260726-0919-p7-ray-public-default-lineage-c2-candidate-audit-review.md",
+        ".agent-work/PLANS/20260726-0930-p7-ray-public-default-lineage-c3-preparation-review.md",
+        ".agent-work/PLANS/20260726-0930-p7-z0-r4-c1c2-acceptance-review.md",
+        ".agent-work/PLANS/20260726-0940-p7-qualification-adapter-c1-preimplementation-stop-review.md",
+        ".agent-work/PLANS/20260726-0945-p7-ray-public-default-lineage-c4-superseded-review.md",
+        ".agent-work/PLANS/20260726-0947-p7-c3-r1-preparation-correction-review.md",
+        ".agent-work/PLANS/20260726-1008-p7-qualification-evidence-adapter-c1-r1-review.md",
+        ".agent-work/PLANS/20260726-1014-p7-evidence-qualification-r1-preflight-checkpoint-review.md",
+        ".agent-work/PLANS/20260726-1020-p7-checkpoint-command-contract-c1-review.md",
+        ".agent-work/PLANS/20260726-1027-p7-evidence-qualification-r1-r1-hard-failure-review.md",
+        ".agent-work/PLANS/20260726-1038-p7-accounting-scan-c1-review.md",
+        ".agent-work/PLANS/20260726-1045-p7-z0-real-failure-review.md",
+        ".agent-work/PLANS/20260726-1049-p7-r1-r1-f1-forensic-disposition-review.md",
+        ".agent-work/PLANS/20260726-1104-p7-r2-h1-real-harness-preparation-review.md",
+        ".agent-work/PLANS/20260726-1120-p7-r2-h2-activation-contract-review.md",
+        ".agent-work/PLANS/20260726-1137-p7-r2-h3-terminal-owner-review.md",
+        ".agent-work/PLANS/20260726-1145-p7-z0-real-c1-acceptance-review.md",
+        ".agent-work/PLANS/20260726-1155-p7-r2-h4-real-output-owner-review.md",
+        ".agent-work/PLANS/20260726-1206-p7-r2-offline-evidence-invocation-review.md",
+        ".agent-work/PLANS/20260726-1245-p7-z0-real-r1-contract-review.md",
+        ".agent-work/PLANS/20260726-1345-p7-z0-real-r1-c1-acceptance-review.md",
+        ".agent-work/PLANS/20260726-1445-p7-z0-real-r1-source-event-review.md",
+        ".agent-work/PLANS/20260726-1545-p7-z0-real-r1-c2-acceptance-review.md",
+        ".agent-work/PLANS/20260726-1645-p7-z0-real-r2-watchdog-review.md",
+        ".agent-work/PLANS/20260726-1715-p7-z0-real-r2-human-reachability-review.md",
+        ".agent-work/PLANS/20260726-1845-p7-z0-real-r3-acceptance-review.md",
+        ".agent-work/PLANS/20260726-1930-p7-e2-readiness-acceptance-review.md",
+        ".agent-work/PLANS/20260726-1931-p7-r2-d1-release-decision-review.md",
+        ".agent-work/PLANS/20260726-1957-p7-r2-d2-release-harness-review.md",
+        ".agent-work/PLANS/20260726-2006-p7-r2-d3-preflight-frozen-hash-review.md",
+        ".agent-work/PLANS/20260726-2015-p7-formal-r1-prerequisite-review.md",
+        ".agent-work/PLANS/20260726-2025-p7-r2-d3-activation-correction-review.md",
+        ".agent-work/PLANS/20260726-2030-p7-lineage-qualify-cli-failure-review.md",
+        ".agent-work/PLANS/20260726-2045-p7-lineage-cli-c1-acceptance-review.md",
+        ".agent-work/PLANS/20260726-2047-p7-r2-d4-real-mode-evidence-review.md",
+        ".agent-work/PLANS/20260726-2113-p7-r2-d5-shared-owner-review.md",
+        ".agent-work/PLANS/20260726-2115-p7-lineage-changed-path-policy-review.md",
+        ".agent-work/PLANS/20260726-2138-p7-r2-lineage-release-generation-review.md",
+        ".agent-work/PLANS/20260726-2145-p7-lineage-human-policy-decision-review.md",
+        ".agent-work/PLANS/20260726-2200-p7-policy-freeze-c1-acceptance-review.md",
+        ".agent-work/PLANS/20260726-2207-p7-formal-r5-offline-preparation-review.md",
+        ".agent-work/PLANS/20260726-2226-p7-formal-r5-activation-c1-review.md",
+        ".agent-work/PLANS/20260726-2238-p7-formal-r5-prelaunch-terminal-policy-review.md",
+        ".agent-work/PLANS/20260726-2335-p7-lineage-qualify-r2-path-policy-review.md",
+        ".agent-work/PLANS/20260727-0005-p7-formal-r5-hard-failure-review.md",
+        ".agent-work/PLANS/20260727-0145-p7-workflow-path-c1-acceptance-review.md",
+        ".agent-work/PLANS/20260727-0230-p7-cleanup-test-provenance-c1-acceptance-review.md",
+        ".agent-work/PLANS/20260727-0315-p7-lineage-qualify-r3-owner-failure-review.md",
+        ".agent-work/PLANS/20260727-0430-p7-owner-binding-c1-acceptance-review.md",
+        ".agent-work/PLANS/20260727-1212-p7-r5-advisor-decision-review.md",
+        ".agent-work/PLANS/20260727-1243-p7-r6-pre-eq-offline-failure-review.md",
+        ".agent-work/PLANS/20260727-1309-p7-r6-pre-eq-c1-acceptance-review.md",
+        ".agent-work/PLANS/20260727-1324-p7-eq-r6-human-checkpoint-live-owner-review.md",
+        ".agent-work/PLANS/20260727-1401-p7-eq-r6-c0-rejection-review.md",
+        ".agent-work/PLANS/20260727-1424-p7-eq-r6-c1-evidence-failure-review.md",
+        ".agent-work/PLANS/20260727-1445-p7-eq-r6-c1e1-acceptance-review.md",
+        ".agent-work/PLANS/20260727-1507-p7-eq-r6-prelaunch-owner-failure-review.md",
+        ".agent-work/PLANS/20260727-1535-p7-eq-r6-c2-evidence-lifecycle-rejection-review.md",
+        ".agent-work/PLANS/20260727-1542-p7-eq-r6-c2e1-preflight-path-failure-review.md",
+        ".agent-work/PLANS/20260727-1601-p7-eq-r6-c2e2-acceptance-review.md",
+        ".agent-work/PLANS/20260727-1612-p7-eq-r6-live-prelaunch-failure-review.md",
+        ".agent-work/PLANS/20260727-1621-p7-eq-r6-zero-reachability-r1-failure-review.md",
+        ".agent-work/PLANS/20260727-1642-p7-eq-r6-human-resolver-checkpoint-review.md",
+        ".agent-work/PLANS/20260727-1650-p7-eq-r6-zero-recovery-r2-acceptance-review.md",
+        ".agent-work/PLANS/20260727-1721-p7-eq-r6-live-1650-runtime-contract-failure-review.md",
+        ".agent-work/PLANS/20260727-1734-p7-eq-r6-c3-path-mismatch-review.md",
+        ".agent-work/PLANS/20260727-1756-p7-eq-r6-c3e1-postcommit-command-review.md",
+        ".agent-work/PLANS/20260727-1807-p7-eq-r6-c3e2-acceptance-review.md",
+        ".agent-work/PLANS/20260727-1928-p7-eq-r6-h2-authorization-override-review.md",
+        ".agent-work/PLANS/20260727-1937-p7-eq-r6-preflight-path-mapping-review.md",
+        ".agent-work/PLANS/20260727-2017-p7-eq-r6-qualified-1-2500-acceptance-review.md",
+        ".agent-work/PLANS/20260727-2026-p7-post-eq-manifest-contract-review.md",
+        ".agent-work/PLANS/20260727-2044-p7-post-eq-policy-c1-evidence-incomplete-review.md",
+        ".agent-work/PLANS/20260727-2052-p7-post-eq-policy-c1e1-acceptance-review.md",
+        ".agent-work/PLANS/20260727-2103-p7-lineage-release-r3-preacquisition-manifest-review.md",
+        ".agent-work/PLANS/20260727-2112-p7-lineage-release-r3-c1-changed-path-policy-review.md",
+        ".agent-work/PLANS/20260727-2204-p7-post-eq-lineage-c2-postcommit-focused-review.md",
+        ".agent-work/PLANS/20260727-2213-p7-post-eq-lineage-c2e1-full-discovery-invocation-review.md",
+        ".agent-work/PLANS/20260727-2227-p7-post-eq-lineage-c2e2-acceptance-review.md",
+        ".agent-work/PLANS/20260727-2241-p7-lineage-release-r3-r2-audit-ledger-shape-review.md",
+        ".agent-work/PLANS/20260727-2251-p7-retained-r3-c1-pre-persistence-parent-root-review.md",
+        ".agent-work/PLANS/20260727-2301-p7-retained-r3-c1r1-source-writer-review.md",
+        ".agent-work/PLANS/20260727-2313-p7-retained-r3-c1r2-third-failure-reassessment-stop-review.md",
+        ".agent-work/PLANS/20260727-2320-p7-retained-r3-option-a-owner-selection-review.md",
+        ".agent-work/PLANS/20260727-2341-p7-retained-r3-option-a-o1-focused-failure-review.md",
+        ".agent-work/PLANS/20260727-2353-p7-retained-r3-option-a-o1-c1-full-suite-terminal-evidence-review.md",
+        ".agent-work/PLANS/20260728-0016-p7-retained-r3-option-a-o1-c1r1-acceptance-review.md",
+        ".agent-work/PLANS/20260728-0028-p7-retained-r3-o2-full-hash-handoff-review.md",
+        ".agent-work/PLANS/20260728-0039-p7-retained-r3-o2-c1-schema-boundary-review.md",
+        ".agent-work/PLANS/20260728-0058-p7-retained-r3-o3-lineage-policy-owner-review.md",
+        ".agent-work/PLANS/20260728-0107-p7-retained-r3-o3-c1-codegraph-target-review.md",
+        ".agent-work/PLANS/20260728-0114-p7-retained-r3-o3-c1r1-codegraph-coverage-review.md",
+        ".agent-work/PLANS/20260728-0121-p7-retained-r3-o3-c1r2-workflow-range-review.md",
+        ".agent-work/PLANS/20260728-0129-p7-retained-r3-o3-c1r3-advisor-evidence-acceptance-review.md",
+        ".agent-work/PLANS/20260729-0901-p7-retained-r3-option-b-advisor-stop-transition-review.md",
+        ".agent-work/PLANS/20260729-0917-p7-retained-r3-option-b-b1-contract-conflict-review.md",
+        ".agent-work/PLANS/20260729-1031-p7-retained-r3-option-b-advisor-stop-superseded-review.md",
+        ".agent-work/PLANS/20260729-1046-p7-retained-r3-option-b-b1a-lifecycle-failure-review.md",
+        ".agent-work/PLANS/20260729-1108-p7-retained-r3-option-b-b1a-c1-focused-launch-failure-review.md",
+        ".agent-work/PLANS/20260729-1121-p7-retained-r3-option-b-b1a-c2-false-source-identity-review.md",
+        ".agent-work/PLANS/20260729-1131-p7-retained-r3-option-b-b1a-c3-full-machine-gate-review.md",
+        ".agent-work/PLANS/20260729-1140-p7-retained-r3-option-b-b1a-c3e1-python-symlink-review.md",
+        ".agent-work/PLANS/20260729-1149-p7-retained-r3-option-b-b1a-c3e2-canonicalization-scope-review.md",
+        ".agent-work/PLANS/20260729-1159-p7-retained-r3-option-b-b1a-c3e3-patch-argv-and-status-review.md",
+        ".agent-work/PLANS/20260729-1210-p7-retained-r3-option-b-b1a-c3e4-first-focused-failure-review.md",
+        ".agent-work/PLANS/20260729-1218-p7-retained-r3-option-b-b1a-c3e5d1-baseline-decomposition-review.md",
+        ".agent-work/PLANS/20260729-1229-p7-retained-r3-option-b-b1a-c3e5d2-focused-lineage-owner-review.md",
+        ".agent-work/PLANS/20260729-1240-p7-retained-r3-option-b-b1a-c3e5d3-test-only-pass-review.md",
+        ".agent-work/PLANS/20260729-1256-p7-retained-r3-option-b-b1a-c3e6f1-full-suite-hermeticity-review.md",
+        ".agent-work/PLANS/20260729-1317-p7-retained-r3-option-b-b1a-c3e6f2-provenance-successor-review.md",
+        ".agent-work/PLANS/20260729-1336-p7-retained-r3-option-b-b1a-c3e6f3-pre-acquisition-read-order-review.md",
+        ".agent-work/PLANS/20260729-1343-p7-retained-r3-option-b-b1a-c3e6f4-machine-row-parser-review.md",
+        ".agent-work/PLANS/20260729-1357-p7-retained-r3-option-b-b1a-c3e6f5-closure-ast-review.md",
+        ".agent-work/PLANS/20260729-1404-p7-retained-r3-option-b-b1a-c3e6f6-full-subset-review.md",
+        ".agent-work/PLANS/20260729-1417-p7-retained-r3-option-b-b1a-c3e6f7-check-ignore-review.md",
+        ".agent-work/PLANS/20260729-1426-p7-retained-r3-option-b-b1a-c3e6f8-closure-owner-path-review.md",
+        ".agent-work/PLANS/20260729-1439-p7-retained-r3-option-b-b1a-c3e6f9-tracked-target-replacement-review.md",
+        ".agent-work/PLANS/20260729-1458-p7-retained-r3-option-b-b1a-c3e6f10-nested-ast-review.md",
+        ".agent-work/PLANS/20260729-1520-p7-retained-r3-option-b-b1a-c3e6f11-acquisition-controller-keyerror-review.md",
+        ".agent-work/PLANS/20260729-1546-p7-retained-r3-option-b-b1a-c3e6f12-worktree-blob-oracle-review.md",
+        ".agent-work/PLANS/20260729-1610-p7-retained-r3-option-b-b1a-c3e6f13-package-retry-violation-review.md",
+        ".agent-work/PLANS/20260729-1623-p7-retained-r3-option-b-b1a-c3e6f14-pre-root-container-failure-review.md",
+        ".agent-work/PLANS/20260729-1640-p7-retained-r3-option-b-b1a-c3e6f15-dispatcher-read-scope-review.md",
+        ".agent-work/PLANS/20260729-1659-p7-retained-r3-option-b-b1a-c3e6f16-plan-row-label-review.md",
+        ".agent-work/debug/INDEX.md",
+        ".agent-work/debug/active/20260725-p7-td-b-e2-r1-hostname-and-progressive-evidence.md",
+        ".agent-work/debug/active/20260727-p7-r3-lineage-path-classification.md",
+        ".agent-work/debug/resolved/20260725-p7-td-b-e2-r1-hostname-and-progressive-evidence.md",
+        ".agent-work/debug/resolved/20260727-p7-eq-r6-feature-selection-and-failure-accounting.md",
+        ".agents/skills/camera-based-rgbww-optimizer/SKILL.md",
+        "AGENTS.md",
+        "advisor/4/0.AUDIT/04-advisor3-to-formal-r5-completed-work.md",
+        "advisor/4/0.AUDIT/05-formal-r5-observer-quality-decision-request.md",
+        "advisor/4/0.AUDIT/06-commit-and-evidence-index.md",
+        "advisor/4/0.AUDIT/07-guide4-to-retained-r3-lineage-owner-decision.md",
+        "advisor/4/0.AUDIT/README.md",
+        "advisor/4/4.GUIDE.md",
+        "advisor/4/4.RESEARCH.md",
+        "src/camera_based_rgbww_optimizer/optimization/p7_retained_release_audit.py",
+        "tests/test_p7_retained_release_audit.py"
+      ],
+      "expected_paths": [
+        "src/camera_based_rgbww_optimizer/optimization/p7_retained_release_audit.py",
+        "tests/test_p7_retained_release_audit.py"
+      ],
+      "framing_valid": true,
+      "owner_empty_bytes": true
+    },
+    "expected_selection": "activation.changed_paths_exact_order_unique_nul",
+    "git_exit_code": 0,
+    "git_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "index": 7,
+    "match": false,
+    "owner_returned_kind": "paths",
+    "plan_expected_kind": "paths",
+    "role": "activation_changed_paths"
+  },
+  {
+    "argv": [
+      "git",
+      "rev-parse",
+      "9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e:src/camera_based_rgbww_optimizer/optimization/p7_retained_release_audit.py"
+    ],
+    "detail": {
+      "actual_sha256": "4c9f34d3a456b8850f88d5d6fd065d1e472279bdb62be184faafcc19dcbdabe2",
+      "owner_sha256": "4c9f34d3a456b8850f88d5d6fd065d1e472279bdb62be184faafcc19dcbdabe2"
+    },
+    "expected_selection": "blob_oid(file_map[activation.parent,helper_path])_exact_lf",
+    "git_exit_code": 0,
+    "git_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "index": 8,
+    "match": true,
+    "owner_returned_kind": "exact",
+    "plan_expected_kind": "exact",
+    "role": "activation_parent_helper_blob"
+  },
+  {
+    "argv": [
+      "git",
+      "rev-parse",
+      "3e2ebed132b6d4338bfa324bfc42c3565d2eeb3c:src/camera_based_rgbww_optimizer/optimization/p7_retained_release_audit.py"
+    ],
+    "detail": {
+      "actual_sha256": "56cb1c20aa7a5e9671cac073984299bf1a556839dadf09255adac9aabdfb53e2",
+      "owner_sha256": "56cb1c20aa7a5e9671cac073984299bf1a556839dadf09255adac9aabdfb53e2"
+    },
+    "expected_selection": "blob_oid(file_map[activation.commit,helper_path])_exact_lf",
+    "git_exit_code": 0,
+    "git_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "index": 9,
+    "match": true,
+    "owner_returned_kind": "exact",
+    "plan_expected_kind": "exact",
+    "role": "activation_child_helper_blob"
+  },
+  {
+    "argv": [
+      "git",
+      "rev-parse",
+      "9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e:tests/test_p7_retained_release_audit.py"
+    ],
+    "detail": {
+      "actual_sha256": "ef8c70253ed3193312e367cf383a6792189b207be2fd511559ecdd55b5c1d243",
+      "owner_sha256": "ef8c70253ed3193312e367cf383a6792189b207be2fd511559ecdd55b5c1d243"
+    },
+    "expected_selection": "blob_oid(file_map[activation.parent,test_path])_exact_lf",
+    "git_exit_code": 0,
+    "git_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "index": 10,
+    "match": true,
+    "owner_returned_kind": "exact",
+    "plan_expected_kind": "exact",
+    "role": "activation_parent_test_blob"
+  },
+  {
+    "argv": [
+      "git",
+      "rev-parse",
+      "3e2ebed132b6d4338bfa324bfc42c3565d2eeb3c:tests/test_p7_retained_release_audit.py"
+    ],
+    "detail": {
+      "actual_sha256": "9aeace262d51f4609d4e27830cf34f9f2a81b7fb6f3ae779a11004d14a20fe63",
+      "owner_sha256": "9aeace262d51f4609d4e27830cf34f9f2a81b7fb6f3ae779a11004d14a20fe63"
+    },
+    "expected_selection": "blob_oid(file_map[activation.commit,test_path])_exact_lf",
+    "git_exit_code": 0,
+    "git_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "index": 11,
+    "match": true,
+    "owner_returned_kind": "exact",
+    "plan_expected_kind": "exact",
+    "role": "activation_child_test_blob"
+  },
+  {
+    "argv": [
+      "git",
+      "diff",
+      "--binary",
+      "--full-index",
+      "--no-ext-diff",
+      "9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e",
+      "3e2ebed132b6d4338bfa324bfc42c3565d2eeb3c",
+      "--",
+      "src/camera_based_rgbww_optimizer/optimization/p7_retained_release_audit.py",
+      "tests/test_p7_retained_release_audit.py"
+    ],
+    "detail": {
+      "actual_sha256": "dc362c278425b25e15048495e3324d6da2e1c5f3c43d866c7f04117f0b7c23b3",
+      "owner_sha256": "dc362c278425b25e15048495e3324d6da2e1c5f3c43d866c7f04117f0b7c23b3"
+    },
+    "expected_selection": "activation.full_patch_sha256",
+    "git_exit_code": 0,
+    "git_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "index": 12,
+    "match": true,
+    "owner_returned_kind": "sha",
+    "plan_expected_kind": "sha",
+    "role": "activation_exact_two_path_patch"
+  },
+  {
+    "argv": [
+      "git",
+      "rev-parse",
+      "9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e:src/camera_based_rgbww_optimizer/optimization/p7_retained_release_audit.py"
+    ],
+    "detail": {
+      "actual_sha256": "4c9f34d3a456b8850f88d5d6fd065d1e472279bdb62be184faafcc19dcbdabe2",
+      "owner_sha256": "4c9f34d3a456b8850f88d5d6fd065d1e472279bdb62be184faafcc19dcbdabe2"
+    },
+    "expected_selection": "blob_oid(file_map[baseline.helper_v1,helper_path])_exact_lf",
+    "git_exit_code": 0,
+    "git_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "index": 13,
+    "match": true,
+    "owner_returned_kind": "exact",
+    "plan_expected_kind": "exact",
+    "role": "baseline_helper_before_blob"
+  },
+  {
+    "argv": [
+      "git",
+      "rev-parse",
+      "3e2ebed132b6d4338bfa324bfc42c3565d2eeb3c:src/camera_based_rgbww_optimizer/optimization/p7_retained_release_audit.py"
+    ],
+    "detail": {
+      "actual_sha256": "56cb1c20aa7a5e9671cac073984299bf1a556839dadf09255adac9aabdfb53e2",
+      "owner_sha256": "56cb1c20aa7a5e9671cac073984299bf1a556839dadf09255adac9aabdfb53e2"
+    },
+    "expected_selection": "blob_oid(file_map[baseline.integration,helper_path])_exact_lf",
+    "git_exit_code": 0,
+    "git_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "index": 14,
+    "match": true,
+    "owner_returned_kind": "exact",
+    "plan_expected_kind": "exact",
+    "role": "baseline_helper_after_blob"
+  },
+  {
+    "argv": [
+      "git",
+      "diff",
+      "--binary",
+      "--full-index",
+      "--no-ext-diff",
+      "9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e",
+      "3e2ebed132b6d4338bfa324bfc42c3565d2eeb3c",
+      "--",
+      "src/camera_based_rgbww_optimizer/optimization/p7_retained_release_audit.py"
+    ],
+    "detail": {
+      "actual_sha256": "f325afe07d3faaca557d94a760652fd6c9ede66201e52b3cb4ccc196810750ec",
+      "owner_sha256": "dc362c278425b25e15048495e3324d6da2e1c5f3c43d866c7f04117f0b7c23b3"
+    },
+    "expected_selection": "baseline.seam_chain[0].binary_patch_sha256",
+    "git_exit_code": 0,
+    "git_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "index": 15,
+    "match": false,
+    "owner_returned_kind": "sha",
+    "plan_expected_kind": "sha",
+    "role": "baseline_helper_patch"
+  },
+  {
+    "argv": [
+      "git",
+      "rev-parse",
+      "9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e:tests/test_p7_retained_release_audit.py"
+    ],
+    "detail": {
+      "actual_sha256": "ef8c70253ed3193312e367cf383a6792189b207be2fd511559ecdd55b5c1d243",
+      "owner_sha256": "ef8c70253ed3193312e367cf383a6792189b207be2fd511559ecdd55b5c1d243"
+    },
+    "expected_selection": "blob_oid(file_map[baseline.helper_v1,test_path])_exact_lf",
+    "git_exit_code": 0,
+    "git_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "index": 16,
+    "match": true,
+    "owner_returned_kind": "exact",
+    "plan_expected_kind": "exact",
+    "role": "baseline_test_before_blob"
+  },
+  {
+    "argv": [
+      "git",
+      "rev-parse",
+      "3e2ebed132b6d4338bfa324bfc42c3565d2eeb3c:tests/test_p7_retained_release_audit.py"
+    ],
+    "detail": {
+      "actual_sha256": "9aeace262d51f4609d4e27830cf34f9f2a81b7fb6f3ae779a11004d14a20fe63",
+      "owner_sha256": "9aeace262d51f4609d4e27830cf34f9f2a81b7fb6f3ae779a11004d14a20fe63"
+    },
+    "expected_selection": "blob_oid(file_map[baseline.integration,test_path])_exact_lf",
+    "git_exit_code": 0,
+    "git_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "index": 17,
+    "match": true,
+    "owner_returned_kind": "exact",
+    "plan_expected_kind": "exact",
+    "role": "baseline_test_after_blob"
+  },
+  {
+    "argv": [
+      "git",
+      "diff",
+      "--binary",
+      "--full-index",
+      "--no-ext-diff",
+      "9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e",
+      "3e2ebed132b6d4338bfa324bfc42c3565d2eeb3c",
+      "--",
+      "tests/test_p7_retained_release_audit.py"
+    ],
+    "detail": {
+      "actual_sha256": "a99769889cfe01b6ed66193823105c506c444312e58104f1685c9fdc20c7f2ed",
+      "owner_sha256": "dc362c278425b25e15048495e3324d6da2e1c5f3c43d866c7f04117f0b7c23b3"
+    },
+    "expected_selection": "baseline.seam_chain[1].binary_patch_sha256",
+    "git_exit_code": 0,
+    "git_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "index": 18,
+    "match": false,
+    "owner_returned_kind": "sha",
+    "plan_expected_kind": "sha",
+    "role": "baseline_test_patch"
+  }
+]
+~~~
+
+Matrix result: 15 matches and 3 mismatches at indices 7, 15, 18; first mismatch index 7; matrix_complete=true.
+Report execution counters: selector calls 18, ledger Git attempts 18, ledger Git processes 18, retry 0, fallback 0.
+Report zero locks (all exact integers equal to zero):
+
+~~~json
+{
+  "all_old_failed_synthetic_d1_d2_d2_c1_d2_c1_r1_typed_proof_real_self_check_source_root_reads_stats_lists_searches_hashes": 0,
+  "archive_writes_by_executer": 0,
+  "camera": 0,
+  "canonical_validator_calls": 0,
+  "cleanup": 0,
+  "codegraph": 0,
+  "compileall": 0,
+  "device": 0,
+  "eligibility_emissions": 0,
+  "failed_d2_c1_r2_source_root_reuse_reads_stats_lists_searches_hashes_repairs": 0,
+  "formal": 0,
+  "full_writes_by_executer": 0,
+  "implementation_commits": 0,
+  "input_artifact_writes": 0,
+  "lineage_conclusions": 0,
+  "network": 0,
+  "owner_git_ledgers": 0,
+  "physical_input_file_reads": 0,
+  "plan_writes_by_executer": 0,
+  "production_owner_conclusions": 0,
+  "public_analyzer": 0,
+  "ray": 0,
+  "release_consumption": 0,
+  "release_copy": 0,
+  "release_generation": 0,
+  "release_qualification": 0,
+  "repository_code_writes": 0,
+  "repository_source_direct_reads": 0,
+  "repository_test_reads": 0,
+  "repository_test_writes": 0,
+  "required_real_manifest_git_argv_calls": 0,
+  "run_real_manifest_self_check_calls": 0,
+  "strip": 0,
+  "tests": 0
+}
+~~~
+
+Corrective execution counters: local process 1; activation metadata 1 + 1 = 2; activation PLAN/FULL/ER Git-object reads 1/1/1; worktree ER raw reads 1; accepted PLAN/FULL parser calls 1/1; report/seal raw reads 1/1; strict report/seal loads 1/1; matrix freeze/canonicalization 1/1; retry 0; fallback 0; device/network/controller/selector/ledger/source/test/CodeGraph/release effects 0.
+Prior execution decision remains REJECTED_ACTIVATION_METADATA_READ_BUDGET_EXCEEDED_ZERO_WRITE_NO_EVIDENCE_CHILD with first failed gate activation_git_metadata_processes_total; it was zero-write and produced no evidence child.
+The original execution contract is rejected. The sealed fixed report supplies accepted synthetic engineering attribution facts only; it does not establish production ownership, lineage, eligibility, or release consumability.
+Conclusions: production owner false, lineage false, eligibility false, release consumable false.
+Retained R3 status: RETAINED_UNVALIDATED_UNCONSUMED.
+Planner stop: B3_C3_C4_R5_R1_C1_R2_R1_C2_S1_C1_R1_D1_D2_C1_R2_C1_S1_C1_C1_C1_C1_C1_C1_C1_C1_C1_C1_FIXED_MATRIX_METADATA_BUDGET_CORRECTIVE_WAITING_PLANNER_REVIEW.
