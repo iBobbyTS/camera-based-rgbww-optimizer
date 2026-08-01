@@ -16,9 +16,9 @@
 
 **当前可执行任务数：** `1`
 
-**当前 active task：** `REF-P7-25-R2-B2-M1-R1-S2-S1-C1 exact-delimiter successor`
+**当前 active task：** `REF-P7-25-R2-B3 postcommit verification`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-08-01","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-M1-R1-S2-S1-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-R1-S2-S1-C1-FRESH-REAL-INPUT-EXACT-MARKDOWN-DELIMITER-V1","next_reference_task":"REF-P7-25-R2-B2-M1-R1-S2-S1-C1","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"M1_R1_S2_S1_C1_EXACT_MARKDOWN_DELIMITER_SUCCESSOR_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","p6_domain_template_owner_status":"ACCEPTED_COMPLETE_DETERMINISTIC_DOMAIN_TEMPLATE_OWNER_WITH_RUNNABLE_CONTRACT_RESIDUAL","p6_candidate_commit":"48b3979d6c0df5f488cd500597e26dc4c38877dd","p6_candidate_consumable":true,"p5_runtime_owner_status":"ACCEPTED_COMPLETE_REPO_OWNED_CONTROLLER_RUNTIME_OWNER","p7_status":"ACCEPTED_COMPLETE_REPO_OWNED_RUNNABLE_DOMAIN_TEMPLATE_OWNER","p7_candidate_commit":"864f08cc5436519a37e41d553e49ebde4a3c8bb2","p7_candidate_consumable":true,"p7_candidate_consumable_scope":"PURE_OFFLINE_SYNTHETIC_INTEGRATION_INPUT_ONLY","p7_synthetic_integration_qualified":true,"p7_i1_status":"ACCEPTED_COMPLETE_FRESH_SYNTHETIC_INTEGRATION_QUALIFIED_NOT_RETAINED_ELIGIBLE","real_manifest_domain_owner_status":"ACCEPTED_COMPLETE_GIT_GRAMMAR_VALIDATED","existing_root_identity_owner_status":"ACCEPTED_COMPLETE_COMPOSITE_VALIDATED","m1_existing_root_candidate_commit":"40d92acb77b32f370955d687c74c7ff7077f55e1","m1_existing_root_correction_commit":"ffd1d9bb234c90a28ab497b10a35b08e4478eb1c","m1_existing_root_candidate_consumable":true,"m1_real_manifest_rejected_candidate_commit":"cddd23eb4ef53a8f90c9b869f96f84ccfcba36cf","m1_real_manifest_candidate_commit":"0f4c09e1b2b2afbf627f6f36d57a1a65847ab4a8","m1_real_manifest_candidate_consumable":true,"carried_test_status":"ACCEPTED_VALIDATED","m1_synthetic_integration_status":"ACCEPTED_COMPLETE_QUALIFIED_NOT_RETAINED_ELIGIBLE","m1_real_input_manifest_status":"ACTIVE_FRESH_EXACT_MARKDOWN_DELIMITER_SUCCESSOR","m1_real_input_supersession_status":"REJECTED_EXECUTION_ASSERTION_MARKDOWN_DELIMITER_NOT_CONTRACTUAL","executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-08-01","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B3","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B3-POSTCOMMIT-SELF-CHECK-TEST-SYNTHETIC-V1","next_reference_task":"REF-P7-25-R2-B3","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"B3_POSTCOMMIT_VERIFICATION_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","p6_domain_template_owner_status":"ACCEPTED_COMPLETE_DETERMINISTIC_DOMAIN_TEMPLATE_OWNER_WITH_RUNNABLE_CONTRACT_RESIDUAL","p6_candidate_commit":"48b3979d6c0df5f488cd500597e26dc4c38877dd","p6_candidate_consumable":true,"p5_runtime_owner_status":"ACCEPTED_COMPLETE_REPO_OWNED_CONTROLLER_RUNTIME_OWNER","p7_status":"ACCEPTED_COMPLETE_REPO_OWNED_RUNNABLE_DOMAIN_TEMPLATE_OWNER","p7_candidate_commit":"864f08cc5436519a37e41d553e49ebde4a3c8bb2","p7_candidate_consumable":true,"p7_candidate_consumable_scope":"PURE_OFFLINE_SYNTHETIC_INTEGRATION_INPUT_ONLY","p7_synthetic_integration_qualified":true,"p7_i1_status":"ACCEPTED_COMPLETE_FRESH_SYNTHETIC_INTEGRATION_QUALIFIED_NOT_RETAINED_ELIGIBLE","real_manifest_domain_owner_status":"ACCEPTED_COMPLETE_GIT_GRAMMAR_VALIDATED","existing_root_identity_owner_status":"ACCEPTED_COMPLETE_COMPOSITE_VALIDATED","m1_existing_root_candidate_commit":"40d92acb77b32f370955d687c74c7ff7077f55e1","m1_existing_root_correction_commit":"ffd1d9bb234c90a28ab497b10a35b08e4478eb1c","m1_existing_root_candidate_consumable":true,"m1_real_manifest_rejected_candidate_commit":"cddd23eb4ef53a8f90c9b869f96f84ccfcba36cf","m1_real_manifest_candidate_commit":"0f4c09e1b2b2afbf627f6f36d57a1a65847ab4a8","m1_real_manifest_candidate_consumable":true,"carried_test_status":"ACCEPTED_VALIDATED","m1_synthetic_integration_status":"ACCEPTED_COMPLETE_QUALIFIED_NOT_RETAINED_ELIGIBLE","m1_real_input_manifest_status":"ACCEPTED_COMPLETE_SEALED_SUBORDINATE_PROVENANCE_NOT_RETAINED_ELIGIBLE","m1_real_input_supersession_status":"ACCEPTED_COMPLETE_SEALED_SUBORDINATE_PROVENANCE_NOT_RETAINED_ELIGIBLE","b3_status":"ACTIVE_POSTCOMMIT_SELF_CHECK_TEST_SYNTHETIC","executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -278,7 +278,7 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-B1A-C3E6F11` | `REJECTED_CONTROLLER_LIFECYCLE_AND_ACCOUNTING` | exact nested-AST prerequisite + successor seal | KeyError；same-root retry；5 reads与zero counters矛盾 | Planner/Executer |
 | `REF-P7-25-R2-B1A-C3E6F12` | `REJECTED_WORKTREE_BLOB_ORACLE_FALSE_REJECTION` | direct-root single-controller prerequisite + truthful accounting | atomic replace exact；index parent blob误作worktree blob | Planner/Executer |
 | `REF-P7-25-R2-B1A-C3E6F13` | `ACTIVE` | split index/worktree blob identity prerequisite + successor seal | C3E6F12 review archive SHA 81ddc4ce；matching PLAN active | Planner/Executer |
-| `REF-P7-25-R2-B2` | `REJECTED_C1_STRUCTURE_AND_FAILURE_LIFECYCLE_MISMATCH` | 由accepted C1 exact path-owner index驱动modern immutable subordinate manifest v2 | C2 controller/lifecycle correction accepted | Planner/Executer |
+| `REF-P7-25-R2-B2` | `ACCEPTED_COMPLETE_SEALED_SUBORDINATE_PROVENANCE_NOT_RETAINED_ELIGIBLE` | 由accepted C1 exact path-owner index驱动modern immutable subordinate manifest v2 | B3 postcommit verification | Planner/Executer |
 | `REF-P7-25-R2-B2-C1` | `ACCEPTED_COMPLETE` | 只验证exact retained directory chain及artifact name/type/path | B2 wrong frozen path failure | Planner/Executer |
 | `REF-P7-25-R2-B2-C2` | `REJECTED_TRANSFORM_ANCHOR_UNPROVEN_FAILURE_LIFECYCLE_ACCEPTED` | content-free exact resolved-record owner与progressive failure terminal lifecycle | corrected B2 controller failure | Planner/Executer |
 | `REF-P7-25-R2-B2-C3` | `ACCEPTED_EXACT_SOURCE_STRUCTURE_INDEX_ONLY` | immutable AST/source-structure index与12-case selector matrix | C2 transform anchor failure | Planner/Executer |
@@ -350,7 +350,7 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-B2-M1-R1-S1-C1-C1-C1` | `ACCEPTED_COMPLETE_PHYSICAL_EOF_SUPERSESSION` | preserve rejected embedded block and append one exact supersession at physical EOF | M1-R1-S2 fresh strict-retained successor | Planner/Executer |
 | `REF-P7-25-R2-B2-M1-R1-S2` | `REJECTED_EXECUTION_ASSERTION_MACHINE_ROW_CANONICAL_ORDER_NOT_CONTRACTUAL` | run one fresh real-input manifest with strict retained decode and zero unversioned terminal selectors | S2-S1 strict-machine-row successor | Planner/Executer |
 | `REF-P7-25-R2-B2-M1-R1-S2-S1` | `REJECTED_EXECUTION_ASSERTION_MARKDOWN_DELIMITER_NOT_CONTRACTUAL` | run one fresh real-input manifest with strict duplicate-free machine rows and no key-order gate | S2-S1-C1 exact-delimiter successor | Planner/Executer |
-| `REF-P7-25-R2-B2-M1-R1-S2-S1-C1` | `ACTIVE_EXECUTION_AUTHORIZED` | run one fresh real-input manifest with exact backtick-wrapped machine-row extraction | Planner review | Planner/Executer |
+| `REF-P7-25-R2-B2-M1-R1-S2-S1-C1` | `ACCEPTED_COMPLETE_SEALED_SUBORDINATE_PROVENANCE_NOT_RETAINED_ELIGIBLE` | run one fresh real-input manifest with exact backtick-wrapped machine-row extraction | B3 postcommit verification | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-V1` | `ACCEPTED_COMPLETE` | one final-source full suite with retained terminal exit/count | 755/755 accepted | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-I1` | `REJECTED_PRE_EFFECT_OWNER_ALIAS_ESCAPE` | fresh synthetic external integration of accepted repo owner | I1-C1 correction | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-I1-C1` | `REJECTED_PRE_EFFECT_LIVE_OWNER_CONTAINER_WRITE_FIELD_ONLY_CORRECTION_REQUIRED` | direct/nonlocal live owner bindings with plain-projection transport | I1-C1-C1 correction | Planner/Executer |
@@ -359,7 +359,7 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-B2-P3-C1` | `ACCEPTED_CODE_FINDINGS_CLOSED_VIA_P3_C2_C1` | fail-closed capability/direct-child correction and missing negative matrix | P3 Planner rejection | Planner/Executer |
 | `REF-P7-25-R2-B2-P3-C2` | `REJECTED_PLAN_PIPELINE_ZSH_STATUS_READONLY_CHILD_RESULT_UNPROVEN` | one low-output full suite with observable exit, exact count and terminal summary | P3-C1 validation evidence gap | Planner/Executer |
 | `REF-P7-25-R2-B2-P3-C2-C1` | `ACCEPTED_COMPLETE` | one corrected unbuffered low-output full suite with ordinary exit variable and observable terminal summary | P3-C2 pipeline-contract rejection | Planner/Executer |
-| `REF-P7-25-R2-B3` | `BLOCKED` | Manifest自校验后执行postcommit focused、durable full、synthetic terminal/replay | `REF-P7-25-R2-B2` accepted | Planner/Executer |
+| `REF-P7-25-R2-B3` | `ACTIVE_EXECUTION_AUTHORIZED` | Manifest自校验后执行postcommit focused、durable full、synthetic terminal/replay | Planner review | Planner/Executer |
 | `REF-P7-25-R2-B4` | `BLOCKED` | 对原retained R3三件套做首次真实audit并由canonical validator唯一判定eligibility | `REF-P7-25-R2-B3` accepted | Planner/Executer |
 | `REF-P7-25-R2-B5` | `BLOCKED` | 独立验收validated-unconsumed状态、manifest与rollback provenance | `REF-P7-25-R2-B4` pass | Planner/Orchestrator |
 | `REF-P7-25-R2-BR` | `SUPERSEDED_BY_HUMAN_GOVERNANCE_OVERRIDE` | exact two-path与canonical validator manifest seam合同矛盾 | Human将工程owner交Orchestrator | Orchestrator |
@@ -4284,10 +4284,13 @@ append合同保持不变；validator、eligibility、release、network/device仍
 
 ### REF-P7-25-R2-B2-M1-R1-S2-S1-C1：exact Markdown delimiter successor
 
-**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。Fresh S2-S1-C1只按exact line prefix `` `<KEY>= ``与final单反引号提取PLAN/FULL各唯一machine row，
+**状态：** `ACCEPTED_COMPLETE_SEALED_SUBORDINATE_PROVENANCE_NOT_RETAINED_ELIGIBLE`。Fresh S2-S1-C1只按exact line prefix `` `<KEY>= ``与final单反引号提取PLAN/FULL各唯一machine row，
 再做strict duplicate-free/nonfinite-rejecting object parse及required FULL subset核对。禁止裸前缀、regex/generic scanner、fallback、whole-file/object search、
 canonical reencode与key-order gate。其余fresh exact-two、C1 selector-zero、retained strict-only、single builder/runtime/controller、partial ledgers、5件sealed
 subordinate evidence及physical-EOF append合同不变；validator/release/network/device仍锁定。
+
+本轮fresh absence2/2、C1 canonical4/4、retained strict3/3、builder/runtime/controller各1、Git56、output exact5、pre/post identities无漂移、
+terminal/admission通过且residual0。Evidence commit `3b9e604...`获Planner接受；该结果只证明sealed subordinate provenance，eligibility与release均false。
 
 ### REF-P7-25-R2-B2-P3：repo-owned provenance I/O boundary
 
@@ -4400,7 +4403,9 @@ Manifest status只能表示`sealed_subordinate_provenance_evidence`，不能包�
 
 ### REF-P7-25-R2-B3：postcommit tests 与 synthetic lifecycle
 
-**状态：** `BLOCKED` on B2 accepted。
+**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。对accepted B2真实manifest/source及冻结C1/retained identities做一次独立自校验，随后focused suite exact1、
+durable full suite exact1和brand-new synthetic terminal/replay exact1。所有真实输入只读；synthetic使用activation-derived fresh root。Canonical lineage
+validator、真实retained audit、eligibility emission、release、network/device全部0；通过只证明postcommit/self-check/test/synthetic closure。
 
 严格顺序为：manifest独立自校验 → postcommit focused → durable full suite → fresh synthetic
 owner/terminal/replay。Canonical manifest verifier必须从Git重新计算commit/parent/tree/path/blob/patch/file fields，并从
@@ -5119,10 +5124,12 @@ rejected B2-M1-R1-S1-C1-C1 result = NON_EOF_INSERTION_CONTRACT_VIOLATION; insert
 accepted B2-M1-R1-S1-C1-C1-C1 result = COMPLETE_PHYSICAL_EOF_SUPERSESSION; prefix1248695; suffix3979; embedded PASS credit false
 rejected B2-M1-R1-S2 result = EXECUTION_ASSERTION_MACHINE_ROW_CANONICAL_ORDER_NOT_CONTRACTUAL; external/builder/controller0; EOF failure evidence valid
 rejected B2-M1-R1-S2-S1 result = EXECUTION_ASSERTION_MARKDOWN_DELIMITER_NOT_CONTRACTUAL; external/builder/controller0; EOF failure evidence valid
-active task = REF-P7-25-R2-B2-M1-R1-S2-S1-C1 exact-delimiter successor
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-R1-S2-S1-C1-FRESH-REAL-INPUT-EXACT-MARKDOWN-DELIMITER-V1
+accepted B2-M1-R1-S2-S1-C1 result = SEALED_SUBORDINATE_PROVENANCE_NOT_RETAINED_ELIGIBLE; exact5; pre/post7 stable; eligibility/release false
+accepted B2 result = SEALED_SUBORDINATE_PROVENANCE_NOT_RETAINED_ELIGIBLE
+active task = REF-P7-25-R2-B3 postcommit verification
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B3-POSTCOMMIT-SELF-CHECK-TEST-SYNTHETIC-V1
 active executable task count = 1
-next reference task = REF-P7-25-R2-B2-M1-R1-S2-S1-C1 ACTIVE_EXECUTION_AUTHORIZED
+next reference task = REF-P7-25-R2-B3 ACTIVE_EXECUTION_AUTHORIZED
 selected state C shutter = 1/2500
 device/network/camera/light = forbidden by active PLAN
 release qualification/generation/copy/consumption = forbidden
