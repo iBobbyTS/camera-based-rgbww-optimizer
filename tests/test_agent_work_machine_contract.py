@@ -1,7 +1,9 @@
 import hashlib
 import inspect
 import json
+from collections.abc import Mapping
 from pathlib import Path
+from types import MappingProxyType
 import unittest
 
 from camera_based_rgbww_optimizer.utils import agent_work_machine_contract as subject
@@ -12,6 +14,22 @@ def row(marker: bytes, payload: bytes, ending: bytes = b"`\n") -> bytes:
 
 
 class AgentWorkMachineContractTests(unittest.TestCase):
+    def assert_json_semantically_equal(self, actual, expected):
+        if isinstance(expected, dict):
+            self.assertIsInstance(actual, Mapping)
+            self.assertEqual(set(actual), set(expected))
+            for key, expected_value in expected.items():
+                self.assert_json_semantically_equal(actual[key], expected_value)
+            return
+        if isinstance(expected, list):
+            self.assertIsInstance(actual, tuple)
+            self.assertEqual(len(actual), len(expected))
+            for actual_value, expected_value in zip(actual, expected, strict=True):
+                self.assert_json_semantically_equal(actual_value, expected_value)
+            return
+        self.assertIs(type(actual), type(expected))
+        self.assertEqual(actual, expected)
+
     def assert_error(self, code, parser, source):
         with self.assertRaises(subject.MachineContractValidationError) as raised:
             parser(source)
@@ -43,7 +61,7 @@ class AgentWorkMachineContractTests(unittest.TestCase):
                 raw_row = row(marker, payload)
                 source = b"heading\n" + raw_row + b"tail\n"
                 parsed = parser(source)
-                self.assertEqual(parsed.value, json.loads(payload))
+                self.assert_json_semantically_equal(parsed.value, json.loads(payload))
                 evidence = parsed.evidence
                 self.assertEqual(evidence.owner, owner)
                 self.assertEqual(evidence.marker_ascii, marker.decode("ascii"))
@@ -59,6 +77,46 @@ class AgentWorkMachineContractTests(unittest.TestCase):
                 self.assertEqual(evidence.line_ending, "LF")
                 self.assertEqual(evidence.schema, "agent_work_machine_contract_scan_evidence_v1")
                 self.assertEqual(json.loads(json.dumps(evidence.to_mapping())), evidence.to_mapping())
+
+    def test_generic_parser_supports_custom_marker_and_legacy_wrappers_delegate(self):
+        payload = b'{"nested":{"items":[true,2]}}'
+        custom = subject.parse_machine_row(
+            b"heading\n`CUSTOM_MACHINE_ROW=" + payload + b"`\ntail\n",
+            b"CUSTOM_MACHINE_ROW=",
+        )
+        self.assert_json_semantically_equal(
+            custom.value,
+            {"nested": {"items": [True, 2]}},
+        )
+        self.assertEqual(custom.evidence.owner, "CUSTOM_MACHINE_ROW")
+
+        plan_source = row(subject.PLAN_MACHINE_MARKER, payload)
+        generic = subject.parse_machine_row(plan_source, subject.PLAN_MACHINE_MARKER[1:])
+        legacy = subject.parse_plan_machine_contract(plan_source)
+        self.assertEqual(generic.value, legacy.value)
+        self.assertEqual(generic.evidence.owner, "PLAN_MACHINE_CONTRACT")
+        self.assertEqual(legacy.evidence.owner, "PLAN")
+        generic_evidence = generic.evidence.to_mapping()
+        legacy_evidence = legacy.evidence.to_mapping()
+        self.assertEqual(generic_evidence.pop("owner"), "PLAN_MACHINE_CONTRACT")
+        self.assertEqual(legacy_evidence.pop("owner"), "PLAN")
+        self.assertEqual(generic_evidence, legacy_evidence)
+
+    def test_success_value_is_deeply_immutable(self):
+        parsed = subject.parse_machine_row(
+            b'`CUSTOM={"nested":{"items":[{"enabled":true}]}}`\n',
+            b"CUSTOM=",
+        )
+        self.assertIsInstance(parsed.value, MappingProxyType)
+        self.assertIsInstance(parsed.value["nested"], MappingProxyType)
+        self.assertIsInstance(parsed.value["nested"]["items"], tuple)
+        self.assertIsInstance(parsed.value["nested"]["items"][0], MappingProxyType)
+        with self.assertRaises(TypeError):
+            parsed.value["new"] = True
+        with self.assertRaises(TypeError):
+            parsed.value["nested"]["new"] = True
+        with self.assertRaises(AttributeError):
+            parsed.value["nested"]["items"].append(False)
 
     def test_plan_and_full_owners_are_separate(self):
         plan = row(subject.PLAN_MACHINE_MARKER, b'{"owner":"plan"}')
@@ -90,10 +148,25 @@ class AgentWorkMachineContractTests(unittest.TestCase):
                     source,
                 )
         self.assert_error(
-            "malformed_json",
+            "invalid_backtick_count",
             subject.parse_plan_machine_contract,
             row(marker, b"{}", b"``\n"),
         )
+
+    def test_multiline_trailing_and_extra_backticks_fail_closed(self):
+        marker = b"CUSTOM="
+        malformed = (
+            ("invalid_line_ending_or_suffix", b'`CUSTOM={"x":\n1}`\n'),
+            ("invalid_line_ending_or_suffix", b'`CUSTOM={"x":1}` trailing\n'),
+            ("invalid_backtick_count", b'`CUSTOM={"x":"`"}`\n'),
+        )
+        for code, source in malformed:
+            with self.subTest(code=code, source=source):
+                self.assert_error(
+                    code,
+                    lambda value: subject.parse_machine_row(value, marker),
+                    source,
+                )
 
     def test_wrong_or_indented_prefix_is_not_a_candidate(self):
         for source in (
@@ -170,8 +243,8 @@ class AgentWorkMachineContractTests(unittest.TestCase):
             "one": int,
             "text": str,
             "none": type(None),
-            "items": list,
-            "nested": dict,
+            "items": tuple,
+            "nested": MappingProxyType,
         }
         self.assertEqual({key: type(item) for key, item in value.items()}, expected_types)
         self.assertIs(value["true"], True)
@@ -182,6 +255,27 @@ class AgentWorkMachineContractTests(unittest.TestCase):
         self.assertIs(type(value["one"]), int)
         self.assertIs(type(value["items"][0]), bool)
         self.assertIs(type(value["items"][1]), int)
+
+    def test_generic_parser_rejects_invalid_source_and_literal_markers(self):
+        self.assert_error(
+            "source_not_exact_bytes",
+            lambda source: subject.parse_machine_row(source, b"CUSTOM="),
+            "not bytes",
+        )
+        for marker in ("CUSTOM=", bytearray(b"CUSTOM="), memoryview(b"CUSTOM=")):
+            with self.subTest(marker_type=type(marker).__name__):
+                self.assert_error(
+                    "marker_not_exact_bytes",
+                    lambda _source, marker=marker: subject.parse_machine_row(b"", marker),
+                    b"",
+                )
+        for marker in (b"", b"`CUSTOM=", b"CUSTOM=`", b"CUSTOM=\r", b"CUSTOM=\n", b"\xff"):
+            with self.subTest(marker=marker):
+                self.assert_error(
+                    "invalid_literal_marker",
+                    lambda _source, marker=marker: subject.parse_machine_row(b"", marker),
+                    b"",
+                )
 
     def test_non_exact_bytes_and_error_evidence_are_stable(self):
         for source in ("bytes", bytearray(b"bytes"), memoryview(b"bytes")):
@@ -200,10 +294,15 @@ class AgentWorkMachineContractTests(unittest.TestCase):
             "MachineContractValidationError",
             "MachineContractEvidence",
             "ParsedMachineContract",
+            "parse_machine_row",
             "parse_plan_machine_contract",
             "parse_full_plan_machine_state",
         }
         self.assertEqual(set(subject.__all__), expected)
+        self.assertEqual(
+            tuple(inspect.signature(subject.parse_machine_row).parameters),
+            ("complete_text", "literal_marker"),
+        )
         for parser in (
             subject.parse_plan_machine_contract,
             subject.parse_full_plan_machine_state,
@@ -226,6 +325,10 @@ class AgentWorkMachineContractTests(unittest.TestCase):
             "eligibility_callback",
         )
         self.assertFalse({token for token in prohibited if token in source})
+        self.assertIsInstance(
+            subject.parse_machine_row(b"`CUSTOM={}`\n", b"CUSTOM=").value,
+            Mapping,
+        )
 
 
 if __name__ == "__main__":

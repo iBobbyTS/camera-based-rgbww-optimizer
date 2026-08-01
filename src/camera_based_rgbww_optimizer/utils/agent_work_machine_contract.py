@@ -5,7 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 import hashlib
 import json
-from typing import NoReturn
+from types import MappingProxyType
+from typing import Mapping, NoReturn
 
 
 PLAN_MACHINE_MARKER = b"`PLAN_MACHINE_CONTRACT="
@@ -18,6 +19,7 @@ __all__ = [
     "MachineContractValidationError",
     "MachineContractEvidence",
     "ParsedMachineContract",
+    "parse_machine_row",
     "parse_plan_machine_contract",
     "parse_full_plan_machine_state",
 ]
@@ -69,7 +71,7 @@ class MachineContractEvidence:
 
 @dataclass(frozen=True)
 class ParsedMachineContract:
-    value: dict[str, object]
+    value: Mapping[str, object]
     evidence: MachineContractEvidence
 
 
@@ -94,6 +96,18 @@ def _reject_nonfinite_constant(value: str) -> NoReturn:
     raise _NonFiniteConstantError(value)
 
 
+def _deep_freeze(value: object) -> object:
+    if isinstance(value, dict):
+        return MappingProxyType({key: _deep_freeze(item) for key, item in value.items()})
+    if isinstance(value, list):
+        return tuple(_deep_freeze(item) for item in value)
+    return value
+
+
+def _marker_ascii(marker: bytes) -> str:
+    return marker.decode("ascii", errors="backslashreplace")
+
+
 def _error(
     code: str,
     *,
@@ -108,7 +122,7 @@ def _error(
     evidence: dict[str, object] = {
         "schema": _EVIDENCE_SCHEMA,
         "owner": owner,
-        "marker_ascii": marker.decode("ascii"),
+        "marker_ascii": _marker_ascii(marker),
         "source_bytes": len(source) if source is not None else None,
         "source_sha256": hashlib.sha256(source).hexdigest() if source is not None else None,
         "candidate_count": len(candidate_lines),
@@ -123,11 +137,17 @@ def _error(
     raise MachineContractValidationError(code, evidence)
 
 
-def _parse(source: bytes, *, owner: str, marker: bytes) -> ParsedMachineContract:
-    if type(source) is not bytes:
+def _parse_machine_row(
+    complete_text: bytes,
+    *,
+    owner: str,
+    literal_marker: bytes,
+) -> ParsedMachineContract:
+    marker = b"`" + literal_marker
+    if type(complete_text) is not bytes:
         _error("source_not_exact_bytes", owner=owner, marker=marker, source=None)
 
-    lines = source.splitlines(keepends=True)
+    lines = complete_text.splitlines(keepends=True)
     candidates = tuple(
         (line_number, line)
         for line_number, line in enumerate(lines, start=1)
@@ -139,7 +159,7 @@ def _parse(source: bytes, *, owner: str, marker: bytes) -> ParsedMachineContract
             "candidate_count_not_one",
             owner=owner,
             marker=marker,
-            source=source,
+            source=complete_text,
             candidate_lines=candidate_lines,
         )
 
@@ -149,7 +169,17 @@ def _parse(source: bytes, *, owner: str, marker: bytes) -> ParsedMachineContract
             "invalid_line_ending_or_suffix",
             owner=owner,
             marker=marker,
-            source=source,
+            source=complete_text,
+            candidate_lines=candidate_lines,
+            line_number=line_number,
+            raw_row=raw_row,
+        )
+    if raw_row.count(b"`") != 2:
+        _error(
+            "invalid_backtick_count",
+            owner=owner,
+            marker=marker,
+            source=complete_text,
             candidate_lines=candidate_lines,
             line_number=line_number,
             raw_row=raw_row,
@@ -163,7 +193,7 @@ def _parse(source: bytes, *, owner: str, marker: bytes) -> ParsedMachineContract
             "invalid_utf8",
             owner=owner,
             marker=marker,
-            source=source,
+            source=complete_text,
             candidate_lines=candidate_lines,
             line_number=line_number,
             raw_row=raw_row,
@@ -188,7 +218,7 @@ def _parse(source: bytes, *, owner: str, marker: bytes) -> ParsedMachineContract
                 "top_level_not_object",
                 owner=owner,
                 marker=marker,
-                source=source,
+                source=complete_text,
                 candidate_lines=candidate_lines,
                 line_number=line_number,
                 raw_row=raw_row,
@@ -197,9 +227,9 @@ def _parse(source: bytes, *, owner: str, marker: bytes) -> ParsedMachineContract
         evidence = MachineContractEvidence(
             schema=_EVIDENCE_SCHEMA,
             owner=owner,
-            marker_ascii=marker.decode("ascii"),
-            source_bytes=len(source),
-            source_sha256=hashlib.sha256(source).hexdigest(),
+            marker_ascii=_marker_ascii(marker),
+            source_bytes=len(complete_text),
+            source_sha256=hashlib.sha256(complete_text).hexdigest(),
             candidate_count=1,
             candidate_lines=candidate_lines,
             line_number=line_number,
@@ -209,13 +239,15 @@ def _parse(source: bytes, *, owner: str, marker: bytes) -> ParsedMachineContract
             payload_sha256=hashlib.sha256(payload).hexdigest(),
             line_ending="LF",
         )
-        return ParsedMachineContract(value=value, evidence=evidence)
+        frozen_value = _deep_freeze(value)
+        assert isinstance(frozen_value, Mapping)
+        return ParsedMachineContract(value=frozen_value, evidence=evidence)
 
     _error(
         code,
         owner=owner,
         marker=marker,
-        source=source,
+        source=complete_text,
         candidate_lines=candidate_lines,
         line_number=line_number,
         raw_row=raw_row,
@@ -223,9 +255,52 @@ def _parse(source: bytes, *, owner: str, marker: bytes) -> ParsedMachineContract
     )
 
 
+def parse_machine_row(
+    complete_text: bytes,
+    literal_marker: bytes,
+) -> ParsedMachineContract:
+    """Parse one exact Markdown-wrapped strict-JSON machine row."""
+    if type(literal_marker) is not bytes:
+        _error("marker_not_exact_bytes", owner="GENERIC", marker=b"<invalid>", source=None)
+    if (
+        not literal_marker
+        or b"`" in literal_marker
+        or b"\r" in literal_marker
+        or b"\n" in literal_marker
+    ):
+        _error(
+            "invalid_literal_marker",
+            owner="GENERIC",
+            marker=literal_marker,
+            source=complete_text if type(complete_text) is bytes else None,
+        )
+    try:
+        owner = literal_marker.decode("ascii").removesuffix("=")
+    except UnicodeDecodeError:
+        _error(
+            "invalid_literal_marker",
+            owner="GENERIC",
+            marker=literal_marker,
+            source=complete_text if type(complete_text) is bytes else None,
+        )
+    return _parse_machine_row(
+        complete_text,
+        owner=owner,
+        literal_marker=literal_marker,
+    )
+
+
 def parse_plan_machine_contract(source: bytes) -> ParsedMachineContract:
-    return _parse(source, owner="PLAN", marker=PLAN_MACHINE_MARKER)
+    return _parse_machine_row(
+        source,
+        owner="PLAN",
+        literal_marker=PLAN_MACHINE_MARKER[1:],
+    )
 
 
 def parse_full_plan_machine_state(source: bytes) -> ParsedMachineContract:
-    return _parse(source, owner="FULL", marker=FULL_PLAN_MACHINE_MARKER)
+    return _parse_machine_row(
+        source,
+        owner="FULL",
+        literal_marker=FULL_PLAN_MACHINE_MARKER[1:],
+    )
