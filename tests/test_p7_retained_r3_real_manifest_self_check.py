@@ -57,17 +57,17 @@ def fixture_spec() -> subject.RealManifestSelfCheckSpec:
         (COMMITS[1], ACTIVATION_PATHS[0]): b"child owner",
         (COMMITS[0], ACTIVATION_PATHS[1]): b"parent test",
         (COMMITS[1], ACTIVATION_PATHS[1]): b"child test",
-        (COMMITS[2], SEAM_PATHS[0]): b"release helper",
-        (COMMITS[3], SEAM_PATHS[0]): b"v1 helper",
-        (COMMITS[3], SEAM_PATHS[1]): b"v1 test",
-        (COMMITS[4], SEAM_PATHS[1]): b"integration test",
+        (COMMITS[3], SEAM_PATHS[0]): b"repair parent helper",
+        (COMMITS[4], SEAM_PATHS[0]): b"repair child helper",
+        (COMMITS[3], SEAM_PATHS[1]): b"repair parent test",
+        (COMMITS[4], SEAM_PATHS[1]): b"repair child test",
     }
     seams = (
         RealManifestGitPathIdentity(
-            SEAM_PATHS[0], blob(files[(COMMITS[2], SEAM_PATHS[0])]),
-            blob(files[(COMMITS[3], SEAM_PATHS[0])]),
-            hashlib.sha256(files[(COMMITS[2], SEAM_PATHS[0])]).hexdigest(),
+            SEAM_PATHS[0], blob(files[(COMMITS[3], SEAM_PATHS[0])]),
+            blob(files[(COMMITS[4], SEAM_PATHS[0])]),
             hashlib.sha256(files[(COMMITS[3], SEAM_PATHS[0])]).hexdigest(),
+            hashlib.sha256(files[(COMMITS[4], SEAM_PATHS[0])]).hexdigest(),
             hashlib.sha256(SEAM_PATCHES[0]).hexdigest(),
         ),
         RealManifestGitPathIdentity(
@@ -177,9 +177,17 @@ def fake_stdout(argv: tuple[str, ...], spec: subject.RealManifestSelfCheckSpec) 
     pair = argv[5:7]
     if pair == (spec.activation.parent, spec.activation.commit):
         return FULL_PATCH
-    if pair == (spec.baseline.release_checkpoint, spec.baseline.helper_v1):
+    if (
+        pair == (spec.baseline.helper_v1, spec.baseline.integration)
+        and argv[-1] == spec.baseline.helper_path
+    ):
         return SEAM_PATCHES[0]
-    return SEAM_PATCHES[1]
+    if (
+        pair == (spec.baseline.helper_v1, spec.baseline.integration)
+        and argv[-1] == spec.baseline.test_path
+    ):
+        return SEAM_PATCHES[1]
+    raise AssertionError(argv)
 
 
 class Runner:
@@ -330,8 +338,14 @@ class RealManifestSelfCheckTests(unittest.TestCase):
         ))
         self.assertEqual(argv[5], ("git", "show", "-s", "--format=%H%x00%P%x00%s", spec.activation.commit))
         self.assertEqual(argv[6], ("git", "diff-tree", "--no-commit-id", "--name-only", "-r", "-z", spec.activation.commit))
+        self.assertEqual(argv[-4], ("git", "diff", "--binary", "--full-index", "--no-ext-diff",
+                                         spec.baseline.helper_v1, spec.baseline.integration, "--", spec.baseline.helper_path))
         self.assertEqual(argv[-1], ("git", "diff", "--binary", "--full-index", "--no-ext-diff",
                                          spec.baseline.helper_v1, spec.baseline.integration, "--", spec.baseline.test_path))
+        self.assertNotIn(
+            spec.baseline.release_checkpoint + ":" + spec.baseline.helper_path,
+            tuple(value for row in argv for value in row),
+        )
 
     def test_08_git_exit_stderr_stdout_argv_and_cwd_mismatch_fail_closed(self):
         spec = fixture_spec()
@@ -368,7 +382,7 @@ class RealManifestSelfCheckTests(unittest.TestCase):
         spec = fixture_spec()
         seam_index = next(
             index for index, item in enumerate(spec.git_file_bytes)
-            if (item.commit, item.repo_path) == (COMMITS[2], SEAM_PATHS[0])
+            if (item.commit, item.repo_path) == (COMMITS[3], SEAM_PATHS[0])
         )
         first = spec.git_file_bytes[seam_index]
         bad_data = replace(first, data=first.data + b"drift")
@@ -384,12 +398,58 @@ class RealManifestSelfCheckTests(unittest.TestCase):
         with self.assertRaises(subject.RealManifestSelfCheckError) as caught:
             subject.required_real_manifest_git_argv(replace(spec, baseline=baseline))
         self.assertEqual(caught.exception.code, "seam_identity_mismatch")
+        seam = replace(spec.baseline.seam_chain[0], before_sha256="0" * 64)
+        baseline = replace(spec.baseline, seam_chain=(seam, spec.baseline.seam_chain[1]))
+        with self.assertRaises(subject.RealManifestSelfCheckError) as caught:
+            subject.required_real_manifest_git_argv(replace(spec, baseline=baseline))
+        self.assertEqual(caught.exception.code, "seam_identity_mismatch")
+        rollback_owner = tuple(sorted(
+            (
+                replace(item, commit=spec.baseline.release_checkpoint)
+                if (item.commit, item.repo_path)
+                == (spec.baseline.helper_v1, spec.baseline.helper_path)
+                else item
+            for item in spec.git_file_bytes
+        ), key=lambda item: (item.commit, item.repo_path)))
+        with self.assertRaises(subject.RealManifestSelfCheckError) as caught:
+            subject.required_real_manifest_git_argv(
+                replace(spec, git_file_bytes=rollback_owner)
+            )
+        self.assertEqual(caught.exception.code, "git_file_set_mismatch")
+        swapped_paths = tuple(sorted(
+            (
+                replace(
+                    item,
+                    repo_path=(
+                        spec.baseline.test_path
+                        if item.repo_path == spec.baseline.helper_path
+                        else spec.baseline.helper_path
+                    ),
+                )
+                if item.repo_path in (spec.baseline.helper_path, spec.baseline.test_path)
+                else item
+            for item in spec.git_file_bytes
+        ), key=lambda item: (item.commit, item.repo_path)))
+        with self.assertRaises(subject.RealManifestSelfCheckError) as caught:
+            subject.required_real_manifest_git_argv(
+                replace(spec, git_file_bytes=swapped_paths)
+            )
+        self.assertEqual(caught.exception.code, "seam_identity_mismatch")
+        duplicate = tuple(sorted(
+            (*spec.git_file_bytes[:-1], spec.git_file_bytes[0]),
+            key=lambda item: (item.commit, item.repo_path),
+        ))
+        with self.assertRaises(subject.RealManifestSelfCheckError) as caught:
+            subject.required_real_manifest_git_argv(
+                replace(spec, git_file_bytes=duplicate)
+            )
+        self.assertEqual(caught.exception.code, "git_file_bytes_invalid")
         collision_seam = replace(
             spec.baseline.seam_chain[0], repo_path=spec.activation.changed_paths[0]
         )
         collision_baseline = replace(
             spec.baseline,
-            release_checkpoint=spec.activation.parent,
+            helper_v1=spec.activation.parent,
             helper_path=spec.activation.changed_paths[0],
             seam_chain=(collision_seam, spec.baseline.seam_chain[1]),
         )
@@ -398,6 +458,22 @@ class RealManifestSelfCheckTests(unittest.TestCase):
                 replace(spec, baseline=collision_baseline)
             )
         self.assertEqual(caught.exception.code, "git_file_set_collision")
+        def corrupt_helper_patch(value, count):
+            argv = value.argv
+            if (
+                argv[:5] == ("git", "diff", "--binary", "--full-index", "--no-ext-diff")
+                and argv[-1] == spec.baseline.helper_path
+            ):
+                stdout = b"wrong helper patch\n"
+                return replace(
+                    value,
+                    stdout=stdout,
+                    stdout_sha256=hashlib.sha256(stdout).hexdigest(),
+                )
+            return value
+        runner = Runner(spec, corrupt_helper_patch)
+        self.assert_code("git_stdout_mismatch", spec, runner)
+        self.assertEqual(len(runner.calls), 15)
 
     def test_10_generic_mapping_extra_ledger_and_dependency_shapes_reject(self):
         spec = fixture_spec()

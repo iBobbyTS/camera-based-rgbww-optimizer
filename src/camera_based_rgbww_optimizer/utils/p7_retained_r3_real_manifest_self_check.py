@@ -451,9 +451,9 @@ def _file_map(spec: RealManifestSelfCheckSpec) -> dict[tuple[str, str], bytes]:
     expected_rows = (
         *((activation.parent, path) for path in activation.changed_paths),
         *((activation.commit, path) for path in activation.changed_paths),
-        (baseline.release_checkpoint, baseline.helper_path),
         (baseline.helper_v1, baseline.helper_path),
         (baseline.helper_v1, baseline.test_path),
+        (baseline.integration, baseline.helper_path),
         (baseline.integration, baseline.test_path),
     )
     if len(set(expected_rows)) != len(expected_rows):
@@ -463,7 +463,7 @@ def _file_map(spec: RealManifestSelfCheckSpec) -> dict[tuple[str, str], bytes]:
         _fail("git_file_set_mismatch")
     result = {(commit, path): data for commit, path, data in rows}
     seam_pairs = (
-        (baseline.seam_chain[0], baseline.release_checkpoint, baseline.helper_v1),
+        (baseline.seam_chain[0], baseline.helper_v1, baseline.integration),
         (baseline.seam_chain[1], baseline.helper_v1, baseline.integration),
     )
     for seam, before, after in seam_pairs:
@@ -509,7 +509,7 @@ def required_real_manifest_git_argv(
         activation.parent, activation.commit, "--", *activation.changed_paths,
     ))
     for before, after, path in (
-        (baseline.release_checkpoint, baseline.helper_v1, baseline.helper_path),
+        (baseline.helper_v1, baseline.integration, baseline.helper_path),
         (baseline.helper_v1, baseline.integration, baseline.test_path),
     ):
         commands.append(("git", "rev-parse", before + ":" + path))
@@ -556,8 +556,16 @@ def _expected_stdout(
         parent, child = argv[5:7]
         if (parent, child) == (activation.parent, activation.commit):
             return "sha", activation.full_patch_sha256
-        seam = baseline.seam_chain[0] if parent == baseline.release_checkpoint else baseline.seam_chain[1]
-        return "sha", seam.binary_patch_sha256
+        seam_key = (parent, child, argv[-1])
+        if seam_key == (
+            baseline.helper_v1, baseline.integration, baseline.helper_path
+        ):
+            return "sha", baseline.seam_chain[0].binary_patch_sha256
+        if seam_key == (
+            baseline.helper_v1, baseline.integration, baseline.test_path
+        ):
+            return "sha", baseline.seam_chain[1].binary_patch_sha256
+        _fail("git_ledger_invalid")
     _fail("git_ledger_invalid")
 
 
