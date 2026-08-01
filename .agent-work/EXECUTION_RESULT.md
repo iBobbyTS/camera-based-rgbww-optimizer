@@ -17144,3 +17144,10 @@ __P3_C2_C1_FULL_EXIT__=0
 - Targeted11, focused93, compileall, unique full778, implementation commit, and postcommit targeted11 were exact `0`; implementation commits used `0/1`. Accepted CodeGraph evidence remained frozen and current-package CodeGraph sync/query were exact `0/0`. No repair, test reinterpretation, second gate, retry, fallback, or later-stage entry occurred.
 - External controller/source/root/process work, synthetic integration, old failed controller/root/evidence reads, retained artifact/candidate-payload reads, Git provenance replay, real B2, subordinate manifest, actual canonical validator, eligibility emission, retained audit, release generation/qualification/copy/consumption, network, DNS, environment, credentials, device, camera, Ray, strip, cleanup, capture, FORMAL, public analyzer, TD-C, sentinel, P8, firmware, deployment, and Executer writes to PLAN/FULL/archive/debug/GUIDE/RESEARCH all remained exact `0`. This section is the unique EOF ER append.
 - Result: `REJECTED_PRE_GATE_LOGICAL_EXIT_PERSISTENCE_WRAPPER_FAILURE_WAITING_FOR_PLANNER`. The exact two-path semantic correction remains uncommitted and non-consumable pending Planner review; retained R3 remains unvalidated/unconsumed, and no integration or later stage is unlocked.
+
+## REF-P7-25-R2-B2-P7-C1-C1-C1-C1-V1-C1-V1 Executer handoff — immutable candidate validation-only closure
+
+PRE_GATE_LOGICAL_EXIT=1
+- Wrapper: exact one fresh zsh pre-gate; logical-exit owner `pregate_exit`; stdout marker count `1`; ER marker persisted before tests; prohibited special-parameter assignments `0`.
+- Gate result: failed; tests/compileall/full/retry/fallback exact `0`; no repair or rerun.
+- Result: `REJECTED_PRE_GATE_WAITING_FOR_PLANNER`.
