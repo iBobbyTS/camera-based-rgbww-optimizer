@@ -16,9 +16,9 @@
 
 **当前可执行任务数：** `1`
 
-**当前 active task：** `REF-P7-25-R2-B2-M1-C1 existing-root identity owner correction`
+**当前 active task：** `REF-P7-25-R2-B2-M1-C1-C1 existing-root identity count closure`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-31","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-M1-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-C1-EXISTING-ROOT-IDENTITY-OWNER-V1","next_reference_task":"REF-P7-25-R2-B2-M1-C1","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"M1_C1_EXISTING_ROOT_IDENTITY_OWNER_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","p6_domain_template_owner_status":"ACCEPTED_COMPLETE_DETERMINISTIC_DOMAIN_TEMPLATE_OWNER_WITH_RUNNABLE_CONTRACT_RESIDUAL","p6_candidate_commit":"48b3979d6c0df5f488cd500597e26dc4c38877dd","p6_candidate_consumable":true,"p5_runtime_owner_status":"ACCEPTED_COMPLETE_REPO_OWNED_CONTROLLER_RUNTIME_OWNER","p7_status":"ACCEPTED_COMPLETE_REPO_OWNED_RUNNABLE_DOMAIN_TEMPLATE_OWNER","p7_candidate_commit":"864f08cc5436519a37e41d553e49ebde4a3c8bb2","p7_candidate_consumable":true,"p7_candidate_consumable_scope":"PURE_OFFLINE_SYNTHETIC_INTEGRATION_INPUT_ONLY","p7_synthetic_integration_qualified":true,"p7_i1_status":"ACCEPTED_COMPLETE_FRESH_SYNTHETIC_INTEGRATION_QUALIFIED_NOT_RETAINED_ELIGIBLE","real_manifest_domain_owner_status":"BLOCKED_ON_EXISTING_ROOT_IDENTITY_OWNER","existing_root_identity_owner_status":"ACTIVE_IMPLEMENTATION","executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-31","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-M1-C1-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-C1-C1-EXISTING-ROOT-IDENTITY-COUNT-CLOSURE-V1","next_reference_task":"REF-P7-25-R2-B2-M1-C1-C1","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"M1_C1_C1_EXISTING_ROOT_IDENTITY_COUNT_CLOSURE_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","p6_domain_template_owner_status":"ACCEPTED_COMPLETE_DETERMINISTIC_DOMAIN_TEMPLATE_OWNER_WITH_RUNNABLE_CONTRACT_RESIDUAL","p6_candidate_commit":"48b3979d6c0df5f488cd500597e26dc4c38877dd","p6_candidate_consumable":true,"p5_runtime_owner_status":"ACCEPTED_COMPLETE_REPO_OWNED_CONTROLLER_RUNTIME_OWNER","p7_status":"ACCEPTED_COMPLETE_REPO_OWNED_RUNNABLE_DOMAIN_TEMPLATE_OWNER","p7_candidate_commit":"864f08cc5436519a37e41d553e49ebde4a3c8bb2","p7_candidate_consumable":true,"p7_candidate_consumable_scope":"PURE_OFFLINE_SYNTHETIC_INTEGRATION_INPUT_ONLY","p7_synthetic_integration_qualified":true,"p7_i1_status":"ACCEPTED_COMPLETE_FRESH_SYNTHETIC_INTEGRATION_QUALIFIED_NOT_RETAINED_ELIGIBLE","real_manifest_domain_owner_status":"BLOCKED_ON_EXISTING_ROOT_IDENTITY_OWNER","existing_root_identity_owner_status":"ACTIVE_IMPLEMENTATION_COUNT_CORRECTED","executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -329,7 +329,8 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-B2-P7-I1-E1` | `REJECTED_TRANSIENT_AUDIT_DOMAIN_ASSERTION` | append-only supersession of two terminal cumulative counts | E1-C1 data-owner correction | Planner/Executer |
 | `REF-P7-25-R2-B2-P7-I1-E1-C1` | `ACCEPTED_COMPLETE_FRESH_SYNTHETIC_INTEGRATION_QUALIFIED_NOT_RETAINED_ELIGIBLE` | bounded audit with exact process/root evidence-owner mapping, then append-only supersession | M1 real-manifest domain owner | Planner/Executer |
 | `REF-P7-25-R2-B2-M1` | `REJECTED_EXISTING_ROOT_IDENTITY_OWNER_MISSING_M1_NOT_IMPLEMENTED` | implement repo-owned deterministic real-manifest-v2 domain template owner | M1-C1 existing-root owner | Planner/Executer |
-| `REF-P7-25-R2-B2-M1-C1` | `ACTIVE_EXECUTION_AUTHORIZED` | add P3 no-follow existing-root identity owner and exact P4 static provenance recognition | M1 pre-edit contract contradiction | Planner/Executer |
+| `REF-P7-25-R2-B2-M1-C1` | `REJECTED_PRE_EDIT_METHOD_COUNT_BASELINE_MISMATCH_NO_IMPLEMENTATION_ATTEMPT` | add P3 no-follow existing-root identity owner and exact P4 static provenance recognition | C1-C1 count closure | Planner/Executer |
+| `REF-P7-25-R2-B2-M1-C1-C1` | `ACTIVE_EXECUTION_AUTHORIZED` | execute unchanged existing-root owner contract with source-backed 24/20/6/11 baseline | M1-C1 count gate | Planner/Executer |
 | `REF-P7-25-R2-B2-M1-I1` | `BLOCKED_ON_M1_ACCEPTANCE` | fresh pure-offline integration of real-manifest template with synthetic fixtures | M1 accepted | Planner/Executer |
 | `REF-P7-25-R2-B2-M1-R1` | `BLOCKED_ON_M1_I1_ACCEPTANCE` | one fresh real-input manifest-only B2 execution | M1-I1 accepted | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-V1` | `ACCEPTED_COMPLETE` | one final-source full suite with retained terminal exit/count | 755/755 accepted | Planner/Executer |
@@ -3962,13 +3963,26 @@ SHA-256 `a6c4524fabed4935c67f68264d289ee6acdbdd6dbadb017017c16f93ec0596bf`。
 
 ### REF-P7-25-R2-B2-M1-C1：existing-root identity owner correction
 
-**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。Exact four paths：P3 provenance I/O + dedicated test、P4 conformance + dedicated test。P3新增public
+**状态：** `REJECTED_PRE_EDIT_METHOD_COUNT_BASELINE_MISMATCH_NO_IMPLEMENTATION_ATTEMPT`。Exact four paths：P3 provenance I/O + dedicated test、P4 conformance + dedicated test。P3新增public
 `read_existing_root`：absolute lexical canonical path、lstat exact1/no-follow、physical dir0700、typed `DirectoryIdentity`、无create/open/enumerate/repair；
 后续`read_exact_file(root=...)`继续fresh lstat防drift。P4仅认可canonical unaliased import的direct `read_existing_root(...)` direct-bound result为effect-
 owned live root；拒绝missing/wrong/alias/wildcard/attribute/shadow/constructor/nested/container/reflection/rebind/rootless/positional，并允许multiple separately
 acquired live roots，不放宽effect transport。新增P3 4+P4 5 methods；targeted41/focused58/full787；CodeGraph pre/post、exact four-path commit
 `feat(p7): own existing root identity acquisition`、posttarget41。M1 files/execution及all external/retained/validator/release/device0；exact stop
 `B2_M1_C1_EXISTING_ROOT_IDENTITY_OWNER_WAITING_PLANNER_REVIEW`。
+
+M1-C1 activation与pre-edit CodeGraph通过，但source-backed static inventory为P3/P4=`24/20`，而PLAN错误冻结old`18/14`与final targeted41；按合同在
+edit前fail closed。Evidence commit `c3018460a6748e447894d83cee5cc8c2851bd750`仅追加ER13行；implementation/tests/commit0。
+Review archive `.agent-work/PLANS/20260731-2121-p7-retained-r3-b2-m1-c1-count-gate-failure-review.md`，bytes`4726`，SHA-256
+`f2ce57a3e369644c9b987c7407b241a67fd592138533070169ea6717f1961a52`。
+
+### REF-P7-25-R2-B2-M1-C1-C1：existing-root identity count closure
+
+**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。Semantic/API/security/four-path/CodeGraph/commit合同逐字继承M1-C1，仅把source-backed baseline冻结为
+P3/P4/P5/P7=`24/20/6/11`；新增P3 4+P4 5后final P3/P4=`28/25`、targeted53、focused70、full787、posttarget53。原M1-C1
+implementation attempt0/retry0；本successor fresh invocation/retry0。Exact commit仍为`feat(p7): own existing root identity acquisition`，所有M1/
+external/retained/validator/release/device0；archive同上；exact stop
+`B2_M1_C1_C1_EXISTING_ROOT_IDENTITY_COUNT_CLOSURE_WAITING_PLANNER_REVIEW`。
 
 ### REF-P7-25-R2-B2-M1-I1：real-manifest template pure-offline integration
 
@@ -4792,10 +4806,11 @@ rejected B2-P7-I1 result = TERMINAL_COUNT_SNAPSHOT_INCONSISTENCY; integration se
 rejected B2-P7-I1-E1 result = TRANSIENT_AUDIT_DOMAIN_ASSERTION; source/root/ER immutable
 accepted B2-P7-I1-E1-C1 result = FRESH_SYNTHETIC_INTEGRATION_QUALIFIED_NOT_RETAINED_ELIGIBLE
 rejected B2-M1 result = EXISTING_ROOT_IDENTITY_OWNER_MISSING; implementation0
-active task = REF-P7-25-R2-B2-M1-C1 existing-root identity owner correction
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-C1-EXISTING-ROOT-IDENTITY-OWNER-V1
+rejected B2-M1-C1 result = PRE_EDIT_METHOD_COUNT_BASELINE_MISMATCH; implementation0
+active task = REF-P7-25-R2-B2-M1-C1-C1 existing-root identity count closure
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-C1-C1-EXISTING-ROOT-IDENTITY-COUNT-CLOSURE-V1
 active executable task count = 1
-next reference task = REF-P7-25-R2-B2-M1-C1 ACTIVE_EXECUTION_AUTHORIZED
+next reference task = REF-P7-25-R2-B2-M1-C1-C1 ACTIVE_EXECUTION_AUTHORIZED
 selected state C shutter = 1/2500
 device/network/camera/light = forbidden by active PLAN
 release qualification/generation/copy/consumption = forbidden

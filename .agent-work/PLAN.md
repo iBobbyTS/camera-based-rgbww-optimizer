@@ -1,36 +1,36 @@
-# P7 retained-R3 Option B：M1-C1 existing-root identity owner correction
+# P7 retained-R3 Option B：M1-C1-C1 existing-root identity count closure
 
 **计划状态：** `ACTIVE_EXECUTION_AUTHORIZED_AFTER_ORCHESTRATOR_ACTIVATION`
 
 **Planner 日期：** `2026-07-31`
 
-**Reference task：** `REF-P7-25-R2-B2-M1-C1`
+**Reference task：** `REF-P7-25-R2-B2-M1-C1-C1`
 
 **Contract：**
-`P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-C1-EXISTING-ROOT-IDENTITY-OWNER-V1`
+`P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-C1-C1-EXISTING-ROOT-IDENTITY-COUNT-CLOSURE-V1`
 
-**当前唯一动作：** 在 Orchestrator 建立 exact activation commit 后，Executer 只扩展既有 P3 provenance-I/O owner与P4
-controller-conformance owner，使generated controller能以typed、no-follow、fail-closed方式取得并静态证明existing `0700` roots；完成exact
-four-path实现、冻结验证、唯一implementation commit与一次ER handoff后停止。
+**当前唯一动作：** 在 Orchestrator 建立 exact activation commit 后，Executer 按source-backed corrected baseline只扩展既有 P3
+provenance-I/O owner与P4 controller-conformance owner，使generated controller能以typed、no-follow、fail-closed方式取得并静态证明existing
+`0700` roots；完成exact four-path实现、冻结验证、唯一implementation commit与一次ER handoff后停止。
 
 **唯一 Planner stop：**
-`B2_M1_C1_EXISTING_ROOT_IDENTITY_OWNER_WAITING_PLANNER_REVIEW`。
+`B2_M1_C1_C1_EXISTING_ROOT_IDENTITY_COUNT_CLOSURE_WAITING_PLANNER_REVIEW`。
 
 **本轮新归档：**
-`.agent-work/PLANS/20260731-2111-p7-retained-r3-b2-m1-existing-root-owner-gap-review.md`；bytes `4516`，SHA-256
-`a6c4524fabed4935c67f68264d289ee6acdbdd6dbadb017017c16f93ec0596bf`；不得覆盖 earlier archives。
+`.agent-work/PLANS/20260731-2121-p7-retained-r3-b2-m1-c1-count-gate-failure-review.md`；bytes `4726`，SHA-256
+`f2ce57a3e369644c9b987c7407b241a67fd592138533070169ea6717f1961a52`；不得覆盖 earlier archives。
 
-`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_m1_c1_existing_root_identity_owner_v1","reference_task_id":"REF-P7-25-R2-B2-M1-C1","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-C1-EXISTING-ROOT-IDENTITY-OWNER-V1","execution_authorized_after_orchestrator_activation":true,"activation_commit":{"expected_parent":"195afbe54caeda01fcf65af4d97604665d5e7adb","expected_subject":"chore(plan): activate existing root identity owner correction","expected_changed_paths":[".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/PLANS/20260731-2111-p7-retained-r3-b2-m1-existing-root-owner-gap-review.md"],"clean_porcelain_required_after_activation":true},"implementation_commit":{"expected_parent_source":"current_activation_head_runtime","expected_subject":"feat(p7): own existing root identity acquisition","expected_changed_paths":["src/camera_based_rgbww_optimizer/utils/p7_retained_r3_controller_conformance.py","src/camera_based_rgbww_optimizer/utils/p7_retained_r3_provenance_io.py","tests/test_p7_retained_r3_controller_conformance.py","tests/test_p7_retained_r3_provenance_io.py"],"single_commit":true,"clean_porcelain_required_after_commit":true},"required_full_machine_state":{"active_task_count":1,"active_task":"REF-P7-25-R2-B2-M1-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-C1-EXISTING-ROOT-IDENTITY-OWNER-V1","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","real_manifest_domain_owner_status":"BLOCKED_ON_EXISTING_ROOT_IDENTITY_OWNER","existing_root_identity_owner_status":"ACTIVE_IMPLEMENTATION","executer_dispatched":true,"device_authorized_by_this_file":false},"exact_write_paths":["src/camera_based_rgbww_optimizer/utils/p7_retained_r3_controller_conformance.py","src/camera_based_rgbww_optimizer/utils/p7_retained_r3_provenance_io.py","tests/test_p7_retained_r3_controller_conformance.py","tests/test_p7_retained_r3_provenance_io.py"],"p3_contract":{"entrypoint":"read_existing_root","return_type":"DirectoryIdentity","absolute_canonical_path":true,"lstat_no_follow_calls":1,"required_mode":448,"create_calls":0,"open_calls":0,"child_reads":0,"child_enumeration":0,"repair_calls":0,"dependency_injection":true,"stable_codes":["invalid_path","root_not_absolute","root_not_canonical","root_lstat_failed","root_not_directory","root_mode_mismatch"]},"p4_contract":{"recognized_owner_call":"read_existing_root","owner_result_type":"DirectoryIdentity","effect_owned":true,"direct_bound_name_required":true,"exact_unaliased_import_required":true,"live_read_root":true,"multiple_live_roots_allowed":true,"direct_constructor_allowed":false,"attribute_call_allowed":false,"local_shadow_allowed":false,"alias_allowed":false,"reflection_allowed":false,"generic_transport_allowed":false,"container_transport_allowed":false,"nested_call_allowed":false,"rootless_read_allowed":false,"existing_codes_preserved":true,"new_codes":["existing_root_owner_import_invalid","existing_root_owner_call_invalid"]},"test_contract":{"new_p3_test_methods":4,"new_p4_test_methods":5,"new_test_methods_total":9,"targeted_command":".venv/bin/python -m unittest tests.test_p7_retained_r3_provenance_io tests.test_p7_retained_r3_controller_conformance","targeted_expected":41,"focused_command":".venv/bin/python -m unittest tests.test_p7_retained_r3_provenance_io tests.test_p7_retained_r3_controller_conformance tests.test_p7_retained_r3_controller_runtime tests.test_p7_retained_r3_controller_domain_template","focused_expected":58,"compileall_command":".venv/bin/python -m compileall -q src tests","full_command":"PYTHONUNBUFFERED=1 .venv/bin/python -m unittest discover -s tests -p 'test_*.py'","full_baseline":778,"full_expected":787,"postcommit_targeted_expected":41},"codegraph_contract":{"pre_edit_sync":1,"pre_edit_query":1,"post_edit_sync":1,"post_edit_query":1,"sync_before_query":true,"query_before_source_edit":true},"execution_budgets":{"implementation_commits":1,"execution_result_appends":1,"test_invocations":4,"compileall_invocations":1,"codegraph_sync":2,"codegraph_queries":2,"retry":0,"fallback":0},"zero_budgets":{"m1_source_test_writes":0,"m1_implementation_commits":0,"third_owner":0,"generic_path_allowlist":0,"accepted_c1_physical_reads":0,"retained_artifact_physical_reads":0,"external_controller_writes":0,"external_controller_reads":0,"external_controller_processes":0,"external_root_creates":0,"external_root_reads":0,"synthetic_integration_runs":0,"git_provenance_replay":0,"real_b2_dispatch":0,"subordinate_manifest_writes":0,"actual_canonical_validator_calls":0,"canonical_validator_callbacks":0,"eligibility_emissions":0,"retained_release_audit":0,"release_generation":0,"release_qualification":0,"release_copy":0,"release_consumption":0,"network":0,"dns":0,"environment":0,"credentials":0,"device":0,"camera":0,"ray":0,"strip":0,"cleanup":0,"capture":0,"formal":0,"public_analyzer":0,"td_c":0,"sentinel":0,"p8":0,"firmware":0,"deployment":0,"plan_writes_by_executer":0,"full_writes_by_executer":0,"archive_writes_by_executer":0,"debug_writes":0,"guide_writes":0,"research_writes":0},"expected_duration":"under_10_minutes","visible_terminal_required":false,"archive":{"path":".agent-work/PLANS/20260731-2111-p7-retained-r3-b2-m1-existing-root-owner-gap-review.md","bytes":4516,"sha256":"a6c4524fabed4935c67f68264d289ee6acdbdd6dbadb017017c16f93ec0596bf"},"planner_stop":"B2_M1_C1_EXISTING_ROOT_IDENTITY_OWNER_WAITING_PLANNER_REVIEW"}`
+`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_m1_c1_c1_existing_root_identity_count_closure_v1","reference_task_id":"REF-P7-25-R2-B2-M1-C1-C1","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-C1-C1-EXISTING-ROOT-IDENTITY-COUNT-CLOSURE-V1","execution_authorized_after_orchestrator_activation":true,"activation_commit":{"expected_parent":"c3018460a6748e447894d83cee5cc8c2851bd750","expected_subject":"chore(plan): activate existing root identity count closure","expected_changed_paths":[".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/PLANS/20260731-2121-p7-retained-r3-b2-m1-c1-count-gate-failure-review.md"],"clean_porcelain_required_after_activation":true},"implementation_commit":{"expected_parent_source":"current_activation_head_runtime","expected_subject":"feat(p7): own existing root identity acquisition","expected_changed_paths":["src/camera_based_rgbww_optimizer/utils/p7_retained_r3_controller_conformance.py","src/camera_based_rgbww_optimizer/utils/p7_retained_r3_provenance_io.py","tests/test_p7_retained_r3_controller_conformance.py","tests/test_p7_retained_r3_provenance_io.py"],"single_commit":true,"clean_porcelain_required_after_commit":true},"required_full_machine_state":{"active_task_count":1,"active_task":"REF-P7-25-R2-B2-M1-C1-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-C1-C1-EXISTING-ROOT-IDENTITY-COUNT-CLOSURE-V1","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","real_manifest_domain_owner_status":"BLOCKED_ON_EXISTING_ROOT_IDENTITY_OWNER","existing_root_identity_owner_status":"ACTIVE_IMPLEMENTATION_COUNT_CORRECTED","executer_dispatched":true,"device_authorized_by_this_file":false},"exact_write_paths":["src/camera_based_rgbww_optimizer/utils/p7_retained_r3_controller_conformance.py","src/camera_based_rgbww_optimizer/utils/p7_retained_r3_provenance_io.py","tests/test_p7_retained_r3_controller_conformance.py","tests/test_p7_retained_r3_provenance_io.py"],"p3_contract":{"entrypoint":"read_existing_root","return_type":"DirectoryIdentity","absolute_canonical_path":true,"lstat_no_follow_calls":1,"required_mode":448,"create_calls":0,"open_calls":0,"child_reads":0,"child_enumeration":0,"repair_calls":0,"dependency_injection":true,"stable_codes":["invalid_path","root_not_absolute","root_not_canonical","root_lstat_failed","root_not_directory","root_mode_mismatch"]},"p4_contract":{"recognized_owner_call":"read_existing_root","owner_result_type":"DirectoryIdentity","effect_owned":true,"direct_bound_name_required":true,"exact_unaliased_import_required":true,"live_read_root":true,"multiple_live_roots_allowed":true,"direct_constructor_allowed":false,"attribute_call_allowed":false,"local_shadow_allowed":false,"alias_allowed":false,"reflection_allowed":false,"generic_transport_allowed":false,"container_transport_allowed":false,"nested_call_allowed":false,"rootless_read_allowed":false,"existing_codes_preserved":true,"new_codes":["existing_root_owner_import_invalid","existing_root_owner_call_invalid"]},"test_contract":{"existing_p3_test_methods":24,"existing_p4_test_methods":20,"existing_p5_test_methods":6,"existing_p7_test_methods":11,"new_p3_test_methods":4,"new_p4_test_methods":5,"new_test_methods_total":9,"final_p3_test_methods":28,"final_p4_test_methods":25,"targeted_command":".venv/bin/python -m unittest tests.test_p7_retained_r3_provenance_io tests.test_p7_retained_r3_controller_conformance","targeted_expected":53,"focused_command":".venv/bin/python -m unittest tests.test_p7_retained_r3_provenance_io tests.test_p7_retained_r3_controller_conformance tests.test_p7_retained_r3_controller_runtime tests.test_p7_retained_r3_controller_domain_template","focused_expected":70,"compileall_command":".venv/bin/python -m compileall -q src tests","full_command":"PYTHONUNBUFFERED=1 .venv/bin/python -m unittest discover -s tests -p 'test_*.py'","full_baseline":778,"full_expected":787,"postcommit_targeted_expected":53},"codegraph_contract":{"pre_edit_sync":1,"pre_edit_query":1,"post_edit_sync":1,"post_edit_query":1,"sync_before_query":true,"query_before_source_edit":true},"execution_budgets":{"implementation_commits":1,"execution_result_appends":1,"test_invocations":4,"compileall_invocations":1,"codegraph_sync":2,"codegraph_queries":2,"retry":0,"fallback":0},"zero_budgets":{"m1_source_test_writes":0,"m1_implementation_commits":0,"third_owner":0,"generic_path_allowlist":0,"accepted_c1_physical_reads":0,"retained_artifact_physical_reads":0,"external_controller_writes":0,"external_controller_reads":0,"external_controller_processes":0,"external_root_creates":0,"external_root_reads":0,"synthetic_integration_runs":0,"git_provenance_replay":0,"real_b2_dispatch":0,"subordinate_manifest_writes":0,"actual_canonical_validator_calls":0,"canonical_validator_callbacks":0,"eligibility_emissions":0,"retained_release_audit":0,"release_generation":0,"release_qualification":0,"release_copy":0,"release_consumption":0,"network":0,"dns":0,"environment":0,"credentials":0,"device":0,"camera":0,"ray":0,"strip":0,"cleanup":0,"capture":0,"formal":0,"public_analyzer":0,"td_c":0,"sentinel":0,"p8":0,"firmware":0,"deployment":0,"plan_writes_by_executer":0,"full_writes_by_executer":0,"archive_writes_by_executer":0,"debug_writes":0,"guide_writes":0,"research_writes":0},"expected_duration":"under_10_minutes","visible_terminal_required":false,"archive":{"path":".agent-work/PLANS/20260731-2121-p7-retained-r3-b2-m1-c1-count-gate-failure-review.md","bytes":4726,"sha256":"f2ce57a3e369644c9b987c7407b241a67fd592138533070169ea6717f1961a52"},"planner_stop":"B2_M1_C1_C1_EXISTING_ROOT_IDENTITY_COUNT_CLOSURE_WAITING_PLANNER_REVIEW"}`
 
 ## 1. Review decision 与 activation gate
 
-上一M1结果判定为
-`REJECTED_EXISTING_ROOT_IDENTITY_OWNER_MISSING_M1_NOT_IMPLEMENTED`。Executer正确在required CodeGraph query后、任何source/test edit前fail closed：
-P3没有existing-root acquisition API，而P4只把effect-owned `DirectoryIdentity` name视为live read root；M1同时需要七个existing roots、output create
-exact1、P3/P4 edits0，合同不可满足。该结果不接受M1，也不消耗M1实现机会。
+上一M1-C1结果判定为
+`REJECTED_PRE_EDIT_METHOD_COUNT_BASELINE_MISMATCH_NO_IMPLEMENTATION_ATTEMPT`。Executer正确在required CodeGraph query与source-backed静态
+inventory后、任何source/test edit前fail closed：P3/P4实际old methods为`24/20`，而PLAN错误冻结为`18/14`。P5/P7由Planner在本包写入前
+只读复核为`6/11`。该结果不接受M1-C1，也不消耗implementation机会；本包仅纠正baseline与derived counts，不放宽其他合同。
 
 Executer开始本包前必须验证activation是parent
-`195afbe54caeda01fcf65af4d97604665d5e7adb`的direct child，subject exact，changed paths exact
+`c3018460a6748e447894d83cee5cc8c2851bd750`的direct child，subject exact，changed paths exact
 FULL/PLAN/本archive三项，PLAN/FULL machine rows strict JSON且required FULL subset exact，porcelain clean。任一不符须在CodeGraph/source/test
 读取或编辑前做single ER handoff并停止。
 
@@ -108,7 +108,8 @@ P4不得调用filesystem API，P3不得解析source。Future M1的7 existing rea
 
 ## 5. Dedicated regression contract
 
-保持现有test methods与assertions；只新增exact `4`个P3 methods和`5`个P4 methods，最终P3 `22`、P4 `19`、合计targeted `41`。新methods
+保持现有test methods与assertions；只新增exact `4`个P3 methods和`5`个P4 methods，source-backed baseline P3 `24`、P4 `20`，最终P3
+`28`、P4 `25`、合计targeted `53`。新methods
 必须冻结name inventory并有meaningful assertions，不得只执行代码：
 
 ### P3 four methods
@@ -136,17 +137,19 @@ Tests只能使用`tempfile`或fully fake dependency/source bytes；不得读取a
 编辑完成后严格依次、每项exact一次，任一nonzero或count mismatch立即停止，不得retry或以narrow green覆盖：
 
 1. targeted：`.venv/bin/python -m unittest tests.test_p7_retained_r3_provenance_io tests.test_p7_retained_r3_controller_conformance`，exact
-   `41/41`；
-2. focused：`.venv/bin/python -m unittest tests.test_p7_retained_r3_provenance_io tests.test_p7_retained_r3_controller_conformance tests.test_p7_retained_r3_controller_runtime tests.test_p7_retained_r3_controller_domain_template`，exact `58/58`；
+   `53/53`；
+2. focused：`.venv/bin/python -m unittest tests.test_p7_retained_r3_provenance_io tests.test_p7_retained_r3_controller_conformance tests.test_p7_retained_r3_controller_runtime tests.test_p7_retained_r3_controller_domain_template`，
+   exact `70/70`（P3 `28` + P4 `25` + P5 `6` + P7 `11`）；
 3. compileall：`.venv/bin/python -m compileall -q src tests`，exit0；
 4. full discovery：`PYTHONUNBUFFERED=1 .venv/bin/python -m unittest discover -s tests -p 'test_*.py'`，current baseline `778` + new9 = exact
    `787/787`且唯一`OK`；
 5. post-edit CodeGraph sync/query与`git diff --check`，并验证unstaged diff exact four paths；
 6. stage exact four paths，创建唯一implementation commit；
-7. postcommit targeted exact `41/41`，验证direct parent、subject、changed paths、blob identities与porcelain clean。
+7. postcommit targeted exact `53/53`，验证direct parent、subject、changed paths、blob identities与porcelain clean。
 
 总test invocations4、compileall1、CodeGraph sync2/query2、implementation commit1、retry/fallback0。不得运行额外ad-hoc Python、pytest、test discovery、
-formatter或second correction。若现有method count与冻结baseline在任何edit前不符，视为gate failure，不自行改count。
+formatter或second correction。若现有method count与本包source-backed冻结baseline P3/P4/P5/P7 `24/20/6/11`在任何edit前不符，视为gate
+failure，不自行改count。
 
 无论通过/失败，只向`.agent-work/EXECUTION_RESULT.md`做一次EOF append。记录activation topology、CodeGraph before/after、exact four-path before/after
 bytes/SHA/blob/diff、API/signature/errors、lstat/effect counters、P4 import/call/root provenance inventory、method inventory、四组test/compileall exit与count、commit
@@ -162,7 +165,7 @@ Retained R3保持`RETAINED_UNVALIDATED_UNCONSUMED`。
 - activation/CodeGraph/pre-edit count gate失败：source/test writes0、commit0，single ER handoff后停Planner；
 - implementation/precommit validation失败：保留exact four-path diff，不跨界修复、不commit、不retry，single ER handoff后停Planner；
 - commit后posttarget/topology失败：保留commit为non-consumable evidence，不amend/rebase，single ER handoff后停Planner；
-- 全绿：只报告M1-C1 candidate waiting Planner review，不得自行接受或进入M1。
+- 全绿：只报告M1-C1-C1 candidate waiting Planner review，不得自行接受或进入M1。
 
 Planner若接受本correction，下一步是重新规划一个fresh M1 successor，使用新activation与accepted P3/P4 owner；不得复用被拒绝M1 activation，也不得由本PLAN
 直接执行M1。
