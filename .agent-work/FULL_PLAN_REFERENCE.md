@@ -16,9 +16,9 @@
 
 **当前可执行任务数：** `1`
 
-**当前 active task：** `REF-P7-25-R2-B2-M1-I1-C1 Git grammar correction`
+**当前 active task：** `REF-P7-25-R2-B2-M1-I1-S1 fresh synthetic integration successor`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-08-01","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-M1-I1-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-I1-C1-GIT-GRAMMAR-CORRECTION-V1","next_reference_task":"REF-P7-25-R2-B2-M1-I1-C1","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"M1_I1_C1_GIT_GRAMMAR_CORRECTION_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","p6_domain_template_owner_status":"ACCEPTED_COMPLETE_DETERMINISTIC_DOMAIN_TEMPLATE_OWNER_WITH_RUNNABLE_CONTRACT_RESIDUAL","p6_candidate_commit":"48b3979d6c0df5f488cd500597e26dc4c38877dd","p6_candidate_consumable":true,"p5_runtime_owner_status":"ACCEPTED_COMPLETE_REPO_OWNED_CONTROLLER_RUNTIME_OWNER","p7_status":"ACCEPTED_COMPLETE_REPO_OWNED_RUNNABLE_DOMAIN_TEMPLATE_OWNER","p7_candidate_commit":"864f08cc5436519a37e41d553e49ebde4a3c8bb2","p7_candidate_consumable":true,"p7_candidate_consumable_scope":"PURE_OFFLINE_SYNTHETIC_INTEGRATION_INPUT_ONLY","p7_synthetic_integration_qualified":true,"p7_i1_status":"ACCEPTED_COMPLETE_FRESH_SYNTHETIC_INTEGRATION_QUALIFIED_NOT_RETAINED_ELIGIBLE","real_manifest_domain_owner_status":"ACTIVE_GIT_GRAMMAR_CORRECTION","existing_root_identity_owner_status":"ACCEPTED_COMPLETE_COMPOSITE_VALIDATED","m1_existing_root_candidate_commit":"40d92acb77b32f370955d687c74c7ff7077f55e1","m1_existing_root_correction_commit":"ffd1d9bb234c90a28ab497b10a35b08e4478eb1c","m1_existing_root_candidate_consumable":true,"m1_real_manifest_rejected_candidate_commit":"cddd23eb4ef53a8f90c9b869f96f84ccfcba36cf","m1_real_manifest_candidate_commit":"c480c4065081eab06388a12e95fd79b37b0230e2","m1_real_manifest_candidate_consumable":false,"carried_test_status":"ACCEPTED_VALIDATED","m1_synthetic_integration_status":"REJECTED_GIT_COMMAND_DENIED_CORRECTION_ACTIVE","executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-08-01","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-M1-I1-S1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-I1-S1-FRESH-SYNTHETIC-INTEGRATION-SUCCESSOR-V1","next_reference_task":"REF-P7-25-R2-B2-M1-I1-S1","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"M1_I1_C1_GIT_GRAMMAR_CORRECTION_ACCEPTED_WITH_PATCH_SUPERSESSION","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","p6_domain_template_owner_status":"ACCEPTED_COMPLETE_DETERMINISTIC_DOMAIN_TEMPLATE_OWNER_WITH_RUNNABLE_CONTRACT_RESIDUAL","p6_candidate_commit":"48b3979d6c0df5f488cd500597e26dc4c38877dd","p6_candidate_consumable":true,"p5_runtime_owner_status":"ACCEPTED_COMPLETE_REPO_OWNED_CONTROLLER_RUNTIME_OWNER","p7_status":"ACCEPTED_COMPLETE_REPO_OWNED_RUNNABLE_DOMAIN_TEMPLATE_OWNER","p7_candidate_commit":"864f08cc5436519a37e41d553e49ebde4a3c8bb2","p7_candidate_consumable":true,"p7_candidate_consumable_scope":"PURE_OFFLINE_SYNTHETIC_INTEGRATION_INPUT_ONLY","p7_synthetic_integration_qualified":true,"p7_i1_status":"ACCEPTED_COMPLETE_FRESH_SYNTHETIC_INTEGRATION_QUALIFIED_NOT_RETAINED_ELIGIBLE","real_manifest_domain_owner_status":"ACCEPTED_COMPLETE_GIT_GRAMMAR_VALIDATED","existing_root_identity_owner_status":"ACCEPTED_COMPLETE_COMPOSITE_VALIDATED","m1_existing_root_candidate_commit":"40d92acb77b32f370955d687c74c7ff7077f55e1","m1_existing_root_correction_commit":"ffd1d9bb234c90a28ab497b10a35b08e4478eb1c","m1_existing_root_candidate_consumable":true,"m1_real_manifest_rejected_candidate_commit":"cddd23eb4ef53a8f90c9b869f96f84ccfcba36cf","m1_real_manifest_candidate_commit":"0f4c09e1b2b2afbf627f6f36d57a1a65847ab4a8","m1_real_manifest_candidate_consumable":true,"carried_test_status":"ACCEPTED_VALIDATED","m1_synthetic_integration_status":"ACTIVE_FRESH_ACTIVATION_DERIVED_SUCCESSOR","executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -340,7 +340,8 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-B2-M1-S1-C1-C1-C1-C1-C1` | `REJECTED_TARGETED_PRODUCTION_CANONICAL_JSON_PAYLOAD_VIOLATION` | correct the exact two dedicated-test fixtures without a CodeGraph semantic query or replacement harness | C1-C1-C1-C1-C1-C1 payload correction | Planner/Executer |
 | `REF-P7-25-R2-B2-M1-S1-C1-C1-C1-C1-C1-C1` | `ACCEPTED_COMPLETE_REAL_MANIFEST_DOMAIN_OWNER_CANONICAL_JSON_VALIDATED` | project immutable tuple contract into ordered JSON-native lists only at M1 persistence boundary | M1-I1 synthetic integration | Planner/Executer |
 | `REF-P7-25-R2-B2-M1-I1` | `REJECTED_CONTROLLER_GIT_COMMAND_DENIED` | fresh pure-offline integration of real-manifest template with synthetic fixtures | M1-I1-C1 Git grammar correction | Planner/Executer |
-| `REF-P7-25-R2-B2-M1-I1-C1` | `ACTIVE_EXECUTION_AUTHORIZED` | align all 56 generated Git argv with P3 canonical read-only grammar | new fresh M1-I1 only after correction acceptance | Planner/Executer |
+| `REF-P7-25-R2-B2-M1-I1-C1` | `ACCEPTED_COMPLETE_GIT_GRAMMAR_CORRECTION_WITH_PLANNER_PATCH_IDENTITY_SUPERSESSION` | align all 56 generated Git argv with P3 canonical read-only grammar | fresh M1-I1-S1 | Planner/Executer |
+| `REF-P7-25-R2-B2-M1-I1-S1` | `ACTIVE_EXECUTION_AUTHORIZED` | new activation-derived pure-offline synthetic integration using accepted M1/P5 owners | no old failure-root reuse | Planner/Executer |
 | `REF-P7-25-R2-B2-M1-R1` | `BLOCKED_ON_M1_I1_ACCEPTANCE` | one fresh real-input manifest-only B2 execution | M1-I1 accepted | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-V1` | `ACCEPTED_COMPLETE` | one final-source full suite with retained terminal exit/count | 755/755 accepted | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-I1` | `REJECTED_PRE_EFFECT_OWNER_ALIAS_ESCAPE` | fresh synthetic external integration of accepted repo owner | I1-C1 correction | Planner/Executer |
@@ -4161,7 +4162,7 @@ source/roots转为immutable no-read/no-reuse/no-modify/no-delete/no-retry eviden
 
 ### REF-P7-25-R2-B2-M1-I1-C1：Git grammar correction
 
-**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。M1 single generated-command owner把全部56条argv的唯一format token改为P3现有canonical shape
+**状态：** `ACCEPTED_COMPLETE_GIT_GRAMMAR_CORRECTION_WITH_PLANNER_PATCH_IDENTITY_SUPERSESSION`。M1 single generated-command owner把全部56条argv的唯一format token改为P3现有canonical shape
 `--format=%H%x00%P%x00%s`；target 0..6循环8次，其余命令与ledger checks不变。禁止修改/放宽P3、generic allowlist、第二runner或fallback。
 Dedicated test必须验证56个generated shapes与实际target cycling，并让每一项通过P3 public `run_read_only_git`配合in-memory process result；不得复制private
 validator或启动Git subprocess。
@@ -4170,6 +4171,22 @@ Validation为targeted13、focused83、compileall、full800、全绿后maintenanc
 `fix(p7): align real manifest Git ledgers`、posttarget13与ER append1；retry0。Correction期间synthetic integration/controller与失败fresh evidence reads均0，
 真实retained/validator/release/network/device全部0。通过仍停Planner门；只有接受后才能规划全新activation-derived M1-I1。Planner stop exact
 `B2_M1_I1_C1_GIT_GRAMMAR_CORRECTION_WAITING_PLANNER_REVIEW`。
+
+Candidate `0f4c09e1b2b2afbf627f6f36d57a1a65847ab4a8`的56-shape/cycle/public-P3 coverage与13/83/800/13 validations通过。ER旧patch
+SHA `4044c624...`由Planner独立Git-object重算supersede；authoritative exact two-path `git diff --binary`为bytes`5874`、SHA-256
+`6b26e49359f944bceafe5129b0b81a3d5600d400eae7d3b739c2baba12d6a5ca`。Acceptance archive
+`.agent-work/PLANS/20260801-0135-p7-retained-r3-b2-m1-i1-c1-git-grammar-acceptance-review.md`，bytes`6186`，SHA-256
+`d3a01adebc667447031ff1bb55f7f055c696fa74ce796d4f79f4728df2ad5764`。
+
+### REF-P7-25-R2-B2-M1-I1-S1：fresh synthetic integration successor
+
+**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。使用当前activation full SHA派生全新`m1-i1-s1` source/output/seven input roots，nine-target absence gate
+后由P3创建synthetic fixtures，M1 builder/P5 runtime/controller各exact1；验证canonical Git ledgers56、inputs7、outputs exact5、manifest/seals/terminal/
+admission与residual process0。旧M1-I1 failure external evidence继续no-read/no-reuse/no-modify/no-delete/no-retry。
+
+本包repo code/test writes0，tests/CodeGraph/implementation commit0，只append ER1；real C1/retained、validator/eligibility/release/network/device全部0，
+retry/fallback0。成功仅表示`FRESH_M1_SYNTHETIC_INTEGRATION_QUALIFIED_NOT_RETAINED_ELIGIBLE`并停Planner门，不进入M1-R1。Planner stop exact
+`B2_M1_I1_S1_FRESH_SYNTHETIC_INTEGRATION_WAITING_PLANNER_REVIEW`。
 
 ### REF-P7-25-R2-B2-M1-R1：fresh real-input manifest-only execution
 
@@ -4998,10 +5015,11 @@ rejected B2-M1-S1-C1-C1-C1-C1 result = PRE_EDIT_CODEGRAPH_PRODUCTION_OWNERSHIP_M
 rejected B2-M1-S1-C1-C1-C1-C1-C1 result = TARGETED_PRODUCTION_CANONICAL_JSON_PAYLOAD_VIOLATION; targeted12 pass/1 error
 accepted B2-M1-S1-C1-C1-C1-C1-C1-C1 result = REAL_MANIFEST_DOMAIN_OWNER_CANONICAL_JSON_VALIDATED; candidate c480c40 consumable
 rejected B2-M1-I1 result = CONTROLLER_GIT_COMMAND_DENIED; attempts/successes1/0; failure evidence immutable
-active task = REF-P7-25-R2-B2-M1-I1-C1 Git grammar correction
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-I1-C1-GIT-GRAMMAR-CORRECTION-V1
+accepted B2-M1-I1-C1 result = GIT_GRAMMAR_CORRECTION_WITH_PLANNER_PATCH_IDENTITY_SUPERSESSION; candidate0f4c09e consumable
+active task = REF-P7-25-R2-B2-M1-I1-S1 fresh synthetic integration successor
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-I1-S1-FRESH-SYNTHETIC-INTEGRATION-SUCCESSOR-V1
 active executable task count = 1
-next reference task = REF-P7-25-R2-B2-M1-I1-C1 ACTIVE_EXECUTION_AUTHORIZED
+next reference task = REF-P7-25-R2-B2-M1-I1-S1 ACTIVE_EXECUTION_AUTHORIZED
 selected state C shutter = 1/2500
 device/network/camera/light = forbidden by active PLAN
 release qualification/generation/copy/consumption = forbidden
