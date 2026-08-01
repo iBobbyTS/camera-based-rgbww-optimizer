@@ -1,144 +1,171 @@
-# P7 retained-R3 Option B：M1 repo-owned real-manifest-v2 domain-template owner
+# P7 retained-R3 Option B：M1-C1 existing-root identity owner correction
 
 **计划状态：** `ACTIVE_EXECUTION_AUTHORIZED_AFTER_ORCHESTRATOR_ACTIVATION`
 
 **Planner 日期：** `2026-07-31`
 
-**Reference task：** `REF-P7-25-R2-B2-M1`
+**Reference task：** `REF-P7-25-R2-B2-M1-C1`
 
 **Contract：**
-`P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-REAL-MANIFEST-DOMAIN-TEMPLATE-V1`
+`P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-C1-EXISTING-ROOT-IDENTITY-OWNER-V1`
 
-**当前唯一动作：** 在 Orchestrator 建立 exact activation commit 后，Executer 仅新增一个 pure/deterministic/effect-free
-real-manifest-v2 controller template owner及其 dedicated test，完成冻结验证、exact two-path implementation commit与一次 ER
-handoff，然后停止在 Planner 验收门。
+**当前唯一动作：** 在 Orchestrator 建立 exact activation commit 后，Executer 只扩展既有 P3 provenance-I/O owner与P4
+controller-conformance owner，使generated controller能以typed、no-follow、fail-closed方式取得并静态证明existing `0700` roots；完成exact
+four-path实现、冻结验证、唯一implementation commit与一次ER handoff后停止。
 
 **唯一 Planner stop：**
-`B2_M1_REAL_MANIFEST_DOMAIN_TEMPLATE_OWNER_WAITING_PLANNER_REVIEW`。
+`B2_M1_C1_EXISTING_ROOT_IDENTITY_OWNER_WAITING_PLANNER_REVIEW`。
 
 **本轮新归档：**
-`.agent-work/PLANS/20260731-2057-p7-retained-r3-b2-p7-i1-acceptance-route-transition.md`；bytes `2871`，SHA-256
-`3d5b8934cd03ce94fb164c9693fb361da251a64ccc3ed06ae573f461e953e0cc`；不得覆盖 earlier archives。
+`.agent-work/PLANS/20260731-2111-p7-retained-r3-b2-m1-existing-root-owner-gap-review.md`；bytes `4516`，SHA-256
+`a6c4524fabed4935c67f68264d289ee6acdbdd6dbadb017017c16f93ec0596bf`；不得覆盖 earlier archives。
 
-`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_m1_real_manifest_domain_template_v1","reference_task_id":"REF-P7-25-R2-B2-M1","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-REAL-MANIFEST-DOMAIN-TEMPLATE-V1","execution_authorized_after_orchestrator_activation":true,"activation_commit":{"expected_parent":"9b23dbd17d5b29ddeb68b55334ade2f1815fa141","expected_subject":"chore(plan): activate real manifest domain owner","expected_changed_paths":[".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/PLANS/20260731-2057-p7-retained-r3-b2-p7-i1-acceptance-route-transition.md"],"clean_porcelain_required_after_activation":true},"implementation_commit":{"expected_parent_source":"current_activation_head_runtime","expected_subject":"feat(p7): own real manifest domain template","expected_changed_paths":["src/camera_based_rgbww_optimizer/utils/p7_retained_r3_real_manifest_domain_template.py","tests/test_p7_retained_r3_real_manifest_domain_template.py"],"single_commit":true,"clean_porcelain_required_after_commit":true},"required_full_machine_state":{"active_task_count":1,"active_task":"REF-P7-25-R2-B2-M1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-REAL-MANIFEST-DOMAIN-TEMPLATE-V1","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","real_manifest_domain_owner_status":"ACTIVE_IMPLEMENTATION","executer_dispatched":true,"device_authorized_by_this_file":false},"exact_write_paths":["src/camera_based_rgbww_optimizer/utils/p7_retained_r3_real_manifest_domain_template.py","tests/test_p7_retained_r3_real_manifest_domain_template.py"],"builder_contract":{"module":"camera_based_rgbww_optimizer.utils.p7_retained_r3_real_manifest_domain_template","entrypoint":"build_real_manifest_domain_template","exports":["RealManifestDomainTemplateError","RealManifestGitPathIdentity","RealManifestCommitIdentity","RealManifestInputIdentity","RealManifestBaselineIdentity","RealManifestDomainTemplateSpec","RealManifestDomainTemplateBundle","build_real_manifest_domain_template"],"input_type":"RealManifestDomainTemplateSpec","output_type":"RealManifestDomainTemplateBundle","output_fields":["template_source","template_sha256","replacement_statement","replacement_sha256","runtime_request","expected_bound_results","expected_artifact_names","expected_lifecycle_order"],"frozen_dataclasses":true,"pure_in_memory":true,"assignment_name":"REAL_MANIFEST_CONTRACT","validation_function":"require_real_manifest_contract","runtime_request_type":"ControllerRuntimeRequest","generic_path_allowlist":false,"parallel_owner":false},"canonical_source_contract":{"strict_utf8":true,"ast_parse":true,"builtin_compile":true,"golden_template_and_replacement_sha256_literals_required":true,"schema":"p7_retained_r3_audit_provenance_manifest_v2","status":"sealed_subordinate_provenance_evidence","exact_artifact_names":["retained-r3-audit-provenance-manifest-v2.json","retained-r3-audit-provenance-manifest-v2.sha256.json","terminal-evidence.json","terminal-evidence.sha256.json","execution-result-admission.json"],"final_root_file_count":5,"single_output_root":true,"output_root_create_calls":1,"c1_input_labels":["path_owner_index","path_owner_index_seal","terminal_evidence","terminal_evidence_seal"],"retained_input_labels":["current_lineage_candidate","resolved_formal_plan","setup_lineage_release"],"c1_reads":4,"retained_reads":3,"input_reads_total":7,"controller_read_only_git_invocations":56,"git_success_field":"exit_code","runtime_returncode_uses":0,"persist_canonical_json_calls":5,"output_reload_reads":5,"read_exact_file_calls":12,"root_chain_file_count":5,"lifecycle_order":["conformance","activation","root","inputs","evaluate","terminal","terminal_seal","admission"],"retry":0,"fallback":0,"canonical_validator_calls":0,"eligibility_emissions":0,"release_operations":0},"validation_codes":["invalid_spec","reference_task_mismatch","contract_mismatch","commit_identity_invalid","git_path_identity_invalid","baseline_identity_invalid","input_identity_invalid","activation_identity_mismatch","c1_cardinality_mismatch","c1_label_mismatch","retained_cardinality_mismatch","retained_label_mismatch","path_collision","path_not_absolute","path_not_direct_child","byte_count_invalid","sha256_invalid","blob_oid_invalid","mode_invalid","source_path_invalid","output_root_invalid","repo_root_invalid","process_argv_mismatch","literal_type_invalid"],"test_contract":{"new_test_methods":13,"targeted_command":".venv/bin/python -m unittest tests.test_p7_retained_r3_real_manifest_domain_template","targeted_expected":13,"focused_command":".venv/bin/python -m unittest tests.test_p7_retained_r3_provenance_io tests.test_p7_retained_r3_controller_conformance tests.test_p7_retained_r3_controller_runtime tests.test_p7_retained_r3_controller_domain_template tests.test_p7_retained_r3_real_manifest_domain_template","focused_expected":74,"compileall_command":".venv/bin/python -m compileall -q src tests","full_command":"PYTHONUNBUFFERED=1 .venv/bin/python -m unittest discover -s tests -p 'test_*.py'","full_baseline":778,"full_expected":791,"postcommit_targeted_expected":13},"codegraph_contract":{"pre_edit_sync":1,"pre_edit_query":1,"post_edit_sync":1,"post_edit_query":1,"sync_before_query":true,"query_before_source_edit":true},"execution_budgets":{"implementation_commits":1,"execution_result_appends":1,"test_invocations":4,"compileall_invocations":1,"codegraph_sync":2,"codegraph_queries":2,"retry":0,"fallback":0},"zero_budgets":{"third_code_test_path_writes":0,"p3_owner_edits":0,"p4_owner_edits":0,"p5_owner_edits":0,"p7_owner_edits":0,"second_writer":0,"second_analyzer":0,"second_classifier":0,"second_serializer":0,"second_lifecycle":0,"external_controller_writes":0,"external_controller_reads":0,"external_controller_processes":0,"external_root_creates":0,"external_root_reads":0,"synthetic_integration_runs":0,"accepted_c1_physical_reads":0,"retained_artifact_physical_reads":0,"git_provenance_replay":0,"real_b2_dispatch":0,"subordinate_manifest_writes":0,"actual_canonical_validator_calls":0,"canonical_validator_callbacks":0,"eligibility_emissions":0,"retained_release_audit":0,"release_generation":0,"release_qualification":0,"release_copy":0,"release_consumption":0,"network":0,"dns":0,"environment":0,"credentials":0,"device":0,"camera":0,"ray":0,"strip":0,"cleanup":0,"capture":0,"formal":0,"public_analyzer":0,"td_c":0,"sentinel":0,"p8":0,"firmware":0,"deployment":0,"plan_writes_by_executer":0,"full_writes_by_executer":0,"archive_writes_by_executer":0,"debug_writes":0,"guide_writes":0,"research_writes":0},"expected_duration":"under_10_minutes","visible_terminal_required":false,"archive":{"path":".agent-work/PLANS/20260731-2057-p7-retained-r3-b2-p7-i1-acceptance-route-transition.md","bytes":2871,"sha256":"3d5b8934cd03ce94fb164c9693fb361da251a64ccc3ed06ae573f461e953e0cc"},"planner_stop":"B2_M1_REAL_MANIFEST_DOMAIN_TEMPLATE_OWNER_WAITING_PLANNER_REVIEW"}`
+`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b2_m1_c1_existing_root_identity_owner_v1","reference_task_id":"REF-P7-25-R2-B2-M1-C1","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-C1-EXISTING-ROOT-IDENTITY-OWNER-V1","execution_authorized_after_orchestrator_activation":true,"activation_commit":{"expected_parent":"195afbe54caeda01fcf65af4d97604665d5e7adb","expected_subject":"chore(plan): activate existing root identity owner correction","expected_changed_paths":[".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/PLANS/20260731-2111-p7-retained-r3-b2-m1-existing-root-owner-gap-review.md"],"clean_porcelain_required_after_activation":true},"implementation_commit":{"expected_parent_source":"current_activation_head_runtime","expected_subject":"feat(p7): own existing root identity acquisition","expected_changed_paths":["src/camera_based_rgbww_optimizer/utils/p7_retained_r3_controller_conformance.py","src/camera_based_rgbww_optimizer/utils/p7_retained_r3_provenance_io.py","tests/test_p7_retained_r3_controller_conformance.py","tests/test_p7_retained_r3_provenance_io.py"],"single_commit":true,"clean_porcelain_required_after_commit":true},"required_full_machine_state":{"active_task_count":1,"active_task":"REF-P7-25-R2-B2-M1-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-C1-EXISTING-ROOT-IDENTITY-OWNER-V1","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","real_manifest_domain_owner_status":"BLOCKED_ON_EXISTING_ROOT_IDENTITY_OWNER","existing_root_identity_owner_status":"ACTIVE_IMPLEMENTATION","executer_dispatched":true,"device_authorized_by_this_file":false},"exact_write_paths":["src/camera_based_rgbww_optimizer/utils/p7_retained_r3_controller_conformance.py","src/camera_based_rgbww_optimizer/utils/p7_retained_r3_provenance_io.py","tests/test_p7_retained_r3_controller_conformance.py","tests/test_p7_retained_r3_provenance_io.py"],"p3_contract":{"entrypoint":"read_existing_root","return_type":"DirectoryIdentity","absolute_canonical_path":true,"lstat_no_follow_calls":1,"required_mode":448,"create_calls":0,"open_calls":0,"child_reads":0,"child_enumeration":0,"repair_calls":0,"dependency_injection":true,"stable_codes":["invalid_path","root_not_absolute","root_not_canonical","root_lstat_failed","root_not_directory","root_mode_mismatch"]},"p4_contract":{"recognized_owner_call":"read_existing_root","owner_result_type":"DirectoryIdentity","effect_owned":true,"direct_bound_name_required":true,"exact_unaliased_import_required":true,"live_read_root":true,"multiple_live_roots_allowed":true,"direct_constructor_allowed":false,"attribute_call_allowed":false,"local_shadow_allowed":false,"alias_allowed":false,"reflection_allowed":false,"generic_transport_allowed":false,"container_transport_allowed":false,"nested_call_allowed":false,"rootless_read_allowed":false,"existing_codes_preserved":true,"new_codes":["existing_root_owner_import_invalid","existing_root_owner_call_invalid"]},"test_contract":{"new_p3_test_methods":4,"new_p4_test_methods":5,"new_test_methods_total":9,"targeted_command":".venv/bin/python -m unittest tests.test_p7_retained_r3_provenance_io tests.test_p7_retained_r3_controller_conformance","targeted_expected":41,"focused_command":".venv/bin/python -m unittest tests.test_p7_retained_r3_provenance_io tests.test_p7_retained_r3_controller_conformance tests.test_p7_retained_r3_controller_runtime tests.test_p7_retained_r3_controller_domain_template","focused_expected":58,"compileall_command":".venv/bin/python -m compileall -q src tests","full_command":"PYTHONUNBUFFERED=1 .venv/bin/python -m unittest discover -s tests -p 'test_*.py'","full_baseline":778,"full_expected":787,"postcommit_targeted_expected":41},"codegraph_contract":{"pre_edit_sync":1,"pre_edit_query":1,"post_edit_sync":1,"post_edit_query":1,"sync_before_query":true,"query_before_source_edit":true},"execution_budgets":{"implementation_commits":1,"execution_result_appends":1,"test_invocations":4,"compileall_invocations":1,"codegraph_sync":2,"codegraph_queries":2,"retry":0,"fallback":0},"zero_budgets":{"m1_source_test_writes":0,"m1_implementation_commits":0,"third_owner":0,"generic_path_allowlist":0,"accepted_c1_physical_reads":0,"retained_artifact_physical_reads":0,"external_controller_writes":0,"external_controller_reads":0,"external_controller_processes":0,"external_root_creates":0,"external_root_reads":0,"synthetic_integration_runs":0,"git_provenance_replay":0,"real_b2_dispatch":0,"subordinate_manifest_writes":0,"actual_canonical_validator_calls":0,"canonical_validator_callbacks":0,"eligibility_emissions":0,"retained_release_audit":0,"release_generation":0,"release_qualification":0,"release_copy":0,"release_consumption":0,"network":0,"dns":0,"environment":0,"credentials":0,"device":0,"camera":0,"ray":0,"strip":0,"cleanup":0,"capture":0,"formal":0,"public_analyzer":0,"td_c":0,"sentinel":0,"p8":0,"firmware":0,"deployment":0,"plan_writes_by_executer":0,"full_writes_by_executer":0,"archive_writes_by_executer":0,"debug_writes":0,"guide_writes":0,"research_writes":0},"expected_duration":"under_10_minutes","visible_terminal_required":false,"archive":{"path":".agent-work/PLANS/20260731-2111-p7-retained-r3-b2-m1-existing-root-owner-gap-review.md","bytes":4516,"sha256":"a6c4524fabed4935c67f68264d289ee6acdbdd6dbadb017017c16f93ec0596bf"},"planner_stop":"B2_M1_C1_EXISTING_ROOT_IDENTITY_OWNER_WAITING_PLANNER_REVIEW"}`
 
-## 1. Activation gate 与 exact scope
+## 1. Review decision 与 activation gate
 
-Executer 开始时必须验证 activation 是 parent
-`9b23dbd17d5b29ddeb68b55334ade2f1815fa141` 的 direct child、subject exact、changed paths exact three、
-PLAN/FULL machine rows strict JSON且 required FULL subset exact，随后 porcelain clean。任一不符必须在 source/test read或edit前停止。
+上一M1结果判定为
+`REJECTED_EXISTING_ROOT_IDENTITY_OWNER_MISSING_M1_NOT_IMPLEMENTED`。Executer正确在required CodeGraph query后、任何source/test edit前fail closed：
+P3没有existing-root acquisition API，而P4只把effect-owned `DirectoryIdentity` name视为live read root；M1同时需要七个existing roots、output create
+exact1、P3/P4 edits0，合同不可满足。该结果不接受M1，也不消耗M1实现机会。
 
-本包只允许新增：
+Executer开始本包前必须验证activation是parent
+`195afbe54caeda01fcf65af4d97604665d5e7adb`的direct child，subject exact，changed paths exact
+FULL/PLAN/本archive三项，PLAN/FULL machine rows strict JSON且required FULL subset exact，porcelain clean。任一不符须在CodeGraph/source/test
+读取或编辑前做single ER handoff并停止。
 
-1. `src/camera_based_rgbww_optimizer/utils/p7_retained_r3_real_manifest_domain_template.py`；
-2. `tests/test_p7_retained_r3_real_manifest_domain_template.py`。
+本包是pure-offline engineering/security boundary correction，不命中AGENTS高危设备授权，不需Human或Advisor。它只授权exact four paths：
 
-不得编辑 existing P3 provenance I/O、P4 conformance/lifecycle、P5 runtime、P7 synthetic template或其他路径。M1 implementation
-commit须为activation direct child、exact two paths、subject `feat(p7): own real manifest domain template`。Executer不得修改PLAN/FULL/archive。
+1. `src/camera_based_rgbww_optimizer/utils/p7_retained_r3_provenance_io.py`；
+2. `tests/test_p7_retained_r3_provenance_io.py`；
+3. `src/camera_based_rgbww_optimizer/utils/p7_retained_r3_controller_conformance.py`；
+4. `tests/test_p7_retained_r3_controller_conformance.py`。
 
-## 2. CodeGraph 与 maintainability preflight
+Implementation commit必须是activation direct child，subject exact
+`feat(p7): own existing root identity acquisition`，changed paths按machine row lexicographic exact four。不得修改M1 module/test、P5/P7、PLAN/FULL/archive、
+debug或任何其他路径。
 
-因repo存在`.codegraph/`，activation gate后、读取或编辑source/test前，必须先运行一次`codegraph sync`，再运行一次精确query，覆盖
-P3 `canonical_json_bytes/create_exclusive_root/persist_canonical_json/read_exact_file/run_read_only_git`、P4
-`analyze_controller_source/validate_root_identity_chain/execute_controller_lifecycle`、P5 `ControllerRuntimeRequest`及P7 builder pattern；query还须确认
-新module/test此前absent。不得先grep/read再补sync。
+## 2. CodeGraph 与 maintainability boundary
 
-编辑完成后再执行一次`codegraph sync`和一次针对新owner/import/call graph的精确query，证明没有新增第二writer/analyzer/classifier/
-serializer/lifecycle且只依赖既有owners。两次sync均须成功；不得把CodeGraph failure降级为warning。
+Activation gate后、source/test read或edit前，先运行一次`codegraph sync`，再运行一次精确query，覆盖P3
+`DirectoryIdentity/_path/_directory_identity/_require_root/create_exclusive_root/read_exact_file/ProvenanceDependencies`与P4
+`_CALL_OWNERS/_OWNER_TYPES/analyze_controller_source/root_names/root_reads/effect_bindings/effect_transport_uses`，确认没有public existing-root owner以及
+current shared-root rejection。不得以grep/read替代或先读后补。
 
-维护性边界冻结为：新module只拥有typed immutable spec、canonical controller template/replacement与runtime request composition；P3独占physical
-I/O/canonical serialization，P4独占AST conformance/root-chain/lifecycle，P5独占source persistence/process execution。不得复制这些实现，亦不得新增
-generic dict payload、generic path allowlist或external one-off controller。
+编辑后再运行一次`codegraph sync`与一次精确query，证明：P3仍是唯一physical provenance-I/O owner；P4仍是唯一static analyzer/effect provenance
+owner；`read_existing_root`只有P3 definition且由P4 exact识别；无第三owner、second analyzer、generic allowlist、parallel framework或M1 edit。两次sync/query都
+必须exit0，不得降级warning。
 
-## 3. Public API、typed identities 与 fail-closed validation
+维护性边界：P3拥有no-follow filesystem observation及typed identity；P4只拥有source AST与effect provenance；未来M1只消费这些owners。不得把lstat、
+path validation或identity construction复制进P4/M1，也不得把AST/import classifier放进P3。
 
-`__all__`必须逐字节等于machine row的8项exports。所有dataclass都必须`frozen=True`，nested collections只能是tuple，builder不得mutate input。
+## 3. P3 exact public `read_existing_root` owner
 
-- `RealManifestGitPathIdentity`字段 exact：`repo_path,before_blob_oid,after_blob_oid,before_sha256,after_sha256,binary_patch_sha256`；
-- `RealManifestCommitIdentity`字段 exact：`commit,parent,subject,changed_paths,full_patch_sha256`；
-- `RealManifestInputIdentity`字段 exact：`label,path,byte_count,sha256,device,inode,mode,root_path,root_device,root_inode,root_mode`；
-- `RealManifestBaselineIdentity`字段 exact：`release_checkpoint,helper_v1,integration,helper_path,test_path,seam_chain,governance_manifest_sha256,guide_sha256,advisor_decision_sha256,advisor_attachment_sha256,human_governance_override,helper_disposition`；
-- `RealManifestDomainTemplateSpec`字段 exact：`reference_task_id,contract_id,activation,baseline,c1_inputs,retained_inputs,source_path,output_root,repo_root,process_argv`；
-- `RealManifestDomainTemplateBundle`字段 exact：machine row `output_fields`的8项。
+在P3现有public surface新增并只新增：
 
-Spec必须要求task/contract exact；activation/baseline/paths/hashes/blob OIDs/bytes/device/inode/modes/type exact并使用machine row稳定错误码。
-C1 tuple必须exact4且labels/order exact；retained tuple必须exact3且labels/order exact。每组path必须absolute canonical direct child of its frozen root，七条输入
-path与source/output不得碰撞；file mode exact0600、root mode exact0700、bytes正数。Repo paths必须canonical relative且由typed identity逐项绑定，绝不接受
-generic allowlist。`process_argv` exact `(repo_root + "/.venv/bin/python", "-")`。
+```python
+def read_existing_root(
+    path: os.PathLike[str] | str,
+    *,
+    dependencies: Mapping[str, Callable[..., Any]] | None = None,
+) -> DirectoryIdentity: ...
+```
 
-## 4. Generated real-manifest controller contract
+函数必须复用现有`_dependencies`、`_path`、`_directory_identity/_directory_from_stat`安全边界并返回exact existing frozen
+`DirectoryIdentity(path,device,inode,mode)`；加入现有`__all__`（若module使用显式export surface）。行为冻结为：
 
-Builder只能返回immutable bytes/hash/replacement/`ControllerRuntimeRequest`；调用builder本身的filesystem、process、Git、external artifact与network effects
-必须为0。Template assignment exact `REAL_MANIFEST_CONTRACT`且只出现一次，紧邻唯一`require_real_manifest_contract`调用；replacement为canonical
-Python literal、无physical NUL/CR/LF escape drift。Dedicated test必须用literal golden SHA-256冻结template与replacement exact bytes，并strict UTF-8、AST parse、
-`compile()`以及`compose_controller_source()`重验。
+- 输入必须是exact可转换为`str`的absolute lexical canonical path。原始text必须以`/`开头，反斜杠、physical NUL、空segment（除leading root）、`.`、
+  `..`、重复slash、trailing slash（root自身除外）或`str(Path(text)) != text`均fail closed；relative为`root_not_absolute`，非canonical为
+  `root_not_canonical`，unsupported/NUL为existing `invalid_path`。不得调用`resolve()`、`realpath()`或任何follow-symlink API。
+- 对通过lexical gate的path调用dependency-injected `lstat` exact1。`FileNotFoundError`、permission及其他`OSError`均映射existing
+  `root_lstat_failed`；symlink或非physical directory为`root_not_directory`；`stat.S_IMODE != 0o700`为`root_mode_mismatch`。
+- 成功时typed identity字段必须逐项来自该次lstat且path为输入canonical text。函数自身`mkdir/chmod/chown/rename/unlink/open/fstat/read/write/fsync/
+  close/listdir/glob/walk/process/network`调用全0；不创建parent、不修复mode、不打开root、不枚举或读取child。
+- 该identity只是采样时刻的能力证据，不承诺永久稳定。后续`read_exact_file(..., root=identity)`必须继续通过existing `_require_root`做fresh
+  lstat identity equality；symlink/rebind/mode/device/inode drift仍报existing `root_identity_drift`或更早existing root error。不得cache或绕开二次验证。
 
-Generated controller只可imports/calls P3/P4 owner surface和Python builtins；不得import/call canonical validator、exact-five validator callback、eligibility、
-release、network/device/science或P7 synthetic owner。Static AST inventory必须exact冻结：Git owner calls56且只读`exit_code`；input reads7（C1=4、retained=3）；
-output reload reads5；`read_exact_file` total12；`persist_canonical_json`5；output root create1；root-chain exact one并包含5个output identities；lifecycle exact one、
-order exact8、retry/fallback0。Generated source不得读`returncode`，不得transport/alias/containerize effect-owned identities；P4 report
-`effect_transport_uses=()`。
+`create_exclusive_root`、`read_exact_file`、persist、canonical JSON、Git owner的既有行为与错误码必须byte-semantically unchanged。
 
-Git56必须从typed baseline与activation identity构造exact command/expected-output checks，绑定full child/parent/subject/path set、before/after blobs、
-canonical/full/per-path patches、helper v1 disposition、release checkpoint与accepted seam chain；不得以generic path allowlist替代逐项identity。Manifest payload必须
-冻结schema/status、baseline chain、C1 four、retained three及before/after physical identities。Real input values只能来自future spec；M1本包不得读取real C1或retained。
+## 4. P4 exact effect provenance extension
 
-Output root exact five direct regular0600 canonical compact sorted UTF-8 JSON+LF artifacts：manifest、manifest seal、terminal、terminal seal、admission。
-每次persist后须strict root-bound reload、duplicate/non-finite rejection与byte/hash equality；root before/after identity chain必须一致。Manifest/seal一旦persist不可
-rewrite/repair/replace/relocate。Schema/status exact machine row values；payload不得含eligibility、release consumability、validator pass或device authorization claim。
+P4只能在现有`analyze_controller_source`与owner metadata内做最小扩展：
 
-任何conformance/activation/root/inputs/evaluate primary failure必须保持原exception identity为dominant；只有既有P4 lifecycle可生成failure terminal/seal/admission，
-terminal或seal failure阻止admission。不得fallback/retry/second root/second process。
+- `_CALL_OWNERS`加入exact `read_existing_root -> DirectoryIdentity`。只有一个由exact unaliased
+  `from camera_based_rgbww_optimizer.utils.p7_retained_r3_provenance_io import ... read_existing_root ...`引入、且以direct `ast.Name`
+  `read_existing_root(...)`调用并direct赋给single local name的结果，才能进入`effect_bindings`与live `root_names`。
+- Import missing/duplicate/aliased/wildcard/wrong-module，attribute call，local def/argument/assignment/class shadow，或其他不能证明canonical owner import的形状必须在该
+  result进入effect set前以`existing_root_owner_import_invalid`或`existing_root_owner_call_invalid` fail closed。不得建立generic module/callee/path allowlist。
+- `read_exact_file(..., root=<name>)`仍必须含exact一个named keyword，root值必须是direct `ast.Name`且绑定为effect-owned
+  `DirectoryIdentity`；rootless、positional、constructor、nested owner call、alias、tuple/list/dict/container、closure/callback、generic helper transport、reflection
+  和rebind继续使用existing rejection或上述new exact codes。
+- 移除“所有read必须共享一个root”的过度约束，允许多个分别由`create_exclusive_root`或exact `read_existing_root`直接取得的live root names；
+  `ControllerConformanceReport.root_reads`和`transport.effect_bindings`必须逐项、deterministic sorted报告每个file-result/root与root owner call provenance，不能折叠。
+- Existing output-root路径保持不变：`create_exclusive_root`仍是唯一creation owner；它返回的root仍可用于persist/reload reads；
+  `RootIdentityChain`仍只接受effect-owned before/files/after且必须exact validate；新增existing-root API不得把fixture constructor升级为effect、不得放宽
+  effect alias/container/generic transport、不得改变owner fields/public method schema或`effect_transport_uses=()`成功条件。
+
+P4不得调用filesystem API，P3不得解析source。Future M1的7 existing reads与output readbacks才可使用本能力；本包自身不得生成、运行或修改M1。
 
 ## 5. Dedicated regression contract
 
-Dedicated file必须exact13个meaningful `unittest` methods，并冻结method names/inventory，至少逐项覆盖：
+保持现有test methods与assertions；只新增exact `4`个P3 methods和`5`个P4 methods，最终P3 `22`、P4 `19`、合计targeted `41`。新methods
+必须冻结name inventory并有meaningful assertions，不得只执行代码：
 
-1. exact exports、dataclass fields/frozen/deep tuple contract；
-2. deterministic build、exact template/replacement bytes与literal SHA；
-3. exact runtime request、source/output/process binding且builder no-effect；
-4. invalid spec/task/contract/type stable codes；
-5. invalid commit/blob/SHA/path/bytes/mode/root identity stable codes；
-6. activation与baseline chain exact typed binding、no generic allowlist；
-7. C1 exact4 labels/order/direct-child/uniqueness与hash cardinality；
-8. retained exact3 names/order/direct-child/uniqueness与frozen hashes；
-9. schema/status/exact5 artifact names与canonical manifest/seal/terminal/admission；
-10. owner imports/calls与Git56/`exit_code`/no`returncode` AST inventory；
-11. P4 bound-result/root-read/root-chain/effect-transport canonical inventory；
-12. lifecycle exact order、primary-failure dominance、terminal/seal admission blocking、retry0；
-13. no-I/O/no-authority negative surface，以及generated strict compile和fully fake success/failure runnable lifecycle。
+### P3 four methods
 
-Fake runnable test只能inject in-memory/fake owners，不得创建external root/process或读取任何real C1/retained evidence。Assertions必须验证实际payload、call counts、
-identity/hash与exception dominance，不能只执行代码。
+1. public signature/export、frozen typed result、valid absolute canonical root、device/inode/mode/path逐项、dependency lstat exact1及所有create/open/read/repair
+   counters0；
+2. invalid type/NUL/relative/noncanonical matrix（double slash、trailing slash、`.`、`..`、backslash等），逐项stable code并证明lstat0；
+3. missing/permission lstat、symlink、regular file/FIFO、wrong modes matrix，逐项stable code、lstat exact1、无repair/follow/open；
+4. acquired identity交给real/fake `read_exact_file` direct-child positive，并覆盖root inode/device/mode/rebind或symlink drift fail closed，证明fresh identity revalidation，
+   file open/read在root drift时0。
 
-## 6. Exact validation、commit 与 evidence
+### P4 five methods
 
-按此顺序各运行一次，任一nonzero立即停且不得以较窄green覆盖：
+1. exact canonical import+direct owner call+direct read root positive，冻结bound result、root_reads、effect binding call provenance与empty transport violations；
+2. multiple separately acquired existing roots及existing+created output root positive，冻结每个read/root映射、deterministic report并证明不恢复shared-root restriction；
+3. import missing/wrong/duplicate/alias/wildcard、attribute call、local shadow/generic same-name function逐项以new stable codes在accept前拒绝；
+4. constructor/nested/alias/rebind/container/reflection/generic helper/rootless/positional/non-name root negatives继续以exact existing codes拒绝；
+5. existing created-root read与RootIdentityChain positive/negative regressions、owner schema/import source AST inventory，以及effect-owned identity不可逃逸；证明P5/P7既有
+   generated source conformance不漂移。
 
-1. targeted：`.venv/bin/python -m unittest tests.test_p7_retained_r3_real_manifest_domain_template`，exact `13/13`；
-2. focused：machine row command，exact `74/74`；
-3. compileall：machine row command，exit0；
-4. full discovery：machine row command，基线`778`加13，exact `791/791`且唯一`OK`；
-5. post-edit CodeGraph sync/query与`git diff --check`；
-6. stage exact two paths并创建唯一implementation commit；
-7. postcommit targeted exact `13/13`，并证明commit direct parent、subject、exact paths、worktree clean。
+Tests只能使用`tempfile`或fully fake dependency/source bytes；不得读取accepted C1、retained R3或external roots。不要新增test helper framework或第三test path。
 
-不得运行第五次test、第二次compileall、第三次CodeGraph sync/query或retry。通过或失败均只向
-`.agent-work/EXECUTION_RESULT.md`做一次EOF append，记录activation/implementation topology、before absent/after bytes/SHA/blob、golden template/replacement identity、
-API/AST/call inventory、四组test exit/count、CodeGraph/diff、zero budgets与first failure。Executer不得自行接受M1或进入M1-I1。
+## 6. Exact validation、commit 与 ER evidence
 
-## 7. Hard locks、failure branches 与授权
+编辑完成后严格依次、每项exact一次，任一nonzero或count mismatch立即停止，不得retry或以narrow green覆盖：
 
-本包是纯离线工程实现，不命中AGENTS高危设备授权，也不需要Advisor科学决策或Human批准；但它不授权任何device/light操作。
+1. targeted：`.venv/bin/python -m unittest tests.test_p7_retained_r3_provenance_io tests.test_p7_retained_r3_controller_conformance`，exact
+   `41/41`；
+2. focused：`.venv/bin/python -m unittest tests.test_p7_retained_r3_provenance_io tests.test_p7_retained_r3_controller_conformance tests.test_p7_retained_r3_controller_runtime tests.test_p7_retained_r3_controller_domain_template`，exact `58/58`；
+3. compileall：`.venv/bin/python -m compileall -q src tests`，exit0；
+4. full discovery：`PYTHONUNBUFFERED=1 .venv/bin/python -m unittest discover -s tests -p 'test_*.py'`，current baseline `778` + new9 = exact
+   `787/787`且唯一`OK`；
+5. post-edit CodeGraph sync/query与`git diff --check`，并验证unstaged diff exact four paths；
+6. stage exact four paths，创建唯一implementation commit；
+7. postcommit targeted exact `41/41`，验证direct parent、subject、changed paths、blob identities与porcelain clean。
 
-Real C1/retained physical reads、external controller/root/process、M1-I1 synthetic integration、real B2、manifest actual seal、canonical validator/callback、eligibility、
-retained audit、release、network/DNS/`.env`/credentials、camera/Ray/strip/cleanup/capture/FORMAL/public analyzer/TD-C/sentinel/P8/firmware/deployment全部0。
-Retained R3保持`RETAINED_UNVALIDATED_UNCONSUMED`，canonical validator仍是唯一eligibility owner。
+总test invocations4、compileall1、CodeGraph sync2/query2、implementation commit1、retry/fallback0。不得运行额外ad-hoc Python、pytest、test discovery、
+formatter或second correction。若现有method count与冻结baseline在任何edit前不符，视为gate failure，不自行改count。
 
-- activation/CodeGraph gate失败：code/test edits0，single ER handoff后停Planner；
-- implementation或precommit validation失败：保留exact two-path diff，不跨界修复、不commit、不retry，single ER handoff后停Planner；
-- commit后postcommit targeted或topology失败：保留该commit为non-consumable evidence，不amend/rebase，single ER handoff后停Planner；
-- 全绿：只报告candidate waiting Planner review；不得称retained eligible或解锁M1-I1。
+无论通过/失败，只向`.agent-work/EXECUTION_RESULT.md`做一次EOF append。记录activation topology、CodeGraph before/after、exact four-path before/after
+bytes/SHA/blob/diff、API/signature/errors、lstat/effect counters、P4 import/call/root provenance inventory、method inventory、四组test/compileall exit与count、commit
+topology、first failure及all zero budgets。旧ER bytes必须保持prefix exact；Executer不得改PLAN/FULL/archive/debug/GUIDE。
 
-维护性判断：M1新增一个typed pure domain owner与dedicated tests，依赖现有P3/P4/P5边界而不复制I/O或lifecycle；复杂度集中在immutable
-spec/template合同，13项回归和CodeGraph inventory覆盖边界，当前不建议另行重构。
+## 7. Hard locks、failure branches 与 next unlock
+
+本包的M1 source/test/commit全部0；它不会构造real manifest，不会读real inputs或运行controller。Accepted C1/retained physical reads、external
+controller/root/process、Git provenance replay、M1 implementation、M1-I1、real B2、manifest/seal写入、canonical validator/callback、eligibility、retained audit、
+release、network/DNS/`.env`/credentials、device/camera/Ray/strip/cleanup/capture/FORMAL/public analyzer/TD-C/sentinel/P8/firmware/deployment全部0。
+Retained R3保持`RETAINED_UNVALIDATED_UNCONSUMED`。
+
+- activation/CodeGraph/pre-edit count gate失败：source/test writes0、commit0，single ER handoff后停Planner；
+- implementation/precommit validation失败：保留exact four-path diff，不跨界修复、不commit、不retry，single ER handoff后停Planner；
+- commit后posttarget/topology失败：保留commit为non-consumable evidence，不amend/rebase，single ER handoff后停Planner；
+- 全绿：只报告M1-C1 candidate waiting Planner review，不得自行接受或进入M1。
+
+Planner若接受本correction，下一步是重新规划一个fresh M1 successor，使用新activation与accepted P3/P4 owner；不得复用被拒绝M1 activation，也不得由本PLAN
+直接执行M1。
+
+维护性判断：本包把existing-root物理身份 acquisition留在P3、静态能力证明留在P4，仅增加一个public effect owner与精确provenance分支；四加五项
+回归覆盖path/lstat/drift/import/transport/multi-root边界，不引入第三owner或framework，接受后无需额外重构。
