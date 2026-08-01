@@ -1,52 +1,63 @@
-# P7 retained-R3 Option B：R3-C1-S1 physical-EOF supersession
+# P7 retained-R3 Option B：R3-C1-R1 fresh typed owner correction
 
 **计划状态：** `WAITING_ORCHESTRATOR_ACTIVATION`
 
 **Planner 日期：** `2026-08-01`
 
-**Reference task：** `REF-P7-25-R2-B3-C3-C4-R3-C1-S1`
+**Reference task：** `REF-P7-25-R2-B3-C3-C4-R3-C1-R1`
 
-**Contract：** `P7-TD-B-RETAINED-R3-OPTION-B-B3-C3-C4-R3-C1-S1-PHYSICAL-EOF-SUPERSESSION-V1`
+**Contract：** `P7-TD-B-RETAINED-R3-OPTION-B-B3-C3-C4-R3-C1-R1-FRESH-TYPED-OWNER-CORRECTION-V1`
 
-**当前唯一动作：** 只用Git、ER与candidate identity核对R3-C1的只读预算超限及non-EOF placement，并在ER physical EOF追加一次canonical supersession。
+**当前唯一动作：** 不做新的pre-edit发现，直接在same exact-two candidate中关闭已冻结八findings，执行fresh targeted12/focused53/full822/compileall/CodeGraph post validation并提交实现。
 
-**唯一 Planner stop：** `B3_C3_C4_R3_C1_S1_PHYSICAL_EOF_SUPERSESSION_WAITING_PLANNER_REVIEW`。
+**唯一 Planner stop：** `B3_C3_C4_R3_C1_R1_FRESH_TYPED_OWNER_CORRECTION_WAITING_PLANNER_REVIEW`。
 
-**本轮新归档：** `.agent-work/PLANS/20260801-0918-p7-retained-r3-b3-c3-c4-r3-c1-non-eof-review.md`；bytes `3229`，SHA-256 `1f862ef75dafed278b16d061e1f860db0948ed96d5e83ff1ec0ab0c6f2d819c5`。
+**本轮新归档：** `.agent-work/PLANS/20260801-0926-p7-retained-r3-b3-c3-c4-r3-c1-s1-acceptance.md`；bytes `2871`，SHA-256 `3701930e115ef23f0e5f0de966fd4709bde934e2b4cf73e7a9d3ee63d1c83e8b`。
 
-`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b3_c3_c4_r3_c1_s1_physical_eof_supersession_v1","reference_task_id":"REF-P7-25-R2-B3-C3-C4-R3-C1-S1","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B3-C3-C4-R3-C1-S1-PHYSICAL-EOF-SUPERSESSION-V1","reviewed_r3_c1":{"activation":"ff372c136516fd785ec94adfeeb50063c3873c83","evidence":"b83ba49031d48c1545011fc7ca64910d636f575e","decision":"REJECTED_READ_ONLY_QUERY_BUDGET_EXCEEDED_AND_HANDOFF_NOT_AT_PHYSICAL_EOF","new_pre_edit_codegraph_queries":1,"budget":0,"patch_writes":0,"tests":0,"implementation_commits":0},"activation_commit":{"expected_parent":"b83ba49031d48c1545011fc7ca64910d636f575e","expected_subject":"chore(plan): supersede non-eof correction handoff","expected_changed_paths":[".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/PLANS/20260801-0918-p7-retained-r3-b3-c3-c4-r3-c1-non-eof-review.md"],"expected_untracked_after_activation":["src/camera_based_rgbww_optimizer/utils/p7_retained_r3_real_manifest_self_check.py","tests/test_p7_retained_r3_real_manifest_self_check.py"]},"candidate_identity":{"source":{"bytes":21578,"sha256":"e8e35afce150ac85cca816a6baf81c6b4dd394f061cfd93b44666f7c35842885"},"test":{"bytes":17922,"sha256":"d913b633093f49ada912a226917a6cb254baeaad40cef935a8fd67427f29a3fb"}},"er_identity":{"before":{"blob":"a91062d7a47b4e20e5bed0e2ad1badd8932b3ee7","bytes":1389034,"sha256":"4a3bfe71e531b98d2ed76adf70eb9b9fde390c9ed3a673191f5f16474f6aee23"},"after":{"blob":"ecd97ade34e5aa7402afbe945d7194307e9284b4","bytes":1392359,"sha256":"e1407040bf5d1c454706cf1e4242d034f243539118db1f4aebab391ceabcca2b"},"logical_prefix":{"lines":40,"bytes":2580,"sha256":"6c18f5e876c3eb59b63fa9f6ddf8d42a7513bc5254dc1231c6c84d20feeb6f14"},"inserted_block":{"starts_at_line":41,"lines":6,"bytes":3325,"sha256":"7ad28a388ec2f94e01ac128ed90b2ce854d97ad80c3aaf049ab6c37edb387c5d"},"preserved_suffix":{"starts_at_old_line":41,"starts_at_new_line":47,"lines":17705,"bytes":1386454,"sha256":"e69917f5a7017510bb9c0b5c79c77440d18bd5816300dd3ce856fb1d72229e58"},"final_256_sha256":"039f56395f2649fbce1ada716feb34f58394d11dd714f29d253de070bcdb5ed4"},"frozen_findings_after_s1":["FIXTURE_JSON_CONTAINER","DECODED_MAPPING_IDENTITY","REPORT_JSON_CONTAINER","PHYSICAL_ROOT_IDENTITY","TYPED_POSITION_LABELS","SEAM_KEY_COLLISION","DIFF_TREE_ORDER","REPORT_LEDGER_FACTS"],"success_contract":{"candidate_identity_exact":true,"activation_evidence_topology_exact":true,"extra_query_classification":"READ_ONLY_BUDGET_EXCESS_NO_CREDIT","non_eof_block_preserved":true,"preserved_suffix_exact":true,"canonical_supersession_at_physical_eof":true,"production_credit":false,"next_branch":"REF-P7-25-R2-B3-C3-C4-R3-C1-R1"},"execution_budgets":{"git_topology_queries":2,"candidate_identity_reads":2,"er_identity_reads":2,"er_line_comparisons":1,"er_placement_searches":1,"process_table_scans":1,"execution_result_tail_reads":1,"execution_result_apply_patch_appends":1,"execution_result_appends":1,"postappend_operations":0,"retry":0,"fallback":0},"zero_budgets":{"codegraph_queries":0,"codegraph_sync":0,"source_edits":0,"test_edits":0,"tests":0,"compileall":0,"implementation_commits":0,"old_block_edits":0,"er_rewrites":0,"real_artifact_reads":0,"retained_artifact_reads":0,"c1_artifact_reads":0,"external_root_reads":0,"external_root_writes":0,"validator_calls":0,"eligibility_emissions":0,"release_consumption":0,"network":0,"device":0,"camera":0,"ray":0,"strip":0,"formal":0,"public_analyzer":0,"plan_writes_by_executer":0,"full_writes_by_executer":0,"archive_writes_by_executer":0},"required_full_machine_state":{"active_task_count":1,"active_task":"REF-P7-25-R2-B3-C3-C4-R3-C1-S1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B3-C3-C4-R3-C1-S1-PHYSICAL-EOF-SUPERSESSION-V1","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","real_self_check_owner_status":"BLOCKED_ON_HANDOFF_SUPERSESSION","real_execution_status":"BLOCKED","synthetic_remainder_status":"BLOCKED","executer_dispatched":true,"device_authorized_by_this_file":false},"orchestrator_commit_after_handoff":{"owner":"ORCHESTRATOR","executer_must_not_commit":true,"expected_subject":"chore(evidence): supersede non-eof correction handoff","expected_changed_paths":[".agent-work/EXECUTION_RESULT.md"]},"authorization":{"classification":"PURE_OFFLINE_GIT_ER_SUPERSESSION","human_device_authorization_required":false,"advisor_scientific_decision_required":false},"expected_duration":"under_10_minutes","visible_terminal_required":false,"archive":{"path":".agent-work/PLANS/20260801-0918-p7-retained-r3-b3-c3-c4-r3-c1-non-eof-review.md","bytes":3229,"sha256":"1f862ef75dafed278b16d061e1f860db0948ed96d5e83ff1ec0ab0c6f2d819c5"},"planner_stop":"B3_C3_C4_R3_C1_S1_PHYSICAL_EOF_SUPERSESSION_WAITING_PLANNER_REVIEW"}`
+`PLAN_MACHINE_CONTRACT={"schema":"p7_td_b_retained_r3_option_b_b3_c3_c4_r3_c1_r1_fresh_typed_owner_correction_v1","reference_task_id":"REF-P7-25-R2-B3-C3-C4-R3-C1-R1","contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B3-C3-C4-R3-C1-R1-FRESH-TYPED-OWNER-CORRECTION-V1","accepted_s1":{"activation":"0ef6198038160ac19cfeaa780a289c9a9f0cd360","evidence":"3bc46c5a866d5f3f8d303224fcb582a4de630e8d","decision":"ACCEPTED_COMPLETE_PHYSICAL_EOF_SUPERSESSION","supersession_append_bytes":4133,"supersession_append_sha256":"0df6b914dca2988607d2adf403bbd6467beb410f93906d9c1443ed5cdd93591b","candidate_identity_exact":true,"production_credit":false},"activation_commit":{"expected_parent":"3bc46c5a866d5f3f8d303224fcb582a4de630e8d","expected_subject":"chore(plan): resume real self-check correction","expected_changed_paths":[".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/PLANS/20260801-0926-p7-retained-r3-b3-c3-c4-r3-c1-s1-acceptance.md"],"expected_untracked_after_activation":["src/camera_based_rgbww_optimizer/utils/p7_retained_r3_real_manifest_self_check.py","tests/test_p7_retained_r3_real_manifest_self_check.py"]},"candidate_before":{"source":{"path":"src/camera_based_rgbww_optimizer/utils/p7_retained_r3_real_manifest_self_check.py","bytes":21578,"sha256":"e8e35afce150ac85cca816a6baf81c6b4dd394f061cfd93b44666f7c35842885"},"test":{"path":"tests/test_p7_retained_r3_real_manifest_self_check.py","bytes":17922,"sha256":"d913b633093f49ada912a226917a6cb254baeaad40cef935a8fd67427f29a3fb"}},"exact_changed_paths":["src/camera_based_rgbww_optimizer/utils/p7_retained_r3_real_manifest_self_check.py","tests/test_p7_retained_r3_real_manifest_self_check.py"],"preserved_public_api":["RealManifestSelfCheckError","RealManifestGitFileBytes","RealManifestSelfCheckSpec","RealManifestSelfCheckReport","required_real_manifest_git_argv","run_real_manifest_self_check"],"frozen_findings":["FIXTURE_JSON_CONTAINER","DECODED_MAPPING_IDENTITY","REPORT_JSON_CONTAINER","PHYSICAL_ROOT_IDENTITY","TYPED_POSITION_LABELS","SEAM_KEY_COLLISION","DIFF_TREE_ORDER","REPORT_LEDGER_FACTS"],"orchestrator_provided_contract":true,"pre_edit_discovery":{"codegraph_queries":0,"codegraph_sync":0,"other_discovery_queries":0},"test_contract":{"targeted":{"module":"tests.test_p7_retained_r3_real_manifest_self_check","expected_tests":12,"invocations":1},"focused":{"modules":["tests.test_p7_retained_r3_provenance_io","tests.test_p7_retained_r3_real_manifest_domain_template","tests.test_p7_retained_r3_real_manifest_self_check"],"expected_tests":53,"invocations":1},"full":{"command":[".venv/bin/python","-m","unittest","discover","-s","tests","-v"],"expected_tests":822,"invocations":1},"postcommit_targeted":{"expected_tests":12,"invocations":1}},"implementation_commit":{"expected_parent_activation":true,"expected_subject":"fix(p7): correct real manifest self-check owner","expected_changed_paths":["src/camera_based_rgbww_optimizer/utils/p7_retained_r3_real_manifest_self_check.py","tests/test_p7_retained_r3_real_manifest_self_check.py"]},"execution_budgets":{"candidate_identity_reads":2,"source_apply_patch_writes":1,"test_apply_patch_writes":1,"targeted_suites":1,"focused_suites":1,"full_suites":1,"compileall":1,"codegraph_sync":1,"codegraph_post_queries":1,"diff_checks":1,"status_checks":1,"implementation_commits":1,"postcommit_targeted_suites":1,"process_table_scans":1,"execution_result_tail_reads":1,"execution_result_apply_patch_appends":1,"execution_result_appends":1,"postappend_operations":0,"retry":0,"fallback":0},"zero_budgets":{"pre_edit_codegraph_queries":0,"pre_edit_codegraph_sync":0,"pre_edit_discovery_queries":0,"other_source_writes":0,"other_test_writes":0,"old_one_off_contract_reads":0,"real_artifact_reads":0,"retained_artifact_reads":0,"c1_artifact_reads":0,"external_root_reads":0,"external_root_writes":0,"durable_log_writes":0,"filesystem_owner_additions":0,"process_runner_additions":0,"validator_additions":0,"validator_calls":0,"eligibility_emissions":0,"release_consumption":0,"network":0,"device":0,"camera":0,"ray":0,"strip":0,"formal":0,"public_analyzer":0,"plan_writes_by_executer":0,"full_writes_by_executer":0,"archive_writes_by_executer":0},"required_full_machine_state":{"active_task_count":1,"active_task":"REF-P7-25-R2-B3-C3-C4-R3-C1-R1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B3-C3-C4-R3-C1-R1-FRESH-TYPED-OWNER-CORRECTION-V1","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","real_self_check_owner_status":"ACTIVE_FRESH_BOUNDED_CORRECTION","real_execution_status":"BLOCKED_ON_R3_C1_R1_ACCEPTANCE","synthetic_remainder_status":"BLOCKED","executer_dispatched":true,"device_authorized_by_this_file":false},"orchestrator_commit_after_handoff":{"owner":"ORCHESTRATOR","executer_must_not_commit":true,"expected_subject":"chore(evidence): record fresh real self-check correction","expected_changed_paths":[".agent-work/EXECUTION_RESULT.md"]},"authorization":{"classification":"PURE_OFFLINE_FRESH_BOUNDED_CORRECTION","human_device_authorization_required":false,"advisor_scientific_decision_required":false},"expected_duration":"under_10_minutes","visible_terminal_required":false,"archive":{"path":".agent-work/PLANS/20260801-0926-p7-retained-r3-b3-c3-c4-r3-c1-s1-acceptance.md","bytes":2871,"sha256":"3701930e115ef23f0e5f0de966fd4709bde934e2b4cf73e7a9d3ee63d1c83e8b"},"planner_stop":"B3_C3_C4_R3_C1_R1_FRESH_TYPED_OWNER_CORRECTION_WAITING_PLANNER_REVIEW"}`
 
-## 1. Activation与read-only gates
+## 1. Activation、identity与no-discovery gate
 
-Activation必须是`b83ba49...`direct child、subject/path set exact；commit后porcelain只能是machine row的exact-two untracked candidate。先用bytes/SHA核对candidate未变；不得阅读或解释production语义。
+Activation必须是`3bc46c5...`direct child、subject/path set exact；commit后porcelain只能是machine row exact-two untracked candidate。读取两文件只为核对冻结bytes/SHA并执行指定patch，不得重新做架构/semantic discovery。
 
-只读核对`ff372c1`、`b83ba49` topology与ER before/after identity。确认新增CodeGraph query exact1、预算0、source/test patch0、tests0；将其分类为`READ_ONLY_BUDGET_EXCESS_NO_CREDIT`，不得升级为科学/设备问题，也不得把它计作恢复包的CodeGraph evidence。
+Orchestrator已经提供完整八findings及下述修复合同。Pre-edit阶段禁止调用CodeGraph explore/sync、grep式发现、测试或其他诊断；相关counts必须全0。若合同与candidate出现无法局部解决的矛盾，立即停并handoff，不得用新query自行扩展范围。
 
-## 2. Non-EOF proof
+## 2. One source patch + one test patch
 
-用line-aware exact comparison复现machine row：前40行prefix exact；line41的6-line/3325-byte block exact；old line41 onward与new line47 onward的17705-line preserved suffix byte exact；final256 hash unchanged。任一bytes/hash/line boundary mismatch立即停且ER append0。
+保持six exports、frozen dataclasses、stable error codes及P3/M1 imports；只各一次`apply_patch`：
 
-现有non-EOF block必须保持byte-for-byte不变；不得删除、移动、改写或重新提交candidate。
+1. Fixture所有manifest nested rows在P3 encode前显式转为JSON lists；不放宽P3 encoder。
+2. `_exact`先处理双方Mapping：exact key set、递归value/type；非Mapping scalar继续concrete type exact，decoded JSON arrays与expected typed tuple positions exact。
+3. Success report显式创建JSON-native dict/list/scalar；P3 canonical encode并strict decode/re-encode exact。禁止`default=`、pickle或宽松serializer。
+4. Shared artifact root验证absolute lexical path、mode0700、positive device/inode；files验证mode0600、positive device/inode、device绑定root、exact direct-child basenames、distinct paths及distinct `(device,inode)`、bytes/hash exact。
+5. C1 exact ordered labels为`path_owner_index,path_owner_index_seal,terminal_evidence,terminal_evidence_seal`；retained exact ordered labels为`current_lineage_candidate,resolved_formal_plan,setup_lineage_release`。
+6. Activation child/parent、baseline release/helper/integration及helper/test paths证明exact chain distinct；expected Git file keys先证明cardinality未collision，再作set equality；seam bytes SHA-256/Git blob OID exact。
+7. Diff-tree stdout decode tuple必须与activation changed_paths exact同序；swapped/duplicate/missing/extra/invalid UTF-8 fail closed。
+8. `RealManifestSelfCheckReport`与canonical payload逐条记录validated ledger的argv、cwd、exit code、stdout SHA-256、stderr SHA-256；仍固定`eligibility=false`、`release_consumable=false`、`authority=subordinate_self_check_only`。
 
-## 3. Single physical-EOF supersession
+不得删减five artifact canonical/type/root/path/hash、typed manifest positions、18 ordered Git commands、activation full patch、two seam patches、blob bytes/OID/SHA验证，不得新增filesystem/persistence/subprocess/validator/eligibility authority。
 
-所有gate通过后，读取ER当前physical tail一次，并以包含当前最后完整handoff block的exact full-tail anchor调用一次`apply_patch`在真正EOF追加：heading + 单行strict canonical JSON + fence。不得使用早期重复heading、短锚点或line-number insertion。
+## 3. Fresh exact validation sequence
 
-Supersession JSON必须记录本PLAN reference/contract、activation/evidence、candidate two hashes、extra query actual/budget/classification、ER before/after blob/bytes/SHA、prefix/insert/suffix/final256 facts，并明确：
+Tests保持exact12 methods，在既有methods内覆盖八finding。Golden success必须真实进入subject、执行18条fake Git ledger并验证canonical report roundtrip/determinism/full ledger facts。Negative cases断言stable first code与pre-Git/first-mismatch call count，至少包括mappingproxy/dict、shared invalid root、inode alias、wrong labels/order、key collision、swapped diff-tree及tuple-free report。
 
-- `supersedes_non_eof_block_status=B3_C3_C4_R3_C1_PRE_EDIT_QUERY_BUDGET_FAILED_WAITING_PLANNER_REVIEW`；
-- old block preserved、authority降级为historical non-terminal；
-- R3-C1仍rejected，patch/tests/production credit为0；
-- 八findings保持未修复；next branch exact `REF-P7-25-R2-B3-C3-C4-R3-C1-R1`；
-- real/validator/eligibility/release/network/device全部locked；
-- stop exact machine row Planner stop。
+严格顺序且各一次：
 
-Append前process scan1、owned0；不kill/cleanup。Apply patch完成后operations0，不读回、不commit。Executer不得修改PLAN/FULL/archive。
+1. targeted exact12；
+2. focused exact53（P3 28 + M1 13 + owner 12）；
+3. full discovery exact822；
+4. compileall exact source/test；
+5. `codegraph sync`一次，然后单次post-query确认six exports/call paths/no new authority；
+6. `git diff --check`及status exact-two；
+7. commit exact subject/path/parent；
+8. postcommit targeted exact12。
 
-## 4. Acceptance与next branch
+任一步失败立即停，后续0，retry/fallback0。CodeGraph只允许步骤5，任何提前query均hard failure。
 
-Planner只在提交后的独立审计证明supersession位于physical EOF、旧block与preserved suffix未变、candidate hashes未变时接受S1。S1不给production或B3 credit。
+## 4. Handoff与locks
 
-S1接受后规划fresh `R3-C1-R1`：same exact-two correction、同八findings、new pre-edit CodeGraph query冻结0，直接进入patch→target12→focused53→full822→compileall→post-sync/query→commit→posttarget；本S1不授权该执行。
+Terminal前process scan1、owned0，不kill/cleanup。ER tail read一次，以当前最后S1 supersession完整block为full-tail anchor，一次`apply_patch`追加physical EOF handoff；append后operations0。记录activation、candidate before/after、八finding closure、tests/compile/CodeGraph/diff/commit topology与所有locks。Executer不得commit ER或修改plan files。
 
-维护性判断：单一EOF supersession保存不可变审计历史并恢复terminal authority；不触碰production owner或扩张验证框架。
+R1成功只提交repo-owned subordinate self-check owner，不执行real artifacts、validator、eligibility、release、synthetic、网络或设备，也不授予B3 credit。Planner接受后才规划独立real execution package。
+
+维护性判断：R1在现有exact-two owner/test内关闭已知语义缺陷；无新发现阶段、无新owner、权限与I/O边界保持不变。
