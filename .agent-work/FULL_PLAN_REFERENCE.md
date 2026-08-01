@@ -16,9 +16,9 @@
 
 **当前可执行任务数：** `1`
 
-**当前 active task：** `REF-P7-25-R2-B2-M1-S1-C1 dedicated fixture correction`
+**当前 active task：** `REF-P7-25-R2-B2-M1-S1-C1-C1 CodeGraph scope correction`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-31","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-M1-S1-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-S1-C1-DEDICATED-FIXTURE-CORRECTION-V1","next_reference_task":"REF-P7-25-R2-B2-M1-S1-C1","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"M1_S1_C1_DEDICATED_FIXTURE_CORRECTION_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","p6_domain_template_owner_status":"ACCEPTED_COMPLETE_DETERMINISTIC_DOMAIN_TEMPLATE_OWNER_WITH_RUNNABLE_CONTRACT_RESIDUAL","p6_candidate_commit":"48b3979d6c0df5f488cd500597e26dc4c38877dd","p6_candidate_consumable":true,"p5_runtime_owner_status":"ACCEPTED_COMPLETE_REPO_OWNED_CONTROLLER_RUNTIME_OWNER","p7_status":"ACCEPTED_COMPLETE_REPO_OWNED_RUNNABLE_DOMAIN_TEMPLATE_OWNER","p7_candidate_commit":"864f08cc5436519a37e41d553e49ebde4a3c8bb2","p7_candidate_consumable":true,"p7_candidate_consumable_scope":"PURE_OFFLINE_SYNTHETIC_INTEGRATION_INPUT_ONLY","p7_synthetic_integration_qualified":true,"p7_i1_status":"ACCEPTED_COMPLETE_FRESH_SYNTHETIC_INTEGRATION_QUALIFIED_NOT_RETAINED_ELIGIBLE","real_manifest_domain_owner_status":"ACTIVE_DEDICATED_FIXTURE_CORRECTION","existing_root_identity_owner_status":"ACCEPTED_COMPLETE_COMPOSITE_VALIDATED","m1_existing_root_candidate_commit":"40d92acb77b32f370955d687c74c7ff7077f55e1","m1_existing_root_correction_commit":"ffd1d9bb234c90a28ab497b10a35b08e4478eb1c","m1_existing_root_candidate_consumable":true,"m1_real_manifest_candidate_commit":"cddd23eb4ef53a8f90c9b869f96f84ccfcba36cf","m1_real_manifest_candidate_consumable":false,"executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-07-31","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-M1-S1-C1-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-S1-C1-C1-CODEGRAPH-SCOPE-CORRECTION-V1","next_reference_task":"REF-P7-25-R2-B2-M1-S1-C1-C1","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"M1_S1_C1_C1_CODEGRAPH_SCOPE_CORRECTION_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","p6_domain_template_owner_status":"ACCEPTED_COMPLETE_DETERMINISTIC_DOMAIN_TEMPLATE_OWNER_WITH_RUNNABLE_CONTRACT_RESIDUAL","p6_candidate_commit":"48b3979d6c0df5f488cd500597e26dc4c38877dd","p6_candidate_consumable":true,"p5_runtime_owner_status":"ACCEPTED_COMPLETE_REPO_OWNED_CONTROLLER_RUNTIME_OWNER","p7_status":"ACCEPTED_COMPLETE_REPO_OWNED_RUNNABLE_DOMAIN_TEMPLATE_OWNER","p7_candidate_commit":"864f08cc5436519a37e41d553e49ebde4a3c8bb2","p7_candidate_consumable":true,"p7_candidate_consumable_scope":"PURE_OFFLINE_SYNTHETIC_INTEGRATION_INPUT_ONLY","p7_synthetic_integration_qualified":true,"p7_i1_status":"ACCEPTED_COMPLETE_FRESH_SYNTHETIC_INTEGRATION_QUALIFIED_NOT_RETAINED_ELIGIBLE","real_manifest_domain_owner_status":"ACTIVE_CODEGRAPH_SCOPE_CORRECTION","existing_root_identity_owner_status":"ACCEPTED_COMPLETE_COMPOSITE_VALIDATED","m1_existing_root_candidate_commit":"40d92acb77b32f370955d687c74c7ff7077f55e1","m1_existing_root_correction_commit":"ffd1d9bb234c90a28ab497b10a35b08e4478eb1c","m1_existing_root_candidate_consumable":true,"m1_real_manifest_candidate_commit":"cddd23eb4ef53a8f90c9b869f96f84ccfcba36cf","m1_real_manifest_candidate_consumable":false,"executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -333,7 +333,8 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-B2-M1-C1-C1` | `REJECTED_TARGETED_WILDCARD_NEGATIVE_SOURCE_CONSTRUCTION_FAILURE_CANDIDATE_IMMUTABLE_NON_CONSUMABLE` | execute unchanged existing-root owner contract with source-backed 24/20/6/11 baseline | C1-C1-C1 wildcard fixture | Planner/Executer |
 | `REF-P7-25-R2-B2-M1-C1-C1-C1` | `ACCEPTED_COMPLETE_COMPOSITE_EXISTING_ROOT_IDENTITY_OWNER_VALIDATED` | correct only module-scope wildcard negative fixture, then validate full candidate | accepted via 40d92ac + ffd1d9b | Planner/Executer |
 | `REF-P7-25-R2-B2-M1-S1` | `REJECTED_TEST_FIXTURE_ASSERTION_ONLY_NO_PRODUCTION_FINDING_ESTABLISHED` | implement fresh pure real-manifest-v2 domain-template successor using accepted P3/P4/P5 owners | M1-S1-C1 fixture correction | Planner/Executer |
-| `REF-P7-25-R2-B2-M1-S1-C1` | `ACTIVE_EXECUTION_AUTHORIZED` | correct only test07 collision identity and test13 AST authority assertions, then validate full candidate | rejected candidate cddd23e | Planner/Executer |
+| `REF-P7-25-R2-B2-M1-S1-C1` | `REJECTED_PRE_EDIT_CODEGRAPH_SEMANTIC_SCOPE_MISMATCH` | correct only test07 collision identity and test13 AST authority assertions, then validate full candidate | C1-C1 deterministic query scope | Planner/Executer |
+| `REF-P7-25-R2-B2-M1-S1-C1-C1` | `ACTIVE_EXECUTION_AUTHORIZED` | use five exact file/symbol CodeGraph groups, then perform unchanged test-only fixture correction | rejected candidate cddd23e | Planner/Executer |
 | `REF-P7-25-R2-B2-M1-I1` | `BLOCKED_ON_M1_ACCEPTANCE` | fresh pure-offline integration of real-manifest template with synthetic fixtures | M1 accepted | Planner/Executer |
 | `REF-P7-25-R2-B2-M1-R1` | `BLOCKED_ON_M1_I1_ACCEPTANCE` | one fresh real-input manifest-only B2 execution | M1-I1 accepted | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-V1` | `ACCEPTED_COMPLETE` | one final-source full suite with retained terminal exit/count | 755/755 accepted | Planner/Executer |
@@ -4031,13 +4032,29 @@ two paths；targeted13为11 pass/2 fail。Test07只替换第二identity path却�
 
 ### REF-P7-25-R2-B2-M1-S1-C1：dedicated fixture correction
 
-**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。唯一write path为M1 dedicated test；只改test07与test13。Test07以first identity完整复制并只替换为second expected
+**状态：** `REJECTED_PRE_EDIT_CODEGRAPH_SEMANTIC_SCOPE_MISMATCH`。唯一write path为M1 dedicated test；只改test07与test13。Test07以first identity完整复制并只替换为second expected
 label，保持direct-child/root identity有效后验证exact `path_collision`。Test13删除full-source裸substring扫描，改用AST exact import module/alias与callable token
 集合验证authority-negative surface，合法`camera_based_rgbww_optimizer`不得误判。Production module、其他tests与P3/P4/P5/P7均冻结。
 
 Validation冻结fresh pre/post CodeGraph、targeted13/focused83/compileall/full800、one-path commit
 `fix(p7): correct real manifest domain fixtures`与posttarget13；retry/fallback0。Real/retained/external/validator/release/network/device全部0；全绿仍只到Planner
 验收门，不能自行接受candidate或进入M1-I1。Planner stop exact `B2_M1_S1_C1_DEDICATED_FIXTURE_CORRECTION_WAITING_PLANNER_REVIEW`。
+
+C1 activation的pre-edit CodeGraph sync exit0，但唯一query错误返回旧`tests/test_p7_retained_r3_controller_domain_template.py`，未回显M1 production、
+dedicated test07/test13或P3/P4/P5 authority surface；因此test read/edit/tests/commit均0。Evidence
+`850537007233a1517962afbef26e8e40e4782ad2`仅追加ER。Review archive
+`.agent-work/PLANS/20260731-2348-p7-retained-r3-b2-m1-s1-c1-codegraph-scope-failure-review.md`，bytes`7601`，SHA-256
+`29bc017e9076257dd94ec9fdb8b61ce76246941dd93c1143069cd052864e1fe5`。
+
+### REF-P7-25-R2-B2-M1-S1-C1-C1：CodeGraph scope correction
+
+**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。原test07/test13 one-path semantic correction不变；只把pre/post CodeGraph gate改为每轮sync1后固定5组逐文件逐symbol
+query：M1 production、M1 dedicated test、P3 provenance I/O、P4 conformance/lifecycle、P5 runtime。每轮必须groups5/5、5 paths + 19 symbols
+coverage24/24；wrong-route/missing时retry/fallback0并立即停，不得补query或fallback raw search。
+
+Pre-edit gate通过后才可读取/修改dedicated test。Validation仍为targeted13/focused83/compileall/full800、同样post query5组、one-path commit
+`fix(p7): correct real manifest domain fixtures`与posttarget13。Production/retained/external/validator/release/network/device全部0；全绿仍停Planner门。Planner stop
+exact `B2_M1_S1_C1_C1_CODEGRAPH_SCOPE_CORRECTION_WAITING_PLANNER_REVIEW`。
 
 ### REF-P7-25-R2-B2-M1-I1：real-manifest template pure-offline integration
 
@@ -4865,10 +4882,11 @@ rejected B2-M1-C1 result = PRE_EDIT_METHOD_COUNT_BASELINE_MISMATCH; implementati
 rejected B2-M1-C1-C1 result = TARGETED_WILDCARD_NEGATIVE_SOURCE_CONSTRUCTION_FAILURE; candidate40d92ac initially nonconsumable
 accepted B2-M1-C1-C1-C1 result = COMPOSITE_EXISTING_ROOT_IDENTITY_OWNER_VALIDATED; correction ffd1d9b; candidate40d92ac consumable in M1 successor scope
 rejected B2-M1-S1 result = TEST_FIXTURE_ASSERTION_ONLY_NO_PRODUCTION_FINDING; candidate cddd23e nonconsumable
-active task = REF-P7-25-R2-B2-M1-S1-C1 dedicated fixture correction
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-S1-C1-DEDICATED-FIXTURE-CORRECTION-V1
+rejected B2-M1-S1-C1 result = PRE_EDIT_CODEGRAPH_SEMANTIC_SCOPE_MISMATCH; test reads/writes0
+active task = REF-P7-25-R2-B2-M1-S1-C1-C1 CodeGraph scope correction
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-S1-C1-C1-CODEGRAPH-SCOPE-CORRECTION-V1
 active executable task count = 1
-next reference task = REF-P7-25-R2-B2-M1-S1-C1 ACTIVE_EXECUTION_AUTHORIZED
+next reference task = REF-P7-25-R2-B2-M1-S1-C1-C1 ACTIVE_EXECUTION_AUTHORIZED
 selected state C shutter = 1/2500
 device/network/camera/light = forbidden by active PLAN
 release qualification/generation/copy/consumption = forbidden
