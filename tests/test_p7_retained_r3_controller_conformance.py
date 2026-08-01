@@ -423,8 +423,12 @@ class ControllerConformanceTests(unittest.TestCase):
                 "existing_root_owner_import_invalid",
             ),
             "wildcard": (
-                OWNER_IMPORT.replace("read_existing_root", "*")
-                + "existing = read_existing_root(path)",
+                (
+                    "from camera_based_rgbww_optimizer.utils."
+                    "p7_retained_r3_provenance_io import *\n"
+                    "def controller():\n"
+                    "    existing = read_existing_root(path)\n"
+                ).encode("utf-8"),
                 "existing_root_owner_import_invalid",
             ),
             "attribute": (
@@ -450,8 +454,28 @@ class ControllerConformanceTests(unittest.TestCase):
         }
         for name, (body, code) in cases.items():
             with self.subTest(name=name):
+                source = body if name == "wildcard" else runtime(body)
+                if name == "wildcard":
+                    tree = ast.parse(source.decode("utf-8"))
+                    self.assertIsInstance(tree.body[0], ast.ImportFrom)
+                    self.assertEqual(tree.body[0].module, (
+                        "camera_based_rgbww_optimizer.utils."
+                        "p7_retained_r3_provenance_io"
+                    ))
+                    self.assertEqual(
+                        tuple(alias.name for alias in tree.body[0].names),
+                        ("*",),
+                    )
+                    self.assertIsInstance(tree.body[1], ast.FunctionDef)
+                    self.assertEqual(tree.body[1].name, "controller")
+                    self.assertIsInstance(tree.body[1].body[0], ast.Assign)
+                    self.assertIsInstance(tree.body[1].body[0].value, ast.Call)
+                    self.assertEqual(
+                        tree.body[1].body[0].value.func.id,
+                        "read_existing_root",
+                    )
                 with self.assertRaises(subject.ControllerConformanceError) as raised:
-                    subject.analyze_controller_source(runtime(body))
+                    subject.analyze_controller_source(source)
                 self.assertEqual(raised.exception.code, code)
 
     def test_24_existing_root_transport_and_read_shape_negatives_remain_closed(self):
