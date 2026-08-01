@@ -16,9 +16,9 @@
 
 **当前可执行任务数：** `1`
 
-**当前 active task：** `REF-P7-25-R2-B2-M1-R1-S1-C1-C1-C1 physical-EOF supersession`
+**当前 active task：** `REF-P7-25-R2-B2-M1-R1-S2 fresh strict-retained successor`
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-08-01","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-M1-R1-S1-C1-C1-C1","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-R1-S1-C1-C1-C1-GIT-ER-ONLY-PHYSICAL-EOF-SUPERSESSION-V1","next_reference_task":"REF-P7-25-R2-B2-M1-R1-S1-C1-C1-C1","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"M1_R1_S1_C1_C1_C1_PHYSICAL_EOF_EVIDENCE_CORRECTION_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","p6_domain_template_owner_status":"ACCEPTED_COMPLETE_DETERMINISTIC_DOMAIN_TEMPLATE_OWNER_WITH_RUNNABLE_CONTRACT_RESIDUAL","p6_candidate_commit":"48b3979d6c0df5f488cd500597e26dc4c38877dd","p6_candidate_consumable":true,"p5_runtime_owner_status":"ACCEPTED_COMPLETE_REPO_OWNED_CONTROLLER_RUNTIME_OWNER","p7_status":"ACCEPTED_COMPLETE_REPO_OWNED_RUNNABLE_DOMAIN_TEMPLATE_OWNER","p7_candidate_commit":"864f08cc5436519a37e41d553e49ebde4a3c8bb2","p7_candidate_consumable":true,"p7_candidate_consumable_scope":"PURE_OFFLINE_SYNTHETIC_INTEGRATION_INPUT_ONLY","p7_synthetic_integration_qualified":true,"p7_i1_status":"ACCEPTED_COMPLETE_FRESH_SYNTHETIC_INTEGRATION_QUALIFIED_NOT_RETAINED_ELIGIBLE","real_manifest_domain_owner_status":"ACCEPTED_COMPLETE_GIT_GRAMMAR_VALIDATED","existing_root_identity_owner_status":"ACCEPTED_COMPLETE_COMPOSITE_VALIDATED","m1_existing_root_candidate_commit":"40d92acb77b32f370955d687c74c7ff7077f55e1","m1_existing_root_correction_commit":"ffd1d9bb234c90a28ab497b10a35b08e4478eb1c","m1_existing_root_candidate_consumable":true,"m1_real_manifest_rejected_candidate_commit":"cddd23eb4ef53a8f90c9b869f96f84ccfcba36cf","m1_real_manifest_candidate_commit":"0f4c09e1b2b2afbf627f6f36d57a1a65847ab4a8","m1_real_manifest_candidate_consumable":true,"carried_test_status":"ACCEPTED_VALIDATED","m1_synthetic_integration_status":"ACCEPTED_COMPLETE_QUALIFIED_NOT_RETAINED_ELIGIBLE","m1_real_input_manifest_status":"REJECTED_EXECUTION_ASSERTION_SELECTOR_NOT_CONTRACTUAL","m1_real_input_supersession_status":"ACTIVE_PHYSICAL_EOF_EVIDENCE_CORRECTION","executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_reference_v2","snapshot_date":"2026-08-01","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","active_task_count":1,"active_task":"REF-P7-25-R2-B2-M1-R1-S2","active_plan_contract_id":"P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-R1-S2-FRESH-REAL-INPUT-STRICT-RETAINED-NO-TERMINAL-SELECTOR-V1","next_reference_task":"REF-P7-25-R2-B2-M1-R1-S2","next_reference_status":"ACTIVE_EXECUTION_AUTHORIZED","human_checkpoint":"REF-P7-22","human_confirmation_satisfied":true,"authorization_override":"REF-P7-23-H2_SUPERSEDED_AUTHORIZATION_MISCLASSIFICATION","engineering_governance_override":"HUMAN_2026_07_29_ORCHESTRATOR_OWNS_FILES_CODE_GIT","checkpoint_head":"9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e","release_checkpoint":"32b9e670ff3bbea0cd1505528c2ca87c2935446c","eq_r6_status":"ACCEPTED_QUALIFIED_1_2500","selected_state_c_shutter":"1/2500","post_eq_policy":"ACCEPTED_COMPLETE","evidence_controller_ownership_selection":"OPTION_A_REPO_OWNED_RETAINED_RELEASE_AUDIT_HELPER","option_a_owner_status":"ACCEPTED_COMPLETE","advisor_lineage_owner_decision":"OPTION_B_SCIENTIFIC_INTENT_RETAINED_IMPLEMENTATION_LIMITS_SUPERSEDED","manifest_authority":"SUBORDINATE_EVIDENCE_ONLY_CANONICAL_VALIDATOR_SOLE_ELIGIBILITY_OWNER","helper_v1_disposition":"RETAINED_RELEASE_AUDIT_PREREQUISITE_V1_SUPERSEDED_BEFORE_REAL_VALIDATION","repair_v2_status":"M1_R1_S2_FRESH_STRICT_RETAINED_NO_TERMINAL_SELECTOR_ACTIVE","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","p6_domain_template_owner_status":"ACCEPTED_COMPLETE_DETERMINISTIC_DOMAIN_TEMPLATE_OWNER_WITH_RUNNABLE_CONTRACT_RESIDUAL","p6_candidate_commit":"48b3979d6c0df5f488cd500597e26dc4c38877dd","p6_candidate_consumable":true,"p5_runtime_owner_status":"ACCEPTED_COMPLETE_REPO_OWNED_CONTROLLER_RUNTIME_OWNER","p7_status":"ACCEPTED_COMPLETE_REPO_OWNED_RUNNABLE_DOMAIN_TEMPLATE_OWNER","p7_candidate_commit":"864f08cc5436519a37e41d553e49ebde4a3c8bb2","p7_candidate_consumable":true,"p7_candidate_consumable_scope":"PURE_OFFLINE_SYNTHETIC_INTEGRATION_INPUT_ONLY","p7_synthetic_integration_qualified":true,"p7_i1_status":"ACCEPTED_COMPLETE_FRESH_SYNTHETIC_INTEGRATION_QUALIFIED_NOT_RETAINED_ELIGIBLE","real_manifest_domain_owner_status":"ACCEPTED_COMPLETE_GIT_GRAMMAR_VALIDATED","existing_root_identity_owner_status":"ACCEPTED_COMPLETE_COMPOSITE_VALIDATED","m1_existing_root_candidate_commit":"40d92acb77b32f370955d687c74c7ff7077f55e1","m1_existing_root_correction_commit":"ffd1d9bb234c90a28ab497b10a35b08e4478eb1c","m1_existing_root_candidate_consumable":true,"m1_real_manifest_rejected_candidate_commit":"cddd23eb4ef53a8f90c9b869f96f84ccfcba36cf","m1_real_manifest_candidate_commit":"0f4c09e1b2b2afbf627f6f36d57a1a65847ab4a8","m1_real_manifest_candidate_consumable":true,"carried_test_status":"ACCEPTED_VALIDATED","m1_synthetic_integration_status":"ACCEPTED_COMPLETE_QUALIFIED_NOT_RETAINED_ELIGIBLE","m1_real_input_manifest_status":"ACTIVE_FRESH_STRICT_RETAINED_NO_TERMINAL_SELECTOR_SUCCESSOR","m1_real_input_supersession_status":"ACCEPTED_COMPLETE_PHYSICAL_EOF_SUPERSESSION","executer_dispatched":true,"device_authorized_by_this_file":false,"candidate_machine_contract_sha256":"96ece8940a82d53ff6e61b8b2e0ecb4f0cb01d93770ce5a992942c2464ab449a","candidate_contract_orchestrator_verified":true}`
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
@@ -347,7 +347,8 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-B2-M1-R1-S1` | `REJECTED_EXECUTION_ASSERTION_SELECTOR_NOT_CONTRACTUAL` | fresh real-input manifest with canonical C1, strict retained and append-last evidence lifecycle | S1-C1 terminal assertion supersession | Planner/Executer |
 | `REF-P7-25-R2-B2-M1-R1-S1-C1` | `REJECTED_PRE_APPEND_NON_CONTRACTUAL_OLD_PLANNER_STOP_SELECTOR` | supersede non-contractual c1_terminal_link selector using committed Git/ER only | S1-C1-C1 selector-free supersession | Planner/Executer |
 | `REF-P7-25-R2-B2-M1-R1-S1-C1-C1` | `REJECTED_NON_EOF_INSERTION_CONTRACT_VIOLATION` | append selector-free terminal supersession from committed Git/ER only on either validation success or failure | C1-C1-C1 physical EOF correction | Planner/Executer |
-| `REF-P7-25-R2-B2-M1-R1-S1-C1-C1-C1` | `ACTIVE_EXECUTION_AUTHORIZED` | preserve rejected embedded block and append one exact supersession at physical EOF | no external path operations | Planner/Executer |
+| `REF-P7-25-R2-B2-M1-R1-S1-C1-C1-C1` | `ACCEPTED_COMPLETE_PHYSICAL_EOF_SUPERSESSION` | preserve rejected embedded block and append one exact supersession at physical EOF | M1-R1-S2 fresh strict-retained successor | Planner/Executer |
+| `REF-P7-25-R2-B2-M1-R1-S2` | `ACTIVE_EXECUTION_AUTHORIZED` | run one fresh real-input manifest with strict retained decode and zero unversioned terminal selectors | Planner review | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-V1` | `ACCEPTED_COMPLETE` | one final-source full suite with retained terminal exit/count | 755/755 accepted | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-I1` | `REJECTED_PRE_EFFECT_OWNER_ALIAS_ESCAPE` | fresh synthetic external integration of accepted repo owner | I1-C1 correction | Planner/Executer |
 | `REF-P7-25-R2-B2-P4-I1-C1` | `REJECTED_PRE_EFFECT_LIVE_OWNER_CONTAINER_WRITE_FIELD_ONLY_CORRECTION_REQUIRED` | direct/nonlocal live owner bindings with plain-projection transport | I1-C1-C1 correction | Planner/Executer |
@@ -4250,10 +4251,21 @@ credit，整块原位immutable并标记`REJECTED_NON_EOF_SELF_REPORTED_PASS_IMMU
 
 ### REF-P7-25-R2-B2-M1-R1-S1-C1-C1-C1：physical-EOF supersession
 
-**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。只用committed Git objects及当前ER bytes验证冻结byte topology；错误内嵌块不得编辑、移动、删除或
+**状态：** `ACCEPTED_COMPLETE_PHYSICAL_EOF_SUPERSESSION`。只用committed Git objects及当前ER bytes验证冻结byte topology；错误内嵌块不得编辑、移动、删除或
 重生成。唯一write必须以当前physical EOF的完整且唯一S1 Markdown block（heading至closing fence）作为apply-patch context，在其后追加one
 canonical supersession payload；禁止generic fence或短尾定位。Append必须是Executer最后操作，prefix/append正确性由后续Planner独立验收。
 External paths、code/test/helper、tests/CodeGraph、controller/validator/release/network/device全部0。
+
+Planner独立确认父ER `1248695` bytes逐字为新ER前缀，唯一physical EOF suffix `3979` bytes且为strict canonical one-line JSON；旧错误块
+completion credit=false，postappend operations=0。Evidence commit `fd8bc48...`通过，只解锁fresh S2，不产生eligibility/release credit。
+
+### REF-P7-25-R2-B2-M1-R1-S2：fresh strict-retained no-terminal-selector successor
+
+**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。使用activation full SHA派生brand-new S2 source/output namespace；C1 four仅exact physical identity+
+canonical decode，承接accepted C1 review且semantic/linkage/unversioned terminal selectors全部0；retained three仅exact physical identity+strict JSON，
+不canonical reencode/schema/science。Builder/runtime/controller各exact1，成功形成5件sealed subordinate evidence但eligibility/release仍false；failure保留
+ordered partial identities。最终ER必须以完整唯一current EOF block为context做single physical-EOF append并作为最后side effect。Validator、release、
+network/device继续锁定。
 
 ### REF-P7-25-R2-B2-P3：repo-owned provenance I/O boundary
 
@@ -5082,10 +5094,11 @@ accepted B2-M1-R1-C1 result = GIT_ER_ONLY_SUPERSESSION
 rejected B2-M1-R1-S1 result = EXECUTION_ASSERTION_SELECTOR_NOT_CONTRACTUAL
 rejected B2-M1-R1-S1-C1 result = PRE_APPEND_NON_CONTRACTUAL_OLD_PLANNER_STOP_SELECTOR; Git reads12; ER append0; evidence commit none
 rejected B2-M1-R1-S1-C1-C1 result = NON_EOF_INSERTION_CONTRACT_VIOLATION; inserted4821 at offset2579; preserved old suffix1241295; embedded PASS credit false
-active task = REF-P7-25-R2-B2-M1-R1-S1-C1-C1-C1 physical-EOF supersession
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-R1-S1-C1-C1-C1-GIT-ER-ONLY-PHYSICAL-EOF-SUPERSESSION-V1
+accepted B2-M1-R1-S1-C1-C1-C1 result = COMPLETE_PHYSICAL_EOF_SUPERSESSION; prefix1248695; suffix3979; embedded PASS credit false
+active task = REF-P7-25-R2-B2-M1-R1-S2 fresh strict-retained successor
+active contract = P7-TD-B-RETAINED-R3-OPTION-B-B2-M1-R1-S2-FRESH-REAL-INPUT-STRICT-RETAINED-NO-TERMINAL-SELECTOR-V1
 active executable task count = 1
-next reference task = REF-P7-25-R2-B2-M1-R1-S1-C1-C1-C1 ACTIVE_EXECUTION_AUTHORIZED
+next reference task = REF-P7-25-R2-B2-M1-R1-S2 ACTIVE_EXECUTION_AUTHORIZED
 selected state C shutter = 1/2500
 device/network/camera/light = forbidden by active PLAN
 release qualification/generation/copy/consumption = forbidden
