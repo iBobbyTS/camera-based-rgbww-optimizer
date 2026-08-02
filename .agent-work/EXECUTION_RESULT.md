@@ -18769,3 +18769,48 @@ Authority boundary: the sealed bundle is subordinate failure evidence only. Prod
 Planner decision request: reject this execution at the exact pre-owner parser gate and decide a bounded successor that corrects only accepted-parser byte binding before any owner call. No retry, fallback, owner invocation, old-root read/reuse, payload/manifest repair, validator, eligibility, release, network, device, camera, Ray, strip, cleanup, formal, analyzer, tests, CodeGraph, or commit was performed.
 
 Planner stop: `FIXED_MATRIX_ACCEPTED_FRESH_REAL_SELF_CHECK_DISPOSITION_WAITING_PLANNER_REVIEW`.
+
+## Parser-byte-binding corrective pre-owner effect-order failure
+
+Status: `SEALED_PRE_OWNER_EFFECT_ORDER_VIOLATION_WAITING_PLANNER_REVIEW`.
+
+Activation identity was verified from the frozen commit topology before the corrective controller work:
+
+- activation commit: `b37cebb0aa8a2c2566dfda636598aab87f751f33`;
+- sole parent: `a61cd46958e1b97d70015064dcbdcfe121672e4d`;
+- subject: `chore(plan): correct real self-check parser byte binding`;
+- ordered changed paths: `.agent-work/FULL_PLAN_REFERENCE.md`, `.agent-work/PLAN.md`, `.agent-work/PLANS/20260801-1817-p7-retained-r3-real-self-check-pre-owner-bytes-failure-review.md`.
+
+Fresh identities were created exclusively and were not reused:
+
+- controller source: `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-real-self-check-parser-bytes-corrective-b37cebb0aa8a.py`, bytes `262`, SHA-256 `06c4085c2acbfe4807397b8704086f1c00c2c61badf0f7a9a6653cbe5e7e3ee6`, mode `0600`, invocations `0`;
+- output root: `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-real-self-check-parser-bytes-corrective-b37cebb0aa8a-output`, mode `0700`.
+
+Parser identity proof from the single live controller process:
+
+- activation PLAN raw Git-object bytes were read exactly once: bytes `12969`, SHA-256 `145ba4660364ae73b44ce5ed9d76a120f6c1c404754a820baa2e9c1dcb0e6d15`, runtime object id `4387380224`;
+- activation FULL raw Git-object bytes were read exactly once: bytes `474432`, SHA-256 `606182c2c6bf43931336d8bc9c35902de146ffe406822d25532cee1ba31b371d`, runtime object id `4831969280`;
+- `parse_plan_machine_contract` received runtime object id `4387380224` and returned once;
+- `parse_full_plan_machine_state` received runtime object id `4831969280` and returned once;
+- same raw bytes object direct to accepted parser `true`; decode-before-parser `false`; `read_text` `false`; controller-owned parser `false`; required FULL subset match `true`.
+
+The controller then failed closed at the pre-owner effect-order gate. Frozen code `PRE_OWNER_EFFECT_ORDER_VIOLATION`, stage `pre_owner_gate`, type `FrozenEffectOrderViolation`, row `null`, message `activation Git-object raw reads occurred before exclusive fresh source/root creation`. The observed order placed both raw Git-object reads, direct accepted-parser calls, and FULL subset validation before exclusive fresh source/root creation; the PLAN requires fresh source/root creation first. Retry and fallback are both zero, so no 14-input read or owner call followed.
+
+Original frozen input accounting is therefore explicit zero: physical input identities read `0/14`; pre/post identities `[]/[]`; mutations `0`. Owner `camera_based_rgbww_optimizer.optimization.p7_retained_release_audit.run_real_manifest_self_check` calls attempted/returned `0/0`; ordered Git ledger `[]`; first failure code `PRE_OWNER_EFFECT_ORDER_VIOLATION`; first failure row `null`; success report `0`.
+
+Terminal artifact inventory:
+
+1. `00-execution-contract.json`: bytes `4671`, SHA-256 `202660e0ec6d6a673545a0db45ba6a9c719fe65dfe748b04f909fdb06cb8876e`, mode `0600`.
+2. `00-execution-contract.sha256.json`: bytes `144`, SHA-256 `5c85d96e83502afd00fca6f12682b3cf1f8f5d743951c5940ab96164bb702d11`, mode `0600`.
+3. `01-terminal-summary.json`: bytes `5090`, SHA-256 `cd8ffc0645e0c1736792cc0c92a25c4201d41896f6d53cebe23a3eeb1e72d9fb`, mode `0600`.
+4. `01-terminal-summary.sha256.json`: bytes `142`, SHA-256 `deaf4678f592e9a43ecb3960b34b7a4bc7775805e58fde47cfb29f513e1b7106`, mode `0600`.
+
+Execution counters: fresh source/root `1/1`; local controller processes `1`; PLAN/FULL raw Git-object reads `1/1`; accepted PLAN/FULL parser calls `1/1`; physical input reads `0`; owner calls attempted/returned `0/0`; retry `0`; fallback `0`; ER append `1`; Executer commits `0`; owned processes empty `true`.
+
+Zero locks: repository code/test writes `0/0`; tests `0`; CodeGraph `0`; canonical validator `0`; controller production-owner conclusion `0`; lineage conclusion `0`; eligibility emission `0`; release operations `0`; network/device/camera/Ray/strip/cleanup/formal/public analyzer all `0`; PLAN/FULL/archive writes `0/0/0`; implementation commits `0`.
+
+Authority remains subordinate evidence only. Production-owner conclusion `false`; lineage conclusion `false`; eligibility `false`; release consumable `false`; retained R3 remains unvalidated and unconsumed. The previous failed `992b04d...` source/root was not read, stated, listed, searched, or reused during this corrective execution.
+
+Planner decision request: accept the complete failure lifecycle only, reject real self-check execution credit, and decide whether a new bounded fresh package may correct only the controller effect order before any input read or owner call.
+
+Planner stop: `PARSER_BYTE_BINDING_CORRECTIVE_EFFECT_ORDER_FAILURE_WAITING_PLANNER_REVIEW`.
