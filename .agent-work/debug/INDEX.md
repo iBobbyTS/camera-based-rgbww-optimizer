@@ -1,3 +1,13 @@
+## Recovery status
+
+As of the 2026-08-01 orchestration recovery, every entry below is a historical
+debug/evidence record and is not an active executable PLAN. Files remain in
+their original paths because archives and evidence may bind their hashes. Open
+scientific or implementation questions retain their recorded disposition, but
+new work must start from `REF-P7-RECOVERY-NEXT-GOAL`; no old corrective task ID
+may be resumed merely because its debug record is under `active/` or
+`unresolved/`.
+
 ## Active
 
 | file | summary |

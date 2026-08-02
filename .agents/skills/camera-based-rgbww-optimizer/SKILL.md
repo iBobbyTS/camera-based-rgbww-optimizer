@@ -91,8 +91,27 @@ the existing cleanup and provenance owners.
 | Current executable work | `.agent-work/PLAN.md` plus the applicable `GUIDE.md` |
 | Orchestrator roadmap or dependency status | `.agent-work/FULL_PLAN_REFERENCE.md` (read-only except Orchestrator) |
 | P7 TD-B provenance or historical regression | `docs/engineering/p7-td-b-contract-history.md`, then only relevant archives/evidence |
+| Orchestration recovery state or historical evidence lookup | `audit/1/4.recovery_baseline.md`, `.agent-work/PLANS/INDEX.md`, and `.agent-work/EXECUTION_RESULT_INDEX.md` |
 | Exact production behavior | The relevant module and focused tests |
 
 Do not preload P7 history for ordinary work. The history note is a reference,
 not authorization; its current route is paused until a future active PLAN
 explicitly releases work.
+
+## Orchestration Recovery Baseline
+
+- The canonical placeholder is `REF-P7-RECOVERY-NEXT-GOAL`; it is flat,
+  non-executable, and exists only for future Human goal intake.
+- A new goal must not restore or extend an old deep corrective task ID. Re-read
+  the recovery baseline, then create a new Planner-owned PLAN from the current
+  Human goal, applicable GUIDE, and Orchestrator reference.
+- Three failures at the same semantic boundary require an ownership/contract
+  reassessment. Do not create another temporary controller unless no accepted
+  repo owner can express the boundary and the new owner is itself tested and
+  reviewed.
+- PLAN/FULL machine rows are owned by `agent_work_machine_contract`; immutable
+  JSON-native projection and canonical bytes are owned by
+  `p7_retained_r3_provenance_io`. External controllers must delegate both.
+- Historical roots, review archives, and `EXECUTION_RESULT.md` are immutable
+  evidence. Index them; do not repair failed artifacts into success or use them
+  as execution inputs.
