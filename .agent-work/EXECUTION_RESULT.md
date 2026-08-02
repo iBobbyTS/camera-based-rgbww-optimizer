@@ -18814,3 +18814,39 @@ Authority remains subordinate evidence only. Production-owner conclusion `false`
 Planner decision request: accept the complete failure lifecycle only, reject real self-check execution credit, and decide whether a new bounded fresh package may correct only the controller effect order before any input read or owner call.
 
 Planner stop: `PARSER_BYTE_BINDING_CORRECTIVE_EFFECT_ORDER_FAILURE_WAITING_PLANNER_REVIEW`.
+
+## Effect-order sequencing corrective terminal failure — 2026-08-02T00:38:58Z
+
+Status: `FAIL_CLOSED_BEFORE_CONTRACT_SEAL_WAITING_PLANNER_REVIEW`.
+
+Activation metadata and clean-scope gate passed once at `eb472629eab08a911ce4e1880bb1d0370219b92d`, parent `0e8543ee11d209f1a5d3d0ed619f25b3801fe0bc`, subject `chore(plan): correct real self-check effect order`, ordered activation paths `.agent-work/FULL_PLAN_REFERENCE.md`, `.agent-work/PLAN.md`, `.agent-work/PLANS/20260801-1829-p7-retained-r3-parser-byte-binding-effect-order-failure-review.md`. The worktree was clean at activation.
+
+The controller then derived and exclusively created, before either PLAN/FULL raw Git-object read, the fresh identities:
+
+- source: `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-effect-order-sequencing-corrective-eb47262-20260802T003858Z-source`
+- root: `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-effect-order-sequencing-corrective-eb47262-20260802T003858Z-run`
+
+Effect-order proof is sealed in `effect-order.json`: activation metadata/clean scope was effect 1; exclusive fresh source/root creation was effect 2; the single PLAN/FULL Git-object raw reads were effect 3; the accepted-parser gate began at effect 4/5. PLAN bytes `18153`, SHA-256 `85fca7e5f1bdcf9c05a89da78fab81cb3963886ae7941131190898efe8b80f90`; FULL bytes `40306`, SHA-256 `2215a74403d56235e8759ea719142e9625c6ad2d2b2af8ada2f859f454bf38eb`.
+
+The attempt failed closed at the accepted PLAN parser: the same controller mistakenly supplied decoded text instead of the exact raw bytes object. `parse_plan_machine_contract` raised `MachineContractValidationError` with code `source_not_exact_bytes`. Because retry and fallback are both frozen at zero, the controller did not call either parser again, did not call the FULL parser, did not perform the required FULL-subset or contract/seal gates, did not freeze/read any of the 14 physical inputs, and did not invoke the repository owner.
+
+Parser identity: module `camera_based_rgbww_optimizer.utils.agent_work_machine_contract`; accepted functions `parse_plan_machine_contract` and `parse_full_plan_machine_state`; source bytes `14306`; source SHA-256 `a30bdc7e26efb806f0032db0793021875119026f2dc00c67a60a914bf6b99a70`. Accepted PLAN parser attempts `1`; accepted FULL parser attempts `0`.
+
+Frozen input accounting: expected `14`; pre snapshots completed `0`; post snapshots completed `0`; mutation claims `0`. Repository owner accounting: attempted/returned `0/0`; Git ledger `[]`; success result `null`.
+
+Terminal artifact inventory:
+
+1. `effect-order.json`: bytes `1579`, SHA-256 `450593974c29229f9614a54f9fbade78140740374d02a425733f5973f0ffd780`.
+2. `failure.json`: bytes `3316`, SHA-256 `770b9dda1836a97e83e17dedc48a9e430e141cc6a4dadf9c6fdfc3525e49adfe`.
+3. `terminal-summary.json`: bytes `4473`, SHA-256 `df1507882699e43087c66e741ac35ce8c432d5cd2d894cb7bb5183e002d27b90`.
+4. `terminal-seal.json`: bytes `203`, SHA-256 `1f69e3e00db8314c67dca7e9bc4b7bd4c32231d3743f2bd5672359da2c417f5c`.
+
+Execution counters: activation metadata/diff-tree/clean-scope `1/1/1`; fresh source/root create attempts `1/1`; PLAN/FULL raw Git-object reads `1/1`; accepted PLAN/FULL parser attempts `1/0`; required subset checks `0`; contract/seal checks `0`; frozen input pre/post snapshots `0/0`; owner calls `0`; retry `0`; fallback `0`; Executer commit `0`.
+
+Zero locks: tests, CodeGraph, validator, eligibility, release, network, device, camera, Ray, strip, cleanup, formal, public analyzer, production/test/docs/skill/GUIDE writes, PLAN/FULL/archive writes, and commit are all `0`. No old source/root was read, stated, listed, searched, or reused.
+
+Authority remains subordinate failure evidence only. Production-owner conclusion `false`; lineage conclusion `false`; eligibility `false`; release consumable `false`; retained R3 remains unvalidated and unconsumed.
+
+Planner decision request: accept only this terminal fail-closed lifecycle, reject real self-check execution credit, and decide whether another bounded fresh package may correct only the exact-bytes parser invocation while preserving the now-correct pre-read fresh-root effect order.
+
+Planner stop: `EFFECT_ORDER_SEQUENCING_CORRECTIVE_EXACT_BYTES_FAILURE_WAITING_PLANNER_REVIEW`.
