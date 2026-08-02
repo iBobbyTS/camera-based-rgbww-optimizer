@@ -11,7 +11,7 @@ from pathlib import Path
 import stat
 import subprocess
 import tempfile
-from types import SimpleNamespace
+from types import MappingProxyType, SimpleNamespace
 import unittest
 from unittest import mock
 
@@ -311,6 +311,28 @@ class ProvenanceIOTests(unittest.TestCase):
         self.assertTrue(decoded["色"][1]["x"])
         with self.assertRaises(TypeError):
             decoded["new"] = 3
+
+        frozen = MappingProxyType({
+            "rows": (MappingProxyType({"enabled": True}), None),
+        })
+        native = subject.json_native_value(frozen)
+        self.assertEqual(native, {"rows": [{"enabled": True}, None]})
+        self.assertIs(type(native), dict)
+        self.assertIs(type(native["rows"]), list)
+        self.assertEqual(
+            subject.canonical_json_bytes(frozen),
+            b'{"rows":[{"enabled":true},null]}\n',
+        )
+        self.assertIn("json_native_value", subject.__all__)
+
+        cyclic: list[object] = []
+        cyclic.append(cyclic)
+        self.assert_code(
+            "json_unsupported_value", subject.json_native_value, cyclic
+        )
+        self.assert_code(
+            "json_unsupported_value", subject.json_native_value, {1: "value"}
+        )
 
     def test_canonical_json_rejects_malformed_and_noncanonical_bytes(self):
         cases = (

@@ -16,7 +16,6 @@ from camera_based_rgbww_optimizer.utils.p7_retained_r3_provenance_io import (
     DirectoryIdentity,
     FileIdentity,
     GitLedger,
-    ProvenanceIOError,
     canonical_json_bytes,
     decode_canonical_json,
 )
@@ -415,9 +414,11 @@ class ControllerDomainTemplateTests(unittest.TestCase):
         decoded = decode_canonical_json(qualification_payload)
         self.assertEqual(decoded["matrix"], tuple(tuple(entry) for entry in expected_matrix))
         self.assertEqual(canonical_json_bytes({"matrix": matrix}), qualification_payload)
-        with self.assertRaises(ProvenanceIOError) as raised:
-            canonical_json_bytes({"matrix": tuple(tuple(entry) for entry in expected_matrix)})
-        self.assertEqual(raised.exception.code, "json_unsupported_value")
+        immutable_matrix = tuple(tuple(entry) for entry in expected_matrix)
+        self.assertEqual(
+            canonical_json_bytes({"matrix": immutable_matrix}),
+            qualification_payload,
+        )
 
     def test_11_pre_root_failure_remains_primary_and_terminal_does_not_touch_missing_root(self):
         namespace, calls, lifecycle_orders, _fake_sys, sentinel, _persisted_values = self._fake_owner_harness(fail_root=True)

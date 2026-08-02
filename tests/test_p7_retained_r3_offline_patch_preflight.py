@@ -95,7 +95,7 @@ class OfflinePatchPreflightTests(unittest.TestCase):
         self.assertEqual(result.classification, "CANONICAL_PATCH_EXACT_MATCH")
         self.assertEqual(result.machine_rows.required_full_state["active"], "R1")
 
-    def test_embedded_backticks_are_payload_data_not_scanned(self):
+    def test_canonical_machine_parser_owns_embedded_backtick_policy(self):
         required = {"note": "left `inner` right"}
         plan = row("PLAN_MACHINE_CONTRACT=", {
             "schema": "plan-v1", "required_full_machine_state": required,
@@ -103,10 +103,35 @@ class OfflinePatchPreflightTests(unittest.TestCase):
         full = row("FULL_PLAN_MACHINE_STATE=", {"schema": "full-v1", **required})
         item = spec()
         runner = mock.Mock(return_value=ledger(item))
-        result = subject.run_offline_patch_preflight(
-            plan, full, item, dependencies={"run_git": runner}
+        self.assert_code(
+            "machine_row_json_invalid",
+            subject.run_offline_patch_preflight,
+            plan,
+            full,
+            item,
+            dependencies={"run_git": runner},
         )
-        self.assertEqual(result.machine_rows.required_full_state["note"], required["note"])
+        runner.assert_not_called()
+
+    def test_machine_rows_delegate_to_the_repo_owned_parsers_once(self):
+        plan, full = valid_inputs()
+        item = spec()
+        runner = mock.Mock(return_value=ledger(item))
+        with mock.patch.object(
+            subject,
+            "parse_plan_machine_contract",
+            wraps=subject.parse_plan_machine_contract,
+        ) as plan_parser, mock.patch.object(
+            subject,
+            "parse_full_plan_machine_state",
+            wraps=subject.parse_full_plan_machine_state,
+        ) as full_parser:
+            result = subject.run_offline_patch_preflight(
+                plan, full, item, dependencies={"run_git": runner}
+            )
+        plan_parser.assert_called_once_with(plan)
+        full_parser.assert_called_once_with(full)
+        self.assertEqual(result.classification, "CANONICAL_PATCH_EXACT_MATCH")
         runner.assert_called_once()
 
     def test_bytes_utf8_cr_and_row_count_fail_before_git(self):
@@ -114,8 +139,12 @@ class OfflinePatchPreflightTests(unittest.TestCase):
         cases = (
             ("invalid_plan_bytes", "text", full),
             ("invalid_full_bytes", plan, bytearray(full)),
-            ("machine_row_utf8_invalid", b"\xff", full),
-            ("machine_row_cr_invalid", plan + b"\r\n", full),
+            (
+                "machine_row_utf8_invalid",
+                b'`PLAN_MACHINE_CONTRACT={"value":"\xff"}`\n',
+                full,
+            ),
+            ("machine_row_cr_invalid", plan[:-1] + b"\r\n", full),
             ("plan_row_count_invalid", b"plain\n", full),
             ("full_row_count_invalid", plan, full + full),
         )

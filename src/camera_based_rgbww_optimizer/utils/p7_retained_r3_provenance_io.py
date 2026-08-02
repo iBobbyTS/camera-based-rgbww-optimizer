@@ -28,6 +28,7 @@ __all__ = [
     "canonical_json_bytes",
     "create_exclusive_root",
     "decode_canonical_json",
+    "json_native_value",
     "persist_canonical_json",
     "read_exact_file",
     "read_existing_root",
@@ -359,13 +360,50 @@ def _freeze_json(value: Any) -> Any:
     raise ProvenanceIOError("json_unsupported_value")
 
 
+def _json_native_value(value: Any, active: set[int]) -> Any:
+    if isinstance(value, Mapping):
+        identity = id(value)
+        if identity in active:
+            raise ProvenanceIOError("json_unsupported_value")
+        active.add(identity)
+        try:
+            result: dict[str, Any] = {}
+            for key, item in value.items():
+                if type(key) is not str:
+                    raise ProvenanceIOError("json_unsupported_value")
+                result[key] = _json_native_value(item, active)
+            return result
+        finally:
+            active.remove(identity)
+    if type(value) in (tuple, list):
+        identity = id(value)
+        if identity in active:
+            raise ProvenanceIOError("json_unsupported_value")
+        active.add(identity)
+        try:
+            return [_json_native_value(item, active) for item in value]
+        finally:
+            active.remove(identity)
+    if type(value) is float and not math.isfinite(value):
+        raise ProvenanceIOError("json_nonfinite")
+    if type(value) in (str, int, float, bool) or value is None:
+        return value
+    raise ProvenanceIOError("json_unsupported_value")
+
+
+def json_native_value(value: Any) -> Any:
+    """Project immutable Mapping/tuple JSON values into plain dict/list values."""
+
+    return _json_native_value(value, set())
+
+
 def canonical_json_bytes(value: Any) -> bytes:
     """Encode strict JSON as compact sorted UTF-8 plus exactly one LF."""
 
-    _freeze_json(value)
+    native = json_native_value(value)
     try:
         text = json.dumps(
-            value, sort_keys=True, separators=(",", ":"), ensure_ascii=False,
+            native, sort_keys=True, separators=(",", ":"), ensure_ascii=False,
             allow_nan=False,
         )
     except (TypeError, ValueError, OverflowError) as exc:

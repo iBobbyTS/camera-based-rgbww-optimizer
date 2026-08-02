@@ -534,6 +534,9 @@ class RealManifestSelfCheckTests(unittest.TestCase):
                 for fact in payload["git"]["ledger_facts"]
             ),
         )
+        source = Path(subject.__file__).read_text(encoding="utf-8")
+        self.assertNotIn("def _json_native", source)
+        self.assertIn("canonical_json_bytes(payload)", source)
 
 
 if __name__ == "__main__":

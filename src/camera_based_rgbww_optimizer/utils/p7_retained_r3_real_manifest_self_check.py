@@ -155,16 +155,6 @@ def _exact(left: Any, right: Any) -> bool:
     return left == right
 
 
-def _json_native(value: Any) -> Any:
-    if isinstance(value, Mapping):
-        return {key: _json_native(item) for key, item in value.items()}
-    if type(value) in (tuple, list):
-        return [_json_native(item) for item in value]
-    if value is None or type(value) in (bool, int, str):
-        return value
-    _fail("report_json_invalid")
-
-
 def _git_blob_oid(data: bytes) -> str:
     return hashlib.sha1(
         b"blob " + str(len(data)).encode("ascii") + b"\x00" + data
@@ -395,14 +385,14 @@ def _artifact_values(
         facts.append((role, basename, item.byte_count, item.sha256))
 
     manifest, manifest_seal, terminal, terminal_seal, admission = decoded
-    expected_manifest = _json_native({
+    expected_manifest = {
         "schema": _MANIFEST_SCHEMA,
         "status": _SUCCESS_STATUS,
         "activation": activation,
         "baseline": baseline,
         "c1": c1,
         "retained": retained,
-    })
+    }
     if not _exact(manifest, expected_manifest):
         _fail("manifest_contract_mismatch")
     expected_manifest_seal = {
@@ -641,7 +631,7 @@ def run_real_manifest_self_check(
         )
         for item in ledgers
     )
-    payload = _json_native({
+    payload = {
         "schema": "p7_retained_r3_real_manifest_self_check_report_v1",
         "status": "real_manifest_self_check_pass",
         "reference_task_id": spec.reference_task_id,
@@ -671,15 +661,18 @@ def run_real_manifest_self_check(
         "eligibility": False,
         "release_consumable": False,
         "authority": "subordinate_self_check_only",
-    })
-    report_bytes = canonical_json_bytes(payload)
+    }
+    try:
+        report_bytes = canonical_json_bytes(payload)
+    except ProvenanceIOError as exc:
+        raise RealManifestSelfCheckError("report_json_invalid") from exc
     try:
         decoded_report = decode_canonical_json(report_bytes)
     except ProvenanceIOError as exc:
         raise RealManifestSelfCheckError("report_json_invalid") from exc
     if not _exact(decoded_report, payload):
         _fail("report_json_invalid")
-    if canonical_json_bytes(_json_native(decoded_report)) != report_bytes:
+    if canonical_json_bytes(decoded_report) != report_bytes:
         _fail("report_json_invalid")
     return RealManifestSelfCheckReport(
         spec.reference_task_id,

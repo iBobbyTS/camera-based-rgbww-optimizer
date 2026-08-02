@@ -8,12 +8,15 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import hashlib
-import json
 from pathlib import Path
 import re
-from types import MappingProxyType
 from typing import Any, Callable, Mapping
 
+from camera_based_rgbww_optimizer.utils.agent_work_machine_contract import (
+    MachineContractValidationError,
+    parse_full_plan_machine_state,
+    parse_plan_machine_contract,
+)
 from camera_based_rgbww_optimizer.utils.p7_retained_r3_provenance_io import (
     GitLedger,
     ProvenanceIOError,
@@ -32,8 +35,6 @@ __all__ = [
 
 _SHA40 = re.compile(r"[0-9a-f]{40}")
 _SHA256 = re.compile(r"[0-9a-f]{64}")
-_PLAN_PREFIX = "PLAN_MACHINE_CONTRACT="
-_FULL_PREFIX = "FULL_PLAN_MACHINE_STATE="
 
 
 class OfflinePatchPreflightError(RuntimeError):
@@ -78,87 +79,80 @@ class OfflinePatchPreflightResult:
     report_bytes: bytes
 
 
-def _reject_duplicate(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
-    value: dict[str, Any] = {}
-    for key, item in pairs:
-        if key in value:
-            raise OfflinePatchPreflightError("machine_row_duplicate_key")
-        value[key] = item
-    return value
-
-
-def _reject_nonfinite(_value: str) -> None:
-    raise OfflinePatchPreflightError("machine_row_nonfinite")
-
-
-def _decode_rows(data: bytes, *, kind: str, prefix: str) -> dict[str, Any]:
-    invalid_code = f"invalid_{kind}_bytes"
-    if type(data) is not bytes:
-        raise OfflinePatchPreflightError(invalid_code)
-    try:
-        text = data.decode("utf-8", errors="strict")
-    except UnicodeDecodeError as exc:
-        raise OfflinePatchPreflightError("machine_row_utf8_invalid") from exc
-    if "\r" in text:
-        raise OfflinePatchPreflightError("machine_row_cr_invalid")
-
-    rows: list[str] = []
-    for row in text.split("\n"):
-        if len(row) < 2 or row[0] != "`" or row[-1] != "`":
-            continue
-        inner = row[1:-1]
-        if inner.startswith(prefix):
-            rows.append(inner[len(prefix):])
-    if len(rows) != 1:
-        raise OfflinePatchPreflightError(f"{kind}_row_count_invalid")
-    try:
-        value = json.loads(
-            rows[0],
-            object_pairs_hook=_reject_duplicate,
-            parse_constant=_reject_nonfinite,
-        )
-    except OfflinePatchPreflightError:
-        raise
-    except (json.JSONDecodeError, TypeError, ValueError, OverflowError) as exc:
-        raise OfflinePatchPreflightError("machine_row_json_invalid") from exc
-    if type(value) is not dict:
-        raise OfflinePatchPreflightError("machine_row_json_invalid")
-    return value
-
-
-def _freeze(value: Any) -> Any:
-    if type(value) is dict:
-        return MappingProxyType({key: _freeze(item) for key, item in value.items()})
-    if type(value) is list:
-        return tuple(_freeze(item) for item in value)
-    return value
+def _translate_machine_error(
+    error: MachineContractValidationError,
+    *,
+    kind: str,
+    source: object,
+) -> OfflinePatchPreflightError:
+    codes = {
+        "source_not_exact_bytes": f"invalid_{kind}_bytes",
+        "candidate_count_not_one": f"{kind}_row_count_invalid",
+        "invalid_utf8": "machine_row_utf8_invalid",
+        "duplicate_json_key": "machine_row_duplicate_key",
+        "nonfinite_json_constant": "machine_row_nonfinite",
+        "malformed_json": "machine_row_json_invalid",
+        "top_level_not_object": "machine_row_json_invalid",
+        "invalid_backtick_count": "machine_row_json_invalid",
+    }
+    if error.code == "invalid_line_ending_or_suffix" and (
+        type(source) is bytes and b"\r" in source
+    ):
+        return OfflinePatchPreflightError("machine_row_cr_invalid")
+    return OfflinePatchPreflightError(
+        codes.get(error.code, "machine_row_json_invalid")
+    )
 
 
 def _exact_equal(left: Any, right: Any) -> bool:
-    if type(left) is not type(right):
-        return False
-    if type(left) is dict:
-        return left.keys() == right.keys() and all(
+    if isinstance(left, Mapping) or isinstance(right, Mapping):
+        if not isinstance(left, Mapping) or not isinstance(right, Mapping):
+            return False
+        return set(left) == set(right) and all(
             _exact_equal(left[key], right[key]) for key in left
         )
-    if type(left) is list:
+    if type(left) in (tuple, list) or type(right) in (tuple, list):
+        if type(left) is not type(right):
+            return False
         return len(left) == len(right) and all(
             _exact_equal(a, b) for a, b in zip(left, right, strict=True)
         )
+    if type(left) is not type(right):
+        return False
     return left == right
 
 
-def _machine_rows(plan_bytes: bytes, full_bytes: bytes) -> tuple[MachineRowPreflightResult, dict[str, Any], dict[str, Any], dict[str, Any]]:
-    plan = _decode_rows(plan_bytes, kind="plan", prefix=_PLAN_PREFIX)
-    full = _decode_rows(full_bytes, kind="full", prefix=_FULL_PREFIX)
+def _machine_rows(
+    plan_bytes: bytes,
+    full_bytes: bytes,
+) -> tuple[
+    MachineRowPreflightResult,
+    Mapping[str, Any],
+    Mapping[str, Any],
+    Mapping[str, Any],
+]:
+    try:
+        plan = parse_plan_machine_contract(plan_bytes).value
+    except MachineContractValidationError as exc:
+        raise _translate_machine_error(
+            exc, kind="plan", source=plan_bytes
+        ) from exc
+    try:
+        full = parse_full_plan_machine_state(full_bytes).value
+    except MachineContractValidationError as exc:
+        raise _translate_machine_error(
+            exc, kind="full", source=full_bytes
+        ) from exc
     required = plan.get("required_full_machine_state")
-    if type(required) is not dict or any(type(key) is not str for key in required):
+    if not isinstance(required, Mapping) or any(
+        type(key) is not str for key in required
+    ):
         raise OfflinePatchPreflightError("required_full_state_invalid")
     for key, expected in required.items():
         if key not in full or not _exact_equal(full[key], expected):
             raise OfflinePatchPreflightError("required_full_subset_mismatch")
     result = MachineRowPreflightResult(
-        _freeze(plan), _freeze(full), _freeze(required)
+        plan, full, required
     )
     return result, plan, full, required
 
