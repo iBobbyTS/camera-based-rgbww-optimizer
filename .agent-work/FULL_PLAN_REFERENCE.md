@@ -1098,11 +1098,11 @@ cleanup/final-zero/evidence边界。因此不需要重复Human授权，也不需
 SHA-256 d18432fb86bdf0ad0de3ef29a103ee3c5b7ddb2d254b038fe3eed9579e7c66c6
 ```
 
-Planner已写入唯一active executable PLAN：
+Planner在当时写入了该历史快照的唯一 executable PLAN：
 
 ```text
 predecessor contract = P7-TD-B-RAY-C-EXPOSURE-QUAL-R6-FRESH-LIVE-AFTER-C3E2
-REF-P7-23 = ACTIVE
+REF-P7-23 = ACCEPTED_QUALIFIED_1_2500
 ```
 
 ### REF-P7-23-C4：fresh activation predevice path-mapping rejection
@@ -1438,7 +1438,7 @@ review archive =
   .agent-work/PLANS/20260727-2026-p7-post-eq-manifest-contract-review.md
 review archive SHA-256 =
   e1de5d4f1dcfee552d1ff1c586b152d1c64df1894833cfd1040296fcb03627ba
-active contract = P7-TD-B-EQ-R6-SELECTED-C-POLICY-FINALIZATION-MANIFEST-C1
+historical activation contract = P7-TD-B-EQ-R6-SELECTED-C-POLICY-FINALIZATION-MANIFEST-C1
 predecessor PLAN SHA-256 = fcda08d30e849ce5a75d6609e0ab0a2799e0847cc0fae666487c79923dfa9e84
 selected state C = 1/2500
 device / network / release / analyzer / formal R6 / strip / TD-C = 0
@@ -1539,7 +1539,7 @@ C1 review archive =
   .agent-work/PLANS/20260727-2112-p7-lineage-release-r3-c1-changed-path-policy-review.md
 C1 review archive SHA-256 =
   9896bda4c7b5075e660be60e2af9f0bf159c0e4725b629eb14b6d88b47c49fd1
-active contract = P7-TD-B-POST-EQ-LINEAGE-PATH-CLASSIFICATION-C2
+historical activation contract = P7-TD-B-POST-EQ-LINEAGE-PATH-CLASSIFICATION-C2
 PLAN SHA-256 = 9d7c58aeee42bad00e6b3084b7e65bf3aec5087bcbaff753ccaeaf8a4ba472b6
 preacquisition root =
   /Volumes/4T/temp/rgbww-optimizer/p7-td-b-lineage-release-r3-c1-preacquisition/
@@ -1847,7 +1847,7 @@ review archive =
   .agent-work/PLANS/20260729-1031-p7-retained-r3-option-b-advisor-stop-superseded-review.md
 review archive SHA-256 =
   12e96efaf24d4931754dee0dcf8450f0330fcbf612248db23d396ae8c5458e19
-active contract =
+historical activation contract =
   P7-TD-B-RETAINED-R3-OPTION-B-B1A-CANONICAL-SEAM-INTEGRATION-V1
 PLAN SHA-256 =
   54b51928ae2b88d28bc2ec8be16899ba9f49bd1392822de10545bf4d95735580
@@ -1910,7 +1910,7 @@ review archive SHA-256 =
 manifest/R3-read合同：
 
 ```text
-active contract =
+historical activation contract =
   P7-TD-B-RETAINED-R3-OPTION-B-B1A-C1-FAILFAST-ACQUISITION-V1
 PLAN SHA-256 =
   2d719972eac7b22cd3aea01eb9b8621bb31358b7d45df31940fd4d1cbbb7f13b
@@ -1946,7 +1946,7 @@ candidate canonical patch SHA-256 =
 **状态：** `ACCEPTED_FALSE_REJECTION_REQUIRES_CANDIDATE_OWNERSHIP_REASSESSMENT`。
 
 ```text
-active contract =
+historical activation contract =
   P7-TD-B-RETAINED-R3-OPTION-B-B1A-C2-UNITTEST-CARRY-FORWARD-V1
 PLAN SHA-256 =
   097c4309a3ede5c1f52293692e90231d781fb653dccb5685970d1cd5fc9ef193
@@ -1984,7 +1984,7 @@ C3在PLAN中只保留一个duplicate-free strict JSON candidate object，Execute
 另行转录path/size/hash/patch/parent/tree/subject：
 
 ```text
-active contract =
+historical activation contract =
   P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3-SINGLE-CANDIDATE-OWNER-V1
 PLAN SHA-256 =
   a6d4cb8d121e334017fc47a5be07fd03cd84366bb9c9c2d5531e0b1e31f78497
@@ -2017,7 +2017,7 @@ review archive SHA-256 =
 **状态：** `ACCEPTED_PRE_ROOT_FALSE_REJECTION`。
 
 ```text
-active contract =
+historical activation contract =
   P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E1-MACHINE-ACTIVATION-V1
 PLAN SHA-256 =
   20b9ad12f7955ac0234b1d0259ed0312444e675fa4ec75299f8931b2893b31f3
@@ -2044,7 +2044,7 @@ review archive SHA-256 =
 **状态：** `ACCEPTED_PRE_ROOT_FALSE_REJECTION`。
 
 ```text
-active contract =
+historical activation contract =
   P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E2-RESOLVED-EXECUTABLE-V1
 PLAN SHA-256 =
   50455df1dd1383a8ce37482042ea4d1ba99e7c1d35a86087060df4ee96ec3a80
@@ -2070,7 +2070,7 @@ review archive SHA-256 =
 **状态：** `REJECTED_CORRECT_HARD_FAILURE`。
 
 ```text
-active contract =
+historical activation contract =
   P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E3-ROW-PARSE-POLICY-V1
 PLAN SHA-256 =
   7b3cf91d9d3d2db6eaf98967be6157bc056d9cf1ac0a6a44d6fba33e3ae81037
@@ -2087,7 +2087,7 @@ PLAN machine内逐row策略、runtime、FULL12、clone/checkout与五项source e
 **状态：** `REJECTED_FIRST_REAL_FOCUSED_FAILURE`。
 
 ```text
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E4-PATCH-ARGV-STATUS-V1
+historical activation contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E4-PATCH-ARGV-STATUS-V1
 PLAN SHA-256 = aa1b891daffd40e0060c6669c9ba3c61a821ffd009a172c70a62b51ebbe0bf2b
 candidate object SHA-256 = 5b9408f2dafd0db47c45f2639dd0ed7a32e7db030871eaaa5d1f0e893a6468c2
 ```
@@ -2101,7 +2101,7 @@ Machine patch/status、source与import identity均通过；首次focused运行10
 **状态：** `ACCEPTED_FAIL_CLOSED_DECOMPOSITION`。
 
 ```text
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E5D1-FOCUSED-DIAGNOSTIC-V1
+historical activation contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E5D1-FOCUSED-DIAGNOSTIC-V1
 PLAN SHA-256 = edbc02baffcff0ab18b0b5bcdad86780c64dddd5949af56f6222be936db614d1
 ```
 
@@ -2113,7 +2113,7 @@ no-edit stop。Review archive SHA：`d2be71e792a15f1ac929bf697d92ce9558fb47ec724
 **状态：** `REJECTED_CHECKOUT_FIX_ACCEPTED`。
 
 ```text
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E5D2-CHECKOUT-TEST-ONLY-V1
+historical activation contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E5D2-CHECKOUT-TEST-ONLY-V1
 PLAN SHA-256 = 2ae48a2dbec894bdd6b3a096bdb0078769c99cfc65c8e7a4b2f3163a44997d3c
 ```
 
@@ -2126,7 +2126,7 @@ ambient HEAD为61，测试错误绑定ambient HEAD。Review archive SHA：
 **状态：** `ACCEPTED_TEST_ONLY_PASS`。
 
 ```text
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E5D3-LINEAGE-TEST-OWNER-V1
+historical activation contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E5D3-LINEAGE-TEST-OWNER-V1
 PLAN SHA-256 = 7bee332612dadb7e275831914195df5162e063e46102b0731a1858b54a5cd106
 ```
 
@@ -2139,7 +2139,7 @@ Explicit checkpoint owner诊断通过，targeted2/2、focused102/102；最终tes
 **状态：** `REJECTED_FULL_HERMETICITY`。
 
 ```text
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F1-EXACT-CANDIDATE-COMMIT-V1
+historical activation contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F1-EXACT-CANDIDATE-COMMIT-V1
 PLAN SHA-256 = 8ad5f81ee58311fa8a453732c9019906860d097cca22c08de0267e9d98e60dfc
 candidate SHA-256 = 3c5847fcbe0af85833c901f6f01058d000a3cecdc0f84e6ae331ed24e138c225
 canonical patch = 53230 bytes / 7b71f9db1ef5a56c6065a255f35b34e9ca7d625699ff31a07cfa7fadb1f75f35
@@ -2154,7 +2154,7 @@ canonical patch = 53230 bytes / 7b71f9db1ef5a56c6065a255f35b34e9ca7d625699ff31a0
 **状态：** `REJECTED_TARGETED_EXTERNAL_INPUT_AND_PROVENANCE_OWNER`。
 
 ```text
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F2-HERMETIC-TEST-CORRECTION-V1
+historical activation contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F2-HERMETIC-TEST-CORRECTION-V1
 PLAN SHA-256 = a5d6269f0195343f8e6e59f790dba74150c1291271e4eeeab306356dfddd0231
 candidate SHA-256 = 3c5847fcbe0af85833c901f6f01058d000a3cecdc0f84e6ae331ed24e138c225
 ```
@@ -2170,7 +2170,7 @@ Review archive SHA：`246a94640f06c931401bdbccfc86940393e23669fc122cd07472a06d86
 **状态：** `REJECTED_PRE_ACQUISITION_READ_ORDER`。
 
 ```text
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F3-CLEANUP-TEST-SUCCESSOR-PREREQUISITE-V1
+historical activation contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F3-CLEANUP-TEST-SUCCESSOR-PREREQUISITE-V1
 PLAN SHA-256 = ba1e8ac912b75bb2f5320136a453ffc19ac3f66efbee6605c04bf93ae664bb7e
 parent = 9303aa22a9bd37e8ec4f23147c78c6bea84b9a2e
 test source SHA-256 = f76726a0bb2ec3b9cf4daa713fd8878becae758690fbafc98b10ed2805e87fb8
@@ -2190,7 +2190,7 @@ fixture与canonical manifest在evidence root取得前被读取而hard-fail；obs
 **状态：** `REJECTED_MACHINE_ROW_PARSER`。
 
 ```text
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F4-CLEANUP-TEST-SUCCESSOR-PREREQUISITE-V1
+historical activation contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F4-CLEANUP-TEST-SUCCESSOR-PREREQUISITE-V1
 PLAN SHA-256 = 6205457e4a7885e7006c447f89d048f2b3209869738cb7b5e87d3fccd01be1ba
 ```
 
@@ -2208,7 +2208,7 @@ root、budgeted lstat/content reads。Review archive SHA：
 **状态：** `REJECTED_CLOSURE_AST_PREDICATE`。
 
 ```text
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F5-CLEANUP-TEST-SUCCESSOR-PREREQUISITE-V1
+historical activation contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F5-CLEANUP-TEST-SUCCESSOR-PREREQUISITE-V1
 PLAN SHA-256 = 23a49a5cb2c83c25f9ca197d398b2eab4db4f802a8749e40702575e5961b1d7a
 ```
 
@@ -2225,7 +2225,7 @@ unwrapped、leading/trailing、truncated、concatenated、duplicate-key与nonfin
 **状态：** `REJECTED_FULL_SUBSET_SHAPE`。
 
 ```text
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F6-CLEANUP-TEST-SUCCESSOR-PREREQUISITE-V1
+historical activation contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F6-CLEANUP-TEST-SUCCESSOR-PREREQUISITE-V1
 PLAN SHA-256 = 50f2669d8fbd62dbdc2cef033e5c1962d2ae1462a4d32e0172ca8a777839e2d7
 ```
 
@@ -2242,7 +2242,7 @@ fields的FULL全对象相等，故root前terminal。Review archive SHA：
 **状态：** `REJECTED_IGNORE_PRESENTATION_BINDING`。
 
 ```text
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F7-CLEANUP-TEST-SUCCESSOR-PREREQUISITE-V1
+historical activation contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F7-CLEANUP-TEST-SUCCESSOR-PREREQUISITE-V1
 PLAN SHA-256 = 6a636720e4bc7860c50ad436377bd841bbf83cd4e18162d66e9b46834b95aadf
 ```
 
@@ -2258,7 +2258,7 @@ fields，禁止whole-object equality或放宽required keys。其余C3E6F6合同�
 **状态：** `REJECTED_CLOSURE_OWNER_PATH`。
 
 ```text
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F8-CLEANUP-TEST-SUCCESSOR-PREREQUISITE-V1
+historical activation contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F8-CLEANUP-TEST-SUCCESSOR-PREREQUISITE-V1
 PLAN SHA-256 = e0b3e245a61c2d9f87fc54f1ef8a5fda0e23d18714bf79f8d11cbbfea0b976ef
 ```
 
@@ -2275,7 +2275,7 @@ source file/line仅作为observed evidence，不绑定完整prefix、文件名�
 **状态：** `REJECTED_TRACKED_TARGET_EXCLUSIVE_CREATE`。
 
 ```text
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F9-CLEANUP-TEST-SUCCESSOR-PREREQUISITE-V1
+historical activation contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F9-CLEANUP-TEST-SUCCESSOR-PREREQUISITE-V1
 PLAN SHA-256 = 6def9d40e2e223f09a0fc0fe1860f7a9c481733e11ce7bfab19e8bb4a69063e6
 ```
 
@@ -2292,7 +2292,7 @@ Identity通过后才运行原structural AST predicate，其余C3E6F8合同不变
 **状态：** `REJECTED_NESTED_CLOSURE_AST_SHAPE`。
 
 ```text
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F10-CLEANUP-TEST-SUCCESSOR-PREREQUISITE-V1
+historical activation contract = P7-TD-B-RETAINED-R3-OPTION-B-B1A-C3E6F10-CLEANUP-TEST-SUCCESSOR-PREREQUISITE-V1
 PLAN SHA-256 = a1490af2193b78400bfb78ba5e5ef3346883a33587c9a3df809748f00f69f9fd
 ```
 
@@ -5643,12 +5643,13 @@ accepted D1-R1 = COMPLETE_ROLLBACK_CHECKPOINT_NOT_FILE_OWNER; evidencefebdb9d; G
 rejected C1-R1 = PRE_EFFECT_ATOMIC_PATCH_AND_HANDOFF_APPEND_FAILED; code/test/real0; ER unchanged
 accepted C1-R1-S1 = COMPLETE_PHYSICAL_EOF_ZERO_EFFECT_SEAL; evidence66ecbcf
 rejected R2 = FULL_MACHINE_BARE_MARKER_PARSE_FAILURE; evidence8909974; implementation/real0
-active task = REF-P7-25-R2-B3-C3-C4-R5-R1-C1-R2-P1 repo-owned machine-row parser
-active contract = P7-TD-B-RETAINED-R3-OPTION-B-B3-C3-C4-R5-R1-C1-R2-P1-REPO-OWNED-MACHINE-ROW-PARSER-V1
-active executable task count = 1
-next reference task = REF-P7-25-R2-B3-C3-C4-R5-R1-C1-R2-P1 ACTIVE_EXECUTION_AUTHORIZED
+historical snapshot task = REF-P7-25-R2-B3-C3-C4-R5-R1-C1-R2-P1 repo-owned machine-row parser
+historical snapshot contract = P7-TD-B-RETAINED-R3-OPTION-B-B3-C3-C4-R5-R1-C1-R2-P1-REPO-OWNED-MACHINE-ROW-PARSER-V1
+snapshot executable task count at that time = 1
+canonical final disposition = REJECTED_TARGETED_STALE_MUTABLE_EXPECTATIONS
+historical successor reference = REF-P7-25-R2-B3-C3-C4-R5-R1-C1-R2-P1-C1
 selected state C shutter = 1/2500
-device/network/camera/light = forbidden by active PLAN
+device/network/camera/light = forbidden by that historical PLAN
 release qualification/generation/copy/consumption = forbidden
 full formal R6/strip/public analyzer/TD-C = forbidden
 ```
