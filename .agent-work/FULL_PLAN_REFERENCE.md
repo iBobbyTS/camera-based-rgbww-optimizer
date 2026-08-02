@@ -432,7 +432,7 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
 | `REF-P7-25-R2-B3-C3-C4-R5-R1-C1-R2-R1-C2-S1-C1-R1-D1-D2-C1-R2-C1-S1-C1-C1-C1-C1-C1-C1-C1` | `ACCEPTED_EXACT_OFFSET_TRUE_PHYSICAL_EOF_FAILURE_SUPERSESSION_ONLY` | exact heading/tail slices and true EOF append independently verified with 2058-byte suffix | fixed-matrix supersession | Planner/Executer |
 | `REF-P7-25-R2-B3-C3-C4-R5-R1-C1-R2-R1-C2-S1-C1-R1-D1-D2-C1-R2-C1-S1-C1-C1-C1-C1-C1-C1-C1-C1` | `REJECTED_PREWRITE_ACTIVATION_SELF_HASH_MEMBERSHIP_ASSERTION_ZERO_WRITE_NO_EVIDENCE_CHILD` | script wrongly required the activation PLAN to contain its own future activation commit SHA; no write occurred | self-hash gate correction | Planner/Executer |
 | `REF-P7-25-R2-B3-C3-C4-R5-R1-C1-R2-R1-C2-S1-C1-R1-D1-D2-C1-R2-C1-S1-C1-C1-C1-C1-C1-C1-C1-C1-C1` | `REJECTED_ACTIVATION_METADATA_READ_BUDGET_EXCEEDED_ZERO_WRITE_NO_EVIDENCE_CHILD` | two separate metadata commands exceeded the single-read budget before report access; no write occurred | metadata command correction | Planner/Executer |
-| `REF-P7-25-R2-B3-C3-C4-R5-R1-C1-R2-R1-C2-S1-C1-R1-D1-D2-C1-R2-C1-S1-C1-C1-C1-C1-C1-C1-C1-C1-C1-C1` | `ACTIVE_EXECUTION_AUTHORIZED` | use one core metadata command plus one separately-budgeted changed-path command, then complete fixed-matrix EOF supersession | Planner review | Planner/Executer |
+| `REF-P7-25-R2-B3-C3-C4-R5-R1-C1-R2-R1-C2-S1-C1-R1-D1-D2-C1-R2-C1-S1-C1-C1-C1-C1-C1-C1-C1-C1-C1-C1` | `ACCEPTED_COMPLETE_FIXED_MATRIX_SYNTHETIC_ATTRIBUTION_ONLY` | use one core metadata command plus one separately-budgeted changed-path command, then complete fixed-matrix EOF supersession | Planner review | Planner/Executer |
 | `REF-P7-25-R2-B3-C3-C4-S1` | `REJECTED_NON_PHYSICAL_EOF_HANDOFF_CANONICAL_CONTENT_PRESERVED` | canonical zero-effect record inserted near line 38 rather than physical EOF | C4-S1-C1 EOF supersession | Planner/Executer |
 | `REF-P7-25-R2-B3-C3-C4-S1-C1` | `ACCEPTED_COMPLETE_PHYSICAL_EOF_SUPERSESSION_CANONICAL_ZERO_EFFECT_RECORD_SEALED` | append canonical zero-effect supersession at physical ER EOF using a full-tail anchor | C4 V2 resume | Planner/Executer |
 | `REF-P7-25-R2-B4` | `BLOCKED` | 对原retained R3三件套做首次真实audit并由canonical validator唯一判定eligibility | `REF-P7-25-R2-B3` accepted | Planner/Executer |
@@ -4860,7 +4860,7 @@ Production source写入0。ER heading read实际2次超预算，但第二次取�
 
 ### REF-P7-25-R2-B3-C3-C4-R5-R1-C1-R2-R1-C2-S1-C1-R1-D1-D2-C1-R2-C1-S1-C1-C1-C1-C1-C1-C1-C1-C1-C1-C1-R1-C1-C1-C1-C1-C1：spec JSON-native projection corrective
 
-**状态：** `ACTIVE_EXECUTION_AUTHORIZED`。仅将公开Mapping/tuple/None-bool-int-str deep-frozen树按原顺序机械投影为plain dict/list/scalar，禁止duck typing、fixture、猜值或直接填missing field；随后以全新source/root重新生成sealed FIRST_MISSING_SPEC_FIELD或完整contract。Expected missing field只作预期而非硬编码结果。
+**状态：** `RETIRED_HISTORICAL_SUPERSEDED_WAITING_DRAFT`。仅将公开Mapping/tuple/None-bool-int-str deep-frozen树按原顺序机械投影为plain dict/list/scalar，禁止duck typing、fixture、猜值或直接填missing field；随后以全新source/root重新生成sealed FIRST_MISSING_SPEC_FIELD或完整contract。Expected missing field只作预期而非硬编码结果。
 
 14 physical inputs与旧external roots的read/stat/list/search、owner、tests、production/test写入、validator/release和设备全部为0；retry/fallback0。纯离线工程序列化纠偏，不需要Advisor或Human授权。
 
