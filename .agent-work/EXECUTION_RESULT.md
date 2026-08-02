@@ -18739,3 +18739,33 @@ The original execution contract is rejected. The sealed fixed report supplies ac
 Conclusions: production owner false, lineage false, eligibility false, release consumable false.
 Retained R3 status: RETAINED_UNVALIDATED_UNCONSUMED.
 Planner stop: B3_C3_C4_R5_R1_C1_R2_R1_C2_S1_C1_R1_D1_D2_C1_R2_C1_S1_C1_C1_C1_C1_C1_C1_C1_C1_C1_C1_FIXED_MATRIX_METADATA_BUDGET_CORRECTIVE_WAITING_PLANNER_REVIEW.
+
+## Fresh real-self-check disposition pre-owner failure at physical EOF
+
+Status: `SEALED_PRE_OWNER_GATE_FAILURE_WAITING_PLANNER_REVIEW`.
+
+- Contract: `P7-TD-B-RETAINED-R3-OPTION-B-FIXED-MATRIX-ACCEPTED-FRESH-REAL-SELF-CHECK-DISPOSITION-V1`.
+- Activation exact metadata: child `992b04d0bc7c90ea2d5fef57d7f01c3e82dcd8cd`; parent `a7b9e1139ab8723c7cca3cd800b65b3c35308857`; subject `chore(plan): run fresh real self-check disposition`; changed paths exactly `.agent-work/FULL_PLAN_REFERENCE.md`, `.agent-work/PLAN.md`, `.agent-work/PLANS/20260801-1800-p7-retained-r3-fixed-matrix-metadata-budget-acceptance-review.md`; pre-execution worktree porcelain was empty.
+- Unique fresh controller source: `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-fixed-matrix-real-self-check-disposition-992b04d0bc7c.py`; pre/post bytes `12992`; pre/post SHA-256 `81f258673e78094d633672659d76312779273184083e6875773213289cdbd5a0`; pre/post mode `0600`; unchanged `true`.
+- Unique fresh evidence root: `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-fixed-matrix-real-self-check-disposition-992b04d0bc7c-output`; mode `0700`; created exactly once and not reused.
+- First failure: code `PRE_OWNER_GATE_FAILURE`; stage `pre_owner_gate`; type `MachineContractValidationError`; message `source_not_exact_bytes`; row `null`. The failure occurred when the controller supplied decoded text rather than the accepted parser's exact source bytes while checking the active PLAN/FULL machine contract.
+- Because this pre-owner gate failed, original retained-R3 physical identity acquisition was not entered: verified input identities `0/14`; `input_before=[]`; `input_after=[]`; `inputs_unchanged=false`. The frozen expected 14-file identity set remains verbatim in the sealed execution contract; no frozen input path was read, written, copied, repaired, regenerated, listed, or mutated by the controller.
+- Exact PLAN owner was not resolved or invoked after this failure. Owner string frozen in the contract: `camera_based_rgbww_optimizer.optimization.p7_retained_release_audit.run_real_manifest_self_check`. Complete ordered owner Git ledger: `[]`; ledger count `0`; owner first-failure row `null`.
+- No success report exists, as required when the owner does not return successfully.
+
+Fresh-root exact inventory after terminal sealing:
+
+1. `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-fixed-matrix-real-self-check-disposition-992b04d0bc7c-output/00-execution-contract.json`: bytes `3786`, SHA-256 `f8d2079d9ed210dfe14a5acef3d8cafa316280394ecba1d0cd26158fcd90daed`, mode `0600`.
+2. `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-fixed-matrix-real-self-check-disposition-992b04d0bc7c-output/00-execution-contract.sha256.json`: bytes `308`, SHA-256 `b726c448932f09713bebcf52f51cc6f3e76d9c9cbe01c4a4ad6d71b3490658dc`, mode `0600`.
+3. `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-fixed-matrix-real-self-check-disposition-992b04d0bc7c-output/01-terminal-summary.json`: bytes `2907`, SHA-256 `48259ef8c9bf47c322470f6b2f59279478d3d785c5151f9743c94bfd01fd3ccc`, mode `0600`.
+4. `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-retained-r3-option-b-fixed-matrix-real-self-check-disposition-992b04d0bc7c-output/01-terminal-summary.sha256.json`: bytes `306`, SHA-256 `f45db6396ae4b50f204cb75adee87ee385a4df1f226a1888011a66755d0424a6`, mode `0600`.
+
+Execution counters: fresh source `1`; fresh root `1`; local controller processes `1`; owner calls attempted/returned `0/0`; retry `0`; fallback `0`; success reports `0`; terminal artifacts/seals `1/1`. Owned child processes `[]`; owned processes empty `true`.
+
+Zero locks: repository code writes `0`; repository test writes `0`; tests `0`; CodeGraph `0`; canonical validator calls `0`; controller production-owner conclusions `0`; lineage conclusions `0`; eligibility emissions `0`; release operations `0`; network `0`; device `0`; camera `0`; Ray `0`; strip `0`; cleanup `0`; formal `0`; public analyzer `0`; PLAN writes `0`; FULL writes `0`; archive writes `0`; implementation commits `0`.
+
+Authority boundary: the sealed bundle is subordinate failure evidence only. Production-owner conclusion `false`; lineage conclusion `false`; eligibility `false`; release consumable `false`; retained R3 remains `RETAINED_UNVALIDATED_UNCONSUMED`.
+
+Planner decision request: reject this execution at the exact pre-owner parser gate and decide a bounded successor that corrects only accepted-parser byte binding before any owner call. No retry, fallback, owner invocation, old-root read/reuse, payload/manifest repair, validator, eligibility, release, network, device, camera, Ray, strip, cleanup, formal, analyzer, tests, CodeGraph, or commit was performed.
+
+Planner stop: `FIXED_MATRIX_ACCEPTED_FRESH_REAL_SELF_CHECK_DISPOSITION_WAITING_PLANNER_REVIEW`.
