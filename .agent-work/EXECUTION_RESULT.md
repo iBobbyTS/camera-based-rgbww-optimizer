@@ -18850,3 +18850,44 @@ Authority remains subordinate failure evidence only. Production-owner conclusion
 Planner decision request: accept only this terminal fail-closed lifecycle, reject real self-check execution credit, and decide whether another bounded fresh package may correct only the exact-bytes parser invocation while preserving the now-correct pre-read fresh-root effect order.
 
 Planner stop: `EFFECT_ORDER_SEQUENCING_CORRECTIVE_EXACT_BYTES_FAILURE_WAITING_PLANNER_REVIEW`.
+
+## Atomic source-type/raw-bytes corrective terminal failure — activation `8746f03`
+
+Status: `SEALED_FAILED_CLOSED_WAITING_PLANNER_REVIEW`.
+
+The one authorized fresh controller invocation terminated before topology acceptance, FULL-subset acceptance, all 14 physical input operations, and the repository owner call. It was not retried and no fallback was used. The actual failure is `ACCEPTED_PARSER_RESULT_TYPE_UNSUPPORTED`: the accepted PLAN parser returned a wrapper shape that the controller's mapping/`.value` adapter did not support.
+
+Atomic pre-read proof:
+
+- Fresh source `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-atomic-controller-8746f03-20260802T005100Z-11861.py` was exclusive-created before any PLAN/FULL read, then remained a non-symlink regular file with mode `0600`, bytes `13916`, SHA-256 `c5f3d0dd1e9a0521e0ed84fd7723137e95fb0bfc351256494b2dc4dbf0012f59`.
+- Fresh root `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-fresh-real-self-check-atomic-source-type-8746f03-20260802T005100Z-11861` was exclusive-created before any PLAN/FULL read, then remained a non-symlink directory with mode `0700`; it was empty immediately after the controller failure and before failure sealing.
+- Source/root type and mode were validated before the controller issued any PLAN/FULL Git-object read.
+
+Raw-object/parser proof:
+
+- Activation PLAN and FULL were each obtained directly from their Git blob exactly once as raw bytes; worktree PLAN/FULL reads were `0`.
+- The same PLAN raw-bytes variable was passed directly to the accepted PLAN parser. Decode, re-encode, and `read_text` calls were all `0`.
+- The PLAN parser call was `1`; its result-unwrapping failure prevented a FULL parser call, topology comparison, required-FULL-subset comparison, contract/seal evaluation, and typed owner-spec construction. No identity number was persisted before the exception, so this handoff does not invent one.
+- Because execution stopped at that parser boundary, the current PLAN's suspected missing typed `RealManifestSelfCheckSpec` construction fields were not independently established by this controller and are not claimed as the terminal failure.
+
+Frozen-input/owner proof:
+
+- The planned 14 physical inputs have pre snapshot `null`, post snapshot `null`, and read/stat/list/search activity `0`.
+- All first-three-round six old source/root paths have read/stat/list/search/reuse count `0`.
+- Repository owner calls `0`; owner result `null`; ledger `null`.
+
+Terminal artifacts:
+
+1. `00-controller-failure.json`: bytes `2078`, SHA-256 `ba98ee776f516deb6e5e836a909a97b3bca7912c3ec2c4265db0f3a1aed39148`.
+2. `01-terminal-summary.json`: bytes `1118`, SHA-256 `024aed75867943ddf6194ed3cfb0250dd5a33e5617587e120e89c7304bb5f0bc`.
+3. `02-terminal-seal.json`: bytes `1454`, SHA-256 `882710929ca0ee03ec591d83930ec7a986789393929f93db64b4b1dd94c1ea7d`.
+
+Execution counters: controller invocations `1`; PLAN/FULL raw Git-object reads `1/1`; accepted PLAN/FULL parser calls `1/0`; physical input activity `0`; owner calls `0`; retry `0`; fallback `0`; Executer commit `0`.
+
+Zero locks: tests, CodeGraph, validator, eligibility, release, network, device, camera, Ray, strip, cleanup, formal, public analyzer, production/test/docs/skill/GUIDE writes, PLAN/FULL/archive writes, and commit are all `0`.
+
+Authority remains subordinate failure evidence only. Production-owner conclusion `false`; lineage conclusion `false`; eligibility `false`; release consumable `false`; retained R3 remains unvalidated and unconsumed.
+
+Planner decision request: accept only this exact terminal fail-closed lifecycle, reject all real self-check execution credit, and decide whether a later bounded fresh package may correct the accepted parser result adapter and explicitly freeze the complete typed owner-spec construction contract.
+
+Planner stop: `ATOMIC_RAW_BYTES_PARSER_RESULT_TYPE_FAILURE_WAITING_PLANNER_REVIEW`.
