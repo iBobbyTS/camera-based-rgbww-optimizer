@@ -29,6 +29,57 @@ C1_FAILED_RUN = Path(
 )
 C1_CR3_SHA256 = "0778e98d46d05e6bf13e218b79ee644178629076e4d9e6d8a1545fcb54a03889"
 C1_SIDECAR_SHA256 = "93d0e64f612ab591da717d99af25dc5606a98148729e1988cc43f667375b4e68"
+RECOVERY_PRE_DOCUMENTATION_CHECKPOINT = (
+    "be8c4cdf75e447d128e3c7283cf5b3916d85d1cf"
+)
+RECOVERY_UPDATED_WORKFLOW_PATH = "docs/engineering/p7-td-b-contract-history.md"
+
+
+def _use_historical_workflow_owner(test_case: unittest.TestCase) -> str:
+    """Replay the accepted workflow manifest without blessing recovery docs."""
+
+    root = Path(__file__).parents[1]
+    owner = (root / RECOVERY_UPDATED_WORKFLOW_PATH).resolve()
+    original_run = subprocess.run
+    current_head = original_run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=root,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    historical = original_run(
+        [
+            "git", "show",
+            f"{RECOVERY_PRE_DOCUMENTATION_CHECKPOINT}:{RECOVERY_UPDATED_WORKFLOW_PATH}",
+        ],
+        cwd=root,
+        check=True,
+        capture_output=True,
+    ).stdout
+    original_read_bytes = Path.read_bytes
+
+    def read_historical(path: Path) -> bytes:
+        if path.resolve() == owner:
+            return historical
+        return original_read_bytes(path)
+
+    checkpoint_show = [
+        "git", "show", f"{current_head}:{RECOVERY_UPDATED_WORKFLOW_PATH}",
+    ]
+
+    def run_historical(command, *args, **kwargs):
+        if command == checkpoint_show:
+            return subprocess.CompletedProcess(command, 0, stdout=historical)
+        return original_run(command, *args, **kwargs)
+
+    read_patcher = mock.patch.object(Path, "read_bytes", read_historical)
+    run_patcher = mock.patch.object(subject.subprocess, "run", side_effect=run_historical)
+    read_patcher.start()
+    run_patcher.start()
+    test_case.addCleanup(run_patcher.stop)
+    test_case.addCleanup(read_patcher.stop)
+    return current_head
 
 
 def _allowed_lineage_changed_paths_fixture() -> tuple[str, ...]:
@@ -2661,13 +2712,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
             backend.connect.assert_not_called()
 
     def test_lineage_release_rebuilds_current_plan_and_reaches_formal_runner(self):
-        checkpoint = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
-            cwd=Path(__file__).parents[1],
-            check=True,
-            capture_output=True,
-            text=True,
-        ).stdout.strip()
+        checkpoint = _use_historical_workflow_owner(self)
         with _w0_temporary_directory() as tempdir:
             release_path = measure.write_td_b_setup_lineage_release(
                 output_dir=tempdir,
@@ -2732,13 +2777,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
             )
 
     def test_lineage_release_rejects_candidate_and_resolved_plan_tampering(self):
-        checkpoint = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
-            cwd=Path(__file__).parents[1],
-            check=True,
-            capture_output=True,
-            text=True,
-        ).stdout.strip()
+        checkpoint = _use_historical_workflow_owner(self)
         with _w0_temporary_directory() as tempdir:
             release_path = measure.write_td_b_setup_lineage_release(
                 output_dir=tempdir,
@@ -2812,14 +2851,30 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                     ],
                 )
 
-    def test_current_head_lineage_accepts_exact_human_policy_freeze(self):
-        checkpoint = subprocess.run(
+    def test_recovery_head_fails_closed_and_historical_policy_remains_replayable(self):
+        current_checkpoint = subprocess.run(
             ["git", "rev-parse", "HEAD"],
             cwd=Path(__file__).parents[1],
             check=True,
             capture_output=True,
             text=True,
         ).stdout.strip()
+        current_changed_paths = subject.changed_paths_between_checkpoints(
+            subject.TD_B_SETUP_CHECKPOINT,
+            current_checkpoint,
+        )
+        with self.assertRaisesRegex(
+            ValueError,
+            f"hash or diff differs: {RECOVERY_UPDATED_WORKFLOW_PATH}",
+        ):
+            subject.build_td_b_setup_release_lineage_candidate(
+                subject.TD_B_SETUP_RELEASE_PATH,
+                old_checkpoint=subject.TD_B_SETUP_CHECKPOINT,
+                new_checkpoint=current_checkpoint,
+                changed_paths=current_changed_paths,
+            )
+
+        checkpoint = _use_historical_workflow_owner(self)
         changed_paths = subject.changed_paths_between_checkpoints(
             subject.TD_B_SETUP_CHECKPOINT,
             checkpoint,
@@ -2873,10 +2928,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
         self.assertEqual(workflow_only["prohibited_paths"], [])
 
     def test_post_eq_policy_lineage_classifies_only_exact_accepted_paths(self):
-        checkpoint = subprocess.run(
-            ["git", "rev-parse", "HEAD"], cwd=Path(__file__).parents[1],
-            check=True, capture_output=True, text=True,
-        ).stdout.strip()
+        checkpoint = _use_historical_workflow_owner(self)
         expected = {
             "config/hsi/p7-ray-td-b-exposure-policy-v2.json":
                 "accepted_post_eq_exposure_policy_contract",
@@ -3307,10 +3359,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
 
     def test_public_default_successor_lineage_layers_historical_and_current_owners(self):
         root = Path(__file__).parents[1]
-        checkpoint = subprocess.run(
-            ["git", "rev-parse", "HEAD"], cwd=root,
-            check=True, capture_output=True, text=True,
-        ).stdout.strip()
+        checkpoint = _use_historical_workflow_owner(self)
         with mock.patch.object(
             subject,
             "_validate_td_b_governance_lineage_successor",
@@ -3397,10 +3446,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
 
     def test_governance_lineage_successor_accepts_exact_authorized_history_and_preserves_canonical_owner(self):
         root = Path(__file__).parents[1]
-        checkpoint = subprocess.run(
-            ["git", "rev-parse", "HEAD"], cwd=root, check=True,
-            capture_output=True, text=True,
-        ).stdout.strip()
+        checkpoint = _use_historical_workflow_owner(self)
         canonical = subject.TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_PATH.read_bytes()
         manifest = json.loads(canonical)
         self.assertEqual(
@@ -3453,10 +3499,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
 
     def test_governance_lineage_successor_fails_closed_on_exact_drift_without_widening(self):
         root = Path(__file__).parents[1]
-        checkpoint = subprocess.run(
-            ["git", "rev-parse", "HEAD"], cwd=root, check=True,
-            capture_output=True, text=True,
-        ).stdout.strip()
+        checkpoint = _use_historical_workflow_owner(self)
         canonical = subject.TD_B_GOVERNANCE_LINEAGE_SUCCESSOR_PATH.read_bytes()
 
         with _w0_temporary_directory() as tempdir:
@@ -3719,10 +3762,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                 subordinate.assert_not_called()
 
     def test_public_default_successor_manifest_fails_closed_on_exact_drift(self):
-        checkpoint = subprocess.run(
-            ["git", "rev-parse", "HEAD"], cwd=Path(__file__).parents[1],
-            check=True, capture_output=True, text=True,
-        ).stdout.strip()
+        checkpoint = _use_historical_workflow_owner(self)
         canonical = subject.TD_B_PUBLIC_DEFAULT_SUCCESSOR_MANIFEST_PATH.read_bytes()
 
         with _w0_temporary_directory() as tempdir:
@@ -3946,10 +3986,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                 )
 
     def test_workflow_path_manifest_rejects_owner_hash_and_provenance_drift(self):
-        checkpoint = subprocess.run(
-            ["git", "rev-parse", "HEAD"], cwd=Path(__file__).parents[1],
-            check=True, capture_output=True, text=True,
-        ).stdout.strip()
+        checkpoint = _use_historical_workflow_owner(self)
         canonical = subject.TD_B_WORKFLOW_PATH_MANIFEST_PATH.read_bytes()
         with _w0_temporary_directory() as tempdir:
             root = Path(tempdir)
@@ -4006,10 +4043,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                 )
 
     def test_agents_policy_lineage_rejects_wrong_bytes_owner_and_provenance(self):
-        checkpoint = subprocess.run(
-            ["git", "rev-parse", "HEAD"], cwd=Path(__file__).parents[1],
-            check=True, capture_output=True, text=True,
-        ).stdout.strip()
+        checkpoint = _use_historical_workflow_owner(self)
         canonical = subject.TD_B_AGENTS_POLICY_FREEZE_PATH.read_bytes()
         with _w0_temporary_directory() as tempdir:
             root = Path(tempdir)
