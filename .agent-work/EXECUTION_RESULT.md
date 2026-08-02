@@ -18891,3 +18891,37 @@ Authority remains subordinate failure evidence only. Production-owner conclusion
 Planner decision request: accept only this exact terminal fail-closed lifecycle, reject all real self-check execution credit, and decide whether a later bounded fresh package may correct the accepted parser result adapter and explicitly freeze the complete typed owner-spec construction contract.
 
 Planner stop: `ATOMIC_RAW_BYTES_PARSER_RESULT_TYPE_FAILURE_WAITING_PLANNER_REVIEW`.
+
+## RealManifestSelfCheckSpec contract diagnostic serialization failure — activation `d399c1a`
+
+Status: `UNSEALED_FAILED_CLOSED_WAITING_PLANNER_REVIEW`.
+
+The unique authorized pure-offline source invocation reached the already-identified first missing public field, `baseline.human_governance_override`, but then failed before the first artifact write while canonicalizing the diagnostic payload. The primary error was `TypeError: Object of type mappingproxy is not JSON serializable`: the controller placed accepted parser `.evidence.to_mapping()` output containing a deep-frozen nested `mappingproxy` directly into `json.dumps`. The source was not edited or reinvoked; retry and fallback remain `0`. Because no contract bytes existed, no truthful matching seal or terminal JSON could be produced after this failure without violating those locks.
+
+Activation and parser gates:
+
+- Activation full SHA `d399c1a1c7af781d15a7705c2118f87e2239c278`, parent `253eaa4a23db1e7c9862606b8212e41c71371b22`, subject `chore(plan): complete real self-check spec contract`, and changed paths exact FULL/PLAN/1859 archive all matched.
+- Activation PLAN Git-object: bytes `13358`, SHA-256 `6f0078a95a2a305a881f5ee084b49ea800ee4688f053be56ce4d905cd69e67f6`; accepted parser candidate count `1`, line `17`, `.value` and `.evidence` both consumed through the public interface.
+- Activation FULL Git-object: bytes `478339`, SHA-256 `570634ec9b70bee30a44fb694cc572b79977ad903f70843692b968c6d772152c`; accepted FULL parser candidate count `1`, line `21`; every `required_full_machine_state` key/value matched.
+- Frozen allowed PLAN `61c33604a55c06345095515be9b0d5ea226031a2:.agent-work/PLAN.md`: bytes `16551`, SHA-256 `888a33e7909c67ca560eb6335a61ddc5b2c02290b4e8c41c1ff35a07b39434ff`, blob `54c45e275568b618225a5dc9d940ec5b7f13151d`; only `typed_baseline` and `physical_groups` were consumed.
+- All six frozen repo source/test identities matched their PLAN bytes, SHA-256, and blob OID before diagnostic construction.
+
+First-missing-field finding reached before serialization:
+
+- Public traversal proceeded in `RealManifestSelfCheckSpec` order and then nested dataclass field order. Exact or mechanical future-binding records were constructed for top-level `reference_task_id`, `contract_id`, `repo_root`, all five `artifacts`, `activation`, and baseline fields through `advisor_attachment_sha256`.
+- The first unresolved field was `baseline.human_governance_override` (`RealManifestBaselineIdentity` field index `10`, type `str`). The allowed `61c33604...` `typed_baseline` omits it; current source provides type/validation only; the dedicated-test value is a fixture and the PLAN explicitly forbids treating it as authoritative. Fields after this point were not evaluated.
+- This finding is execution memory only because the strict JSON contract and seal were never persisted; Planner must not accept a complete or sealed spec-construction contract from this run.
+
+Fresh identities and artifact disposition:
+
+- Source `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-real-manifest-spec-contract-d399c1a1c7af.py`: exclusive-created regular non-symlink, mode `0600`, bytes `14566`, SHA-256 `e91fb6b2a60eeda001743ae8b56bb69b6b01da5470a49a60dab5b58fb5d6049f`, device `16777244`, inode `2322053`.
+- Root `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-real-manifest-spec-contract-d399c1a1c7af-output`: exclusive-created directory, mode `0700`, device `16777244`, inode `2322056`; it remained empty after failure.
+- `00-spec-construction-contract.json`, `01-spec-construction-contract-seal.json`, and `02-terminal-summary.json` were not created. Artifact writes `0/3`; no identity or hash is invented.
+
+Execution counters: activation metadata queries `1`; activation PLAN/FULL raw reads `1/1`; accepted activation PLAN/FULL parser calls `1/1`; frozen allowed PLAN raw read/parser calls `1/1`; allowed repo source reads `6`; fresh source writes/invocations `1/1`; fresh root creations `1`; contract/seal/terminal writes `0/0/0`; physical input read/stat/list/search `0`; old external root read/stat/list/search `0`; owner calls `0`; tests `0`; retry `0`; fallback `0`; Executer commits `0`.
+
+Zero locks remained effective: no production/test edits, validator, lineage conclusion, eligibility emission, release operation, network, device, camera, Ray, strip, cleanup, formal, public analyzer, PLAN/FULL/archive write, old artifact repair, or implementation commit occurred. Owned processes are empty. Production-owner conclusion `false`; lineage conclusion `false`; eligibility `false`; release consumable `false`; retained R3 remains `RETAINED_UNVALIDATED_UNCONSUMED`.
+
+Planner decision request: accept only the truthful offline gate evidence and the unsealed serialization failure; reject sealed-spec or complete-contract credit. A future corrective package would need both an authoritative `baseline.human_governance_override` value/provenance and JSON-native projection of accepted parser evidence before persistence.
+
+Planner stop: `REAL_MANIFEST_SPEC_CONTRACT_COMPLETION_WAITING_PLANNER_REVIEW`.
