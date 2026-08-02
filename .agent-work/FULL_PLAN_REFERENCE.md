@@ -1,8 +1,8 @@
-# GUIDE 当前未完成任务完整计划参考
+# Advisor 4.GUIDE completion FULL plan reference
 
-**文档状态：** `ORCHESTRATION_RECOVERY_BASELINE_NON_EXECUTABLE`
+**文档状态：** `GUIDE4_COMPLETION_WAITING_NEW_GOAL_NON_EXECUTABLE`
 
-**快照日期：** `2026-08-01`
+**快照日期：** `2026-08-02`
 
 **Owner：** Orchestrator（唯一写入者）
 
@@ -20,20 +20,232 @@
 
 **唯一 canonical next reference：** `REF-P7-RECOVERY-NEXT-GOAL`（`NEW_GOAL_INTAKE_PLACEHOLDER_NON_EXECUTABLE`）
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_recovery_v1","snapshot_date":"2026-08-01","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","recovery_source_checkpoint":"be8c4cdf75e447d128e3c7283cf5b3916d85d1cf","pre_recovery_full_snapshot":{"source_commit":"b6e93a2520e7bac3d9351ed75bee97541bc4052d","source_blob_oid":"e9cdb1a57d7db1afbc75d27d753f5892d580272b","source_bytes":479494,"source_sha256":"dc4b5f481bb8d05bffb95c157bf766d739de31cc7a2d300d08bb54271bd861f0"},"active_task_count":0,"active_task":null,"active_plan_contract_id":null,"canonical_next_reference_task":"REF-P7-RECOVERY-NEXT-GOAL","canonical_next_reference_status":"NEW_GOAL_INTAKE_PLACEHOLDER_NON_EXECUTABLE","executable":false,"plan_status":"NO_ACTIVE_EXECUTABLE_PLAN_WAITING_NEW_GOAL","retired_plan":{"archive_path":".agent-work/PLANS/20260801-2152-p7-orchestration-recovery-draft-retirement.md","archive_bytes":4279,"archive_sha256":"18384a4bd1d422d4413265ba90a8582e4a466bb77bc28434084d88935cb7e7b5","disposition":"RETIRED_HISTORICAL_SUPERSEDED_WAITING_DRAFT"},"old_corrective_task_ids_reactivatable":false,"historical_route_policy":"LEDGER_ONLY_REJECTED_OR_SUPERSEDED_NO_SUFFIX_GROWTH","latest_scientific_result":{"stage":"EQ-R6_STATE_C","selected_exposure":"1/2500","status":"ACCEPTED_HISTORICAL_SCIENTIFIC_RESULT"},"accepted_owner_baseline":{"machine_contract_parser":"repo_owned_accepted","controller_preparation":"repo_owned_accepted","controller_conformance":"repo_owned_accepted","controller_runtime":"repo_owned_accepted","domain_templates":"repo_owned_synthetic_or_subordinate_only","provenance_io_and_canonical_json":"repo_owned_accepted_single_source","offline_patch_preflight":"repo_owned_subordinate_only","real_manifest_self_check":"repo_owned_subordinate_only"},"retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","canonical_validator_success":false,"eligibility":false,"release_consumable":false,"release_consumption_authorized":false,"device_authorized_by_this_file":false,"camera_authorized_by_this_file":false,"ray_authorized_by_this_file":false,"strip_authorized_by_this_file":false,"formal_r6_authorized":false,"td_c_authorized":false,"unresolved_human_facts":["baseline.human_governance_override"],"unresolved_scientific_questions_for_recovery":[],"allowed_next_action":"WAIT_FOR_HUMAN_NEW_GOAL","full_is_non_executable_reference":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_guide4_waiting_v1","snapshot_date":"2026-08-02","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","reference_revision_parent":"d490ee9e599243ad9e5156fb446354c77e5345b2","recovery_source_checkpoint":"be8c4cdf75e447d128e3c7283cf5b3916d85d1cf","pre_recovery_full_snapshot":{"source_commit":"b6e93a2520e7bac3d9351ed75bee97541bc4052d","source_blob_oid":"e9cdb1a57d7db1afbc75d27d753f5892d580272b","source_bytes":479494,"source_sha256":"dc4b5f481bb8d05bffb95c157bf766d739de31cc7a2d300d08bb54271bd861f0"},"active_task_count":0,"active_task":null,"active_plan_contract_id":null,"canonical_next_reference_task":"REF-P7-RECOVERY-NEXT-GOAL","canonical_next_reference_status":"NEW_GOAL_INTAKE_PLACEHOLDER_NON_EXECUTABLE","executable":false,"plan_status":"NO_ACTIVE_EXECUTABLE_PLAN_WAITING_NEW_GOAL","pending_human_goal_route":{"reference_goal":"REF-G4-COMPLETE","status":"WAITING_HUMAN_NEW_GOAL_NON_EXECUTABLE","objective":"COMPLETE_ADVISOR_4_GUIDE_REACHABLE_ROUTE_TO_MANDATED_STOP","first_reference_task":"REF-G4-01-SUCCESSOR-LINEAGE","first_reference_status":"READY_FOR_PLANNING_AFTER_NEW_GOAL"},"guide_completion_contract":{"success_definition":"ALL_REACHABLE_GUIDE4_STAGES_ACCEPTED_OR_MANDATED_FAIL_STOP_AND_ADVISOR_HANDOFF_REACHED","force_pass_prohibited":true,"historical_audit_inside_goal":false},"retired_plan":{"archive_path":".agent-work/PLANS/20260801-2152-p7-orchestration-recovery-draft-retirement.md","archive_bytes":4279,"archive_sha256":"18384a4bd1d422d4413265ba90a8582e4a466bb77bc28434084d88935cb7e7b5","disposition":"RETIRED_HISTORICAL_SUPERSEDED_WAITING_DRAFT"},"old_corrective_task_ids_reactivatable":false,"historical_route_policy":"LEDGER_ONLY_REJECTED_OR_SUPERSEDED_NO_SUFFIX_GROWTH","legacy_retained_route":{"status":"HISTORICAL_ONLY_NOT_A_GUIDE4_PREDECESSOR","guide4_required":false,"execution_input_allowed":false,"task_ids_reactivatable":false},"latest_scientific_result":{"reference_task":"REF-P7-23","stage":"EQ-R6_STATE_C","selected_exposure":"1/2500","status":"ACCEPTED_QUALIFIED_1_2500"},"accepted_owner_baseline":{"machine_contract_parser":"repo_owned_accepted","controller_preparation":"repo_owned_accepted","controller_conformance":"repo_owned_accepted","controller_runtime":"repo_owned_accepted","domain_templates":"repo_owned_synthetic_or_subordinate_only","provenance_io_and_canonical_json":"repo_owned_accepted_single_source","offline_patch_preflight":"repo_owned_subordinate_only","real_manifest_self_check":"repo_owned_subordinate_only"},"retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","canonical_validator_success":false,"eligibility":false,"release_consumable":false,"release_consumption_authorized":false,"device_authorized_by_this_file":false,"camera_authorized_by_this_file":false,"ray_authorized_by_this_file":false,"strip_authorized_by_this_file":false,"formal_r6_authorized":false,"td_c_authorized":false,"automatic_experiment_package_generation":false,"unresolved_human_facts":["baseline.human_governance_override"],"unresolved_scientific_questions_for_current_route":[],"allowed_next_action":"WAIT_FOR_HUMAN_NEW_GOAL","future_planner_requirement":"WRITE_ONE_NEW_PLAN_PACKAGE_FROM_REF_G4_ROUTE_AFTER_HUMAN_GOAL","full_is_non_executable_reference":true}`
 
-## Recovery current-state declaration
+## Current-state declaration
 
 - `.agent-work/PLAN.md` 当前为 `NO_ACTIVE_EXECUTABLE_PLAN_WAITING_NEW_GOAL`；本文件不授权执行。
 - `REF-P7-RECOVERY-NEXT-GOAL` 是等待未来 Human 新 goal 的平坦 placeholder，不是 active task。
+- Human 已明确：新 goal 的目标不是无脑推进某一个历史 package，而是完成当前适用的 Advisor
+  `advisor/4/4.GUIDE.md`。下文 `REF-G4-*` 是新 goal 建立后唯一允许规划的 canonical route。
+- 当前科学起点是已接受的 EQ-R6 State C `qualified_1_2500`；不得重跑 EQ-R6，也不得把它降级成仅供参考的
+  未确认结论。
 - Retained R3 仍为 `RETAINED_UNVALIDATED_UNCONSUMED`；canonical validator success、eligibility、consumability 与 consumption 均为 false。
-- 下文保留的深层 corrective 路线与旧 `active` 文案均是截至恢复前的历史 ledger；它们已被拒绝或 supersede，不得恢复、重试或继续追加 task-ID 后缀。
+- Retained R3、旧 Option-B controller 链和所有深层 corrective task 只是历史工程证据，不是完成 4.GUIDE
+  的 predecessor、release candidate 或默认实现输入；不得验证后直接消费、恢复、重试或继续追加 task-ID 后缀。
+- 第 4—13、15 节保留的旧具体 task route 均为恢复前 historical ledger。它们不能与第 0 节并列成为
+  current route；只有第 0 节可指导未来 Orchestrator 选择新 task。
 - 本次恢复不改变 GUIDE 科学结论，不授权设备、相机、Ray、灯带、network、FORMAL-R6、TD-C、固件、部署或任何实验。
 
 
 > 本文件保存当前适用 GUIDE 要求、但尚未完成的完整路线。它不是执行队列，不授权设备访问、实验、
 > retry、release、预算、Git commit 或阶段进入。Planner 与 Executer 只能读取本文件；只有未来由 Planner
 > 写入 `.agent-work/PLAN.md` 的单一 active package 才能授权执行。
+
+## 0. Canonical pending route：完成 Advisor 4.GUIDE
+
+### 0.1 目标、完成定义与控制边界
+
+未来 Human 发起新 goal 后，Orchestrator 必须把 goal 解释为：从已接受的 EQ-R6 State C `1/2500`
+开始，完成 `advisor/4/4.GUIDE.md` 当前仍可到达的所有阶段，直到 GUIDE 规定的成功出口或首个强制
+fail-stop/Advisor handoff。不得把“完成 GUIDE”误写成“保证实验通过”；若 measurement quality、history、
+source contract 或 combined gate 按 GUIDE 失败，冻结证据并正确停止也属于该路线的正确完成。
+
+本节是新 goal 建立后唯一 current unfinished route。第 1—3 节提供治理与 accepted baseline，第 14 节
+提供仍适用的全局 guardrails；第 4—13、15 节只保存历史设计与证据，不得从中恢复旧 task ID、旧 PLAN、
+retained R3、旧 release 或一次性 controller。独立 clean-room 审计已经在 goal 外完成；未来 goal 不重新做
+恢复审计，除非新的可观测 drift 使当前前置事实失效。
+
+本文件始终 non-executable。Human 创建 goal 后的第一轮必须是：Orchestrator 重读 Human goal、GUIDE、
+PLAN/FULL machine rows 与当前 Git state，确认无新 drift，更新本节状态，然后委派 Planner 只为
+`REF-G4-01-SUCCESSOR-LINEAGE` 写一个 executable package。不得一次把后续设备阶段全部写进 PLAN，
+不得由 FULL 自动生成实验 package。
+
+### 0.2 Pending route 总表
+
+| Reference ID | 当前状态 | 目的 | 直接依赖 | 解锁/验收 owner |
+| --- | --- | --- | --- | --- |
+| `REF-G4-COMPLETE` | `WAITING_HUMAN_NEW_GOAL_NON_EXECUTABLE` | 完成 4.GUIDE 的全部可到达路线并在规定出口停下 | Human 新 goal | Human / Orchestrator |
+| `REF-G4-01-SUCCESSOR-LINEAGE` | `READY_FOR_PLANNING_AFTER_NEW_GOAL` | 从 accepted EQ/policy 与当前 clean code 建立唯一 fresh successor release | Human 新 goal；accepted `1/2500` | Planner / Orchestrator |
+| `REF-G4-02-PREDEVICE` | `BLOCKED` | 对 G4-01 的 fresh release 做严格 offline predevice oracle | G4-01 accepted | Planner |
+| `REF-G4-03-ZERO-READINESS` | `BLOCKED` | fresh real zero/readiness 与设备身份/能力检查 | G4-02 accepted | Planner |
+| `REF-G4-04-E2` | `BLOCKED` | fresh E2 preformal gate，不进行 formal capture | G4-03 accepted | Planner |
+| `REF-G4-05-RAY-R6-STAGE-GATE` | `BLOCKED` | Orchestrator冻结一次 exact Ray R6 visible-Terminal launch | G4-04 accepted | Orchestrator |
+| `REF-G4-06-RAY-R6` | `LOCKED` | 完整新 Ray-only formal R6 16 帧 | G4-05 exact stage gate | Planner |
+| `REF-G4-07-RAY-ANALYSIS` | `BLOCKED` | Ray quality、chronology 与 A-return history gate | G4-06 terminal result | Planner |
+| `REF-G4-08-STRIP-PLAN` | `CONDITIONAL` | Ray pass 后冻结独立 strip 16 帧 package | G4-07 history pass | Planner |
+| `REF-G4-09-STRIP-RUN` | `LOCKED` | 新 root、strip-only formal 16 帧 | G4-08 accepted package | Planner |
+| `REF-G4-10-STRIP-ANALYSIS` | `BLOCKED` | Strip quality、chronology 与 A-return history gate | G4-09 terminal result | Planner |
+| `REF-G4-11-COMBINED-TDB` | `BLOCKED` | 生成 operating-envelope v3 与 operational600 analysis | G4-07 与 G4-10 pass | Planner |
+| `REF-G4-12-TDC-CORE` | `LOCKED` | operational-600 transient 下的 TD-C core 8 帧 | G4-11 accepted | Planner |
+| `REF-G4-13-ADVISOR-HANDOFF` | `BLOCKED` | 冻结 AUDIT PACK，交 Advisor 决定后续 scientific route | 成功终点或任一 GUIDE stop | Advisor |
+
+以上 `READY_FOR_PLANNING_AFTER_NEW_GOAL` 不表示当前已取得 goal、PLAN、release、device 或 experiment
+权限；当前唯一动作仍是等待 Human 新 goal。
+
+### 0.3 `REF-G4-01-SUCCESSOR-LINEAGE`：fresh successor release
+
+- **依赖与冻结输入：** Human 新 goal；`REF-P7-23=ACCEPTED_QUALIFIED_1_2500`；accepted EQ family
+  canonical manifest SHA-256 `41136d0d1530163668e111b7a9213bb1b9df330d8a168b451c752e3e5dca28e9`；
+  accepted post-EQ checkpoint `161094ffa2bf1f84ed1fc787e708e8c3463f10db`；exposure-policy v2 SHA-256
+  `c9080d18571f617cb7d323ade843ff9c86bf92e3795d23e3999e26d413968681`。Planner 必须从 accepted
+  archive 冻结 exact EQ root/path/artifact hashes，不得让 Executer现场猜测。
+- **实现：** 先证明 accepted policy/config 与当前 production owner 没有语义 drift；以当前 clean successor
+  checkpoint 为 lineage source，使用 repo-owned production API 组合现有 policy、plan、lineage builder、writer
+  与 public/final/strict validators，生成一个 fresh unique successor release。若当前 owner 缺少稳定的 composition
+  seam，只允许先做一个最小 repo-owned extraction/integration 及行为测试；禁止复制历史 external controller、
+  复活旧 real-manifest template task identity，或消费 retained R3。
+- **维护性门：** `measure_p7_thermal_diagnostics.py` 与 `p7_thermal_diagnostics.py` 均超过 4,000 行，直接修改前
+  必须定位 state/ownership boundary。若变更会继续扩大 coordinator、复制 serialization/validation 或增加平行
+  state owner，Planner 必须先安排最小 enabling refactor 和 regression tests；不得借本任务做无关的大重构。
+- **安全边界：** pure offline；device、camera、Ray、strip、network experiment、formal capture、release consumption
+  均为 0。生成和验证 release 不等于授权消费。
+- **证据与验收：** exact source commit/tree/changed paths；frozen input path/bytes/SHA；unique release root；canonical
+  JSON/hash；public/final/strict validators 首次全过；negative drift/replay/old-release rejection tests；focused + affected +
+  full suite；artifact inventory；clean worktree；Planner archive。验收只将 fresh release 标记为后续 G4-02 的输入，
+  不得把 machine state 中 retained R3 的 `canonical_validator_success/eligibility/consumable` 改成 true。
+- **失败与 stop：** ordinary integration defect 进入同一 task 的一次 bounded offline correction；scientific input
+  不一致、accepted EQ/policy drift、无法证明唯一 production owner 或需要改变 GUIDE contract 时立即停给 Orchestrator，
+  科学矛盾才上升 Advisor。
+
+### 0.4 `REF-G4-02-PREDEVICE`：fresh offline oracle
+
+- **实现：** 对 G4-01 唯一 fresh release、current checkpoint、policy、R5 A/D/B shutter、EQ C shutter、R6 exact
+  capture plan、16/16 与 physical cap、old/new pooling prohibition、operational-600/steady schema、cleanup/terminal
+  paths做一次 fail-closed predevice oracle。全部输入都由 PLAN 冻结 exact path/hash。
+- **安全边界：** pure offline；不得解析、验证或消费 retained R3，不得触碰设备或创建 formal root。
+- **验收：** public/final/strict/replay/lineage checks一致；negative cases证明旧 R2、旧 retained R3、checkpoint drift、
+  auto exposure、weak reacquire、wrong capture order与pooling都会拒绝；focused/full tests与 durable evidence 首次通过。
+  Planner接受后，Orchestrator可为该 exact fresh release新增独立的current-route eligibility/consumption字段，供后续
+  G4-03/G4-04 package使用；不得改写 retained R3 的 false字段或泛化为formal launch授权。
+- **失败与 stop：** 普通代码缺陷只允许一次 bounded correction；contract/science conflict 停给 Orchestrator/Advisor。
+  成功只解锁 G4-03，不授权 nonzero output或capture。
+
+### 0.5 `REF-G4-03-ZERO-READINESS`：real zero/readiness
+
+- **实现：** 在单一 PLAN 中冻结 fixture/camera/Ray/bridge identity 与 endpoint；执行 read-only health/config/capability、
+  strip generation-bearing zero、Ray intensity 0、camera/bridge readiness、source isolation、Python finally、shell trap、
+  independent final-zero 与 terminal seal。不得 capture，不得有 nonzero light output。
+- **安全边界：** 只允许 AGENTS 所列 read-only 与 zero/off 例外；firmware/flash、remote deployment、配置写入、
+  destructive operation、nonzero sweep均禁止。
+- **验收：** identity/readback/chronology/cleanup exact，no stale process/root，所有设备最终为零；证据写入 fresh root，
+  Planner 独立验收。失败时保持零并停止，不得现场修设备或绕过 capability mismatch。
+
+### 0.6 `REF-G4-04-E2`：fresh preformal gate
+
+- **实现：** 只消费 G4-01 release 与 G4-03 readiness evidence，验证 current checkpoint、exposure policy consumer、
+  exact Ray states、strip-zero invariant、fixed shutter/no-reacquire、capture accounting、abort/cleanup 与 formal runner
+  的 bounded dry/preformal path。不得执行 16 帧 formal，也不得留下 fixture nonzero。
+- **验收：** E2 的 exact contract、side-effect ledger、cleanup、terminal evidence及相关测试全过；release/checkpoint未漂移。
+- **失败与 stop：** 普通工程缺陷回离线一次 bounded correction；任何 measurement contract、source isolation或设备
+  identity矛盾停止。成功只允许 Orchestrator进入 G4-05 stage review，不得自动进入 formal。
+
+### 0.7 `REF-G4-05-RAY-R6-STAGE-GATE`：exact one-launch orchestration checkpoint
+
+- **冻结内容：** exact experiment ID `P7-TD-B-RAY-OP600-EXPOSURE-GUARDED-FORMAL-R6`、新 root、Ray-only、
+  strip始终为零、16 formal/physical cap16/setup0/ambient0/retry0/launch1、expected continuous-on window、fixed
+  A/D/B shutters与C=`1/2500`、visible Terminal、abort、Python/shell cleanup与final-zero路径。
+- **权限解释：** 4.GUIDE §6/§14/§16 的 Human visible-Terminal checkpoint是科学阶段隔离要求，但其重复授权
+  建议受后来且更高优先级的 Human-owned AGENTS工程治理覆盖：有界灯光输出、相机capture、zero/off与本地实验
+  不因其本身构成高危操作。G4-04 accepted后，Orchestrator可直接审查并要求 Planner把这一次精确launch写入
+  G4-06 PLAN，不得让Planner/Executer重复向Human索取非必要授权。
+- **仍需 Human 的边界：** firmware/flash、remote deployment、destructive hardware change、PLAN外设备操作，或需要
+  扩大target/intensity/range/duration/retry/recovery path时必须停止并请求Human。Human若显式暂停或增加checkpoint，
+  后来的明确决定优先。
+- **stop：** exact target、root、budget、continuous-on window、abort或cleanup任一未冻结即不放行；不得生成半授权
+  PLAN，也不得把一次 Ray launch扩成retry或strip stage。
+
+### 0.8 `REF-G4-06-RAY-R6`：完整新 Ray 16 帧
+
+- **固定合同：** GUIDE §7 的 exact `000-ray-a0-t600` 至 `015-ray-a-after-c-t600` 顺序；A/D/B exact R5
+  frozen shutter，C exact EQ `1/2500`，ISO/aperture unchanged；auto exposure、weak reacquire、mid-run shutter change、
+  R5 frame reuse与中途恢复均禁止。
+- **运行：** 新 unique root；Ray-only；strip zero；16 logical/physical cap16；setup0；ambient0；launch1；retry0。
+  每张 accepted 前验证 CR3/sidecar、bytes/SHA、remote IDs、MakerNote exposure、state/readback、58 features、
+  clipping0、near-noise/finite/valid pixels、chronology、isolation与accounting。
+- **长任务：** 若预计超过10分钟，Executer在可见 macOS Terminal 启动，做3次稀疏存活检查后回交；Orchestrator
+  估算窗口、创建 automation唤醒本 task并按长任务规则阻塞，不使用 Codex background tool 持续轮询。
+- **终止：** 任一 capture/cleanup/source failure立即形成 `accepted_hard_failed_formal_attempt`、formal pass false、
+  retry0；无论成功失败均执行 Python finally、shell trap、independent final-zero、terminal seal并回 Planner。
+  不在 formal run 内运行 analyzer、strip solver或生成 LUT。
+
+### 0.9 `REF-G4-07-RAY-ANALYSIS`：Ray gate
+
+- **入口：** 只接受 G4-06 terminal evidence；acquisition/quality hard fail直接转 G4-13，不运行 analyzer补救。
+- **实现与验收：** Ray-only TD-B analyzer必须验证16/16 engineering quality，输出D/B/C的60/120/300/600 trend、
+  dominance/direction，并以 existing same-state frozen joint coverage比较 A0/A-after-D/A-after-B/A-after-C。
+  `steady_status=not_demonstrated` 始终保留；trend>4只表明未settled，不能单独否定 operational endpoint。
+- **分支：** quality fail -> stop/Advisor；A-return history fail ->
+  `history_dependent_at_operational_600` 与 `stop_history_model_required`，转 G4-13；只有16/16 quality pass且
+  history pass才输出 `ray_td_b_operational_branch=accepted_for_strip_entry` 并解锁 G4-08。
+
+### 0.10 `REF-G4-08-STRIP-PLAN`、`REF-G4-09-STRIP-RUN` 与 `REF-G4-10-STRIP-ANALYSIS`
+
+- **Planning：** G4-08 必须是 Ray pass 后的新 Planner pass，冻结新 experiment/run ID、新 root、strip-only、Ray zero、
+  existing strip command/observer/exposure/setup/no-ambient statistic、same A/D/B/C sequence、A returns@600、16 formal、
+  retry0、source isolation、cleanup和old Ray manifest引用；本 task本身不运行设备。
+- **科学变化 stop：** 若 strip 需要改变 observer、threshold、feature、exposure envelope或command，禁止现场调整，
+  直接转 G4-13 交 Advisor；只有已有合同内 bounded exposure setup 才可写入 G4-09 PLAN。
+- **运行：** G4-09 使用一个 fresh root，Ray始终为零；16/16、physical ledger、readback、chronology、retry0、
+  Python/shell cleanup、independent final-zero、terminal seal。设备长任务遵循与 G4-06 相同的 visible-Terminal、
+  3次liveness与automation规则。任一 formal failure立即 hard stop，不重跑。
+- **分析：** G4-10 只消费 terminal result；验证16/16 quality与 A0/A-after-D/A-after-B/A-after-C compatibility，
+  保留 `steady_status=not_demonstrated`。quality/history fail转 G4-13；两者全过才解锁 G4-11。
+
+### 0.11 `REF-G4-11-COMBINED-TDB`：operational-600 gate
+
+- **实现：** 只以两个已接受 source run的 immutable manifest运行 combined analyzer，不跨 source pooling；生成
+  `p7-operating-envelope-v3.json` 与 `p7-td-b-operational600-analysis-v1.json`。
+- **必须声明：** `developer_selected_operational_600s_transient_v1`、`operational_dwell_s=600`、
+  `steady_status=not_demonstrated`、TD-A仍为`settling_not_demonstrated_by_600`、两source history pass、exact
+  `A-D-A-B-A-C-A` previous-state scope。禁止 `t_formal=600`、settled/steady/TD-A pass。
+- **验收：** GUIDE §10.2 十项条件逐项机器可判定；exposure/hash、ledger、source isolation、cleanup、worktree/checkpoint
+  均闭合。任一失败转 G4-13且 TD-C保持 locked；不得用一 source的通过抵消另一 source失败。
+
+### 0.12 `REF-G4-12-TDC-CORE`：operational-600 transient core
+
+- **入口与范围：** 只有 G4-11 accepted并冻结 envelope v3后，Planner才可按 3.GUIDE core设计新 package：
+  H120/S100，S1 Ray->strip、S2 strip->Ray、S3 Ray->strip、S4 strip->Ray，共8 formal；
+  `developer_selected_operational_dwell_s=600`、`steady_claim=false`。
+- **表述与锁：** 只称 `order-balanced comparison under operational_600s_transient`，不得称steady ABBA或
+  linear-drift elimination。reference epoch final classification、TD-C expansion、sentinel、remaining9、boundary、
+  holdout、Gate-6、P8 INT与default LUT/runtime install全部继续 locked。
+- **安全/证据：** Planner必须先冻结exact device sequence、capture/physical budgets、source isolation、abort、cleanup、
+  final-zero、analysis和failure branch；Human/PLAN边界按当时AGENTS适用规则取得，不得从G4-06/G4-09继承。
+  terminal result经Planner验收后无论pass/fail都转 G4-13。
+
+### 0.13 `REF-G4-13-ADVISOR-HANDOFF`：阶段 AUDIT PACK
+
+- **触发：** Ray quality/history stop、strip contract/quality/history stop、combined fail、TD-C terminal result，或出现
+  GUIDE无法决定的科学分支。
+- **内容：** Human goal、GUIDE/hash、所有Planner archives、exact commits/trees/diffs/tests、release/checkpoint lineage、
+  immutable artifact paths/bytes/SHA、capture/physical/accounting、quality/chronology/history、cleanup/final-zero、失败分类、
+  remaining locks与一个不预选答案的scientific decision request。
+- **验收与 stop：** Planner生成 AUDIT PACK；Orchestrator核对 provenance和状态后更新 FULL，并暂停受影响路线等待
+  Advisor。不得在 handoff 期间自行改变阈值、feature、exposure、observer、command、dwell或继续后续 stage。
+
+### 0.14 收敛、Git 与 Planner/Executer循环规则
+
+- Orchestrator必须把每次plan编写和result验收实际委派给Planner subagent，把每次已授权执行实际委派给
+  Executer subagent，并独立审查两者handoff；不得自己兼任三种角色以跳过交叉验收。
+- 每轮只允许一个 flat `REF-G4-*` reference进入一个 PLAN；Planner验收后先归档并重写单一下一包，Orchestrator
+  独立审查结果再更新 FULL。Executer只写 `EXECUTION_RESULT.md`，不得编辑 PLAN/FULL。
+- PLAN通常只由Planner写。唯一窄例外是Planner把当前AGENTS未定义为高危的有界灯光、camera capture、read-only、
+  zero/off、offline computation错误判为必须重复Human授权时，Orchestrator可直接删除该错误授权门并放行原exact
+  bounds，同时记录override；不得借此修改科学合同、扩大设备范围，或覆盖firmware/flash、remote deployment、
+  destructive hardware change及Human显式暂停。
+- 普通工程边界第一次失败：一次 bounded correction；同边界第二次失败：重新判断 owner/state seam并允许一个最小
+  enabling refactor；第三次相同边界失败：停止并回 Orchestrator，不得出现第四次同类 retry或 task-ID suffix增长。
+- GUIDE明确的 scientific/formal hard stop（retry0、quality fail、history fail、strip contract变化、combined fail）首次
+  命中即停止，不适用三轮工程纠偏规则。
+- 任一已授权且预计超过10分钟的任务都由Executer在可见macOS Terminal启动，不使用Codex tool background process。
+  Executer做3次稀疏liveness检查；确认存活后Orchestrator估算完成窗口、创建automation唤醒本task、把goal标为
+  blocked并停止轮询。若Human主动恢复goal，只做1次状态检查：未完成则再次blocked且不继续轮询；已完成则删除
+  automation，取得terminal evidence并恢复Planner验收循环。
+- Orchestrator亲自分类 dirty worktree并为每个验收完成的离散工程单元建立 focused commit；不push。不得为追求
+  “干净历史”重写、删除或reset旧evidence。任何旧 archive/root/release保持immutable。
+- 新实现跨 persistence、device control、measurement、shared state或巨型P7 coordinator前必须执行维护性preflight；
+  优先复用当前production owner和测试入口，禁止新增平行semantic owner。只有必要的最小重构进入当前task。
 
 ## 1. 文档合同
 
@@ -42,15 +254,12 @@
 - `.agent-work/FULL_PLAN_REFERENCE.md` 由 Orchestrator 独占维护，回答“全部未完成 GUIDE 工作是什么”。
 - `.agent-work/PLAN.md` 由 Planner 独占维护，回答“Executer 当前只执行哪一个 package”。
 - `.agent-work/EXECUTION_RESULT.md` 由 Executer记录执行证据；Executer不得编辑两个计划文件。
-- Human 后续明确要求恢复正常 Planner/Executer loop。Planner 已归档旧 R5 Advisor-stop，并写入唯一
-  `REF-P7-18` active PLAN，contract ID
-  `P7-TD-B-R6-PRE-EQ-OFFLINE-PREPARATION`。FULL 不嵌入 active PLAN hash，避免 PLAN 冻结 FULL hash
-  时形成循环引用；exact PLAN hash 由 Orchestrator handoff 单独冻结。
-- 旧 PLAN 已归档为
-  `.agent-work/PLANS/20260727-1212-p7-r5-advisor-decision-review.md`，SHA-256
-  `51367f7096b81406da138b5c43bbd059224189e5837ba9472037c9e36184a331`。
-- Orchestrator 已独立验收该 PLAN 并只放行 `REF-P7-18` pure-offline package；设备、EQ、release、
-  formal R6、strip 与 TD-C 仍未授权。
+- Human 后续明确要求恢复正常 Planner/Executer loop，但当前尚未创建新 goal；PLAN machine contract仍为
+  `NO_ACTIVE_EXECUTABLE_PLAN_WAITING_NEW_GOAL`，不存在当前 executable package。
+- 恢复前 `REF-P7-18` 与 contract `P7-TD-B-R6-PRE-EQ-OFFLINE-PREPARATION` 已完成其历史作用；对应旧 PLAN
+  与后续 review archive只作为 accepted provenance保留，不得被未来 Planner复制为当前 PLAN。
+- 新 goal 建立后，Orchestrator只从第0节 `REF-G4-01-SUCCESSOR-LINEAGE` 开始新的 flat loop。当前设备、release
+  consumption、formal R6、strip与TD-C仍未授权。
 
 ### 1.2 来源优先级
 
@@ -165,14 +374,22 @@ R2 lineage release = 36a2ecd7c68bda35b4f722548b3c7a3bbafc880fc012af28c8fc501eed1
 
 R2 release 只作为历史 provenance；4.GUIDE 明确禁止为新 code/config 复用或改写它。
 
-### 2.4 当前 orchestration evidence
+### 2.4 Recovery 与当前 orchestration evidence
 
 ```text
-HEAD = 1e3b107b8fbfe97bae5624ef638c4883a0faee1d
-EXECUTION_RESULT = cc4627828f97d41951945561bf82a22c491693eb9e894957d9964da08d4f1ff9
-superseded FULL snapshot = cba7c8d66b9aacbbf0b431e7dc8972f5f37699a94f125d6fd19052cadfec992d
-stale Advisor-stop PLAN = e28a1d4cd8c0af5a8dd2d3bf3eb7dcbf7d6b57900b62cf99561fd42f88f09bf9
+reference revision parent = d490ee9e599243ad9e5156fb446354c77e5345b2
+recovery baseline = audit/1/4.recovery_baseline.md
+recovery baseline SHA-256 = a3ac75b2d8a1e51bf8f1d26fa2ab3385c08728d199e06d8dadf6657d35a1b6a1
+retired PLAN = .agent-work/PLANS/20260801-2152-p7-orchestration-recovery-draft-retirement.md
+retired PLAN SHA-256 = 18384a4bd1d422d4413265ba90a8582e4a466bb77bc28434084d88935cb7e7b5
+current PLAN state = NO_ACTIVE_EXECUTABLE_PLAN_WAITING_NEW_GOAL
+current canonical placeholder = REF-P7-RECOVERY-NEXT-GOAL
+pending GUIDE route = REF-G4-COMPLETE
 ```
+
+`reference revision parent`只标识本次FULL更正开始时的clean parent，不是未来实验checkpoint。恢复前
+`HEAD=1e3b107...`、旧 EXECUTION_RESULT/FULL/PLAN hashes继续存在于immutable archives与baseline索引中，但不再是
+current orchestration state。未来 Planner必须冻结新 goal开始时的live commit/tree，而不是使用本段parent作为release。
 
 ### 2.5 4.GUIDE 顺序规范化
 
@@ -222,7 +439,7 @@ final policy checkpoint 和唯一 R3 release。未来 Planner 若发现实现无
   `.agent-work/PLANS/20260727-1309-p7-r6-pre-eq-c1-acceptance-review.md`，SHA-256
   `35e0e49aaa91f438602346cb70af46efdfd520e1a1a508b393dc1ddc37940470`。
 
-## 4. 未完成路线总表
+## 4. Historical ledger：恢复前路线总表（全部非执行）
 
 | Task ID | 状态 | 任务 | 直接依赖 | 解锁/决定 owner |
 | --- | --- | --- | --- | --- |
@@ -492,7 +709,7 @@ REF-P7-18 -> 19 -> 20 -> 21 -> Human 22 -> EQ 23
 
 任一箭头只是依赖，不是自动续跑。
 
-## 5. 已完成的 R5 disposition 与 pre-EQ offline preparation baseline
+## 5. Historical ledger：R5 disposition 与 pre-EQ offline preparation
 
 ### REF-P7-18：完整 pre-EQ offline preparation umbrella
 
@@ -818,7 +1035,7 @@ policy C status仍 pending；没有 successor release。
 
 **失败与 stop：** 任一验证失败返回 bounded offline correction；不得申请 EQ。Planner接受后才进入 Human `REF-P7-22`。
 
-## 6. EQ-R6 exposure qualification
+## 6. Historical ledger：EQ-R6 exposure qualification
 
 ### REF-P7-22：Human EQ-R6 checkpoint
 
@@ -1409,7 +1626,7 @@ Planner-bounded fresh EQ PLAN，不授权同 root retry；只有命中AGENTS高�
 **请求：** 提交两档全部 measurement/recorded exposure/quality/cleanup evidence，请 Advisor选择 stop、不同 exposure design、
 observer策略或其他实验。禁止自行尝试 1/4000、1/5000、放宽 clipping或删feature。
 
-## 7. Post-EQ policy、release 与 fresh readiness
+## 7. Historical ledger：Post-EQ policy、retained release 与旧 readiness route
 
 ### REF-P7-24：Selected C policy finalization 与 post-EQ checkpoint
 
@@ -4980,7 +5197,7 @@ cleanup/final-zero、terminal seal、no stale/new formal roots。
 
 **失败与 stop：** 任一 E2 failure保留 progressive/terminal evidence并停；无自动 retry。通过只进入 Human `REF-P7-29`。
 
-## 8. Full Ray R6
+## 8. Historical design：Full Ray R6（current route见第0节）
 
 ### REF-P7-29：Human one-launch checkpoint
 
@@ -5067,7 +5284,7 @@ retry = 0
 **请求：** 提交完整 Ray chronology/history/previous-state/exposure/quality evidence，请 Advisor选择新的 history model、
 restricted operational scope或stop。禁止用 covariance inflation、删 anchor或将trend warning改为pass。
 
-## 9. Conditional strip 与 combined TD-B
+## 9. Historical design：Conditional strip 与 combined TD-B（current route见第0节）
 
 ### REF-P7-32：新 strip TD-B 独立 planning gate
 
@@ -5170,7 +5387,7 @@ all counts/hashes/cleanup和machine status schema。
 
 **拒绝：** 按 failure type进入 bounded offline correction、Advisor decision或stop；不得重跑Ray/strip。
 
-## 10. TD-C 与 reference completion
+## 10. Historical design：TD-C 与 reference completion（current route见第0节）
 
 ### REF-P7-06：H0 full-scale vs 3072 thermal diagnostic
 
@@ -5252,7 +5469,7 @@ reference classification、failed runs、tests/checkpoint/release、安全和res
 
 **出口：** explicit sentinel release、targeted correction、restricted envelope、block或stop。无Advisor explicit release不进入sentinel。
 
-## 11. P7 INT100、boundary 与 holdout
+## 11. Historical design：P7 INT100、boundary 与 holdout（仍锁定）
 
 ### REF-P7-13：四点 sentinel v2
 
@@ -5320,7 +5537,7 @@ reference/uncertainty provenance。
 
 **出口：** exact P8 scope、targeted P7 repeat、restrict range或stop。Planner/Executer不得自行进入P8。
 
-## 12. P8、Gate-6、P9 与交付
+## 12. Historical design：P8、Gate-6、P9 与交付（仍锁定）
 
 ### REF-P8-01：INT acquisition、model branch 与 holdout
 
@@ -5380,7 +5597,7 @@ same/cross-day、fixed anchors。运行中禁止优化。
 汇总全部 GUIDE/Human provenance、archives、candidates/config hashes、P9/Gate-7、delivery/hold/rollback、
 limitations、scope、reproduction/rollback、tests/safety/deferred branches。Advisor review后由Human关闭或新开GUIDE。
 
-## 13. 当前延后分支
+## 13. Historical deferred branches
 
 ### REF-CCT-01：完整 CCT/GM P5
 
