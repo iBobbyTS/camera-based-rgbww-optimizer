@@ -571,21 +571,11 @@ def persist_e2_package(
     *,
     create_root_fn: Callable[[str], provenance.DirectoryIdentity] = provenance.create_exclusive_root,
     persist_fn: Callable[[provenance.DirectoryIdentity, str, Any], provenance.FileIdentity] = provenance.persist_canonical_json,
-    replay_fn: Callable[[str | Path], Mapping[str, Any]] | None = None,
-    build_plan_fn: Callable[[], Mapping[str, Any]] = thermal.build_td_b_r6_formal_plan,
-    validate_plan_fn: Callable[[Mapping[str, Any]], None] = thermal.validate_td_b_r6_formal_plan,
-    machine_status_fn: Callable[[], Mapping[str, Any]] = thermal.td_b_r6_machine_status,
 ) -> E2Package:
     """Persist one exclusive two-artifact package and replay it once."""
 
     _validate_exact_input(inputs)
-    _validate_result_contract(
-        result,
-        inputs,
-        build_plan_fn=build_plan_fn,
-        validate_plan_fn=validate_plan_fn,
-        machine_status_fn=machine_status_fn,
-    )
+    _validate_result_contract(result, inputs)
     root = create_root_fn(inputs.output_root)
     result_identity: provenance.FileIdentity | None = None
     try:
@@ -611,19 +601,11 @@ def persist_e2_package(
                 "terminal_persist_and_fail_seal_failed", primary=primary, seal_failure=seal_failure,
             ) from primary
         raise E2ContractError("terminal_persist_failed", primary=primary) from primary
-    replay_owner = replay_fn or replay_e2_package
-    replay = replay_owner(root.path)
+    replay = replay_e2_package(root.path)
     return E2Package(root, result_identity, terminal_identity, replay)
 
 
-def replay_e2_package(
-    root_path: str | Path,
-    *,
-    inputs: E2Input | None = None,
-    build_plan_fn: Callable[[], Mapping[str, Any]] = thermal.build_td_b_r6_formal_plan,
-    validate_plan_fn: Callable[[Mapping[str, Any]], None] = thermal.validate_td_b_r6_formal_plan,
-    machine_status_fn: Callable[[], Mapping[str, Any]] = thermal.td_b_r6_machine_status,
-) -> Mapping[str, Any]:
+def replay_e2_package(root_path: str | Path) -> Mapping[str, Any]:
     """Independently replay one exact offline package through provenance I/O."""
 
     root = provenance.read_existing_root(str(Path(root_path)))
@@ -637,14 +619,7 @@ def replay_e2_package(
     )
     result = provenance.decode_canonical_json(result_identity.data)
     terminal = provenance.decode_canonical_json(terminal_identity.data)
-    frozen_inputs = frozen_e2_input() if inputs is None else inputs
-    _validate_result_contract(
-        result,
-        frozen_inputs,
-        build_plan_fn=build_plan_fn,
-        validate_plan_fn=validate_plan_fn,
-        machine_status_fn=machine_status_fn,
-    )
+    _validate_result_contract(result, frozen_e2_input())
     _validate_success_terminal(terminal, result_identity)
     return _freeze({
         "schema": REPLAY_SCHEMA,

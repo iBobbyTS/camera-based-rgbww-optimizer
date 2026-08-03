@@ -1,5 +1,6 @@
 import ast
 import copy
+import inspect
 import os
 import tempfile
 import unittest
@@ -280,15 +281,11 @@ class PackageTests(E2TestCase):
 
     def test_exact_two_artifact_package_modes_canonicality_and_replay(self):
         root, inputs, result = self._temporary_package()
-        replay_calls = 0
-
-        def replay(value):
-            nonlocal replay_calls
-            replay_calls += 1
-            return subject.replay_e2_package(value)
-
-        package = subject.persist_e2_package(inputs, result, replay_fn=replay)
-        self.assertEqual(replay_calls, 1)
+        with mock.patch.object(
+            subject, "replay_e2_package", wraps=subject.replay_e2_package,
+        ) as canonical_replay:
+            package = subject.persist_e2_package(inputs, result)
+        canonical_replay.assert_called_once_with(root)
         self.assertEqual(package.root.path, root)
         self.assertEqual(package.root.mode, 0o700)
         self.assertEqual(provenance.list_exact_regular_children(package.root), subject.ARTIFACT_NAMES)
@@ -545,6 +542,129 @@ class PackageTests(E2TestCase):
                 self.assertIsInstance(package.replay, MappingProxyType)
                 self.assertTrue(Path(root).exists())
         self.assertFalse(Path(parent).exists())
+
+
+class CanonicalOwnerBindingTests(E2TestCase):
+    def test_public_signatures_and_ast_bind_canonical_owners(self):
+        persist = inspect.signature(subject.persist_e2_package)
+        replay = inspect.signature(subject.replay_e2_package)
+        self.assertEqual(
+            tuple(persist.parameters),
+            ("inputs", "result", "create_root_fn", "persist_fn"),
+        )
+        self.assertEqual(persist.parameters["inputs"].kind, inspect.Parameter.POSITIONAL_OR_KEYWORD)
+        self.assertEqual(persist.parameters["result"].kind, inspect.Parameter.POSITIONAL_OR_KEYWORD)
+        self.assertEqual(persist.parameters["create_root_fn"].kind, inspect.Parameter.KEYWORD_ONLY)
+        self.assertEqual(persist.parameters["persist_fn"].kind, inspect.Parameter.KEYWORD_ONLY)
+        self.assertEqual(tuple(replay.parameters), ("root_path",))
+        self.assertEqual(replay.parameters["root_path"].kind, inspect.Parameter.POSITIONAL_OR_KEYWORD)
+
+        tree = ast.parse(Path(subject.__file__).read_text(encoding="utf-8"))
+        functions = {
+            node.name: node
+            for node in tree.body
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        }
+        persist_node = functions["persist_e2_package"]
+        replay_node = functions["replay_e2_package"]
+        self.assertIsNone(persist_node.args.kwarg)
+        self.assertIsNone(replay_node.args.kwarg)
+        persist_calls = [node for node in ast.walk(persist_node) if isinstance(node, ast.Call)]
+        replay_calls = [node for node in ast.walk(replay_node) if isinstance(node, ast.Call)]
+        direct_replay = [
+            node for node in persist_calls
+            if isinstance(node.func, ast.Name) and node.func.id == "replay_e2_package"
+        ]
+        self.assertEqual(len(direct_replay), 1)
+        self.assertEqual(len(direct_replay[0].args), 1)
+        self.assertEqual(direct_replay[0].keywords, [])
+        for node in persist_calls + replay_calls:
+            self.assertTrue({keyword.arg for keyword in node.keywords}.isdisjoint({
+                "build_plan_fn", "validate_plan_fn", "machine_status_fn", "replay_fn", "inputs",
+            }))
+        names = {node.id for node in ast.walk(persist_node) if isinstance(node, ast.Name)}
+        self.assertNotIn("replay_fn", names)
+
+    def test_persist_rejects_removed_semantic_keywords_before_io(self):
+        result = self.native_result()
+        for forbidden in (
+            "build_plan_fn", "validate_plan_fn", "machine_status_fn", "replay_fn",
+        ):
+            calls = {"create": 0, "persist": 0}
+
+            def create(_path):
+                calls["create"] += 1
+                raise AssertionError("create must not run")
+
+            def persist(_root, _name, _value):
+                calls["persist"] += 1
+                raise AssertionError("persist must not run")
+
+            kwargs = {
+                "create_root_fn": create,
+                "persist_fn": persist,
+                forbidden: lambda *_args, **_kwargs: None,
+            }
+            with self.subTest(forbidden=forbidden), self.assertRaises(TypeError):
+                subject.persist_e2_package(self.inputs, result, **kwargs)
+            self.assertEqual(calls, {"create": 0, "persist": 0})
+
+    def test_replay_rejects_removed_keywords_before_root_read(self):
+        for forbidden in (
+            "inputs", "build_plan_fn", "validate_plan_fn", "machine_status_fn", "replay_fn",
+        ):
+            with self.subTest(forbidden=forbidden), mock.patch.object(
+                provenance, "read_existing_root",
+            ) as read_root, self.assertRaises(TypeError):
+                subject.replay_e2_package(
+                    "must-not-be-read",
+                    **{forbidden: lambda *_args, **_kwargs: None},
+                )
+            read_root.assert_not_called()
+
+    def test_self_consistent_forged_owner_result_cannot_reach_io(self):
+        forged_plan = thermal.build_td_b_r6_formal_plan()
+        forged_plan["experiment_id"] = "forged-owner-experiment"
+        forged_status = thermal.td_b_r6_machine_status()
+        forged_status["operating_envelope"]["dwell_s"] = 601
+        calls = {"build": 0, "validate": 0, "status": 0, "create": 0, "persist": 0}
+
+        def build():
+            calls["build"] += 1
+            return copy.deepcopy(forged_plan)
+
+        def validate(_value):
+            calls["validate"] += 1
+
+        def status():
+            calls["status"] += 1
+            return copy.deepcopy(forged_status)
+
+        result = subject.evaluate_e2_preformal_gate(
+            self.inputs,
+            build_plan_fn=build,
+            validate_plan_fn=validate,
+            machine_status_fn=status,
+        )
+        self.assertEqual(calls, {"build": 1, "validate": 1, "status": 1, "create": 0, "persist": 0})
+
+        def create(_path):
+            calls["create"] += 1
+            raise AssertionError("create must not run")
+
+        def persist(_root, _name, _value):
+            calls["persist"] += 1
+            raise AssertionError("persist must not run")
+
+        with self.assertRaises(subject.E2ContractError):
+            subject.persist_e2_package(
+                self.inputs,
+                result,
+                create_root_fn=create,
+                persist_fn=persist,
+            )
+        self.assertEqual(calls["create"], 0)
+        self.assertEqual(calls["persist"], 0)
 
 
 class StaticBoundaryTests(unittest.TestCase):
