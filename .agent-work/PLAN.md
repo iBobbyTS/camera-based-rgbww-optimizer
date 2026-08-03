@@ -1,71 +1,247 @@
-# REF-G4-01-SUCCESSOR-LINEAGE：accepted JSON-native seam checkpoint stop
+# REF-G4-01-SUCCESSOR-LINEAGE：fresh successor release generation after native seam fix
 
-**计划状态：** `ACCEPTED_JSON_NATIVE_SEAM_WAITING_ORCHESTRATOR_FOCUSED_CHECKPOINT`
+**计划状态：** `EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION_PURE_OFFLINE_FRESH_RELEASE_V2`
 
-**Executable：** `false`
+**Executable：** `true`（仅在Orchestrator按§2对齐FULL并提交activation后生效）
 
-**Active task count：** `0`
+**Active task count：** `1`
 
-**Active task：** `null`
+**Active task：** `REF-G4-01-SUCCESSOR-LINEAGE`
 
-**Canonical reference task：** `REF-G4-01-SUCCESSOR-LINEAGE`
+**Reference goal：** `REF-G4-COMPLETE`
 
-**Planner stop：** `RETURN_ORCHESTRATOR_FOR_FOCUSED_CODE_TEST_CHECKPOINT_AND_SAME_G4_01_FRESH_RELEASE_REPLAN`
+**唯一 Planner stop：** `RETURN_FOR_G4_01_FRESH_SUCCESSOR_RELEASE_V2_REVIEW`
 
-`PLAN_MACHINE_CONTRACT={"schema":"planner_execution_contract_v2","contract_id":null,"plan_status":"ACCEPTED_JSON_NATIVE_SEAM_WAITING_ORCHESTRATOR_FOCUSED_CHECKPOINT","executable":false,"active_task_count":0,"active_task":null,"reference_task_id":"REF-G4-01-SUCCESSOR-LINEAGE","reference_goal":"REF-G4-COMPLETE","reference_task_status":"UNFINISHED_ACCEPTED_JSON_NATIVE_SEAM_WAITING_ORCHESTRATOR_CHECKPOINT","accepted_disposition":"ACCEPTED_JSON_NATIVE_PROJECTION_INTEGRATION_SEAM_ONLY_NO_RELEASE_CREDIT","review_source_head":"796f69aa9a011903a56da8bb60d45cc6ad10a2bd","reviewed_plan_archive":{"path":".agent-work/archived/PLAN-20260803-1107.md","bytes":13515,"sha256":"5508f5960788c42456e9586963b8ebda19ec495715d782ac463b5297f0520fc2","source_body_bytes":12461,"source_body_sha256":"e6d1b99a4fe71951557e6e134b7ce76f7f9e762eddd328564e126e6ecf868dff"},"reviewed_execution_result_archive":{"path":".agent-work/archived/EXECUTION_RESULT-20260803-1107.md","bytes":8905,"sha256":"88e595b648abcf585db17bfa0d0b513ac1e578b4bac7204a911b86ff577718df","source_body_bytes":7849,"source_body_sha256":"66897e61cd546e34ab023b0d18bca812f9d4f5dffb8ec33278f30749e693631d"},"accepted_code_test_paths":["src/camera_based_rgbww_optimizer/optimization/p7_successor_lineage.py","tests/test_p7_successor_lineage.py"],"targeted_result":"47/47_PASS","focused_result":"115/115_PASS","full_suite_result":"846/846_PASS","compile_result":"PASS","static_result":"PASS","codegraph_sync_query_result":"PASS","diff_scope_result":"PASS","orchestrator_checkpoint_required":true,"next_package":null,"fresh_release_generated":false,"fresh_release_validated":false,"eligibility":false,"release_consumable":false,"release_consumption_authorized":false,"retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","device_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"formal_r6_authorized":false,"td_c_authorized":false,"corrective_task_id_creation":0,"planner_stop":"RETURN_ORCHESTRATOR_FOR_FOCUSED_CODE_TEST_CHECKPOINT_AND_SAME_G4_01_FRESH_RELEASE_REPLAN","future_reference_task":"REF-G4-01-SUCCESSOR-LINEAGE","future_stage_locked":true}`
+`PLAN_MACHINE_CONTRACT={"schema":"planner_execution_contract_v2","contract_id":"G4-SUCCESSOR-LINEAGE-FRESH-RELEASE-GENERATION-VALIDATION-V2","plan_status":"EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION_PURE_OFFLINE_FRESH_RELEASE_V2","executable":true,"active_task_count":1,"active_task":"REF-G4-01-SUCCESSOR-LINEAGE","reference_task_id":"REF-G4-01-SUCCESSOR-LINEAGE","reference_goal":"REF-G4-COMPLETE","reference_task_status":"ACTIVE_AFTER_ORCHESTRATOR_ACTIVATION_FRESH_RELEASE_GENERATION_VALIDATION_V2","activation_state":"DRAFT_WAITING_ORCHESTRATOR_FULL_ALIGNMENT_AND_FOCUSED_COMMIT","verified_source_parent":"fbc3b166b81f0ea7eee79fdacb37a958e1cbd03c","activation_child_sha_recorded_in_plan":false,"activation_child_subject":"docs(plan): activate g4 fresh release after seam fix","activation_changed_paths":[".agent-work/EXECUTION_RESULT.md",".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/archived/EXECUTION_RESULT-20260803-1111.md",".agent-work/archived/PLAN-20260803-1111.md"],"reviewed_plan_archive":{"path":".agent-work/archived/PLAN-20260803-1111.md","bytes":6464,"sha256":"b49dafbda43d561d8932f508ac836f14ebd4de0952fcb55f4ee7af97234a40ad","source_body_bytes":5480,"source_body_sha256":"514db1c07677910f8dc00ff4cb09f6d458358f3a02a10089c58c17e92cc9d3bc"},"reviewed_execution_result_archive":{"path":".agent-work/archived/EXECUTION_RESULT-20260803-1111.md","bytes":2087,"sha256":"02151d66e914a7b22376af8353a4a6f82bfa71571089af806f33b4ad0bbf7bca","source_body_bytes":1105,"source_body_sha256":"7274408e90d8fa9676b50a1fd54f2ef0f8e7ee8de39906e3d63708cda78a211d"},"accepted_owner_checkpoint":"2e8eeb59bac43bb437bbfcd3a266fca924e2ceae","accepted_native_seam_checkpoint":"a8e006e40822a5e1f8782be923e5b2a6f17f4a96","single_current_action":"run_the_one_real_production_default_eq_manifest_and_build_inputs_zero_root_preflight_then_create_one_fresh_0700_family_and_compose_one_non_authorizing_successor_bundle_with_public_final_strict_each_once","executor_repo_write_paths":[".agent-work/EXECUTION_RESULT.md"],"external_write_family_template":"/Volumes/4T/temp/rgbww-optimizer/g4-successor-lineage-<activation_head_12>-<utc_YYYYMMDDTHHMMSSZ>","bundle_direct_child_name":"release","production_eq_manifest_invocation_cap":1,"production_build_inputs_invocation_cap":1,"family_root_acquisition_cap":1,"production_compose_invocation_cap":1,"bundle_root_acquisition_cap":1,"public_validator_invocation_cap":1,"final_validator_invocation_cap":1,"strict_validator_invocation_cap":1,"retry":0,"fallback":0,"repair":0,"alternate_root":0,"release_consumption":0,"retained_r3_access":0,"legacy_release_access":0,"other_external_experiment_payload_access":0,"code_edits":0,"test_edits":0,"config_edits":0,"guide_edits":0,"research_edits":0,"plan_edits_by_executer":0,"full_edits_by_executer":0,"archive_edits_by_executer":0,"full_suite_invocation_cap":0,"codegraph_sync_cap":0,"device_access":0,"network_access":0,"camera_access":0,"ray_access":0,"strip_access":0,"capture_access":0,"formal_r6_access":0,"td_c_access":0,"firmware_access":0,"deployment_access":0,"commit_by_executer":0,"eligibility":false,"release_consumable":false,"release_consumption_authorized":false,"retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","device_authorized":false,"formal_r6_authorized":false,"planner_stop":"RETURN_FOR_G4_01_FRESH_SUCCESSOR_RELEASE_V2_REVIEW","future_reference_task":"REF-G4-01-SUCCESSOR-LINEAGE","future_stage_locked":true}`
 
-## 1. Accepted disposition
+## 1. 唯一动作与credit边界
 
-Planner接受以下且仅以下工程成果：
+本包继续同一flat `REF-G4-01-SUCCESSOR-LINEAGE`。它先在zero release-root状态运行一次真实production-default
+input build；只有该seam完整通过，才创建一个fresh unique `0700` evidence family并调用repo-owned successor composer
+exactly once。Compose内部public/final/strict各exactly once；成功或失败均停回Planner。
+
+本包不创建suffix/new task，不复用、修改或搜索任何旧root。前次release package在UTC/root/build/compose前已stop，
+所以不存在可继续的旧family；这不授权重放旧attempt。Release generation仍不等于consumption、eligibility、device或
+formal authorization。
+
+Executer只可写：
 
 ```text
-decoded immutable policy -> existing provenance json_native_value exactly once
-same ordinary dict/list object -> production policy validator + R6 plan builder + policy_contract
-final SuccessorLineageInputs output remains immutable
-real tracked policy production-default seam passes
+.agent-work/EXECUTION_RESULT.md
+one fresh external family from §4, with its single production `release` child
 ```
 
-Exact accepted candidate paths：
+Source、tests、config、PLAN、FULL、archives、GUIDE、RESEARCH只读；Executer不得stage或commit。
+
+## 2. Activation与archive identity
+
+Orchestrator activation必须是下列verified parent的direct child：
 
 ```text
-src/camera_based_rgbww_optimizer/optimization/p7_successor_lineage.py
-  26438 bytes
-  8485755619ee6cee11845ff0ca698a8fff0906ff42537b3039ce5b8358fc1555
-tests/test_p7_successor_lineage.py
-  24526 bytes
-  8d825cdaddf5135435c45d4752ac0478436a05904f602799f4e40155d7665af7
+parent = fbc3b166b81f0ea7eee79fdacb37a958e1cbd03c
+subject = docs(plan): activate g4 fresh release after seam fix
+changed paths exact =
+  .agent-work/EXECUTION_RESULT.md
+  .agent-work/FULL_PLAN_REFERENCE.md
+  .agent-work/PLAN.md
+  .agent-work/archived/EXECUTION_RESULT-20260803-1111.md
+  .agent-work/archived/PLAN-20260803-1111.md
 ```
 
-Validation：targeted `47/47`、focused `115/115`、compile/static PASS、fresh full `846/846`、CodeGraph
-sync/query与diff checks PASS。Protected provenance owner、thermal giant module、config、GUIDE/RESEARCH保持byte-exact。
+Child SHA不自嵌PLAN。Executer在任何ER写入、UTC采样、EQ root traversal或external write前，必须证明direct-child
+topology、subject/path set、branch `main`、worktree clean，以及repo-owned parser给出PLAN/FULL contract ID一致、
+active count `1/1`、task exact。
 
-本次接受不代表release generation/validation、G4-01 terminal completion、G4-02 unlock、eligibility、consumption、
-hardware readiness或formal authorization。Release root、public/final/strict real invocation、retained/device/network/formal
-side effects全部为0。
-
-## 2. Reviewed archives
+Reviewed archives exact：
 
 | archive | bytes | SHA-256 | body bytes | body SHA-256 |
 |---|---:|---|---:|---|
-| `.agent-work/archived/PLAN-20260803-1107.md` | 13515 | `5508f5960788c42456e9586963b8ebda19ec495715d782ac463b5297f0520fc2` | 12461 | `e6d1b99a4fe71951557e6e134b7ce76f7f9e762eddd328564e126e6ecf868dff` |
-| `.agent-work/archived/EXECUTION_RESULT-20260803-1107.md` | 8905 | `88e595b648abcf585db17bfa0d0b513ac1e578b4bac7204a911b86ff577718df` | 7849 | `66897e61cd546e34ab023b0d18bca812f9d4f5dffb8ec33278f30749e693631d` |
+| `.agent-work/archived/PLAN-20260803-1111.md` | 6464 | `b49dafbda43d561d8932f508ac836f14ebd4de0952fcb55f4ee7af97234a40ad` | 5480 | `514db1c07677910f8dc00ff4cb09f6d458358f3a02a10089c58c17e92cc9d3bc` |
+| `.agent-work/archived/EXECUTION_RESULT-20260803-1111.md` | 2087 | `02151d66e914a7b22376af8353a4a6f82bfa71571089af806f33b4ad0bbf7bca` | 1105 | `7274408e90d8fa9676b50a1fd54f2ef0f8e7ee8de39906e3d63708cda78a211d` |
 
-Archives为historical non-executable；不授权release、retry、device、budget或commit。
+任一archive type/metadata/body replay mismatch立即stop。
 
-## 3. Orchestrator checkpoint stop
+## 3. Frozen source、owners与scientific prerequisites
 
-当前没有active executable PLAN。Orchestrator必须：
+### 3.1 Live source identity
 
-1. 独立复核two-file diff、archives、tests、CodeGraph与zero-side-effect ledger；
-2. 更新其独占FULL为active task count `0`，canonical next仍是同一
-   `REF-G4-01-SUCCESSOR-LINEAGE`，状态为accepted seam waiting checkpoint；
-3. 创建一个focused commit，只纳入accepted code/test correction与必要orchestration review state；
-4. commit后证明clean worktree、exact checkpoint/tree与accepted two-file identities；
-5. 再委派同一G4-01的新Planner pass，为fresh release generation重新冻结post-checkpoint source identity。
+Repo root：`/Users/ibobby/Projects/WLED-RGBWW`。`source_checkpoint`必须从§2 verified activation child live HEAD
+取得；不得由Planner猜未来SHA。Production default `provenance.read_git_source_identity`必须在
+`build_successor_lineage_inputs`内证明：
 
-不得在本stop直接生成release、激活G4-02、复用旧root、创建suffix或从FULL推断执行权。
+```text
+HEAD = checkpoint = activation child
+tree = live activation tree
+staged / unstaged / untracked = false / false / false
+clean = true
+```
 
-`RETURN_ORCHESTRATOR_FOR_FOCUSED_CODE_TEST_CHECKPOINT_AND_SAME_G4_01_FRESH_RELEASE_REPLAN`
+Executer在该build成功前不得写ER。若source不clean，停止且root0；不得stash/reset/clean/checkout/commit或绕过owner。
 
-维护性判断：接受修复只在composition seam复用既有provenance projection owner，未扩大thermal巨型模块或新增parallel
-controller；真实default integration、same-object与immutability回归覆盖了该边界。
+Accepted checkpoints：
+
+```text
+repo-owned successor/provenance owner = 2e8eeb59bac43bb437bbfcd3a266fca924e2ceae
+JSON-native integration seam = a8e006e40822a5e1f8782be923e5b2a6f17f4a96
+clean Orchestrator checkpoint = fbc3b166b81f0ea7eee79fdacb37a958e1cbd03c
+```
+
+Activation tree exact owner/test/delegate identities：
+
+| path | SHA-256 |
+|---|---|
+| `src/camera_based_rgbww_optimizer/optimization/p7_successor_lineage.py` | `8485755619ee6cee11845ff0ca698a8fff0906ff42537b3039ce5b8358fc1555` |
+| `tests/test_p7_successor_lineage.py` | `8d825cdaddf5135435c45d4752ac0478436a05904f602799f4e40155d7665af7` |
+| `src/camera_based_rgbww_optimizer/utils/p7_retained_r3_provenance_io.py` | `38a6a6c0402d08b8ba126e0e928fdd17244784c0fa9977c9955a3018bf6f3608` |
+| `tests/test_p7_retained_r3_provenance_io.py` | `21f47535106937f2f99acdece8b3fb5c6717e1f9900f974e60b0f744163d34c6` |
+| `src/camera_based_rgbww_optimizer/optimization/p7_thermal_diagnostics.py` | `14955da5f19e9cd73532910eee295aaaf612ec9a78559c99a51d38c239c674d1` |
+
+Accepted validation：targeted `47/47`、focused `115/115`、full `846/846`、compile/static/CodeGraph/diff PASS。
+本包不改code/test，故不重跑full suite、compile或CodeGraph sync；只证明这些identities未漂移并真实运行下述production
+default input seam。
+
+### 3.2 Policy与EQ
+
+```text
+policy path = /Users/ibobby/Projects/WLED-RGBWW/config/hsi/p7-ray-td-b-exposure-policy-v2.json
+policy bytes = 4065
+policy SHA-256 = c9080d18571f617cb7d323ade843ff9c86bf92e3795d23e3999e26d413968681
+EQ root = /Volumes/4T/temp/rgbww-optimizer/p7-td-b-exposure-qual-r6-f37517a-20260727T1928
+EQ accepted status = qualified_1_2500
+selected shutter = 1/2500
+manifest schema = planner_eq_family_manifest_v1
+manifest payload bytes = 7980
+manifest SHA-256 = 41136d0d1530163668e111b7a9213bb1b9df330d8a168b451c752e3e5dca28e9
+candidate launch / candidate2 / attempted / physical / accepted / retry = 1/0/4/4/4/0
+```
+
+Accepted archive identities：
+
+```text
+.agent-work/PLANS/20260727-2017-p7-eq-r6-qualified-1-2500-acceptance-review.md
+  25296 bytes / bf48528e826ba1fc8928f32acfd10e1cdcc08208a0adc8da8cc4d29f751203f7
+.agent-work/PLANS/20260727-2052-p7-post-eq-policy-c1e1-acceptance-review.md
+  17030 bytes / 6dd605a8d5f142d8fb50cc9a40020e6a816cc116581cccb414459f6c91cc1762
+```
+
+本包只读exact EQ root，不访问其他external experiment root，不读取retained R3或legacy release。
+
+## 4. Zero-root production-default preflight与唯一family
+
+执行顺序不可调换：
+
+1. 通过§2/§3 repo/archive/hash/machine checks，保持ER未写、release root0。
+2. `manifest = thermal.build_planner_eq_family_manifest(EQ_ROOT)` exactly once；要求payload exact `bytes`及
+   47 entries/42 files/5 dirs/0 symlink/7980 bytes/SHA `41136...28e9`。
+3. 在UTC sample与root creation前，调用`successor.build_successor_lineage_inputs(...)` exactly once，参数exact：
+   - repo root与runtime activation child checkpoint；
+   - §3.2 absolute policy path/SHA；
+   - exact EQ root；
+   - `eq_manifest_bytes=manifest["payload"]`与exact manifest SHA；
+   - `source_identity_fn`、`read_exact_file_fn`、`decode_policy_fn`、`validate_policy_fn`、`audit_eq_fn`、
+     `build_r6_plan_fn`、`machine_status_fn`全部使用production defaults，不注入fake/wrapper/compatibility adapter。
+4. Build必须PASS并在内存中证明：source clean identity exact；policy path/bytes/SHA exact；decoded policy经accepted
+   native seam进入default validator/build；R6 plan C=`1/2500`、16/16、non-executable、retry0；machine locks exact；
+   retained/history markers与authorizing claims absent。
+
+这次build既是本包唯一production build inputs调用，也是必须新增的zero-root真实回归。失败时UTC sample、family/bundle
+root、compose、public/final/strict必须全0；写ER后stop，不得修复、重跑或替换default。
+
+只有build完整PASS后才采样一次UTC并冻结：
+
+```text
+activation12 = runtime activation HEAD first 12 lowercase hex
+timestamp = one UTC YYYYMMDDTHHMMSSZ sample
+family_name = g4-successor-lineage-<activation12>-<timestamp>
+FAMILY_ROOT = /Volumes/4T/temp/rgbww-optimizer/<family_name>
+BUNDLE_ROOT = <FAMILY_ROOT>/release
+```
+
+Name必须匹配`g4-successor-lineage-[0-9a-f]{12}-[0-9]{8}T[0-9]{6}Z`。两个path都必须absent、
+non-symlink且从未被当前package使用；碰撞即stop，不得选择alternate。Container当前`0755`不能冒充provenance
+`0700` root；同一foreground process用`provenance.create_exclusive_root(FAMILY_ROOT)`exactly once取得fresh `0700`
+safe-parent identity，再由compose创建其唯一direct child `release` mode `0700`。FAMILY_ROOT是唯一external evidence
+family，release只是唯一production payload child。
+
+## 5. Exact compose与validation
+
+Build通过且family identity取得后：
+
+1. 初始化in-memory counter exact `{"public":0,"final":0,"strict":0}`；callback只允许三个key各+1。
+2. 调用`successor.compose_successor_lineage_bundle(inputs, safe_parent=family,
+   child_name="release", call_counter=counter)` exactly once，所有production defaults不注入。
+3. Compose必须terminal-last写exact五个canonical `0600` regular non-symlink files：
+
+```text
+frozen-inputs.json
+r6-formal-plan.json
+release-descriptor.json
+validation-summary.json
+terminal-seal.json
+```
+
+4. Compose return时counter必须exact public/final/strict=`1/1/1`；不得在外层再次调用任一validator。其内部final/strict
+   即本包唯一independent replay。
+5. 使用returned root/file identities做一次non-semantic只读identity audit：exact inventory/order、same target、mode、
+   bytes/SHA、canonical decode、no extra/tmp。不得重写artifact或实现第二validator。
+
+Successful facts：
+
+```text
+descriptor status = candidate_non_authorizing
+public summary = public_descriptor_semantic_pass
+terminal = sealed_non_authorizing_pending_independent_replay
+final replay / strict validation = pass / pass
+source HEAD/checkpoint/tree = runtime activation identity
+policy and EQ refs = §3 exact
+R6 plan = non-executable, 16/16, retry0, old/new pooling prohibited
+terminal references exact first four artifacts; no self-reference
+```
+
+Authority必须保持：
+
+```text
+retained_r3_status = RETAINED_UNVALIDATED_UNCONSUMED
+release_consumable = false
+release_consumption_authorized = false
+eligibility = false
+device_authorized = false
+formal_r6_authorized = false
+```
+
+Final/strict pass只给当前candidate离线validation evidence，不得写成release usable、production ready、hardware ready、
+eligibility或formal pass。
+
+## 6. Failure convergence、validation scope与handoff
+
+所有步骤只有一次：EQ manifest/build/compose/family/bundle/public/final/strict=`1` cap；retry/fallback/repair/alternate
+root/second package invocation=`0`。Source/policy/EQ/history mismatch在zero-root fail closed；root/persist/validator failure保留
+truthful failure/pending seal并stop。普通engineering failure交Orchestrator；只有真实scientific contradiction才标Advisor
+candidate，不得把serialization/provenance failure升级为science。
+
+本包不改code/test，full suite/compile/CodeGraph sync invocation=`0`，继承a8e accepted `846/846`的依据是exact
+code/test hashes未变。必须在production invocation前后证明owner/test/config/GUIDE/RESEARCH无diff，运行
+repo-owned PLAN/FULL parser、archive replay、`git diff --check`与changed-path classification。
+
+Executer在production build成功绑定clean source前不得写ER。最终ER至少记录：activation HEAD/tree/topology；parser/
+archive identities；policy/EQ/owner checks；manifest/build zero-root PASS；sampled family/bundle absent-before与root identities；
+five artifact paths/bytes/SHA/modes；counter与returned statuses；identity audit；authority zeros；inherited846 evidence；
+pre/post diff；failure或decision request。
+
+Absolute zero：
+
+```text
+code/test/config/docs/skill edits = 0
+PLAN/FULL/archive/GUIDE/RESEARCH edits by Executer = 0
+release consumption / retained R3 / legacy release = 0/0/0
+device/network/camera/Ray/strip/capture/formal/TD-C = 0
+firmware/deployment = 0
+commit/amend/stage/push = 0
+```
+
+成功只请求`RETURN_FOR_G4_01_FRESH_SUCCESSOR_RELEASE_V2_REVIEW`；不得自行解锁G4-02或消费release。随后stop。
+
+## 7. 维护性判断
+
+本包零代码修改，复用accepted successor composition、provenance persistence/native projection与thermal policy/plan owners；
+production-default zero-root build直接覆盖上一缺失seam，不新增controller或parallel serialization owner。
