@@ -1,29 +1,23 @@
-# REF-G4-04-E2：Planner reviewed rejection checkpoint
+# REF-G4-04-E2：等待 final owner-binding activation
 
-**状态：** `REJECTED_CURRENT_BOUNDED_CLOSURE_CANDIDATE_WAITING_ORCHESTRATOR`
+**状态：** `DRAFT_PLAN_WRITTEN_WAITING_ORCHESTRATOR_ACTIVATION`
 
-**Executable PLAN：** `false`
+**Executable before activation：** `false`
 
-**Active task count：** `0`
+**Active task before activation：** `null`
 
-**Reference task：** `REF-G4-04-E2`
+**Draft reference task：** `REF-G4-04-E2`
 
-**Planner stop：** `RETURN_ORCHESTRATOR_G4_04_CANONICAL_THERMAL_OWNER_SEAM_REASSESSMENT`
+**Contract：** `G4-E2-FINAL-CANONICAL-OWNER-BINDING-V1`
 
-Terminal disposition：
+**唯一 Planner stop：** `RETURN_FOR_G4_04_E2_FINAL_CANONICAL_OWNER_BINDING_REVIEW`
 
-`REJECTED_G4_04_E2_CANONICAL_THERMAL_OWNER_INJECTION_BYPASS`
+Planner已完成同一task的final-attempt single-task/single-stop draft。只有Orchestrator验证parent
+`a05b2703de49f29d0fc93030a37a39fed24c2fdb`、对齐FULL并创建subject exact为
+`docs(plan): activate final e2 owner binding`且changed paths exact为PLAN/ER/FULL的activation commit后才可执行。
 
-Reviewed archives：
+本attempt没有bounded correction/retry；任一targeted或canonical-owner gate首次失败即stop，第四轮禁止。当前未修改source/test/FULL/archive，
+未执行test，未访问或创建external/durable/formal/experiment root，未访问device、network、camera、Ray、strip、release、formal R6、TD-C，
+未生成G4-05/06 PLAN。
 
-- `.agent-work/archived/PLAN-20260803-1549.md`：16255 bytes /
-  `221f4f0425b754489671802ec2786dd7760f7ca9221d1257cc39f74009ad78ad`
-- `.agent-work/archived/EXECUTION_RESULT-20260803-1549.md`：9554 bytes /
-  `c816a196362cd41ded2402bd858caab6082bb2b500cc553cbd20038d78588b83`
-
-Planner独立确认shared validator、closed result/terminal、existing-owner default bindings、同步shape forgery拒绝、21/21 targeted及900/900
-full suite均成立。但public persist/replay允许同时注入伪builder、no-op validator和伪machine-status owner；无I/O探针证明伪formal/machine
-result可越过semantic validation并到达create callback（`create=1`）。因此canonical thermal truth没有被独立固定，candidate被拒绝。
-
-当前无active PLAN；不生成repair PLAN、new task或suffix。G4-05/06保持locked；未访问已拒external E2 root/payload，未创建root，未访问
-device/network/release/formal/TD-C。等待Orchestrator工程ownership reassessment。
+Executer开始后必须覆盖本文件写完整handoff；不得修改PLAN或FULL。
