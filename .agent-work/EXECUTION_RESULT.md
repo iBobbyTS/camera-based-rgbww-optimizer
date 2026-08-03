@@ -1,28 +1,22 @@
-# REF-G4-04-E2：Planner reviewed rejection checkpoint
+# REF-G4-04-E2：等待 Orchestrator activation
 
-**状态：** `REJECTED_CURRENT_E2_CANDIDATE_WAITING_ORCHESTRATOR`
+**状态：** `DRAFT_PLAN_WRITTEN_WAITING_ORCHESTRATOR_ACTIVATION`
 
-**Executable PLAN：** `false`
+**Executable before activation：** `false`
 
-**Active task count：** `0`
+**Active task before activation：** `null`
 
-**Reference task：** `REF-G4-04-E2`
+**Draft reference task：** `REF-G4-04-E2`
 
-**Planner stop：** `RETURN_ORCHESTRATOR_BOUNDED_SAME_REFERENCE_OFFLINE_RESULT_REPLAY_CLOSURE`
+**Contract：** `G4-E2-BOUNDED-RESULT-REPLAY-CLOSURE-V1`
 
-Terminal disposition：
+**唯一 Planner stop：** `RETURN_FOR_G4_04_E2_BOUNDED_RESULT_REPLAY_CLOSURE_REVIEW`
 
-`REJECTED_G4_04_E2_ACCEPTANCE_OPEN_RESULT_PERSISTENCE_AND_REPLAY_CONTRACT`
+Planner已完成single-task/single-stop draft。只有Orchestrator验证parent
+`f385288e2a465350d9d66801578b7bdc5e211122`、对齐FULL并创建subject为
+`docs(plan): activate bounded e2 replay closure`且changed paths exact为PLAN/ER/FULL的activation commit后，Executer才可执行。
 
-Reviewed archives：
+当前未执行code/test、未访问或创建E2/external/formal/experiment root，未访问device、network、camera、Ray、strip、release、formal R6或
+TD-C，未生成G4-05/06 PLAN。已拒E2 package继续只是historical identity，禁止读取或修补。
 
-- `.agent-work/archived/PLAN-20260803-1514.md`：15973 bytes /
-  `68e806c7f6610a26f7d156ff5258ea279f95210e4bd5751f2005c26ed8ecff6b`
-- `.agent-work/archived/EXECUTION_RESULT-20260803-1514.md`：8688 bytes /
-  `243a00e4c890ff232c9068f549c45b66a748954ceec7dc13ee56916167db496d`
-
-Recorded two-artifact root identity与`13/245/892`测试证据保留，但不取得acceptance：persist/replay没有closed result
-revalidation，伪造/open result与同步terminal可绕过并PASS；测试没有覆盖该边界。现有E2 root未读取、未修补。
-
-仅允许Orchestrator后续在同一`REF-G4-04-E2`上请求一次code/test-only bounded offline correction；不得创建suffix、root，
-不得访问device/network/release/formal，不得解锁或生成G4-05/06 PLAN。
+Executer开始后必须覆盖本文件，记录PLAN要求的完整execution handoff；不得修改PLAN或FULL。
