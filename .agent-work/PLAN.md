@@ -1,114 +1,40 @@
-# REF-G4-03-ZERO-READINESS：bounded Amaran listener recovery + fresh readiness
+# REF-G4-03-ZERO-READINESS：terminal cleanup-contract failure checkpoint
 
-**计划状态：** `EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION_BOUNDED_ENVIRONMENT_RECOVERY`
+**计划状态：** `TERMINAL_REJECTED_OVERALL_PASS_WAITING_ORCHESTRATOR_APP_LIFECYCLE_REASSESSMENT`
 
-**Executable：** `true`（仅在Orchestrator将FULL对齐为同一contract并创建exact activation commit后生效）
+**Executable：** `false`
 
-**Active task count：** `1`
+**Active task count：** `0`
 
-**Active task：** `REF-G4-03-ZERO-READINESS`
+**Active task：** `null`
 
 **Reference goal：** `REF-G4-COMPLETE`
 
-**唯一 Planner stop：** `RETURN_FOR_G4_03_BOUNDED_LISTENER_RECOVERY_READINESS_REVIEW`
+**唯一 Planner stop：** `RETURN_ORCHESTRATOR_APP_LIFECYCLE_CONTRACT_REASSESSMENT`
 
-`PLAN_MACHINE_CONTRACT={"schema":"planner_execution_contract_v2","contract_id":"G4-ZERO-READINESS-BOUNDED-LISTENER-RECOVERY-V1","plan_status":"EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION_BOUNDED_ENVIRONMENT_RECOVERY","executable":true,"active_task_count":1,"active_task":"REF-G4-03-ZERO-READINESS","reference_task_id":"REF-G4-03-ZERO-READINESS","reference_goal":"REF-G4-COMPLETE","reference_task_status":"ACTIVE_AFTER_ORCHESTRATOR_ACTIVATION_BOUNDED_LISTENER_RECOVERY_AND_ONE_FRESH_READINESS","activation_state":"DRAFT_WAITING_ORCHESTRATOR_FULL_ALIGNMENT_AND_FOCUSED_COMMIT","activation_commit":{"expected_parent":"d957a89a84d39f5d6533a2c829093c9059cb9822","expected_parent_tree":"40e19fdfd9fecd6c01460f9214e0d307b5096da9","expected_subject":"docs(plan): activate bounded ray listener recovery","expected_changed_paths":[".agent-work/EXECUTION_RESULT.md",".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md"],"child_sha_recorded_in_plan":false},"single_current_action":"recover_the_exact_amaran_desktop_loopback_listener_once_then_run_one_existing_repo_owned_zero_readiness_wrapper_in_one_fresh_root_and_restore_owned_app_process_state","allowed_changed_paths":[".agent-work/EXECUTION_RESULT.md"],"plan_activation_changed_paths":[".agent-work/EXECUTION_RESULT.md",".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md"],"production_edits":0,"test_edits":0,"wrapper_edits":0,"full_edits_by_executer":0,"plan_edits_by_executer":0,"archive_edits_by_executer":0,"guide_edits":0,"research_edits":0,"commit_by_executer":0,"app_bundle":"/Applications/amaran Desktop.app","app_bundle_id":"com.sidus.amaran-desktop","app_executable":"/Applications/amaran Desktop.app/Contents/MacOS/amaran Desktop","ray_listener":"ws://127.0.0.1:33782","ray_node":"40165-560387","ray_client":1,"app_launch_cap":1,"app_graceful_quit_cap":1,"force_kill_cap":0,"process_poll_cap_before_readiness":6,"listener_poll_cap_before_readiness":6,"listener_deadline_seconds":15,"owned_exit_poll_cap":6,"owned_exit_deadline_seconds":15,"service_variant_count":0,"endpoint_variant_count":0,"config_write_calls":0,"secret_readback_or_serialization":0,"fresh_root":"/Volumes/4T/temp/rgbww-optimizer/g4-zero-readiness-d957a89a84d3-20260803T200550Z","fresh_root_mode":448,"artifact_mode":384,"existing_owner":{"path":"src/camera_based_rgbww_optimizer/optimization/p7_successor_zero_readiness.py","bytes":28288,"sha256":"fea119e6a49825cf5858732c5a27dd0187020b70bc6fa5d6e8e2b3c428dacc8c"},"existing_tests":{"path":"tests/test_p7_successor_zero_readiness.py","bytes":16311,"sha256":"5e2efcbab079b46ca18e874ee5d684a73586517b58560d793d4bff6fc060a6b7"},"existing_wrapper":{"path":"tmp/run-g4-zero-readiness.zsh","bytes":2969,"sha256":"13c61af94a8c3e326447fe59103db074b9c707d8670120e10c82d974c09ab62a"},"readiness_wrapper_invocation_cap":1,"root_acquisition_cap":1,"readiness_retry":0,"alternate_root":0,"strip_verified_zero_cap":3,"strip_shell_zero_cap":1,"strip_nonzero_calls":0,"ray_set_intensity_zero_cap":4,"ray_get_cct_cap":2,"ray_get_node_config_cap":1,"ray_nonzero_calls":0,"camera_health_get_cap":1,"camera_config_get_cap":1,"camera_capture_calls":0,"source_isolation_validation_cap":2,"python_finally_required":true,"shell_trap_required":true,"independent_final_zero_required":true,"terminal_seal_required":true,"release_consumption":0,"retained_r3_access":0,"legacy_release_access":0,"other_external_experiment_payload_access":0,"formal_r6_access":0,"td_c_access":0,"firmware_access":0,"deployment_access":0,"expected_duration_seconds_max":480,"visible_terminal_required":false,"automation_required":false,"human_governance_gate":false,"advisor_scientific_gate":false,"g4_01_reopen":false,"g4_04_unlocked":false,"success_candidate_proposal_allowed":true,"planner_stop":"RETURN_FOR_G4_03_BOUNDED_LISTENER_RECOVERY_READINESS_REVIEW","future_reference_task":"REF-G4-04-E2","future_stage_locked":true}`
+`PLAN_MACHINE_CONTRACT={"schema":"planner_terminal_checkpoint_v2","contract_id":null,"plan_status":"TERMINAL_REJECTED_OVERALL_PASS_WAITING_ORCHESTRATOR_APP_LIFECYCLE_REASSESSMENT","executable":false,"active_task_count":0,"active_task":null,"reference_task_id":"REF-G4-03-ZERO-READINESS","reference_goal":"REF-G4-COMPLETE","reference_task_status":"READINESS_ROOT_ACCEPTED_PASS_OVERALL_TASK_NOT_ACCEPTED","terminal_disposition":"REJECTED_G4_03_PASS_APP_GRACEFUL_QUIT_EXIT_MISMATCH_DESPITE_RESIDUAL_ZERO","review_source_head":"663c873e79708c91c4f788144ef2987d880e7a37","reviewed_plan_archive":{"path":".agent-work/archived/PLAN-20260803-1415.md","bytes":11371,"sha256":"8fdc95371fa21eb7a6a486cd9c145a76becae474aacd9159c66464a0689ad188","source_body_bytes":10251,"source_body_sha256":"8359238500b313c5f4b68ba6afe1b8e31132f9fae356a96cb0f58a36b35de472"},"reviewed_execution_result_archive":{"path":".agent-work/archived/EXECUTION_RESULT-20260803-1415.md","bytes":10449,"sha256":"0f05a0b25394ddde5f499d2e906e51d5d4a546f54bfcd6b10cbe906101835602","source_body_bytes":9377,"source_body_sha256":"9df3bf1601ae8d13819841188a16f474367d1efdcb907f48f8d23dfd8c3fd287"},"readiness_root":{"path":"/Volumes/4T/temp/rgbww-optimizer/g4-zero-readiness-d957a89a84d3-20260803T200550Z","device":16777244,"inode":2506552,"mode":448,"inventory_count":14,"terminal_status":"sealed_pass_waiting_planner_review","terminal_sha256":"c6fc7b2a14cfce2474e1a1369721ebbdf660aa60baccb4caf237873a1af2a39d","terminal_artifact_refs":13,"terminal_self_reference":false,"readiness_evidence_accepted":true},"call_ledger":{"strip_verified_zero":3,"strip_shell_zero":1,"strip_nonzero":0,"ray_set_zero":4,"ray_get_cct":2,"ray_get_node_config":1,"ray_nonzero":0,"camera_health_get":1,"camera_config_get":1,"camera_capture":0,"camera_config_write":0,"source_isolation_validation":2,"release_consumption":0,"formal_r6":0,"td_c":0,"retry":0,"alternate_root":0},"final_zero":{"strip":true,"ray":true,"strip_generations":[2,3,5]},"app_lifecycle":{"preexisting":false,"launch_count":1,"owned_pid":79395,"listener_owner_exact":true,"graceful_quit_count":1,"graceful_quit_exit":1,"graceful_quit_error":-128,"graceful_quit_status":"USER_CANCELED_NOT_SUCCESS","owned_pid_at_0s":true,"owned_pid_absent_from_1s_through_15s":true,"force_kill_count":0,"alternate_quit_count":0,"service_variant_count":0,"endpoint_variant_count":0},"final_residual":{"exact_app_process":0,"listener":0,"owned_process":0,"scratch":0,"readiness_helper_process":0,"automation":0},"g4_03_pass":false,"g4_04_unlocked":false,"future_reference_task":"REF-G4-03-ZERO-READINESS","future_reference_status":"WAITING_ORCHESTRATOR_APP_LIFECYCLE_CONTRACT_REASSESSMENT_NOT_EXECUTABLE","repair_plan_generated":false,"human_governance_gate":false,"advisor_scientific_gate":false,"g4_01_reopen":false,"g4_01_status":"ACCEPTED_NOT_REOPENED","planner_stop":"RETURN_ORCHESTRATOR_APP_LIFECYCLE_CONTRACT_REASSESSMENT"}`
 
-## 1. Activation与immutable-owner intake
+## Planner decision
 
-Executer开始前必须证明：
+Readiness evidence自身接受：activation exact；fresh root 14项、0700/0600、canonical bytes、13项terminal引用与hash、
+non-self-reference均通过；call ledger exact；strip/Ray final zero、camera health/config和两次source isolation通过；
+capture/nonzero/config-write/consumption/formal/TD-C、retry、alternate root与variant均为0。
 
-1. branch为`main`；HEAD是
-   `d957a89a84d39f5d6533a2c829093c9059cb9822`的direct child；activation subject与exact three-path
-   diff符合machine row；除PLAN/FULL/ER activation diff外工作树干净。
-2. PLAN/FULL strict parser均通过；contract同为
-   `G4-ZERO-READINESS-BOUNDED-LISTENER-RECOVERY-V1`；active task/count为
-   `REF-G4-03-ZERO-READINESS / 1`。
-3. canonical next仍是同一`REF-G4-03-ZERO-READINESS`；不得创建task suffix、corrective task或新reference。
-4. 现有owner/test/wrapper的bytes/SHA与machine row exact；它们和
-   FULL、GUIDE、RESEARCH、archives均只读。
-5. exact fresh root及symlink均不存在；不得读取、复用、改名、移动或删除上一失败root及其他external payload。
+但整体G4-03 PASS被拒绝。PLAN §6明确要求本轮owned app同时满足“graceful quit成功”与“owned residual为0”。
+Exact bundle-id AppleScript只调用一次，但exit为1且返回-128 `User canceled`；这不是成功。Owned PID从1秒起消失、
+最终app/listener/owned/scratch residual均为0，只满足第二个必要条件，不能覆盖第一个失败条件。
 
-任一项失败：不启动app、不访问listener/device/network、不创建root，只写ER后stop。禁止reset/clean/checkout。
+Terminal disposition：
 
-## 2. Frozen environment owner与安全边界
+`REJECTED_G4_03_PASS_APP_GRACEFUL_QUIT_EXIT_MISMATCH_DESPITE_RESIDUAL_ZERO`
 
-Repo docs与Orchestrator工程重评已冻结：
+这是普通app-lifecycle/attestation工程合同问题，不是科学问题或Human授权问题。Planner不生成repair PLAN，不重试、
+不访问设备/网络，不修改FULL。Orchestrator应将FULL收为active0、G4-04继续locked，并独立决定后续app lifecycle
+success contract；不得把本次readiness root丢弃或重跑来改写证据。
 
-- listener owner：`/Applications/amaran Desktop.app`
-- bundle id：`com.sidus.amaran-desktop`
-- executable：`/Applications/amaran Desktop.app/Contents/MacOS/amaran Desktop`
-- exact endpoint：`ws://127.0.0.1:33782`
-- node/client：`40165-560387 / 1`
+G4-01仍为accepted，不重开。
 
-应用bundle、Info.plist、endpoint、node、client、secret、timeout及应用配置均不得修改；不得用替代service、
-proxy、port-forward、endpoint variant或controller。不得打印或序列化secret。
+## Stop
 
-本包只授权启动/关闭本地controller应用的environment recovery，以及既有readiness wrapper内的read-only与zero/off。
-Strip/Ray只能zero；camera只能health/config。Capture、nonzero、release consumption、formal R6、TD-C、firmware、
-deployment、config write均为0。
-
-## 3. Bounded listener recovery
-
-Executer必须先记录pre-existing process集合与port 33782 LISTEN集合，使用exact executable path和只读
-`ps`/`lsof`；不得通过WebSocket发送探针。
-
-- 若exact app已运行：`app_preexisting=true`，launch count为0；它不是Executer-owned，最后绝对不得关闭。
-- 若exact app未运行：只允许一次
-  `/usr/bin/open "/Applications/amaran Desktop.app"`；记录launch前不存在及launch后exact PID集合，
-  仅这些新出现且归属于exact bundle executable/process tree的PID可标记owned。
-- 稀疏轮询上限6次，固定时间点为启动/观察后的0、1、2、4、8、15秒；每次只读记录exact app process与
-  TCP 127.0.0.1:33782 LISTEN。总deadline 15秒；不得增加poll、sleep、launch或换service。
-- Listener ready必须同时满足：exact app process存在，且33782为loopback LISTEN并归属该app process/process tree。
-  仅进程存在或端口被其他owner占用均不算ready。
-
-若deadline内未ready：不得调用readiness wrapper、不得创建fresh root；若app为本轮owned，执行第5节graceful cleanup；
-在ER记录失败并立即Planner review。没有第二次launch/retry。
-
-## 4. 唯一 fresh readiness
-
-Listener ready后，先再次确认owner/test/wrapper hash、PLAN/FULL contract和fresh root absent，然后只执行一次：
-
-`zsh tmp/run-g4-zero-readiness.zsh /Volumes/4T/temp/rgbww-optimizer/g4-zero-readiness-d957a89a84d3-20260803T200550Z`
-
-禁止任何第二次wrapper invocation或alternate root。既有owner必须继续负责fresh 0700 root、14项0600 canonical evidence、
-generation-bearing strip zero、Ray exact zero/readback/node、camera health/config/capability、source isolation、
-Python finally、shell trap、independent final-zero与terminal seal。
-
-成功路径call ledger必须exact为：strip verified zero 3、strip shell zero 1、Ray set intensity0 4、Ray get_cct 2、
-Ray get_node_config 1、camera health/config各1、source isolation validation 2；所有capture/nonzero/config-write/
-consumption/formal/TD-C为0。任一readiness或cleanup失败：保留同一root的sealed-fail，不重试、不修设备、不换root，
-直接执行owned-app cleanup并回Planner。
-
-## 5. Owned app cleanup
-
-无论listener recovery或readiness成功/失败：
-
-- 如果app在preflight已存在：不得quit、TERM、KILL或改变它。
-- 如果app由本轮启动：在wrapper完整cleanup与terminal seal之后，只允许一次
-  `/usr/bin/osascript -e 'tell application id "com.sidus.amaran-desktop" to quit'`；
-  禁止`kill`、`pkill`、`killall`或第二种退出方式。
-- graceful quit后以0、1、2、4、8、15秒最多6次只读poll exact owned PID/process tree；要求owned residual为0。
-  若未退出，记录cleanup failure并stop，不得force-kill或请求新recovery variant。
-- App是否pre-existing、launch/quit counts、owned PIDs、listener observations与最终owned residual必须写入ER；
-  不得伪装成readiness root自身的terminal fields。
-
-预计总时长少于8分钟，前台执行；禁止visible Terminal、后台owner与automation。
-
-## 6. Handoff与acceptance
-
-ER必须记录activation topology、pre-existing/owned process classification、六次以内process/listener observations、
-launch/quit counts、listener ownership、root inventory/hash/modes/seal、call ledger、all exit status、最终zero与owned residual。
-
-G4-03 PASS candidate必须同时要求：
-
-- listener exact且owner正确；
-- readiness terminal PASS、14项证据exact；
-- strip和Ray final zero均证明；
-- camera health/config通过且capture为0；
-- retry/alternate/service variant为0；
-- 若app由本轮启动，graceful quit成功且owned residual为0；若pre-existing，未关闭它。
-
-任何一项失败都只返回sealed/recorded failure，不解锁G4-04。本PLAN不授权Executer commit、修改PLAN/FULL或生成后继package。
-Executer完成ER后停于
-`RETURN_FOR_G4_03_BOUNDED_LISTENER_RECOVERY_READINESS_REVIEW`，由Planner独立验收。
+停止于`RETURN_ORCHESTRATOR_APP_LIFECYCLE_CONTRACT_REASSESSMENT`。本checkpoint不授权G4-04、service/app操作、
+readiness retry、release consumption、capture、formal或TD-C。

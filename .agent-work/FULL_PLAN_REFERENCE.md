@@ -12,22 +12,22 @@
 
 **适用 GUIDE SHA-256：** `659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35`
 
-**Archived predecessor：** `.agent-work/archived/FULL_PLAN_REFERENCE-20260803-1359.md`
+**Archived predecessor：** `.agent-work/archived/FULL_PLAN_REFERENCE-20260803-1417.md`
 
-**当前可执行任务数：** `1`
+**当前可执行任务数：** `0`
 
-**当前 active task：** `REF-G4-03-ZERO-READINESS`
+**当前 active task：** `null`
 
 **唯一 canonical next reference：** `REF-G4-03-ZERO-READINESS`
-（`ACTIVE_BOUNDED_LISTENER_RECOVERY_AND_FRESH_READINESS`）
+（`WAITING_APP_LIFECYCLE_CONTRACT_REASSESSMENT_NOT_EXECUTABLE`）
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_guide4_goal_active_v13","snapshot_date":"2026-08-03","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","reference_revision_parent":"4e8d9c7330a0c2be6bb9f9dd912ec2b39348fbcd","content_policy":"UNFINISHED_TASKS_AND_REQUIRED_EXECUTION_INVARIANTS_ONLY","completed_content_allowed":false,"archive_policy":{"directory":".agent-work/archived","name_pattern":"{PLAN类型}-YYYYMMDD-HHMM.md","immutable":true,"overwrite":false},"archived_predecessor":{"path":".agent-work/archived/FULL_PLAN_REFERENCE-20260803-1359.md","status":"HISTORICAL_NON_EXECUTABLE_PRE_REWRITE_SNAPSHOT","source_commit":"e64cdaf309ac623f978e1c8aa08988707aa0c344","source_body_bytes":25289,"source_body_sha256":"342b2afec4bea0ec6c2ef8b91a37515c151c44d440cfec0175aee20e5379bd63","archive_bytes":26516,"archive_sha256":"5b467836513774cced1f8e7acccdc058f19d1dff3895cf227127ac676639ac28"},"active_task_count":1,"active_task":"REF-G4-03-ZERO-READINESS","active_plan_contract_id":"G4-ZERO-READINESS-BOUNDED-LISTENER-RECOVERY-V1","current_plan_active_task_count":1,"current_plan_active_task":"REF-G4-03-ZERO-READINESS","canonical_next_reference_task":"REF-G4-03-ZERO-READINESS","canonical_next_reference_status":"ACTIVE_BOUNDED_LISTENER_RECOVERY_AND_FRESH_READINESS","executable":false,"plan_status":"ACTIVE_EXECUTABLE_PLAN_BOUNDED_LISTENER_RECOVERY","active_human_goal_route":{"reference_goal":"REF-G4-COMPLETE","status":"GOAL_ACTIVE_G4_03_BOUNDED_LISTENER_RECOVERY","objective":"COMPLETE_ADVISOR_4_GUIDE_REACHABLE_ROUTE_TO_MANDATED_STOP","current_reference_task":"REF-G4-03-ZERO-READINESS"},"guide_completion_contract":{"success_definition":"ALL_REACHABLE_GUIDE4_STAGES_ACCEPTED_OR_MANDATED_FAIL_STOP_AND_ADVISOR_HANDOFF_REACHED","force_pass_prohibited":true},"old_corrective_task_ids_reactivatable":false,"corrective_suffix_creation_allowed":false,"historical_route_policy":"ARCHIVED_ONLY_NO_REACTIVATION_NO_SUFFIX_GROWTH","frozen_guide_input":{"stage":"EQ-R6_STATE_C","selected_exposure":"1/2500","status":"ACCEPTED_QUALIFIED_INPUT_NOT_A_CURRENT_TASK"},"retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","canonical_validator_success":true,"eligibility":true,"release_consumable":true,"release_consumption_authorized":false,"device_authorized_by_this_file":false,"camera_authorized_by_this_file":false,"ray_authorized_by_this_file":false,"strip_authorized_by_this_file":false,"formal_r6_authorized":false,"td_c_authorized":false,"automatic_experiment_package_generation":false,"unresolved_scientific_questions_for_current_route":[],"unresolved_human_authority_facts_for_current_route":[],"allowed_next_action":"EXECUTE_ACTIVE_PLAN_REF_G4_03_BOUNDED_LISTENER_RECOVERY","planner_requirement":"REVIEW_EXECUTION_RESULT_AT_SINGLE_STOP","full_is_non_executable_reference":true,"g4_01_prerequisite":{"disposition":"ACCEPTED_G4_01_SUCCESSOR_RELEASE_GENERATED_VALIDATED_NON_AUTHORIZING_UNCONSUMED","owner_checkpoint":"2e8eeb59bac43bb437bbfcd3a266fca924e2ceae","contract_correction":"INTEGRITY_FIRST_AND_REFERENCE_CONSISTENT_SEMANTIC_GUARDS_ACCEPTED","source_head":"779c7d9572d991f82076c892ec8198a059bbe44e","release_bundle":"/Volumes/4T/temp/rgbww-optimizer/g4-successor-lineage-779c7d9572d9-20260803T172055Z/release","release_consumed":false,"device_or_formal_credit":false},"g4_02_prerequisite":{"disposition":"ACCEPTED_G4_02_DURABLE_PREDEVICE_EXACT_G4_01_RELEASE_ELIGIBLE_CONSUMABLE_UNCONSUMED","owner_checkpoint":"125158a3c1b8fa36a3a377290d90ebd53e46ec8a","durable_root":"/Volumes/4T/temp/rgbww-optimizer/g4-predevice-oracle-125158a3c1b8-20260803T181631Z","release_consumed":false,"device_or_formal_credit":false},"g4_03_last_attempt":{"disposition":"ACCEPTED_G4_03_SEALED_FAIL_RAY_CONTROLLER_UNREACHABLE_FINAL_ZERO_UNPROVEN","source_head":"e64cdaf309ac623f978e1c8aa08988707aa0c344","sealed_root":"/Volumes/4T/temp/rgbww-optimizer/g4-zero-readiness-5d05cc14286a-20260803T191648Z","terminal_seal_sha256":"cc11b85ec69c94a44b6a0dcc4b46e001387938d1fc6765b284c56523b09be4a6","strip_final_zero_proven":true,"ray_final_zero_proven":false,"ray_listener":"ws://127.0.0.1:33782","ray_listener_reachable":false,"retry":0,"alternate_root":0,"g4_03_pass":false,"g4_04_unlocked":false,"planner_review_archive":".agent-work/archived/PLAN-20260803-1357.md","execution_result_archive":".agent-work/archived/EXECUTION_RESULT-20260803-1357.md"}}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_guide4_goal_active_v13","snapshot_date":"2026-08-03","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","reference_revision_parent":"4e8d9c7330a0c2be6bb9f9dd912ec2b39348fbcd","content_policy":"UNFINISHED_TASKS_AND_REQUIRED_EXECUTION_INVARIANTS_ONLY","completed_content_allowed":false,"archive_policy":{"directory":".agent-work/archived","name_pattern":"{PLAN类型}-YYYYMMDD-HHMM.md","immutable":true,"overwrite":false},"archived_predecessor":{"path":".agent-work/archived/FULL_PLAN_REFERENCE-20260803-1417.md","status":"HISTORICAL_NON_EXECUTABLE_PRE_REWRITE_SNAPSHOT","source_commit":"663c873e79708c91c4f788144ef2987d880e7a37","source_body_bytes":11100,"source_body_sha256":"88e70cc87cc893e3bb39092d911a7f0ec8c1b32efb4657f4d2259a9c610ba07d","archive_bytes":12309,"archive_sha256":"57dcb851e948fa8114b700f2d339f446c25c4a52fe236230ea8e2861efe4b39c"},"active_task_count":0,"active_task":null,"active_plan_contract_id":null,"current_plan_active_task_count":0,"current_plan_active_task":null,"canonical_next_reference_task":"REF-G4-03-ZERO-READINESS","canonical_next_reference_status":"WAITING_APP_LIFECYCLE_CONTRACT_REASSESSMENT_NOT_EXECUTABLE","executable":false,"plan_status":"TERMINAL_REJECTED_OVERALL_PASS_WAITING_ORCHESTRATOR_APP_LIFECYCLE_REASSESSMENT","active_human_goal_route":{"reference_goal":"REF-G4-COMPLETE","status":"GOAL_ACTIVE_G4_03_APP_LIFECYCLE_REASSESSMENT","objective":"COMPLETE_ADVISOR_4_GUIDE_REACHABLE_ROUTE_TO_MANDATED_STOP","current_reference_task":"REF-G4-03-ZERO-READINESS"},"guide_completion_contract":{"success_definition":"ALL_REACHABLE_GUIDE4_STAGES_ACCEPTED_OR_MANDATED_FAIL_STOP_AND_ADVISOR_HANDOFF_REACHED","force_pass_prohibited":true},"old_corrective_task_ids_reactivatable":false,"corrective_suffix_creation_allowed":false,"historical_route_policy":"ARCHIVED_ONLY_NO_REACTIVATION_NO_SUFFIX_GROWTH","frozen_guide_input":{"stage":"EQ-R6_STATE_C","selected_exposure":"1/2500","status":"ACCEPTED_QUALIFIED_INPUT_NOT_A_CURRENT_TASK"},"retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","canonical_validator_success":true,"eligibility":true,"release_consumable":true,"release_consumption_authorized":false,"device_authorized_by_this_file":false,"camera_authorized_by_this_file":false,"ray_authorized_by_this_file":false,"strip_authorized_by_this_file":false,"formal_r6_authorized":false,"td_c_authorized":false,"automatic_experiment_package_generation":false,"unresolved_scientific_questions_for_current_route":[],"unresolved_human_authority_facts_for_current_route":[],"allowed_next_action":"ORCHESTRATOR_PURE_OFFLINE_APP_LIFECYCLE_CONTRACT_REASSESSMENT_THEN_PLANNER_SINGLE_TASK_PASS","planner_requirement":"DO_NOT_AUTHORIZE_DEVICE_OR_SERVICE_RETRY","full_is_non_executable_reference":true,"g4_01_prerequisite":{"disposition":"ACCEPTED_G4_01_SUCCESSOR_RELEASE_GENERATED_VALIDATED_NON_AUTHORIZING_UNCONSUMED","owner_checkpoint":"2e8eeb59bac43bb437bbfcd3a266fca924e2ceae","contract_correction":"INTEGRITY_FIRST_AND_REFERENCE_CONSISTENT_SEMANTIC_GUARDS_ACCEPTED","source_head":"779c7d9572d991f82076c892ec8198a059bbe44e","release_bundle":"/Volumes/4T/temp/rgbww-optimizer/g4-successor-lineage-779c7d9572d9-20260803T172055Z/release","release_consumed":false,"device_or_formal_credit":false},"g4_02_prerequisite":{"disposition":"ACCEPTED_G4_02_DURABLE_PREDEVICE_EXACT_G4_01_RELEASE_ELIGIBLE_CONSUMABLE_UNCONSUMED","owner_checkpoint":"125158a3c1b8fa36a3a377290d90ebd53e46ec8a","durable_root":"/Volumes/4T/temp/rgbww-optimizer/g4-predevice-oracle-125158a3c1b8-20260803T181631Z","release_consumed":false,"device_or_formal_credit":false},"g4_03_last_attempt":{"disposition":"REJECTED_G4_03_PASS_APP_GRACEFUL_QUIT_EXIT_MISMATCH_DESPITE_RESIDUAL_ZERO","source_head":"663c873e79708c91c4f788144ef2987d880e7a37","readiness_evidence_disposition":"ACCEPTED_SEALED_PASS","sealed_root":"/Volumes/4T/temp/rgbww-optimizer/g4-zero-readiness-d957a89a84d3-20260803T200550Z","terminal_seal_sha256":"c6fc7b2a14cfce2474e1a1369721ebbdf660aa60baccb4caf237873a1af2a39d","strip_final_zero_proven":true,"ray_final_zero_proven":true,"camera_readiness_pass":true,"source_isolation_pass":true,"app_graceful_quit_exit":1,"app_graceful_quit_error":-128,"app_owned_residual":0,"listener_residual":0,"retry":0,"alternate_root":0,"g4_03_pass":false,"g4_04_unlocked":false,"planner_review_archive":".agent-work/archived/PLAN-20260803-1415.md","execution_result_archive":".agent-work/archived/EXECUTION_RESULT-20260803-1415.md"}}`
 
 ## Current state
 
 - Planner 已接受 G4-03 的完整 sealed-fail evidence，但没有接受 readiness PASS。
-- 当前 PLAN 与 FULL active task count 均为 `1`；只有PLAN授权执行，FULL仍不提供执行授权。
-- 唯一active/current task仍是 `REF-G4-03-ZERO-READINESS`，contract为 `G4-ZERO-READINESS-BOUNDED-LISTENER-RECOVERY-V1`。不得创建
+- 当前 PLAN 与 FULL active task count 均为 `0`；没有active executable PLAN，FULL不提供执行授权。
+- 唯一unfinished current task仍是 `REF-G4-03-ZERO-READINESS`。当前只允许纯离线app-lifecycle contract重评；不得创建
   corrective suffix、不得恢复旧 `REF-P7-25-R2-...` route。
 - 当前精确工程边界是冻结 endpoint `ws://127.0.0.1:33782` 无 listener：
   main、Python finally、shell cleanup 与 independent final-zero 均
@@ -51,7 +51,7 @@
 | Reference ID | 当前状态 | 目的 | 直接依赖 / stop |
 | --- | --- | --- | --- |
 | `REF-G4-COMPLETE` | `GOAL_ACTIVE_NON_EXECUTABLE_REFERENCE` | 完成 GUIDE 全部可达路线或正确停在 GUIDE fail-stop | Human goal 已创建 |
-| `REF-G4-03-ZERO-READINESS` | `ACTIVE_BOUNDED_LISTENER_RECOVERY_AND_FRESH_READINESS` | 取得 exact Ray listener owner/reachability，并在 fresh root 重做 bounded zero/readiness | G4-02 accepted；同一 task；一次 bounded environment recovery |
+| `REF-G4-03-ZERO-READINESS` | `WAITING_APP_LIFECYCLE_CONTRACT_REASSESSMENT_NOT_EXECUTABLE` | 取得 exact Ray listener owner/reachability，并在 fresh root 重做 bounded zero/readiness | G4-02 accepted；同一 task；一次 bounded environment recovery |
 | `REF-G4-04-E2` | `BLOCKED` | fresh E2 preformal gate | G4-03 PASS |
 | `REF-G4-05-RAY-R6-STAGE-GATE` | `BLOCKED` | 冻结 exact Ray R6 launch | G4-04 accepted |
 | `REF-G4-06-RAY-R6` | `LOCKED` | Ray-only formal R6 16帧 | G4-05 exact gate |
@@ -65,17 +65,17 @@
 
 ## Current engineering reassessment boundary
 
-Orchestrator已确认exact local controller owner并委派Planner写成当前唯一active PLAN。当前PLAN冻结：
+Orchestrator已冻结并接受本次readiness root的设备/zero证据；下一步只允许纯离线app-lifecycle contract重评。后续PLAN必须冻结：
 
-- exact localhost listener owner、startup command、health/readback contract 与退出/残留处理；
-- 一个 fresh 0700 evidence root，artifact 0600；
-- service recovery 仅用于恢复既有 exact endpoint，不改变 node/client/target/intensity/range；
-- strip 与 Ray 只允许 zero/off；camera仅read-only health/config；capture/nonzero均为0；
+- 只读取既有review archive中的launch/quit/process/listener observations，不访问external root payload；
+- 不创建fresh root、不启动app、不访问device/network，不重跑readiness；
+- 把graceful-request transport result与authoritative final process/listener effect分开建模；
+- 通过repo-owned pure classifier与行为测试冻结success/failure truth table；
 - release consumption、retained R3、formal R6、TD-C、firmware、deployment均为0；
-- Python finally、shell cleanup、independent final-zero 与 terminal seal；
-- 单次 fresh readiness invocation；失败即回 Planner，不创建 suffix 或 alternate root。
+- 保留原PLAN rejection，不事后改写历史；只判断accepted readiness evidence是否可在新contract下完成G4-03；
+- 一次targeted/focused/full offline validation；失败即回Planner，不创建suffix或实验root。
 
-FULL只描述该未完成路线。当前执行权仅来自匹配的active PLAN；FULL本身不能启动service、访问设备、授权额外retry或消费release。
+FULL只描述该未完成路线。当前没有active PLAN。FULL本身不能启动service、访问设备、授权retry或消费release。
 
 ## Scientific and safety locks
 
@@ -95,14 +95,14 @@ FULL只描述该未完成路线。当前执行权仅来自匹配的active PLAN�
 ## Archive pointers
 
 - G4-03 reviewed PLAN：
-  `.agent-work/archived/PLAN-20260803-1357.md`
-  / `adb4a85e99bb1bc95bd945186bc3018ac28da0fdab75cdda38ae0985ded56eff`
+  `.agent-work/archived/PLAN-20260803-1415.md`
+  / `8fdc95371fa21eb7a6a486cd9c145a76becae474aacd9159c66464a0689ad188`
 - G4-03 reviewed EXECUTION_RESULT：
-  `.agent-work/archived/EXECUTION_RESULT-20260803-1357.md`
-  / `5a9231805a661ee97980feb703316bf6f2857e5fc77d7bfec26c1d1e32bd5961`
+  `.agent-work/archived/EXECUTION_RESULT-20260803-1415.md`
+  / `0f05a0b25394ddde5f499d2e906e51d5d4a546f54bfcd6b10cbe906101835602`
 - Pre-rewrite FULL：
-  `.agent-work/archived/FULL_PLAN_REFERENCE-20260803-1359.md`
-  / `5b467836513774cced1f8e7acccdc058f19d1dff3895cf227127ac676639ac28`
-- Immutable sealed-fail root：
-  `/Volumes/4T/temp/rgbww-optimizer/g4-zero-readiness-5d05cc14286a-20260803T191648Z`
-  / terminal seal `cc11b85ec69c94a44b6a0dcc4b46e001387938d1fc6765b284c56523b09be4a6`
+  `.agent-work/archived/FULL_PLAN_REFERENCE-20260803-1417.md`
+  / `57dcb851e948fa8114b700f2d339f446c25c4a52fe236230ea8e2861efe4b39c`
+- Immutable accepted-readiness root：
+  `/Volumes/4T/temp/rgbww-optimizer/g4-zero-readiness-d957a89a84d3-20260803T200550Z`
+  / terminal seal `c6fc7b2a14cfce2474e1a1369721ebbdf660aa60baccb4caf237873a1af2a39d`
