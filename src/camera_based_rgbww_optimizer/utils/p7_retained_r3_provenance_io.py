@@ -25,13 +25,19 @@ __all__ = [
     "GitLedger",
     "ProvenanceDependencies",
     "ProvenanceIOError",
+    "RepositoryIdentity",
+    "SourceIdentity",
     "canonical_json_bytes",
+    "create_exclusive_direct_child",
     "create_exclusive_root",
     "decode_canonical_json",
+    "decode_strict_json_bytes",
     "json_native_value",
+    "list_exact_regular_children",
     "persist_canonical_json",
     "read_exact_file",
     "read_existing_root",
+    "read_git_source_identity",
     "require_same_target",
     "run_read_only_git",
 ]
@@ -80,6 +86,26 @@ class GitLedger:
 
 
 @dataclass(frozen=True)
+class RepositoryIdentity:
+    path: str
+    device: int
+    inode: int
+    mode: int
+
+
+@dataclass(frozen=True)
+class SourceIdentity:
+    repository: RepositoryIdentity
+    head: str
+    checkpoint: str
+    tree: str
+    staged: bool
+    unstaged: bool
+    untracked: bool
+    clean: bool
+
+
+@dataclass(frozen=True)
 class ProvenanceDependencies:
     lstat: Callable[[Any], os.stat_result] = os.lstat
     mkdir: Callable[[Any, int], None] = os.mkdir
@@ -89,6 +115,7 @@ class ProvenanceDependencies:
     write_fd: Callable[[int, bytes | memoryview], int] = os.write
     fsync_fd: Callable[[int], None] = os.fsync
     close_fd: Callable[[int], None] = os.close
+    scandir: Callable[[Any], Any] = os.scandir
     run_process: Callable[..., Any] = subprocess.run
 
 
@@ -205,6 +232,28 @@ def create_exclusive_root(
     except OSError as exc:
         raise ProvenanceIOError("root_mkdir_failed") from exc
     return _directory_identity(target, deps)
+
+
+def create_exclusive_direct_child(
+    parent: DirectoryIdentity,
+    child_name: str,
+    *,
+    dependencies: Mapping[str, Callable[..., Any]] | None = None,
+) -> DirectoryIdentity:
+    """Create one exact child while binding the canonical parent identity."""
+
+    deps = _dependencies(dependencies)
+    parent_path = _require_root(parent, deps)
+    child = parent_path / _direct_child(child_name)
+    try:
+        deps.mkdir(child, 0o700)
+    except FileExistsError as exc:
+        raise ProvenanceIOError("root_exists") from exc
+    except OSError as exc:
+        raise ProvenanceIOError("root_mkdir_failed") from exc
+    if _directory_identity(parent_path, deps) != parent:
+        raise ProvenanceIOError("parent_identity_drift")
+    return _directory_identity(child, deps)
 
 
 def read_existing_root(
@@ -433,6 +482,24 @@ def decode_canonical_json(data: bytes) -> Any:
     return frozen
 
 
+def decode_strict_json_bytes(data: bytes) -> Any:
+    """Strictly decode JSON bytes without requiring canonical source layout."""
+
+    if type(data) is not bytes or data.startswith(b"\xef\xbb\xbf"):
+        raise ProvenanceIOError("json_bytes_invalid")
+    try:
+        value = json.loads(
+            data.decode("utf-8"),
+            object_pairs_hook=_strict_object,
+            parse_constant=_reject_constant,
+        )
+        return _freeze_json(value)
+    except ProvenanceIOError:
+        raise
+    except (UnicodeDecodeError, json.JSONDecodeError, TypeError, ValueError) as exc:
+        raise ProvenanceIOError("json_decode_failed") from exc
+
+
 def _direct_child(value: str) -> str:
     if type(value) is not str or not value or "\x00" in value or value in {".", ".."}:
         raise ProvenanceIOError("unsafe_child")
@@ -532,6 +599,33 @@ def require_same_target(actual: FileIdentity, expected: FileIdentity) -> FileIde
     return actual
 
 
+def list_exact_regular_children(
+    root: DirectoryIdentity,
+    *,
+    dependencies: Mapping[str, Callable[..., Any]] | None = None,
+) -> tuple[str, ...]:
+    """List exact direct regular-file children under one bound root identity."""
+
+    deps = _dependencies(dependencies)
+    root_path = _require_root(root, deps)
+    names: list[str] = []
+    try:
+        with deps.scandir(root_path) as entries:
+            for entry in entries:
+                name = _direct_child(entry.name)
+                observed = entry.stat(follow_symlinks=False)
+                if stat.S_ISLNK(observed.st_mode) or not stat.S_ISREG(observed.st_mode):
+                    raise ProvenanceIOError("child_not_regular")
+                names.append(name)
+    except ProvenanceIOError:
+        raise
+    except OSError as exc:
+        raise ProvenanceIOError("root_inventory_failed") from exc
+    if _directory_identity(root_path, deps) != root:
+        raise ProvenanceIOError("root_identity_drift")
+    return tuple(sorted(names, key=lambda value: value.encode("utf-8")))
+
+
 def _sha(value: str) -> bool:
     return type(value) is str and _SHA40.fullmatch(value) is not None
 
@@ -550,9 +644,15 @@ def _validate_git_argv(argv: tuple[str, ...]) -> None:
         raise ProvenanceIOError("git_argv_invalid")
     valid = False
     if len(argv) == 4 and argv[:3] == ("git", "rev-parse", "--verify"):
-        valid = argv[3].endswith("^{commit}") and _sha(argv[3][:-9])
+        valid = argv[3] == "HEAD^{commit}" or (
+            argv[3].endswith("^{commit}") and _sha(argv[3][:-9])
+        )
     elif len(argv) == 5 and argv[:4] == ("git", "show", "-s", "--format=%H%x00%P%x00%s"):
         valid = _sha(argv[4])
+    elif len(argv) == 5 and argv[:4] == ("git", "show", "-s", "--format=%H%x00%T"):
+        valid = _sha(argv[4])
+    elif argv == ("git", "status", "--porcelain=v1", "-z", "--untracked-files=all"):
+        valid = True
     elif len(argv) == 7 and argv[:6] == ("git", "diff-tree", "--no-commit-id", "--name-only", "-r", "-z"):
         valid = _sha(argv[6])
     elif len(argv) == 3 and argv[:2] == ("git", "rev-parse") and ":" in argv[2]:
@@ -601,4 +701,93 @@ def run_read_only_git(
     return GitLedger(
         tuple(argv), str(repo_path), completed.returncode, stdout, stderr,
         hashlib.sha256(stdout).hexdigest(), hashlib.sha256(stderr).hexdigest(),
+    )
+
+
+def _repository_identity(
+    path: Path, dependencies: ProvenanceDependencies
+) -> RepositoryIdentity:
+    try:
+        observed = dependencies.lstat(path)
+    except OSError as exc:
+        raise ProvenanceIOError("repo_lstat_failed") from exc
+    if stat.S_ISLNK(observed.st_mode) or not stat.S_ISDIR(observed.st_mode):
+        raise ProvenanceIOError("repo_not_directory")
+    return RepositoryIdentity(
+        str(path), observed.st_dev, observed.st_ino, stat.S_IMODE(observed.st_mode)
+    )
+
+
+def _require_clean_ledger(ledger: GitLedger, code: str) -> bytes:
+    if ledger.exit_code != 0 or ledger.stderr:
+        raise ProvenanceIOError(code)
+    return ledger.stdout
+
+
+def read_git_source_identity(
+    repo: os.PathLike[str] | str,
+    checkpoint: str,
+    *,
+    dependencies: Mapping[str, Callable[..., Any]] | None = None,
+) -> SourceIdentity:
+    """Read one clean HEAD/checkpoint/tree identity through allowlisted Git."""
+
+    if not _sha(checkpoint):
+        raise ProvenanceIOError("source_checkpoint_invalid")
+    deps = _dependencies(dependencies)
+    repo_path = _path(repo)
+    if not repo_path.is_absolute() or str(repo_path) != os.fspath(repo):
+        raise ProvenanceIOError("repo_not_absolute")
+    before = _repository_identity(repo_path, deps)
+    head_bytes = _require_clean_ledger(
+        run_read_only_git(
+            repo_path, ("git", "rev-parse", "--verify", "HEAD^{commit}"),
+            dependencies=dependencies,
+        ),
+        "source_head_unverified",
+    )
+    if not head_bytes.endswith(b"\n") or head_bytes.count(b"\n") != 1:
+        raise ProvenanceIOError("source_head_invalid")
+    try:
+        head = head_bytes[:-1].decode("ascii")
+    except UnicodeDecodeError as exc:
+        raise ProvenanceIOError("source_head_invalid") from exc
+    if not _sha(head) or head != checkpoint:
+        raise ProvenanceIOError("source_head_mismatch")
+    show = _require_clean_ledger(
+        run_read_only_git(
+            repo_path,
+            ("git", "show", "-s", "--format=%H%x00%T", checkpoint),
+            dependencies=dependencies,
+        ),
+        "source_tree_unverified",
+    )
+    try:
+        commit_bytes, tree_bytes = show.removesuffix(b"\n").split(b"\x00", 1)
+        observed_commit = commit_bytes.decode("ascii")
+        tree = tree_bytes.decode("ascii")
+    except (ValueError, UnicodeDecodeError) as exc:
+        raise ProvenanceIOError("source_tree_invalid") from exc
+    if observed_commit != checkpoint or not _sha(tree):
+        raise ProvenanceIOError("source_tree_invalid")
+    status = _require_clean_ledger(
+        run_read_only_git(
+            repo_path,
+            ("git", "status", "--porcelain=v1", "-z", "--untracked-files=all"),
+            dependencies=dependencies,
+        ),
+        "source_status_unverified",
+    )
+    records = tuple(record for record in status.split(b"\x00") if record)
+    if any(len(record) < 3 for record in records):
+        raise ProvenanceIOError("source_status_invalid")
+    untracked = any(record.startswith(b"?? ") for record in records)
+    staged = any(record[:1] not in {b" ", b"?"} for record in records)
+    unstaged = any(record[1:2] not in {b" ", b"?"} for record in records)
+    after = _repository_identity(repo_path, deps)
+    if after != before:
+        raise ProvenanceIOError("repo_identity_drift")
+    return SourceIdentity(
+        before, head, checkpoint, tree, staged, unstaged, untracked,
+        not (staged or unstaged or untracked),
     )

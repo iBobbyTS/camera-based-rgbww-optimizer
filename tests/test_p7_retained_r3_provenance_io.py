@@ -756,6 +756,117 @@ class ProvenanceIOTests(unittest.TestCase):
                 lstats.assert_called_once_with(Path(identity.path))
                 opened.assert_not_called()
 
+    def test_strict_noncanonical_json_bytes_decoder(self):
+        pretty = b'{\n  "schema": "fixture",\n  "value": [1, true, null]\n}\n'
+        decoded = subject.decode_strict_json_bytes(pretty)
+        self.assertEqual(decoded["schema"], "fixture")
+        self.assertEqual(decoded["value"], (1, True, None))
+        self.assert_code("json_not_canonical", subject.decode_canonical_json, pretty)
+        failures = (
+            (b"\xef\xbb\xbf{}", "json_bytes_invalid"),
+            (b'{"x":1,"x":2}', "json_duplicate_key"),
+            (b'{"x":NaN}', "json_nonfinite"),
+            (b'{"x":Infinity}', "json_nonfinite"),
+            (b'\xff', "json_decode_failed"),
+            (b'{"x":', "json_decode_failed"),
+        )
+        for payload, code in failures:
+            with self.subTest(code=code, payload=payload):
+                self.assert_code(code, subject.decode_strict_json_bytes, payload)
+
+    def test_bound_parent_direct_child_creation_and_race_guards(self):
+        parent = self.case / "parent"
+        parent.mkdir(mode=0o700)
+        parent.chmod(0o700)
+        identity = subject.read_existing_root(parent)
+        child = subject.create_exclusive_direct_child(identity, "release")
+        self.assertEqual(child.path, str(parent / "release"))
+        self.assertEqual(child.mode, 0o700)
+        self.assert_code("root_exists", subject.create_exclusive_direct_child, identity, "release")
+        for name in ("", ".", "..", "../escape", "a/b", "a\\b", "/absolute"):
+            with self.subTest(name=name):
+                self.assert_code("unsafe_child", subject.create_exclusive_direct_child, identity, name)
+
+        target = self.case / "target"
+        target.mkdir(mode=0o700)
+        target.chmod(0o700)
+        link = self.case / "parent-link"
+        link.symlink_to(target, target_is_directory=True)
+        self.assert_code("repo_not_directory", subject.read_git_source_identity, link, SHA_A)
+        self.assert_code("root_not_directory", subject.read_existing_root, link)
+
+        raced = self.case / "raced-parent"
+        raced.mkdir(mode=0o700)
+        raced.chmod(0o700)
+        raced_identity = subject.read_existing_root(raced)
+        observed = os.lstat(raced)
+        parent_reads = 0
+
+        def lstat_with_swap(path):
+            nonlocal parent_reads
+            if Path(path) == raced:
+                parent_reads += 1
+                if parent_reads > 1:
+                    return SimpleNamespace(
+                        st_mode=observed.st_mode, st_dev=observed.st_dev,
+                        st_ino=observed.st_ino + 1,
+                    )
+            return os.lstat(path)
+
+        self.assert_code(
+            "parent_identity_drift", subject.create_exclusive_direct_child,
+            raced_identity, "child", dependencies={"lstat": lstat_with_swap},
+        )
+
+    def test_exact_inventory_rejects_nonregular_or_symlink_children(self):
+        root = self.root()
+        subject.persist_canonical_json(root, "b.json", {"b": 1})
+        subject.persist_canonical_json(root, "a.json", {"a": 1})
+        self.assertEqual(subject.list_exact_regular_children(root), ("a.json", "b.json"))
+        (Path(root.path) / "directory").mkdir()
+        self.assert_code("child_not_regular", subject.list_exact_regular_children, root)
+
+        second = subject.create_exclusive_root(self.case / "second")
+        target = self.case / "outside"
+        target.write_text("x", encoding="utf-8")
+        (Path(second.path) / "link").symlink_to(target)
+        self.assert_code("child_not_regular", subject.list_exact_regular_children, second)
+
+    def test_git_source_identity_uses_real_head_tree_and_all_status_classes(self):
+        repo = self.case / "source-repo"
+        repo.mkdir()
+        subprocess.run(("git", "init", "-q"), cwd=repo, check=True)
+        subprocess.run(("git", "config", "user.email", "test@example.invalid"), cwd=repo, check=True)
+        subprocess.run(("git", "config", "user.name", "Test"), cwd=repo, check=True)
+        tracked = repo / "tracked.txt"
+        tracked.write_text("one\n", encoding="utf-8")
+        subprocess.run(("git", "add", "tracked.txt"), cwd=repo, check=True)
+        subprocess.run(("git", "commit", "-qm", "fixture"), cwd=repo, check=True)
+        head = subprocess.check_output(("git", "rev-parse", "HEAD"), cwd=repo, text=True).strip()
+        tree = subprocess.check_output(("git", "show", "-s", "--format=%T", "HEAD"), cwd=repo, text=True).strip()
+
+        clean = subject.read_git_source_identity(repo, head)
+        self.assertEqual((clean.head, clean.checkpoint, clean.tree), (head, head, tree))
+        self.assertTrue(clean.clean)
+        self.assertEqual(clean.repository.path, str(repo))
+        self.assert_code("source_head_mismatch", subject.read_git_source_identity, repo, SHA_B)
+
+        untracked_path = repo / "untracked.txt"
+        untracked_path.write_text("new\n", encoding="utf-8")
+        untracked = subject.read_git_source_identity(repo, head)
+        self.assertEqual((untracked.staged, untracked.unstaged, untracked.untracked, untracked.clean),
+                         (False, False, True, False))
+        untracked_path.unlink()
+
+        tracked.write_text("two\n", encoding="utf-8")
+        unstaged = subject.read_git_source_identity(repo, head)
+        self.assertEqual((unstaged.staged, unstaged.unstaged, unstaged.untracked, unstaged.clean),
+                         (False, True, False, False))
+        subprocess.run(("git", "add", "tracked.txt"), cwd=repo, check=True)
+        staged = subject.read_git_source_identity(repo, head)
+        self.assertEqual((staged.staged, staged.unstaged, staged.untracked, staged.clean),
+                         (True, False, False, False))
+
     def test_ast_import_and_capability_guard(self):
         source_path = Path(subject.__file__)
         source = source_path.read_text(encoding="utf-8")
