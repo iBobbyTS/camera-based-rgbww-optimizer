@@ -1,23 +1,41 @@
-# REF-G4-01-SUCCESSOR-LINEAGE：fresh successor release v2 handoff
+# REF-G4-01-SUCCESSOR-LINEAGE：Planner accepted terminal stop
 
-**状态：** `WAITING_ORCHESTRATOR_ACTIVATION_AND_EXECUTER`
-
-**PLAN contract：** `G4-SUCCESSOR-LINEAGE-FRESH-RELEASE-GENERATION-VALIDATION-V2`
+**状态：** `REVIEWED_ACCEPTED_WAITING_ORCHESTRATOR_FULL_TERMINAL_DISPOSITION`
 
 **Reference task：** `REF-G4-01-SUCCESSOR-LINEAGE`
 
-**Planner stop：** `RETURN_FOR_G4_01_FRESH_SUCCESSOR_RELEASE_V2_REVIEW`
+**Executable PLAN：** `false`
 
-Planner已先归档accepted seam checkpoint PLAN/ER：
+**Active task count：** `0`
+
+Planner已接受：`ACCEPTED_G4_01_SUCCESSOR_RELEASE_GENERATED_VALIDATED_NON_AUTHORIZING_UNCONSUMED`。
+
+Reviewed evidence已冻结：
 
 ```text
-.agent-work/archived/PLAN-20260803-1111.md
-  6464 bytes
-  b49dafbda43d561d8932f508ac836f14ebd4de0952fcb55f4ee7af97234a40ad
-.agent-work/archived/EXECUTION_RESULT-20260803-1111.md
-  2087 bytes
-  02151d66e914a7b22376af8353a4a6f82bfa71571089af806f33b4ad0bbf7bca
+.agent-work/archived/PLAN-20260803-1126.md
+  16643 bytes
+  f73edd5db23a45ac077b393608f92515ce050487d4ce2c6c26d026e67ea7af46
+.agent-work/archived/EXECUTION_RESULT-20260803-1126.md
+  10560 bytes
+  685c183e264dd8f9862aea3a61048f39ec81a0e45405b789f946273aa4d31e25
 ```
 
-本文件等待Orchestrator activation后由Executer写入唯一fresh offline release v2 handoff。Executer不得修改代码、
-测试、PLAN、FULL、archives、config或GUIDE/RESEARCH；不得消费release、访问设备或commit。
+Accepted external family：
+
+```text
+/Volumes/4T/temp/rgbww-optimizer/g4-successor-lineage-779c7d9572d9-20260803T172055Z
+release child = release
+family/release mode = 0700/0700
+artifact count = 5
+public/final/strict = pass/pass/pass
+descriptor = candidate_non_authorizing
+terminal = sealed_non_authorizing_pending_independent_replay
+```
+
+Authority保持：retained R3=`RETAINED_UNVALIDATED_UNCONSUMED`；release consumption/consumable、eligibility、device、
+camera、Ray、strip、formal R6、TD-C全部false。
+
+当前唯一stop是`RETURN_ORCHESTRATOR_ARCHIVE_FULL_RETIRE_G4_01_AND_PREPARE_G4_02_PLANNING`。Orchestrator须先归档
+pre-rewrite FULL snapshot、从live FULL移除terminal G4-01，再将`REF-G4-02-PREDEVICE`置为唯一ready-for-planning
+canonical next；本ER不激活G4-02。
