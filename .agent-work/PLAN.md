@@ -1,6 +1,6 @@
-# REF-G4-01-SUCCESSOR-LINEAGE：建立 Guide 4 successor composition owner
+# REF-G4-01-SUCCESSOR-LINEAGE：provenance/state seam 第二次 owner reassessment
 
-**计划状态：** `EXECUTABLE_BOUNDED_PURE_OFFLINE_ENABLING_INTEGRATION`
+**计划状态：** `EXECUTABLE_BOUNDED_PURE_OFFLINE_SECOND_SEAM_REASSESSMENT`
 
 **Executable：** `true`
 
@@ -8,266 +8,152 @@
 
 **Active task：** `REF-G4-01-SUCCESSOR-LINEAGE`
 
-**Planner 日期：** `2026-08-02`
+**Planner review disposition：** `REJECTED_HIGH_RISK_PROVENANCE_STATE_SEAM_SECOND_PASS_REQUIRED`
 
-**适用 GUIDE：** `advisor/4/4.GUIDE.md`；SHA-256
-`659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35`
+`PLAN_MACHINE_CONTRACT={"schema":"planner_execution_contract_v2","contract_id":"G4-SUCCESSOR-LINEAGE-PROVENANCE-SEAM-REASSESSMENT-V2","plan_status":"EXECUTABLE_BOUNDED_PURE_OFFLINE_SECOND_SEAM_REASSESSMENT","executable":true,"active_task_count":1,"active_task":"REF-G4-01-SUCCESSOR-LINEAGE","reference_task_id":"REF-G4-01-SUCCESSOR-LINEAGE","reference_goal":"REF-G4-COMPLETE","package_kind":"bounded_pure_offline_existing_owner_extension_and_composition_repair","same_boundary_failure_ordinal":2,"review_source_head":"c0e47c482ba0dfb9c004c0e67383e012ab56073e","review_source_tree":"ff51ee655d5dfe1f1337f5a756e9daac9c883ade","reviewed_plan_archive":{"path":".agent-work/archived/PLAN-20260802-2320.md","bytes":19849,"sha256":"e40698084b84f1e7e3b4e5176d44c215345015e9b40cc405763ee8f88086fad7"},"reviewed_execution_result_archive":{"path":".agent-work/archived/EXECUTION_RESULT-20260802-2320.md","bytes":11889,"sha256":"52feabe4be3510368e7429733afeb97d4923a1d7f6d153ec9ad0ddec8844c13d"},"policy_bytes_decoder":"PROVENANCE_STRICT_JSON_BYTES_NONCANONICAL_INPUT_V1","bundle_state_machine":"CANDIDATE_DESCRIPTOR_THEN_PUBLIC_SUMMARY_THEN_TERMINAL_LAST_PENDING_INDEPENDENT_REPLAY","independent_replay_results_persisted_in_bundle":false,"single_current_action":"repair_the_five_frozen_and_three_additional_same_root_provenance_findings_by_minimally_extending_the_existing_provenance_owner_and_reducing_successor_to_composition_only","allowed_changed_paths":["src/camera_based_rgbww_optimizer/optimization/p7_successor_lineage.py","src/camera_based_rgbww_optimizer/utils/p7_retained_r3_provenance_io.py","tests/test_p7_successor_lineage.py","tests/test_p7_retained_r3_provenance_io.py",".agent-work/EXECUTION_RESULT.md"],"production_source_edits":2,"test_file_edits":2,"giant_p7_module_edits":0,"config_edits":0,"guide_edits":0,"research_edits":0,"plan_edits_by_executer":0,"full_edits_by_executer":0,"release_root_acquisition":0,"release_generation":0,"public_validator_invocations":0,"final_validator_invocations":0,"strict_validator_invocations":0,"release_consumption":0,"retained_r3_access":0,"legacy_release_access":0,"external_experiment_payload_access":0,"full_suite_invocations":0,"device_access":0,"network_access":0,"camera_access":0,"ray_access":0,"strip_access":0,"capture_access":0,"formal_r6_access":0,"td_c_access":0,"firmware_access":0,"deployment_access":0,"ordinary_bounded_correction_cap":0,"corrective_task_id_creation":0,"third_same_boundary_failure_action":"STOP_RETURN_ORCHESTRATOR_NO_FURTHER_REPAIR","planner_stop":"RETURN_FOR_SECOND_SEAM_REASSESSMENT_REVIEW_OR_THIRD_FAILURE_STOP","future_reference_task":"REF-G4-01-SUCCESSOR-LINEAGE","future_stage_locked":true}`
 
-`PLAN_MACHINE_CONTRACT={"schema":"planner_execution_contract_v2","contract_id":"G4-SUCCESSOR-LINEAGE-ENABLING-INTEGRATION-V1","plan_status":"EXECUTABLE_BOUNDED_PURE_OFFLINE_ENABLING_INTEGRATION","executable":true,"active_task_count":1,"active_task":"REF-G4-01-SUCCESSOR-LINEAGE","reference_task_id":"REF-G4-01-SUCCESSOR-LINEAGE","reference_goal":"REF-G4-COMPLETE","package_kind":"bounded_pure_offline_repo_owned_composition_seam_and_tests","verified_source_parent":"b91066015613c996187665d8ea9b7841ac321b84","verified_source_parent_tree":"4b1083e71d321e85daa64e47fe1dcd82eef79aef","activation_child_sha_recorded_in_plan":false,"activation_child_subject":"docs(plan): activate g4 successor lineage integration","activation_changed_paths":[".agent-work/EXECUTION_RESULT.md",".agent-work/PLAN.md",".agent-work/archived/EXECUTION_RESULT-20260802-2246.md"],"rotated_execution_result_archive":{"path":".agent-work/archived/EXECUTION_RESULT-20260802-2246.md","bytes":1619225,"sha256":"dea5bb1d4f183aee806d7bb8b83153d486190f19e64eb8cf59c8bdb3f7d6e5e4","source_body_bytes":1618285,"source_body_sha256":"803a023422bf20c096c218498e44f7196d6bc99aa8504ff4e8110592b9448abd","immutable_after_activation":true},"activation_protected_paths":["src","tests","config","advisor",".agent-work/FULL_PLAN_REFERENCE.md"],"guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","single_current_action":"implement_one_repo_owned_guide4_successor_lineage_composition_owner_and_behavior_tests_then_stop_for_planner_review_and_orchestrator_checkpoint","allowed_changed_paths":["src/camera_based_rgbww_optimizer/optimization/p7_successor_lineage.py","tests/test_p7_successor_lineage.py",".agent-work/EXECUTION_RESULT.md"],"production_source_edits":1,"test_file_edits":1,"config_edits":0,"guide_edits":0,"research_edits":0,"plan_edits_by_executer":0,"full_edits_by_executer":0,"release_root_acquisition":0,"release_generation":0,"public_validator_invocations":0,"final_validator_invocations":0,"strict_validator_invocations":0,"release_consumption":0,"retained_r3_access":0,"legacy_release_access":0,"old_controller_access":0,"external_experiment_payload_access":0,"device_access":0,"network_access":0,"camera_access":0,"ray_access":0,"strip_access":0,"capture_access":0,"formal_r6_access":0,"td_c_access":0,"firmware_access":0,"deployment_access":0,"commit_by_executer":0,"amend":0,"push":0,"ordinary_bounded_correction_cap":1,"corrective_task_id_creation":0,"planner_stop":"RETURN_FOR_ENABLING_INTEGRATION_REVIEW_AND_ORCHESTRATOR_CHECKPOINT","future_release_family":"/Volumes/4T/temp/rgbww-optimizer/g4-successor-lineage","future_release_exact_root":"MUST_BE_FROZEN_BY_THE_POST_CHECKPOINT_PLAN_NOT_THIS_PACKAGE","future_reference_task":"REF-G4-01-SUCCESSOR-LINEAGE","future_stage_locked":true}`
+## 1. Review decision 与唯一 stop
 
-## 1. 当前唯一动作与停止点
+首包 **reject**。Targeted `9/9`、focused `44/44` 及 Orchestrator独立 `836/836` 证明普通回归面为绿，不能关闭
+下列纯合成可复现的 high-risk provenance/state findings。当前task保持同一 flat
+`REF-G4-01-SUCCESSOR-LINEAGE`；不得创建suffix、corrective task、release root或新semantic owner。
 
-本包只建立一个可维护的 repository-owned Guide 4 successor-lineage composition seam，及其行为保护测试。
-Executer 完成实现与验证后，只写当前 `.agent-work/EXECUTION_RESULT.md` 并停回 Planner。Planner 验收后，
-Orchestrator 才能建立包含本 owner 的 exact Git checkpoint；随后仍由同一个
-`REF-G4-01-SUCCESSOR-LINEAGE` 的新 Planner pass 冻结 exact checkpoint/tree 与 exact fresh root，首次生成并验证
-release。
-
-本包不得取得 release root，不得生成 release，不得调用 public/final/strict validator，不得把未提交代码绑定为
-lineage source，也不得新建 corrective task ID。后续 predevice/device/formal stage 全部 hard locked。
+本包是同一 seam 的第二次 owner reassessment，只允许一次实现。任一 Must Fix仍可复现、任何新同根high-risk缺口、
+或验证失败，即计为第三次同边界失败并执行
+`STOP_RETURN_ORCHESTRATOR_NO_FURTHER_REPAIR`；不得在本包内再修。
 
 **唯一 Planner stop：**
-`RETURN_FOR_ENABLING_INTEGRATION_REVIEW_AND_ORCHESTRATOR_CHECKPOINT`。
+`RETURN_FOR_SECOND_SEAM_REASSESSMENT_REVIEW_OR_THIRD_FAILURE_STOP`。
 
-## 2. Frozen intake
-
-### 2.1 非自引用 activation topology
+## 2. Reviewed evidence与输入冻结
 
 ```text
-verified source parent = b91066015613c996187665d8ea9b7841ac321b84
-verified source parent parent = 4e8d9c7330a0c2be6bb9f9dd912ec2b39348fbcd
-verified source parent tree = 4b1083e71d321e85daa64e47fe1dcd82eef79aef
-verified source parent subject = docs(orchestration): activate guide 4 completion goal
-branch = main
-
-allowed direct child subject = docs(plan): activate g4 successor lineage integration
-allowed direct child exact changed paths =
-  .agent-work/EXECUTION_RESULT.md
-  .agent-work/PLAN.md
-  .agent-work/archived/EXECUTION_RESULT-20260802-2246.md
-
-rotated archive = .agent-work/archived/EXECUTION_RESULT-20260802-2246.md
-archive bytes = 1619225
-archive SHA-256 = dea5bb1d4f183aee806d7bb8b83153d486190f19e64eb8cf59c8bdb3f7d6e5e4
-source body bytes = 1618285
-source body SHA-256 = 803a023422bf20c096c218498e44f7196d6bc99aa8504ff4e8110592b9448abd
-```
-
-本 PLAN 不记录、也不要求预知 future child SHA。Orchestrator必须先以 exact subject/path set建立上述唯一 activation
-child；archive从该commit起immutable，不由Executer修改。Executer启动时必须只读证明：current HEAD是verified
-source parent的direct child；subject与changed paths exact；worktree clean；PLAN/FULL对本task一致；且
-`verified source parent..current HEAD` 对 `src/`、`tests/`、`config/`、`advisor/**/GUIDE.md`、
-`advisor/**/RESEARCH.md` 与 `.agent-work/FULL_PLAN_REFERENCE.md` 完全无变化。任一不一致即停，不得reset、clean、
-checkout、猜测child SHA或接受更深后继。
-
-### 2.2 Accepted EQ family
-
-以下只作为 immutable accepted scientific/provenance input；本包不得读取或修改 external payload：
-
-```text
-acceptance archive =
-  .agent-work/PLANS/20260727-2017-p7-eq-r6-qualified-1-2500-acceptance-review.md
-archive bytes = 25296
-archive SHA-256 = bf48528e826ba1fc8928f32acfd10e1cdcc08208a0adc8da8cc4d29f751203f7
-
-accepted EQ family root =
-  /Volumes/4T/temp/rgbww-optimizer/p7-td-b-exposure-qual-r6-f37517a-20260727T1928
-canonical manifest schema = planner_eq_family_manifest_v1
-canonical manifest subject = all descendants of that exact root, root excluded
-canonical manifest entries/files/directories/symlinks/other = 47/42/5/0/0
-canonical manifest payload bytes = 7980
-canonical manifest SHA-256 =
+review source HEAD = c0e47c482ba0dfb9c004c0e67383e012ab56073e
+review source tree = ff51ee655d5dfe1f1337f5a756e9daac9c883ade
+reviewed PLAN archive = .agent-work/archived/PLAN-20260802-2320.md
+  bytes/SHA-256 = 19849 / e40698084b84f1e7e3b4e5176d44c215345015e9b40cc405763ee8f88086fad7
+reviewed ER archive = .agent-work/archived/EXECUTION_RESULT-20260802-2320.md
+  bytes/SHA-256 = 11889 / 52feabe4be3510368e7429733afeb97d4923a1d7f6d153ec9ad0ddec8844c13d
+candidate module = src/camera_based_rgbww_optimizer/optimization/p7_successor_lineage.py
+  bytes/SHA-256 = 23185 / 4fdd7fe880650c98fc9ffad0520a2e8bd15c371c206484905e72f8cb298a1240
+candidate tests = tests/test_p7_successor_lineage.py
+  bytes/SHA-256 = 16284 / b269dcf99b20c731d75dda622fcb5bc9597f572819c2c85d9aae8e34ad3ed46e
+GUIDE SHA-256 = 659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35
+post-EQ checkpoint = 161094ffa2bf1f84ed1fc787e708e8c3463f10db
+policy path/SHA-256 = config/hsi/p7-ray-td-b-exposure-policy-v2.json /
+  c9080d18571f617cb7d323ade843ff9c86bf92e3795d23e3999e26d413968681
+accepted EQ manifest bytes/SHA-256 = 7980 /
   41136d0d1530163668e111b7a9213bb1b9df330d8a168b451c752e3e5dca28e9
-accepted status = qualified_1_2500
 ```
 
-四个 accepted artifact reference 只冻结 path/hash，不在本包打开：
+Orchestrator激活本 PLAN后，Executer只接受上述两个candidate file为继承的未提交实现；archive immutable。
+其他dirty/staged/untracked内容即停。不得要求 PLAN自嵌future commit SHA；dispatch必须提供current HEAD、parent、subject、
+exact activation paths，Executer只读证明activation未修改candidate/provenance/test/config/GUIDE/FULL内容。
 
-```text
-run/outer-result.json =
-  20a4ee42c931e7df74b7fdd756eab3077530726e8ae5c03d3d48b45e8b562f0a
-run/candidate-1-outer-terminal.json =
-  6401f0f162ce3efcd1ca6139e8394ed17411df7552fb1722e2db3eb7a8e4cd16
-run/candidate-1/candidate-result.json =
-  7db4d60627c9a63304945664b4ba2e7918dafb12495f5fbf1d45500a46748612
-run/candidate-1/terminal-seal.json =
-  8baa46bc6431e9e79c035a6f83954d810c25def2c8b662a761784fd1d81417a3
-```
+## 3. Must Fix ledger
 
-### 2.3 Accepted post-EQ checkpoint and policy
+### `REV-G4-01-001 SOURCE_ATTESTATION_FALSE`
 
-```text
-acceptance archive =
-  .agent-work/PLANS/20260727-2052-p7-post-eq-policy-c1e1-acceptance-review.md
-archive bytes = 17030
-archive SHA-256 = 6dd605a8d5f142d8fb50cc9a40020e6a816cc116581cccb414459f6c91cc1762
+`source_checkpoint`、tree、HEAD、index/worktree状态必须由真实Git事实产生，禁止caller自报。最小扩展
+`p7_retained_r3_provenance_io.py`，提供一个typed source identity owner；其内部只通过扩展后的
+`run_read_only_git` exact allowlist读取 `HEAD^{commit}`、exact checkpoint tree及porcelain staged/unstaged/untracked状态。
+返回值必须同时绑定repo physical path、HEAD、checkpoint、tree、index/worktree clean，并由successor module消费。
+successor module不得直接调用subprocess或自己解析Git输出。
 
-checkpoint = 161094ffa2bf1f84ed1fc787e708e8c3463f10db
-parent = f37517af3ae25efb41f085904fd48f037980ed04
-tree = 6a69b2c7c1569352047500c44e25b337e4ff82aa
-subject = feat(p7): finalize eq-r6 state-c exposure policy
-changed paths = exact three paths below
-```
+### `REV-G4-01-002 POLICY_IDENTITY_SEMANTIC_SPLIT`
 
-| Accepted path | Bytes at checkpoint | SHA-256 at checkpoint |
-| --- | ---: | --- |
-| `config/hsi/p7-ray-td-b-exposure-policy-v2.json` | 4065 | `c9080d18571f617cb7d323ade843ff9c86bf92e3795d23e3999e26d413968681` |
-| `src/camera_based_rgbww_optimizer/optimization/p7_thermal_diagnostics.py` | 171565 | `87efa4ff026b4433ff00b40876bdb6a0b96ec181190f8d288e1f3fea6ad41b90` |
-| `tests/test_p7_td_b_r6_contract.py` | 102435 | `10374ec2366fc8cbe928953690defc31c83dc5c04da192f599f59591ec196f23` |
+现有policy是合法pretty JSON（4065 bytes），不是repo canonical compact JSON；不得调用
+`provenance.decode_canonical_json()`。最小扩展provenance owner新增
+`decode_strict_json_bytes()`（或职责完全等价的具名API）：严格UTF-8、拒绝BOM、duplicate key、NaN/Infinity及
+unsupported JSON value，但**不要求re-encode后与原bytes canonical相等**。Successor必须只将同一次
+`read_exact_file()` 返回的 `FileIdentity.data` 交该decoder，再交existing thermal in-memory policy validator；禁止随后
+按path二次读取、禁止successor自行调用`json.loads`或复制strict JSON owner。Policy reference、semantic contract与SHA
+必须来自同一FileIdentity。测试必须使用当前pretty JSON形状positive fixture，并证明duplicate/nonfinite/invalid UTF-8、
+identity bytes与semantic contract不一致、fixture schema伪装均拒绝。
 
-当前 policy owner 必须保持：
+### `REV-G4-01-003 SAFE_PARENT_SYMLINK_ESCAPE`
 
-```text
-path = config/hsi/p7-ray-td-b-exposure-policy-v2.json
-bytes = 4065
-SHA-256 = c9080d18571f617cb7d323ade843ff9c86bf92e3795d23e3999e26d413968681
-selected C = 1/2500
-old_new_frame_combination = prohibited
-```
+最小扩展provenance owner以取得 canonical、no-follow parent directory identity，并以该identity创建一个exact direct
+child；create前后都必须重验parent dev/inode/mode/path。Successor只传parent identity与一个direct-child name，不做词法
+`Path.parent`安全判断。symlink parent、parent swap、escape、preexisting child全部fail closed。
 
-### 2.4 当前 production delegates
+### `REV-G4-01-004 CROSS_ARTIFACT_REPLAY_GAP`
 
-下列 owner 在本包中全部只读；新 seam 只组合其 public API，不复制其 policy/plan/serialization 语义：
+共享internal schema checker逐项绑定：descriptor的两个preterminal refs、public validation summary中的descriptor
+bytes/SHA与全部authority、terminal前四refs，必须分别与实际 `FileIdentity` exact相等。Final replay和strict validator
+都必须在terminal写完后各自读取真实五artifact，验证closed schema、cross-reference、artifact order、terminal
+non-circularity及pending-replay seal语义；不能只看status/path，也不能把public semantic pass冒充final/strict pass。
 
-| Boundary | Current path | Bytes | Current SHA-256 |
-| --- | --- | ---: | --- |
-| policy、EQ audit、R6 plan builder/validator | `src/camera_based_rgbww_optimizer/optimization/p7_thermal_diagnostics.py` | 203416 | `14955da5f19e9cd73532910eee295aaaf612ec9a78559c99a51d38c239c674d1` |
-| legacy lineage writer，仅用于证明不适用 | `src/camera_based_rgbww_optimizer/optimization/measure_p7_thermal_diagnostics.py` | 188493 | `a9bc77340dc43a30c0733e6ed651ea155b2250739b02a69d5abe6b6d249a3d47` |
-| downstream analysis consumer，当前不调用 | `src/camera_based_rgbww_optimizer/optimization/analyze_p7_thermal_diagnostics.py` | 97644 | `8e68400d51d01a20f4629aec7ad17c084835d7242e1cfba73a0335916209fa03` |
-| filesystem/Git/canonical JSON | `src/camera_based_rgbww_optimizer/utils/p7_retained_r3_provenance_io.py` | 21151 | `a27546b1b19aa979d5bfb1731b4bf5dab87a6eed6b5c18ff5b728095d73957c1` |
+### `REV-G4-01-005 OPEN_AUTHORITY_SCHEMA`
 
-必须复用 `p7_thermal_diagnostics.load_td_b_exposure_policy_v2()`、
-`audit_td_b_eq_r6_qualification()`、`build_td_b_r6_formal_plan()`、
-`validate_td_b_r6_formal_plan()` 与 `td_b_r6_machine_status()`；canonical bytes、exclusive-root、exact-file、
-read-only Git 与 durable persistence 必须委派给 `p7_retained_r3_provenance_io` 的现有 owner，不得写第二套
-JSON projector、Git parser、temporary-replace writer或 filesystem identity模型。
+五个artifact全部使用exact key set。任何额外authority/downstream claim，包括但不限于
+`release_usable`、`production_release_usable`、`product_ready`、`formal_pass` 均拒绝；retained、eligibility、consumption、
+device、formal字段只允许合同中的exact false/status。Public/final/strict三条入口全部执行同一closed-schema helper。
 
-## 3. Maintainability preflight 与 owner 决定
+### 同根新增finding
 
-CodeGraph 已确认现有 `write_td_b_setup_lineage_release()` 硬绑定 legacy R2 setup release、旧 F0A Planner
-candidate，并重建旧 formal plan；其 validator 同样要求这些 owner。它不能证明 current Guide 4 successor，且使用它会
-违反 old release/retained route lock。
+- `REV-G4-01-006 FAILURE_SEAL_ABSENT`：实现必须使用无循环state machine。Descriptor只能是candidate且
+  non-authorizing；public summary只能声明descriptor semantic pass，不能声明final/strict。Terminal必须是第五件且最后
+  persist，success状态只能为 `sealed_non_authorizing_pending_independent_replay`（或冻结的完全等价literal），authority
+  全false，不声明final/strict pass。Terminal写前任何失败且terminal target仍可exclusive-create时，写truthful fail seal：
+  primary failure、已存在artifact exact refs、authority false；seal失败保留原primary并向caller报告双失败。Terminal写后
+  final/strict失败时不得覆盖、repair或retry pending seal，只在返回值/exception/ER记录primary failure。
+- `REV-G4-01-007 VALIDATOR_ACCOUNTING_UNDERCOUNT`：final/strict内部再次调用public函数却不计数。提取一个无counter的
+  shared closed-schema helper；public/final/strict各自入口恰好计数一次，彼此不得调用另一个public入口。
+- `REV-G4-01-008 PREVALIDATION_STATUS_LIE`：descriptor在验证前即写
+  `fresh_successor_lineage_validated_unconsumed`。Descriptor改为candidate/non-authorizing；public summary只记录public
+  semantic pass；terminal-last只记录sealed/pending independent replay。Final/strict各运行一次并真实读取五件，其pass结果
+  只存在compose返回值与ER；future consumer必须重放，绝不能把pending seal本身当validation proof。失败root任何artifact
+  都不得声称validated/final/strict pass。
 
-因此本包的最小 enabling change 是新增：
+## 4. Owner/state seam与exact scope
 
-```text
-src/camera_based_rgbww_optimizer/optimization/p7_successor_lineage.py
-tests/test_p7_successor_lineage.py
-```
+唯一允许修改：
 
-`measure_p7_thermal_diagnostics.py`、`p7_thermal_diagnostics.py` 与
-`analyze_p7_thermal_diagnostics.py` 均不得修改。新模块是唯一 Guide 4 composition owner；它只组合上述 existing
-delegates，不成为第二个 scientific-policy、R6-plan、Git、serialization或validator semantic owner。不得复用
-retained controller source/template/runtime，不得生成 handwritten external controller。
+1. `src/camera_based_rgbww_optimizer/utils/p7_retained_r3_provenance_io.py`：只新增通用Git source identity、canonical
+   parent/direct-child primitive及strict-noncanonical-input JSON bytes decoder；保持filesystem/Git/JSON单一source of truth。
+2. `tests/test_p7_retained_r3_provenance_io.py`：上述primitive的真实behavior、race/symlink/dirty/staged/untracked测试。
+3. `src/camera_based_rgbww_optimizer/optimization/p7_successor_lineage.py`：删除caller自报、path safety、二次policy读取与
+   open-schema逻辑；只组合provenance与thermal owners并负责Guide4 artifact state machine。
+4. `tests/test_p7_successor_lineage.py`：五项frozen finding和三项新增finding的合成回归。
+5. `.agent-work/EXECUTION_RESULT.md`：handoff only。
 
-若实现证明必须修改任一巨型 P7 module、第三个 production module、config、docs、skill或 wrapper，立即停回
-Orchestrator；不得自行扩大 changed-path set。
+三个巨型P7模块、config、docs、skill、GUIDE/RESEARCH、PLAN/FULL、archive均不得改。不得新增adapter/controller/module。
+若需要第六个path或更改scientific contract，立即第三次stop。
 
-## 4. Enabling integration contract
+## 5. 验证合同
 
-新模块必须提供以下稳定 public seam；类型名称可以使用 module-local frozen dataclass，但函数名与职责不可漂移：
+先做CodeGraph owner query；实现后运行 `codegraph sync`并query provenance→successor delegate path。验证至少包含：
 
-```text
-build_successor_lineage_inputs(...)
-compose_successor_lineage_bundle(...)
-validate_successor_lineage_release(...)
-replay_successor_lineage_bundle(...)
-strict_validate_successor_lineage_bundle(...)
-```
+1. provenance targeted tests及successor targeted tests；每个 REV finding有先失败后受保护的行为断言；pretty policy
+   positive fixture必须通过strict-noncanonical-input decoder，canonical-only decoder继续对该fixture fail closed；
+2. focused集合：上述两test modules，加现有controller conformance/runtime/integration中直接依赖provenance primitive的
+   synthetic tests；不得打开accepted external EQ payload；
+3. compile/static/import、artifact state-machine replay、`git diff --check`、exact changed-path inventory；必须断言
+   descriptor/public-summary/pending-terminal三个状态不越权，terminal-last且无rewrite，final/strict结果只在返回值/ER；
+4. 证明release root acquisition/generation与real public/final/strict invocation均为0；所有device/formal side effect为0；
+5. 证明三个巨型模块、config、GUIDE/RESEARCH/FULL/PLAN/archive相对activation未变。
 
-行为合同：
+本包 **禁止 full suite**。先前full suite确实只读accepted external EQ fixture，因此
+`external_experiment_payload_access=0` 与 full suite不可同时成立。本包选择focused/affected且payload-free路径，
+`full_suite_invocations=0`；不得把 `836/836`冒充本次repair后的full结果。后续若Orchestrator要求full suite，必须另行
+显式授权该read-only fixture access并如实计数。
 
-1. 所有 runtime input 必须显式接收并精确绑定 `source_checkpoint`、`source_tree`、policy path/hash、EQ root及
-   canonical EQ manifest bytes/hash；不得从 retained release、旧 candidate、archive摘要或环境变量猜测。
-2. `build_successor_lineage_inputs()` 只通过现有 thermal owner验证 accepted policy、EQ qualification、exact R6
-   non-executable formal plan与 machine locks；它不得声明 release/device/formal authority。
-3. `compose_successor_lineage_bundle()` 只能在 caller 提供的 absent、non-symlink、safe-parent-contained exact root上
-   acquisition一次；调用 provenance owner写 canonical artifacts。它不得调用 legacy lineage writer，也不得读取
-   legacy R2、retained R3或旧 external-controller root。
-4. Future bundle schema必须把 current route与 retained state分开，并至少固定：
-   `status=fresh_successor_lineage_validated_unconsumed`、`release_consumable=false`、
-   `release_consumption_authorized=false`、`device_authorized=false`、`formal_r6_authorized=false`、
-   `retained_r3_status=RETAINED_UNVALIDATED_UNCONSUMED`、exact source commit/tree、policy/EQ references、
-   R6 exact plan reference及 `old_new_frame_combination=prohibited`。
-5. Public validator是 release semantic owner；final replay验证完整 artifact inventory、每个 path/bytes/SHA、
-   non-circular terminal references与 source immutability；strict validator拒绝 duplicate key、NaN/Infinity、symlink、
-   extra/missing artifact、path escape、secret/authority drift与非canonical bytes。三者不得相互伪造结果或按摘要放行。
-6. Future exact success bundle的 artifact name/order必须由 module constant冻结，并至少分离 frozen inputs、R6 formal
-   plan、release descriptor、validation summary与terminal seal；terminal最后写且不自引用。失败可形成truthful
-   non-success seal，但不得 repair、retry、alternate root或第二 bundle。
-7. Public/final/strict call accounting必须可注入并被测试；future generation pass要求三者首次各一次。**本包只实现并
-   测试 seam，真实 invocation count必须保持 `0/0/0`。**
-8. Module import与unit tests必须 pure offline、无 filesystem mutation at import、无 external root读取、无
-   subprocess/device/network side effect。
+本包预计不超过10分钟；若预计超时，按visible Terminal/3次liveness规则回交，不得后台长占有。
 
-Future root contract仅冻结 family与生成规则，不授权取得：
+## 6. 第三次失败 stop与handoff
 
-```text
-safe parent = /Volumes/4T/temp/rgbww-optimizer
-family = /Volumes/4T/temp/rgbww-optimizer/g4-successor-lineage
-exact child = future Planner在Orchestrator checkpoint后冻结的
-              successor-<checkpoint12>-<UTC YYYYMMDDTHHMMSSZ>
-this package root acquisition/generation = 0/0
-```
-
-## 5. 保护测试
-
-`tests/test_p7_successor_lineage.py` 必须以 hermetic injected fixtures 覆盖实际行为断言：
-
-1. composition只调用现有 policy、EQ audit、R6 plan builder/validator与 provenance owner；不复制 delegate语义；
-2. exact accepted policy/EQ/source commit/tree positive fixture可构造 non-authorizing bundle model；
-3. policy bytes/hash、EQ manifest bytes/hash、checkpoint/tree任一 drift均 fail closed；dirty/staged source拒绝；
-4. legacy setup release、旧 Planner candidate、retained R3 root、旧 deep task ID或旧 controller input一律拒绝；
-5. bundle保持 retained R3 unvalidated/unconsumed，所有 eligibility/consumption/device/formal字段为 false；
-6. exact R6 `000..015`、A/D/B fixed shutters、C=`1/2500`、16/16、retry0与old/new pooling prohibition来自
-   existing thermal owner且不可被 caller覆盖；
-7. public validator拒绝字段/hash/path/authority drift；final replay拒绝tamper、missing、extra、duplicate reference与
-   terminal self-reference；strict validator拒绝noncanonical JSON、duplicate key、NaN/Infinity、symlink/path escape、
-   secret material；
-8. root acquisition恰好一次；preexisting/nonempty/symlink root拒绝；失败无repair/retry/alternate root；
-9. validator call accounting exact；本测试只用 injected fixture，绝不读取 accepted external EQ payload或生成真实 release；
-10. import、negative path与failure seal均保持 device/network/camera/Ray/strip/capture/formal/consumption call count为0。
-
-不得用只检查 symbol存在、只运行代码或 mock掉被测语义的空断言代替上述测试。
-
-## 6. 执行顺序与验证
-
-1. 复核 §2 exact Git/archive/policy/current-owner identity；只读 CodeGraph确认 blast radius仍与本 PLAN一致。
-2. 新增唯一 production module与唯一 test module；不编辑其他 source/config/test/docs/skill/wrapper。
-3. 运行新测试文件；再运行现有 R6 contract、thermal lineage与 provenance focused tests。
-4. 运行受影响测试集合；随后运行 full suite并报告 exact discovered/passed/skipped/failed count。
-5. 运行 `python -m compileall`（至少覆盖新增 module及受影响 package）、适用 static/import check、
-   `git diff --check`。
-6. 在实现完成后运行 `codegraph sync`，再 query新 public seam与delegate call path；证明没有第二套 persistence/
-   serialization/Git owner。
-7. 生成 repo diff inventory，要求除 Executer-owned `.agent-work/EXECUTION_RESULT.md` 外 changed source set exact为
-   §3两个文件；证明 GUIDE/RESEARCH/FULL/PLAN/config、三个巨型 P7 module、legacy archives与external roots未变。
-8. Executer只把命令、exit、exact counts、diff inventory、CodeGraph结果、owner/seam结论与 acceptance request写入
-   `.agent-work/EXECUTION_RESULT.md`，不得修改 PLAN或FULL，不得 stage/commit/amend/push。
-
-预计本包本身不超过10分钟。若在启动任一授权 validation前根据现有 timing明确预计超过10分钟，Executer必须改用
-可见 macOS Terminal启动，完成3次稀疏liveness检查后把session/命令/日志路径交回；不得用Codex background tool长期
-占有。其后由Orchestrator决定automation与blocked状态，Executer不得自行持续轮询。
-
-## 7. Failure convergence 与验收
-
-- 首次普通实现/测试缺陷：本 PLAN只允许一次不扩大owner/path/API的 bounded correction。
-- 同一边界第二次失败：停止并记录 exact seam/state evidence，回 Orchestrator重新评估；不得继续修、创建新root或
-  task suffix。
-- 同一边界第三次失败：明确 terminal stop；禁止第四次同类retry。
-- accepted policy/EQ scientific provenance矛盾、必须改变 GUIDE contract或无法复用 frozen thermal owners时立即停；
-  只有确属科学指导不足/矛盾才请求Advisor。普通module/test/Git问题归Orchestrator。
-
-Planner接受条件：exact两个实现路径、真实保护测试通过、focused/affected/full/compile/static/diff/CodeGraph证据闭合，
-没有 release/external/device/formal side effect，且 handoff明确请求：
+无in-place correction budget。任一测试/静态复现失败、scope扩大、CodeGraph无法证明单一owner、或REV finding未闭合：
 
 ```text
 REF-G4-01-SUCCESSOR-LINEAGE remains unfinished
-enabling composition owner = ready for Orchestrator checkpoint
-next package = same REF-G4-01, freeze post-checkpoint exact root and generate/validate once
+same provenance/state boundary failure ordinal = 3
+stop = RETURN_ORCHESTRATOR_NO_FURTHER_REPAIR
+release/device/formal = locked
 ```
 
-通过只允许 Orchestrator 建立 focused checkpoint并委派同一 reference的后续 Planner pass；不解锁任何后续 stage。
+全部通过也只回Planner review并请求Orchestrator建立代码checkpoint；release acquisition/generation仍为0，后续仍由同一
+reference的新PLAN冻结exact source/tree/root。Executer禁止stage/commit/amend/push，禁止修改PLAN/FULL。
 
-维护性判断：本包把缺失的 Guide 4 composition seam隔离为一个小型repo owner，三个巨型P7模块保持只读；policy、
-R6 plan与canonical persistence继续由现有单一source of truth负责，测试覆盖authority、drift、replay与failure边界。
+维护性判断：该包把Git、directory identity与canonical persistence收回既有provenance owner，并压缩successor module
+为composition/state machine；这是第二次也是最后一次允许的enabling seam修复，不做无关重构。

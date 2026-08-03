@@ -18,15 +18,17 @@
 
 **当前 active task：** `none`
 
-**唯一 canonical next reference：** `REF-G4-01-SUCCESSOR-LINEAGE`（`READY_FOR_PLANNING_CURRENT_GOAL_NON_EXECUTABLE`）
+**唯一 canonical next reference：** `REF-G4-01-SUCCESSOR-LINEAGE`（`EXECUTABLE_PLAN_ACTIVE_SECOND_SEAM_REASSESSMENT_EXTERNAL_TO_FULL`）
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_guide4_goal_active_v3","snapshot_date":"2026-08-02","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","reference_revision_parent":"4e8d9c7330a0c2be6bb9f9dd912ec2b39348fbcd","content_policy":"UNFINISHED_TASKS_AND_REQUIRED_EXECUTION_INVARIANTS_ONLY","completed_content_allowed":false,"archive_policy":{"directory":".agent-work/archived","name_pattern":"{PLAN类型}-YYYYMMDD-HHMM.md","immutable":true,"overwrite":false},"archived_predecessor":{"path":".agent-work/archived/FULL_PLAN_REFERENCE-20260802-1038.md","status":"HISTORICAL_NON_EXECUTABLE_SNAPSHOT","source_commit":"805ee6b27da3ac757b84d85941a4ddc967feedeb","source_bytes":485726,"source_sha256":"1da4291a1ecab3285d9136d4019bdce3e3f9e3fe419c2ee55b38603f53151fe7","snapshot_body_start_line":18},"active_task_count":0,"active_task":null,"active_plan_contract_id":null,"canonical_next_reference_task":"REF-G4-01-SUCCESSOR-LINEAGE","canonical_next_reference_status":"READY_FOR_PLANNING_CURRENT_GOAL_NON_EXECUTABLE","executable":false,"plan_status":"NO_ACTIVE_EXECUTABLE_PLAN_WAITING_NEW_GOAL","active_human_goal_route":{"reference_goal":"REF-G4-COMPLETE","status":"GOAL_ACTIVE_NON_EXECUTABLE_REFERENCE","objective":"COMPLETE_ADVISOR_4_GUIDE_REACHABLE_ROUTE_TO_MANDATED_STOP","first_reference_task":"REF-G4-01-SUCCESSOR-LINEAGE","first_reference_status":"READY_FOR_PLANNING"},"guide_completion_contract":{"success_definition":"ALL_REACHABLE_GUIDE4_STAGES_ACCEPTED_OR_MANDATED_FAIL_STOP_AND_ADVISOR_HANDOFF_REACHED","force_pass_prohibited":true,"historical_audit_inside_goal":false},"old_corrective_task_ids_reactivatable":false,"historical_route_policy":"ARCHIVED_ONLY_NO_REACTIVATION_NO_SUFFIX_GROWTH","legacy_retained_route":{"status":"HISTORICAL_ONLY_NOT_A_GUIDE4_PREDECESSOR","guide4_required":false,"execution_input_allowed":false,"task_ids_reactivatable":false},"frozen_guide_input":{"stage":"EQ-R6_STATE_C","selected_exposure":"1/2500","status":"ACCEPTED_QUALIFIED_INPUT_NOT_A_CURRENT_TASK"},"retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","canonical_validator_success":false,"eligibility":false,"release_consumable":false,"release_consumption_authorized":false,"device_authorized_by_this_file":false,"camera_authorized_by_this_file":false,"ray_authorized_by_this_file":false,"strip_authorized_by_this_file":false,"formal_r6_authorized":false,"td_c_authorized":false,"automatic_experiment_package_generation":false,"unresolved_scientific_questions_for_current_route":[],"allowed_next_action":"DELEGATE_PLANNER_FOR_REF_G4_01","planner_requirement":"WRITE_ONE_NEW_PLAN_PACKAGE_FOR_REF_G4_01_ONLY","full_is_non_executable_reference":true}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_guide4_goal_active_v3","snapshot_date":"2026-08-02","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","reference_revision_parent":"4e8d9c7330a0c2be6bb9f9dd912ec2b39348fbcd","content_policy":"UNFINISHED_TASKS_AND_REQUIRED_EXECUTION_INVARIANTS_ONLY","completed_content_allowed":false,"archive_policy":{"directory":".agent-work/archived","name_pattern":"{PLAN类型}-YYYYMMDD-HHMM.md","immutable":true,"overwrite":false},"archived_predecessor":{"path":".agent-work/archived/FULL_PLAN_REFERENCE-20260802-1038.md","status":"HISTORICAL_NON_EXECUTABLE_SNAPSHOT","source_commit":"805ee6b27da3ac757b84d85941a4ddc967feedeb","source_bytes":485726,"source_sha256":"1da4291a1ecab3285d9136d4019bdce3e3f9e3fe419c2ee55b38603f53151fe7","snapshot_body_start_line":18},"active_task_count":0,"active_task":null,"active_plan_contract_id":"G4-SUCCESSOR-LINEAGE-PROVENANCE-SEAM-REASSESSMENT-V2","current_plan_active_task_count":1,"current_plan_active_task":"REF-G4-01-SUCCESSOR-LINEAGE","canonical_next_reference_task":"REF-G4-01-SUCCESSOR-LINEAGE","canonical_next_reference_status":"EXECUTABLE_PLAN_ACTIVE_SECOND_SEAM_REASSESSMENT_EXTERNAL_TO_FULL","executable":false,"plan_status":"EXECUTABLE_BOUNDED_PURE_OFFLINE_SECOND_SEAM_REASSESSMENT","active_human_goal_route":{"reference_goal":"REF-G4-COMPLETE","status":"GOAL_ACTIVE_NON_EXECUTABLE_REFERENCE_WITH_PLAN_ACTIVE","objective":"COMPLETE_ADVISOR_4_GUIDE_REACHABLE_ROUTE_TO_MANDATED_STOP","first_reference_task":"REF-G4-01-SUCCESSOR-LINEAGE","first_reference_status":"SECOND_SEAM_REASSESSMENT_EXECUTION_AUTHORIZED_BY_PLAN_ONLY"},"guide_completion_contract":{"success_definition":"ALL_REACHABLE_GUIDE4_STAGES_ACCEPTED_OR_MANDATED_FAIL_STOP_AND_ADVISOR_HANDOFF_REACHED","force_pass_prohibited":true,"historical_audit_inside_goal":false},"old_corrective_task_ids_reactivatable":false,"historical_route_policy":"ARCHIVED_ONLY_NO_REACTIVATION_NO_SUFFIX_GROWTH","legacy_retained_route":{"status":"HISTORICAL_ONLY_NOT_A_GUIDE4_PREDECESSOR","guide4_required":false,"execution_input_allowed":false,"task_ids_reactivatable":false},"frozen_guide_input":{"stage":"EQ-R6_STATE_C","selected_exposure":"1/2500","status":"ACCEPTED_QUALIFIED_INPUT_NOT_A_CURRENT_TASK"},"retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","canonical_validator_success":false,"eligibility":false,"release_consumable":false,"release_consumption_authorized":false,"device_authorized_by_this_file":false,"camera_authorized_by_this_file":false,"ray_authorized_by_this_file":false,"strip_authorized_by_this_file":false,"formal_r6_authorized":false,"td_c_authorized":false,"automatic_experiment_package_generation":false,"unresolved_scientific_questions_for_current_route":[],"allowed_next_action":"DELEGATE_EXECUTER_FOR_REF_G4_01_SECOND_SEAM_REASSESSMENT","planner_requirement":"REVIEW_EXECUTION_RESULT_AND_ARCHIVE_BEFORE_NEXT_PACKAGE","full_is_non_executable_reference":true}`
 
 ## Current-state declaration
 
-- `.agent-work/PLAN.md` 当前为 `NO_ACTIVE_EXECUTABLE_PLAN_WAITING_NEW_GOAL`；本文件不授权执行。
-- Human 已创建 `REF-G4-COMPLETE` goal；当前唯一可规划 reference 是
-  `REF-G4-01-SUCCESSOR-LINEAGE`，它仍需 Planner 写入单一 PLAN 后才可执行。
+- `.agent-work/PLAN.md` 当前为 `EXECUTABLE_BOUNDED_PURE_OFFLINE_SECOND_SEAM_REASSESSMENT`；执行权只来自该
+  PLAN，本文件的 active task count仍为0且不授权执行。
+- Human 已创建 `REF-G4-COMPLETE` goal；当前唯一 reference 是
+  `REF-G4-01-SUCCESSOR-LINEAGE`。首个 enabling integration 已被 Planner拒绝，当前同一 flat task 的第二次且最后一次
+  provenance/state seam reassessment 已由 PLAN 激活；不得创建 suffix 或第四次修复。
 - Human 已明确：本 goal 的目标不是无脑推进某一个历史 package，而是完成当前适用的 Advisor
   `advisor/4/4.GUIDE.md`。下文 `REF-G4-*` 是本 goal 唯一允许规划的 canonical route。
 - EQ-R6 State C `qualified_1_2500` 只作为当前路线的 frozen prerequisite；它不是本文件中的已完成 task条目，
@@ -58,8 +60,8 @@ retained R3、旧release或一次性controller。独立clean-room审计已经在
 除非新的可观测drift使当前前置事实失效。
 
 本文件始终 non-executable。Orchestrator 已重读 Human goal、GUIDE、PLAN/FULL machine rows 与当前 Git state，
-确认无新 drift并更新本节状态；下一步只委派 Planner 为
-`REF-G4-01-SUCCESSOR-LINEAGE` 写一个 executable package。不得一次把后续设备阶段全部写进 PLAN，
+确认首包 review reject及第二次 seam reassessment PLAN；下一步只委派 Executer执行该 exact package并停回 Planner。
+不得一次把后续设备阶段全部写进 PLAN，
 不得由 FULL 自动生成实验 package。
 
 ### 0.2 Pending route 总表
@@ -67,7 +69,7 @@ retained R3、旧release或一次性controller。独立clean-room审计已经在
 | Reference ID | 当前状态 | 目的 | 直接依赖 | 解锁/验收 owner |
 | --- | --- | --- | --- | --- |
 | `REF-G4-COMPLETE` | `GOAL_ACTIVE_NON_EXECUTABLE_REFERENCE` | 完成 4.GUIDE 的全部可到达路线并在规定出口停下 | Human goal 已创建 | Human / Orchestrator |
-| `REF-G4-01-SUCCESSOR-LINEAGE` | `READY_FOR_PLANNING` | 从 accepted EQ/policy 与当前 clean code 建立唯一 fresh successor release | Human goal；accepted `1/2500` | Planner / Orchestrator |
+| `REF-G4-01-SUCCESSOR-LINEAGE` | `SECOND_SEAM_REASSESSMENT_PLAN_ACTIVE` | 先闭合唯一 provenance/composition owner，再从 accepted EQ/policy 与clean checkpoint建立 fresh successor release | Human goal；accepted `1/2500` | Planner / Orchestrator |
 | `REF-G4-02-PREDEVICE` | `BLOCKED` | 对 G4-01 的 fresh release 做严格 offline predevice oracle | G4-01 accepted | Planner |
 | `REF-G4-03-ZERO-READINESS` | `BLOCKED` | fresh real zero/readiness 与设备身份/能力检查 | G4-02 accepted | Planner |
 | `REF-G4-04-E2` | `BLOCKED` | fresh E2 preformal gate，不进行 formal capture | G4-03 accepted | Planner |
@@ -81,8 +83,8 @@ retained R3、旧release或一次性controller。独立clean-room审计已经在
 | `REF-G4-12-TDC-CORE` | `LOCKED` | operational-600 transient 下的 TD-C core 8 帧 | G4-11 accepted | Planner |
 | `REF-G4-13-ADVISOR-HANDOFF` | `BLOCKED` | 冻结 AUDIT PACK，交 Advisor 决定后续 scientific route | 成功终点或任一 GUIDE stop | Advisor |
 
-以上 `READY_FOR_PLANNING` 不表示 PLAN、release、device 或 experiment 权限；当前唯一动作是委派 Planner
-只为 `REF-G4-01-SUCCESSOR-LINEAGE` 写入一个 bounded executable PLAN。
+以上状态不表示 FULL、release、device 或 experiment 权限；当前唯一动作是委派 Executer执行当前 PLAN 中
+`REF-G4-01-SUCCESSOR-LINEAGE` 的 bounded pure-offline second seam reassessment并回到 Planner stop。
 
 ### 0.3 `REF-G4-01-SUCCESSOR-LINEAGE`：fresh successor release
 
