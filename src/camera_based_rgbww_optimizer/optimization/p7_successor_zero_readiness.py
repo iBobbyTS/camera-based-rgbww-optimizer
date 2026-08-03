@@ -11,6 +11,7 @@ import argparse
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from types import MappingProxyType
 from typing import Any
 
 from camera_based_rgbww_optimizer.control import all_off, camera_remote, esphome, ray120c
@@ -20,7 +21,9 @@ from camera_based_rgbww_optimizer.utils import p7_retained_r3_provenance_io as p
 
 
 __all__ = [
+    "AppLifecycleObservation",
     "ZeroReadinessError",
+    "classify_app_lifecycle_observation",
     "execute_zero_readiness",
     "finalize_zero_readiness",
     "main",
@@ -73,12 +76,168 @@ FINALIZE_ARTIFACTS = (
 TERMINAL_NAME = "terminal-seal.json"
 FINAL_INVENTORY = tuple(sorted((*INITIAL_ARTIFACTS, *FINALIZE_ARTIFACTS, TERMINAL_NAME)))
 FORBIDDEN_EVIDENCE_WORDS = ("secret", "token", "api_key", "encryption_key")
+APP_LIFECYCLE_OBSERVATION_SCHEMA = "g4_app_lifecycle_observation_v1"
+APP_LIFECYCLE_CLASSIFICATION_SCHEMA = "g4_app_lifecycle_classification_v1"
+EXPECTED_APP_BUNDLE = "/Applications/amaran Desktop.app"
+EXPECTED_APP_BUNDLE_ID = "com.sidus.amaran-desktop"
+EXPECTED_APP_EXECUTABLE = "/Applications/amaran Desktop.app/Contents/MacOS/amaran Desktop"
+APP_LIFECYCLE_POLL_SECONDS = (0, 1, 2, 4, 8, 15)
 
 
 class ZeroReadinessError(RuntimeError):
     def __init__(self, code: str) -> None:
         self.code = code
         super().__init__(code)
+
+
+@dataclass(frozen=True)
+class AppLifecycleObservation:
+    """One immutable, caller-supplied observation with no live inspection."""
+
+    schema: str
+    app_bundle: str
+    app_bundle_id: str
+    app_executable: str
+    owned_pid: int
+    app_preexisting: bool
+    graceful_request_count: int
+    request_transport_exit: int
+    request_error_code: int | None
+    force_request_count: int
+    alternate_request_count: int
+    poll_elapsed_seconds: tuple[int, ...]
+    owned_pid_present: tuple[bool, ...]
+    final_app_residual_count: int
+    final_listener_residual_count: int
+    final_owned_residual_count: int
+    final_scratch_residual_count: int
+    service_variant_count: int
+    endpoint_variant_count: int
+
+    def to_jsonable(self) -> dict[str, Any]:
+        return {
+            "schema": self.schema,
+            "app_bundle": self.app_bundle,
+            "app_bundle_id": self.app_bundle_id,
+            "app_executable": self.app_executable,
+            "owned_pid": self.owned_pid,
+            "app_preexisting": self.app_preexisting,
+            "graceful_request_count": self.graceful_request_count,
+            "request_transport_exit": self.request_transport_exit,
+            "request_error_code": self.request_error_code,
+            "force_request_count": self.force_request_count,
+            "alternate_request_count": self.alternate_request_count,
+            "poll_elapsed_seconds": list(self.poll_elapsed_seconds),
+            "owned_pid_present": list(self.owned_pid_present),
+            "final_app_residual_count": self.final_app_residual_count,
+            "final_listener_residual_count": self.final_listener_residual_count,
+            "final_owned_residual_count": self.final_owned_residual_count,
+            "final_scratch_residual_count": self.final_scratch_residual_count,
+            "service_variant_count": self.service_variant_count,
+            "endpoint_variant_count": self.endpoint_variant_count,
+        }
+
+
+def _validate_app_lifecycle_observation(value: AppLifecycleObservation) -> None:
+    _require(type(value) is AppLifecycleObservation, "app_lifecycle_observation_type_invalid")
+    string_fields = (value.schema, value.app_bundle, value.app_bundle_id, value.app_executable)
+    integer_fields = (
+        value.owned_pid,
+        value.graceful_request_count,
+        value.request_transport_exit,
+        value.force_request_count,
+        value.alternate_request_count,
+        value.final_app_residual_count,
+        value.final_listener_residual_count,
+        value.final_owned_residual_count,
+        value.final_scratch_residual_count,
+        value.service_variant_count,
+        value.endpoint_variant_count,
+    )
+    _require(all(type(item) is str for item in string_fields), "app_lifecycle_observation_string_invalid")
+    _require(all(type(item) is int for item in integer_fields), "app_lifecycle_observation_integer_invalid")
+    _require(type(value.app_preexisting) is bool, "app_lifecycle_observation_boolean_invalid")
+    _require(
+        value.request_error_code is None or type(value.request_error_code) is int,
+        "app_lifecycle_observation_error_invalid",
+    )
+    _require(
+        type(value.poll_elapsed_seconds) is tuple
+        and all(type(item) is int for item in value.poll_elapsed_seconds),
+        "app_lifecycle_observation_poll_schedule_invalid",
+    )
+    _require(
+        type(value.owned_pid_present) is tuple
+        and all(type(item) is bool for item in value.owned_pid_present),
+        "app_lifecycle_observation_presence_invalid",
+    )
+
+
+def classify_app_lifecycle_observation(
+    observation: AppLifecycleObservation,
+) -> Mapping[str, Any]:
+    """Classify frozen facts without inspecting an app, process, or listener."""
+
+    _validate_app_lifecycle_observation(observation)
+    presence = observation.owned_pid_present
+    post_zero = presence[1:]
+    disappearance_index = next((index for index, present in enumerate(post_zero) if not present), None)
+    disappeared = disappearance_index is not None
+    remained_absent = disappeared and not any(post_zero[disappearance_index:])
+    transport_consistent = (
+        (observation.request_transport_exit == 0 and observation.request_error_code is None)
+        or (observation.request_transport_exit != 0 and type(observation.request_error_code) is int)
+    )
+    guards = {
+        "schema_exact": observation.schema == APP_LIFECYCLE_OBSERVATION_SCHEMA,
+        "app_bundle_exact": observation.app_bundle == EXPECTED_APP_BUNDLE,
+        "app_bundle_id_exact": observation.app_bundle_id == EXPECTED_APP_BUNDLE_ID,
+        "app_executable_exact": observation.app_executable == EXPECTED_APP_EXECUTABLE,
+        "owned_pid_positive": observation.owned_pid > 0,
+        "non_preexisting": observation.app_preexisting is False,
+        "graceful_request_exactly_once": observation.graceful_request_count == 1,
+        "transport_exit_error_consistent": transport_consistent,
+        "force_request_zero": observation.force_request_count == 0,
+        "alternate_request_zero": observation.alternate_request_count == 0,
+        "service_variant_zero": observation.service_variant_count == 0,
+        "endpoint_variant_zero": observation.endpoint_variant_count == 0,
+        "poll_schedule_exact": observation.poll_elapsed_seconds == APP_LIFECYCLE_POLL_SECONDS,
+        "poll_presence_count_exact": len(presence) == len(APP_LIFECYCLE_POLL_SECONDS),
+        "owned_present_at_zero": len(presence) > 0 and presence[0] is True,
+        "disappeared_within_bounded_grace": disappeared,
+        "remained_absent_after_disappearance": remained_absent,
+        "final_app_residual_zero": observation.final_app_residual_count == 0,
+        "final_listener_residual_zero": observation.final_listener_residual_count == 0,
+        "final_owned_residual_zero": observation.final_owned_residual_count == 0,
+        "final_scratch_residual_zero": observation.final_scratch_residual_count == 0,
+    }
+    transport_success = observation.request_transport_exit == 0 and observation.request_error_code is None
+    all_clean = all(guards.values())
+    if observation.app_preexisting:
+        classification = "NON_OWNED_NOT_APPLICABLE"
+        final_effect_status = "not_applicable"
+    elif all_clean and transport_success:
+        classification = "REQUEST_CONFIRMED_EFFECT_CONFIRMED_CLEAN"
+        final_effect_status = "confirmed_clean"
+    elif all_clean:
+        classification = "REQUEST_TRANSPORT_AMBIGUOUS_EFFECT_CONFIRMED_CLEAN"
+        final_effect_status = "confirmed_clean"
+    else:
+        classification = "APP_LIFECYCLE_FAIL_CLOSED"
+        final_effect_status = "not_confirmed"
+    request_transport_status = "success" if transport_success else "ambiguous_failure"
+    if not transport_consistent:
+        request_transport_status = "invalid"
+    return MappingProxyType({
+        "schema": APP_LIFECYCLE_CLASSIFICATION_SCHEMA,
+        "classification": classification,
+        "request_transport_status": request_transport_status,
+        "request_transport_success": transport_success,
+        "final_effect_status": final_effect_status,
+        "request_transport_exit": observation.request_transport_exit,
+        "request_error_code": observation.request_error_code,
+        "guards": MappingProxyType(guards),
+    })
 
 
 @dataclass(frozen=True)

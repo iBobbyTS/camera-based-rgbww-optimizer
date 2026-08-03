@@ -5,7 +5,9 @@ import json
 import os
 import tempfile
 import unittest
+from dataclasses import FrozenInstanceError
 from pathlib import Path
+from types import MappingProxyType
 from unittest import mock
 
 from camera_based_rgbww_optimizer.optimization import p7_successor_zero_readiness as subject
@@ -59,6 +61,174 @@ class _FakeRay:
         if "node" in self.failures:
             raise ConnectionError("fake node failure")
         return {"code": 0, "data": {"node_id": subject.EXPECTED_RAY_NODE}}
+
+
+class AppLifecycleClassifierTests(unittest.TestCase):
+    def observation(self, **changes: object) -> subject.AppLifecycleObservation:
+        values: dict[str, object] = {
+            "schema": subject.APP_LIFECYCLE_OBSERVATION_SCHEMA,
+            "app_bundle": subject.EXPECTED_APP_BUNDLE,
+            "app_bundle_id": subject.EXPECTED_APP_BUNDLE_ID,
+            "app_executable": subject.EXPECTED_APP_EXECUTABLE,
+            "owned_pid": 79395,
+            "app_preexisting": False,
+            "graceful_request_count": 1,
+            "request_transport_exit": 0,
+            "request_error_code": None,
+            "force_request_count": 0,
+            "alternate_request_count": 0,
+            "poll_elapsed_seconds": subject.APP_LIFECYCLE_POLL_SECONDS,
+            "owned_pid_present": (True, False, False, False, False, False),
+            "final_app_residual_count": 0,
+            "final_listener_residual_count": 0,
+            "final_owned_residual_count": 0,
+            "final_scratch_residual_count": 0,
+            "service_variant_count": 0,
+            "endpoint_variant_count": 0,
+        }
+        values.update(changes)
+        return subject.AppLifecycleObservation(**values)
+
+    def native(self, observation: subject.AppLifecycleObservation) -> dict[str, object]:
+        return provenance.json_native_value(subject.classify_app_lifecycle_observation(observation))
+
+    def test_confirmed_and_transport_ambiguous_clean_truth_table(self) -> None:
+        confirmed = self.native(self.observation())
+        self.assertEqual(confirmed["classification"], "REQUEST_CONFIRMED_EFFECT_CONFIRMED_CLEAN")
+        self.assertEqual(confirmed["request_transport_status"], "success")
+        self.assertTrue(confirmed["request_transport_success"])
+        self.assertEqual(confirmed["final_effect_status"], "confirmed_clean")
+        self.assertTrue(all(confirmed["guards"].values()))
+
+        ambiguous = self.native(self.observation(request_transport_exit=1, request_error_code=-128))
+        self.assertEqual(
+            ambiguous["classification"],
+            "REQUEST_TRANSPORT_AMBIGUOUS_EFFECT_CONFIRMED_CLEAN",
+        )
+        self.assertEqual(ambiguous["request_transport_status"], "ambiguous_failure")
+        self.assertFalse(ambiguous["request_transport_success"])
+        self.assertEqual(ambiguous["request_transport_exit"], 1)
+        self.assertEqual(ambiguous["request_error_code"], -128)
+        self.assertEqual(ambiguous["final_effect_status"], "confirmed_clean")
+        self.assertTrue(all(ambiguous["guards"].values()))
+
+    def test_each_request_identity_variant_and_poll_guard_fails_closed(self) -> None:
+        cases = (
+            ({"graceful_request_count": 0}, "graceful_request_exactly_once"),
+            ({"graceful_request_count": 2}, "graceful_request_exactly_once"),
+            ({"force_request_count": 1}, "force_request_zero"),
+            ({"alternate_request_count": 1}, "alternate_request_zero"),
+            ({"service_variant_count": 1}, "service_variant_zero"),
+            ({"endpoint_variant_count": 1}, "endpoint_variant_zero"),
+            ({"app_bundle": "/Applications/drift.app"}, "app_bundle_exact"),
+            ({"app_bundle_id": "drift"}, "app_bundle_id_exact"),
+            ({"app_executable": "/drift"}, "app_executable_exact"),
+            ({"owned_pid": 0}, "owned_pid_positive"),
+            ({"poll_elapsed_seconds": (0, 1, 2, 4, 8, 16)}, "poll_schedule_exact"),
+            ({"owned_pid_present": (False, False, False, False, False, False)}, "owned_present_at_zero"),
+            ({"owned_pid_present": (True, True, True, True, True, True)}, "disappeared_within_bounded_grace"),
+            ({"owned_pid_present": (True, False, True, False, False, False)}, "remained_absent_after_disappearance"),
+        )
+        for changes, guard in cases:
+            with self.subTest(changes=changes):
+                result = self.native(self.observation(**changes))
+                self.assertEqual(result["classification"], "APP_LIFECYCLE_FAIL_CLOSED")
+                self.assertEqual(result["final_effect_status"], "not_confirmed")
+                self.assertFalse(result["guards"][guard])
+
+        preexisting = self.native(self.observation(app_preexisting=True))
+        self.assertEqual(preexisting["classification"], "NON_OWNED_NOT_APPLICABLE")
+        self.assertEqual(preexisting["final_effect_status"], "not_applicable")
+        self.assertFalse(preexisting["guards"]["non_preexisting"])
+
+    def test_each_final_residual_and_transport_inconsistency_fail_closed(self) -> None:
+        for field in (
+            "final_app_residual_count",
+            "final_listener_residual_count",
+            "final_owned_residual_count",
+            "final_scratch_residual_count",
+        ):
+            with self.subTest(field=field):
+                result = self.native(self.observation(**{field: 1}))
+                self.assertEqual(result["classification"], "APP_LIFECYCLE_FAIL_CLOSED")
+                self.assertFalse(result["guards"][field.removesuffix("_count") + "_zero"])
+        for changes in (
+            {"request_transport_exit": 0, "request_error_code": -128},
+            {"request_transport_exit": 1, "request_error_code": None},
+        ):
+            result = self.native(self.observation(**changes))
+            self.assertEqual(result["classification"], "APP_LIFECYCLE_FAIL_CLOSED")
+            self.assertEqual(result["request_transport_status"], "invalid")
+            self.assertFalse(result["guards"]["transport_exit_error_consistent"])
+
+    def test_invalid_types_bool_as_int_and_mutable_or_unknown_shapes_reject(self) -> None:
+        cases = (
+            {"owned_pid": True},
+            {"app_preexisting": 0},
+            {"request_error_code": True},
+            {"poll_elapsed_seconds": [0, 1, 2, 4, 8, 15]},
+            {"poll_elapsed_seconds": (0, 1, 2, 4, 8, True)},
+            {"owned_pid_present": [True, False, False, False, False, False]},
+            {"owned_pid_present": (1, False, False, False, False, False)},
+            {"schema": 1},
+        )
+        for changes in cases:
+            with self.subTest(changes=changes), self.assertRaises(subject.ZeroReadinessError):
+                subject.classify_app_lifecycle_observation(self.observation(**changes))
+        with self.assertRaisesRegex(subject.ZeroReadinessError, "app_lifecycle_observation_type_invalid"):
+            subject.classify_app_lifecycle_observation({"unknown": "mutable"})
+
+    def test_classifier_is_pure_and_output_is_immutable_with_exact_native_projection(self) -> None:
+        observation = self.observation(request_transport_exit=1, request_error_code=-128)
+        before = observation.to_jsonable()
+        first = subject.classify_app_lifecycle_observation(observation)
+        second = subject.classify_app_lifecycle_observation(observation)
+        self.assertIs(type(first), MappingProxyType)
+        self.assertIs(type(first["guards"]), MappingProxyType)
+        self.assertEqual(provenance.json_native_value(first), provenance.json_native_value(second))
+        self.assertEqual(observation.to_jsonable(), before)
+        with self.assertRaises(TypeError):
+            first["classification"] = "changed"
+        with self.assertRaises(TypeError):
+            first["guards"]["schema_exact"] = False
+        with self.assertRaises(FrozenInstanceError):
+            observation.owned_pid = 1
+        projection = provenance.json_native_value(first)
+        self.assertEqual(set(projection), {
+            "schema", "classification", "request_transport_status",
+            "request_transport_success", "final_effect_status",
+            "request_transport_exit", "request_error_code", "guards",
+        })
+        self.assertFalse({"authority", "g4_03_pass", "g4_04_unlocked"} & set(projection))
+
+    def test_frozen_1415_observation_has_only_the_ambiguous_clean_classification(self) -> None:
+        frozen = self.observation(
+            owned_pid=79395,
+            graceful_request_count=1,
+            request_transport_exit=1,
+            request_error_code=-128,
+            owned_pid_present=(True, False, False, False, False, False),
+        )
+        result = self.native(frozen)
+        self.assertEqual(result["classification"], "REQUEST_TRANSPORT_AMBIGUOUS_EFFECT_CONFIRMED_CLEAN")
+        self.assertFalse(result["request_transport_success"])
+        self.assertEqual(result["request_transport_exit"], 1)
+        self.assertEqual(result["request_error_code"], -128)
+        self.assertEqual(result["final_effect_status"], "confirmed_clean")
+
+    def test_classifier_ast_has_no_io_process_network_or_device_edge(self) -> None:
+        tree = ast.parse(Path(subject.__file__).read_text(encoding="utf-8"))
+        classifier = next(
+            node for node in tree.body
+            if isinstance(node, ast.FunctionDef)
+            and node.name == "classify_app_lifecycle_observation"
+        )
+        text = ast.unparse(classifier)
+        for forbidden in (
+            "os.", "subprocess", "socket", "ps(", "lsof", "osascript",
+            "provenance", "esphome", "ray120c", "camera_remote",
+        ):
+            self.assertNotIn(forbidden, text)
 
 
 class SuccessorZeroReadinessTests(unittest.TestCase):
@@ -231,7 +401,9 @@ class SuccessorZeroReadinessTests(unittest.TestCase):
         self.assertNotIn("write_bytes(", source)
         self.assertNotIn("open(", source)
         self.assertEqual(subject.__all__, [
-            "ZeroReadinessError", "execute_zero_readiness", "finalize_zero_readiness", "main",
+            "AppLifecycleObservation", "ZeroReadinessError",
+            "classify_app_lifecycle_observation", "execute_zero_readiness",
+            "finalize_zero_readiness", "main",
         ])
 
     def test_wrapper_has_foreground_owner_traps_and_sibling_scratch_only(self) -> None:

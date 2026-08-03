@@ -1,124 +1,46 @@
-# REF-G4-03-ZERO-READINESS：pure offline app-lifecycle contract convergence
+# REF-G4-03-ZERO-READINESS：Planner acceptance checkpoint
 
-**计划状态：** `EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION_PURE_OFFLINE_APP_LIFECYCLE_CONVERGENCE`
+**计划状态：** `REVIEWED_ACCEPTANCE_CANDIDATE_WAITING_ORCHESTRATOR_G4_03_TERMINAL_DISPOSITION`
 
-**Executable：** `true`（仅在Orchestrator将FULL对齐为同一contract并创建exact activation commit后生效）
+**Executable：** `false`
 
-**Active task count：** `1`
+**Active task count：** `0`
 
-**Active task：** `REF-G4-03-ZERO-READINESS`
+**Active task：** `null`
 
 **Reference goal：** `REF-G4-COMPLETE`
 
-**唯一 Planner stop：** `RETURN_FOR_G4_03_APP_LIFECYCLE_CONVERGENCE_REVIEW`
+**唯一 Planner stop：** `RETURN_ORCHESTRATOR_G4_03_TERMINAL_DISPOSITION_AND_G4_04_PLANNING_UNLOCK_REVIEW`
 
-`PLAN_MACHINE_CONTRACT={"schema":"planner_execution_contract_v2","contract_id":"G4-ZERO-READINESS-APP-LIFECYCLE-CONVERGENCE-V1","plan_status":"EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION_PURE_OFFLINE_APP_LIFECYCLE_CONVERGENCE","executable":true,"active_task_count":1,"active_task":"REF-G4-03-ZERO-READINESS","reference_task_id":"REF-G4-03-ZERO-READINESS","reference_goal":"REF-G4-COMPLETE","reference_task_status":"ACTIVE_AFTER_ORCHESTRATOR_ACTIVATION_PURE_OFFLINE_APP_LIFECYCLE_CONVERGENCE","activation_state":"DRAFT_WAITING_ORCHESTRATOR_FULL_ALIGNMENT_AND_FOCUSED_COMMIT","activation_commit":{"expected_parent":"c7838eece611c92d74dc49e4922af1b133141bac","expected_parent_tree":"3a2aed80dfe04a4642756790737fe15c3b710866","expected_subject":"docs(plan): activate offline app lifecycle convergence","expected_changed_paths":[".agent-work/EXECUTION_RESULT.md",".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md"],"child_sha_recorded_in_plan":false},"single_current_action":"add_one_pure_app_lifecycle_observation_record_and_classifier_to_the_existing_zero_readiness_owner_cover_the_truth_table_and_classify_the_frozen_1415_observation_offline","allowed_changed_paths":["src/camera_based_rgbww_optimizer/optimization/p7_successor_zero_readiness.py","tests/test_p7_successor_zero_readiness.py",".agent-work/EXECUTION_RESULT.md"],"production_source_edits":1,"test_file_edits":1,"wrapper_edits":0,"full_edits_by_executer":0,"plan_edits_by_executer":0,"archive_edits_by_executer":0,"guide_edits":0,"research_edits":0,"commit_by_executer":0,"new_task_ids":0,"corrective_suffixes":0,"new_external_roots":0,"existing_owner":{"path":"src/camera_based_rgbww_optimizer/optimization/p7_successor_zero_readiness.py","bytes":28288,"sha256":"fea119e6a49825cf5858732c5a27dd0187020b70bc6fa5d6e8e2b3c428dacc8c"},"existing_tests":{"path":"tests/test_p7_successor_zero_readiness.py","bytes":16311,"sha256":"5e2efcbab079b46ca18e874ee5d684a73586517b58560d793d4bff6fc060a6b7"},"wrapper_read_only":{"path":"tmp/run-g4-zero-readiness.zsh","bytes":2969,"sha256":"13c61af94a8c3e326447fe59103db074b9c707d8670120e10c82d974c09ab62a"},"frozen_plan_evidence":{"path":".agent-work/archived/PLAN-20260803-1415.md","bytes":11371,"sha256":"8fdc95371fa21eb7a6a486cd9c145a76becae474aacd9159c66464a0689ad188","source_body_bytes":10251,"source_body_sha256":"8359238500b313c5f4b68ba6afe1b8e31132f9fae356a96cb0f58a36b35de472"},"frozen_er_evidence":{"path":".agent-work/archived/EXECUTION_RESULT-20260803-1415.md","bytes":10449,"sha256":"0f05a0b25394ddde5f499d2e906e51d5d4a546f54bfcd6b10cbe906101835602","source_body_bytes":9377,"source_body_sha256":"9df3bf1601ae8d13819841188a16f474367d1efdcb907f48f8d23dfd8c3fd287"},"archive_read_cap":2,"external_experiment_payload_access":0,"app_access":0,"device_access":0,"network_access":0,"listener_access":0,"process_poll":0,"root_access":0,"root_creation":0,"release_consumption":0,"capture_access":0,"nonzero_light":0,"formal_r6_access":0,"td_c_access":0,"firmware_access":0,"deployment_access":0,"config_write_calls":0,"classifier_invocation_cap_after_tests":1,"targeted_test_invocation_cap":2,"focused_test_invocation_cap":1,"full_suite_invocation_cap":1,"compile_static_invocation_cap":1,"codegraph_sync_cap":1,"offline_bounded_correction_cap":1,"prior_rejection":"REJECTED_G4_03_PASS_APP_GRACEFUL_QUIT_EXIT_MISMATCH_DESPITE_RESIDUAL_ZERO","prior_rejection_preserved":true,"candidate_status":"NOT_EVALUATED_WAITING_EXECUTION_AND_PLANNER_REVIEW","g4_03_pass":false,"g4_04_unlocked":false,"human_governance_gate":false,"advisor_scientific_gate":false,"g4_01_reopen":false,"planner_stop":"RETURN_FOR_G4_03_APP_LIFECYCLE_CONVERGENCE_REVIEW","future_reference_task":"REF-G4-03-ZERO-READINESS","future_stage_locked":true}`
+`PLAN_MACHINE_CONTRACT={"schema":"planner_terminal_checkpoint_v2","contract_id":null,"plan_status":"REVIEWED_ACCEPTANCE_CANDIDATE_WAITING_ORCHESTRATOR_G4_03_TERMINAL_DISPOSITION","executable":false,"active_task_count":0,"active_task":null,"reference_task_id":"REF-G4-03-ZERO-READINESS","reference_goal":"REF-G4-COMPLETE","reference_task_status":"PLANNER_ACCEPTED_WAITING_ORCHESTRATOR_TERMINAL_DISPOSITION","terminal_disposition":"PLANNER_ACCEPTED_G4_03_ZERO_READINESS_WITH_REQUEST_TRANSPORT_AMBIGUOUS_EFFECT_CONFIRMED_CLEAN","review_source_head":"109ba1bf483aebb6c7eea55e4c9f46e9fbdfb28c","reviewed_plan_archive":{"path":".agent-work/archived/PLAN-20260803-1436.md","bytes":11600,"sha256":"bdb9666ccda837123c2461df8f2e3bedd725ab1d941fdc6439e4aa7c0e8c82e8","source_body_bytes":10197,"source_body_sha256":"4fbe8e8fb76ab2751e0610d87042fecaf120eb078e2f6b064e0463645c0dc37f"},"reviewed_execution_result_archive":{"path":".agent-work/archived/EXECUTION_RESULT-20260803-1436.md","bytes":11039,"sha256":"9c39787d61a36c403887f41b59f47f7016437226286339237c187ae147708b5f","source_body_bytes":9689,"source_body_sha256":"cd28ad1226e72b7b546b5d4f8c6622cd6af5593af7890e4ed4883f38091acba2"},"prior_rejection":"REJECTED_G4_03_PASS_APP_GRACEFUL_QUIT_EXIT_MISMATCH_DESPITE_RESIDUAL_ZERO","prior_rejection_preserved":true,"frozen_observation_classification":"REQUEST_TRANSPORT_AMBIGUOUS_EFFECT_CONFIRMED_CLEAN","request_transport_success":false,"request_transport_exit":1,"request_error_code":-128,"previous_readiness_evidence_status":"ACCEPTED_SEALED_PASS_NOT_REOPENED","g4_03_planner_accepted":true,"g4_04_planning_unlock_recommended":true,"g4_04_execution_authorized":false,"future_reference_task":"REF-G4-04-E2","future_reference_status":"WAITING_ORCHESTRATOR_PLANNING_UNLOCK_NOT_EXECUTABLE","new_plan_generated":false,"external_experiment_payload_access":0,"app_access":0,"process_poll":0,"listener_access":0,"device_access":0,"network_access":0,"root_access":0,"release_consumption":0,"capture_access":0,"nonzero_light":0,"formal_r6_access":0,"td_c_access":0,"human_governance_gate":false,"advisor_scientific_gate":false,"g4_01_reopen":false,"planner_stop":"RETURN_ORCHESTRATOR_G4_03_TERMINAL_DISPOSITION_AND_G4_04_PLANNING_UNLOCK_REVIEW"}`
 
-## 1. Intake与authority
+## Planner decision
 
-Executer开始前必须证明：
+Planner接受本次pure offline app-lifecycle convergence candidate。现有owner只有一个新增的frozen observation record与
+pure fail-closed classifier；没有新增I/O、process、network、device、persistence、wrapper或parallel controller owner。
+Truth table、exact typing、immutable output、identity/request/variant/poll/final-residual guards及静态无I/O边界均有实际断言。
 
-1. branch为`main`；HEAD是
-   `c7838eece611c92d74dc49e4922af1b133141bac`的direct child；activation subject与exact three paths符合machine row。
-2. PLAN/FULL strict parser均通过；contract同为
-   `G4-ZERO-READINESS-APP-LIFECYCLE-CONVERGENCE-V1`；active task/count为同一
-   `REF-G4-03-ZERO-READINESS / 1`。
-3. 除activation three paths外worktree clean；现有owner/test/wrapper与两个1415 archives的bytes/SHA exact。
-4. 当前task仍是G4-03；G4-04 locked；G4-01/G4-02 accepted且不重开。
-5. 本包不读取任何external root或payload，不访问app/process/listener/device/network。
+冻结1415 observation的唯一分类为
+`REQUEST_TRANSPORT_AMBIGUOUS_EFFECT_CONFIRMED_CLEAN`。原始request exit `1`、error `-128`及
+`request_transport_success=false`均被保留；此前
+`REJECTED_G4_03_PASS_APP_GRACEFUL_QUIT_EXIT_MISMATCH_DESPITE_RESIDUAL_ZERO`仍是当时PLAN合同下的历史局部正确判定，
+没有被重写成成功。
 
-任一项失败：不编辑owner/test，只写ER后stop。禁止reset/clean/checkout。
+结合此前已经接受且不重开的readiness sealed-pass证据，Planner认为当前工程合同足以关闭G4-03，并建议Orchestrator
+把`REF-G4-04-E2`仅解锁为下一次planning输入。该建议不授予G4-04 execution，不消费旧root，不访问device、app、
+process、listener、network、release或formal stage，也不生成G4-04 PLAN。
 
-## 2. Ownership与最小实现
+## Validation review
 
-只在现有`p7_successor_zero_readiness.py`内新增：
+- owner/test after identity与Executer handoff一致：
+  `ba326702ad53aba06eeef2c12a86753c31bbeaa65bed78139dc777f2047d9193` /
+  `6bbee82e8e61a65aada750e7d5b74d30157d38b61c8edec4b7d20bd907d1a2dd`。
+- reviewed archive file/body identity均重新核对通过。
+- targeted `15/15`、focused `125/125`、full `879/879`、compileall、`git diff --check`与CodeGraph结果可从已归档ER追溯；
+  本次纯review没有重复执行会触及temporary/external roots的测试。
+- 当前review未读取external experiment root/payload，也未访问app/process/listener/device/network。
 
-- 一个frozen、exactly typed、JSON-native-compatible app-lifecycle observation record；
-- 一个pure classifier，输入该record，输出request transport与authoritative final effect分离的immutable classification。
+## Stop
 
-不得创建第二个module、controller、persistence owner、CLI、wrapper或I/O path。Classifier不得import或调用
-`os`、`subprocess`、`socket`、`ps`、`lsof`、AppleScript、provenance writer或任何device/network owner；
-不得自行观察进程或端口。现有readiness执行、root schema、device cleanup、serialization与wrapper行为不得改变。
-
-原1415 Planner rejection保持历史正确：`exit 1/-128`不得重写为request success。新classifier只能把request transport
-result与最终effect分别记录，并在全部effect证据满足时给出新的后续工程分类。
-
-## 3. Frozen record contract
-
-Record至少包含且严格验证：
-
-- exact app bundle/bundle-id/executable与owned PID identity；
-- `app_preexisting`；
-- graceful request count、transport exit、error code；
-- force/alternate request counts；
-- fixed bounded poll elapsed tuple及owned PID presence tuple；
-- final exact app/listener/owned/scratch residual counts；
-- service/endpoint variant counts。
-
-Owned-app success-classification前置必须同时满足：
-
-- identity exact，非pre-existing；
-- graceful request exact一次；
-- force=0、alternate=0、service/endpoint variant=0；
-- poll elapsed exact为`(0,1,2,4,8,15)`，0秒owned PID存在，之后在bounded grace内消失并保持消失；
-- final app/listener/owned/scratch residual全0。
-
-Classification truth table：
-
-1. request exit `0`且上述effect条件全满足：
-   `REQUEST_CONFIRMED_EFFECT_CONFIRMED_CLEAN`。
-2. request exit非0（包括本次`1/-128 User canceled`），但exact single request及上述effect条件全满足：
-   `REQUEST_TRANSPORT_AMBIGUOUS_EFFECT_CONFIRMED_CLEAN`。
-   必须同时保留`request_transport_success=false`、原exit/error，绝不得写成request success。
-3. 任一residual非0、force/alternate/variant非0、identity不exact、request count不是1、poll schedule/presence漂移、
-   0秒即无owned PID或bounded polls未证明持续消失：fail closed，不得产生任何clean classification。
-4. pre-existing app不得借用owned-app classifier；若输入为pre-existing必须fail closed或返回明确non-owned/not-applicable，
-   绝不得声明本包cleanup credit。
-
-返回值必须包含schema、classification、request transport status、final effect status、原始exit/error与每项guard，
-不得包含authority、G4-03 pass或G4-04 unlock字段。
-
-## 4. Tests与immutable observation
-
-仅更新现有test file，覆盖：
-
-- 上述两个clean classification；
-- exit 1/-128仍是transport ambiguous而非success；
-- request count 0/2；
-- force、alternate、service/endpoint variant各自拒绝；
-- identity drift、pre-existing、poll schedule drift、0秒缺失、未在deadline内消失、消失后复现；
-- 每个final residual字段非0；
-- invalid type/bool-as-int/unknown or mutable shape fail closed；
-- classifier纯函数、输入不变、输出immutable/JSON-native projection exact；
-- owner无新增I/O/process/network/device imports或调用；
-- 本次immutable observation：PID `79395`、request count1、exit1/error-128、presence
-  `(true,false,false,false,false,false)`、final residual全0，exact结果只能是
-  `REQUEST_TRANSPORT_AMBIGUOUS_EFFECT_CONFIRMED_CLEAN`，且request transport success为false。
-
-Tests不得读取external root。允许只读两个1415 archive并验证其完整file/body identity；immutable observation应作为明确的
-test record，不从未经owner的regex/临时controller抽取语义。
-
-## 5. Validation与唯一离线 candidate
-
-顺序：
-
-1. targeted新测试；首次失败只允许在owner/test内一次bounded correction并重跑targeted。同一边界第二次失败stop。
-2. focused：zero-readiness、provenance/machine contract及相关owner tests。
-3. full suite；compileall；`git diff --check`。
-4. `codegraph sync`后query classifier只被tests与本包offline caller使用，且没有新增I/O/device/process边。
-5. 全部通过后，使用repo-owned pure classifier对第4节exact immutable record调用一次；把完整classification写入ER。
-
-不得创建durable package/root，不得修改1415 archives。即使classification为
-`REQUEST_TRANSPORT_AMBIGUOUS_EFFECT_CONFIRMED_CLEAN`，Executer也只能提出：
-
-`G4_03_ACCEPTANCE_CANDIDATE_AFTER_OFFLINE_APP_LIFECYCLE_CONVERGENCE`
-
-不能自行把G4-03设PASS或解锁G4-04。
-
-## 6. Handoff
-
-ER必须记录activation、code/test before/after identity、archive identity、diff path set、test/check结果、CodeGraph边、
-classifier唯一调用及完整guard/output、external/app/device/network/root访问均0、prior rejection preserved。
-
-Executer完成后停于`RETURN_FOR_G4_03_APP_LIFECYCLE_CONVERGENCE_REVIEW`。Planner必须先归档PLAN/ER并独立验收；
-Orchestrator才可决定G4-03 terminal disposition。本PLAN不生成后继package，不修改FULL或提交。
+停止于`RETURN_ORCHESTRATOR_G4_03_TERMINAL_DISPOSITION_AND_G4_04_PLANNING_UNLOCK_REVIEW`。当前没有active executable
+PLAN；只有Orchestrator可更新FULL、决定G4-03 terminal disposition并委派后续Planner pass。
