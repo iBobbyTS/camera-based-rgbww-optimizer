@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from types import MappingProxyType
 from typing import Any
@@ -35,7 +37,11 @@ TERMINAL_NAME = "terminal-seal.json"
 ARTIFACT_NAMES = (RESULT_NAME, TERMINAL_NAME)
 PASS_STATUS = "offline_preformal_contract_pass_waiting_planner_review"
 SUCCESS_TERMINAL_STATUS = "sealed_offline_preformal_contract_pass_waiting_planner_review"
-EXPECTED_OUTPUT_ROOT = "/Volumes/4T/temp/rgbww-optimizer/g4-e2-preformal-4995f7d65141-20260803T204648Z"
+OUTPUT_ROOT_PARENT = "/Volumes/4T/temp/rgbww-optimizer"
+OUTPUT_ROOT_BASENAME = re.compile(
+    r"g4-e2-preformal-([0-9a-f]{12})-([0-9]{8}T[0-9]{6}Z)\Z"
+)
+SOURCE_IDENTITY = re.compile(r"[0-9a-f]{40}\Z")
 GUARD_KEYS = (
     "frozen_input_exact",
     "g4_01_release_accepted_unconsumed",
@@ -156,13 +162,58 @@ def _source(path: str, byte_count: int, sha256: str) -> SourceReference:
     return SourceReference(path, byte_count, sha256)
 
 
-def frozen_e2_input() -> E2Input:
+def _validate_output_root(value: object) -> str:
+    """Validate one canonical direct child without touching the filesystem."""
+
+    if type(value) is not str or not value:
+        raise E2ContractError("invalid_output_root")
+    if "\\" in value or any(ord(character) < 32 or ord(character) == 127 for character in value):
+        raise E2ContractError("invalid_output_root")
+    parent, separator, basename = value.rpartition("/")
+    if separator != "/" or parent != OUTPUT_ROOT_PARENT or not basename:
+        raise E2ContractError("invalid_output_root")
+    path = Path(value)
+    if not path.is_absolute() or str(path) != value:
+        raise E2ContractError("invalid_output_root")
+    match = OUTPUT_ROOT_BASENAME.fullmatch(basename)
+    if match is None:
+        raise E2ContractError("invalid_output_root")
+    timestamp = match.group(2)
+    try:
+        parsed = datetime.strptime(timestamp, "%Y%m%dT%H%M%SZ")
+    except ValueError as error:
+        raise E2ContractError("invalid_output_root", primary=error) from error
+    if parsed.strftime("%Y%m%dT%H%M%SZ") != timestamp:
+        raise E2ContractError("invalid_output_root")
+    return value
+
+
+def _validate_source_identity(value: object, *, code: str) -> str:
+    """Validate one explicit Git-shaped identity without consulting Git."""
+
+    if type(value) is not str or SOURCE_IDENTITY.fullmatch(value) is None:
+        raise E2ContractError(code)
+    return value
+
+
+def frozen_e2_input(
+    *,
+    output_root: str,
+    source_checkpoint: str,
+    source_tree: str,
+) -> E2Input:
     """Return the exact machine-row references without reading their targets."""
+
+    output_root = _validate_output_root(output_root)
+    source_checkpoint = _validate_source_identity(
+        source_checkpoint, code="invalid_source_checkpoint",
+    )
+    source_tree = _validate_source_identity(source_tree, code="invalid_source_tree")
 
     return E2Input(
         schema=INPUT_SCHEMA,
-        source_checkpoint="4995f7d65141ce8a4086d74f9add21c5b44d593d",
-        source_tree="da458ce4a81344397354a8535e8a38cef5d59375",
+        source_checkpoint=source_checkpoint,
+        source_tree=source_tree,
         guide=_source(
             "advisor/4/4.GUIDE.md", 22702,
             "659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35",
@@ -241,7 +292,7 @@ def frozen_e2_input() -> E2Input:
         device_authorized=False,
         formal_r6_authorized=False,
         td_c_authorized=False,
-        output_root=EXPECTED_OUTPUT_ROOT,
+        output_root=output_root,
     )
 
 
@@ -323,6 +374,7 @@ def _prerequisite_projection(value: PrerequisiteReference) -> dict[str, Any]:
 
 def _reference_ledger(inputs: E2Input) -> dict[str, Any]:
     return {
+        "output_root": inputs.output_root,
         "source_checkpoint": inputs.source_checkpoint,
         "source_tree": inputs.source_tree,
         "guide": _source_projection(inputs.guide),
@@ -452,6 +504,11 @@ def _validate_result_contract(
 def _validate_exact_input(value: E2Input) -> None:
     if type(value) is not E2Input:
         raise E2ContractError("invalid_input_type")
+    _validate_output_root(value.output_root)
+    _validate_source_identity(
+        value.source_checkpoint, code="invalid_source_checkpoint",
+    )
+    _validate_source_identity(value.source_tree, code="invalid_source_tree")
     for source in (
         value.guide, value.policy, value.g4_03_review_plan, value.g4_03_review_result,
         value.g4_03_owner, value.g4_03_tests, value.g4_03_wrapper,
@@ -477,11 +534,13 @@ def _validate_exact_input(value: E2Input) -> None:
         raise E2ContractError("input_integer_type_invalid")
     if any(type(item) is not bool for item in boolean_fields):
         raise E2ContractError("input_boolean_type_invalid")
-    expected = frozen_e2_input()
+    expected = frozen_e2_input(
+        output_root=value.output_root,
+        source_checkpoint=value.source_checkpoint,
+        source_tree=value.source_tree,
+    )
     if value != expected:
         raise E2ContractError("frozen_input_drift")
-    if not Path(value.output_root).is_absolute():
-        raise E2ContractError("output_root_not_absolute")
 
 
 def evaluate_e2_preformal_gate(
@@ -577,6 +636,8 @@ def persist_e2_package(
     _validate_exact_input(inputs)
     _validate_result_contract(result, inputs)
     root = create_root_fn(inputs.output_root)
+    if type(root) is not provenance.DirectoryIdentity or root.path != inputs.output_root:
+        raise E2ContractError("created_root_identity_mismatch")
     result_identity: provenance.FileIdentity | None = None
     try:
         result_identity = persist_fn(root, RESULT_NAME, result)
@@ -601,14 +662,32 @@ def persist_e2_package(
                 "terminal_persist_and_fail_seal_failed", primary=primary, seal_failure=seal_failure,
             ) from primary
         raise E2ContractError("terminal_persist_failed", primary=primary) from primary
-    replay = replay_e2_package(root.path)
+    replay = replay_e2_package(
+        root.path,
+        source_checkpoint=inputs.source_checkpoint,
+        source_tree=inputs.source_tree,
+    )
     return E2Package(root, result_identity, terminal_identity, replay)
 
 
-def replay_e2_package(root_path: str | Path) -> Mapping[str, Any]:
+def replay_e2_package(
+    root_path: str | Path,
+    *,
+    source_checkpoint: str,
+    source_tree: str,
+) -> Mapping[str, Any]:
     """Independently replay one exact offline package through provenance I/O."""
 
+    source_checkpoint = _validate_source_identity(
+        source_checkpoint, code="invalid_source_checkpoint",
+    )
+    source_tree = _validate_source_identity(source_tree, code="invalid_source_tree")
     root = provenance.read_existing_root(str(Path(root_path)))
+    inputs = frozen_e2_input(
+        output_root=root.path,
+        source_checkpoint=source_checkpoint,
+        source_tree=source_tree,
+    )
     if provenance.list_exact_regular_children(root) != ARTIFACT_NAMES:
         raise E2ContractError("package_inventory_drift")
     result_identity = provenance.read_exact_file(
@@ -619,7 +698,7 @@ def replay_e2_package(root_path: str | Path) -> Mapping[str, Any]:
     )
     result = provenance.decode_canonical_json(result_identity.data)
     terminal = provenance.decode_canonical_json(terminal_identity.data)
-    _validate_result_contract(result, frozen_e2_input())
+    _validate_result_contract(result, inputs)
     _validate_success_terminal(terminal, result_identity)
     return _freeze({
         "schema": REPLAY_SCHEMA,
