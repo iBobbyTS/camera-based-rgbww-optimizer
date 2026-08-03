@@ -241,6 +241,8 @@ class SuccessorPredeviceTests(unittest.TestCase):
         }
         self.assertFalse({"json", "hashlib", "os", "subprocess", "socket"}.intersection(imports))
         for owner_call in (
+            "provenance.create_exclusive_root",
+            "provenance.persist_canonical_json",
             "provenance.read_existing_root",
             "provenance.list_exact_regular_children",
             "provenance.read_exact_file",
@@ -254,8 +256,218 @@ class SuccessorPredeviceTests(unittest.TestCase):
             "thermal.td_b_r6_machine_status",
         ):
             self.assertIn(owner_call, source)
-        self.assertNotIn("persist_canonical_json", source)
-        self.assertNotIn("create_exclusive", source)
+        for forbidden in (".write_bytes(", ".write_text(", ".mkdir(", "open(", "__main__"):
+            self.assertNotIn(forbidden, source)
+        replay_node = next(
+            node for node in tree.body
+            if isinstance(node, ast.FunctionDef)
+            and node.name == "replay_successor_predevice_evidence"
+        )
+        replay_names = {
+            node.id for node in ast.walk(replay_node) if isinstance(node, ast.Name)
+        }
+        self.assertNotIn("evaluate_successor_predevice", replay_names)
+
+    def test_durable_success_persists_exact_two_and_replays_once(self):
+        calls = {"evaluate": 0, "root": 0, "result": 0, "terminal": 0, "replay": 0}
+        output = self.parent / "oracle-success"
+
+        def evaluate(value):
+            calls["evaluate"] += 1
+            return subject.evaluate_successor_predevice(value)
+
+        def create(path):
+            calls["root"] += 1
+            return provenance.create_exclusive_root(path)
+
+        def persist(root, name, value):
+            calls["result" if name == subject.EVIDENCE_ARTIFACT_NAMES[0] else "terminal"] += 1
+            return provenance.persist_canonical_json(root, name, value)
+
+        package = subject.persist_successor_predevice_evidence(
+            self.expectation,
+            output_root=output,
+            evaluate_fn=evaluate,
+            create_root_fn=create,
+            persist_fn=persist,
+        )
+
+        def read_root(path):
+            calls["replay"] += 1
+            return provenance.read_existing_root(path)
+
+        replay = subject.replay_successor_predevice_evidence(package, read_root_fn=read_root)
+        self.assertEqual(calls, {
+            "evaluate": 1, "root": 1, "result": 1, "terminal": 1, "replay": 1,
+        })
+        self.assertEqual(package.root.mode, 0o700)
+        self.assertEqual(tuple(item.mode for item in (package.result, package.terminal)), (0o600, 0o600))
+        self.assertEqual(
+            provenance.list_exact_regular_children(package.root),
+            tuple(sorted(subject.EVIDENCE_ARTIFACT_NAMES)),
+        )
+        result = _native(provenance.decode_canonical_json(package.result.data))
+        seal = _native(provenance.decode_canonical_json(package.terminal.data))
+        self.assertEqual(result["proposed_current_route_state"]["eligibility"], True)
+        self.assertTrue(all(
+            value is False
+            for key, value in result["effective_authority"].items()
+            if key != "retained_r3_status"
+        ))
+        self.assertEqual(seal["schema"], "g4_successor_predevice_terminal_seal_v1")
+        self.assertEqual(seal["status"], "sealed_pass_non_authorizing_waiting_planner_review")
+        self.assertEqual(seal["result"]["path"], subject.EVIDENCE_ARTIFACT_NAMES[0])
+        self.assertNotEqual(seal["result"]["path"], subject.EVIDENCE_ARTIFACT_NAMES[1])
+        self.assertEqual(replay["schema"], "g4_successor_predevice_evidence_replay_v1")
+        self.assertEqual(replay["status"], "pass")
+        self.assertEqual(replay["artifact_count"], 2)
+        self.assertEqual(replay["independent_replay_calls"], 1)
+        self.assertEqual(replay["release_consumption"], 0)
+
+    def test_evaluator_failure_is_before_root_and_preexisting_root_is_not_repaired(self):
+        output = self.parent / "oracle-zero"
+        calls = {"evaluate": 0, "root": 0}
+
+        def fail(_value):
+            calls["evaluate"] += 1
+            raise RuntimeError("evaluate-failed")
+
+        def create(path):
+            calls["root"] += 1
+            return provenance.create_exclusive_root(path)
+
+        with self.assertRaisesRegex(RuntimeError, "evaluate-failed"):
+            subject.persist_successor_predevice_evidence(
+                self.expectation, output_root=output,
+                evaluate_fn=fail, create_root_fn=create,
+            )
+        self.assertEqual(calls, {"evaluate": 1, "root": 0})
+        self.assertFalse(os.path.lexists(output))
+
+        existing = self.parent / "oracle-existing"
+        existing.mkdir(mode=0o700)
+        with self.assertRaisesRegex(provenance.ProvenanceIOError, "root_exists"):
+            subject.persist_successor_predevice_evidence(
+                self.expectation, output_root=existing,
+            )
+        self.assertEqual(tuple(existing.iterdir()), ())
+
+    def test_post_root_result_failure_attempts_one_failure_seal_and_preserves_root(self):
+        output = self.parent / "oracle-result-failure"
+        calls = 0
+
+        def persist(root, name, value):
+            nonlocal calls
+            calls += 1
+            if calls == 1:
+                raise RuntimeError("result-persist-failed")
+            return provenance.persist_canonical_json(root, name, value)
+
+        with self.assertRaises(subject.SuccessorPredeviceError) as raised:
+            subject.persist_successor_predevice_evidence(
+                self.expectation, output_root=output, persist_fn=persist,
+            )
+        self.assertEqual(raised.exception.code, "durable_package_failed")
+        self.assertIsInstance(raised.exception.primary, RuntimeError)
+        self.assertEqual(calls, 2)
+        root = provenance.read_existing_root(output)
+        self.assertEqual(provenance.list_exact_regular_children(root), ("terminal-seal.json",))
+        terminal = provenance.read_exact_file(output / "terminal-seal.json", expected_mode=0o600, root=root)
+        seal = _native(provenance.decode_canonical_json(terminal.data))
+        self.assertEqual(seal["status"], "sealed_fail_non_authorizing")
+        self.assertEqual(seal["failed_phase"], "persist_result")
+        self.assertEqual(seal["primary_code"], "RuntimeError")
+        self.assertIsNone(seal["result"])
+
+    def test_terminal_failure_seal_preserves_result_and_double_failure_is_visible(self):
+        output = self.parent / "oracle-terminal-failure"
+        calls = 0
+
+        def persist(root, name, value):
+            nonlocal calls
+            calls += 1
+            if calls == 2:
+                raise RuntimeError("terminal-persist-failed")
+            return provenance.persist_canonical_json(root, name, value)
+
+        with self.assertRaises(subject.SuccessorPredeviceError) as raised:
+            subject.persist_successor_predevice_evidence(
+                self.expectation, output_root=output, persist_fn=persist,
+            )
+        self.assertEqual(raised.exception.code, "durable_package_failed")
+        self.assertEqual(calls, 3)
+        root = provenance.read_existing_root(output)
+        self.assertEqual(provenance.list_exact_regular_children(root), tuple(sorted(subject.EVIDENCE_ARTIFACT_NAMES)))
+        terminal = provenance.read_exact_file(output / "terminal-seal.json", expected_mode=0o600, root=root)
+        seal = _native(provenance.decode_canonical_json(terminal.data))
+        self.assertEqual(seal["status"], "sealed_fail_non_authorizing")
+        self.assertEqual(seal["failed_phase"], "persist_terminal")
+        self.assertEqual(seal["result"]["path"], subject.EVIDENCE_ARTIFACT_NAMES[0])
+
+        double = self.parent / "oracle-double-failure"
+        double_calls = 0
+
+        def fail_both(_root, _name, _value):
+            nonlocal double_calls
+            double_calls += 1
+            raise RuntimeError(f"persist-{double_calls}")
+
+        with self.assertRaises(subject.SuccessorPredeviceError) as double_raised:
+            subject.persist_successor_predevice_evidence(
+                self.expectation, output_root=double, persist_fn=fail_both,
+            )
+        self.assertEqual(double_raised.exception.code, "durable_package_and_failure_seal_failed")
+        self.assertEqual(double_calls, 2)
+        self.assertIsInstance(double_raised.exception.primary, RuntimeError)
+        self.assertIsInstance(double_raised.exception.seal_failure, RuntimeError)
+        self.assertEqual(provenance.list_exact_regular_children(provenance.read_existing_root(double)), ())
+
+    def test_root_identity_drift_fail_closed_after_creation(self):
+        output = self.parent / "oracle-root-drift"
+
+        def drift_root(path):
+            root = provenance.create_exclusive_root(path)
+            return replace(root, inode=root.inode + 1)
+
+        with self.assertRaises(subject.SuccessorPredeviceError) as raised:
+            subject.persist_successor_predevice_evidence(
+                self.expectation, output_root=output, create_root_fn=drift_root,
+            )
+        self.assertEqual(raised.exception.code, "durable_package_and_failure_seal_failed")
+        self.assertTrue(os.path.isdir(output))
+
+    def test_replay_inventory_hash_canonical_root_and_target_drift_fail_closed(self):
+        for index, case in enumerate(("inventory", "hash", "canonical", "root", "target")):
+            output = self.parent / f"oracle-replay-{index}"
+            package = subject.persist_successor_predevice_evidence(
+                self.expectation, output_root=output,
+            )
+            kwargs = {}
+            replay_package = package
+            if case == "inventory":
+                provenance.persist_canonical_json(package.root, "extra.json", {"extra": True})
+            elif case == "hash":
+                Path(package.result.path).write_bytes(b"{}\n")
+            elif case == "canonical":
+                path = Path(package.result.path)
+                path.write_bytes(b'{ "schema": "not-canonical" }\n')
+                current = provenance.read_exact_file(path, expected_mode=0o600, root=package.root)
+                replay_package = replace(package, result=current)
+            elif case == "root":
+                kwargs["read_root_fn"] = lambda path: replace(
+                    provenance.read_existing_root(path), inode=package.root.inode + 1
+                )
+            else:
+                def read(path, **read_kwargs):
+                    identity = provenance.read_exact_file(path, **read_kwargs)
+                    if Path(path).name == subject.EVIDENCE_ARTIFACT_NAMES[0]:
+                        return replace(identity, inode=identity.inode + 1)
+                    return identity
+                kwargs["read_file_fn"] = read
+            with self.subTest(case=case), self.assertRaises(
+                (subject.SuccessorPredeviceError, provenance.ProvenanceIOError)
+            ):
+                subject.replay_successor_predevice_evidence(replay_package, **kwargs)
 
     def test_historical_markers_are_rejected(self):
         markers = ("REF-P7-25-R2-old", "retained-r3", "retained_r3_root")

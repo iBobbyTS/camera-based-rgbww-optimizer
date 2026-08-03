@@ -1,26 +1,33 @@
-# REF-G4-02-PREDEVICE：durable offline oracle等待执行
+# REF-G4-02-PREDEVICE：Planner terminal acceptance checkpoint
 
-**状态：** `WAITING_ORCHESTRATOR_ACTIVATION`
-
-**PLAN contract：** `G4-PREDEVICE-DURABLE-OFFLINE-ORACLE-V1`
+**状态：** `REVIEWED_TERMINAL_ACCEPTED_WAITING_ORCHESTRATOR_FULL_UPDATE_AND_FOCUSED_COMMIT`
 
 **Reference task：** `REF-G4-02-PREDEVICE`
 
-**Planner stop：** `RETURN_FOR_G4_02_DURABLE_OFFLINE_ORACLE_REVIEW`
+**Executable PLAN：** `false`
 
-Planner已归档accepted owner checkpoint并编写唯一durable offline oracle package。当前尚未执行：durable root creation、
-release read/consumption、device、camera、Ray、strip、capture、formal R6、TD-C、firmware、deployment均为0。
+**Active task count：** `0`
 
-Reviewed checkpoint archives：
+**Planner stop：** `RETURN_ORCHESTRATOR_TERMINAL_FULL_UPDATE_AND_FOCUSED_COMMIT_G4_03_PLANNING_ONLY`
+
+Planner接受：
+
+`ACCEPTED_G4_02_DURABLE_PREDEVICE_EXACT_G4_01_RELEASE_ELIGIBLE_CONSUMABLE_UNCONSUMED`
+
+独立只读验收通过root/inventory/modes/bytes/SHA、canonical identities、terminal non-circular result reference、result closed core、
+repo-owned names和authority边界；未再次调用evaluator/persist/replay。Production ledger保持persist/evaluate/root/replay
+1/1/1/1，retry/alternate/consumption 0。
+
+Reviewed archives：
 
 ```text
-.agent-work/archived/PLAN-20260803-1217.md
-  6858 bytes / bf6bcb8010406a578774e9f8bced707ff0116a56cca84de693742e89e413f4ca
-  body 5953 bytes / bc74180c41a514694b426712ee765f9432a6a099a7fcfd32dc3705ca9988e1b8
-.agent-work/archived/EXECUTION_RESULT-20260803-1217.md
-  3450 bytes / 1cd0a9ee081c16bdecf88250602edfdae1d0bdbc9b3dc634129b143b7ab8fb9c
-  body 2542 bytes / 8585991d5297a0972480a73a2ad1e7d62b7f37dc82004cf2f994796f1f433c65
+.agent-work/archived/PLAN-20260803-1259.md
+  12554 bytes / 6dfa02175a2d1b18da841f912b8aed0a56b59ec0ae473bdfbfff317628354f15
+.agent-work/archived/EXECUTION_RESULT-20260803-1259.md
+  7416 bytes / 9553789352e278324f6d2a8078b19109e910286dc1f9292580322e7dc4a21ee7
 ```
 
-Orchestrator必须先审查PLAN、对齐FULL并按PLAN §2创建docs-only activation child。Executer不得在activation前执行或创建
-root，不得修改PLAN/FULL。
+Planner建议FULL仅对exact G4-01 release设canonical validator success、eligibility、release consumable为true；consumption
+authorization及全部device/formal authority保持false，retained R3不变。G4-03只可标记ready-for-planning，不得执行。
+
+Orchestrator下一步：归档pre-rewrite FULL、应用terminal status、创建focused commit。Planner不修改FULL或生成G4-03 PLAN。

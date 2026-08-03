@@ -12,34 +12,34 @@
 
 **适用 GUIDE SHA-256：** `659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35`
 
-**Archived predecessor：** `.agent-work/archived/FULL_PLAN_REFERENCE-20260803-1132.md`
+**Archived predecessor：** `.agent-work/archived/FULL_PLAN_REFERENCE-20260803-1305.md`
 
-**当前可执行任务数：** `1`
+**当前可执行任务数：** `0`
 
-**当前 active task：** `REF-G4-02-PREDEVICE`
+**当前 active task：** `none`
 
-**唯一 canonical next reference：** `REF-G4-02-PREDEVICE`（`ACTIVE_DURABLE_OFFLINE_ORACLE`）
+**唯一 canonical next reference：** `REF-G4-03-ZERO-READINESS`（`READY_FOR_PLANNING_ONLY_NOT_EXECUTABLE`）
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_guide4_goal_active_v12","snapshot_date":"2026-08-03","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","reference_revision_parent":"4e8d9c7330a0c2be6bb9f9dd912ec2b39348fbcd","content_policy":"UNFINISHED_TASKS_AND_REQUIRED_EXECUTION_INVARIANTS_ONLY","completed_content_allowed":false,"archive_policy":{"directory":".agent-work/archived","name_pattern":"{PLAN类型}-YYYYMMDD-HHMM.md","immutable":true,"overwrite":false},"archived_predecessor":{"path":".agent-work/archived/FULL_PLAN_REFERENCE-20260803-1132.md","status":"HISTORICAL_NON_EXECUTABLE_PRE_REWRITE_SNAPSHOT","source_commit":"779c7d9572d991f82076c892ec8198a059bbe44e","source_body_bytes":29546,"source_body_sha256":"0c8e15de428f401eb5e33da81b75ddf9d8e9d1e25b0b897c5396ac7816f3acc3","archive_bytes":30721,"archive_sha256":"ac72bcc4578aefcbf5aa23983d837cf749dbf982f9e1eeb75641dfa214c03d2d"},"active_task_count":1,"active_task":"REF-G4-02-PREDEVICE","active_plan_contract_id":"G4-PREDEVICE-DURABLE-OFFLINE-ORACLE-V1","current_plan_active_task_count":1,"current_plan_active_task":"REF-G4-02-PREDEVICE","canonical_next_reference_task":"REF-G4-02-PREDEVICE","canonical_next_reference_status":"ACTIVE_DURABLE_OFFLINE_ORACLE","executable":false,"plan_status":"EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION_DURABLE_OFFLINE_ORACLE","active_human_goal_route":{"reference_goal":"REF-G4-COMPLETE","status":"GOAL_ACTIVE_G4_02_DURABLE_OFFLINE_ORACLE","objective":"COMPLETE_ADVISOR_4_GUIDE_REACHABLE_ROUTE_TO_MANDATED_STOP","first_reference_task":"REF-G4-02-PREDEVICE","first_reference_status":"ACTIVE_DURABLE_OFFLINE_ORACLE"},"guide_completion_contract":{"success_definition":"ALL_REACHABLE_GUIDE4_STAGES_ACCEPTED_OR_MANDATED_FAIL_STOP_AND_ADVISOR_HANDOFF_REACHED","force_pass_prohibited":true,"historical_audit_inside_goal":false},"old_corrective_task_ids_reactivatable":false,"historical_route_policy":"ARCHIVED_ONLY_NO_REACTIVATION_NO_SUFFIX_GROWTH","legacy_retained_route":{"status":"HISTORICAL_ONLY_NOT_A_GUIDE4_PREDECESSOR","guide4_required":false,"execution_input_allowed":false,"task_ids_reactivatable":false},"frozen_guide_input":{"stage":"EQ-R6_STATE_C","selected_exposure":"1/2500","status":"ACCEPTED_QUALIFIED_INPUT_NOT_A_CURRENT_TASK"},"retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","canonical_validator_success":false,"eligibility":false,"release_consumable":false,"release_consumption_authorized":false,"device_authorized_by_this_file":false,"camera_authorized_by_this_file":false,"ray_authorized_by_this_file":false,"strip_authorized_by_this_file":false,"formal_r6_authorized":false,"td_c_authorized":false,"automatic_experiment_package_generation":false,"unresolved_scientific_questions_for_current_route":[],"allowed_next_action":"EXECUTE_ACTIVE_PLAN_REF_G4_02_DURABLE_OFFLINE_ORACLE","planner_requirement":"REVIEW_EXECUTION_RESULT_AT_SINGLE_STOP","full_is_non_executable_reference":true,"g4_01_prerequisite":{"disposition":"ACCEPTED_G4_01_SUCCESSOR_RELEASE_GENERATED_VALIDATED_NON_AUTHORIZING_UNCONSUMED","source_head":"779c7d9572d991f82076c892ec8198a059bbe44e","source_tree":"1ead5268917612d1232543b1a7eca28788f3980c","release_family":"/Volumes/4T/temp/rgbww-optimizer/g4-successor-lineage-779c7d9572d9-20260803T172055Z","release_bundle":"/Volumes/4T/temp/rgbww-optimizer/g4-successor-lineage-779c7d9572d9-20260803T172055Z/release","artifact_sha256":{"frozen-inputs.json":"8a81a906d2a94903a365f54b33c224a8ec99ce8d519ae2317cdc213c6e0264f8","r6-formal-plan.json":"dea5f979950909d5b3e8fd93c3a76e4fd18c0242158eade7967c4c62ec72cc3b","release-descriptor.json":"6843ef5007b9ebe3bfef1f7c8c1864ed0b86b3000d3d72caa8f08f67ce3bb452","validation-summary.json":"07e831616c303e68f9bf863a722b8b640c3726556f47143db8299083f941cc07","terminal-seal.json":"d9d7b784a4ec910d7c7740bc560ed87f2b99ab1744c19df42097d5683b668850"},"release_consumed":false,"eligibility":false,"device_or_formal_credit":false,"planner_review_archive":".agent-work/archived/PLAN-20260803-1126.md","execution_result_archive":".agent-work/archived/EXECUTION_RESULT-20260803-1126.md"},"g4_02_owner_checkpoint":{"status":"ACCEPTED_OWNER_INTEGRATION_AND_REAL_READ_ONLY_OBSERVATION_WAITING_DURABLE_PACKAGE","owner_path":"src/camera_based_rgbww_optimizer/optimization/p7_successor_predevice.py","owner_sha256":"0d6c529934b59a2faedf802bdd1e872a8c18085d055c4bfb1604e49032885be1","test_path":"tests/test_p7_successor_predevice.py","test_sha256":"eb90e55026a1c4bd927c80ab80f198346eb23ac97122eb52dabf914f99c1c509","reviewed_plan_archive":".agent-work/archived/PLAN-20260803-1208.md","reviewed_execution_result_archive":".agent-work/archived/EXECUTION_RESULT-20260803-1208.md","real_read_only_observation":"pass","durable_root_created":false,"release_consumed":false,"eligibility_credit":false,"device_or_formal_credit":false}}`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_guide4_goal_active_v12","snapshot_date":"2026-08-03","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","reference_revision_parent":"4e8d9c7330a0c2be6bb9f9dd912ec2b39348fbcd","content_policy":"UNFINISHED_TASKS_AND_REQUIRED_EXECUTION_INVARIANTS_ONLY","completed_content_allowed":false,"archive_policy":{"directory":".agent-work/archived","name_pattern":"{PLAN类型}-YYYYMMDD-HHMM.md","immutable":true,"overwrite":false},"archived_predecessor":{"path":".agent-work/archived/FULL_PLAN_REFERENCE-20260803-1305.md","status":"HISTORICAL_NON_EXECUTABLE_PRE_REWRITE_SNAPSHOT","source_commit":"79b8f03e65107e1d62f8de3b33ffb31d3413e185","source_body_bytes":26345,"source_body_sha256":"2dc39a6c44e996c89259d37680701cb8c2c5be9ce76357766cb5873f38f786fd","archive_bytes":27517,"archive_sha256":"55ecaa64542c362a5cc84b30174d230e530fba317180d3c0b6eba18c8d5fe274"},"active_task_count":0,"active_task":null,"active_plan_contract_id":null,"current_plan_active_task_count":0,"current_plan_active_task":null,"canonical_next_reference_task":"REF-G4-03-ZERO-READINESS","canonical_next_reference_status":"READY_FOR_PLANNING_ONLY_NOT_EXECUTABLE","executable":false,"plan_status":"TERMINAL_ACCEPTED_WAITING_ORCHESTRATOR_FULL_UPDATE_AND_FOCUSED_COMMIT","active_human_goal_route":{"reference_goal":"REF-G4-COMPLETE","status":"GOAL_ACTIVE_WAITING_G4_03_ZERO_READINESS_PLANNING","objective":"COMPLETE_ADVISOR_4_GUIDE_REACHABLE_ROUTE_TO_MANDATED_STOP","first_reference_task":"REF-G4-03-ZERO-READINESS","first_reference_status":"READY_FOR_PLANNING_ONLY_NOT_EXECUTABLE"},"guide_completion_contract":{"success_definition":"ALL_REACHABLE_GUIDE4_STAGES_ACCEPTED_OR_MANDATED_FAIL_STOP_AND_ADVISOR_HANDOFF_REACHED","force_pass_prohibited":true,"historical_audit_inside_goal":false},"old_corrective_task_ids_reactivatable":false,"historical_route_policy":"ARCHIVED_ONLY_NO_REACTIVATION_NO_SUFFIX_GROWTH","legacy_retained_route":{"status":"HISTORICAL_ONLY_NOT_A_GUIDE4_PREDECESSOR","guide4_required":false,"execution_input_allowed":false,"task_ids_reactivatable":false},"frozen_guide_input":{"stage":"EQ-R6_STATE_C","selected_exposure":"1/2500","status":"ACCEPTED_QUALIFIED_INPUT_NOT_A_CURRENT_TASK"},"retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","canonical_validator_success":true,"eligibility":true,"release_consumable":true,"release_consumption_authorized":false,"device_authorized_by_this_file":false,"camera_authorized_by_this_file":false,"ray_authorized_by_this_file":false,"strip_authorized_by_this_file":false,"formal_r6_authorized":false,"td_c_authorized":false,"automatic_experiment_package_generation":false,"unresolved_scientific_questions_for_current_route":[],"allowed_next_action":"DELEGATE_PLANNER_FOR_REF_G4_03_ZERO_READINESS","planner_requirement":"WRITE_ONE_BOUNDED_ZERO_READINESS_PACKAGE","full_is_non_executable_reference":true,"g4_01_prerequisite":{"disposition":"ACCEPTED_G4_01_SUCCESSOR_RELEASE_GENERATED_VALIDATED_NON_AUTHORIZING_UNCONSUMED","source_head":"779c7d9572d991f82076c892ec8198a059bbe44e","source_tree":"1ead5268917612d1232543b1a7eca28788f3980c","release_family":"/Volumes/4T/temp/rgbww-optimizer/g4-successor-lineage-779c7d9572d9-20260803T172055Z","release_bundle":"/Volumes/4T/temp/rgbww-optimizer/g4-successor-lineage-779c7d9572d9-20260803T172055Z/release","artifact_sha256":{"frozen-inputs.json":"8a81a906d2a94903a365f54b33c224a8ec99ce8d519ae2317cdc213c6e0264f8","r6-formal-plan.json":"dea5f979950909d5b3e8fd93c3a76e4fd18c0242158eade7967c4c62ec72cc3b","release-descriptor.json":"6843ef5007b9ebe3bfef1f7c8c1864ed0b86b3000d3d72caa8f08f67ce3bb452","validation-summary.json":"07e831616c303e68f9bf863a722b8b640c3726556f47143db8299083f941cc07","terminal-seal.json":"d9d7b784a4ec910d7c7740bc560ed87f2b99ab1744c19df42097d5683b668850"},"release_consumed":false,"eligibility":false,"device_or_formal_credit":false,"planner_review_archive":".agent-work/archived/PLAN-20260803-1126.md","execution_result_archive":".agent-work/archived/EXECUTION_RESULT-20260803-1126.md"},"g4_02_prerequisite":{"disposition":"ACCEPTED_G4_02_DURABLE_PREDEVICE_EXACT_G4_01_RELEASE_ELIGIBLE_CONSUMABLE_UNCONSUMED","release_scope":"exact_g4_01_release_only","owner_path":"src/camera_based_rgbww_optimizer/optimization/p7_successor_predevice.py","owner_sha256":"4c8bf96dca444b5412120534a1df5519976afc98fe4aa1aaf2b83596177ffc81","test_path":"tests/test_p7_successor_predevice.py","test_sha256":"44ac81ae18ae0a8f041d53837c4c7d6c4e867cf4761c616bfb640117550d4cfa","validation":{"targeted":18,"focused":133,"full":864,"compileall":"pass","codegraph":"pass"},"durable_root":"/Volumes/4T/temp/rgbww-optimizer/g4-predevice-oracle-125158a3c1b8-20260803T181631Z","artifact_sha256":{"predevice-oracle-result.json":"78fa982b7f318734afc158324b968ee71ff41b5ce7b91e27d6eabc0f60bc40d9","terminal-seal.json":"39456ca3379df45cae0ca5337bf6d24d2040e6581dcd074b8ebf12d39b87e68e"},"reviewed_plan_archive":".agent-work/archived/PLAN-20260803-1259.md","reviewed_execution_result_archive":".agent-work/archived/EXECUTION_RESULT-20260803-1259.md","canonical_validator_success":true,"eligibility":true,"release_consumable":true,"release_consumption_authorized":false,"release_consumed":false,"device_or_formal_credit":false}}`
 
 ## Current-state declaration
 
-- `.agent-work/PLAN.md` 当前为G4-02 durable offline oracle package；PLAN与FULL active task count均为1，只有PLAN授权执行。
-- Human 已创建并恢复 `REF-G4-COMPLETE` goal；G4-01已按Planner验收为
-  `ACCEPTED_G4_01_SUCCESSOR_RELEASE_GENERATED_VALIDATED_NON_AUTHORIZING_UNCONSUMED`，当前唯一 canonical next reference是
-  `REF-G4-02-PREDEVICE`，只允许下一次Planner pass进行规划。
-- G4-02所需compact frozen prerequisite：source HEAD `779c7d9572d991f82076c892ec8198a059bbe44e`、tree
-  `1ead5268917612d1232543b1a7eca28788f3980c`、release bundle
-  `/Volumes/4T/temp/rgbww-optimizer/g4-successor-lineage-779c7d9572d9-20260803T172055Z/release`；exact artifact hashes与
-  Planner/ER archive identity只以machine row和`.agent-work/archived/FULL_PLAN_REFERENCE-20260803-1132.md`为准。
+- `.agent-work/PLAN.md` 当前为G4-02 terminal accepted checkpoint；PLAN与FULL active task count均为0，没有执行权。
+- Human 已创建并恢复 `REF-G4-COMPLETE` goal；G4-02已按Planner验收为
+  `ACCEPTED_G4_02_DURABLE_PREDEVICE_EXACT_G4_01_RELEASE_ELIGIBLE_CONSUMABLE_UNCONSUMED`，当前唯一 canonical next reference是
+  `REF-G4-03-ZERO-READINESS`，只允许下一次Planner pass进行规划。
+- G4-03所需compact frozen prerequisite包括G4-01 exact release与G4-02 durable oracle；source、release、owner/test、evidence
+  root、artifact hashes及review archive identity只以machine row和
+  `.agent-work/archived/FULL_PLAN_REFERENCE-20260803-1305.md`为准。
 - Human 已明确：本 goal 的目标不是无脑推进某一个历史 package，而是完成当前适用的 Advisor
   `advisor/4/4.GUIDE.md`。下文 `REF-G4-*` 是本 goal 唯一允许规划的 canonical route。
 - EQ-R6 State C `qualified_1_2500` 只作为当前路线的 frozen prerequisite；它不是本文件中的已完成 task条目，
   不得重跑，也不得降级成未确认结论。
-- Retained R3 仍为 `RETAINED_UNVALIDATED_UNCONSUMED`；canonical validator success、eligibility、consumability 与 consumption 均为 false。
+- Retained R3 仍为 `RETAINED_UNVALIDATED_UNCONSUMED`。仅对exact G4-01 release，canonical validator success、eligibility与
+  release consumable现为true；release仍未消费且consumption authorization为false。
 - Retained R3、旧 Option-B controller 链和所有深层 corrective task 只是历史工程证据，不是完成 4.GUIDE
   的 predecessor、release candidate 或默认实现输入；不得验证后直接消费、恢复、重试或继续追加 task-ID 后缀。
-- 所有拆分前历史、G4-01完成叙述、rejection/corrective chain与handoff ledger只位于
+- 所有拆分前历史、已完成G4-01/G4-02叙述、rejection/corrective chain与handoff ledger只位于
   `.agent-work/archived/FULL_PLAN_REFERENCE-20260802-1038.md`与最新pre-rewrite snapshot；当前 FULL 不复制这些内容。
 - 本文件不改变 GUIDE 科学结论，不授权设备、相机、Ray、灯带、network、FORMAL-R6、TD-C、固件、部署或任何实验。
 
@@ -63,8 +63,8 @@ retained R3、旧release或一次性controller。独立clean-room审计已经在
 除非新的可观测drift使当前前置事实失效。
 
 本文件始终 non-executable。Orchestrator 已重读 Human goal、GUIDE、PLAN/FULL machine rows、失败夹具与当前 Git state，
-  确认G4-01已取得terminal accepted disposition并完成pre-rewrite FULL archive。当前唯一active executable PLAN是
-`REF-G4-02-PREDEVICE`的pure-offline owner integration package。不得一次把后续设备阶段全部写进 PLAN，
+确认G4-02已取得terminal accepted disposition并完成pre-rewrite FULL archive。当前没有active executable PLAN；唯一下一动作是
+委派Planner为`REF-G4-03-ZERO-READINESS`编写一个严格有界的zero/readiness package。不得一次把后续设备阶段全部写进 PLAN，
 不得由 FULL 自动生成实验 package。
 
 ### 0.2 Pending route 总表
@@ -72,8 +72,7 @@ retained R3、旧release或一次性controller。独立clean-room审计已经在
 | Reference ID | 当前状态 | 目的 | 直接依赖 | 解锁/验收 owner |
 | --- | --- | --- | --- | --- |
 | `REF-G4-COMPLETE` | `GOAL_ACTIVE_NON_EXECUTABLE_REFERENCE` | 完成 4.GUIDE 的全部可到达路线并在规定出口停下 | Human goal 已创建 | Human / Orchestrator |
-| `REF-G4-02-PREDEVICE` | `ACTIVE_DURABLE_OFFLINE_ORACLE` | 对 G4-01 的 fresh release 做严格 offline predevice oracle | G4-01 accepted release prerequisite | Planner |
-| `REF-G4-03-ZERO-READINESS` | `BLOCKED` | fresh real zero/readiness 与设备身份/能力检查 | G4-02 accepted | Planner |
+| `REF-G4-03-ZERO-READINESS` | `READY_FOR_PLANNING_ONLY_NOT_EXECUTABLE` | fresh real zero/readiness 与设备身份/能力检查 | G4-02 accepted | Planner |
 | `REF-G4-04-E2` | `BLOCKED` | fresh E2 preformal gate，不进行 formal capture | G4-03 accepted | Planner |
 | `REF-G4-05-RAY-R6-STAGE-GATE` | `BLOCKED` | Orchestrator冻结一次 exact Ray R6 visible-Terminal launch | G4-04 accepted | Orchestrator |
 | `REF-G4-06-RAY-R6` | `LOCKED` | 完整新 Ray-only formal R6 16 帧 | G4-05 exact stage gate | Planner |
@@ -85,21 +84,8 @@ retained R3、旧release或一次性controller。独立clean-room审计已经在
 | `REF-G4-12-TDC-CORE` | `LOCKED` | operational-600 transient 下的 TD-C core 8 帧 | G4-11 accepted | Planner |
 | `REF-G4-13-ADVISOR-HANDOFF` | `BLOCKED` | 冻结 AUDIT PACK，交 Advisor 决定后续 scientific route | 成功终点或任一 GUIDE stop | Advisor |
 
-以上状态不表示 FULL、release、device 或 experiment 权限；当前PLAN只授权fresh durable offline oracle，G4-01 release仍未消费且
-eligibility/device/formal均为false。已接受的owner integration与一次read-only observation只是本package的工程前置。
-
-### 0.4 `REF-G4-02-PREDEVICE`：fresh offline oracle
-
-- **实现：** 对 G4-01 唯一 fresh release、current checkpoint、policy、R5 A/D/B shutter、EQ C shutter、R6 exact
-  capture plan、16/16 与 physical cap、old/new pooling prohibition、operational-600/steady schema、cleanup/terminal
-  paths做一次 fail-closed predevice oracle。全部输入都由 PLAN 冻结 exact path/hash。
-- **安全边界：** pure offline；不得解析、验证或消费 retained R3，不得触碰设备或创建 formal root。
-- **验收：** public/final/strict/replay/lineage checks一致；negative cases证明旧 R2、旧 retained R3、checkpoint drift、
-  auto exposure、weak reacquire、wrong capture order与pooling都会拒绝；focused/full tests与 durable evidence 首次通过。
-  Planner接受后，Orchestrator可为该 exact fresh release新增独立的current-route eligibility/consumption字段，供后续
-  G4-03/G4-04 package使用；不得改写 retained R3 的 false字段或泛化为formal launch授权。
-- **失败与 stop：** 普通代码缺陷只允许一次 bounded correction；contract/science conflict 停给 Orchestrator/Advisor。
-  成功只解锁 G4-03，不授权 nonzero output或capture。
+以上状态不表示 FULL、release、device 或 experiment 权限；当前没有active executable PLAN。Exact G4-01 release已通过G4-02
+durable predevice oracle并为eligible/consumable，但仍未消费且consumption authorization/device/formal均为false。
 
 ### 0.5 `REF-G4-03-ZERO-READINESS`：real zero/readiness
 
