@@ -1,23 +1,28 @@
-# REF-G4-01-SUCCESSOR-LINEAGE：等待第二次 seam reassessment execution
+# REF-G4-01-SUCCESSOR-LINEAGE：已review，等待Orchestrator处置
 
-**状态：** `NO_CURRENT_EXECUTION_RESULT_AWAITING_EXECUTER`
-
-**PLAN contract：** `G4-SUCCESSOR-LINEAGE-PROVENANCE-SEAM-REASSESSMENT-V2`
+**状态：** `REVIEWED_THIRD_ENGINEERING_STOP_WAITING_ORCHESTRATOR_DISPOSITION`
 
 **Reference task：** `REF-G4-01-SUCCESSOR-LINEAGE`
 
-上一轮reviewed handoff已保真归档：
+**Reference disposition：** `UNFINISHED_UNACCEPTED_ENGINEERING_CONVERGENCE_STOP`
 
-```text
-.agent-work/archived/EXECUTION_RESULT-20260802-2320.md
-bytes = 11889
-SHA-256 = 52feabe4be3510368e7429733afeb97d4923a1d7f6d153ec9ad0ddec8844c13d
-disposition = REJECTED_HIGH_RISK_PROVENANCE_STATE_SEAM_SECOND_PASS_REQUIRED
-```
+**Executable PLAN：** `false`
 
-本文件等待Executer写入本次唯一handoff。它不授权release、device、formal、retry或commit；执行边界只来自当前
-`.agent-work/PLAN.md`。
+**Active task count：** `0`
 
-Planner在Orchestrator独立review后修订了两个内部可执行合同：policy使用provenance-owned strict但非canonical-required
-JSON bytes decoder；bundle使用candidate → public-summary → terminal-last pending-independent-replay → final/strict
-read-only replay state machine。Task、reject disposition、scope、budgets与archive identities均未改变。
+Planner已完成第三次同一provenance/state boundary失败的正式review。Reviewed originals已保真归档：
+
+- `.agent-work/archived/PLAN-20260802-2351.md`：`14454` bytes，SHA-256
+  `1ffaa09eed96e66a17814cb967977ec46c9ce3701775e9b2e6b6080c8505ebae`。
+- `.agent-work/archived/EXECUTION_RESULT-20260802-2351.md`：`6930` bytes，SHA-256
+  `fd6bc095aa4613578bc7f49f9e506a2a9a804a3c47a98727a8610ed78faf9e0d`。
+
+唯一targeted run为`44` tests、exit `1`、failures `4`；实际均以`descriptor_reference_drift`提前fail closed，
+而冻结测试regex要求`secret_material_prohibited|historical_input_prohibited`。这属于error precedence与
+cross-reference fail-closed顺序的ordinary engineering冲突，不是科学、设备、formal或Advisor问题。
+
+四个code/test candidate路径及其identity已记录在live PLAN和reviewed ER archive中，全部维持
+`UNACCEPTED_CANDIDATE_PENDING_ORCHESTRATOR_DISPOSITION`。本live ER不授权执行、修复、测试、commit、第四PLAN、
+corrective task、Advisor AUDIT PACK、release、device或formal动作。
+
+**Exact stop：** `THIRD_PROVENANCE_STATE_BOUNDARY_FAILURE_STOP_RETURN_ORCHESTRATOR`
