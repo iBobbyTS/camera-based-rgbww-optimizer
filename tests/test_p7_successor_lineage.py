@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import tempfile
+from types import MappingProxyType
 import unittest
 
 from camera_based_rgbww_optimizer.optimization import p7_successor_lineage as subject
@@ -20,6 +21,9 @@ POLICY_BYTES = b'{\n  "schema": "fixture",\n  "states": {"C": "1/2500"}\n}\n'
 POLICY_SHA = hashlib.sha256(POLICY_BYTES).hexdigest()
 MANIFEST_BYTES = b'[{"path":"fixture"}]'
 MANIFEST_SHA = hashlib.sha256(MANIFEST_BYTES).hexdigest()
+REPO_ROOT = Path(__file__).resolve().parents[1]
+REAL_POLICY_PATH = REPO_ROOT / "config/hsi/p7-ray-td-b-exposure-policy-v2.json"
+REAL_POLICY_SHA = "c9080d18571f617cb7d323ade843ff9c86bf92e3795d23e3999e26d413968681"
 
 
 def capture_ids() -> list[str]:
@@ -144,6 +148,94 @@ class SuccessorInputTests(unittest.TestCase):
         self.assertEqual(inputs.frozen_inputs["policy_contract"]["schema"], "fixture")
         with self.assertRaisesRegex(provenance.ProvenanceIOError, "json_not_canonical"):
             provenance.decode_canonical_json(POLICY_BYTES)
+
+    def test_real_repository_policy_passes_production_default_consumers(self):
+        self.assertTrue(REAL_POLICY_PATH.is_absolute())
+        policy_bytes = REAL_POLICY_PATH.read_bytes()
+        self.assertEqual(len(policy_bytes), 4065)
+        self.assertEqual(hashlib.sha256(policy_bytes).hexdigest(), REAL_POLICY_SHA)
+
+        inputs = subject.build_successor_lineage_inputs(
+            repo_root="/repo",
+            source_checkpoint=CHECKPOINT,
+            policy_path=REAL_POLICY_PATH,
+            policy_sha256=REAL_POLICY_SHA,
+            eq_root="/evidence/eq-r6",
+            eq_manifest_bytes=MANIFEST_BYTES,
+            eq_manifest_sha256=MANIFEST_SHA,
+            source_identity_fn=lambda *_args: source_identity(),
+            audit_eq_fn=lambda _root: qualification_fixture(),
+            machine_status_fn=status_fixture,
+        )
+
+        self.assertEqual(inputs.frozen_inputs["policy"]["path"], str(REAL_POLICY_PATH))
+        self.assertEqual(inputs.frozen_inputs["policy"]["bytes"], 4065)
+        self.assertEqual(inputs.frozen_inputs["policy"]["sha256"], REAL_POLICY_SHA)
+        self.assertEqual(inputs.r6_formal_plan["state_shutters"]["C"], "1/2500")
+        self.assertEqual(len(inputs.r6_formal_plan["capture_ids"]), 16)
+        self.assertEqual(inputs.r6_formal_plan["formal_logical"], 16)
+        self.assertEqual(inputs.r6_formal_plan["formal_physical_cap"], 16)
+        self.assertFalse(inputs.r6_formal_plan["executable"])
+
+    def test_policy_projection_is_single_same_object_and_preserves_immutability(self):
+        decoded_policy = MappingProxyType({
+            "schema": "fixture",
+            "states": MappingProxyType({
+                "C": MappingProxyType({"formal_shutter": "1/2500"}),
+            }),
+            "sequence": ("A", "D", "B", "C"),
+        })
+        before = provenance.json_native_value(decoded_policy)
+        seen: list[dict] = []
+
+        def validate_policy(value):
+            self.assertIs(type(value), dict)
+            self.assertIs(type(value["states"]), dict)
+            self.assertIs(type(value["sequence"]), list)
+            seen.append(value)
+
+        def build_plan(value):
+            seen.append(value)
+            return plan_fixture()
+
+        inputs, _calls = self.build(
+            decode_policy_fn=lambda _data: decoded_policy,
+            validate_policy_fn=validate_policy,
+            build_r6_plan_fn=build_plan,
+        )
+
+        self.assertEqual(len(seen), 2)
+        self.assertIs(seen[0], seen[1])
+        self.assertEqual(seen[0], before)
+        self.assertIs(type(decoded_policy), MappingProxyType)
+        self.assertIs(type(decoded_policy["states"]), MappingProxyType)
+        self.assertIs(type(decoded_policy["sequence"]), tuple)
+        self.assertEqual(provenance.json_native_value(decoded_policy), before)
+        frozen = inputs.frozen_inputs["policy_contract"]
+        self.assertIs(type(frozen), MappingProxyType)
+        self.assertIs(type(frozen["states"]), MappingProxyType)
+        self.assertIs(type(frozen["sequence"]), tuple)
+        self.assertEqual(provenance.json_native_value(frozen), before)
+        with self.assertRaises(TypeError):
+            frozen["schema"] = "changed"
+        with self.assertRaises(TypeError):
+            frozen["states"]["C"] = {}
+
+        tree = ast.parse(Path(subject.__file__).read_text(encoding="utf-8"))
+        build_node = next(
+            node for node in tree.body
+            if isinstance(node, ast.FunctionDef)
+            and node.name == "build_successor_lineage_inputs"
+        )
+        projections = [
+            node for node in ast.walk(build_node)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id == "provenance"
+            and node.func.attr == "json_native_value"
+        ]
+        self.assertEqual(len(projections), 1)
 
     def test_source_policy_semantic_and_eq_drift_fail_closed(self):
         for dirty in (

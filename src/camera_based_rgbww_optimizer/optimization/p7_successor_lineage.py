@@ -245,10 +245,13 @@ def build_successor_lineage_inputs(
         or policy_identity.sha256 != expected_policy_sha
     ):
         raise SuccessorLineageError("policy_identity_invalid")
-    policy = decode_policy_fn(policy_identity.data)
-    if not isinstance(policy, Mapping):
+    decoded_policy = decode_policy_fn(policy_identity.data)
+    if not isinstance(decoded_policy, Mapping):
         raise SuccessorLineageError("policy_not_object")
-    validate_policy_fn(policy)
+    native_policy = provenance.json_native_value(decoded_policy)
+    if type(native_policy) is not dict:
+        raise SuccessorLineageError("policy_not_object")
+    validate_policy_fn(native_policy)
 
     manifest_sha = _sha256(eq_manifest_sha256, "eq_manifest_sha256_invalid")
     if type(eq_manifest_bytes) is not bytes or hashlib.sha256(eq_manifest_bytes).hexdigest() != manifest_sha:
@@ -268,7 +271,7 @@ def build_successor_lineage_inputs(
     ):
         raise SuccessorLineageError("eq_qualification_drift")
 
-    plan = dict(build_r6_plan_fn(policy))
+    plan = dict(build_r6_plan_fn(native_policy))
     _check_r6_plan(plan)
     machine = dict(machine_status_fn())
     locks = machine.get("locks", {})
@@ -288,7 +291,7 @@ def build_successor_lineage_inputs(
             "bytes": policy_identity.byte_count,
             "sha256": policy_identity.sha256,
         },
-        "policy_contract": provenance.json_native_value(policy),
+        "policy_contract": native_policy,
         "eq": {
             "root": str(eq_root), "manifest_bytes": len(eq_manifest_bytes),
             "manifest_sha256": manifest_sha, "qualification": qualification,
