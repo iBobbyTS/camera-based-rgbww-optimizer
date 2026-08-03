@@ -47,6 +47,16 @@ class E2TestCase(unittest.TestCase):
         self.assertEqual(calls, {"build": 1, "validate": 1, "status": 1})
         return result
 
+    def native_result(self):
+        return provenance.json_native_value(self.evaluate())
+
+    def assert_result_rejected(self, value, *, inputs=None):
+        with self.assertRaises(subject.E2ContractError):
+            subject._validate_result_contract(
+                value,
+                self.inputs if inputs is None else inputs,
+            )
+
 
 class FrozenInputTests(E2TestCase):
     def test_exact_frozen_input_and_existing_owners_pass_once(self):
@@ -187,7 +197,7 @@ class OwnerContractTests(E2TestCase):
                 self.evaluate(plan=value)
 
     def test_machine_status_envelope_and_locks_are_closed(self):
-        base = thermal.td_b_r6_machine_status()
+        base = self.native_result()
         mutations = []
         paths = (
             ("operating_envelope", "dwell_s", 601),
@@ -204,14 +214,25 @@ class OwnerContractTests(E2TestCase):
         )
         for section, key, value in paths:
             changed = copy.deepcopy(base)
-            changed[section][key] = value
+            changed["machine_status"][section][key] = value
             mutations.append((f"{section}.{key}", changed))
         changed = copy.deepcopy(base)
-        changed["extra"] = {}
+        changed["machine_status"]["extra"] = {}
         mutations.append(("open", changed))
         for label, value in mutations:
-            with self.subTest(label=label), self.assertRaises(subject.E2ContractError):
-                self.evaluate(status=value)
+            with self.subTest(label=label):
+                self.assert_result_rejected(value)
+
+    def test_e2_has_no_local_full_formal_or_machine_literal_contract(self):
+        source = Path(subject.__file__).read_text(encoding="utf-8")
+        self.assertNotIn("P7-TD-B-RAY-OP600-EXPOSURE-GUARDED-FORMAL-R6", source)
+        self.assertNotIn("000-ray-a0-t600", source)
+        self.assertNotIn("selected_fixed_time_transient_not_proven_steady", source)
+        self.assertNotIn("def _validate_formal_plan", source)
+        self.assertNotIn("def _validate_machine_status", source)
+        self.assertIn("thermal.build_td_b_r6_formal_plan", source)
+        self.assertIn("thermal.validate_td_b_r6_formal_plan", source)
+        self.assertIn("thermal.td_b_r6_machine_status", source)
 
     def test_non_executable_plan_is_rejected_before_backend_or_output(self):
         class FakeBackend:
@@ -332,6 +353,198 @@ class PackageTests(E2TestCase):
         self.assertEqual(extra.mode, 0o600)
         with self.assertRaisesRegex(subject.E2ContractError, "package_inventory_drift"):
             subject.replay_e2_package(root)
+
+    def _persist_handcrafted_package(self, result, terminal_mutator=None):
+        tempdir = tempfile.TemporaryDirectory(dir=TEMP_PARENT)
+        self.addCleanup(tempdir.cleanup)
+        root_path = str(Path(tempdir.name) / "package")
+        root = provenance.create_exclusive_root(root_path)
+        result_identity = provenance.persist_canonical_json(root, subject.RESULT_NAME, result)
+        terminal = subject._success_terminal(result_identity)
+        if terminal_mutator is not None:
+            terminal_mutator(terminal)
+        provenance.persist_canonical_json(root, subject.TERMINAL_NAME, terminal)
+        return root_path
+
+    def test_shared_closed_result_semantics_cover_evaluate_persist_and_replay(self):
+        result = self.native_result()
+        result["extra"] = True
+        self.assert_result_rejected(result)
+
+        create_calls = 0
+
+        def create(_path):
+            nonlocal create_calls
+            create_calls += 1
+            raise AssertionError("root creation must not be reached")
+
+        with self.assertRaises(subject.E2ContractError):
+            subject.persist_e2_package(self.inputs, result, create_root_fn=create)
+        self.assertEqual(create_calls, 0)
+
+        root = self._persist_handcrafted_package(result)
+        with self.assertRaises(subject.E2ContractError):
+            subject.replay_e2_package(root)
+
+    def test_result_top_level_guards_and_authority_are_closed_and_strict(self):
+        base = self.native_result()
+        cases = []
+        for key in tuple(base):
+            changed = copy.deepcopy(base)
+            del changed[key]
+            cases.append((f"top_missing_{key}", changed))
+        changed = copy.deepcopy(base)
+        changed["extra"] = False
+        cases.append(("top_extra", changed))
+
+        changed = copy.deepcopy(base)
+        changed["guards"] = {}
+        cases.append(("guards_empty", changed))
+        first_guard = next(iter(base["guards"]))
+        for label, mutate in (
+            ("guards_missing", lambda value: value["guards"].pop(first_guard)),
+            ("guards_extra", lambda value: value["guards"].__setitem__("extra", True)),
+            ("guards_false", lambda value: value["guards"].__setitem__(first_guard, False)),
+            ("guards_truthy_int", lambda value: value["guards"].__setitem__(first_guard, 1)),
+        ):
+            changed = copy.deepcopy(base)
+            mutate(changed)
+            cases.append((label, changed))
+
+        for key, expected in base["authority"].items():
+            changed = copy.deepcopy(base)
+            del changed["authority"][key]
+            cases.append((f"authority_missing_{key}", changed))
+            changed = copy.deepcopy(base)
+            changed["authority"][key] = 0 if expected is False else False
+            cases.append((f"authority_type_{key}", changed))
+            changed = copy.deepcopy(base)
+            changed["authority"][key] = True if expected is False else 1
+            cases.append((f"authority_value_{key}", changed))
+        changed = copy.deepcopy(base)
+        changed["authority"]["extra"] = 0
+        cases.append(("authority_extra", changed))
+
+        for label, value in cases:
+            with self.subTest(label=label):
+                self.assert_result_rejected(value)
+
+    def test_reference_ledger_tampering_is_closed(self):
+        base = self.native_result()
+        cases = []
+        for section in ("source_checkpoint", "source_tree", "guide", "policy", "g4_01", "g4_02", "g4_03", "protected_sources"):
+            changed = copy.deepcopy(base)
+            if isinstance(changed["reference_ledger"][section], str):
+                changed["reference_ledger"][section] = "0" * 40
+            elif isinstance(changed["reference_ledger"][section], list):
+                changed["reference_ledger"][section].reverse()
+            else:
+                changed["reference_ledger"][section]["extra"] = True
+            cases.append((section, changed))
+        for section in ("g4_01", "g4_02", "g4_03"):
+            for mutation in ("name", "bytes", "sha256", "order", "count"):
+                changed = copy.deepcopy(base)
+                artifacts = changed["reference_ledger"][section]["artifacts"]
+                if mutation == "order" and len(artifacts) < 2:
+                    continue
+                if mutation == "name":
+                    artifacts[0]["name"] += ".forged"
+                elif mutation == "bytes":
+                    artifacts[0]["bytes"] += 1
+                elif mutation == "sha256":
+                    artifacts[0]["sha256"] = "0" * 64
+                elif mutation == "order":
+                    artifacts.reverse()
+                else:
+                    artifacts.pop()
+                cases.append((f"{section}_{mutation}", changed))
+        for key, value in {
+            "classification": "SUCCESS",
+            "request_transport_success": True,
+            "request_transport_exit": 0,
+            "request_error_code": 0,
+            "final_residual": 1,
+        }.items():
+            changed = copy.deepcopy(base)
+            changed["reference_ledger"]["g4_03"][key] = value
+            cases.append((f"g4_03_{key}", changed))
+        for label, value in cases:
+            with self.subTest(label=label):
+                self.assert_result_rejected(value)
+
+    def test_formal_and_machine_result_tampering_use_existing_owners(self):
+        base = self.native_result()
+        formal_cases = []
+        for label, mutate in (
+            ("missing", lambda value: value["formal_plan"].pop("schema")),
+            ("extra", lambda value: value["formal_plan"].__setitem__("extra", True)),
+            ("field", lambda value: value["formal_plan"].__setitem__("source", "strip")),
+            ("order", lambda value: value["formal_plan"]["capture_ids"].reverse()),
+            ("shutter", lambda value: value["formal_plan"]["state_shutters"].__setitem__("C", "1/2000")),
+            ("budget", lambda value: value["formal_plan"].__setitem__("formal_logical", 17)),
+            ("failure", lambda value: value["formal_plan"]["failure_contract"].__setitem__("retry", 1)),
+        ):
+            changed = copy.deepcopy(base)
+            mutate(changed)
+            formal_cases.append((f"formal_{label}", changed))
+        for section, key, value in (
+            ("operating_envelope", "dwell_s", 601),
+            ("locks", "strip", "unlocked"),
+            ("ray_r6", "formal_accepted", 1),
+        ):
+            changed = copy.deepcopy(base)
+            changed["machine_status"][section][key] = value
+            formal_cases.append((f"machine_{section}_{key}", changed))
+        changed = copy.deepcopy(base)
+        changed["machine_status"]["extra"] = True
+        formal_cases.append(("machine_extra", changed))
+        for label, value in formal_cases:
+            with self.subTest(label=label):
+                self.assert_result_rejected(value)
+
+    def test_terminal_shape_authority_and_result_identity_are_closed(self):
+        base = self.native_result()
+        mutators = []
+        terminal_keys = (
+            "schema", "status", "result", "artifact_count_before_terminal",
+            "terminal_self_reference", "retry", "alternate_root", "authority",
+        )
+        for key in terminal_keys:
+            mutators.append((f"missing_{key}", lambda value, key=key: value.pop(key)))
+        mutators.append(("extra", lambda value: value.__setitem__("extra", True)))
+        for key in ("execution_authorized", "formal_r6_access", "capture_count"):
+            mutators.append((f"authority_missing_{key}", lambda value, key=key: value["authority"].pop(key)))
+            mutators.append((f"authority_value_{key}", lambda value, key=key: value["authority"].__setitem__(key, 1)))
+        mutators.append(("authority_extra", lambda value: value["authority"].__setitem__("extra", 0)))
+        for key, forged in (
+            ("path", "forged.json"), ("device", 0), ("inode", 0),
+            ("mode", 0), ("bytes", 1), ("sha256", "0" * 64),
+        ):
+            mutators.append((f"identity_{key}", lambda value, key=key, forged=forged: value["result"].__setitem__(key, forged)))
+        for label, mutator in mutators:
+            with self.subTest(label=label):
+                root = self._persist_handcrafted_package(base, mutator)
+                with self.assertRaisesRegex(subject.E2ContractError, "replay_terminal_contract_drift"):
+                    subject.replay_e2_package(root)
+
+    def test_synchronized_result_and_terminal_forgery_still_fails_closed(self):
+        result = self.native_result()
+        result["guards"]["forged_guard"] = True
+        root = self._persist_handcrafted_package(result)
+        with self.assertRaisesRegex(subject.E2ContractError, "result_contract_drift"):
+            subject.replay_e2_package(root)
+
+    def test_ephemeral_packages_leave_no_test_root_residual(self):
+        with tempfile.TemporaryDirectory(dir=TEMP_PARENT) as parent:
+            root = str(Path(parent) / "package")
+            with mock.patch.object(subject, "EXPECTED_OUTPUT_ROOT", root):
+                inputs = subject.frozen_e2_input()
+                result = subject.evaluate_e2_preformal_gate(inputs)
+                package = subject.persist_e2_package(inputs, result)
+                self.assertEqual(package.replay["status"], "pass")
+                self.assertIsInstance(package.replay, MappingProxyType)
+                self.assertTrue(Path(root).exists())
+        self.assertFalse(Path(parent).exists())
 
 
 class StaticBoundaryTests(unittest.TestCase):

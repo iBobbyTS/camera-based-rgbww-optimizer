@@ -34,13 +34,38 @@ RESULT_NAME = "preformal-gate-result.json"
 TERMINAL_NAME = "terminal-seal.json"
 ARTIFACT_NAMES = (RESULT_NAME, TERMINAL_NAME)
 PASS_STATUS = "offline_preformal_contract_pass_waiting_planner_review"
+SUCCESS_TERMINAL_STATUS = "sealed_offline_preformal_contract_pass_waiting_planner_review"
 EXPECTED_OUTPUT_ROOT = "/Volumes/4T/temp/rgbww-optimizer/g4-e2-preformal-4995f7d65141-20260803T204648Z"
-EXPECTED_CAPTURE_IDS = (
-    "000-ray-a0-t600", "001-ray-d-t60", "002-ray-d-t120", "003-ray-d-t300",
-    "004-ray-d-t600", "005-ray-a-after-d-t600", "006-ray-b-t60",
-    "007-ray-b-t120", "008-ray-b-t300", "009-ray-b-t600",
-    "010-ray-a-after-b-t600", "011-ray-c-t60", "012-ray-c-t120",
-    "013-ray-c-t300", "014-ray-c-t600", "015-ray-a-after-c-t600",
+GUARD_KEYS = (
+    "frozen_input_exact",
+    "g4_01_release_accepted_unconsumed",
+    "g4_02_predevice_accepted",
+    "g4_03_effect_confirmed_transport_ambiguous",
+    "ray_only_capture_order_exact",
+    "state_shutters_exact",
+    "formal_plan_non_executable",
+    "formal_budget_exact",
+    "failure_contract_exact",
+    "operating_600_transient_not_steady",
+    "downstream_locks_preserved",
+    "retained_r3_unvalidated_unconsumed",
+    "release_consumption_false",
+    "device_formal_td_c_authority_false",
+)
+AUTHORITY_FALSE_KEYS = (
+    "execution_authorized",
+    "human_authorization",
+    "formal_pass",
+    "hardware_ready",
+    "release_consumed",
+    "g4_06_unlocked",
+)
+AUTHORITY_ZERO_KEYS = (
+    "release_consumption",
+    "device_access",
+    "formal_r6_access",
+    "td_c_access",
+    "capture_count",
 )
 
 
@@ -296,6 +321,134 @@ def _prerequisite_projection(value: PrerequisiteReference) -> dict[str, Any]:
     }
 
 
+def _reference_ledger(inputs: E2Input) -> dict[str, Any]:
+    return {
+        "source_checkpoint": inputs.source_checkpoint,
+        "source_tree": inputs.source_tree,
+        "guide": _source_projection(inputs.guide),
+        "policy": {**_source_projection(inputs.policy), "status": inputs.policy_status},
+        "g4_01": _prerequisite_projection(inputs.g4_01),
+        "g4_02": _prerequisite_projection(inputs.g4_02),
+        "g4_03": {
+            **_prerequisite_projection(inputs.g4_03),
+            "classification": inputs.g4_03_classification,
+            "request_transport_success": inputs.g4_03_request_transport_success,
+            "request_transport_exit": inputs.g4_03_request_transport_exit,
+            "request_error_code": inputs.g4_03_request_error_code,
+            "final_residual": inputs.g4_03_final_residual,
+        },
+        "protected_sources": [_source_projection(item) for item in inputs.protected_sources],
+    }
+
+
+def _authority() -> dict[str, Any]:
+    return {
+        **{key: False for key in AUTHORITY_FALSE_KEYS},
+        **{key: 0 for key in AUTHORITY_ZERO_KEYS},
+    }
+
+
+def _result_value(
+    inputs: E2Input,
+    formal_plan: Mapping[str, Any],
+    machine_status: Mapping[str, Any],
+) -> dict[str, Any]:
+    return {
+        "schema": RESULT_SCHEMA,
+        "status": PASS_STATUS,
+        "reference_ledger": _reference_ledger(inputs),
+        "formal_plan": provenance.json_native_value(formal_plan),
+        "machine_status": provenance.json_native_value(machine_status),
+        "guards": {key: True for key in GUARD_KEYS},
+        "authority": _authority(),
+    }
+
+
+def _require_exact_shape(actual: Any, expected: Any, *, code: str) -> None:
+    if isinstance(expected, Mapping):
+        if not isinstance(actual, Mapping) or set(actual) != set(expected):
+            raise E2ContractError(code)
+        for key, expected_value in expected.items():
+            _require_exact_shape(actual[key], expected_value, code=code)
+        return
+    if isinstance(expected, list):
+        if type(actual) not in {list, tuple} or len(actual) != len(expected):
+            raise E2ContractError(code)
+        for actual_value, expected_value in zip(actual, expected, strict=True):
+            _require_exact_shape(actual_value, expected_value, code=code)
+        return
+    if type(actual) is not type(expected) or actual != expected:
+        raise E2ContractError(code)
+
+
+def _existing_owner_value(
+    owner: Callable[[], Mapping[str, Any]],
+    *,
+    code: str,
+) -> Mapping[str, Any]:
+    try:
+        value = owner()
+    except BaseException as error:
+        raise E2ContractError(code, primary=error) from error
+    if not isinstance(value, Mapping):
+        raise E2ContractError(code)
+    return value
+
+
+def _validate_result_contract(
+    result: Mapping[str, Any],
+    inputs: E2Input,
+    *,
+    expected_plan: Mapping[str, Any] | None = None,
+    expected_status: Mapping[str, Any] | None = None,
+    build_plan_fn: Callable[[], Mapping[str, Any]] = thermal.build_td_b_r6_formal_plan,
+    validate_plan_fn: Callable[[Mapping[str, Any]], None] = thermal.validate_td_b_r6_formal_plan,
+    machine_status_fn: Callable[[], Mapping[str, Any]] = thermal.td_b_r6_machine_status,
+) -> Mapping[str, Any]:
+    """Validate the one closed E2 result contract at every trust boundary."""
+
+    _validate_exact_input(inputs)
+    if not isinstance(result, Mapping):
+        raise E2ContractError("result_contract_drift")
+    try:
+        native = provenance.json_native_value(result)
+    except BaseException as error:
+        raise E2ContractError("result_not_json_native", primary=error) from error
+    if not isinstance(native, Mapping) or set(native) != {
+        "schema", "status", "reference_ledger", "formal_plan",
+        "machine_status", "guards", "authority",
+    }:
+        raise E2ContractError("result_contract_drift")
+    plan = native.get("formal_plan")
+    status = native.get("machine_status")
+    if not isinstance(plan, Mapping) or not isinstance(status, Mapping):
+        raise E2ContractError("result_contract_drift")
+    try:
+        validate_plan_fn(plan)
+    except BaseException as error:
+        raise E2ContractError("formal_plan_owner_rejected", primary=error) from error
+    plan_owner_value = (
+        expected_plan
+        if expected_plan is not None
+        else _existing_owner_value(build_plan_fn, code="formal_plan_owner_rejected")
+    )
+    status_owner_value = (
+        expected_status
+        if expected_status is not None
+        else _existing_owner_value(machine_status_fn, code="machine_status_owner_rejected")
+    )
+    if not isinstance(plan_owner_value, Mapping) or not isinstance(status_owner_value, Mapping):
+        raise E2ContractError("existing_owner_result_type_invalid")
+    _require_exact_shape(plan, provenance.json_native_value(plan_owner_value), code="formal_plan_contract_drift")
+    _require_exact_shape(status, provenance.json_native_value(status_owner_value), code="machine_status_contract_drift")
+    expected = _result_value(inputs, plan_owner_value, status_owner_value)
+    _require_exact_shape(native, expected, code="result_contract_drift")
+    canonical = provenance.canonical_json_bytes(native)
+    decoded = provenance.decode_canonical_json(canonical)
+    _require_exact_shape(decoded, expected, code="result_canonical_projection_drift")
+    return native
+
+
 def _validate_exact_input(value: E2Input) -> None:
     if type(value) is not E2Input:
         raise E2ContractError("invalid_input_type")
@@ -331,73 +484,6 @@ def _validate_exact_input(value: E2Input) -> None:
         raise E2ContractError("output_root_not_absolute")
 
 
-def _validate_formal_plan(plan: Mapping[str, Any]) -> None:
-    expected_keys = {
-        "schema", "status", "executable", "experiment_id", "source", "strip",
-        "ambient", "formal_logical", "formal_physical_cap", "setup_in_formal_root",
-        "launch", "retry", "capture_ids", "state_shutters", "c_policy_status",
-        "old_new_frame_combination", "failure_contract",
-    }
-    if set(plan) != expected_keys:
-        raise E2ContractError("formal_plan_open_or_missing_schema")
-    exact = {
-        "schema": "p7_td_b_ray_r6_formal_plan_v1",
-        "status": "selected_exposure_policy_non_executable",
-        "executable": False,
-        "experiment_id": "P7-TD-B-RAY-OP600-EXPOSURE-GUARDED-FORMAL-R6",
-        "source": "ray",
-        "strip": "zero_throughout",
-        "ambient": 0,
-        "formal_logical": 16,
-        "formal_physical_cap": 16,
-        "setup_in_formal_root": 0,
-        "launch": 1,
-        "retry": 0,
-        "capture_ids": list(EXPECTED_CAPTURE_IDS),
-        "state_shutters": {"A": "1/5000", "D": "1/6400", "B": "1/8000", "C": "1/2500"},
-        "c_policy_status": "qualified",
-        "old_new_frame_combination": "prohibited",
-        "failure_contract": {
-            "classification": "accepted_hard_failed_formal_attempt",
-            "formal_pass": False,
-            "strip_call_count": 0,
-            "retry": 0,
-        },
-    }
-    if dict(plan) != exact:
-        raise E2ContractError("formal_plan_contract_drift")
-
-
-def _validate_machine_status(status: Mapping[str, Any]) -> None:
-    try:
-        envelope = status["operating_envelope"]
-        locks = status["locks"]
-        ray = status["ray_r6"]
-    except (KeyError, TypeError) as error:
-        raise E2ContractError("machine_status_missing") from error
-    if (
-        set(status) != {"r5", "exposure_qualification", "ray_r6", "operating_envelope", "locks"}
-        or dict(envelope) != {
-            "dwell_s": 600,
-            "claim": "selected_fixed_time_transient_not_proven_steady",
-            "steady_status": "not_demonstrated",
-        }
-        or dict(locks) != {
-            "strip": "blocked_until_ray_r6_pass",
-            "td_c": "blocked_until_combined_td_b_pass",
-            "sentinel": True,
-            "p8": True,
-        }
-        or dict(ray) != {
-            "formal_planned": 16,
-            "formal_accepted": 0,
-            "retry": 0,
-            "return_anchor_history": "not_evaluated",
-        }
-    ):
-        raise E2ContractError("machine_status_contract_drift")
-
-
 def evaluate_e2_preformal_gate(
     inputs: E2Input,
     *,
@@ -408,66 +494,16 @@ def evaluate_e2_preformal_gate(
     """Evaluate exact frozen references without reading any prerequisite root."""
 
     _validate_exact_input(inputs)
-    plan = build_plan_fn()
-    validate_plan_fn(plan)
-    status = machine_status_fn()
-    if not isinstance(plan, Mapping) or not isinstance(status, Mapping):
-        raise E2ContractError("existing_owner_result_type_invalid")
-    _validate_formal_plan(plan)
-    _validate_machine_status(status)
-    guards = {
-        "frozen_input_exact": True,
-        "g4_01_release_accepted_unconsumed": True,
-        "g4_02_predevice_accepted": True,
-        "g4_03_effect_confirmed_transport_ambiguous": True,
-        "ray_only_capture_order_exact": True,
-        "state_shutters_exact": True,
-        "formal_plan_non_executable": True,
-        "formal_budget_exact": True,
-        "failure_contract_exact": True,
-        "operating_600_transient_not_steady": True,
-        "downstream_locks_preserved": True,
-        "retained_r3_unvalidated_unconsumed": True,
-        "release_consumption_false": True,
-        "device_formal_td_c_authority_false": True,
-    }
-    result = {
-        "schema": RESULT_SCHEMA,
-        "status": PASS_STATUS,
-        "reference_ledger": {
-            "source_checkpoint": inputs.source_checkpoint,
-            "source_tree": inputs.source_tree,
-            "guide": _source_projection(inputs.guide),
-            "policy": {**_source_projection(inputs.policy), "status": inputs.policy_status},
-            "g4_01": _prerequisite_projection(inputs.g4_01),
-            "g4_02": _prerequisite_projection(inputs.g4_02),
-            "g4_03": {
-                **_prerequisite_projection(inputs.g4_03),
-                "classification": inputs.g4_03_classification,
-                "request_transport_success": inputs.g4_03_request_transport_success,
-                "request_transport_exit": inputs.g4_03_request_transport_exit,
-                "request_error_code": inputs.g4_03_request_error_code,
-                "final_residual": inputs.g4_03_final_residual,
-            },
-            "protected_sources": [_source_projection(item) for item in inputs.protected_sources],
-        },
-        "formal_plan": provenance.json_native_value(plan),
-        "machine_status": provenance.json_native_value(status),
-        "guards": guards,
-        "authority": {
-            "execution_authorized": False,
-            "human_authorization": False,
-            "formal_pass": False,
-            "hardware_ready": False,
-            "release_consumed": False,
-            "g4_06_unlocked": False,
-            "release_consumption": 0,
-            "device_access": 0,
-            "formal_r6_access": 0,
-            "td_c_access": 0,
-            "capture_count": 0,
-        },
-    }
+    plan = _existing_owner_value(build_plan_fn, code="formal_plan_owner_rejected")
+    status = _existing_owner_value(machine_status_fn, code="machine_status_owner_rejected")
+    result = _result_value(inputs, plan, status)
+    _validate_result_contract(
+        result,
+        inputs,
+        expected_plan=plan,
+        expected_status=status,
+        validate_plan_fn=validate_plan_fn,
+    )
     return _freeze(result)
 
 
@@ -495,6 +531,40 @@ def _fail_seal(code: str, result: provenance.FileIdentity | None) -> dict[str, A
     }
 
 
+def _success_terminal(result: provenance.FileIdentity) -> dict[str, Any]:
+    return {
+        "schema": TERMINAL_SCHEMA,
+        "status": SUCCESS_TERMINAL_STATUS,
+        "result": _reference(result),
+        "artifact_count_before_terminal": 1,
+        "terminal_self_reference": False,
+        "retry": 0,
+        "alternate_root": 0,
+        "authority": {
+            "execution_authorized": False,
+            "formal_r6_access": 0,
+            "capture_count": 0,
+        },
+    }
+
+
+def _validate_success_terminal(
+    terminal: Mapping[str, Any],
+    result: provenance.FileIdentity,
+) -> None:
+    if not isinstance(terminal, Mapping):
+        raise E2ContractError("replay_terminal_contract_drift")
+    try:
+        native = provenance.json_native_value(terminal)
+    except BaseException as error:
+        raise E2ContractError("replay_terminal_contract_drift", primary=error) from error
+    _require_exact_shape(
+        native,
+        _success_terminal(result),
+        code="replay_terminal_contract_drift",
+    )
+
+
 def persist_e2_package(
     inputs: E2Input,
     result: Mapping[str, Any],
@@ -502,12 +572,20 @@ def persist_e2_package(
     create_root_fn: Callable[[str], provenance.DirectoryIdentity] = provenance.create_exclusive_root,
     persist_fn: Callable[[provenance.DirectoryIdentity, str, Any], provenance.FileIdentity] = provenance.persist_canonical_json,
     replay_fn: Callable[[str | Path], Mapping[str, Any]] | None = None,
+    build_plan_fn: Callable[[], Mapping[str, Any]] = thermal.build_td_b_r6_formal_plan,
+    validate_plan_fn: Callable[[Mapping[str, Any]], None] = thermal.validate_td_b_r6_formal_plan,
+    machine_status_fn: Callable[[], Mapping[str, Any]] = thermal.td_b_r6_machine_status,
 ) -> E2Package:
     """Persist one exclusive two-artifact package and replay it once."""
 
     _validate_exact_input(inputs)
-    if not isinstance(result, Mapping) or provenance.json_native_value(result).get("status") != PASS_STATUS:
-        raise E2ContractError("result_not_accepted_for_persistence")
+    _validate_result_contract(
+        result,
+        inputs,
+        build_plan_fn=build_plan_fn,
+        validate_plan_fn=validate_plan_fn,
+        machine_status_fn=machine_status_fn,
+    )
     root = create_root_fn(inputs.output_root)
     result_identity: provenance.FileIdentity | None = None
     try:
@@ -520,16 +598,7 @@ def persist_e2_package(
                 "result_persist_and_fail_seal_failed", primary=primary, seal_failure=seal_failure,
             ) from primary
         raise E2ContractError("result_persist_failed", primary=primary) from primary
-    terminal_value = {
-        "schema": TERMINAL_SCHEMA,
-        "status": "sealed_offline_preformal_contract_pass_waiting_planner_review",
-        "result": _reference(result_identity),
-        "artifact_count_before_terminal": 1,
-        "terminal_self_reference": False,
-        "retry": 0,
-        "alternate_root": 0,
-        "authority": {"execution_authorized": False, "formal_r6_access": 0, "capture_count": 0},
-    }
+    terminal_value = _success_terminal(result_identity)
     try:
         terminal_identity = persist_fn(root, TERMINAL_NAME, terminal_value)
     except BaseException as primary:
@@ -547,7 +616,14 @@ def persist_e2_package(
     return E2Package(root, result_identity, terminal_identity, replay)
 
 
-def replay_e2_package(root_path: str | Path) -> Mapping[str, Any]:
+def replay_e2_package(
+    root_path: str | Path,
+    *,
+    inputs: E2Input | None = None,
+    build_plan_fn: Callable[[], Mapping[str, Any]] = thermal.build_td_b_r6_formal_plan,
+    validate_plan_fn: Callable[[Mapping[str, Any]], None] = thermal.validate_td_b_r6_formal_plan,
+    machine_status_fn: Callable[[], Mapping[str, Any]] = thermal.td_b_r6_machine_status,
+) -> Mapping[str, Any]:
     """Independently replay one exact offline package through provenance I/O."""
 
     root = provenance.read_existing_root(str(Path(root_path)))
@@ -561,24 +637,15 @@ def replay_e2_package(root_path: str | Path) -> Mapping[str, Any]:
     )
     result = provenance.decode_canonical_json(result_identity.data)
     terminal = provenance.decode_canonical_json(terminal_identity.data)
-    if (
-        result.get("schema") != RESULT_SCHEMA
-        or result.get("status") != PASS_STATUS
-        or not all(result.get("guards", {}).values())
-        or result.get("authority", {}).get("execution_authorized") is not False
-        or result.get("formal_plan", {}).get("executable") is not False
-    ):
-        raise E2ContractError("replay_result_contract_drift")
-    if (
-        terminal.get("schema") != TERMINAL_SCHEMA
-        or terminal.get("status") != "sealed_offline_preformal_contract_pass_waiting_planner_review"
-        or terminal.get("result") != _reference(result_identity)
-        or terminal.get("artifact_count_before_terminal") != 1
-        or terminal.get("terminal_self_reference") is not False
-        or terminal.get("retry") != 0
-        or terminal.get("alternate_root") != 0
-    ):
-        raise E2ContractError("replay_terminal_contract_drift")
+    frozen_inputs = frozen_e2_input() if inputs is None else inputs
+    _validate_result_contract(
+        result,
+        frozen_inputs,
+        build_plan_fn=build_plan_fn,
+        validate_plan_fn=validate_plan_fn,
+        machine_status_fn=machine_status_fn,
+    )
+    _validate_success_terminal(terminal, result_identity)
     return _freeze({
         "schema": REPLAY_SCHEMA,
         "status": "pass",

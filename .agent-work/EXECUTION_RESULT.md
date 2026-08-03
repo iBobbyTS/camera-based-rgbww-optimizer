@@ -1,22 +1,29 @@
-# REF-G4-04-E2：等待 Orchestrator activation
+# REF-G4-04-E2：Planner reviewed rejection checkpoint
 
-**状态：** `DRAFT_PLAN_WRITTEN_WAITING_ORCHESTRATOR_ACTIVATION`
+**状态：** `REJECTED_CURRENT_BOUNDED_CLOSURE_CANDIDATE_WAITING_ORCHESTRATOR`
 
-**Executable before activation：** `false`
+**Executable PLAN：** `false`
 
-**Active task before activation：** `null`
+**Active task count：** `0`
 
-**Draft reference task：** `REF-G4-04-E2`
+**Reference task：** `REF-G4-04-E2`
 
-**Contract：** `G4-E2-BOUNDED-RESULT-REPLAY-CLOSURE-V1`
+**Planner stop：** `RETURN_ORCHESTRATOR_G4_04_CANONICAL_THERMAL_OWNER_SEAM_REASSESSMENT`
 
-**唯一 Planner stop：** `RETURN_FOR_G4_04_E2_BOUNDED_RESULT_REPLAY_CLOSURE_REVIEW`
+Terminal disposition：
 
-Planner已完成single-task/single-stop draft。只有Orchestrator验证parent
-`f385288e2a465350d9d66801578b7bdc5e211122`、对齐FULL并创建subject为
-`docs(plan): activate bounded e2 replay closure`且changed paths exact为PLAN/ER/FULL的activation commit后，Executer才可执行。
+`REJECTED_G4_04_E2_CANONICAL_THERMAL_OWNER_INJECTION_BYPASS`
 
-当前未执行code/test、未访问或创建E2/external/formal/experiment root，未访问device、network、camera、Ray、strip、release、formal R6或
-TD-C，未生成G4-05/06 PLAN。已拒E2 package继续只是historical identity，禁止读取或修补。
+Reviewed archives：
 
-Executer开始后必须覆盖本文件，记录PLAN要求的完整execution handoff；不得修改PLAN或FULL。
+- `.agent-work/archived/PLAN-20260803-1549.md`：16255 bytes /
+  `221f4f0425b754489671802ec2786dd7760f7ca9221d1257cc39f74009ad78ad`
+- `.agent-work/archived/EXECUTION_RESULT-20260803-1549.md`：9554 bytes /
+  `c816a196362cd41ded2402bd858caab6082bb2b500cc553cbd20038d78588b83`
+
+Planner独立确认shared validator、closed result/terminal、existing-owner default bindings、同步shape forgery拒绝、21/21 targeted及900/900
+full suite均成立。但public persist/replay允许同时注入伪builder、no-op validator和伪machine-status owner；无I/O探针证明伪formal/machine
+result可越过semantic validation并到达create callback（`create=1`）。因此canonical thermal truth没有被独立固定，candidate被拒绝。
+
+当前无active PLAN；不生成repair PLAN、new task或suffix。G4-05/06保持locked；未访问已拒external E2 root/payload，未创建root，未访问
+device/network/release/formal/TD-C。等待Orchestrator工程ownership reassessment。
