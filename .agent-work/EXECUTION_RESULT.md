@@ -1,23 +1,27 @@
-# REF-G4-01-SUCCESSOR-LINEAGE：JSON-native projection correction handoff
+# REF-G4-01-SUCCESSOR-LINEAGE：accepted JSON-native seam等待Orchestrator checkpoint
 
-**状态：** `WAITING_ORCHESTRATOR_ACTIVATION_AND_EXECUTER`
-
-**PLAN contract：** `G4-SUCCESSOR-LINEAGE-JSON-NATIVE-PROJECTION-CORRECTION-V1`
+**状态：** `REVIEWED_ACCEPTED_JSON_NATIVE_SEAM_WAITING_ORCHESTRATOR_FOCUSED_CHECKPOINT`
 
 **Reference task：** `REF-G4-01-SUCCESSOR-LINEAGE`
 
-**Planner stop：** `RETURN_FOR_G4_01_JSON_NATIVE_PROJECTION_CORRECTION_REVIEW`
+**Executable PLAN：** `false`
 
-Planner已拒绝上一zero-root execution并保真归档：
+**Active task count：** `0`
+
+Planner已接受JSON-native integration seam correction并保真归档：
 
 ```text
-.agent-work/archived/PLAN-20260803-1057.md
-  20233 bytes
-  f8daec91b1c41b6a4686511869c18be3b1feea06291e6b88a118e61701d16f7d
-.agent-work/archived/EXECUTION_RESULT-20260803-1057.md
-  8260 bytes
-  9f446dbfdef2040147db504a61c85f92ca95f718be52e1fb1cc377c74a8aab8e
+.agent-work/archived/PLAN-20260803-1107.md
+  13515 bytes
+  5508f5960788c42456e9586963b8ebda19ec495715d782ac463b5297f0520fc2
+.agent-work/archived/EXECUTION_RESULT-20260803-1107.md
+  8905 bytes
+  88e595b648abcf585db17bfa0d0b513ac1e578b4bac7204a911b86ff577718df
 ```
 
-本文件等待Orchestrator activation后由Executer写入唯一bounded code/test correction handoff。Executer不得修改
-PLAN、FULL、archives、provenance/thermal owners、config、GUIDE/RESEARCH；不得生成release root、访问设备或commit。
+接受范围只包括successor composition owner与对应测试的JSON-native seam。它不表示fresh release已生成/验证，不授予
+eligibility、consumption、device或formal credit。等待Orchestrator独立复核、FULL active0收敛与focused commit；之后
+只能对同一`REF-G4-01-SUCCESSOR-LINEAGE`重新规划fresh release package。
+
+**Planner stop：**
+`RETURN_ORCHESTRATOR_FOR_FOCUSED_CODE_TEST_CHECKPOINT_AND_SAME_G4_01_FRESH_RELEASE_REPLAN`
