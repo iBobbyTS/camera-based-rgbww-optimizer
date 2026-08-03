@@ -1,26 +1,80 @@
-# REF-G4-01-SUCCESSOR-LINEAGE：accepted fresh successor release terminal checkpoint
+# REF-G4-02-PREDEVICE：canonical predevice owner integration
 
-**计划状态：** `ACCEPTED_G4_01_WAITING_ORCHESTRATOR_TERMINAL_DISPOSITION`
+**计划状态：** `EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION_PURE_OFFLINE_OWNER_INTEGRATION`
 
-**Executable：** `false`
+**Executable：** `true`（仅在Orchestrator按§2对齐FULL并提交activation后生效）
 
-**Active task count：** `0`
+**Active task count：** `1`
 
-**Active task：** `null`
+**Active task：** `REF-G4-02-PREDEVICE`
 
-**Canonical reviewed reference：** `REF-G4-01-SUCCESSOR-LINEAGE`
+**Reference goal：** `REF-G4-COMPLETE`
 
-**唯一 Planner stop：** `RETURN_ORCHESTRATOR_ARCHIVE_FULL_RETIRE_G4_01_AND_PREPARE_G4_02_PLANNING`
+**唯一 Planner stop：** `RETURN_FOR_G4_02_PREDEVICE_OWNER_INTEGRATION_REVIEW`
 
-`PLAN_MACHINE_CONTRACT={"schema":"planner_execution_contract_v2","contract_id":null,"plan_status":"ACCEPTED_G4_01_WAITING_ORCHESTRATOR_TERMINAL_DISPOSITION","executable":false,"active_task_count":0,"active_task":null,"reference_task_id":"REF-G4-01-SUCCESSOR-LINEAGE","reference_goal":"REF-G4-COMPLETE","reference_task_status":"TERMINAL_ACCEPTED_WAITING_ORCHESTRATOR_FULL_ARCHIVE_AND_RETIREMENT","accepted_disposition":"ACCEPTED_G4_01_SUCCESSOR_RELEASE_GENERATED_VALIDATED_NON_AUTHORIZING_UNCONSUMED","review_source_head":"779c7d9572d991f82076c892ec8198a059bbe44e","reviewed_plan_archive":{"path":".agent-work/archived/PLAN-20260803-1126.md","bytes":16643,"sha256":"f73edd5db23a45ac077b393608f92515ce050487d4ce2c6c26d026e67ea7af46","source_body_bytes":15406,"source_body_sha256":"8455f201f3e851b28a9dee5d548860d3be82233698925e80b6db761f73307c18"},"reviewed_execution_result_archive":{"path":".agent-work/archived/EXECUTION_RESULT-20260803-1126.md","bytes":10560,"sha256":"685c183e264dd8f9862aea3a61048f39ec81a0e45405b789f946273aa4d31e25","source_body_bytes":9317,"source_body_sha256":"7fdd375928f5af1da81ffd429b8f2a1750fe44ea458609cc49160d7a32fd4cd0"},"release_family":"/Volumes/4T/temp/rgbww-optimizer/g4-successor-lineage-779c7d9572d9-20260803T172055Z","release_bundle":"/Volumes/4T/temp/rgbww-optimizer/g4-successor-lineage-779c7d9572d9-20260803T172055Z/release","release_status":"candidate_non_authorizing","release_generated":true,"release_offline_validated":true,"release_consumed":false,"eligibility":false,"release_consumable":false,"release_consumption_authorized":false,"retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","device_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"formal_r6_authorized":false,"td_c_authorized":false,"orchestrator_full_snapshot_before_rewrite_required":true,"orchestrator_remove_completed_g4_01_from_live_full_required":true,"next_package":null,"future_reference_task":"REF-G4-02-PREDEVICE","future_reference_status":"READY_FOR_PLANNING_ONLY_AFTER_ORCHESTRATOR_FULL_RETIREMENT_NOT_ACTIVE","planner_stop":"RETURN_ORCHESTRATOR_ARCHIVE_FULL_RETIRE_G4_01_AND_PREPARE_G4_02_PLANNING","future_stage_locked":true}`
+`PLAN_MACHINE_CONTRACT={"schema":"planner_execution_contract_v2","contract_id":"G4-PREDEVICE-CANONICAL-OWNER-INTEGRATION-V1","plan_status":"EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION_PURE_OFFLINE_OWNER_INTEGRATION","executable":true,"active_task_count":1,"active_task":"REF-G4-02-PREDEVICE","reference_task_id":"REF-G4-02-PREDEVICE","reference_goal":"REF-G4-COMPLETE","reference_task_status":"ACTIVE_AFTER_ORCHESTRATOR_ACTIVATION_PREDEVICE_OWNER_INTEGRATION","activation_state":"DRAFT_WAITING_ORCHESTRATOR_FULL_ALIGNMENT_AND_FOCUSED_COMMIT","verified_source_parent":"df261592fbafbf09bd6ce018d2a60de62996fab1","activation_child_sha_recorded_in_plan":false,"activation_child_subject":"docs(plan): activate g4 predevice owner integration","activation_changed_paths":[".agent-work/EXECUTION_RESULT.md",".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/archived/EXECUTION_RESULT-20260803-1136.md",".agent-work/archived/PLAN-20260803-1136.md"],"reviewed_plan_archive":{"path":".agent-work/archived/PLAN-20260803-1136.md","bytes":5329,"sha256":"6ec985298e6d3efa33cdd024c1e128eef7a199b3dfc66a429432be61addeb773","source_body_bytes":4267,"source_body_sha256":"a3dbcd8d439abf33481ebf30784f040b85e87938253b7bb79c3832e692fd7a86"},"reviewed_execution_result_archive":{"path":".agent-work/archived/EXECUTION_RESULT-20260803-1136.md","bytes":2533,"sha256":"76960fbf08954b0535c18e2ba34c062cd50ffbc09f0fbe8b41cb07e554be11d3","source_body_bytes":1468,"source_body_sha256":"c496cbbe6a7c9dcd4b55cc3f81923ec9598c1c225843d3ef2c4f252a6156430c"},"full_archive":{"path":".agent-work/archived/FULL_PLAN_REFERENCE-20260803-1132.md","bytes":30721,"sha256":"ac72bcc4578aefcbf5aa23983d837cf749dbf982f9e1eeb75641dfa214c03d2d","source_body_bytes":29546,"source_body_sha256":"0c8e15de428f401eb5e33da81b75ddf9d8e9d1e25b0b897c5396ac7816f3acc3"},"single_current_action":"implement_and_validate_one_repo_owned_pure_offline_predevice_oracle_seam_then_invoke_it_read_only_once_against_the_exact_accepted_g4_01_bundle","executor_repo_write_paths":["src/camera_based_rgbww_optimizer/optimization/p7_successor_predevice.py","tests/test_p7_successor_predevice.py",".agent-work/EXECUTION_RESULT.md"],"release_bundle_read_path":"/Volumes/4T/temp/rgbww-optimizer/g4-successor-lineage-779c7d9572d9-20260803T172055Z/release","release_bundle_read_invocation_cap":1,"durable_predevice_root_creation":0,"release_consumption":0,"retained_r3_access":0,"legacy_r2_access":0,"other_external_experiment_payload_access":0,"device_access":0,"network_access":0,"camera_access":0,"ray_access":0,"strip_access":0,"capture_access":0,"formal_r6_access":0,"td_c_access":0,"firmware_access":0,"deployment_access":0,"plan_edits_by_executer":0,"full_edits_by_executer":0,"archive_edits_by_executer":0,"guide_edits":0,"research_edits":0,"commit_by_executer":0,"canonical_validator_success":false,"eligibility":false,"release_consumable":false,"release_consumption_authorized":false,"retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","device_authorized":false,"formal_r6_authorized":false,"planner_stop":"RETURN_FOR_G4_02_PREDEVICE_OWNER_INTEGRATION_REVIEW","future_reference_task":"REF-G4-02-PREDEVICE","future_stage_locked":true}`
 
-## Planner acceptance
+## 1. 唯一动作与credit边界
 
-Planner独立复验后接受`REF-G4-01-SUCCESSOR-LINEAGE`的terminal disposition：repo-owned production defaults生成了
-一个fresh unique successor family及其single `release` child；五个canonical `0600` artifacts identity、cross-reference、
-public/final/strict semantic validation和source/policy/EQ/R6 contract均闭合。
+本包继续唯一flat task `REF-G4-02-PREDEVICE`，只建立并验证一个repo-owned pure-offline predevice oracle seam。它不生成
+durable oracle root；成功只给owner integration、tests与一次real-bundle只读observation候选credit。Planner验收且
+Orchestrator建立focused clean checkpoint后，才由同一G4-02第二包从clean source生成唯一durable evidence。
 
-Exact release identities：
+首包绿测不得改变`canonical_validator_success/eligibility/release_consumable/release_consumption_authorized=false`，不得把
+G4-01 bundle消费为设备/formal输入，不解锁G4-03。Retained R3保持`RETAINED_UNVALIDATED_UNCONSUMED`且禁止读取。
+
+Executer只可修改：
+
+```text
+src/camera_based_rgbww_optimizer/optimization/p7_successor_predevice.py
+tests/test_p7_successor_predevice.py
+.agent-work/EXECUTION_RESULT.md
+```
+
+不得修改`p7_successor_lineage.py`、provenance owner、三个巨型P7模块、config/docs/skill、PLAN/FULL/archives、GUIDE/RESEARCH。
+若实现必须扩大scope，立即stop并请求Planner/Orchestrator decision。
+
+## 2. Activation与archive identity
+
+Activation必须是以下parent的direct child：
+
+```text
+parent = df261592fbafbf09bd6ce018d2a60de62996fab1
+parent tree = edc45c32590d6fcdf20df04641031d3beff8ebfc
+subject = docs(plan): activate g4 predevice owner integration
+changed paths exact =
+  .agent-work/EXECUTION_RESULT.md
+  .agent-work/FULL_PLAN_REFERENCE.md
+  .agent-work/PLAN.md
+  .agent-work/archived/EXECUTION_RESULT-20260803-1136.md
+  .agent-work/archived/PLAN-20260803-1136.md
+```
+
+Child SHA不自嵌。Executer在代码写入或external bundle读取前必须证明branch `main`、topology/subject/path set、worktree
+clean、repo-owned PLAN/FULL parser contract一致、active count `1/1`、task exact，并验证：
+
+```text
+FULL_PLAN_REFERENCE-20260803-1132.md = 30721 bytes / ac72bcc4578aefcbf5aa23983d837cf749dbf982f9e1eeb75641dfa214c03d2d
+PLAN-20260803-1136.md = 5329 bytes / 6ec985298e6d3efa33cdd024c1e128eef7a199b3dfc66a429432be61addeb773
+EXECUTION_RESULT-20260803-1136.md = 2533 bytes / 76960fbf08954b0535c18e2ba34c062cd50ffbc09f0fbe8b41cb07e554be11d3
+```
+
+任一mismatch零代码/零external read停止；禁止stash/reset/clean。
+
+## 3. Frozen G4-01 release read bounds
+
+唯一允许读取的external payload：
+
+```text
+family = /Volumes/4T/temp/rgbww-optimizer/g4-successor-lineage-779c7d9572d9-20260803T172055Z
+bundle = /Volumes/4T/temp/rgbww-optimizer/g4-successor-lineage-779c7d9572d9-20260803T172055Z/release
+family device/inode/mode = 16777244 / 2478932 / 0700
+bundle device/inode/mode = 16777244 / 2478933 / 0700
+source HEAD/checkpoint = 779c7d9572d991f82076c892ec8198a059bbe44e
+source tree = 1ead5268917612d1232543b1a7eca28788f3980c
+```
+
+Exact five regular non-symlink `0600` artifacts：
 
 | artifact | bytes | SHA-256 |
 | --- | ---: | --- |
@@ -30,14 +84,126 @@ Exact release identities：
 | `validation-summary.json` | 432 | `07e831616c303e68f9bf863a722b8b640c3726556f47143db8299083f941cc07` |
 | `terminal-seal.json` | 808 | `d9d7b784a4ec910d7c7740bc560ed87f2b99ab1744c19df42097d5683b668850` |
 
-这只给offline successor release generation/validation credit。Release仍为`candidate_non_authorizing`且未消费；
-retained R3保持`RETAINED_UNVALIDATED_UNCONSUMED`，eligibility/release consumable/device/formal均为false。
+Frozen policy/EQ references：
 
-## Orchestrator stop
+```text
+policy path = /Users/ibobby/Projects/WLED-RGBWW/config/hsi/p7-ray-td-b-exposure-policy-v2.json
+policy bytes/SHA = 4065 / c9080d18571f617cb7d323ade843ff9c86bf92e3795d23e3999e26d413968681
+EQ root reference = /Volumes/4T/temp/rgbww-optimizer/p7-td-b-exposure-qual-r6-f37517a-20260727T1928
+EQ manifest bytes/SHA = 7980 / 41136d0d1530163668e111b7a9213bb1b9df330d8a168b451c752e3e5dca28e9
+EQ status/C = qualified_1_2500 / 1/2500
+```
 
-Orchestrator必须独立review该acceptance，并按`.agent-work/AGENTS.md`先归档完整pre-rewrite FULL snapshot，再从live FULL
-删除已完成G4-01内容，使`REF-G4-02-PREDEVICE`成为唯一canonical next ready-for-planning。不得由本checkpoint直接激活G4-02。
+Oracle只读取bundle与repo policy；不得遍历EQ root、retained R3、R2、其他release或其他external experiment payload。旧R2/
+retained negatives只使用synthetic marker strings与fresh test fixtures。
 
-## 维护性判断
+## 4. Maintainability preflight与single-owner实现
 
-本次仅轮换orchestration文档与immutable review archives；production owner和代码树未变，没有新增parallel semantic owner。
+现有`p7_successor_lineage.py`拥有bundle schema/public/final/strict/cross-reference，provenance模块拥有filesystem/canonical I/O，
+thermal模块已有exact policy/R6 plan/machine semantics。缺口只是稳定组合这些owners的predevice seam。
+
+新增小模块`p7_successor_predevice.py`；不得复制artifact schema、canonical JSON、filesystem safety或R6 plan逻辑：
+
+1. 以provenance `read_existing_root/list_exact_regular_children/read_exact_file/decode_canonical_json/require_same_target`绑定§3；
+2. 调用successor public exact once、final replay exact once、strict exact once；lineage pass来自既有complete-bundle guard；
+3. 调用thermal `validate_td_b_exposure_policy_v2`、`validate_td_b_r6_formal_plan`和`td_b_r6_machine_status`，校验exact 16顺序、
+   A/D/B/C shutter、16/16、setup0/ambient0/launch1/retry0、pooling prohibition、600 selected transient、
+   `steady_status=not_demonstrated`及后续locks；不得改thermal巨型模块；
+4. source HEAD/checkpoint/tree、policy path/bytes/SHA与EQ reference必须§3 exact；
+5. 返回closed mapping：`schema=g4_successor_predevice_oracle_v1`、`status=pass`、各validation status、release/artifact/
+   source/policy/EQ refs、`proposed_current_route_state`与`effective_authority`。
+
+成功proposal可明确建议：
+
+```text
+canonical_validator_success = true
+eligibility = true
+release_consumable = true
+release_consumption_authorized = false
+scope = exact_g4_01_release_only_waiting_planner_and_orchestrator
+```
+
+但首包`effective_authority`必须全false；第二包durable result经Planner验收后Orchestrator才可决定是否写入FULL。始终保持：
+
+```text
+retained_r3_status = RETAINED_UNVALIDATED_UNCONSUMED
+device/camera/Ray/strip/capture/formal_r6/td_c_authorized = false
+```
+
+不得提供CLI、external controller、compatibility adapter、release consumer或第二套validator。
+
+## 5. Tests与negative proof
+
+新增`tests/test_p7_successor_predevice.py`，使用production API与test-owned fresh temp roots，至少覆盖：
+
+1. synthetic positive：public/final/strict各一次，lineage/result/proposal/authority exact；
+2. default dependencies确实委托successor/provenance/thermal，无handwritten serializer/parallel validator；
+3. old `REF-P7-25-R2-...`与retained-R3/root marker分别拒绝；
+4. source HEAD/checkpoint/tree drift分别拒绝；
+5. policy path/bytes/SHA或EQ root/manifest drift分别拒绝；
+6. reference-consistent plan加入`auto_exposure=true`或`weak_reacquire=true`被closed/exact R6 contract拒绝；
+7. capture IDs交换、缺失、重复或resume order被拒绝；
+8. pooling改为允许、旧帧/origin语义或cross-root marker被拒绝；
+9. dwell非600、claim伪称steady、steady status drift或lock放开均拒绝；
+10. output不得把retained R3、consumption authorization、device或formal设true；
+11. artifact extra/missing/symlink/wrong mode/size/hash/canonical/identity drift继续由现有owner拒绝；
+12. 任一validator failure立即失败，不fallback/repair/alternate owner/second real call。
+
+Synthetic scratch只能由`TemporaryDirectory`在`/Volumes/4T/temp/rgbww-optimizer`创建并自动清理；不属于实验release或durable
+evidence，且不得读取任何历史payload。
+
+## 6. Real bundle one-call与验证
+
+实现和synthetic tests通过后，对§3 bundle调用新production owner exactly once，零external write。要求返回：
+
+```text
+public = public_descriptor_semantic_pass
+final_replay / strict / lineage = pass / pass / pass
+artifact_count = 5
+R6 = non-executable, 16/16, setup0, ambient0, launch1, retry0
+operational = 600 selected transient / steady_status not_demonstrated
+effective authority = all false
+proposal scope = exact G4-01 release only
+```
+
+失败立即写ER并stop；不得第二次调用、修补bundle、换root或改用controller。Result只进入ER，不创建durable root、不改变bundle。
+
+验证至少运行并记录exact counts：
+
+```text
+.venv/bin/python -m unittest tests.test_p7_successor_predevice -v
+.venv/bin/python -m unittest tests.test_p7_successor_predevice tests.test_p7_successor_lineage tests.test_p7_retained_r3_provenance_io tests.test_p7_td_b_r6_contract -v
+.venv/bin/python -m unittest discover -s tests -v
+.venv/bin/python -m compileall -q src tests
+codegraph sync
+codegraph explore "p7_successor_predevice ownership call paths and validators"
+git diff --check
+```
+
+证明diff只含§1三项，config/docs/skill/GUIDE/RESEARCH/PLAN/FULL/archives未改。CodeGraph sync只是索引操作。
+
+## 7. Failure convergence、handoff与absolute zero
+
+普通engineering defect若不能在single-owner scope闭合，记录首次失败回Planner；下一轮最多一次bounded correction。若必须改变
+observer/features/threshold、A/D/B/C shutter、sequence、600 transient/steady语义或GUIDE分支，标genuine scientific
+conflict并停给Orchestrator/Advisor，不得猜测。
+
+Executer最终只写ER，记录activation/source、preflight、code/test hashes、call graph、negative matrix、real one-call result、
+validation counts、diff与zero ledger；禁止stage/commit。成功只请求当前Planner stop；Planner接受后由Orchestrator建立focused
+clean checkpoint，再规划同一G4-02 durable oracle package。不得创建task suffix或激活G4-03。
+
+```text
+durable/external predevice root creation = 0
+release consumption = 0
+retained R3 / R2 / other external payload access = 0 / 0 / 0
+device/network/camera/Ray/strip/capture/formal/TD-C = 0
+firmware/deployment = 0
+PLAN/FULL/archive/GUIDE/RESEARCH edits by Executer = 0
+commit/amend/stage/push = 0
+Terminal/background/automation = 0
+```
+
+## 8. 维护性判断
+
+新小模块只组合现有owners：bundle语义仍属successor、I/O仍属provenance、R6/operational合同仍属thermal。专属测试保护新seam，
+不扩大巨型thermal coordinator；第二包将复用同一API而不生成一次性controller。
