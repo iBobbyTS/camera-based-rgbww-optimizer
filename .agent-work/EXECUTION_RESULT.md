@@ -1,30 +1,25 @@
-# REF-G4-04-E2：Planner reviewed engineering acceptance checkpoint
+# REF-G4-04-E2：等待 fresh-root binding activation
 
-**状态：** `OWNER_BINDING_ENGINEERING_UNIT_ACCEPTED_FRESH_E2_NOT_YET_SATISFIED`
+**状态：** `DRAFT_PLAN_WRITTEN_WAITING_ORCHESTRATOR_ACTIVATION`
 
-**Executable PLAN：** `false`
+**Executable before activation：** `false`
 
-**Active task count：** `0`
+**Active task before activation：** `null`
 
-**Reference task：** `REF-G4-04-E2`
+**Draft reference task：** `REF-G4-04-E2`
 
-**Planner stop：** `RETURN_ORCHESTRATOR_G4_04_FRESH_OFFLINE_E2_PACKAGE_DECISION`
+**Contract：** `G4-E2-FRESH-ROOT-BINDING-ENABLING-V1`
 
-Terminal disposition：
+**唯一 Planner stop：** `RETURN_FOR_G4_04_E2_FRESH_ROOT_BINDING_ENGINEERING_REVIEW`
 
-`ACCEPTED_G4_04_E2_FINAL_CANONICAL_OWNER_BINDING_ENGINEERING_UNIT_ONLY`
+Planner独立确认current owner仍把output root固定到已拒root，因此本PLAN只做explicit fresh-root binding engineering unit，不在dirty code上生成
+evidence package。只有Orchestrator验证parent`ce4eaab9e06bdb1c6092b2ab104b7f2931a7fb44`、对齐FULL并创建subject
+`docs(plan): activate e2 fresh root binding`且changed paths exact为PLAN/ER/FULL的activation commit后才可执行。
 
-Reviewed archives：
+Planner已修正draft中的test-root可达性矛盾：测试不使用嵌套`TemporaryDirectory`，而由test-owned context在TEMP_PARENT下选择最多两个
+exact合法、预先不存在的direct-child roots。Fixture记录repo provenance DirectoryIdentity，并在`finally`验证exact path/identity、历史root
+排除及allowlisted regular-file inventory后，仅逐项unlink exact children并`rmdir` exact root；禁止glob、rmtree、prefix scan或parent cleanup。
+Durable root budget仍为0，test root residual必须为0。
 
-- `.agent-work/archived/PLAN-20260803-1615.md`：14847 bytes /
-  `afd03650b6d3f39b1e80c65ec158da29c625efbc4ad58dd9c6cc09d240b561bb`
-- `.agent-work/archived/EXECUTION_RESULT-20260803-1615.md`：8687 bytes /
-  `ea71f66b9d8743890f8d28362ddd90b749ebd74803ca11a20c2a9c6a53ce0b3f`
-
-Planner独立接受public canonical owner-binding收敛：targeted 25/25、full 904/904、compile/static、signature/AST、unexpected-keyword
-I/O=0及旧self-consistent forged result create/persist=0均通过。Executer报告的targeted/focused/full及所有其他gate首次通过，bounded
-correction/retry为0。
-
-该接受不代表GUIDE §6 fresh E2：production evaluate/persist/replay为0，fresh durable package未生成/未验收，先前root保持rejected且未访问。
-G4-04 stage仍未完成；G4-05 planning/execution=false，G4-06 locked。当前active0，等待Orchestrator在同一task决定是否释放fresh offline E2
-package generation；本checkpoint不生成或授权后继PLAN/root/device/network/release/formal操作。
+当前未修改source/test/FULL/archive，未运行tests，未访问旧root/external payload/device/network/release/formal，未创建root/package，未生成
+G4-05/06 PLAN。Executer开始后必须覆盖本文件写完整handoff；不得修改PLAN或FULL。
