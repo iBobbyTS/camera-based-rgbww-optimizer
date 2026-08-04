@@ -2,253 +2,204 @@
 
 ## Terminal status request
 
-`READY_FOR_PLANNER_G4_06_ROUTE_A_BLOB_REFERENCE_CORRECTION_FAILURE_REVIEW`
+`READY_FOR_PLANNER_G4_06_ROUTE_A_TERMINAL_CANDIDATE_ACCEPTANCE_REVIEW`
 
 - Reference task: `REF-G4-06-RAY-R6`
 - Contract: `G4-RAY-R6-FINAL-CODE-FIRST-FINAL-PACKAGE-REMINT-V1`
-- Phase:
-  `FINAL_CODE_CANDIDATE_IMPORT_PACKAGED_DIAGNOSTIC_SINGLE_CORRECTION_AND_FINAL_VALIDATION`
+- Phase: `FINAL_CODE_CANDIDATE_TERMINAL_ACCEPTANCE`
 - Stop classification:
-  `BOTH_DIAGNOSTIC_FIXTURES_PASS_HISTORICAL_FOCUSED_FAILURE_NOT_REPRODUCED`
+  `TERMINAL_VALIDATION_PASS_WITH_APPLESCRIPT_RETURNED_TAB_READBACK_MISMATCH`
 - Candidate disposition:
-  `PRESERVED_UNACCEPTED_UNREJECTED_NO_ATTRIBUTABLE_CORRECTION_BRANCH`
-- Planner stop: `RETURN_FOR_G4_06_ROUTE_A_FINAL_CODE_CANDIDATE_REVIEW`
+  `UNCHANGED_UNACCEPTED_PENDING_PLANNER_TERMINAL_REVIEW`
+- Planner stop:
+  `RETURN_FOR_G4_06_ROUTE_A_FINAL_CODE_CANDIDATE_ACCEPTANCE_REVIEW`
 
-The standard-library packaging probe passed, and the sole packaged diagnostic
-completed with canonical JSON. Equivalent fixtures before and after importing
-the two additional focused modules both passed the committed-source validator.
-For both candidate paths, declared OID, `git rev-parse` OID and parsed
-`git ls-tree` OID were identical; committed blob bytes and current bytes were
-also identical. Module/helper identities and Git-related environment were
-unchanged across imports.
+The sole focused validation and sole fresh full suite both passed. The candidate
+source and test identities remained exact and the harness recorded zero candidate
+writes, zero targeted/compile reruns, and zero retry/resume/alternate actions.
 
-This result does not reproduce or explain the historical focused
-`committed_source_candidate_blob_drift`. Live PLAN section 6 requires no edit
-when both fixtures pass but the focused history remains unexplained. No
-candidate correction, validation harness, Terminal launch or test rerun was
-performed.
+The one permitted AppleScript invocation did start the visible Terminal command,
+but AppleScript then failed while reading `window of returnedTab` with error
+`-1728`. Therefore this handoff does **not** claim a successful native AppleScript
+window/TTY readback. PID `43543` and TTY `/dev/ttys021` were instead bound by the
+fresh-root process seal, the Terminal-owned process, and the three liveness
+observations. Planner must review this launch-metadata mismatch; passing offline
+tests does not make the candidate accepted, formal-ready, release-consumed, or
+hardware-ready.
 
-## Activation and frozen inputs
+## Activation and machine contract
 
-- Branch: `main`
-- HEAD: `b1d41bda9be7a982666d281a25708447d0c76dbc`
-- Sole parent: `5ed15b427c50e66336ae8c4f3af2c07ce0c4c8cc`
-- Subject: `docs(plan): fix diagnostic import packaging`
+- Branch: `main`.
+- Activation HEAD:
+  `7c318c57fbe0a2b467ddef6456daeed9455e869c`.
+- Sole parent:
+  `b1d41bda9be7a982666d281a25708447d0c76dbc`.
+- Parent tree:
+  `180466af684049364e96418ff4117e0d49a2b794`.
+- Subject: `docs(plan): activate terminal candidate acceptance`.
 - Exact activation paths:
   - `.agent-work/EXECUTION_RESULT.md`
   - `.agent-work/FULL_PLAN_REFERENCE.md`
   - `.agent-work/PLAN.md`
-  - `.agent-work/archived/EXECUTION_RESULT-20260804-2031.md`
-  - `.agent-work/archived/PLAN-20260804-2031.md`
-- Repo-owned parser: PLAN/FULL active `1/1`, same task/contract, PLAN
-  executable, FULL `executable=false`, FULL non-executable reference true, and
-  required FULL subset exact.
-- Fresh validation script/root were both non-following absent.
+  - `.agent-work/archived/EXECUTION_RESULT-20260804-2042.md`
+  - `.agent-work/archived/PLAN-20260804-2042.md`
+- Activation candidate-path writes: `0`.
+- Repo-owned strict parser before launch: PLAN/FULL active `1/1`, same task and
+  contract, PLAN executable, FULL `executable=false`, FULL non-executable
+  reference true, canonical next `REF-G4-06-RAY-R6`, and all device/formal/
+  release/analysis authority false.
+- Repo-owned strict parser after CodeGraph: same result; canonical JSON marker:
+  `{"active_counts":[1,1],"all_authority_false":true,"contract":"G4-RAY-R6-FINAL-CODE-FIRST-FINAL-PACKAGE-REMINT-V1","gate":"post_codegraph_machine","status":"PASS","task":"REF-G4-06-RAY-R6"}`.
 
-Frozen candidate remained:
+Reviewed archive identities were rechecked before launch:
 
-- source: `94324` bytes, SHA-256
-  `c4cd13e7fb64434914ccb12c862d1d12e81728a9a647d41ff23fb2d0d860fe83`;
-- test: `133201` bytes, SHA-256
-  `479dd8d5b0bb851d256045ee1535860ca23328874b7b7a1eb7de76dceb43ab6e`;
-- source/test numstat: `+35/-8`, `+67/-1`;
-- candidate writes: `0`.
+- `.agent-work/archived/PLAN-20260804-2042.md`: `22585` bytes, SHA-256
+  `3b610d2250115f8d38f67478cef7c0bd5668eba6a8946c72d2446051552d3c10`.
+- `.agent-work/archived/EXECUTION_RESULT-20260804-2042.md`: `11438` bytes,
+  SHA-256
+  `0553734db55dff76c03eb24cab4e574ebc1de85b71d4ea1f39337cc0c8a5fd2f`.
 
-Frozen diagnostic source remained a regular mode-`0600` file:
+## Inherited validation and immutable candidate
 
-`/Volumes/4T/temp/rgbww-optimizer/g4-route-a-blob-seam-diagnostic-e5c8fd7ae095-20260804T201412Z.py`
+Inherited exact-candidate validation was not rerun:
 
-- bytes: `8678`;
+- Targeted: `47/47`, exit `0`, rerun count `0`.
+- Compile: exit `0`, rerun count `0`.
+
+Candidate before launch, after focused, before full, after full, and at handoff:
+
+| Path | Bytes | SHA-256 | Mode | Numstat |
+|---|---:|---|---:|---|
+| `src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py` | 94324 | `c4cd13e7fb64434914ccb12c862d1d12e81728a9a647d41ff23fb2d0d860fe83` | `0644` | `+35/-8` |
+| `tests/test_p7_td_b_r6_stage_gate.py` | 133201 | `479dd8d5b0bb851d256045ee1535860ca23328874b7b7a1eb7de76dceb43ab6e` | `0644` | `+67/-1` |
+
+- Candidate source/test writes: `0/0`.
+- Candidate correction count: `0`.
+- Before this ER rewrite, `git status --short` contained only the exact two
+  candidate paths above.
+- Harness `git diff --check`: pass.
+- Harness pre-full/final path scope: exact two candidate paths; tracked config,
+  GUIDE, RESEARCH, FULL and PLAN unchanged relative to activation.
+
+## Fresh plain harness identity
+
+Script:
+
+`/Volumes/4T/temp/rgbww-optimizer/g4-route-a-terminal-candidate-acceptance-b1d41bda9be7-20260804T204210Z.zsh`
+
+- bytes: `15039`;
 - SHA-256:
-  `f23c3a1187e07d2a557546e7af44a4b99a36b3adf77e848767b011ff28c243df`;
-- device/inode: `16777244/3090518`;
-- uid/gid: `501/20`;
-- mtime/ctime ns: `1785874866252624621/1785874882492679249`.
+  `fe891eed4085b6805bb41e55a3b169c0bfdbe5f47274cb608275a994107e0004`;
+- mode: `0600`;
+- device/inode: `16777244/3091142`;
+- `/bin/zsh -n`: pass before launch;
+- plain UTF-8/LF source, no encoded launcher, dynamic decode, or self-delete;
+- persisted as immutable harness evidence.
 
-It was not rewritten, replaced, chmodded, deleted, cleaned or moved.
+Fresh root:
 
-## Import packaging probe
+`/Volumes/4T/temp/rgbww-optimizer/g4-route-a-terminal-candidate-acceptance-b1d41bda9be7-20260804T204210Z`
 
-The probe ran exactly once from cwd
-`/Users/ibobby/Projects/WLED-RGBWW` with absolute interpreter
-`/Users/ibobby/Projects/WLED-RGBWW/.venv/bin/python`, flags `-P -B`, and
-per-process-only `PYTHONPATH=/Users/ibobby/Projects/WLED-RGBWW`.
+The completed inventory is exactly four files:
 
-- Original parent `PYTHONPATH`: absent.
-- Original value: empty, `0` bytes, SHA-256
-  `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`.
-- Parent `PYTHONPATH` after probe: still absent.
-- Effective `PYTHONPATH`: exact repo root.
-- `sys.flags.safe_path`: true.
-- `sys.dont_write_bytecode`: true.
-- Test module bodies imported: false.
-- Test runner called: false.
-- Temporary files: `0`.
-- Probe exit: `0` with one canonical JSON stdout object and no failure stderr.
+| File | Bytes | SHA-256 | Mode | Device/inode |
+|---|---:|---|---:|---|
+| `command-seal.json` | 2501 | `47dfefdb3cf5a3e182a2bec28605506478d60fc5df98b0ec7a056e56e120c4be` | `0600` | `16777244/3112045` |
+| `validation.stdout.log` | 29495 | `456ea032a5624e7c45fa605f270101ce934051cf5593bf03d29fd9d1ebd9ce08` | `0644` | `16777244/3091146` |
+| `validation.stderr.log` | 59535 | `cb044531e59f885aefb65716be22f0e07b8270c1f08946131c214f98f1154c91` | `0644` | `16777244/3091147` |
+| `validation.exit` | 2 | `9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa` | `0644` | `16777244/3112044` |
 
-Ordered effective `sys.path`:
+`validation.exit` is exactly `0\n`. The seal is canonical JSON schema
+`g4_route_a_terminal_candidate_acceptance_command_seal_v1`, terminal phase
+`complete`, exit `0`, and binds the activation, script, candidate, command order,
+PID/TTY/token, inherited validation, zero counters, and all-false authority map.
 
-```json
-["/Users/ibobby/Projects/WLED-RGBWW","/Users/ibobby/miniconda3/lib/python313.zip","/Users/ibobby/miniconda3/lib/python3.13","/Users/ibobby/miniconda3/lib/python3.13/lib-dynload","/Users/ibobby/Projects/WLED-RGBWW/.venv/lib/python3.13/site-packages","/Users/ibobby/Projects/WLED-RGBWW/src"]
-```
+## Visible Terminal launch and liveness
 
-`tests` resolved as a namespace at
-`/Users/ibobby/Projects/WLED-RGBWW/tests`. Module specs resolved exactly:
+- AppleScript invocations: `1`.
+- Terminal `do script` launches: `1`.
+- Exact launched command:
+  `/bin/zsh '/Volumes/4T/temp/rgbww-optimizer/g4-route-a-terminal-candidate-acceptance-b1d41bda9be7-20260804T204210Z.zsh'`.
+- AppleScript returned-tab window/TTY readback: unavailable; after `do script`,
+  `window of returnedTab` raised `-1728`. Error text mentioned window id `62352`,
+  but this is not represented as a successful native window-id attestation.
+- Seal/process PID: `43543`.
+- Seal/process TTY: `/dev/ttys021`.
+- Token:
+  `g4-route-a-terminal-candidate-acceptance-b1d41bda9be7-20260804T204210Z`.
+- Sparse liveness checks: `3/3` alive while focused was running.
+- After the third live check, Executer stopped polling and requested the
+  Orchestrator-owned automation/block transition.
+- On the automation wake, Orchestrator reported PID `43543` exited, exact
+  four-file inventory and `validation.exit=0`, then removed the automation.
+- Retry/resume/alternate Terminal launches: `0/0/0`.
 
-| Module | Origin |
-|---|---|
-| `tests.test_p7_td_b_r6_stage_gate` | `/Users/ibobby/Projects/WLED-RGBWW/tests/test_p7_td_b_r6_stage_gate.py` |
-| `tests.test_p7_td_b_r6_contract` | `/Users/ibobby/Projects/WLED-RGBWW/tests/test_p7_td_b_r6_contract.py` |
-| `tests.test_p7_thermal_diagnostics` | `/Users/ibobby/Projects/WLED-RGBWW/tests/test_p7_thermal_diagnostics.py` |
+## Focused validation
 
-The probe used only `sys.path` and `importlib.util.find_spec`; it did not act as
-a semantic controller or execute candidate/test behavior.
-
-## Sole packaged diagnostic
-
-Exact invocation, once:
+Exact command, once, from repo cwd with per-process-only repo `PYTHONPATH`,
+absolute venv interpreter, and `-P -B`:
 
 ```text
-PYTHONPATH=/Users/ibobby/Projects/WLED-RGBWW /Users/ibobby/Projects/WLED-RGBWW/.venv/bin/python -P -B /Volumes/4T/temp/rgbww-optimizer/g4-route-a-blob-seam-diagnostic-e5c8fd7ae095-20260804T201412Z.py
+PYTHONPATH=/Users/ibobby/Projects/WLED-RGBWW /Users/ibobby/Projects/WLED-RGBWW/.venv/bin/python -P -B -m unittest -v tests.test_p7_td_b_r6_stage_gate tests.test_p7_td_b_r6_contract tests.test_p7_thermal_diagnostics
 ```
 
+- Invocation count: `1`.
+- Tests: `202`.
+- Test-reported duration: `223.428s`.
+- Seal start/end epoch: `1785876616/1785876840`.
 - Exit: `0`.
-- Stdout: one canonical JSON object.
-- Real diagnostic invocations: `1/1`.
-- Temporary roots: `1`; auto cleanup true.
-- Synthetic fixture repositories: `2`.
-- Temporary children before cleanup: `before-imports`, `after-imports`.
-- Test runner called: false.
-- Candidate writes: `0`.
-- Source before/after: exact `8678` bytes, frozen SHA, mode `0600`, UTF-8/LF.
-- Shared cache content/list/read/modify/delete access: `0`.
-- Bytecode writing disabled by `-B`.
+- Result: `OK`.
+- Failure details: none.
 
-Production module file in both snapshots:
+## CodeGraph, machine and scope gates
 
-`/Users/ibobby/Projects/WLED-RGBWW/src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py`
+- `codegraph sync` invocation count: `1`; exit `0`; result `Already up to date`.
+- CodeGraph query invocation count: `1`; exit `0`.
+- Query named the committed-source attestation owner, loader/production launch
+  consumption path, and parallel-owner check. It returned the current
+  `CommittedSourceAttestation`, `COMMITTED_SOURCE_ATTESTATION_SCHEMA`, and
+  `validate_committed_source_attestation` owner/call references in the stage-gate
+  source plus its tests; no separate production semantic owner was surfaced.
+- Post-CodeGraph PLAN/FULL strict parser: pass.
+- Machine active counts: `1/1`.
+- Same task/contract: pass.
+- FULL non-executable and required subset: pass.
+- Device/formal/release/analysis authority: all false.
+- Candidate identity/numstat, changed-path scope and protected tracked path
+  checks: pass.
 
-Imports were exact:
+## Unique fresh full validation
 
-- `tests.test_p7_td_b_r6_stage_gate`;
-- `tests.test_p7_td_b_r6_contract`;
-- `tests.test_p7_thermal_diagnostics`.
+Exact command, once, under the same packaging:
 
-Before/after module snapshot was unchanged:
+```text
+PYTHONPATH=/Users/ibobby/Projects/WLED-RGBWW /Users/ibobby/Projects/WLED-RGBWW/.venv/bin/python -P -B -m unittest discover -s tests
+```
 
-- module id: `4394460768`;
-- binding helper id: `4417988672`;
-- contract helper id: `4417988832`;
-- validator id: `4417993792`;
-- binding schema: `p7_td_b_r6_preparation_source_attestation_binding_v1`;
-- attestation schema: `p7_td_b_r6_committed_source_attestation_v1`;
-- Git environment: `{"GIT_PAGER":"cat"}`.
-
-## Exact fixture evidence
-
-Both fixtures used subject
-`fix(stage-gate): bind package preparation to g4-06` and the exact two allowed
-paths.
-
-For the stage-gate source candidate in both fixtures:
-
-- declared OID / `rev-parse` OID / `ls-tree` OID:
-  `8c076eee6f79d19fc1abc7a22ec297f1ea97e547`;
-- `ls-tree`: mode `100644`, type `blob`, exact source path;
-- Git-show/current bytes: `81/81`;
-- Git-show/current SHA-256:
-  `40889c52b6487ee69b1afeb1b25dd6eff42d0790d44b2f557f16286809c5c895`;
-- current mode: `420` (`0644`);
-- all OIDs equal: true;
-- committed/current bytes equal: true.
-
-For the stage-gate test candidate in both fixtures:
-
-- declared OID / `rev-parse` OID / `ls-tree` OID:
-  `36fa7be7453163c0cae2db33d0e4de746d65b101`;
-- `ls-tree`: mode `100644`, type `blob`, exact test path;
-- Git-show/current bytes: `46/46`;
-- Git-show/current SHA-256:
-  `66c3ae3c16413bac2e7d0338e6ef1e1a05e620e748728b7ea875fce74613d93f`;
-- current mode: `420` (`0644`);
-- all OIDs equal: true;
-- committed/current bytes equal: true.
-
-Before-import fixture validator result: `PASS`.
-
-- source/code/live checkpoints:
-  `75c874bc5dbb4f2dc9d0ebc45ae6d01b2825d68a` /
-  `7dd477d10f69c69842d21e831862aae1a5ff7502` /
-  `e9e3b258748483942535d1cc3a34864746c26157`.
-
-After-import fixture validator result: `PASS`.
-
-- source/code/live checkpoints:
-  `6b0e7a98500bdc8b643461d9553f51c1703e0590` /
-  `16d796bad7c8a052d06e8ff6b1b2a370a6a3c122` /
-  `7108eef137b07f952acd9cc4b0891826c1937553`.
-
-Aggregate diagnostic fields:
-
-- `module_environment_unchanged=true`;
-- `all_declared_rev_parse_ls_tree_oids_equal=true`;
-- `all_git_show_current_bytes_equal=true`;
-- validator status pair: `PASS/PASS`;
-- temporary cleanup: true.
-
-## Attribution and correction decision
-
-Canonical attribution:
-
-`DIAGNOSTIC_PASS_PASS_NO_IMPORT_OR_OID_DRIFT_HISTORICAL_FOCUSED_FAILURE_UNEXPLAINED`
-
-The imports did not change the module, helpers, Git environment, binding OIDs,
-committed blobs or current source identity. The production validator passed in
-both minimal fixtures. Therefore neither the test-fixture/import-isolation
-branch nor the existing-production-comparison branch is justified.
-
-- Bounded correction count: `0`.
-- Source/test writes: `0`.
-- OID validation relaxation: `0`.
-- New schema/validator/controller/adapter/successor/global patch: `0`.
-
-## Validation and launcher state
-
-The PLAN stopped before fresh validation packaging:
-
-- Fresh script/root writes: `0/0`.
-- Targeted/focused/compile starts: `0/0/0`.
-- Candidate diff/static gate: not started.
-- CodeGraph sync/query: `0/0`.
-- Machine/scope/full starts: `0/0`.
-- AppleScript/Terminal launches: `0/0`.
-- PID/TTY/token/liveness: `none/none/none/0`.
-- Retry/resume/alternate/automation: `0/0/0/0`.
-
-Prior scripts, validation roots, rejected partial root and historical launcher
-evidence were not accessed, statted, listed, read, modified, cleaned, reused or
-resumed.
+- Invocation count: `1`.
+- Tests: `973`.
+- Test-reported duration: `352.845s`.
+- Seal start/end epoch: `1785876840/1785877193`.
+- Exit: `0`.
+- Result: `OK`.
+- Retry: `0`.
 
 ## Scope and zero effects
 
-- PLAN/FULL/GUIDE/RESEARCH/archive writes: `0`.
-- Git stage/commit/push/PR: `0/0/0/0`.
+- Old validation root/script access: `0`.
+- Frozen diagnostic source access: `0`.
+- Shared cache access: `0`.
 - Existing experiment/package/formal root access: `0`.
-- Network/device/backend/camera/Ray/strip/capture calls: `0/0/0/0/0/0/0`.
-- Release/package/formal-R6/analysis/TD-C consumption or execution:
-  `0/0/0/0/0`.
-- Formal owner/root/device effects: `0/0/0`.
+- PLAN/FULL/GUIDE/RESEARCH/archive writes: `0`.
+- Source/test writes: `0`.
+- Git stage/commit/push/PR: `0/0/0/0`.
+- Device/network/backend/camera/Ray/strip/capture calls:
+  `0/0/0/0/0/0/0`.
+- Release consumption/formal execution/analysis/TD-C:
+  `0/0/0/0`.
+- Formal root creation: `0`.
 
-Only this live ER handoff was written after the stop. Candidate source/test,
-frozen diagnostic source, PLAN and FULL remained read-only.
-
-## Planner handoff
-
-Planner should review the exact PASS/PASS differential result and return the
-unexplained historical focused failure to Orchestrator ownership reassessment.
-The candidate remains unaccepted, but this diagnostic supplies no justified
-correction branch and no production failure.
-
-Do not rerun the probe or diagnostic, modify the candidate, launch validation,
-or infer a scientific/formal branch under this completed PLAN. No future code
-checkpoint or tree SHA is guessed.
+Only this live `.agent-work/EXECUTION_RESULT.md` was written after completion.
+The candidate remains unaccepted pending Planner review. This result grants no
+formal, device, release-consumption, scientific-pass, or hardware-readiness
+credit.
