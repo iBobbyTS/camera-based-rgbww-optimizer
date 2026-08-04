@@ -1,54 +1,207 @@
-# REF-G4-06-RAY-R6 Planner terminal stop
+# REF-G4-06-RAY-R6 formal terminal evidence engineering
 
-**计划状态：** `PLANNER_STOP_WAITING_ORCHESTRATOR_G4_06_FORMAL_BOUNDARY`
+**计划状态：** `EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION_ENGINEERING`
 
-**Executable：** `false`
+**Executable：** `true_after_exact_orchestrator_activation`
 
-**Active task count：** `0`
+**Active task count：** `1`
 
-**Active reference task：** `null`
+**Active reference task：** `REF-G4-06-RAY-R6`
 
-**Reviewed reference task：** `REF-G4-06-RAY-R6`
+**Contract：** `G4-RAY-R6-FORMAL-TERMINAL-EVIDENCE-ENGINEERING-V1`
 
-**Contract：** `G4-RAY-R6-STAGE-GATE-FRESH-PACKAGE-EVIDENCE-V1`
+**Planner stop：** `RETURN_FOR_G4_06_FORMAL_TERMINAL_ENGINEERING_REVIEW`
 
-**Planner decision：** `ACCEPTED_G4_06_OFFLINE_FRESH_STAGE_GATE_PACKAGE_EVIDENCE`
+`PLAN_MACHINE_CONTRACT={"schema":"planner_execution_contract_v2","contract_id":"G4-RAY-R6-FORMAL-TERMINAL-EVIDENCE-ENGINEERING-V1","plan_status":"EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION_ENGINEERING","executable":true,"active_task_count":1,"active_task":"REF-G4-06-RAY-R6","reference_task_id":"REF-G4-06-RAY-R6","reference_goal":"REF-G4-COMPLETE","reference_task_status":"ACTIVE_FORMAL_TERMINAL_EVIDENCE_ENGINEERING_AFTER_EXACT_ORCHESTRATOR_ACTIVATION","activation_state":"WAITING_ORCHESTRATOR_FULL_ALIGNMENT_COMMIT","activation_commit":{"expected_parent":"db8188785079f15837c02d2d4632ed7a17543832","expected_parent_tree":"ee96f0ca460e6e94fcbdbe2aba8403bfd4d07cfb","expected_subject":"docs(plan): activate ray r6 terminal evidence engineering","expected_changed_paths":[".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md"],"direct_non_merge_child":true,"child_sha_recorded_in_plan":false},"single_current_action":"implement_and_validate_one_repo_owned_formal_terminal_evidence_boundary_before_any_real_formal_launch","same_reference":true,"new_task_ids":0,"corrective_suffixes":0,"engineering_only":true,"maintainability_preflight":"EXISTING_OWNER_LACKS_POST_CAPTURE_LEDGER_CALL_INDEPENDENT_FINAL_ZERO_AND_TERMINAL_SEAL","accepted_stage_gate_package_binding":{"schema":"p7_td_b_r6_stage_gate_package_binding_v1","package_root":{"path":"/Volumes/4T/temp/rgbww-optimizer/g4-ray-r6-stage-gate-ebc40bf8e40c-harness-replacement-20260804T141423Z","device":16777244,"inode":2903750,"mode":448},"inventory":["launch-descriptor.json","stage-gate.json","terminal-seal.json"],"artifacts":{"launch-descriptor.json":{"path":"launch-descriptor.json","bytes":10890,"sha256":"9dd7da778f0bfd1d5975a7babc0341fbc32ea4a10e44edf95ed4c8fd59d6afc8","device":16777244,"inode":2903752,"mode":384},"stage-gate.json":{"path":"stage-gate.json","bytes":24805,"sha256":"e14eabd51eab182f50b6c8ff7583ec7e96294ae21e6feb447400ca4aee718ef2","device":16777244,"inode":2903751,"mode":384},"terminal-seal.json":{"path":"terminal-seal.json","bytes":980,"sha256":"a7a84fae6abf60fba3a5aef891074c4a5a99be478f8f6f8fb95a507f908aa65e","device":16777244,"inode":2903753,"mode":384}}},"required_full_g4_06_state":{"package":"C_FORMAL_TERMINAL_EVIDENCE_ENGINEERING","contract_id":"G4-RAY-R6-FORMAL-TERMINAL-EVIDENCE-ENGINEERING-V1","authority_owner":"MATCHING_LIVE_PLAN_ONLY","full_top_level_non_authorizing":true,"engineering_only":true,"formal_execution_authorized":false,"formal_root_creation_authorized":false,"device_authorized":false,"camera_authorized":false,"ray_authorized":false,"capture_authorized":false,"release_consumption_authorized":false,"g4_07_unlocked":false,"accepted_stage_gate_package_binding":{"schema":"p7_td_b_r6_stage_gate_package_binding_v1","package_root":{"path":"/Volumes/4T/temp/rgbww-optimizer/g4-ray-r6-stage-gate-ebc40bf8e40c-harness-replacement-20260804T141423Z","device":16777244,"inode":2903750,"mode":448},"inventory":["launch-descriptor.json","stage-gate.json","terminal-seal.json"],"artifacts":{"launch-descriptor.json":{"path":"launch-descriptor.json","bytes":10890,"sha256":"9dd7da778f0bfd1d5975a7babc0341fbc32ea4a10e44edf95ed4c8fd59d6afc8","device":16777244,"inode":2903752,"mode":384},"stage-gate.json":{"path":"stage-gate.json","bytes":24805,"sha256":"e14eabd51eab182f50b6c8ff7583ec7e96294ae21e6feb447400ca4aee718ef2","device":16777244,"inode":2903751,"mode":384},"terminal-seal.json":{"path":"terminal-seal.json","bytes":980,"sha256":"a7a84fae6abf60fba3a5aef891074c4a5a99be478f8f6f8fb95a507f908aa65e","device":16777244,"inode":2903753,"mode":384}}}},"single_terminal_owner_module":"src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_terminal.py","allowed_repo_changed_paths":[".agent-work/EXECUTION_RESULT.md","src/camera_based_rgbww_optimizer/optimization/measure_p7_thermal_diagnostics.py","src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_terminal.py","tests/test_p7_td_b_r6_terminal.py","tests/test_p7_thermal_diagnostics.py","tmp/run-p7-thermal-diagnostics.zsh"],"new_module_cap":1,"new_controller_or_adapter_cap":0,"wrapper_terminal_sequence_trigger":{"owner":"EXACT_PARSED_RUNNER_ARGV","experiment_id":"p7_td_b_command_switch_history_v1","source":"ray","phase":"formal","stage_gate_package_required":true,"code_checkpoint_required":true,"near_miss_triggers":false,"legacy_behavior_unchanged":true},"r6_python_cleanup_nonpass_promoted_to_failure":true,"terminal_pass_requires_python_cleanup_pass":true,"formal_root_access_authorized":false,"stage_gate_root_access_authorized":false,"device_authorized":false,"network_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"capture_authorized":false,"formal_execution_authorized":false,"release_consumption_authorized":false,"retained_r3_access":0,"td_c_authorized":false,"analysis_authorized":false,"test_real_device_calls":0,"targeted_required":true,"focused_required":true,"compile_required":true,"zsh_syntax_required":true,"codegraph_sync_required":true,"full_suite_required_once":true,"expected_duration_under_10_minutes":true,"visible_terminal_required":false,"accepted_code_checkpoint_required_before_formal_plan":true,"planner_stop":"RETURN_FOR_G4_06_FORMAL_TERMINAL_ENGINEERING_REVIEW","future_formal_acquisition":"LOCKED_UNTIL_ENGINEERING_ACCEPTED_AND_COMMITTED"}`
 
-**Planner stop：** `WAITING_ORCHESTRATOR_G4_06_FORMAL_BOUNDARY`
+## 0. Engineering boundary
 
-`PLAN_MACHINE_CONTRACT={"schema":"planner_execution_contract_v2","contract_id":"G4-RAY-R6-STAGE-GATE-FRESH-PACKAGE-EVIDENCE-V1","plan_status":"PLANNER_STOP_WAITING_ORCHESTRATOR_G4_06_FORMAL_BOUNDARY","executable":false,"active_task_count":0,"active_task":null,"reference_task_id":"REF-G4-06-RAY-R6","reference_goal":"REF-G4-COMPLETE","reference_task_status":"ACCEPTED_G4_06_OFFLINE_FRESH_STAGE_GATE_PACKAGE_EVIDENCE","planner_decision":"ACCEPTED_G4_06_OFFLINE_FRESH_STAGE_GATE_PACKAGE_EVIDENCE","reviewed_plan_archive":{"path":".agent-work/archived/PLAN-20260804-0833.md","bytes":13532,"sha256":"ed93c93716b3c081b6e38068daa651fa234a036127f2fff851057efae305040e"},"reviewed_execution_result_archive":{"path":".agent-work/archived/EXECUTION_RESULT-20260804-0833.md","bytes":10015,"sha256":"1c35dd9df5b6aeba31e4911fa93acbea07f93f7827b820249c4ee98c790fd712"},"package_binding":{"schema":"p7_td_b_r6_stage_gate_package_binding_v1","package_root":{"path":"/Volumes/4T/temp/rgbww-optimizer/g4-ray-r6-stage-gate-ebc40bf8e40c-harness-replacement-20260804T141423Z","device":16777244,"inode":2903750,"mode":448},"inventory":["launch-descriptor.json","stage-gate.json","terminal-seal.json"],"artifacts":{"launch-descriptor.json":{"path":"launch-descriptor.json","bytes":10890,"sha256":"9dd7da778f0bfd1d5975a7babc0341fbc32ea4a10e44edf95ed4c8fd59d6afc8","device":16777244,"inode":2903752,"mode":384},"stage-gate.json":{"path":"stage-gate.json","bytes":24805,"sha256":"e14eabd51eab182f50b6c8ff7583ec7e96294ae21e6feb447400ca4aee718ef2","device":16777244,"inode":2903751,"mode":384},"terminal-seal.json":{"path":"terminal-seal.json","bytes":980,"sha256":"a7a84fae6abf60fba3a5aef891074c4a5a99be478f8f6f8fb95a507f908aa65e","device":16777244,"inode":2903753,"mode":384}}},"prepare_exit_code":0,"describe_exit_code":0,"native_outputs_exact_equal":true,"owner_root_create_count":1,"per_run_retry_count":0,"per_run_alternate_root_count":0,"historical_root":{"path":"/Volumes/4T/temp/rgbww-optimizer/g4-ray-r6-stage-gate-ebc40bf8e40c-20260804T063700Z","disposition":"HISTORICAL_UNCONSUMED_UNKNOWN_NOT_PROBED","access_count":0},"rejected_planner_contract_attempt":{"disposition":"REJECTED_G4_06_REPLACEMENT_PACKAGE_PLANNER_MACHINE_CONTRACT_OMISSION_OUTPUT_ROOT_DRIFT","prepare_launch_count":1,"owner_root_create_count":0,"describe_launch_count":0},"scientific_credit":false,"formal_execution_authorized":false,"device_authorized":false,"quality_pass_claimed":false,"history_pass_claimed":false,"release_consumption_authorized":false,"g4_07_execution_authorized":false,"formal_planning_unlocked_for_orchestrator":true,"formal_plan_designed_or_authorized":false,"planner_stop":"WAITING_ORCHESTRATOR_G4_06_FORMAL_BOUNDARY"}`
+静态maintainability preflight确认现有formal authority/materialization/capture owner可保留，但terminal evidence boundary不闭合：
 
-## Terminal review
+1. Runtime template要求post-capture调用`p7_thermal_diagnostics.validate_td_b_r6_capture_ledger`，现有production execution path调用数为`0`；
+2. `execute_plan`只有Python cleanup，repo wrapper只有shell cleanup与wrapper result；缺少independent final-zero；
+3. Formal run没有一个repo-owned owner把run/capture/physical-return/quality ledger、三层cleanup和wrapper exit闭合为success/failure terminal evidence。
 
-Planner已独立验收activation topology、strict PLAN/FULL parser、production pure projection、两次native exit/output、canonical binding shape、root/inventory/artifact identities、attempt/authority counters与repo diff scope。
+本PLAN只修复上述工程边界，不访问accepted package或formal root，不执行设备/相机/Ray/灯带，不运行formal capture，不设计G4-07 analysis。它仍是同一`REF-G4-06-RAY-R6`，不创建suffix或新task。
 
-结论：
+## 1. Activation 与FULL exact mirror
 
-`ACCEPTED_G4_06_OFFLINE_FRESH_STAGE_GATE_PACKAGE_EVIDENCE`
+只有Orchestrator创建以下commit后才可执行：
 
-Prepare与describe均exit `0`，保存的raw combined output逐字符相等，且闭合为同一个canonical package binding。该接受仅代表unchanged repo-owned stage-gate owner生成并独立replay了一个fresh、sealed、offline package；不授予formal/device/quality/history/release-consumption或G4-07 execution credit。
+- parent `db8188785079f15837c02d2d4632ed7a17543832`；
+- parent tree `ee96f0ca460e6e94fcbdbe2aba8403bfd4d07cfb`；
+- subject `docs(plan): activate ray r6 terminal evidence engineering`；
+- changed paths exact：`.agent-work/FULL_PLAN_REFERENCE.md`、`.agent-work/PLAN.md`；
+- direct non-merge child；activation后worktree clean。
 
-## Accepted binding
+PLAN/FULL必须active `1/1`，task/current/canonical均为`REF-G4-06-RAY-R6`，active contract均为`G4-RAY-R6-FORMAL-TERMINAL-EVIDENCE-ENGINEERING-V1`；PLAN executable true，FULL executable false。FULL顶层device/camera/Ray/strip/formal/release/TD-C authority全部false。
 
-- Root：`/Volumes/4T/temp/rgbww-optimizer/g4-ray-r6-stage-gate-ebc40bf8e40c-harness-replacement-20260804T141423Z`
-- Root identity：device `16777244`，inode `2903750`，mode `0700`
-- Ordered inventory：`launch-descriptor.json`、`stage-gate.json`、`terminal-seal.json`
-- Launch descriptor：10890 bytes，SHA-256 `9dd7da778f0bfd1d5975a7babc0341fbc32ea4a10e44edf95ed4c8fd59d6afc8`，device/inode `16777244/2903752`，mode `0600`
-- Stage gate：24805 bytes，SHA-256 `e14eabd51eab182f50b6c8ff7583ec7e96294ae21e6feb447400ca4aee718ef2`，device/inode `16777244/2903751`，mode `0600`
-- Terminal seal：980 bytes，SHA-256 `a7a84fae6abf60fba3a5aef891074c4a5a99be478f8f6f8fb95a507f908aa65e`，device/inode `16777244/2903753`，mode `0600`
+FULL `g4_06_state`必须逐字段等于machine row中的`required_full_g4_06_state`：Package C engineering-only、matching-live-PLAN、FULL non-authorizing、全部execution authority false、G4-07 locked，并保留accepted stage-gate package binding exact identity。任一不符只写ER并停止。
 
-## Historical ledger
+## 2. Maintainability 与scope
 
-- Original unknown root保持`HISTORICAL_UNCONSUMED_UNKNOWN_NOT_PROBED`，reviewed execution access count `0`。
-- Planner-contract omission attempt保持rejected；它在owner root create前因`output_root_drift`终止，不计production owner failure。
+编辑前Executer必须用CodeGraph重新确认：
 
-## Archives and stop
+- `run_production_cli_launch -> run_validated_td_b_r6_runtime_contract -> run_authorized_plan -> execute_plan`；
+- 16 captures完成、status改为complete、exception/finally cleanup之间的effect order；
+- wrapper的child wait、signal、shell cleanup、final exit order；
+- existing `validate_td_b_r6_capture_ledger`、`all_off`、provenance canonical JSON/file-identity helpers。
 
-- Reviewed PLAN：`.agent-work/archived/PLAN-20260804-0833.md`，13532 bytes，SHA-256 `ed93c93716b3c081b6e38068daa651fa234a036127f2fff851057efae305040e`
-- Reviewed ER：`.agent-work/archived/EXECUTION_RESULT-20260804-0833.md`，10015 bytes，SHA-256 `1c35dd9df5b6aeba31e4911fa93acbea07f93f7827b820249c4ee98c790fd712`
+不得继续向三个巨型P7模块复制serialization、terminal validation或wrapper state machine。唯一允许的新owner：
 
-继承accepted code checkpoint的fresh `963/963`，本docs/evidence review未重复full suite。
+`src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_terminal.py`
 
-当前无active executable PLAN。Orchestrator可把G4-06记为terminal accepted，并解锁formal boundary的后续规划判断；本PLAN没有设计或授权formal package、device access或下一stage execution。
+它是formal terminal evidence的单一source of truth，不是controller、adapter或parallel acquisition owner。`measure_p7_thermal_diagnostics.py`只增加最小post-capture delegation/hook；wrapper只按固定顺序调用该module CLI，不实现JSON语义。
 
-唯一stop：`WAITING_ORCHESTRATOR_G4_06_FORMAL_BOUNDARY`。
+Exact changed scope只有：
+
+- `.agent-work/EXECUTION_RESULT.md`；
+- `src/camera_based_rgbww_optimizer/optimization/measure_p7_thermal_diagnostics.py`；
+- `src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_terminal.py`；
+- `tmp/run-p7-thermal-diagnostics.zsh`；
+- `tests/test_p7_td_b_r6_terminal.py`；
+- `tests/test_p7_thermal_diagnostics.py`。
+
+若需要修改stage-gate、thermal scientific owner、analyzer、config或其他文件，停止回Orchestrator，不得自行扩大。
+
+## 3. Post-capture ledger gate
+
+在existing `execute_plan`路径中增加一个focused、可测试的post-capture validator delegation。Exact effect order：
+
+1. 16个capture逐个完成existing physical-return-before-acceptance、quality/source/readback/timing checks；
+2. formal/ambient/physical budget exact检查通过；
+3. 把当前run的16 rows投影成existing `thermal.validate_td_b_r6_capture_ledger`所需shape；projection必须绑定同一run root、`origin=ray_r6`、exact capture IDs/order、state、frozen nominal shutter、fixed/no-reacquire/no-mid-run-change、CR3/sidecar/remote IDs、58 features/quality与timing/budget evidence；不得伪造缺失字段；
+4. exact一次调用existing `thermal.validate_td_b_r6_capture_ledger(rows, required_feature_ids=..., selected_c_shutter="1/2500")`；
+5. validator通过后才允许写commands audit并进入Python finally cleanup；R6 cleanup返回的`status`不是exact pass、steps缺失或任一步`ok != true`时，必须提升为execution failure，写failure evidence并保持run failed；
+6. 只有validator与Python cleanup均pass后，run才可最终表达complete；validator抛错或cleanup non-pass均不得留下`run.status=complete`，capture不得被称为formal success。
+
+默认非R6调用者的行为必须保持兼容；不得让可选hook跳过R6 gate。R6 production owner必须强制绑定，call count exact `1`；第17帧、skip/resume、cross-root/R5 pooling仍fail closed。
+
+## 4. Single terminal owner
+
+新module必须复用现有owners：
+
+- `thermal.validate_td_b_r6_capture_ledger`；
+- `camera_based_rgbww_optimizer.control.all_off`及既有both-off/readback semantics；
+- `p7_retained_r3_provenance_io`的canonical writers、exact regular-file reads和file identities。
+
+它只提供两个窄CLI/函数边界：
+
+### A. Independent final-zero
+
+在child终止且shell cleanup完成后exact once执行真实independent both-off/readback，写`independent-final-zero.json`。只有strip五通道readback全零、Ray intensity readback零、步骤全pass才返回0。失败仍写canonical failure evidence并返回nonzero；禁止retry、recovery capture或扩大设备动作。
+
+### B. Terminal finalize
+
+Independent final-zero之后exact once运行。必须先验证canonical root identity与expected formal basename grammar，再读取exact regular files并验证：
+
+- `plan.json`是exact R6 materialized contract；
+- `run.json`、`captures.jsonl`、`physical-returns.jsonl`、commands/quality/measurement artifacts mutually consistent；
+- success必须16 logical/16 physical、setup0、ambient0、retry0、exact 000..015 order；
+- existing capture ledger validator在terminal replay exact once pass；
+- Python cleanup、shell cleanup exit/steps、independent final-zero均pass；
+- child/wrapper/signal状态与run success/failure一致；
+- 每个retained artifact path/bytes/SHA/device/inode/mode绑定，无symlink/extra mutable owner混淆；
+- 不调用analyzer、strip solver、release、TD-C或任何capture/device retry。
+
+Success只在全部gate pass时写canonical `terminal-audit.json`和PASS terminal seal；任何capture/quality/source/readback/ledger/Python cleanup/shell cleanup/final-zero/child/signal/artifact failure均分类为`accepted_hard_failed_formal_attempt`、`formal_pass=false`、`retry=0`、`strip_call_count=0`，写FAIL terminal seal并返回nonzero。Terminal write自身失败必须nonzero且由wrapper state保留stable failure；不得伪造seal。
+
+Seal必须记录schema/status/task/contract、root identity、formal/physical/setup/ambient counts、retry/alternate/launch、cleanup statuses、failed phase/error code、artifact identity map与`analysis_call_count=0`。Canonical success/failure只能由该module owner写一次。
+
+## 5. Wrapper effect order
+
+修改`tmp/run-p7-thermal-diagnostics.zsh`，保留`set -euo pipefail`、visible logging、child PID、EXIT/INT/TERM/HUP traps和idempotent finalize。R6 terminal sequence只能由repo-owned、exact parsed runner argv contract触发：`--experiment-id p7_td_b_command_switch_history_v1`、`--source ray`、`--phase formal`、存在exact `--stage-gate-package`与`--code-checkpoint`，并保持wrapper-added `--execute --allow-device-control`。不得用substring、参数包含关系、run-name或path-name猜测mode；duplicate/missing/conflicting args必须fail closed而不是误触发。
+
+任何legacy/non-R6 invocation及near miss（wrong experiment/source/phase、缺stage-gate package、dry-run/setup/strip、相似字符串）必须保持修改前wrapper行为，不调用R6 independent-zero/finalizer，也不改变其exit/cleanup artifact contract。Exact trigger及near-miss isolation必须由repo-owned parser/helper或terminal module负责，shell只消费明确的exact mode result。
+
+对exact R6 mode，terminal order在success、child failure和signal上都必须是：
+
+```text
+wait/terminate child
+-> existing shell all_off cleanup exact once
+-> repo-owned independent-final-zero CLI exact once
+-> repo-owned terminal-finalize CLI exact once
+-> wrapper-result/wrapper-state terminal write
+-> wrapper returns 0 only if child + all three evidence gates pass
+```
+
+不得在shell内拼JSON或复制terminal validation。Signal必须先传递/等待child，再走相同cleanup/finalization；Python cleanup non-pass、shell cleanup、final-zero或finalizer任一失败均使terminal owner拒绝PASS且wrapper nonzero。No retry、no second root、no second child、no background orphan。
+
+## 6. Meaningful fake-hardware tests
+
+所有测试只能使用temporary synthetic roots与fake callbacks/subprocesses；real external root/device/network/camera/Ray/strip call count必须为0。
+
+至少覆盖：
+
+### Positive
+
+1. 16 exact rows完成后，existing ledger validator exact once发生在run complete之前；
+2. wrapper success effect order exact：child -> shell cleanup -> independent zero -> terminal finalize -> wrapper terminal state；
+3. terminal owner replay 16/16、three cleanup pass与artifact identities后写唯一PASS seal，analysis call0。
+4. exact Ray R6 stage-gate argv唯一触发新terminal sequence；legacy invocation继续产生原有wrapper结果且新owner call count为0。
+
+### Negative
+
+5. missing/skipped/reordered ledger、cross-root/R5 origin、wrong shutter、quality fail、physical-return mismatch分别fail closed；
+6. post-capture validator failure进入existing failure + Python cleanup，run不得complete；
+7. Python cleanup返回non-pass但不抛时也必须提升为failure；terminal owner明确拒绝`run.status=complete + cleanup fail`并不得写PASS；
+8. shell cleanup fail、independent-zero fail分别生成FAIL/nonzero，后续terminal owner不误报PASS；
+9. child nonzero与INT/TERM/HUP各自仍执行shell cleanup、independent zero、terminal finalize exact once，并保留signal/exit；
+10. wrong experiment/source/phase、missing stage-gate、setup/strip/dry-run及相似字符串等near miss均不得触发R6 finalizer，legacy effect order/counters不变；
+11. terminal write failure、symlink/artifact identity drift、missing/extra required artifact均nonzero，不留伪PASS seal；
+12. retry、alternate root、second child/capture、analysis、strip nonzero、release/TD-C调用均为0；
+13. production stage-gate/authority path仍只delegate一次，terminal engineering不改变16 captures、shutters或formal authority schema。
+
+Assertions必须验证真实状态/effect order/counters，不得只断言“抛异常”。禁止mock掉被验收的ledger、cleanup或terminal owner来制造green path。
+
+## 7. Validation
+
+按顺序执行并写入ER：
+
+1. Targeted：
+
+```text
+.venv/bin/python -m pytest -q tests/test_p7_td_b_r6_terminal.py
+```
+
+2. Focused integration：
+
+```text
+.venv/bin/python -m pytest -q tests/test_p7_td_b_r6_terminal.py tests/test_p7_thermal_diagnostics.py tests/test_p7_td_b_r6_stage_gate.py tests/test_p7_td_b_r6_contract.py
+```
+
+3. Compile与wrapper syntax：
+
+```text
+.venv/bin/python -m py_compile src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_terminal.py src/camera_based_rgbww_optimizer/optimization/measure_p7_thermal_diagnostics.py tests/test_p7_td_b_r6_terminal.py tests/test_p7_thermal_diagnostics.py
+zsh -n tmp/run-p7-thermal-diagnostics.zsh
+```
+
+4. `codegraph sync`，随后query确认single terminal owner、measure/wrapper只委派、无parallel serialization/validator；
+5. `git diff --check`与exact changed-path check；
+6. 唯一fresh full suite：
+
+```text
+.venv/bin/python -m pytest -q
+```
+
+Targeted/focused/compile未绿前不得消耗full。普通工程失败按本goal的1/2/3 convergence执行；不得创建suffix、新root或第四轮。
+
+## 8. ER 与acceptance
+
+ER必须包含activation topology、CodeGraph pre/post evidence、implementation ownership、effect-order proof、positive/negative test mapping、所有validation命令/counts、scope/diff、real access counters全0，以及proposed status。
+
+Acceptance要求：
+
+- R6 ledger validator在production execute path exact once且位于status complete前；
+- exact parsed Ray R6 stage-gate argv才触发新terminal sequence；near miss call count为0，所有non-R6/legacy wrapper行为保持兼容；
+- R6 Python cleanup non-pass被提升为failure，`run complete + cleanup fail`永远不能获得PASS；
+- Python/shell/independent-zero/terminal-finalize effect order全部闭合；
+- success只有PASS seal，任何hard failure均accepted-hard-fail seal/nonzero/retry0；
+- no analysis、device retry、parallel owner或handwritten controller；
+- targeted/focused/compile/zsh/CodeGraph/diff/full全部pass；
+- changed paths不超exact scope。
+
+成功status request：`READY_FOR_PLANNER_G4_06_FORMAL_TERMINAL_EVIDENCE_ENGINEERING_REVIEW`。成功只代表engineering candidate；Orchestrator必须先形成immutable focused code checkpoint，之后Planner才可重新规划formal acquisition。
+
+唯一stop：`RETURN_FOR_G4_06_FORMAL_TERMINAL_ENGINEERING_REVIEW`。
