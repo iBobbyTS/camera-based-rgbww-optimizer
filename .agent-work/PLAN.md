@@ -1,8 +1,8 @@
-# REF-G4-06-RAY-R6 Package A authority-contract seam convergence
+# REF-G4-06-RAY-R6 Package A source-attestation subject convergence
 
-**计划状态：** `EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION_PACKAGE_A_AUTHORITY_CONTRACT_REVISION`
+**计划状态：** `EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION_SOURCE_ATTESTATION_SUBJECT_ALIGNMENT`
 
-**Executable：** `true_after_exact_orchestrator_revision_activation`
+**Executable：** `true_after_exact_orchestrator_activation`
 
 **Active task count：** `1`
 
@@ -10,103 +10,131 @@
 
 **Contract：** `G4-RAY-R6-PRODUCTION-CLI-LAUNCH-SEAM-PACKAGE-A-V2`
 
-**Planner stop：** `RETURN_FOR_G4_06_PACKAGE_A_AUTHORITY_CONTRACT_TWO_PHASE_REVIEW`
+**Planner stop：** `RETURN_FOR_G4_06_PACKAGE_A_TWO_PHASE_REVIEW`
 
-`PLAN_MACHINE_CONTRACT={"schema":"planner_execution_contract_v2","contract_id":"G4-RAY-R6-PRODUCTION-CLI-LAUNCH-SEAM-PACKAGE-A-V2","plan_status":"EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION_PACKAGE_A_AUTHORITY_CONTRACT_REVISION","executable":true,"active_task_count":1,"active_task":"REF-G4-06-RAY-R6","reference_task_id":"REF-G4-06-RAY-R6","reference_goal":"REF-G4-COMPLETE","reference_task_status":"ACTIVE_PACKAGE_A_AUTHORITY_CONTRACT_REVISION_AFTER_EXACT_ORCHESTRATOR_ACTIVATION","activation_state":"WAITING_ORCHESTRATOR_FULL_ALIGNMENT_AND_REVIEW_ARCHIVE_COMMIT","activation_commit":{"expected_parent":"37a3866af0c9c79556690b1624b9e96468756c62","expected_parent_tree":"bd6b29a29e2758500eee02e4192c935f1deadeb8","expected_subject":"docs(plan): revise ray r6 authority contract seam","expected_changed_paths":[".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/archived/EXECUTION_RESULT-20260803-2040.md",".agent-work/archived/PLAN-20260803-2040.md"],"child_sha_recorded_in_plan":false},"reviewed_archives":{"plan":{"path":".agent-work/archived/PLAN-20260803-2040.md","bytes":16903,"sha256":"5330d97f9323c0fdd5362cf31610c0b5dada3cfe70c182fcc13a1f011cf74291"},"execution_result":{"path":".agent-work/archived/EXECUTION_RESULT-20260803-2040.md","bytes":11620,"sha256":"e7d2a63d73ab79c49ce10fda53d0e57cf923e241f61767a34136c2fb4af698dc"}},"activation_dirty_contract":{"exact_paths":[".agent-work/EXECUTION_RESULT.md","src/camera_based_rgbww_optimizer/optimization/measure_p7_thermal_diagnostics.py","src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","tests/test_p7_td_b_r6_stage_gate.py"],"exact_initial_sha256":{".agent-work/EXECUTION_RESULT.md":"3708bbd1200cef8fda771d350536515326461aaac88ab98c0d828365bd4e2d52","src/camera_based_rgbww_optimizer/optimization/measure_p7_thermal_diagnostics.py":"babca565fafa7492a3fdcc7a498dc7d2be129367fe40118e489b5f0f7e11b02f","src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py":"db2e2a3e2b9f8881bd5bda3a31b1dcf56b63d31302e33c3d0162e294eaa664c9","tests/test_p7_td_b_r6_stage_gate.py":"ddc8debef5f0bdabdfa7dfa9fabc8424716bc6ceb71cb1dd6ff4cb8da8386c2b"},"disposition":"REJECTED_FIRST_SUBSTANTIVE_AUTHORITY_CONTRACT_SEAM_CANDIDATE_RETAINED_IN_PLACE_FOR_BOUNDED_REVISION","other_dirty_allowed":false},"single_current_action":"separate_engineering_package_a_state_from_future_formal_package_b_authority_and_prove_reachable_transition","package":"A_PRODUCTION_CLI_LAUNCH_SEAM_ENGINEERING_ONLY","failure_classification":"FIRST_SUBSTANTIVE_AUTHORITY_CONTRACT_SEAM_FAILURE","same_reference":true,"same_engineering_stage":true,"human_or_advisor_blocker":false,"third_same_boundary_failure":false,"corrective_suffixes":0,"new_task_ids":0,"new_modules":0,"new_test_modules":0,"controller_files":0,"candidate_code_child":{"expected_subject":"feat(stage-gate): route ray r6 formal launch owner","expected_parent_is_revision_activation_child":true,"expected_changed_paths":["src/camera_based_rgbww_optimizer/optimization/measure_p7_thermal_diagnostics.py","src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","tests/test_p7_td_b_r6_stage_gate.py"],"child_sha_recorded_in_plan":false},"allowed_repo_changed_paths":[".agent-work/EXECUTION_RESULT.md","src/camera_based_rgbww_optimizer/optimization/measure_p7_thermal_diagnostics.py","src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","tests/test_p7_td_b_r6_stage_gate.py"],"engineering_contract_id":"G4-RAY-R6-PRODUCTION-CLI-LAUNCH-SEAM-PACKAGE-A-V2","future_formal_contract_id":"G4-RAY-R6-FORMAL-ACQUISITION-PACKAGE-B-V1","production_launch_accepts_engineering_contract":false,"production_launch_requires_formal_authority":true,"full_remains_non_executable":true,"measure_maintainability_preflight_required":true,"semantic_owner":"p7_td_b_r6_stage_gate","measure_change_role":"NARROW_CLI_PARSE_AND_DISPATCH_ONLY","production_wrapper_changes_allowed":false,"synthetic_fixtures_only":true,"accepted_g4_05_package_access":0,"formal_root_access":0,"formal_root_create":0,"device_access":0,"network_access":0,"camera_connect_calls":0,"ray_access":0,"strip_access":0,"capture_access":0,"nonzero_light":0,"release_consumption":0,"retained_r3_access":0,"firmware_access":0,"deployment_access":0,"td_c_access":0,"targeted_required":true,"focused_required":true,"compile_static_required":true,"codegraph_sync_required":true,"fresh_full_suite_runs":1,"phase1_status":"READY_FOR_ORCHESTRATOR_CONTROLLED_CODE_CHILD","phase2_reuses_same_plan":true,"phase2_full_rerun":false,"further_executer_revision_after_same_seam_failure":false,"planner_stop":"RETURN_FOR_G4_06_PACKAGE_A_AUTHORITY_CONTRACT_TWO_PHASE_REVIEW","future_package":"G4_06_PACKAGE_B_FORMAL_ACQUISITION_NOT_AUTHORIZED"}`
+`PLAN_MACHINE_CONTRACT={"schema":"planner_execution_contract_v2","contract_id":"G4-RAY-R6-PRODUCTION-CLI-LAUNCH-SEAM-PACKAGE-A-V2","plan_status":"EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION_SOURCE_ATTESTATION_SUBJECT_ALIGNMENT","executable":true,"active_task_count":1,"active_task":"REF-G4-06-RAY-R6","reference_task_id":"REF-G4-06-RAY-R6","reference_goal":"REF-G4-COMPLETE","reference_task_status":"ACTIVE_PACKAGE_A_SOURCE_ATTESTATION_SUBJECT_ALIGNMENT_AFTER_EXACT_ORCHESTRATOR_ACTIVATION","activation_state":"WAITING_ORCHESTRATOR_FULL_ALIGNMENT_AND_REVIEW_ARCHIVE_COMMIT","activation_commit":{"expected_parent":"34092241057a3b51e8afe7a4ef8cea1178eb080d","expected_parent_tree":"0926d0c1cd07dae1270148d69f74e279d38aab18","expected_subject":"docs(plan): align ray r6 attestation subject","expected_changed_paths":[".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/archived/EXECUTION_RESULT-20260803-2139.md",".agent-work/archived/PLAN-20260803-2139.md"],"child_sha_recorded_in_plan":false},"reviewed_archives":{"plan":{"path":".agent-work/archived/PLAN-20260803-2139.md","bytes":15267,"sha256":"f6b738ba709bccf8412f204e8df407b66bae81d8518f58c76d4cf566c6c7c3ed"},"execution_result":{"path":".agent-work/archived/EXECUTION_RESULT-20260803-2139.md","bytes":8862,"sha256":"2b62bdcc40ea480d54d3670fcc684cfa1dffe41d856e36aa1f44238ceb2e4144"}},"activation_dirty_contract":{"exact_paths":[".agent-work/EXECUTION_RESULT.md","src/camera_based_rgbww_optimizer/optimization/measure_p7_thermal_diagnostics.py","src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","tests/test_p7_td_b_r6_stage_gate.py"],"exact_sha256":{".agent-work/EXECUTION_RESULT.md":"07d628de839a2140db0e2c8beffca9dbe75e79472d9b3ab431b7737d580ecd45","src/camera_based_rgbww_optimizer/optimization/measure_p7_thermal_diagnostics.py":"babca565fafa7492a3fdcc7a498dc7d2be129367fe40118e489b5f0f7e11b02f","src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py":"deb8073038b5d3126ef7a124195a8d2e1ecd298a1f3e94d6e90cd2b878f21553","tests/test_p7_td_b_r6_stage_gate.py":"040f338f6c3a4991c025f024599489b3decf0230cb34d1e1c7f6188b572433f4"},"disposition":"SECOND_SUBSTANTIVE_SOURCE_ATTESTATION_SUBJECT_CANDIDATE_RETAINED_FOR_ONE_MAXIMUM_SAFE_CONTINUOUS_REVISION","other_dirty_allowed":false},"single_current_action":"align_the_single_source_attestation_child_subject_with_the_planned_controlled_code_child_and_prove_exact_topology","package":"A_PRODUCTION_CLI_LAUNCH_SEAM_ENGINEERING_ONLY","failure_classification":"SECOND_SUBSTANTIVE_SOURCE_ATTESTATION_SUBJECT_SEAM_FAILURE","same_reference":true,"same_engineering_stage":true,"human_or_advisor_blocker":false,"corrective_suffixes":0,"new_task_ids":0,"new_modules":0,"new_test_modules":0,"controller_files":0,"maximum_safe_continuous_revision":true,"third_substantive_failure_returns_to_orchestrator":true,"candidate_code_child":{"expected_subject":"feat(stage-gate): route ray r6 formal launch owner","expected_parent_is_this_activation_child":true,"expected_changed_paths":["src/camera_based_rgbww_optimizer/optimization/measure_p7_thermal_diagnostics.py","src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","tests/test_p7_td_b_r6_stage_gate.py"],"child_sha_recorded_in_plan":false},"allowed_repo_changed_paths":[".agent-work/EXECUTION_RESULT.md","src/camera_based_rgbww_optimizer/optimization/measure_p7_thermal_diagnostics.py","src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","tests/test_p7_td_b_r6_stage_gate.py"],"engineering_contract_id":"G4-RAY-R6-PRODUCTION-CLI-LAUNCH-SEAM-PACKAGE-A-V2","future_formal_contract_id":"G4-RAY-R6-FORMAL-ACQUISITION-PACKAGE-B-V1","source_attestation_child_subject":"feat(stage-gate): route ray r6 formal launch owner","legacy_subject_authorizes_new_g4_06_child":false,"old_g4_05_package_promotes_new_owner":false,"production_launch_accepts_engineering_contract":false,"production_launch_requires_formal_authority":true,"full_remains_non_executable":true,"semantic_owner":"p7_td_b_r6_stage_gate","measure_change_role":"NARROW_CLI_PARSE_AND_DISPATCH_ONLY","production_wrapper_changes_allowed":false,"synthetic_fixtures_only":true,"accepted_g4_05_package_access":0,"formal_root_access":0,"formal_root_create":0,"device_access":0,"network_access":0,"camera_connect_calls":0,"ray_access":0,"strip_access":0,"capture_access":0,"nonzero_light":0,"release_consumption":0,"retained_r3_access":0,"firmware_access":0,"deployment_access":0,"td_c_access":0,"targeted_required":true,"focused_required":true,"compile_static_required":true,"codegraph_sync_required":true,"fresh_full_suite_runs":1,"phase1_status":"RETURN_FOR_REVIEW","phase2_reuses_same_plan":true,"phase2_full_rerun":false,"planner_stop":"RETURN_FOR_G4_06_PACKAGE_A_TWO_PHASE_REVIEW","future_package":"G4_06_PACKAGE_B_FORMAL_ACQUISITION_NOT_AUTHORIZED"}`
 
 ## 0. Review disposition 与 activation
 
-Planner拒绝上一candidate的`READY_FOR_ORCHESTRATOR_CONTROLLED_CODE_CHILD`。决定性事实：
+Planner拒绝上一handoff的`READY_FOR_ORCHESTRATOR_CONTROLLED_CODE_CHILD`。决定性证据：
 
-- `PRODUCTION_CLI_CONTRACT_ID`固定为上一Package-A engineering contract；
-- `_validate_package_a_machine_contract()`要求PLAN/FULL继续使用该contract，并要求formal/device/camera/Ray authority全部false；
-- `run_production_cli_launch()`无phase/authority参数，先调用该validator，后调用backend factory；
-- 独立只读复现中当前Package-A state PASS；替换为distinct Package-B formal contract并令formal/device authority true时，exact返回`production_machine_contract_drift`。
+- PLAN与预定Git code child要求subject exact为
+  `feat(stage-gate): route ray r6 formal launch owner`；
+- production source-attestation descriptor仍将唯一允许subject冻结为旧
+  `feat(stage-gate): accept ray r6 launch owner`；
+- current positive synthetic topology通过`ALLOWED_CODE_CHILD_SUBJECT`提交，因此只证明旧subject可达；
+- 独立复现保持candidate tree完全不变，只将direct-child subject设为PLAN预定值，即命中
+  `committed_source_subject_drift`。
 
-因此candidate在当前绿测下只证明“engineering PLAN可以进入production seam”，却使未来真正formal PLAN必然在backend前拒绝；同时这会把false authority engineering state当作可生成execution-authorized runtime的前提。不能commit。
+因此当前candidate虽正确完成Package-A-negative / Package-B-formal-positive authority分离，却无法把计划中的受控code child识别为future Package-B的source-bound code owner，不能commit。
 
-该缺陷分类为同一`REF-G4-06-RAY-R6`、同一Package A工程阶段的首次substantive authority-contract seam failure；不是Human/Advisor blocker，不是第三次同边界失败，不创建suffix/new task/root。
+该缺陷是同一`REF-G4-06-RAY-R6`、同一Package A focused source-attestation seam的第二次substantive failure。Orchestrator ownership reassessment后只允许本最大安全连续revision；不是Human/Advisor blocker，不创建suffix/new task/root。若修订后再次出现同一source-attestation/authority seam的substantive failure，立即回Orchestrator，不得在本PLAN内继续第四轮式修补。
 
-上一review已归档：
+Reviewed archives：
 
-- PLAN：`.agent-work/archived/PLAN-20260803-2040.md`，16903 bytes，SHA-256
-  `5330d97f9323c0fdd5362cf31610c0b5dada3cfe70c182fcc13a1f011cf74291`；
-- ER：`.agent-work/archived/EXECUTION_RESULT-20260803-2040.md`，11620 bytes，SHA-256
-  `e7d2a63d73ab79c49ce10fda53d0e57cf923e241f61767a34136c2fb4af698dc`。
+- PLAN：`.agent-work/archived/PLAN-20260803-2139.md`，15267 bytes，SHA-256
+  `f6b738ba709bccf8412f204e8df407b66bae81d8518f58c76d4cf566c6c7c3ed`；
+- ER：`.agent-work/archived/EXECUTION_RESULT-20260803-2139.md`，8862 bytes，SHA-256
+  `2b62bdcc40ea480d54d3670fcc684cfa1dffe41d856e36aa1f44238ceb2e4144`。
 
-两者均historical non-executable，不授权commit、formal或device。
+两者均`historical_non_executable`，不授权commit、formal、device、retry或后续stage。
 
-本修订只有Orchestrator创建exact activation后可执行：parent=`37a3866af0c9c79556690b1624b9e96468756c62`，tree=`bd6b29a29e2758500eee02e4192c935f1deadeb8`；subject=`docs(plan): revise ray r6 authority contract seam`；changed paths exact为FULL、live PLAN与上述两份review archive。Orchestrator不得提交ER或candidate code/tests。
+本PLAN只有Orchestrator创建exact activation后可执行：
 
-Activation后PLAN/FULL active `1/1`、task同一G4-06、contract同一V2；dirty exact保持ER与三项candidate，其SHA须匹配machine row。任一不符停止，不编辑candidate。
+- parent：`34092241057a3b51e8afe7a4ef8cea1178eb080d`；
+- parent tree：`0926d0c1cd07dae1270148d69f74e279d38aab18`；
+- subject：`docs(plan): align ray r6 attestation subject`；
+- changed paths exact：FULL、live PLAN及上述两份2139 review archives。
 
-## 1. Ownership 与最小设计收敛
+Orchestrator不得把ER或candidate code/tests纳入activation commit。Activation后PLAN/FULL必须active `1/1`、同一task/contract/canonical next；candidate与ER仍保持machine row记录的exact dirty identity。任一不符停止。
 
-继续由existing focused `p7_td_b_r6_stage_gate.py`唯一拥有package、machine contract、Git attestation、activation与materialization；巨型measure只保留CLI parse与一次dispatch。不得修改wrapper、thermal scientific owner、GUIDE/RESEARCH，不新增module/controller/schema family或parallel owner。
+## 1. Ownership 与最大安全连续 revision
 
-必须明确分离两个状态：
-
-1. 当前engineering Package A：contract exact为
-   `G4-RAY-R6-PRODUCTION-CLI-LAUNCH-SEAM-PACKAGE-A-V2`，formal/device/root authority全false；它只授权代码、synthetic tests与validation，绝不能通过production launch gate；
-2. 未来formal Package B：contract exact预留为
-   `G4-RAY-R6-FORMAL-ACQUISITION-PACKAGE-B-V1`；只有未来独立PLAN/FULL activation将exact formal bounds和authority置为true后，production launch才可通过。
-
-不得用任意contract allowlist、字符串prefix、boolean bypass或“Package A或B均可”掩盖边界。Production owner必须只接受一个exact future formal contract；Package A必须明确negative。
-
-FULL始终是non-executable reference：`device_authorized_by_this_file`、`camera_authorized_by_this_file`、`ray_authorized_by_this_file`、`strip_authorized_by_this_file`与`formal_r6_authorized`继续false。未来Package-B对齐只可由FULL的nested current-route mirror记录formal package/bounds状态；真正execution authority只来自matching live PLAN。Production validator必须同时要求FULL non-authorizing顶层不变、nested mirror与PLAN exact一致，不能把FULL本身变成设备授权者。
-
-## 2. Exact revision boundary
+`p7_td_b_r6_stage_gate.py`继续唯一拥有package、source-attestation descriptor、machine authority、future activation和materialization；巨型measure只保留已经存在的narrow CLI parse与一次dispatch。本修订不得新增module、controller、schema family、serialization owner或test module；不得修改wrapper、thermal scientific owner、GUIDE/RESEARCH、PLAN/FULL之外的orchestration文件。
 
 只允许继续修改：
 
-- `src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py`
-- `src/camera_based_rgbww_optimizer/optimization/measure_p7_thermal_diagnostics.py`
-- `tests/test_p7_td_b_r6_stage_gate.py`
-- `.agent-work/EXECUTION_RESULT.md`
+- `src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py`；
+- `tests/test_p7_td_b_r6_stage_gate.py`；
+- `.agent-work/EXECUTION_RESULT.md`。
 
-最小修订：
+Measure保持当前candidate bytes不再编辑，但仍属于最终受控三路径code child。不得读取真实accepted G4-05 root或任何external experiment payload。
 
-1. 移除production launch对Package-A contract/false authority的硬编码依赖；将machine validator重命名/收敛为production-formal语义，exact要求future Package-B contract；
-2. PLAN必须active1、同一G4-06、contract exact Package B、formal execution/root/device/camera/Ray/capture authority true，strip/retry/release/TD-C false；
-3. FULL必须active1/canonical next同一G4-06、active contract exact Package B、顶层non-authorizing fields保持false，nested G4-06 route mirror exact标记Package B formal acquisition与对应bounds；
-4. 只有package/inventory/source、PLAN/FULL、C/L、activation/runtime全部PASS后才可调用backend factory；current Package-A state必须在backend前拒绝；
-5. existing package loader、per-commit attestation、materializer、narrow hook、runner及CLI generic-bypass保护保持single owner/exact once；
-6. 不得在本包读取真实accepted G4-05 package或解决未来source-bound package identity。Package B必须使用与terminal accepted Package-A code checkpoint相容的immutable source-bound package；不得假定旧G4-05 package可因本次代码变化自动取得新code-owner credit。该identity由未来独立Package-B PLAN冻结。
+## 2. Exact subject 与 source topology contract
 
-若需要在measure main中添加phase/authority判断，停止并改在stage-gate focused owner完成；measure只转发显式输入。
+唯一source-attestation code-child subject必须统一为：
 
-## 3. Meaningful tests
+`feat(stage-gate): route ray r6 formal launch owner`
 
-在existing focused test module内完成一个连续矩阵，不拆微型fixture/validation包：
+必须同时满足：
 
-1. current Package-A PLAN/FULL exact state调用production launch：`production_machine_contract_drift`，backend factory/delegate/root create=`0`；
-2. exact synthetic Package-B PLAN与FULL mirror、formal authority true：完整package → attestation → materializer → narrow hook → injected delegate PASS且each once；fake backend connect=`0`；
-3. Package-B contract但任一PLAN authority false、Package-A contract但authority true、任意第三contract、PLAN/FULL contract mismatch、FULL nested mirror mismatch、FULL顶层自称device/formal authority true：全部pre-backend FAIL；
-4. missing/extra authority keys、wrong task/count/canonical next、retry/root/strip/release/TD-C越界全部pre-backend FAIL；
-5. 验证runtime execution authorization只可由exact Package-B machine state产生；Package A不得调用activation/materializer/backend；
-6. 保留inventory/hash/mode/semantic guard、C/L linear history、expected runtime、kwargs exactly-once、delegate exception no retry、generic formal bypass与legacy CLI保护；
-7. 增加真实拓扑形状的synthetic regression：stage package code-owner之后存在Package-A code child时，旧descriptor不得被错误提升为新code-owner；未来source-bound package requirement必须fail closed而非绕过attestation。
+1. 新建的synthetic descriptor、descriptor validator、Git attestation validator与测试fixture都引用同一repo-owned常量；不得在不同层保留parallel subject、allowlist、prefix或兼容fallback；
+2. exact synthetic A → C → L拓扑中，A为descriptor verified parent，C为subject exact且changed paths exact为measure、stage-gate、focused tests的direct non-merge child，C的三个committed blobs与descriptor candidate references逐bytes/SHA/mode一致，L以后只允许逐commit `.agent-work/`路径；该拓扑必须通过attestation；
+3. 相同candidate blobs与exact-three-path tree若subject仍为旧
+   `feat(stage-gate): accept ray r6 launch owner`，必须命中
+   `committed_source_subject_drift`，且activation/materializer/backend/delegate均0；
+4. 旧G4-05 descriptor/package与later G4-06 code child必须继续因source reference或attestation不相容而fail closed，不得自动取得新code-owner credit；只可用synthetic同形状fixture证明，不得访问真实G4-05 root；
+5. 不改变既有per-commit linear history、candidate blob、worktree scope、descriptor integrity-first、secret/historical guard或old-descriptor protections。
 
-测试不得monkeypatch production semantic owner或用controller/python-c/heredoc/env injection替代真实调用链；依赖注入只观察fake backend/delegate。
+这次subject统一只决定新G4-06 code-owner identity，不重写或撤销已接受G4-05历史证据，也不授权消费旧package。
 
-## 4. Validation 与 two-phase checkpoint
+## 3. V2 authority seam必须完整保留
 
-顺序：CodeGraph maintainability复核 → targeted authority/package/CLI tests → relevant focused thermal/CLI/integration → compileall/static → wrapper `zsh -n` → `codegraph sync`及post-query → `git diff --check` → final candidate唯一一次fresh full suite。
+不得因subject修订弱化上一candidate已经建立的边界：
 
-不得继承上一candidate的948/948；修订后必须跑唯一新的full。Final full之后不得再修改semantic code并复用结果。
+1. 当前engineering Package A contract exact为
+   `G4-RAY-R6-PRODUCTION-CLI-LAUNCH-SEAM-PACKAGE-A-V2`，formal/device/root authority false，production launch必须返回
+   `production_machine_contract_drift`，activation/materializer/backend/delegate均0；
+2. 未来formal Package B contract exact为
+   `G4-RAY-R6-FORMAL-ACQUISITION-PACKAGE-B-V1`；只有matching live PLAN closed authority与FULL exact non-authorizing nested mirror同时成立，才可通过package → attestation → activation → materializer → narrow hook → injected delegate，各owner exact once；
+3. FULL顶层始终`executable=false`且device/camera/Ray/strip/formal/release/TD-C authority false；真正execution authority只来自matching live PLAN；
+4. contract/authority/root/retry/launch/logical/physical/strip/release/TD-C、missing/extra、task/count/current-plan/canonical-next等drift全部在backend前fail；
+5. generic formal CLI bypass、inventory/hash/mode/terminal、expected runtime hash、kwargs exact-once、delegate exception no-retry与legacy CLI protections保持不变；
+6. measure不得吸收authority、provenance或materialization逻辑，也不得新增dispatch分支。
 
-Phase1只有全部PASS且独立Package-A-negative/Package-B-positive矩阵成立，才可返回`READY_FOR_ORCHESTRATOR_CONTROLLED_CODE_CHILD`。Orchestrator随后创建direct child：subject exact=`feat(stage-gate): route ray r6 formal launch owner`；changed paths exact为measure、stage-gate、focused tests，不含ER。
+Package B仍未授权。本PLAN只证明future formal transition与planned immutable code child可达。
 
-同一PLAN phase2只读验证child topology/blob/current bytes、ER-only dirty与phase1 evidence；code bytes未变时继承新full，不重复full。只有phase2接受后Package A terminal accepted；Package B仍需Orchestrator更新FULL并重新委派Planner，不能由本PLAN执行。
+## 4. Meaningful tests
 
-若本次同一authority-contract seam再次substantive失败，立即回Orchestrator；不允许本PLAN内第二次Executer修订、micro package、suffix、new task或root。
+在existing focused test module内一次完成连续矩阵：
 
-## 5. Hard locks 与 handoff
+1. literal断言production唯一允许child subject exact为预定`route...`；
+2. real local synthetic Git topology以exact subject、exact direct parent、exact three changed paths、exact candidate blobs通过committed source attestation；不得仅通过mock或读取常量后自洽提交掩盖literal错误；
+3. 保持bytes/tree相同但使用旧`accept...` subject时exact命中
+   `committed_source_subject_drift`，所有下游counter为0；
+4. old descriptor + later G4-06 code child继续命中`source_reference_drift`或更早的exact integrity/attestation拒绝，不能获得新owner credit；
+5. current actual/synthetic Package A machine negative以及exact synthetic Package B positive各复验一次；
+6. 33项或等价完整closed authority drift矩阵全部pre-backend fail；
+7. narrow measure dispatch、existing real runner shape、fake backend connect=0、delegate each once继续受行为断言保护。
 
-真实accepted G4-05 root、formal root、device、network、camera connect、Ray、strip、capture、nonzero light、release、retained R3、firmware/deployment/TD-C访问全部0。Synthetic temp fixtures only。
+测试不得monkeypatch production semantic owner；依赖注入只用于观察fake backend/delegate及downstream zero/exact-once counters。
 
-Executer只写ER，不改PLAN/FULL/debug/archives/GUIDE/RESEARCH/wrapper，不commit/push/PR。ER必须记录authority transition逐字段矩阵、Package-A negative与Package-B positive证据、所有pre-backend counters、candidate identities、fresh validation与唯一stop。
+## 5. Validation 与 two-phase checkpoint
 
-唯一stop：`RETURN_FOR_G4_06_PACKAGE_A_AUTHORITY_CONTRACT_TWO_PHASE_REVIEW`。
+执行顺序：
 
-本包即使通过也只证明未来formal contract在production seam上可达并建立immutable code checkpoint；不授权Package B、formal root/device/capture，不表示hardware ready、formal/quality/history pass或G4-07 unlocked。
+1. CodeGraph preflight/query确认subject与attestation唯一owner仍在focused stage-gate，measure只narrow dispatch；
+2. targeted subject/topology/Package-A-negative/Package-B-positive/drift tests；
+3. relevant focused stage-gate、contract、thermal与successor integration tests；
+4. `compileall`、wrapper `zsh -n`、repo-owned PLAN/FULL strict parser和actual Package-A negative probe；
+5. `codegraph sync`及post-query；
+6. `git diff --check`、exact dirty path/hash/protected-path检查；
+7. semantic code完成后只跑一次fresh full suite；不得继承951/951，full后不得修改semantic code。
+
+Phase1只有全部PASS且planned subject的exact topology真实可达，才返回
+`READY_FOR_ORCHESTRATOR_CONTROLLED_CODE_CHILD`。Orchestrator随后创建direct child：
+
+- parent：本PLAN的exact activation commit；
+- subject：`feat(stage-gate): route ray r6 formal launch owner`；
+- changed paths exact：measure、stage-gate、focused tests；
+- ER与archives不得进入code child。
+
+同一PLAN phase2只读验证direct-child topology、subject/path/blob/current bytes、ER-only dirty及phase1 evidence。若code bytes未变，继承本次fresh full，不重复full。只有phase2接受后Package A才terminal accepted；Package B仍需Orchestrator更新FULL并重新委派Planner。
+
+## 6. Hard locks 与 handoff
+
+真实accepted G4-05 root、formal root、device、network、camera connect、Ray、strip、capture、nonzero light、release、retained R3、firmware/deployment、TD-C访问全部0。Synthetic temp fixtures only；不创建新实验root。
+
+Executer只写ER，不改PLAN/FULL/archives/debug/GUIDE/RESEARCH/wrapper，不commit/push/PR。ER必须记录exact subject positive/old-subject negative、A/C/L topology、V2 authority矩阵、downstream counters、candidate identities、fresh validation与唯一stop。
+
+唯一stop：`RETURN_FOR_G4_06_PACKAGE_A_TWO_PHASE_REVIEW`。
