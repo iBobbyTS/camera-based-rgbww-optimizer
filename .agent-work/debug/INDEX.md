@@ -12,7 +12,6 @@ may be resumed merely because its debug record is under `active/` or
 
 | file | summary |
 | --- | --- |
-| active/20260803-g4-05-committed-source-lineage-history.md | G4-05 endpoint net-diff cannot prove every C-to-L descendant is orchestration-only; one same-task per-commit history-owner package is under Orchestrator reassessment. |
 | active/20260727-p7-r3-lineage-path-classification.md | C3E6F11 failed on an unpassed fresh-root value, then contaminated the root by retrying and serialized contradictory content-read counters; C3E6F12 must unify lifecycle and accounting ownership. |
 | active/20260725-platform-cyber-risk-false-positive.md | Platform flagged the authorized local calibration chat; highest-impact suspects are a hard-coded Ray OpenAPI key and oversized remote/rejection-heavy project context. |
 | active/20260722-p7-td-b-prerequisite-path-identity.md | PATH-R1 owns the raw relative/absolute operating-envelope identity mismatch; canonical producer, setup gate, and analyzer replay must close it before the single authorized setup retry. |
@@ -27,14 +26,13 @@ may be resumed merely because its debug record is under `active/` or
 | unresolved/20260720-p7-td-a-runner-settings.md | TD-A is blocked before device access because dry plans leak a future TD-B shutter requirement and production timed captures serialize ISO/aperture as null. |
 | unresolved/20260720-p7-actual-exposure-start-adapter.md | Deployed bridge contract and local remote client expose no verifiable actual exposure-start field; Advisor must decide whether to change the bridge or timing contract. |
 | unresolved/20260721-p7-td-b-ray-h120-s50-setup.md | R0S closes the offline seed/schema/ledger contract, but production CLI/wrapper still lacks retained-v2 setup, post-wrapper canonical finalization and formal resume; E0X owns this final execution boundary. |
-| resolved/20260718-p7-r0d-evidence-reconstruction.md | P7-R0D now reconstructs formal target facts and P7-R1 source/physical evidence from retained artifacts against the frozen plan. |
 
 ## Resolved
 
-| resolved/20260731-p7-retained-r3-b2-controller-contract-drift.md | P5/P6/P7 now own runtime effects, deterministic construction, and runnable template semantics; P7 passed 11/93/778 validation and the next fresh synthetic integration must compose only those accepted owners. |
-
 | file | summary |
 | --- | --- |
+| resolved/20260803-g4-05-committed-source-lineage-history.md | G4-05 now validates every linear C-to-L descendant commit and rejects restored-tree non-orchestration history; commit d813cba passed 25/9/215/942 checks and phase2 acceptance. |
+| resolved/20260731-p7-retained-r3-b2-controller-contract-drift.md | P5/P6/P7 now own runtime effects, deterministic construction, and runnable template semantics; P7 passed 11/93/778 validation and the next fresh synthetic integration must compose only those accepted owners. |
 | resolved/20260727-p7-eq-r6-feature-selection-and-failure-accounting.md | Commit f37517a closes ordered 92-to-58 policy selection and atomic post-return failure accounting; exact-12 evidence and immutable 1650 replay pass, while any fresh live EQ attempt remains Human-checkpointed. |
 | resolved/20260725-p7-td-b-e2-r1-hostname-and-progressive-evidence.md | Human repaired the local network; H1 proved same-stack non-empty resolution and R2 production prelaunch proved generation-bearing strip zero plus complete cleanup/final-zero. |
 | resolved/20260724-p7-td-b-e2-external-root-and-json-writer.md | C1 closes the external Git-root and literal backslash-n evidence defects with a frozen five-source owner, 22/22 fake/runtime cases, and 62 strict JSON artifacts; real E2 remains separately Planner-gated. |
@@ -54,6 +52,7 @@ may be resumed merely because its debug record is under `active/` or
 | resolved/20260718-p7-r0j-production-roundtrip.md | P7-R0J canonicalizes sparse solver exhaustion at the runner ownership boundary, distinguishes start/target counters, and makes post-capture overrun fatal. |
 | resolved/20260718-p7-r0e-trust-boundaries.md | P7-R0E offline closure added generation-bearing device-state verification, RAW/objective/owner reconstruction, exact frozen-plan auditing, and explicit firmware compile tooling block; no real execution authorized. |
 | resolved/20260718-p7-r0c-formal-closure.md | P7-R0C closed the six Planner repros with explicit v2 analysis, confirmed-first/full-group solver semantics, centered audits, and independently reconstructed R1 physical evidence. |
+| resolved/20260718-p7-r0d-evidence-reconstruction.md | P7-R0D now reconstructs formal target facts and P7-R1 source/physical evidence from retained artifacts against the frozen plan. |
 | resolved/20260714-p1-raw-black-level-linearity.md | CR3 optical-margin black fallback corrects implausible rawpy metadata and P1 acquisition now completes without the prior auto-exposure failure. |
 | resolved/20260710-white-lut-bounded-feedback-solver.md | Bounded feedback and a ten-round early-stopping budget passed hardware retries for all three previously unmet 14x5 targets. |
 | resolved/20260709-white-lut-light-isolation-exposure-cache.md | Formal white LUT now enforces mutually exclusive Ray/strip captures, independent exposure caches, and compensation-channel high-output ownership; isolated 12-point LUT completed. |

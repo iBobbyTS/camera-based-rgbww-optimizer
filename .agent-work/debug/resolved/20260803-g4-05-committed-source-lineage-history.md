@@ -1,4 +1,20 @@
-# G4-05 committed-source lineage history bypass
+# G4-05 committed-source lineage history bypass (resolved)
+
+## Verified resolution
+
+- Accepted code owner commit: `d813cba24f49ca8ae8b54004f7ec20592ee979ab`
+  / tree `e5a940cb068ab1aec0d462edf8ea9f3b907eb1fe`.
+- The validator now walks every linear direct-child commit from L back to C,
+  rejects merge/nonlinear history, validates each adjacent changed-path set, and
+  binds the ordered ledger into activation/runtime authority.
+- The exact add-then-delete restored-tree repro, restored-tree merge, mixed-path
+  commit, and positive ordered-ledger probes pass their expected outcomes.
+- Validation: targeted `25/25`, real-owner `9/9`, focused `215/215`, fresh full
+  suite `942/942`, compile/static/CodeGraph/diff checks all passed.
+- Planner phase2 accepted
+  `ACCEPTED_G4_05_PER_COMMIT_SOURCE_ATTESTED_LAUNCH_GATE_G4_06_PLANNING_UNLOCKED_EXECUTION_FALSE`.
+- G4-06 is planning-unlocked only. Device/formal/release execution remains
+  separately locked.
 
 ## Confirmed state
 
@@ -49,13 +65,9 @@ parent-child changed-path set before aggregating the attestation result.
 - Preserve all previously accepted A/C identities, candidate blob/worktree
   checks, runtime delegation, package authority=false, and offline safety locks.
 
-## Next diagnostic
+## Completed diagnostic
 
-Planner must freeze one maximum safe continuous package around the existing
-focused owner. Executer may make only the minimal per-commit traversal change
-and extend the same focused tests. Because candidate bytes change, every rejected
-package remains historical access 0; after all pre-package gates pass, the package
-must create one new immutable root and may not retry, repair, or choose an
-alternate root. The final candidate must receive targeted/focused/static/
-CodeGraph/diff checks and one fresh full suite before the existing two-phase
-controlled-child review.
+The maximum safe continuous package completed exactly once around the existing
+focused owner. Rejected roots remained historical access 0; one fresh immutable
+root was created only after pre-package checks passed, then persisted and replayed
+once. The two-phase controlled-child review accepted the committed owner.
