@@ -985,6 +985,7 @@ def execute_plan(
     capture_fn: Callable[[Mapping[str, Any]], Mapping[str, Any]],
     both_off_gate_fn: Callable[[str], Mapping[str, Any]],
     cleanup_fn: Callable[[], Mapping[str, Any]],
+    post_capture_validator_fn: Callable[[Path, Mapping[str, Any]], Any] | None = None,
     bind_physical_return_observer_fn: Callable[
         [Callable[[Mapping[str, Any], Any, int], Mapping[str, Any]]],
         None,
@@ -995,6 +996,11 @@ def execute_plan(
     sleep_fn: Callable[[float], None] = time.sleep,
 ) -> Path:
     validate_authorized_execution_plan(plan)
+    from camera_based_rgbww_optimizer.optimization import p7_td_b_r6_terminal
+
+    exact_r6 = p7_td_b_r6_terminal.is_r6_materialized_plan(plan)
+    if exact_r6 and post_capture_validator_fn is None:
+        raise PermissionError("Ray R6 execution requires its post-capture ledger owner")
     root = Path(run_dir)
     root.mkdir(parents=True, exist_ok=True)
     if any(root.iterdir()):
@@ -1341,11 +1347,14 @@ def execute_plan(
             or run["accepted_ambient_count"] != run["ambient_capture_count"]
         ):
             raise RuntimeError("thermal diagnostic accepted measurement ledger drifted")
+        if exact_r6:
+            assert post_capture_validator_fn is not None
+            post_capture_validator_fn(root, plan)
         _write_json(root / "commands-audit.json", {
             "status": "pass", "formal_capture_count": run["completed_formal"],
             "ambient_capture_count": run["ambient_capture_count"],
         })
-        run["status"] = "complete"
+        run["status"] = "terminalizing" if exact_r6 else "complete"
     except BaseException as exc:
         failure = exc
         run["status"] = "failed"
@@ -1363,7 +1372,30 @@ def execute_plan(
                 run["status"] = "failed"
                 _write_json(root / "failure.json", {"type": type(exc).__name__, "message": str(exc), "at": _utc_now()})
         _write_json(root / "all-off-python.json", cleanup)
-        run["cleanup"] = "pass" if cleanup.get("status") in {"pass", "complete", "all_off"} or cleanup.get("ok") else "fail"
+        if exact_r6:
+            steps = cleanup.get("steps")
+            cleanup_pass = (
+                cleanup.get("status") == "pass"
+                and isinstance(steps, list)
+                and len(steps) == 2
+                and all(isinstance(step, Mapping) and step.get("ok") is True for step in steps)
+            )
+        else:
+            cleanup_pass = bool(
+                cleanup.get("status") in {"pass", "complete", "all_off"}
+                or cleanup.get("ok")
+            )
+        run["cleanup"] = "pass" if cleanup_pass else "fail"
+        if exact_r6 and not cleanup_pass and failure is None:
+            failure = RuntimeError("Ray R6 Python cleanup did not pass exactly")
+            run["status"] = "failed"
+            _write_json(root / "failure.json", {
+                "type": type(failure).__name__,
+                "message": str(failure),
+                "at": _utc_now(),
+            })
+        elif failure is None:
+            run["status"] = "complete"
         run["finished_at"] = _utc_now()
         _write_json(root / "run.json", run)
     if failure is not None:
@@ -1628,6 +1660,7 @@ def run_authorized_plan(
 ) -> Path:
     validate_authorized_execution_plan(plan, camera_backend=camera_backend)
     from camera_based_rgbww_optimizer.control import all_off, esphome, ray120c
+    from camera_based_rgbww_optimizer.optimization import p7_td_b_r6_terminal
     from camera_based_rgbww_optimizer.optimization import measure_raw_observer_validation as raw_validation
     from camera_based_rgbww_optimizer.measurement.raw_observer_analysis import DEFAULT_STATISTIC
     from camera_based_rgbww_optimizer.optimization.hsi_objective import (
@@ -1650,6 +1683,7 @@ def run_authorized_plan(
     plan_steps_by_id = {
         str(step["capture_id"]): step for step in plan["captures"]
     }
+    exact_r6_materialized = p7_td_b_r6_terminal.is_r6_materialized_plan(plan)
     physical_return_observer_slot: dict[
         str,
         Callable[[Mapping[str, Any], Any, int], Mapping[str, Any]] | None,
@@ -1848,6 +1882,19 @@ def run_authorized_plan(
                 feature_ids,
                 statistic=feature_statistic,
             )
+            if exact_r6_materialized:
+                cache_key = thermal.shutter_cache_key_for_step(step)
+                nominal_shutter = plan["frozen_shutters"].get(cache_key)
+                if type(nominal_shutter) is not str:
+                    raise RuntimeError("Ray R6 capture lacks its frozen nominal shutter")
+                output["r6_terminal_quality"] = (
+                    p7_td_b_r6_terminal.project_quality_capture(
+                        report,
+                        capture_id=str(step["capture_id"]),
+                        required_feature_ids=feature_ids,
+                        nominal_shutter=nominal_shutter,
+                    )
+                )
         return output
 
     def both_off_gate(gate_id: str) -> Mapping[str, Any]:
@@ -1877,6 +1924,18 @@ def run_authorized_plan(
     return execute_plan(
         plan, run_dir=root, apply_command_fn=apply, readback_fn=readback,
         capture_fn=capture, both_off_gate_fn=both_off_gate, cleanup_fn=cleanup,
+        post_capture_validator_fn=(
+            (
+                lambda run_root, frozen_plan: (
+                    p7_td_b_r6_terminal.validate_post_capture_ledger(
+                        run_root,
+                        frozen_plan,
+                        required_feature_ids=feature_ids,
+                    )
+                )
+            )
+            if exact_r6_materialized else None
+        ),
         bind_physical_return_observer_fn=lambda callback: physical_return_observer_slot.__setitem__(
             "callback", callback
         ),

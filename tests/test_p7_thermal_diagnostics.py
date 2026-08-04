@@ -13,6 +13,8 @@ from pathlib import Path
 from unittest import mock
 
 from camera_based_rgbww_optimizer.optimization import measure_p7_thermal_diagnostics as measure
+from camera_based_rgbww_optimizer.optimization import p7_td_b_r6_stage_gate as r6_stage_gate
+from camera_based_rgbww_optimizer.optimization import p7_td_b_r6_terminal as r6_terminal
 from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as subject
 from camera_based_rgbww_optimizer.optimization import analyze_p7_thermal_diagnostics as thermal_analyzer
 from camera_based_rgbww_optimizer.optimization.hsi_objective import (
@@ -33,13 +35,19 @@ RECOVERY_PRE_DOCUMENTATION_CHECKPOINT = (
     "be8c4cdf75e447d128e3c7283cf5b3916d85d1cf"
 )
 RECOVERY_UPDATED_WORKFLOW_PATH = "docs/engineering/p7-td-b-contract-history.md"
+RECOVERY_HISTORICAL_WRAPPER_PATH = "tmp/run-p7-thermal-diagnostics.zsh"
 
 
-def _use_historical_workflow_owner(test_case: unittest.TestCase) -> str:
+def _use_historical_workflow_owner(
+    test_case: unittest.TestCase,
+    *,
+    patch_workflow: bool = True,
+) -> str:
     """Replay the accepted workflow manifest without blessing recovery docs."""
 
     root = Path(__file__).parents[1]
     owner = (root / RECOVERY_UPDATED_WORKFLOW_PATH).resolve()
+    wrapper_owner = (root / RECOVERY_HISTORICAL_WRAPPER_PATH).resolve()
     original_run = subprocess.run
     current_head = original_run(
         ["git", "rev-parse", "HEAD"],
@@ -57,11 +65,22 @@ def _use_historical_workflow_owner(test_case: unittest.TestCase) -> str:
         check=True,
         capture_output=True,
     ).stdout
+    historical_wrapper = original_run(
+        [
+            "git", "show",
+            f"{RECOVERY_PRE_DOCUMENTATION_CHECKPOINT}:{RECOVERY_HISTORICAL_WRAPPER_PATH}",
+        ],
+        cwd=root,
+        check=True,
+        capture_output=True,
+    ).stdout
     original_read_bytes = Path.read_bytes
 
     def read_historical(path: Path) -> bytes:
-        if path.resolve() == owner:
+        if patch_workflow and path.resolve() == owner:
             return historical
+        if path.resolve() == wrapper_owner:
+            return historical_wrapper
         return original_read_bytes(path)
 
     checkpoint_show = [
@@ -245,6 +264,36 @@ def _attach_v2_capture_evidence(root, step, result, *, observed=None, tier="tier
                    "timing_metadata": metadata, "timing_evidence": timing,
                    "physical_capture_count": 1})
     return result
+
+
+def _r6_materialized_plan_for_test(run_name: str) -> dict:
+    template = r6_stage_gate.build_runtime_plan_template()
+    attestation = {
+        "schema": r6_stage_gate.COMMITTED_SOURCE_ATTESTATION_SCHEMA,
+        "verified_parent_checkpoint": "1" * 40,
+        "verified_parent_tree": "2" * 40,
+        "code_owner_checkpoint": "3" * 40,
+        "code_owner_tree": "4" * 40,
+        "live_activation_checkpoint": "5" * 40,
+        "live_activation_tree": "6" * 40,
+        "candidate_references_sha256": "7" * 64,
+        "post_child_changed_paths": [".agent-work/PLAN.md"],
+        "post_child_commits": [{
+            "parent_checkpoint": "3" * 40,
+            "child_checkpoint": "5" * 40,
+            "child_tree": "6" * 40,
+            "changed_paths": [".agent-work/PLAN.md"],
+        }],
+    }
+    activation = {
+        "descriptor_sha256": "8" * 64,
+        "template_sha256": r6_stage_gate.runtime_plan_template_sha256(template),
+        "committed_source_attestation": attestation,
+        "formal_root_basename": run_name,
+    }
+    plan = r6_stage_gate._materialized_projection(template, activation)
+    r6_stage_gate.validate_materialized_runtime_plan(plan)
+    return plan
 
 
 def _fake_td_b_setup(root: Path, *, count: int = 1, fake_only: bool = True):
@@ -1076,6 +1125,69 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
             self.assertEqual(run["status"], "failed")
             self.assertEqual(run["cleanup"], "fail")
             self.assertEqual(cleanup["message"], "cleanup failed")
+
+    def test_r6_execute_calls_post_capture_validator_once_before_complete(self):
+        basename = "p7-td-b-formal-r6-abcdef123456-20260804T150000Z"
+        plan = _r6_materialized_plan_for_test(basename)
+        for cleanup_pass in (True, False):
+            with self.subTest(cleanup_pass=cleanup_pass), _w0_temporary_directory() as temporary:
+                root = Path(temporary) / basename
+                clock = _Clock()
+                validator_states = []
+
+                def capture(step):
+                    return _attach_v2_capture_evidence(
+                        root,
+                        step,
+                        {"thermal_covariates": _minimal_covariate(step)},
+                        observed=float(step["requested_elapsed_s"]),
+                    )
+
+                def post_capture_validator(observed_root, observed_plan):
+                    validator_states.append(
+                        (
+                            Path(observed_root),
+                            observed_plan["guide_experiment_id"],
+                            _read_json(root / "run.json")["status"],
+                        )
+                    )
+
+                cleanup = {
+                    "status": "pass",
+                    "steps": [
+                        {"name": "esphome", "ok": True},
+                        {"name": "ray120c", "ok": cleanup_pass},
+                    ],
+                }
+                call = lambda: measure.execute_plan(
+                    plan,
+                    run_dir=root,
+                    apply_command_fn=lambda _step: {},
+                    readback_fn=lambda _step: {},
+                    capture_fn=capture,
+                    both_off_gate_fn=lambda _gate: {
+                        "status": "pass",
+                        "strip_verified_off": True,
+                        "ray_verified_off": True,
+                    },
+                    cleanup_fn=lambda: cleanup,
+                    post_capture_validator_fn=post_capture_validator,
+                    monotonic_fn=clock.monotonic,
+                    monotonic_ns_fn=lambda: int(clock.value * 1e9),
+                    sleep_fn=clock.sleep,
+                )
+                if cleanup_pass:
+                    self.assertEqual(call(), root)
+                    self.assertEqual(_read_json(root / "run.json")["status"], "complete")
+                else:
+                    with self.assertRaisesRegex(RuntimeError, "cleanup did not pass exactly"):
+                        call()
+                    self.assertEqual(_read_json(root / "run.json")["status"], "failed")
+                    self.assertFalse((root / "terminal-seal.json").exists())
+                self.assertEqual(
+                    validator_states,
+                    [(root, subject.TD_B_R6_EXPERIMENT_ID, "running")],
+                )
 
     def test_rejected_post_capture_timing_retains_physical_ledger_and_failure_evidence(self):
         plan = subject.build_diagnostic_plan(
@@ -2034,6 +2146,139 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                         encoding="utf-8",
                     )
 
+    def test_r6_wrapper_terminal_effect_order_and_failure_precedence(self):
+        exact_args = [
+            "--experiment-id", subject.TD_B,
+            "--source", "ray",
+            "--phase", "formal",
+            "--stage-gate-package", "/offline/stage-gate",
+            "--code-checkpoint", "a" * 40,
+        ]
+        cases = (
+            ("success", None, {}, 0),
+            ("child_failure", None, {}, 7),
+            ("cleanup_failure", None, {}, 70),
+            ("success", None, {"FAKE_INDEPENDENT_ZERO_EXIT": "1"}, 71),
+            ("success", None, {"FAKE_TERMINAL_FINALIZE_EXIT": "1"}, 72),
+            ("signal_wait", signal.SIGTERM, {}, 143),
+        )
+        for mode, sent_signal, extra_env, expected_exit in cases:
+            with self.subTest(mode=mode, extra_env=extra_env), _w0_temporary_directory() as temporary:
+                root, wrapper, call_log, _source_hash = _make_fake_thermal_wrapper_project(Path(temporary))
+                run_dir = root / "runs" / "p7-td-b-formal-r6-abcdef123456-20260804T150000Z"
+                state_path = run_dir.parent / f"{run_dir.name}.wrapper-state.json"
+                ready_file = Path(temporary) / "r6-ready"
+                env = os.environ.copy()
+                env.update({
+                    "FAKE_RUNNER_MODE": mode,
+                    "FAKE_CALL_LOG": str(call_log),
+                    "FAKE_READY_FILE": str(ready_file),
+                    **extra_env,
+                })
+                process = subprocess.Popen(
+                    ["zsh", str(wrapper), str(run_dir), *exact_args],
+                    env=env,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    start_new_session=True,
+                )
+                try:
+                    if sent_signal is not None:
+                        deadline = time.monotonic() + 8
+                        while time.monotonic() < deadline:
+                            if ready_file.exists() and state_path.exists():
+                                if _read_json(state_path).get("status") == "running":
+                                    break
+                            time.sleep(0.02)
+                        else:
+                            self.fail("fake R6 wrapper did not reach running state")
+                        os.kill(process.pid, sent_signal)
+                    process.wait(timeout=12)
+                finally:
+                    if process.poll() is None:
+                        os.killpg(process.pid, signal.SIGKILL)
+                        process.wait(timeout=5)
+                self.assertEqual(process.returncode, expected_exit)
+                calls = call_log.read_text(encoding="utf-8").splitlines()
+                runner = next(index for index, line in enumerate(calls) if "measure_p7_thermal_diagnostics" in line)
+                cleanup = next(index for index, line in enumerate(calls) if "control.all_off" in line)
+                zero = [index for index, line in enumerate(calls) if "independent-final-zero" in line]
+                terminal = [index for index, line in enumerate(calls) if "p7_td_b_r6_terminal finalize" in line]
+                self.assertEqual(len(zero), 1)
+                self.assertEqual(len(terminal), 1)
+                self.assertLess(runner, cleanup)
+                self.assertLess(cleanup, zero[0])
+                self.assertLess(zero[0], terminal[0])
+                result_writers = [index for index, line in enumerate(calls) if line.startswith("-c ")]
+                self.assertTrue(result_writers)
+                self.assertLess(terminal[0], result_writers[-1])
+
+        with _w0_temporary_directory() as temporary:
+            root, wrapper, call_log, _source_hash = _make_fake_thermal_wrapper_project(Path(temporary))
+            run_dir = root / "runs" / "setup-near-miss"
+            env = os.environ.copy()
+            env.update({
+                "FAKE_RUNNER_MODE": "success",
+                "FAKE_CALL_LOG": str(call_log),
+                "FAKE_READY_FILE": str(Path(temporary) / "legacy-ready"),
+            })
+            process = subprocess.run(
+                ["zsh", str(wrapper), str(run_dir), *exact_args, "--dry-run"],
+                env=env,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                timeout=12,
+            )
+            self.assertEqual(process.returncode, 0)
+            calls = call_log.read_text(encoding="utf-8").splitlines()
+            self.assertFalse(any("independent-final-zero" in line for line in calls))
+            self.assertFalse(any("p7_td_b_r6_terminal finalize" in line for line in calls))
+
+    def test_r6_wrapper_terminal_artifact_write_failure_is_nonzero_and_not_complete(self):
+        exact_args = [
+            "--experiment-id", subject.TD_B,
+            "--source", "ray",
+            "--phase", "formal",
+            "--stage-gate-package", "/offline/stage-gate",
+            "--code-checkpoint", "a" * 40,
+        ]
+        for failed_write in ("result", "state"):
+            with self.subTest(failed_write=failed_write), _w0_temporary_directory() as temporary:
+                root, wrapper, call_log, _source_hash = _make_fake_thermal_wrapper_project(
+                    Path(temporary)
+                )
+                run_dir = root / "runs" / "p7-td-b-formal-r6-abcdef123456-20260804T150000Z"
+                state_path = run_dir.parent / f"{run_dir.name}.wrapper-state.json"
+                env = os.environ.copy()
+                env.update({
+                    "FAKE_RUNNER_MODE": "success",
+                    "FAKE_CALL_LOG": str(call_log),
+                    "FAKE_READY_FILE": str(Path(temporary) / "r6-ready"),
+                    "FAKE_WRAPPER_WRITE_FAIL": failed_write,
+                })
+                process = subprocess.run(
+                    ["zsh", str(wrapper), str(run_dir), *exact_args],
+                    env=env,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    timeout=12,
+                )
+                self.assertEqual(process.returncode, 73)
+                calls = call_log.read_text(encoding="utf-8").splitlines()
+                runner = [line for line in calls if "measure_p7_thermal_diagnostics" in line]
+                cleanup = [line for line in calls if "control.all_off" in line]
+                zero = [line for line in calls if "independent-final-zero" in line]
+                terminal = [line for line in calls if "p7_td_b_r6_terminal finalize" in line]
+                self.assertEqual((len(runner), len(cleanup), len(zero), len(terminal)), (1, 1, 1, 1))
+                result_path = run_dir / "wrapper-result.json"
+                if result_path.exists():
+                    self.assertEqual(_read_json(result_path)["status"], "terminal_write_failed")
+                    self.assertEqual(_read_json(result_path)["wrapper_exit_code"], 73)
+                if state_path.exists():
+                    self.assertNotEqual(_read_json(state_path)["status"], "finished")
+                    self.assertNotEqual(_read_json(state_path)["status"], "complete")
+                self.assertTrue(result_path.exists() or state_path.exists())
+
     def test_setup_wrapper_records_exit_without_predicting_post_exit_finalization(self):
         for mode, expected_exit in (("success", 0), ("child_failure", 7), ("cleanup_failure", 70)):
             with self.subTest(mode=mode), _w0_temporary_directory() as tempdir:
@@ -2663,6 +2908,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
         self.assertEqual(after, before)
 
     def test_setup_release_lineage_candidate_is_planner_only_and_fail_closed(self):
+        _use_historical_workflow_owner(self)
         release = Path(
             "/Volumes/4T/temp/rgbww-optimizer/p7-thermal-diagnostics/"
             "p7-td-b-canon-r2-setup-20260723-042002/setup-release.json"
@@ -2852,6 +3098,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                 )
 
     def test_recovery_head_fails_closed_and_historical_policy_remains_replayable(self):
+        checkpoint = _use_historical_workflow_owner(self, patch_workflow=False)
         current_checkpoint = subprocess.run(
             ["git", "rev-parse", "HEAD"],
             cwd=Path(__file__).parents[1],
@@ -2874,7 +3121,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                 changed_paths=current_changed_paths,
             )
 
-        checkpoint = _use_historical_workflow_owner(self)
+        _use_historical_workflow_owner(self)
         changed_paths = subject.changed_paths_between_checkpoints(
             subject.TD_B_SETUP_CHECKPOINT,
             checkpoint,
@@ -3037,6 +3284,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                 )
 
     def test_post_eq_validation_successor_binds_exact_commit_and_only_validation_path(self):
+        _use_historical_workflow_owner(self)
         root = Path(__file__).parents[1]
         checkpoint = subprocess.run(
             ["git", "rev-parse", "HEAD"], cwd=root,
@@ -3126,6 +3374,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
         )
 
     def test_post_eq_validation_successor_rejects_topology_blob_and_working_drift(self):
+        _use_historical_workflow_owner(self)
         root = Path(__file__).parents[1]
         checkpoint = subprocess.run(
             ["git", "rev-parse", "HEAD"], cwd=root,
@@ -3232,6 +3481,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                 )
 
     def test_post_eq_policy_lineage_fails_closed_without_widening(self):
+        _use_historical_workflow_owner(self)
         root = Path(__file__).parents[1]
         checkpoint = subprocess.run(
             ["git", "rev-parse", "HEAD"], cwd=root,
@@ -4448,7 +4698,48 @@ import time
 with open(os.environ["FAKE_CALL_LOG"], "a", encoding="utf-8") as handle:
     handle.write(" ".join(sys.argv[1:]) + "\\n")
 if len(sys.argv) > 1 and sys.argv[1] == "-c":
+    target = sys.argv[3] if len(sys.argv) > 3 else ""
+    write_status = sys.argv[4] if len(sys.argv) > 4 else ""
+    failed_write = os.environ.get("FAKE_WRAPPER_WRITE_FAIL")
+    if (
+        failed_write == "result"
+        and "wrapper-result.json" in target
+        and write_status != "terminal_write_failed"
+    ):
+        raise SystemExit(91)
+    if (
+        failed_write == "state"
+        and "wrapper-state.json" in target
+        and write_status == "finished"
+    ):
+        raise SystemExit(92)
     os.execv(sys.executable, [sys.executable, *sys.argv[1:]])
+if "camera_based_rgbww_optimizer.optimization.p7_td_b_r6_terminal" in sys.argv:
+    command = sys.argv[3]
+    if command == "classify-wrapper":
+        values = sys.argv[5:] if sys.argv[4:5] == ["--"] else sys.argv[4:]
+        parsed = {}
+        index = 0
+        while index < len(values):
+            if values[index] in {"--experiment-id", "--source", "--phase", "--stage-gate-package", "--code-checkpoint"} and index + 1 < len(values):
+                parsed[values[index]] = values[index + 1]
+                index += 2
+            else:
+                index += 1
+        exact = (
+            parsed.get("--experiment-id") == "p7_td_b_command_switch_history_v1"
+            and parsed.get("--source") == "ray"
+            and parsed.get("--phase") == "formal"
+            and bool(parsed.get("--stage-gate-package"))
+            and bool(parsed.get("--code-checkpoint"))
+            and "--dry-run" not in values
+        )
+        print("r6" if exact else "legacy")
+        raise SystemExit(0)
+    if command == "independent-final-zero":
+        raise SystemExit(int(os.environ.get("FAKE_INDEPENDENT_ZERO_EXIT", "0")))
+    if command == "finalize":
+        raise SystemExit(int(os.environ.get("FAKE_TERMINAL_FINALIZE_EXIT", "0")))
 if "camera_based_rgbww_optimizer.control.all_off" in sys.argv:
     print(json.dumps([
         {"name": "esphome", "ok": True, "detail": {}, "error": None},
