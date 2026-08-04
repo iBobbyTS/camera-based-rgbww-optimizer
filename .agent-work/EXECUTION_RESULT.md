@@ -2,204 +2,262 @@
 
 ## Terminal status request
 
-`READY_FOR_PLANNER_G4_06_ROUTE_A_TERMINAL_CANDIDATE_ACCEPTANCE_REVIEW`
+`READY_FOR_PLANNER_G4_06_FINAL_CODE_SNAPSHOT_PACKAGE_REVIEW`
 
 - Reference task: `REF-G4-06-RAY-R6`
-- Contract: `G4-RAY-R6-FINAL-CODE-FIRST-FINAL-PACKAGE-REMINT-V1`
-- Phase: `FINAL_CODE_CANDIDATE_TERMINAL_ACCEPTANCE`
-- Stop classification:
-  `TERMINAL_VALIDATION_PASS_WITH_APPLESCRIPT_RETURNED_TAB_READBACK_MISMATCH`
-- Candidate disposition:
-  `UNCHANGED_UNACCEPTED_PENDING_PLANNER_TERMINAL_REVIEW`
-- Planner stop:
-  `RETURN_FOR_G4_06_ROUTE_A_FINAL_CODE_CANDIDATE_ACCEPTANCE_REVIEW`
+- Package contract: `G4-RAY-R6-STAGE-GATE-FRESH-PACKAGE-EVIDENCE-V1`
+- Total route: `G4-RAY-R6-FINAL-CODE-FIRST-FINAL-PACKAGE-REMINT-V1`
+- Phase: `FINAL_CODE_SNAPSHOT_REMINT`
+- Disposition:
+  `FRESH_FINAL_CODE_SNAPSHOT_PACKAGE_PREPARED_AND_DESCRIBED_WAITING_PLANNER_REVIEW`
+- Planner stop: `RETURN_FOR_G4_06_FINAL_CODE_SNAPSHOT_PACKAGE_REVIEW`
 
-The sole focused validation and sole fresh full suite both passed. The candidate
-source and test identities remained exact and the harness recorded zero candidate
-writes, zero targeted/compile reruns, and zero retry/resume/alternate actions.
+The repo-owned stage-gate CLI public entrypoint completed exactly one `prepare`
+and, only after that passed, exactly one `describe`. Both returned exit `0`, no
+failure stderr, and one canonical
+`p7_td_b_r6_stage_gate_package_binding_v1` JSON object. The two bindings were
+byte-for-byte equal and match the sealed filesystem package.
 
-The one permitted AppleScript invocation did start the visible Terminal command,
-but AppleScript then failed while reading `window of returnedTab` with error
-`-1728`. Therefore this handoff does **not** claim a successful native AppleScript
-window/TTY readback. PID `43543` and TTY `/dev/ttys021` were instead bound by the
-fresh-root process seal, the Terminal-owned process, and the three liveness
-observations. Planner must review this launch-metadata mismatch; passing offline
-tests does not make the candidate accepted, formal-ready, release-consumed, or
-hardware-ready.
+This is offline engineering evidence only. It is not a formal run, hardware
+readiness, quality/history pass, scientific pass, release consumption, or device
+authorization.
 
-## Activation and machine contract
+## Activation and immutable source ledger
 
 - Branch: `main`.
 - Activation HEAD:
-  `7c318c57fbe0a2b467ddef6456daeed9455e869c`.
+  `97c97c41a2976a89ab327ea0f153b585812da894`.
 - Sole parent:
-  `b1d41bda9be7a982666d281a25708447d0c76dbc`.
+  `ac6145829dcf7d88167604b51f0299c1650300ae`.
 - Parent tree:
-  `180466af684049364e96418ff4117e0d49a2b794`.
-- Subject: `docs(plan): activate terminal candidate acceptance`.
+  `1544d303504985009d8bc8c9c08f8f0b928984d1`.
+- Activation subject: `docs(plan): activate final code snapshot remint`.
 - Exact activation paths:
   - `.agent-work/EXECUTION_RESULT.md`
   - `.agent-work/FULL_PLAN_REFERENCE.md`
   - `.agent-work/PLAN.md`
-  - `.agent-work/archived/EXECUTION_RESULT-20260804-2042.md`
-  - `.agent-work/archived/PLAN-20260804-2042.md`
-- Activation candidate-path writes: `0`.
-- Repo-owned strict parser before launch: PLAN/FULL active `1/1`, same task and
-  contract, PLAN executable, FULL `executable=false`, FULL non-executable
-  reference true, canonical next `REF-G4-06-RAY-R6`, and all device/formal/
-  release/analysis authority false.
-- Repo-owned strict parser after CodeGraph: same result; canonical JSON marker:
-  `{"active_counts":[1,1],"all_authority_false":true,"contract":"G4-RAY-R6-FINAL-CODE-FIRST-FINAL-PACKAGE-REMINT-V1","gate":"post_codegraph_machine","status":"PASS","task":"REF-G4-06-RAY-R6"}`.
+  - `.agent-work/archived/EXECUTION_RESULT-20260804-2117.md`
+  - `.agent-work/archived/PLAN-20260804-2117.md`
+  - `.agent-work/archived/PLAN-20260804-2122.md`
+- Activation is a direct non-merge orchestration-only child; source/test were
+  excluded and the activation worktree was clean.
 
-Reviewed archive identities were rechecked before launch:
+Frozen source parent:
 
-- `.agent-work/archived/PLAN-20260804-2042.md`: `22585` bytes, SHA-256
-  `3b610d2250115f8d38f67478cef7c0bd5668eba6a8946c72d2446051552d3c10`.
-- `.agent-work/archived/EXECUTION_RESULT-20260804-2042.md`: `11438` bytes,
+- checkpoint:
+  `7c318c57fbe0a2b467ddef6456daeed9455e869c`;
+- tree: `3e3e1da18ea5a40210ec091fc00baf76c92c04fb`.
+
+Accepted immutable code-owner child:
+
+- checkpoint:
+  `ac6145829dcf7d88167604b51f0299c1650300ae`;
+- tree: `1544d303504985009d8bc8c9c08f8f0b928984d1`;
+- direct parent:
+  `7c318c57fbe0a2b467ddef6456daeed9455e869c`;
+- subject: `fix(stage-gate): bind final package to immutable code snapshot`;
+- exact changed paths:
+  - `src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py`
+  - `tests/test_p7_td_b_r6_stage_gate.py`
+- source blob OID:
+  `d47c2ab2655d3e5ec2d425cb225d628d31fd32f2`;
+- test blob OID:
+  `f41d1aa44056efed3e51847f25d3186b769664fd`.
+
+Current source identities before and after package generation remained exact:
+
+| Path | Bytes | SHA-256 | Mode |
+|---|---:|---|---:|
+| `src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py` | 94324 | `c4cd13e7fb64434914ccb12c862d1d12e81728a9a647d41ff23fb2d0d860fe83` | `0644` |
+| `tests/test_p7_td_b_r6_stage_gate.py` | 133201 | `479dd8d5b0bb851d256045ee1535860ca23328874b7b7a1eb7de76dceb43ab6e` | `0644` |
+
+Both current files match their checkpoint blobs. Source/test/code write count is
+`0`.
+
+## PLAN/FULL and archive preflight
+
+Repo-owned strict machine parser passed before package creation:
+
+- PLAN/FULL active counts: `1/1`;
+- same task: `REF-G4-06-RAY-R6`;
+- same package contract:
+  `G4-RAY-R6-STAGE-GATE-FRESH-PACKAGE-EVIDENCE-V1`;
+- canonical next: `REF-G4-06-RAY-R6` /
+  `ACTIVE_FINAL_CODE_SNAPSHOT_REMINT`;
+- FULL non-executable: true;
+- final checkpoint/tree: exact immutable code-owner child;
+- final package binding before execution: `null`;
+- production source frozen before review: false;
+- nested source-attestation binding: exact;
+- device/formal/release/network/camera/Ray/strip/capture/analysis/TD-C/
+  firmware/deployment authority: all false.
+
+Machine evidence marker:
+
+`{"active":[1,1],"authority_false":true,"binding_exact":true,"contract":"G4-RAY-R6-STAGE-GATE-FRESH-PACKAGE-EVIDENCE-V1","full_line":24,"plan_line":24,"status":"PASS","task":"REF-G4-06-RAY-R6"}`
+
+Reviewed archives matched their frozen identities:
+
+- `.agent-work/archived/PLAN-20260804-2122.md`: `11877` bytes,
   SHA-256
-  `0553734db55dff76c03eb24cab4e574ebc1de85b71d4ea1f39337cc0c8a5fd2f`.
+  `5968be4689a239191a62203bf1cc80a06596fab776d59e6dd7d960617721022b`;
+- `.agent-work/archived/PLAN-20260804-2117.md`: `17623` bytes,
+  SHA-256
+  `df980249ca5f79beed6a5a4596181ed9e740e6580582c09b13db8e5ebc7d8782`;
+- `.agent-work/archived/EXECUTION_RESULT-20260804-2117.md`: `10825`
+  bytes, SHA-256
+  `577a1a3f97d729bf63ac5b57e64983c11519bd0d625866404969eee800e12dfb`.
 
-## Inherited validation and immutable candidate
+## Unique fresh root
 
-Inherited exact-candidate validation was not rerun:
+The non-following precheck proved the exact path absent and its canonical parent
+equal to `/Volumes/4T/temp/rgbww-optimizer`:
 
-- Targeted: `47/47`, exit `0`, rerun count `0`.
-- Compile: exit `0`, rerun count `0`.
+`/Volumes/4T/temp/rgbww-optimizer/g4-ray-r6-final-code-snapshot-remint-ac6145829dcf-20260804T212212Z`
 
-Candidate before launch, after focused, before full, after full, and at handoff:
+Completed root identity:
 
-| Path | Bytes | SHA-256 | Mode | Numstat |
+- regular directory, non-symlink;
+- mode: `0700`;
+- device/inode: `16777244/3112308`;
+- root create count: `1`;
+- alternate root count: `0`.
+
+Exact sorted inventory:
+
+1. `launch-descriptor.json`
+2. `stage-gate.json`
+3. `terminal-seal.json`
+
+No fourth artifact or nested evidence controller was created.
+
+| Artifact | Bytes | SHA-256 | Mode | Device/inode |
 |---|---:|---|---:|---|
-| `src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py` | 94324 | `c4cd13e7fb64434914ccb12c862d1d12e81728a9a647d41ff23fb2d0d860fe83` | `0644` | `+35/-8` |
-| `tests/test_p7_td_b_r6_stage_gate.py` | 133201 | `479dd8d5b0bb851d256045ee1535860ca23328874b7b7a1eb7de76dceb43ab6e` | `0644` | `+67/-1` |
+| `launch-descriptor.json` | 11417 | `f8b4a1f8901879c40c412ff69594da6158b42d53672e573637fc29ef665f16e2` | `0600` | `16777244/3112310` |
+| `stage-gate.json` | 22594 | `13588f9e7e808f4ab81c951e06b1f37b91539db9ec03154f23004a60113c1738` | `0600` | `16777244/3112309` |
+| `terminal-seal.json` | 976 | `44cd098c5aee4cfe517331d65369ae27a4b943a724b86dbf61d13525f0886b31` | `0600` | `16777244/3112311` |
 
-- Candidate source/test writes: `0/0`.
-- Candidate correction count: `0`.
-- Before this ER rewrite, `git status --short` contained only the exact two
-  candidate paths above.
-- Harness `git diff --check`: pass.
-- Harness pre-full/final path scope: exact two candidate paths; tracked config,
-  GUIDE, RESEARCH, FULL and PLAN unchanged relative to activation.
+All three are regular non-symlink files. The terminal seal binds the exact root
+device/inode/mode and the exact pre-terminal two-artifact inventory/identities;
+the final filesystem inventory adds only the canonical terminal seal.
 
-## Fresh plain harness identity
+## Public production-owner execution
 
-Script:
+Owner:
 
-`/Volumes/4T/temp/rgbww-optimizer/g4-route-a-terminal-candidate-acceptance-b1d41bda9be7-20260804T204210Z.zsh`
+`camera_based_rgbww_optimizer.optimization.p7_td_b_r6_stage_gate`
 
-- bytes: `15039`;
-- SHA-256:
-  `fe891eed4085b6805bb41e55a3b169c0bfdbe5f47274cb608275a994107e0004`;
-- mode: `0600`;
-- device/inode: `16777244/3091142`;
-- `/bin/zsh -n`: pass before launch;
-- plain UTF-8/LF source, no encoded launcher, dynamic decode, or self-delete;
-- persisted as immutable harness evidence.
+Execution packaging for both calls:
 
-Fresh root:
+- cwd: `/Users/ibobby/Projects/WLED-RGBWW`;
+- interpreter:
+  `/Users/ibobby/Projects/WLED-RGBWW/.venv/bin/python`;
+- per-process-only `PYTHONPATH`:
+  `/Users/ibobby/Projects/WLED-RGBWW`;
+- flags: `-P -B`;
+- persistent environment mutation: `0`;
+- foreground tool owner; no background or visible Terminal owner.
 
-`/Volumes/4T/temp/rgbww-optimizer/g4-route-a-terminal-candidate-acceptance-b1d41bda9be7-20260804T204210Z`
-
-The completed inventory is exactly four files:
-
-| File | Bytes | SHA-256 | Mode | Device/inode |
-|---|---:|---|---:|---|
-| `command-seal.json` | 2501 | `47dfefdb3cf5a3e182a2bec28605506478d60fc5df98b0ec7a056e56e120c4be` | `0600` | `16777244/3112045` |
-| `validation.stdout.log` | 29495 | `456ea032a5624e7c45fa605f270101ce934051cf5593bf03d29fd9d1ebd9ce08` | `0644` | `16777244/3091146` |
-| `validation.stderr.log` | 59535 | `cb044531e59f885aefb65716be22f0e07b8270c1f08946131c214f98f1154c91` | `0644` | `16777244/3091147` |
-| `validation.exit` | 2 | `9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa` | `0644` | `16777244/3112044` |
-
-`validation.exit` is exactly `0\n`. The seal is canonical JSON schema
-`g4_route_a_terminal_candidate_acceptance_command_seal_v1`, terminal phase
-`complete`, exit `0`, and binds the activation, script, candidate, command order,
-PID/TTY/token, inherited validation, zero counters, and all-false authority map.
-
-## Visible Terminal launch and liveness
-
-- AppleScript invocations: `1`.
-- Terminal `do script` launches: `1`.
-- Exact launched command:
-  `/bin/zsh '/Volumes/4T/temp/rgbww-optimizer/g4-route-a-terminal-candidate-acceptance-b1d41bda9be7-20260804T204210Z.zsh'`.
-- AppleScript returned-tab window/TTY readback: unavailable; after `do script`,
-  `window of returnedTab` raised `-1728`. Error text mentioned window id `62352`,
-  but this is not represented as a successful native window-id attestation.
-- Seal/process PID: `43543`.
-- Seal/process TTY: `/dev/ttys021`.
-- Token:
-  `g4-route-a-terminal-candidate-acceptance-b1d41bda9be7-20260804T204210Z`.
-- Sparse liveness checks: `3/3` alive while focused was running.
-- After the third live check, Executer stopped polling and requested the
-  Orchestrator-owned automation/block transition.
-- On the automation wake, Orchestrator reported PID `43543` exited, exact
-  four-file inventory and `validation.exit=0`, then removed the automation.
-- Retry/resume/alternate Terminal launches: `0/0/0`.
-
-## Focused validation
-
-Exact command, once, from repo cwd with per-process-only repo `PYTHONPATH`,
-absolute venv interpreter, and `-P -B`:
+Exact prepare command, once:
 
 ```text
-PYTHONPATH=/Users/ibobby/Projects/WLED-RGBWW /Users/ibobby/Projects/WLED-RGBWW/.venv/bin/python -P -B -m unittest -v tests.test_p7_td_b_r6_stage_gate tests.test_p7_td_b_r6_contract tests.test_p7_thermal_diagnostics
+PYTHONPATH=/Users/ibobby/Projects/WLED-RGBWW /Users/ibobby/Projects/WLED-RGBWW/.venv/bin/python -P -B -m camera_based_rgbww_optimizer.optimization.p7_td_b_r6_stage_gate prepare --repo-root /Users/ibobby/Projects/WLED-RGBWW --source-parent-checkpoint 7c318c57fbe0a2b467ddef6456daeed9455e869c --source-parent-tree 3e3e1da18ea5a40210ec091fc00baf76c92c04fb --package-root /Volumes/4T/temp/rgbww-optimizer/g4-ray-r6-final-code-snapshot-remint-ac6145829dcf-20260804T212212Z
 ```
 
-- Invocation count: `1`.
-- Tests: `202`.
-- Test-reported duration: `223.428s`.
-- Seal start/end epoch: `1785876616/1785876840`.
-- Exit: `0`.
-- Result: `OK`.
-- Failure details: none.
+- count: `1`;
+- exit: `0`;
+- wall time: `1.080594875s`;
+- stderr failure output: none;
+- stdout: exactly one canonical package-binding JSON object.
 
-## CodeGraph, machine and scope gates
-
-- `codegraph sync` invocation count: `1`; exit `0`; result `Already up to date`.
-- CodeGraph query invocation count: `1`; exit `0`.
-- Query named the committed-source attestation owner, loader/production launch
-  consumption path, and parallel-owner check. It returned the current
-  `CommittedSourceAttestation`, `COMMITTED_SOURCE_ATTESTATION_SCHEMA`, and
-  `validate_committed_source_attestation` owner/call references in the stage-gate
-  source plus its tests; no separate production semantic owner was surfaced.
-- Post-CodeGraph PLAN/FULL strict parser: pass.
-- Machine active counts: `1/1`.
-- Same task/contract: pass.
-- FULL non-executable and required subset: pass.
-- Device/formal/release/analysis authority: all false.
-- Candidate identity/numstat, changed-path scope and protected tracked path
-  checks: pass.
-
-## Unique fresh full validation
-
-Exact command, once, under the same packaging:
+Exact describe command, once after prepare passed:
 
 ```text
-PYTHONPATH=/Users/ibobby/Projects/WLED-RGBWW /Users/ibobby/Projects/WLED-RGBWW/.venv/bin/python -P -B -m unittest discover -s tests
+PYTHONPATH=/Users/ibobby/Projects/WLED-RGBWW /Users/ibobby/Projects/WLED-RGBWW/.venv/bin/python -P -B -m camera_based_rgbww_optimizer.optimization.p7_td_b_r6_stage_gate describe --repo-root /Users/ibobby/Projects/WLED-RGBWW --package-root /Volumes/4T/temp/rgbww-optimizer/g4-ray-r6-final-code-snapshot-remint-ac6145829dcf-20260804T212212Z
 ```
 
-- Invocation count: `1`.
-- Tests: `973`.
-- Test-reported duration: `352.845s`.
-- Seal start/end epoch: `1785876840/1785877193`.
-- Exit: `0`.
-- Result: `OK`.
-- Retry: `0`.
+- count: `1`;
+- exit: `0`;
+- wall time: `0.163070167s`;
+- stderr failure output: none;
+- stdout: exactly one canonical package-binding JSON object;
+- prepare/describe binding equality: exact.
+
+Canonical binding fields:
+
+- schema: `p7_td_b_r6_stage_gate_package_binding_v1`;
+- package root device/inode/mode:
+  `16777244/3112308/0700`;
+- inventory: exact three artifact names above;
+- each artifact bytes/SHA/device/inode/mode: exact table above.
+
+Public/direct and owner-internal call ledger:
+
+- CLI prepare: `1`;
+- CLI describe: `1`;
+- direct internal helper/validator calls by Executer: `0`;
+- dependency injection/monkeypatch/external controller: `0/0/0`;
+- owner-exclusive root create/build input/evaluate/persist/internal replay:
+  `1/1/1/1/1`;
+- prepare public replay / independent describe replay: `1/1`;
+- retry/repair/alternate: `0/0/0`.
+
+The internal sequence is the production owner's sealed prepare behavior; the
+Executer did not invoke or reproduce those stages separately.
+
+## Sealed package claims
+
+`stage-gate.json`:
+
+- schema: `p7_td_b_r6_stage_gate_v1`;
+- status: `offline_stage_gate_pass_waiting_planner_review`;
+- output root: exact fresh root;
+- source checkpoint/tree: exact frozen source parent;
+- source-attestation binding: exact verified parent, accepted code-owner child,
+  subject, changed paths and blob OIDs;
+- retry/alternate root: `0/0`;
+- `offline_engineering_evidence_only=true`;
+- `hardware_ready=false`;
+- `formal_pass=false`;
+- `quality_pass=false`;
+- `history_pass=false`;
+- `release_consumed=false`;
+- all authority fields false.
+
+`launch-descriptor.json`:
+
+- schema: `p7_td_b_r6_launch_descriptor_v1`;
+- status: `non_authorizing_g4_06_fresh_package_evidence`;
+- source-attestation binding and committed-source contract match the immutable
+  checkpoint ledger;
+- all execution/device/formal/release authority fields false;
+- firmware, deployment, destructive hardware and bounds expansion remain Human
+  stops.
+
+`terminal-seal.json`:
+
+- schema: `p7_td_b_r6_stage_gate_terminal_seal_v1`;
+- status:
+  `sealed_offline_ray_r6_stage_gate_pass_waiting_planner_review`;
+- internal replay: true;
+- retry/alternate root: `0/0`;
+- device calls/formal captures/release consumption: `0/0/0`;
+- root and artifact references match the filesystem identities exactly.
 
 ## Scope and zero effects
 
-- Old validation root/script access: `0`.
-- Frozen diagnostic source access: `0`.
-- Shared cache access: `0`.
-- Existing experiment/package/formal root access: `0`.
-- PLAN/FULL/GUIDE/RESEARCH/archive writes: `0`.
-- Source/test writes: `0`.
-- Git stage/commit/push/PR: `0/0/0/0`.
+- Worktree before ER handoff: clean.
+- Source/test/config/GUIDE/RESEARCH/PLAN/FULL relative to activation: unchanged.
+- Repo write paths after handoff: only `.agent-work/EXECUTION_RESULT.md`.
+- Old package/experiment/validation/diagnostic root access: `0`.
+- Release consumption: `0`.
+- Formal root creation/execution/capture: `0/0/0`.
 - Device/network/backend/camera/Ray/strip/capture calls:
   `0/0/0/0/0/0/0`.
-- Release consumption/formal execution/analysis/TD-C:
-  `0/0/0/0`.
-- Formal root creation: `0`.
+- Analysis/TD-C/firmware/deployment: `0/0/0/0`.
+- Git stage/commit/push/PR: `0/0/0/0`.
+- Test/compile reruns in this package: `0`.
+- New task IDs/corrective suffixes/routes: `0/0/0`.
 
-Only this live `.agent-work/EXECUTION_RESULT.md` was written after completion.
-The candidate remains unaccepted pending Planner review. This result grants no
-formal, device, release-consumption, scientific-pass, or hardware-readiness
-credit.
+The fresh package and candidate remain pending Planner acceptance. No formal
+launch or later stage is authorized by this handoff.
