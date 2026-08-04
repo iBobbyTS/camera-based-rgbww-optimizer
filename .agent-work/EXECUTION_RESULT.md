@@ -1,147 +1,139 @@
-# REF-G4-06-RAY-R6 package preparation bounded-correction handoff
+# EXECUTION_RESULT
 
-**Status:** `READY_FOR_ORCHESTRATOR_CONTROLLED_PACKAGE_PREPARATION_ROUTE_CODE_CHILD`
+## Machine Status
 
-**Planner stop:** `RETURN_FOR_G4_06_PACKAGE_PREPARATION_ROUTE_TWO_PHASE_REVIEW`
+```json
+{
+  "schema": "g4_06_fresh_package_evidence_execution_result_v1",
+  "reference_task": "REF-G4-06-RAY-R6",
+  "contract": "G4-RAY-R6-STAGE-GATE-FRESH-PACKAGE-EVIDENCE-V1",
+  "status": "FAILED_G4_06_FRESH_PACKAGE_EVIDENCE_UNRECOVERABLE_PREPARE_OUTPUT_HARNESS",
+  "planner_review_required": true,
+  "prepare_launch_count": 1,
+  "describe_launch_count": 0,
+  "retry_count": 0,
+  "alternate_root_count": 0,
+  "repair_count": 0,
+  "prepare_exit": "UNPROVEN",
+  "prepare_stdout": "UNPROVEN",
+  "prepare_stderr": "UNPROVEN",
+  "package_root_created": "UNKNOWN_NOT_PROBED",
+  "package_root_status": "UNKNOWN_NOT_PROBED",
+  "package_inventory": "UNKNOWN_NOT_PROBED",
+  "terminal_seal": "UNKNOWN_NOT_PROBED",
+  "device_authorized": false,
+  "device_called": false,
+  "formal_authorized": false,
+  "formal_called": false,
+  "release_authorized": false,
+  "release_called": false
+}
+```
 
-本 handoff 取代被 Planner phase-1 拒绝的第一 candidate。它只证明当前 G4-06 fresh-package preparation route 在 synthetic/offline repository 中绑定 accepted A→C→L source topology；不生成、describe或读取真实 package/external root，不消费 release/retained R3，不授权 formal/device/camera/Ray/strip/capture/G4-07。
+## Terminal Failure Handoff
 
-## 1. Activation 与不变边界
+The one authorized `prepare` launch was issued exactly once. The nested CLI call
+returned to the agent-side orchestration script in approximately 1.5 seconds.
+Immediately afterward, the agent-side output-summary code raised
+`ReferenceError: TextEncoder is not defined`. Because that exception occurred
+before the nested result was retained or emitted, the CLI exit code, stdout, and
+stderr are unrecoverable and therefore remain `UNPROVEN`.
 
-- branch：`main`
-- activation HEAD：`310f547c91420c34f67d1d241ad4aedaa3bc9c2c`
-- activation direct parent：`16b982c29e6f8bcc49d7a11e87b30eacf237f825`
-- activation tree：`e5184c3236ba053909332fff032691c1aad167d0`
-- activation subject：`docs(plan): activate ray r6 package preparation route engineering`
-- activation paths exact：`.agent-work/FULL_PLAN_REFERENCE.md`、`.agent-work/PLAN.md`
-- PLAN SHA-256 unchanged：`c0bf01d0fb2d45254b0b8a4e2741ee8d9bb60b9976521b9e3faa3677ab3361a0`
-- FULL SHA-256 unchanged：`2b78acc9e6ca979c56bf3dba2330779327b7747e7bc67a67cc0fe23c44afdd2b`
-- live strict machine：active `1/1`、current-plan `1`、task/current/canonical next均为`REF-G4-06-RAY-R6`、engineering contract为`G4-RAY-R6-PACKAGE-PREPARATION-ROUTE-ENGINEERING-V1`；PLAN executable true，FULL non-executable，顶层device/formal/release/TD-C authority全false。
+This is an execution-harness evidence failure. It is not evidence that package
+preparation succeeded or failed. The package root was not probed, listed, read,
+stat'ed, replayed, cleaned, repaired, or reused after the harness exception.
 
-## 2. Planner phase-1 rejection / failure 1
+The PLAN condition for launching `describe` requires proven `prepare` exit
+zero. That condition was not established, so `describe` was not launched.
 
-第一 candidate虽通过其synthetic tests及`961/961` full，但 Planner 独立验收构造了另一组Git中存在且内部自洽的`--source-parent-checkpoint/tree`。旧CLI只验证该commit/tree存在且匹配，未把args绑定到future evidence PLAN/FULL与accepted code owner，因此错误prepare成功；later source attestation才返回`committed_source_parent_drift`。
+## Exact Authorized Invocation
 
-分类：`PRODUCTION_SOURCE_ATTESTATION_BINDING_MISSING_BEFORE_EXCLUSIVE_ROOT`。
+Prepare launch count: `1`.
 
-该`961/961`只属于被拒candidate，不作为本 correction 的full证据。没有生成新PLAN/task/root/suffix；本次是同一PLAN允许的第一次且唯一 bounded production correction。
+```text
+.venv/bin/python -m camera_based_rgbww_optimizer.optimization.p7_td_b_r6_stage_gate prepare --repo-root /Users/ibobby/Projects/WLED-RGBWW --source-parent-checkpoint 310f547c91420c34f67d1d241ad4aedaa3bc9c2c --source-parent-tree e5184c3236ba053909332fff032691c1aad167d0 --package-root /Volumes/4T/temp/rgbww-optimizer/g4-ray-r6-stage-gate-ebc40bf8e40c-20260804T063700Z
+```
 
-## 3. Bounded production correction
+Describe launch count: `0`.
 
-现有stage-gate owner新增closed schema：
+## Activation Intake Evidence
 
-`p7_td_b_r6_preparation_source_attestation_binding_v1`
+- Branch: `main`
+- Activation HEAD: `411571f2aa7b70d931a5ccbac365c666d9c49ae9`
+- Activation HEAD parent: `1c94b5df1fa796f1d56aaa012237c064cfd541de`
+- Activation HEAD tree: `8dc7e0ea42b5c92a24391aae96a302da9086bbcf`
+- Activation subject: `docs(plan): activate ray r6 fresh package evidence`
+- Activation changed paths: exactly
+  `.agent-work/FULL_PLAN_REFERENCE.md` and `.agent-work/PLAN.md`
+- Intake worktree: clean
+- Intake `git diff --check`: pass
+- PLAN/FULL strict machine rows: one marker each
+- PLAN/FULL active task count: `1/1`
+- Active/current/canonical task:
+  `REF-G4-06-RAY-R6`
+- PLAN executable authority: `true`
+- FULL executable authority: `false`
+- Device, formal, retained-release consumption, release, and TD-C authority:
+  `false`
 
-Exact keys：
+## Accepted Source Topology Evidence
 
-- `schema`
-- `verified_parent_checkpoint`
-- `verified_parent_tree`
-- `accepted_code_owner_checkpoint`
-- `accepted_code_owner_tree`
-- `code_child_subject`
-- `code_child_paths`
+- Verified source parent checkpoint:
+  `310f547c91420c34f67d1d241ad4aedaa3bc9c2c`
+- Verified source parent tree:
+  `e5184c3236ba053909332fff032691c1aad167d0`
+- Accepted code owner checkpoint:
+  `ebc40bf8e40c4bb59bd070367a321a2e76c3ce5c`
+- Accepted code owner tree:
+  `9dc4b3fb70bc97b80fb1db3b2389585e349e8737`
+- Accepted code owner subject:
+  `fix(stage-gate): bind package preparation to g4-06`
+- Accepted code owner paths:
+  `src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py`
+  and `tests/test_p7_td_b_r6_stage_gate.py`
+- Accepted code owner is an ancestor of activation HEAD: pass
+- Stage-gate source and test are byte-identical between accepted owner checkpoint
+  and activation HEAD: pass
+- Stage-gate source blob:
+  `c12c4f19bfa422a1fe38378ed3ae243f7982e9aa`
+- Stage-gate test blob:
+  `a6f3432ba6ce00946901cf786bb67b26e8857356`
+- Both source modes: `100644`
+- Inherited accepted validation: `963/963`; not rerun by this PLAN
 
-Future evidence PLAN必须持有该binding；FULL `g4_06_state.source_attestation_binding`必须exact mirror。Missing/extra/schema/identity/subject/path或PLAN/FULL mirror drift均fail closed。
+## Frozen File Identities at Intake
 
-`build_stage_gate_input`现在在evaluate、persist和exclusive root creation之前：
+- `.agent-work/PLAN.md` SHA-256:
+  `64e4554270d32be3c761bbb61e279e59761a60a0b8d06039e93c8cb57795745a`
+- `.agent-work/FULL_PLAN_REFERENCE.md` SHA-256:
+  `b76dba2d52cda037289c31966fa7f4c3bf5ca48354c69a6a59cfc2e95df0f4dd`
+- Prior `.agent-work/EXECUTION_RESULT.md` SHA-256:
+  `8a3665b8be44f03644b8c3e345ee78d34afcec32e4966dec284063df427945b2`
+- Stage-gate source SHA-256:
+  `406ac5c82ac9a098052a812af866f29083bdb2ee3fd5962964c8889100ef5d37`
+- Stage-gate tests SHA-256:
+  `ff3964db91ba2bd19073be16eb4a45aa7ae81a96c2ff17cb54b108f4cf2915c3`
+- GUIDE SHA-256:
+  `659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35`
 
-1. exact解析PLAN/FULL binding；
-2. 要求CLI/source args checkpoint/tree exact等于binding verified parent；
-3. 将accepted code owner、live HEAD/tree和candidate references交给existing `validate_committed_source_attestation`；
-4. 复用其direct non-merge parent、exact subject、exact two paths、tree、committed blob bytes/SHA/mode、current bytes、HEAD ancestor、linear `.agent-work/` descendants与worktree scope验证；
-5. 将同一binding投影到StageGateInput、stage-gate、launch descriptor、persistence input binding及replay validation。
+## Safety and Side Effects
 
-没有复制Git topology/blob/current-byte语义，没有新增第二个attestation/serializer/controller owner。CodeGraph确认`measure_p7_thermal_diagnostics.py`未取得preparation或attestation ownership。
+- No retry, alternate package root, repair, cleanup, or controller was launched.
+- No `describe` or other stage-gate replay was launched.
+- No external-root probe, list, read, stat, inventory, or seal inspection was
+  performed after the harness exception.
+- No device, camera, Ray, strip, capture, network, retained-R3, release,
+  eligibility, formal R6, TD-C, or external experiment payload was authorized
+  or called.
+- No production source, tests, configuration, GUIDE, RESEARCH, PLAN, FULL,
+  archive, or Git state was modified by this execution.
+- The only intended repository modification in this handoff is this
+  `.agent-work/EXECUTION_RESULT.md`.
 
-Later `validate_committed_source_attestation`还要求probe code owner checkpoint/tree exact等于descriptor binding；合法但不同的probe不能推迟到parent/path检查后才失败。
+## Planner Decision Request
 
-## 4. Pre-root evidence
-
-Current G4-06 real module `prepare`/`describe` synthetic positive继续PASS；prepare owner counts：
-
-- `build_stage_gate_input=1`
-- `evaluate_stage_gate=1`
-- `persist_stage_gate_package=1`
-- `create_exclusive_root=1`
-- public replay=`1`
-- terminal internal replay=`true`
-
-新增source binding/topology matrix `11` cases全部pre-root fail：
-
-- wrong-but-valid source parent checkpoint/tree pair；
-- verified parent被错误当作code owner；
-- wrong-but-valid accepted code-owner checkpoint；
-- accepted code-owner tree drift；
-- PLAN binding missing/extra/subject/path drift；
-- FULL binding missing/extra/mirror drift。
-
-每项root不存在，evaluate/persist/replay/root-create=`0`。Later attestation probe checkpoint/tree与descriptor binding不一致均返回`committed_source_binding_drift`。
-
-既有preparation machine matrix `24` cases、old G4-05、old subject、three-path child、wrong parent/merge、transient history、package substitution/stale identity、sealed replay、Package-A negative、Package-B formal pre-backend comparison、runtime hash、generic bypass和delegate no-retry回归均继续通过。
-
-## 5. Failure convergence record
-
-- substantive production failure：`1`（Planner发现的pre-root source binding缺口）
-- bounded production correction：`1/1`，已完成
-- 第二个production failure：`0`
-- 第三次同边界失败：`0`
-- 第一candidate中已记录的单次call-count harness correction没有改变production owner。
-- correction实现后的测试红灯均为一次性fixture migration：动态真实A→C→L替换伪SHA后，旧断言未计orchestration L；deep mutation tests未同步descriptor binding而正确更早被新gate拒绝；alternate handwritten fixture漏新binding。分组机械更新后stage module完整通过；没有放宽production contract。
-- 未创建corrective task/suffix、parallel adapter/controller、额外root或第四次retry。
-
-## 6. Validation
-
-- final targeted：`13/13` PASS，`126.277s`
-- full stage-gate module：`46/46` PASS，`196.527s`
-- focused五模块：`251/251` PASS，`240.775s`
-  - `tests.test_p7_td_b_r6_stage_gate`
-  - `tests.test_p7_td_b_r6_contract`
-  - `tests.test_p7_thermal_diagnostics`
-  - `tests.test_agent_work_machine_contract`
-  - `tests.test_p7_successor_e2`
-- `.venv/bin/python -m compileall -q src tests`：PASS
-- `zsh -n tmp/run-p7-thermal-diagnostics.zsh`：PASS
-- repo-owned PLAN/FULL strict parser：PASS
-- `codegraph sync`：PASS；post-query确认single existing attestation owner、无measure/parallel owner
-- `git diff --check`：PASS
-- protected diff：empty
-- staged/cached：empty
-- semantic freeze后的correction唯一fresh full：`.venv/bin/python -m unittest discover -s tests` → `963/963` PASS，`404.540s`，exit `0`
-- full后source/test bytes未修改，未重复full。
-
-## 7. Frozen candidate identities
-
-相对activation HEAD的最终two-file candidate：`+734/-112`。
-
-- stage-gate：`93155` bytes，mode `0644`，SHA-256 `406ac5c82ac9a098052a812af866f29083bdb2ee3fd5962964c8889100ef5d37`
-- focused tests：`130254` bytes，mode `0644`，SHA-256 `ff3964db91ba2bd19073be16eb4a45aa7ae81a96c2ff17cb54b108f4cf2915c3`
-- wrapper unchanged：`2730d43507af14a531453978477439bb29ef93ae7dea8e0bddb6c2330e1242e5`
-- measure unchanged：`babca565fafa7492a3fdcc7a498dc7d2be129367fe40118e489b5f0f7e11b02f`
-- ER为本handoff，不属于controlled code child。
-
-最终dirty set应exact为ER、stage-gate、focused tests；PLAN/FULL/archives/measure/wrapper/config/docs/GUIDE/RESEARCH无diff，staged为空。
-
-## 8. Side-effect counters 与 disposition request
-
-- real package generate/describe/read=`0/0/0`
-- external experiment root/payload=`0`
-- formal root access/create=`0/0`
-- retained R3/release consumption=`0/0`
-- real backend/device/network/camera/Ray/strip/capture/nonzero light=`0`
-- firmware/deployment/TD-C=`0/0/0`
-- stage/commit/push/PR=`0/0/0/0`
-
-请求Planner重新执行phase-1 review。若接受，请返回：
-
-`READY_FOR_ORCHESTRATOR_CONTROLLED_PACKAGE_PREPARATION_ROUTE_CODE_CHILD`
-
-由Orchestrator创建activation commit的唯一direct non-merge code child：
-
-- subject exact：`fix(stage-gate): bind package preparation to g4-06`
-- paths exact：
-  - `src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py`
-  - `tests/test_p7_td_b_r6_stage_gate.py`
-- ER不得进入code child。
-
-随后同一PLAN进入phase-2 read-only review。真实fresh package/external root/formal/device execution仍未授权。
+Review this terminal harness-evidence failure without treating unknown package
+state as success or failure. Any future action concerning the exact package root,
+including inspection, reuse, cleanup, or a replacement package execution,
+requires a new Planner decision and executable PLAN. No retry is authorized by
+this handoff.
