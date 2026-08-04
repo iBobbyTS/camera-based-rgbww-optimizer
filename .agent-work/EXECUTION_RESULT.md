@@ -2,141 +2,170 @@
 
 ## Terminal status request
 
-`REJECTED_SUPERVISOR_ARCHITECTURE_SUPERSEDED_UNPROVEN`
+`STOPPED_FOR_ORCHESTRATOR_VISIBLE_TERMINAL_REPACKAGING_NOT_A_CANDIDATE_REJECTION`
 
 - Reference task: `REF-G4-06-RAY-R6`
-- Contract: `G4-RAY-R6-CANONICAL-PACKAGE-REPLAY-SOURCE-SUCCESSOR-ENGINEERING-V1`
-- Planner stop: `RETURN_FOR_G4_06_SOURCE_SUCCESSOR_ENGINEERING_REVIEW`
-- Supervisor route selection: `ROUTE_A_FINAL_CODE_FIRST_FINAL_PACKAGE_REMINT`
-- Candidate historical disposition:
-  `HISTORICAL_REJECTED_SUPERVISOR_SUPERSEDED_SOURCE_SUCCESSOR_CANDIDATE_UNPROVEN`
-- Requested Planner decision: reject the current successor-chain candidate; do
-  not accept, commit, activate, execute, or reuse it as current production
-  evidence.
+- Contract: `G4-RAY-R6-FINAL-CODE-FIRST-FINAL-PACKAGE-REMINT-V1`
+- Phase reached: `TARGETED_COMPLETE_BEFORE_FOCUSED`
+- Planner stop requested: return to Orchestrator for visible-Terminal validation
+  repackaging because measured validation duration makes the original
+  under-10-minute packaging no longer credible.
 
-This is a terminal handoff for the Supervisor-superseded candidate. It is not a
-scientific failure, formal attempt, device failure, package-consumption result,
-or GUIDE hard stop. It does not erase or reinterpret the earlier accepted
-pre-device `source_reference_drift` failure history preserved in the reviewed
-PLAN/EXECUTION_RESULT archives.
+This is a long-task packaging stop required by PLAN section 7. It is not a
+candidate rejection, production-seam failure, scientific/formal failure,
+device failure, GUIDE hard stop, or permission request. The implementation is
+left intact for the next bounded package; it is not accepted or committed.
 
-## Frozen repository intake
+## Activation intake
 
 - Branch: `main`
-- HEAD: `f5e85bc4b2aca501725b239b8f7515513bacaee6`
-- Intake dirty paths, exact:
-  - `src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py`
-  - `tests/test_p7_td_b_r6_stage_gate.py`
-- PLAN/FULL/GUIDE/RESEARCH were read-only and were not modified by this
-  Executer.
-- No source or test file was changed after the Supervisor selected Route A.
-
-## Recoverable historical candidate attestation
-
-The uncommitted candidate is preserved by an exact archive ref and remains
-recoverable without treating it as accepted production code:
-
-- Ref:
-  `refs/archive/g4-06/source-successor-candidate-supervisor-superseded-20260804`
-- Commit: `88185fceeed8630e5df35a83126df181bed0cd68`
-- Tree: `35d0a46c081a91e5c0f930924cde223ada59be15`
+- Activation HEAD: `7214ff5eb797d2716d7b9d4bdb34324f5febe350`
+- Activation tree: `d9dc5dcf0e2177a11f2b6651fe707fdca8b8ef6e`
 - Sole parent: `f5e85bc4b2aca501725b239b8f7515513bacaee6`
-- Subject:
-  `archive(g4-06): preserve supervisor-superseded source successor candidate`
-- Exact archived paths:
-  - `src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py`
-  - `tests/test_p7_td_b_r6_stage_gate.py`
-- Binary diff bytes from parent to archive commit: `59839`
-- Binary diff SHA-256:
-  `eb907ac5b2059beed39646a0b181d43d1af37b96e25c3a9c35b12e64e7fbb9c2`
+- Subject: `docs(plan): activate Route A final code first`
+- Exact activation changed paths:
+  - `.agent-work/EXECUTION_RESULT.md`
+  - `.agent-work/FULL_PLAN_REFERENCE.md`
+  - `.agent-work/PLAN.md`
+  - `.agent-work/archived/EXECUTION_RESULT-20260804-1817.md`
+  - `.agent-work/archived/FULL_PLAN_REFERENCE-20260804-1820.md`
+  - `.agent-work/archived/PLAN-20260804-1817.md`
+  - `.agent-work/archived/PLAN-20260804-1827.md`
+- PLAN/FULL strict machine state at intake: active `1/1`, exact task
+  `REF-G4-06-RAY-R6`, exact contract
+  `G4-RAY-R6-FINAL-CODE-FIRST-FINAL-PACKAGE-REMINT-V1`; PLAN executable and
+  FULL non-executable; required FULL subset exact.
+- PLAN identity: `16498` bytes, SHA-256
+  `197e404da2da194a3ea44aad2ef813f58cc0ce250b05aaba20c4ab502ec13afe`.
+- FULL identity: `15183` bytes, SHA-256
+  `b565ab837ee9584f6f8384a790166701991c205c690203c96238ab8411563d22`.
 
-Exact file and blob identities:
+## Supervisor archive and accepted-tree restore
 
-| Path | Archived/current file SHA-256 | Git blob |
-|---|---|---|
-| `src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py` | `a5ec111167fa20f34914a481face68e1d2c276688c74ead434d9effdc5e7b0d3` | `c35684a639ab8f40200f9ed5be6c1196ad08c568` |
-| `tests/test_p7_td_b_r6_stage_gate.py` | `a6107c9f3290a63921fd94911f729c9d69dffcfc59d9e841010d4e6ee0eb009d` | `da973e2748c2d814cb4b78354cea52e6e014458e` |
+The rejected successor candidate remains recoverable and was not reused:
 
-The current two candidate files matched the archived blobs exactly at terminal
-handoff intake. The archive is historical-only and supplies recoverability, not
-acceptance, readiness, release credit, or execution authorization.
+- Ref: `refs/archive/g4-06/source-successor-candidate-supervisor-superseded-20260804`
+- Commit/tree/parent:
+  `88185fceeed8630e5df35a83126df181bed0cd68` /
+  `35d0a46c081a91e5c0f930924cde223ada59be15` /
+  `f5e85bc4b2aca501725b239b8f7515513bacaee6`
+- Subject: `archive(g4-06): preserve supervisor-superseded source successor candidate`
+- Exact paths: the stage-gate source and its test file only.
+- Archived source: `116366` bytes, SHA-256
+  `a5ec111167fa20f34914a481face68e1d2c276688c74ead434d9effdc5e7b0d3`,
+  blob `c35684a639ab8f40200f9ed5be6c1196ad08c568`.
+- Archived test: `149152` bytes, SHA-256
+  `a6107c9f3290a63921fd94911f729c9d69dffcfc59d9e841010d4e6ee0eb009d`,
+  blob `da973e2748c2d814cb4b78354cea52e6e014458e`.
+- Binary diff: `59839` bytes, SHA-256
+  `eb907ac5b2059beed39646a0b181d43d1af37b96e25c3a9c35b12e64e7fbb9c2`.
 
-## Observed but unproven engineering validation
+The reviewed reverse diff was applied non-destructively with `apply_patch`.
+Both restored files then matched HEAD byte-for-byte:
 
-Before Supervisor interruption, the following results were observed against
-the uncommitted candidate:
+- source: `93155` bytes, SHA-256
+  `406ac5c82ac9a098052a812af866f29083bdb2ee3fd5962964c8889100ef5d37`,
+  blob `c12c4f19bfa422a1fe38378ed3ae243f7982e9aa`, mode `100644`;
+- test: `130254` bytes, SHA-256
+  `ff3964db91ba2bd19073be16eb4a45aa7ae81a96c2ff17cb54b108f4cf2915c3`,
+  blob `a6f3432ba6ce00946901cf786bb67b26e8857356`, mode `100644`.
 
-- targeted stage-gate suite: `51/51` observed pass;
-- focused stage-gate/contract/thermal suite: `206/206` observed pass;
-- `py_compile`: observed pass;
-- CodeGraph sync/query: observed pass; the query showed the successor
-  schema/parser/Git proof remained in the stage-gate owner and delegated through
-  the existing measure validation owner;
-- `git diff --check`: observed pass;
-- changed-scope check: observed exact candidate code/test paths.
+One bounded tooling correction occurred: the first `apply_patch` rejected
+standard unified hunk headers and made no modification; the same reviewed
+reverse diff was resubmitted with tool-compatible hunk headers and succeeded.
+This is a patch-harness formatting correction, not a production seam failure.
 
-These observations were not frozen in the prior live EXECUTION_RESULT before
-Supervisor intervention. They remain observations of an uncommitted,
-architecture-superseded candidate and must not be promoted to accepted evidence.
+## Implemented candidate and ownership
 
-The one fresh full-suite process has terminal status:
+Maintainability preflight found that the change belongs in the existing
+`_source_attestation_binding` -> `_committed_source_contract` ->
+`_validate_descriptor_attestation_contract` ->
+`validate_committed_source_attestation` owner path. No module, controller,
+adapter, successor chain, second attestation, new schema, global override,
+environment override, or `validate_current_sources=False` mode was introduced.
 
-`INTERRUPTED_UNPROVEN_NOT_A_TEST_FAILURE_NOT_REUSABLE`
+The candidate:
 
-No final test count, exit code, pass/fail result, or reusable full-suite evidence
-was produced. Interruption is not a test failure, but no success may be inferred.
-The full suite was not resumed, supplemented, or rerun after Supervisor Route A
-selection.
+- admits exactly the existing preparation subject and the frozen final subject
+  `fix(stage-gate): bind final package to immutable code snapshot`;
+- adds a closed, ordered `code_child_blob_oids` declaration for the existing
+  exact two paths to the existing binding and descriptor mirror;
+- validates actual commit subject and exact paths against that immutable
+  binding;
+- validates each Git `ls-tree` blob OID before the existing mode, bytes,
+  SHA-256, and current-file identity checks;
+- preserves the single existing loader/launch attestation owner and the
+  existing delegate-exactly-once production seam.
+
+Observed diff before this stop was limited to the stage-gate source and its
+test: overall `102` insertions and `9` deletions; production source accounting
+was `34` insertions and `8` deletions, below the `150`-line soft cap.
+
+Tests add the final-subject positive production-delegation case, exact declared
+OID checks, missing OID rejection, and wrong OID rejection while preserving the
+original preparation-subject behavior and existing topology/blob/history
+negative matrices.
+
+Final candidate source/test byte counts and SHA-256 values were not sampled
+before the mandatory long-task stop. They must be recorded by the next
+authorized package without changing the candidate first.
+
+## Validation evidence and duration stop
+
+- Compile command completed with exit `0`:
+  `.venv/bin/python -m py_compile src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py tests/test_p7_td_b_r6_stage_gate.py`
+- Targeted command completed with exit `0`:
+  `.venv/bin/python -m unittest -v tests.test_p7_td_b_r6_stage_gate`
+- Targeted result: `47/47`, `OK`, `182.148s`.
+- `git diff --check` was observed clean immediately after targeted completion.
+- A preliminary `python3 -m unittest` attempt failed to import the editable
+  package because system Python was used; it is not a PLAN validation and not a
+  product/test failure.
+- A preliminary `.venv/bin/python -m pytest` observation reported that pytest
+  is not installed. It is not a PLAN validation, dependency installation was
+  not attempted, and it is not a product/test failure.
+- Focused integration was **not started**.
+- Fresh full suite was **not started**.
+- The earlier Supervisor-interrupted full remains
+  `INTERRUPTED_UNPROVEN_NOT_REUSABLE`; it was not resumed, supplemented, or
+  interpreted.
+- CodeGraph had been synced after accepted-tree restoration and confirmed the
+  existing sole owner path before implementation. Required post-change sync and
+  query were **not run** because execution stopped before that validation phase.
+
+The focused command must run the same measured 182-second stage-gate module
+again plus two additional modules, followed by the required one fresh full
+suite. At this evidence boundary it became reasonable to expect the original
+package's total validation time to exceed 10 minutes. PLAN section 7 therefore
+requires stopping before those commands and returning to Orchestrator for
+visible-Terminal repackaging. No Codex-managed background validation remains.
 
 ## Zero-access and zero-effect counters
 
-- Accepted external package/root read/stat/list/access: `0`
-- Reserved/fresh formal root read/stat/list/access/create: `0/0/0/0/0`
-- Network calls: `0`
-- Device calls: `0`
-- Camera calls/captures: `0/0`
-- Ray calls: `0`
-- Strip calls/nonzero calls: `0/0`
-- Cleanup/final-zero calls: `0/0`
-- Formal owner calls/attempts: `0/0`
-- Release consumption: `0`
-- Retained-R3 access/consumption: `0/0`
-- TD-C access/execution: `0/0`
-- Firmware/flash/deploy/destructive operations: `0`
-- New experiment root/package: `0/0`
-- New task ID/corrective suffix/controller: `0/0/0`
+- External experiment/package/formal root access/read/stat/list/create: `0`
+- Network/device/camera/Ray/strip/capture calls: `0/0/0/0/0/0`
+- Release/retained-R3/formal-R6/analysis/TD-C consumption or execution:
+  `0/0/0/0/0`
+- Backend/final-zero/cleanup/formal-owner calls: `0/0/0/0`
+- New experiment/package/formal roots: `0/0/0`
+- New task IDs/corrective suffixes/controllers/adapters: `0/0/0/0`
 - Git stage/commit/push/PR: `0/0/0/0`
 
-No hardware readiness, eligibility, release consumability, formal success,
-scientific success, or device readiness is claimed.
+PLAN, FULL, GUIDE, RESEARCH, and archives were not modified. No hardware,
+release, formal, scientific, eligibility, or readiness claim is made.
 
-## Prior failure-history preservation
+## Orchestrator handoff
 
-The earlier controlled Package-B attempt remains a distinct historical record:
+Repackage only the remaining validation and evidence-finalization work under
+the visible-Terminal long-task rule. Preserve this exact candidate and the same
+reference task; do not create a corrective suffix or revive the rejected
+successor candidate. The future immutable code checkpoint subject remains:
 
-- reviewed disposition:
-  `ACCEPTED_CONTROLLED_PREDEVICE_SOURCE_REFERENCE_DRIFT_NO_FORMAL_ATTEMPT`;
-- failure code: `source_reference_drift`;
-- canonical package loader calls/successes: `1/0`;
-- formal machine owner, root, device, camera, Ray, strip, capture, formal attempt:
-  all `0`;
-- reviewed archive pointers remain under `.agent-work/archived/` and were not
-  modified or rewritten by this handoff.
+`fix(stage-gate): bind final package to immutable code snapshot`
 
-The Supervisor rejection of this candidate does not clear that history and does
-not recast the candidate as a repair of it.
+with exact commit paths:
 
-## Planner handoff
+- `src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py`
+- `tests/test_p7_td_b_r6_stage_gate.py`
 
-Planner should reject this live candidate with:
-
-`REJECTED_SUPERVISOR_ARCHITECTURE_SUPERSEDED_UNPROVEN`
-
-and preserve its historical disposition as:
-
-`HISTORICAL_REJECTED_SUPERVISOR_SUPERSEDED_SOURCE_SUCCESSOR_CANDIDATE_UNPROVEN`
-
-The next route, if activated by Orchestrator/Planner, must follow
-`ROUTE_A_FINAL_CODE_FIRST_FINAL_PACKAGE_REMINT`. This Executer does not design,
-activate, or execute that route. The archived candidate must not be restored as
-the current owner, and the interrupted full-suite observation must not be reused.
+No future checkpoint or tree SHA is guessed.
