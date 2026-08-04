@@ -15,16 +15,11 @@ from unittest import mock
 from camera_based_rgbww_optimizer.optimization import measure_p7_thermal_diagnostics as measure
 from camera_based_rgbww_optimizer.optimization import p7_td_b_r6_stage_gate as subject
 from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
-from camera_based_rgbww_optimizer.paths import PROJECT_ROOT
 from camera_based_rgbww_optimizer.utils import p7_retained_r3_provenance_io as provenance
 
 
 ACTIVATION_HEAD = "860b27359ab54a1c8c4b4a4737331e169e53cb38"
 ACTIVATION_TREE = "c4c9f0129beba2f13b663f9d392abab986e37484"
-LIVE_ROOT = Path(
-    "/Volumes/4T/temp/rgbww-optimizer/"
-    "g4-ray-r6-stage-gate-70fec61ef830-20260804T012240Z"
-)
 FUTURE_RUN_NAME = "p7-td-b-formal-r6-111111111111-20260804T010000Z"
 
 
@@ -106,8 +101,14 @@ class SyntheticRepository:
 class SyntheticGitRepository(SyntheticRepository):
     """A real local A -> C -> L Git topology with no network or external payload."""
 
-    def __init__(self, root: Path) -> None:
-        super().__init__(root, root / "offline-stage-gate")
+    def __init__(
+        self,
+        root: Path,
+        *,
+        code_child_subject: str = "feat(stage-gate): route ray r6 formal launch owner",
+    ) -> None:
+        root = root.resolve()
+        super().__init__(root, root.parent / "offline-stage-gate")
         self.git("init", "-q")
         self.git("config", "user.name", "G4 Synthetic")
         self.git("config", "user.email", "g4-synthetic@example.invalid")
@@ -124,7 +125,7 @@ class SyntheticGitRepository(SyntheticRepository):
             self.descriptor, self.stage_gate, repo_root=self.root,
         )
         self.git("add", "--", *subject.ALLOWED_CODE_CHILD_PATHS)
-        self.git("commit", "-q", "-m", subject.ALLOWED_CODE_CHILD_SUBJECT)
+        self.git("commit", "-q", "-m", code_child_subject)
         self.code_checkpoint = self.git_text("rev-parse", "HEAD")
         self.code_tree = self.git_text("rev-parse", "HEAD^{tree}")
         self.live_checkpoint = self.code_checkpoint
@@ -157,6 +158,119 @@ class SyntheticGitRepository(SyntheticRepository):
         path.write_text(f"orchestration:{name}\n", encoding="utf-8")
         self.git("add", "--", f".agent-work/{name}")
         self.git("commit", "-q", "-m", f"synthetic orchestration {name}")
+        self.live_checkpoint = self.git_text("rev-parse", "HEAD")
+        self.live_tree = self.git_text("rev-parse", "HEAD^{tree}")
+
+    def persist_production_package(self) -> None:
+        subject.persist_stage_gate_package(self.build_input(), repo_root=self.root)
+
+    def activate_package_a_machine(self) -> None:
+        plan = {
+            "active_task_count": 1,
+            "active_task": subject.FUTURE_TASK_ID,
+            "reference_task_id": subject.FUTURE_TASK_ID,
+            "contract_id": subject.ENGINEERING_PACKAGE_A_CONTRACT_ID,
+        }
+        full = {
+            "active_task_count": 1,
+            "active_task": subject.FUTURE_TASK_ID,
+            "active_plan_contract_id": subject.ENGINEERING_PACKAGE_A_CONTRACT_ID,
+            "canonical_next_reference_task": subject.FUTURE_TASK_ID,
+            "executable": False,
+            "full_is_non_executable_reference": True,
+            "release_consumption_authorized": False,
+            "device_authorized_by_this_file": False,
+            "camera_authorized_by_this_file": False,
+            "ray_authorized_by_this_file": False,
+            "strip_authorized_by_this_file": False,
+            "formal_r6_authorized": False,
+            "td_c_authorized": False,
+            "g4_06_state": {
+                "package": "A_AUTHORITY_CONTRACT_REVISION_ENGINEERING_ONLY",
+                "formal_execution_authorized": False,
+            },
+        }
+        self.commit_machine(plan, full, "synthetic package A activation")
+
+    def activate_package_b_machine(self) -> None:
+        plan, full = self.package_b_machine_values()
+        self.commit_machine(plan, full, "synthetic package B activation")
+
+    def package_b_machine_values(self) -> tuple[dict, dict]:
+        authority = {
+            "experiment_id": thermal.TD_B,
+            "source": "ray",
+            "stage": "TD-B",
+            "camera_backend": "remote",
+            "formal_execution_authorized": True,
+            "formal_root_creation_authorized": True,
+            "device_control_authorized": True,
+            "camera_authorized": True,
+            "ray_authorized": True,
+            "strip_authorized": False,
+            "capture_authorized": True,
+            "formal_root_parent": subject.FORMAL_ROOT_PARENT,
+            "formal_root_basename": FUTURE_RUN_NAME,
+            "formal_root_basename_regex": subject.FORMAL_ROOT_BASENAME_REGEX,
+            "logical_capture_cap": 16,
+            "physical_cr3_cap": 16,
+            "launch_cap": 1,
+            "retry": 0,
+            "release_consumption_authorized": False,
+            "td_c_authorized": False,
+        }
+        plan = {
+            "active_task_count": 1,
+            "active_task": subject.FUTURE_TASK_ID,
+            "reference_task_id": subject.FUTURE_TASK_ID,
+            "contract_id": subject.FORMAL_PACKAGE_B_CONTRACT_ID,
+            "executable": True,
+            "formal_execution_authority": authority,
+        }
+        full = {
+            "active_task_count": 1,
+            "active_task": subject.FUTURE_TASK_ID,
+            "current_plan_active_task_count": 1,
+            "current_plan_active_task": subject.FUTURE_TASK_ID,
+            "active_plan_contract_id": subject.FORMAL_PACKAGE_B_CONTRACT_ID,
+            "canonical_next_reference_task": subject.FUTURE_TASK_ID,
+            "executable": False,
+            "full_is_non_executable_reference": True,
+            "release_consumption_authorized": False,
+            "device_authorized_by_this_file": False,
+            "camera_authorized_by_this_file": False,
+            "ray_authorized_by_this_file": False,
+            "strip_authorized_by_this_file": False,
+            "formal_r6_authorized": False,
+            "td_c_authorized": False,
+            "g4_06_state": {
+                "package": "B_FORMAL_ACQUISITION",
+                "contract_id": subject.FORMAL_PACKAGE_B_CONTRACT_ID,
+                "authority_owner": "MATCHING_LIVE_PLAN_ONLY",
+                "full_top_level_non_authorizing": True,
+                "formal_authority_mirror": authority,
+                "g4_07_unlocked": False,
+            },
+        }
+        return plan, full
+
+    def commit_package_a_code_descendant(self) -> None:
+        path = self.root / subject.ALLOWED_CODE_CHILD_PATHS[1]
+        path.write_bytes(path.read_bytes() + b"synthetic-package-a-code-child\n")
+        self.git("add", "--", subject.ALLOWED_CODE_CHILD_PATHS[1])
+        self.git("commit", "-q", "-m", "feat(stage-gate): route ray r6 formal launch owner")
+        self.live_checkpoint = self.git_text("rev-parse", "HEAD")
+        self.live_tree = self.git_text("rev-parse", "HEAD^{tree}")
+
+    def commit_machine(self, plan: dict, full: dict, commit_subject: str) -> None:
+        (self.root / ".agent-work/PLAN.md").write_bytes(
+            machine_row("PLAN_MACHINE_CONTRACT", plan)
+        )
+        (self.root / ".agent-work/FULL_PLAN_REFERENCE.md").write_bytes(
+            machine_row("FULL_PLAN_MACHINE_STATE", full)
+        )
+        self.git("add", "--", ".agent-work/PLAN.md", ".agent-work/FULL_PLAN_REFERENCE.md")
+        self.git("commit", "-q", "-m", commit_subject)
         self.live_checkpoint = self.git_text("rev-parse", "HEAD")
         self.live_tree = self.git_text("rev-parse", "HEAD^{tree}")
 
@@ -220,6 +334,43 @@ class P7TdBR6StageGateTests(unittest.TestCase):
         subject.validate_launch_descriptor(descriptor, gate, repo_root=fixture.root)
         return value, gate, descriptor
 
+    def production_fixture(self, temporary: str, name: str = "production") -> SyntheticGitRepository:
+        fixture = SyntheticGitRepository(Path(temporary) / name / "repo")
+        fixture.persist_production_package()
+        fixture.activate_package_b_machine()
+        return fixture
+
+    def package_a_fixture(self, temporary: str, name: str = "package-a") -> SyntheticGitRepository:
+        fixture = SyntheticGitRepository(Path(temporary) / name / "repo")
+        fixture.persist_production_package()
+        fixture.activate_package_a_machine()
+        return fixture
+
+    def rewrite_package_json(
+        self, fixture: SyntheticGitRepository, name: str, value: dict,
+    ) -> None:
+        path = fixture.output_root / name
+        path.write_bytes(provenance.canonical_json_bytes(value))
+        path.chmod(0o600)
+
+    def refresh_terminal_reference(
+        self, fixture: SyntheticGitRepository, name: str,
+    ) -> None:
+        terminal_path = fixture.output_root / "terminal-seal.json"
+        terminal = json.loads(terminal_path.read_text(encoding="utf-8"))
+        identity = provenance.read_exact_file(
+            fixture.output_root / name, expected_mode=0o600,
+        )
+        terminal["artifacts"][name] = {
+            "path": name,
+            "bytes": identity.byte_count,
+            "sha256": identity.sha256,
+            "device": identity.device,
+            "inode": identity.inode,
+            "mode": identity.mode,
+        }
+        self.rewrite_package_json(fixture, "terminal-seal.json", terminal)
+
     def future_activation(self, gate: dict, descriptor: dict) -> tuple[dict, dict]:
         template = gate["runtime_plan_template"]
         candidates = descriptor["committed_source_contract"][
@@ -274,23 +425,629 @@ class P7TdBR6StageGateTests(unittest.TestCase):
         )
         return activation, runtime
 
-    def test_live_input_binds_activation_and_all_candidate_sources(self):
-        value = subject.build_stage_gate_input(
-            repo_root=PROJECT_ROOT,
-            source_checkpoint=ACTIVATION_HEAD,
-            source_tree=ACTIVATION_TREE,
-            output_root=LIVE_ROOT,
-        )
-        self.assertEqual(value.source_checkpoint, ACTIVATION_HEAD)
-        self.assertEqual(value.source_tree, ACTIVATION_TREE)
-        self.assertEqual(
-            tuple(item.path for item in value.source_references),
-            subject.EXPECTED_SOURCE_PATHS,
-        )
-        self.assertTrue(all(item.bytes > 0 for item in value.source_references))
-        self.assertTrue(all(len(item.sha256) == 64 for item in value.source_references))
-        self.assertEqual(value.prerequisite_projection["retained_r3_status"], subject.RETAINED_R3_STATUS)
-        self.assertFalse(value.prerequisite_projection["release_consumption_authorized"])
+    def test_synthetic_input_binds_activation_and_all_candidate_sources(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = self.fixture(temporary)
+            value = fixture.build_input()
+            self.assertEqual(value.source_checkpoint, ACTIVATION_HEAD)
+            self.assertEqual(value.source_tree, ACTIVATION_TREE)
+            self.assertEqual(
+                tuple(item.path for item in value.source_references),
+                subject.EXPECTED_SOURCE_PATHS,
+            )
+            self.assertTrue(all(item.bytes > 0 for item in value.source_references))
+            self.assertTrue(all(len(item.sha256) == 64 for item in value.source_references))
+            self.assertEqual(
+                value.prerequisite_projection["retained_r3_status"],
+                subject.RETAINED_R3_STATUS,
+            )
+            self.assertFalse(
+                value.prerequisite_projection["release_consumption_authorized"]
+            )
+
+    def test_production_cli_seam_loads_materializes_and_delegates_exactly_once(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = SyntheticGitRepository(Path(temporary) / "repo")
+            fixture.persist_production_package()
+            fixture.activate_package_b_machine()
+            backend = FakeCapableBackend()
+            backend_factory = mock.Mock(return_value=backend)
+            delegated = mock.Mock(return_value=Path("synthetic-result"))
+
+            result = subject.run_production_cli_launch(
+                package_dir=fixture.output_root,
+                repo_root=fixture.root,
+                code_owner_checkpoint=fixture.code_checkpoint,
+                output_dir=Path(subject.FORMAL_ROOT_PARENT),
+                run_name=FUTURE_RUN_NAME,
+                camera_backend_name="remote",
+                camera_backend_kwargs={
+                    "env_file": Path("synthetic.env"),
+                    "base_url": None,
+                    "timeout": 10.0,
+                },
+                backend_factory=backend_factory,
+                delegated_run_fn=delegated,
+            )
+
+            self.assertEqual(result, Path("synthetic-result"))
+            backend_factory.assert_called_once()
+            delegated.assert_called_once()
+            runtime = delegated.call_args.args[0]
+            self.assertEqual(len(runtime["captures"]), 16)
+            self.assertEqual(runtime["budgets"]["logical_cap"], 16)
+            self.assertEqual(runtime["budgets"]["physical_cr3_cap"], 16)
+            self.assertEqual(runtime["setup_physical_cr3_count"], 0)
+            self.assertEqual(runtime["budgets"]["ambient_cap"], 0)
+            self.assertEqual(
+                [row["state_id"] for row in runtime["captures"]],
+                ["A", *(["D"] * 4), "A", *(["B"] * 4), "A", *(["C"] * 4), "A"],
+            )
+            self.assertTrue(runtime["hard_locks"]["strip_nonzero"])
+            backend.connect.assert_not_called()
+
+    def test_planned_subject_real_topology_binds_exact_three_committed_blobs(self):
+        planned_subject = "feat(stage-gate): route ray r6 formal launch owner"
+        self.assertEqual(subject.ALLOWED_CODE_CHILD_SUBJECT, planned_subject)
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = SyntheticGitRepository(Path(temporary) / "planned" / "repo")
+            fixture.persist_production_package()
+            fixture.activate_package_b_machine()
+            attestation = subject.validate_committed_source_attestation(
+                fixture.descriptor,
+                fixture.activation_probe(),
+                repo_root=fixture.root,
+            )
+            self.assertEqual(
+                fixture.git_text("show", "-s", "--format=%s", fixture.code_checkpoint),
+                planned_subject,
+            )
+            self.assertEqual(
+                tuple(thermal.changed_paths_between_checkpoints(
+                    fixture.source_checkpoint,
+                    fixture.code_checkpoint,
+                    project_root=fixture.root,
+                )),
+                subject.ALLOWED_CODE_CHILD_PATHS,
+            )
+            candidates = fixture.descriptor["committed_source_contract"][
+                "allowed_code_owner_child"
+            ]["candidate_references"]
+            self.assertEqual(len(candidates), 3)
+            for reference in candidates:
+                blob = subprocess.run(
+                    ["git", "show", f"{fixture.code_checkpoint}:{reference['path']}"],
+                    cwd=fixture.root,
+                    check=True,
+                    capture_output=True,
+                ).stdout
+                self.assertEqual(len(blob), reference["bytes"])
+                self.assertEqual(hashlib.sha256(blob).hexdigest(), reference["sha256"])
+                self.assertEqual(reference["mode"], 0o644)
+            self.assertEqual(attestation.code_owner_checkpoint, fixture.code_checkpoint)
+            self.assertEqual(attestation.live_activation_checkpoint, fixture.live_checkpoint)
+            self.assertEqual(len(attestation.post_child_commits), 1)
+            self.assertEqual(
+                tuple(attestation.post_child_commits[0]["changed_paths"]),
+                (".agent-work/FULL_PLAN_REFERENCE.md", ".agent-work/PLAN.md"),
+            )
+
+    def test_legacy_subject_with_identical_code_tree_fails_before_backend(self):
+        legacy_subject = "feat(stage-gate): accept ray r6 launch owner"
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = SyntheticGitRepository(Path(temporary) / "legacy" / "repo")
+            planned_checkpoint = fixture.code_checkpoint
+            legacy_checkpoint = fixture.commit_tree(
+                fixture.code_tree,
+                (fixture.source_checkpoint,),
+                legacy_subject,
+            )
+            self.assertEqual(
+                fixture.git_text("rev-parse", f"{planned_checkpoint}^{{tree}}"),
+                fixture.git_text("rev-parse", f"{legacy_checkpoint}^{{tree}}"),
+            )
+            fixture.set_head(legacy_checkpoint)
+            fixture.code_checkpoint = legacy_checkpoint
+            fixture.persist_production_package()
+            fixture.activate_package_b_machine()
+            factory = mock.Mock()
+            delegated = mock.Mock()
+            with self.assertRaisesRegex(
+                subject.StageGateError, "committed_source_subject_drift",
+            ):
+                subject.run_production_cli_launch(
+                    package_dir=fixture.output_root,
+                    repo_root=fixture.root,
+                    code_owner_checkpoint=fixture.code_checkpoint,
+                    output_dir=Path(subject.FORMAL_ROOT_PARENT),
+                    run_name=FUTURE_RUN_NAME,
+                    camera_backend_name="remote",
+                    camera_backend_kwargs={
+                        "env_file": Path("synthetic.env"),
+                        "base_url": None,
+                        "timeout": 10.0,
+                    },
+                    backend_factory=factory,
+                    delegated_run_fn=delegated,
+                )
+            factory.assert_not_called()
+            delegated.assert_not_called()
+
+    def test_package_a_engineering_machine_state_is_not_production_authority(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = self.package_a_fixture(temporary)
+            factory = mock.Mock()
+            delegated = mock.Mock()
+            with self.assertRaisesRegex(
+                subject.StageGateError, "production_machine_contract_drift",
+            ):
+                subject.run_production_cli_launch(
+                    package_dir=fixture.output_root,
+                    repo_root=fixture.root,
+                    code_owner_checkpoint=fixture.code_checkpoint,
+                    output_dir=Path(subject.FORMAL_ROOT_PARENT),
+                    run_name=FUTURE_RUN_NAME,
+                    camera_backend_name="remote",
+                    camera_backend_kwargs={
+                        "env_file": Path("synthetic.env"),
+                        "base_url": None,
+                        "timeout": 10.0,
+                    },
+                    backend_factory=factory,
+                    delegated_run_fn=delegated,
+                )
+            factory.assert_not_called()
+            delegated.assert_not_called()
+
+    def test_formal_machine_authority_matrix_is_closed_and_pre_backend(self):
+        def plan_authority(name: str, value: object):
+            return lambda plan, _full: plan["formal_execution_authority"].__setitem__(name, value)
+
+        def mirrored_authority(name: str, value: object):
+            def mutate(plan: dict, full: dict) -> None:
+                plan["formal_execution_authority"][name] = value
+                full["g4_06_state"]["formal_authority_mirror"][name] = value
+            return mutate
+
+        cases = {
+            "plan_formal_false": plan_authority("formal_execution_authorized", False),
+            "plan_device_false": plan_authority("device_control_authorized", False),
+            "plan_camera_false": plan_authority("camera_authorized", False),
+            "plan_ray_false": plan_authority("ray_authorized", False),
+            "plan_capture_false": plan_authority("capture_authorized", False),
+            "plan_source_drift": plan_authority("source", "strip"),
+            "plan_backend_drift": plan_authority("camera_backend", "local"),
+            "plan_not_executable": lambda plan, _full: plan.__setitem__(
+                "executable", False,
+            ),
+            "authority_missing": lambda plan, _full: plan["formal_execution_authority"].pop("capture_authorized"),
+            "authority_extra": lambda plan, _full: plan["formal_execution_authority"].__setitem__("extra", False),
+            "mirror_authority_missing": lambda _plan, full: full["g4_06_state"]["formal_authority_mirror"].pop("capture_authorized"),
+            "mirror_authority_extra": lambda _plan, full: full["g4_06_state"]["formal_authority_mirror"].__setitem__("extra", False),
+            "package_a_contract_with_authority": lambda plan, full: (
+                plan.__setitem__("contract_id", subject.ENGINEERING_PACKAGE_A_CONTRACT_ID),
+                full.__setitem__("active_plan_contract_id", subject.ENGINEERING_PACKAGE_A_CONTRACT_ID),
+                full["g4_06_state"].__setitem__("contract_id", subject.ENGINEERING_PACKAGE_A_CONTRACT_ID),
+            ),
+            "third_contract": lambda plan, full: (
+                plan.__setitem__("contract_id", "G4-RAY-R6-THIRD-CONTRACT"),
+                full.__setitem__("active_plan_contract_id", "G4-RAY-R6-THIRD-CONTRACT"),
+                full["g4_06_state"].__setitem__("contract_id", "G4-RAY-R6-THIRD-CONTRACT"),
+            ),
+            "plan_full_contract_mismatch": lambda _plan, full: full.__setitem__(
+                "active_plan_contract_id", subject.ENGINEERING_PACKAGE_A_CONTRACT_ID,
+            ),
+            "full_mirror_mismatch": lambda _plan, full: full["g4_06_state"].__setitem__(
+                "package", "A_ENGINEERING",
+            ),
+            "full_claims_device_authority": lambda _plan, full: full.__setitem__(
+                "device_authorized_by_this_file", True,
+            ),
+            "full_claims_formal_authority": lambda _plan, full: full.__setitem__(
+                "formal_r6_authorized", True,
+            ),
+            "full_claims_executable": lambda _plan, full: full.__setitem__(
+                "executable", True,
+            ),
+            "full_drops_non_authorizing_lock": lambda _plan, full: full.__setitem__(
+                "full_is_non_executable_reference", False,
+            ),
+            "wrong_task": lambda plan, full: (
+                plan.__setitem__("active_task", "REF-WRONG"),
+                full.__setitem__("active_task", "REF-WRONG"),
+            ),
+            "wrong_count": lambda plan, full: (
+                plan.__setitem__("active_task_count", 0),
+                full.__setitem__("active_task_count", 0),
+            ),
+            "wrong_canonical_next": lambda _plan, full: full.__setitem__(
+                "canonical_next_reference_task", "REF-WRONG",
+            ),
+            "wrong_current_plan_task": lambda _plan, full: full.__setitem__(
+                "current_plan_active_task", "REF-WRONG",
+            ),
+            "wrong_current_plan_count": lambda _plan, full: full.__setitem__(
+                "current_plan_active_task_count", 0,
+            ),
+            "retry_expansion": mirrored_authority("retry", 1),
+            "launch_expansion": mirrored_authority("launch_cap", 2),
+            "logical_expansion": mirrored_authority("logical_capture_cap", 17),
+            "physical_expansion": mirrored_authority("physical_cr3_cap", 17),
+            "root_expansion": mirrored_authority("formal_root_parent", "/synthetic/other"),
+            "strip_expansion": mirrored_authority("strip_authorized", True),
+            "release_expansion": mirrored_authority("release_consumption_authorized", True),
+            "td_c_expansion": mirrored_authority("td_c_authorized", True),
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            for index, (name, mutate) in enumerate(cases.items()):
+                with self.subTest(name=name):
+                    fixture = self.production_fixture(
+                        temporary, f"matrix-{index:02d}",
+                    )
+                    plan, full = fixture.package_b_machine_values()
+                    mutate(plan, full)
+                    (fixture.root / ".agent-work/PLAN.md").write_bytes(
+                        machine_row("PLAN_MACHINE_CONTRACT", plan)
+                    )
+                    (fixture.root / ".agent-work/FULL_PLAN_REFERENCE.md").write_bytes(
+                        machine_row("FULL_PLAN_MACHINE_STATE", full)
+                    )
+                    factory = mock.Mock()
+                    delegated = mock.Mock()
+                    with self.assertRaisesRegex(
+                        subject.StageGateError, "production_machine_contract_drift",
+                    ):
+                        subject.run_production_cli_launch(
+                            package_dir=fixture.output_root,
+                            repo_root=fixture.root,
+                            code_owner_checkpoint=fixture.code_checkpoint,
+                            output_dir=Path(subject.FORMAL_ROOT_PARENT),
+                            run_name=FUTURE_RUN_NAME,
+                            camera_backend_name="remote",
+                            camera_backend_kwargs={
+                                "env_file": Path("synthetic.env"),
+                                "base_url": None,
+                                "timeout": 10.0,
+                            },
+                            backend_factory=factory,
+                            delegated_run_fn=delegated,
+                        )
+                    factory.assert_not_called()
+                    delegated.assert_not_called()
+
+    def test_old_descriptor_does_not_promote_later_package_a_code_child(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = SyntheticGitRepository(Path(temporary) / "source-bound" / "repo")
+            fixture.persist_production_package()
+            fixture.commit_package_a_code_descendant()
+            fixture.activate_package_b_machine()
+            old_descriptor = deepcopy(fixture.descriptor)
+            old_descriptor["committed_source_contract"]["allowed_code_owner_child"][
+                "subject"
+            ] = "feat(stage-gate): accept ray r6 launch owner"
+            with self.assertRaisesRegex(
+                subject.StageGateError,
+                "committed_source_descriptor_semantic_drift",
+            ):
+                subject.validate_committed_source_attestation(
+                    old_descriptor,
+                    fixture.activation_probe(),
+                    repo_root=fixture.root,
+                )
+            factory = mock.Mock()
+            delegated = mock.Mock()
+            with self.assertRaisesRegex(subject.StageGateError, "source_reference_drift"):
+                subject.run_production_cli_launch(
+                    package_dir=fixture.output_root,
+                    repo_root=fixture.root,
+                    code_owner_checkpoint=fixture.code_checkpoint,
+                    output_dir=Path(subject.FORMAL_ROOT_PARENT),
+                    run_name=FUTURE_RUN_NAME,
+                    camera_backend_name="remote",
+                    camera_backend_kwargs={
+                        "env_file": Path("synthetic.env"),
+                        "base_url": None,
+                        "timeout": 10.0,
+                    },
+                    backend_factory=factory,
+                    delegated_run_fn=delegated,
+                )
+            factory.assert_not_called()
+            delegated.assert_not_called()
+
+    def test_measure_cli_routes_exact_stage_gate_chain_and_rejects_generic_bypass(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = self.production_fixture(temporary)
+            backend = FakeCapableBackend()
+            backend_factory = mock.Mock(return_value=backend)
+            delegated = mock.Mock(return_value=Path("synthetic-cli-result"))
+            argv = [
+                "--experiment-id", thermal.TD_B,
+                "--source", "ray",
+                "--phase", "formal",
+                "--execute",
+                "--allow-device-control",
+                "--code-checkpoint", fixture.code_checkpoint,
+                "--output-dir", subject.FORMAL_ROOT_PARENT,
+                "--run-name", FUTURE_RUN_NAME,
+                "--stage-gate-package", str(fixture.output_root),
+            ]
+
+            self.assertEqual(
+                measure.main(
+                    argv,
+                    backend_factory=backend_factory,
+                    run_fn=delegated,
+                    repo_root=fixture.root,
+                ),
+                0,
+            )
+            backend_factory.assert_called_once()
+            delegated.assert_called_once()
+            backend.connect.assert_not_called()
+
+            bypass_factory = mock.Mock()
+            with self.assertRaisesRegex(
+                PermissionError, "requires --stage-gate-package",
+            ):
+                measure.main(
+                    [item for item in argv if item not in {
+                        "--stage-gate-package", str(fixture.output_root),
+                    }],
+                    backend_factory=bypass_factory,
+                    run_fn=mock.Mock(),
+                    repo_root=fixture.root,
+                )
+            bypass_factory.assert_not_called()
+
+    def test_production_package_integrity_precedes_semantics_and_backend_factory(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = self.production_fixture(temporary, "integrity")
+            descriptor_path = fixture.output_root / "launch-descriptor.json"
+            descriptor = json.loads(descriptor_path.read_text(encoding="utf-8"))
+            descriptor["secret_note"] = "credential"
+            self.rewrite_package_json(
+                fixture, "launch-descriptor.json", descriptor,
+            )
+            factory = mock.Mock()
+            with self.assertRaisesRegex(subject.StageGateError, "artifact_identity_drift"):
+                subject.run_production_cli_launch(
+                    package_dir=fixture.output_root,
+                    repo_root=fixture.root,
+                    code_owner_checkpoint=fixture.code_checkpoint,
+                    output_dir=Path(subject.FORMAL_ROOT_PARENT),
+                    run_name=FUTURE_RUN_NAME,
+                    camera_backend_name="remote",
+                    camera_backend_kwargs={
+                        "env_file": Path("synthetic.env"),
+                        "base_url": None,
+                        "timeout": 10.0,
+                    },
+                    backend_factory=factory,
+                    delegated_run_fn=mock.Mock(),
+                )
+            factory.assert_not_called()
+
+            historical = self.production_fixture(temporary, "historical")
+            historical_descriptor = json.loads(
+                (historical.output_root / "launch-descriptor.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            historical_descriptor["historical_payload"] = "retained-r3"
+            self.rewrite_package_json(
+                historical, "launch-descriptor.json", historical_descriptor,
+            )
+            self.refresh_terminal_reference(historical, "launch-descriptor.json")
+            historical_factory = mock.Mock()
+            with self.assertRaisesRegex(subject.StageGateError, "historical_input_prohibited"):
+                subject.run_production_cli_launch(
+                    package_dir=historical.output_root,
+                    repo_root=historical.root,
+                    code_owner_checkpoint=historical.code_checkpoint,
+                    output_dir=Path(subject.FORMAL_ROOT_PARENT),
+                    run_name=FUTURE_RUN_NAME,
+                    camera_backend_name="remote",
+                    camera_backend_kwargs={
+                        "env_file": Path("synthetic.env"),
+                        "base_url": None,
+                        "timeout": 10.0,
+                    },
+                    backend_factory=historical_factory,
+                    delegated_run_fn=mock.Mock(),
+                )
+            historical_factory.assert_not_called()
+
+            self.refresh_terminal_reference(fixture, "launch-descriptor.json")
+            with self.assertRaisesRegex(subject.StageGateError, "secret_material_prohibited"):
+                subject.run_production_cli_launch(
+                    package_dir=fixture.output_root,
+                    repo_root=fixture.root,
+                    code_owner_checkpoint=fixture.code_checkpoint,
+                    output_dir=Path(subject.FORMAL_ROOT_PARENT),
+                    run_name=FUTURE_RUN_NAME,
+                    camera_backend_name="remote",
+                    camera_backend_kwargs={
+                        "env_file": Path("synthetic.env"),
+                        "base_url": None,
+                        "timeout": 10.0,
+                    },
+                    backend_factory=factory,
+                    delegated_run_fn=mock.Mock(),
+                )
+            factory.assert_not_called()
+
+    def test_production_inventory_machine_and_delegate_failures_are_fail_closed(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            extra = self.production_fixture(temporary, "extra")
+            (extra.output_root / "unexpected.json").write_text("{}", encoding="utf-8")
+            (extra.output_root / "unexpected.json").chmod(0o600)
+            factory = mock.Mock()
+            common = {
+                "repo_root": extra.root,
+                "code_owner_checkpoint": extra.code_checkpoint,
+                "output_dir": Path(subject.FORMAL_ROOT_PARENT),
+                "run_name": FUTURE_RUN_NAME,
+                "camera_backend_name": "remote",
+                "camera_backend_kwargs": {
+                    "env_file": Path("synthetic.env"),
+                    "base_url": None,
+                    "timeout": 10.0,
+                },
+                "backend_factory": factory,
+                "delegated_run_fn": mock.Mock(),
+            }
+            with self.assertRaisesRegex(subject.StageGateError, "artifact_inventory_drift"):
+                subject.run_production_cli_launch(
+                    package_dir=extra.output_root, **common,
+                )
+            factory.assert_not_called()
+
+            machine = self.production_fixture(temporary, "machine")
+            (machine.root / ".agent-work/PLAN.md").write_bytes(
+                machine_row("PLAN_MACHINE_CONTRACT", {
+                    "active_task_count": 0,
+                    "active_task": None,
+                    "reference_task_id": subject.FUTURE_TASK_ID,
+                    "contract_id": subject.FORMAL_PACKAGE_B_CONTRACT_ID,
+                    "formal_execution_authority": {},
+                })
+            )
+            factory = mock.Mock()
+            with self.assertRaisesRegex(subject.StageGateError, "production_machine_contract_drift"):
+                subject.run_production_cli_launch(
+                    package_dir=machine.output_root,
+                    repo_root=machine.root,
+                    code_owner_checkpoint=machine.code_checkpoint,
+                    output_dir=Path(subject.FORMAL_ROOT_PARENT),
+                    run_name=FUTURE_RUN_NAME,
+                    camera_backend_name="remote",
+                    camera_backend_kwargs={
+                        "env_file": Path("synthetic.env"),
+                        "base_url": None,
+                        "timeout": 10.0,
+                    },
+                    backend_factory=factory,
+                    delegated_run_fn=mock.Mock(),
+                )
+            factory.assert_not_called()
+
+            delegated_fixture = self.production_fixture(temporary, "delegate")
+            backend = FakeCapableBackend()
+            factory = mock.Mock(return_value=backend)
+            delegated = mock.Mock(side_effect=RuntimeError("synthetic delegate failure"))
+            with self.assertRaisesRegex(RuntimeError, "synthetic delegate failure"):
+                subject.run_production_cli_launch(
+                    package_dir=delegated_fixture.output_root,
+                    repo_root=delegated_fixture.root,
+                    code_owner_checkpoint=delegated_fixture.code_checkpoint,
+                    output_dir=Path(subject.FORMAL_ROOT_PARENT),
+                    run_name=FUTURE_RUN_NAME,
+                    camera_backend_name="remote",
+                    camera_backend_kwargs={
+                        "env_file": Path("synthetic.env"),
+                        "base_url": None,
+                        "timeout": 10.0,
+                    },
+                    backend_factory=factory,
+                    delegated_run_fn=delegated,
+                )
+            factory.assert_called_once()
+            delegated.assert_called_once()
+            backend.connect.assert_not_called()
+
+    def test_production_source_and_machine_parser_drift_precede_backend_factory(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            source = self.production_fixture(temporary, "source")
+            factory = mock.Mock()
+            with self.assertRaisesRegex(
+                subject.StageGateError, "committed_source_parent_drift",
+            ):
+                subject.run_production_cli_launch(
+                    package_dir=source.output_root,
+                    repo_root=source.root,
+                    code_owner_checkpoint=source.live_checkpoint,
+                    output_dir=Path(subject.FORMAL_ROOT_PARENT),
+                    run_name=FUTURE_RUN_NAME,
+                    camera_backend_name="remote",
+                    camera_backend_kwargs={
+                        "env_file": Path("synthetic.env"),
+                        "base_url": None,
+                        "timeout": 10.0,
+                    },
+                    backend_factory=factory,
+                    delegated_run_fn=mock.Mock(),
+                )
+            factory.assert_not_called()
+
+            duplicate = self.production_fixture(temporary, "duplicate")
+            plan_path = duplicate.root / ".agent-work/PLAN.md"
+            plan_path.write_bytes(plan_path.read_bytes() + plan_path.read_bytes())
+            factory = mock.Mock()
+            with self.assertRaisesRegex(
+                subject.StageGateError, "production_machine_contract_invalid",
+            ):
+                subject.run_production_cli_launch(
+                    package_dir=duplicate.output_root,
+                    repo_root=duplicate.root,
+                    code_owner_checkpoint=duplicate.code_checkpoint,
+                    output_dir=Path(subject.FORMAL_ROOT_PARENT),
+                    run_name=FUTURE_RUN_NAME,
+                    camera_backend_name="remote",
+                    camera_backend_kwargs={
+                        "env_file": Path("synthetic.env"),
+                        "base_url": None,
+                        "timeout": 10.0,
+                    },
+                    backend_factory=factory,
+                    delegated_run_fn=mock.Mock(),
+                )
+            factory.assert_not_called()
+
+    def test_stage_gate_cli_rejects_extra_or_inexact_combinations_before_dispatch(self):
+        absolute_package = Path("/synthetic/stage-gate-package")
+        base = [
+            "--experiment-id", thermal.TD_B,
+            "--source", "ray",
+            "--phase", "formal",
+            "--execute",
+            "--allow-device-control",
+            "--code-checkpoint", "1" * 40,
+            "--output-dir", subject.FORMAL_ROOT_PARENT,
+            "--run-name", FUTURE_RUN_NAME,
+            "--stage-gate-package", str(absolute_package),
+        ]
+        cases = {
+            "relative_package": [
+                *base[:-1], "relative-package",
+            ],
+            "human_gate_injection": [
+                *base, "--human-authorization", thermal.TD_B,
+            ],
+            "parallel_release": [
+                *base, "--setup-release", "/synthetic/release.json",
+            ],
+            "variant_expansion": [
+                *base, "--variant", "expansion",
+            ],
+            "remote_override": [
+                *base, "--remote-base-url", "http://127.0.0.1:1",
+            ],
+        }
+        for name, argv in cases.items():
+            with self.subTest(name=name):
+                factory = mock.Mock()
+                launch = mock.Mock()
+                with self.assertRaisesRegex(
+                    PermissionError, "exact stage-gate CLI contract",
+                ):
+                    measure.main(
+                        argv,
+                        backend_factory=factory,
+                        g4_r6_launch_fn=launch,
+                    )
+                factory.assert_not_called()
+                launch.assert_not_called()
 
     def test_canonical_factory_reuses_thermal_owner_and_freezes_exact_contract(self):
         with tempfile.TemporaryDirectory() as temporary:

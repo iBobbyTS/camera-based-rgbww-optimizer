@@ -18,7 +18,7 @@ from typing import Any, Callable, Mapping, Sequence
 from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
 from camera_based_rgbww_optimizer.optimization import measure_raw_observer_validation as raw_validation
 from camera_based_rgbww_optimizer.control import camera_remote_v2
-from camera_based_rgbww_optimizer.paths import PROJECT_TMP_DIR
+from camera_based_rgbww_optimizer.paths import PROJECT_ROOT, PROJECT_TMP_DIR
 
 
 DEFAULT_OUTPUT = PROJECT_TMP_DIR / "p7-thermal-diagnostics-offline"
@@ -4078,6 +4078,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--finalize-setup-run", type=Path)
     parser.add_argument("--orchestrate-setup", action="store_true")
     parser.add_argument("--code-checkpoint")
+    parser.add_argument("--stage-gate-package", type=Path)
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--dry-run", action="store_true")
     mode.add_argument("--execute", action="store_true")
@@ -4106,8 +4107,78 @@ def main(
     setup_orchestrate_fn: Callable[..., tuple[Path, Path, Path]] = orchestrate_td_b_setup,
     resolved_run_fn: Callable[..., Path] = run_resolved_td_b_formal,
     eq_prelaunch_fn: Callable[..., Path] = run_td_b_eq_r6_prelaunch,
+    g4_r6_launch_fn: Callable[..., Any] | None = None,
+    repo_root: str | Path = PROJECT_ROOT,
 ) -> int:
     args = parse_args(argv)
+    if args.stage_gate_package is not None:
+        from camera_based_rgbww_optimizer.control import camera_remote
+        from camera_based_rgbww_optimizer.optimization import p7_td_b_r6_stage_gate
+
+        if (
+            not args.execute
+            or not args.allow_device_control
+            or args.experiment_id != thermal.TD_B
+            or args.source != "ray"
+            or args.phase != "formal"
+            or args.variant != "core"
+            or not args.output_dir.is_absolute()
+            or not args.stage_gate_package.is_absolute()
+            or not args.code_checkpoint
+            or args.human_authorization is not None
+            or args.camera_backend != "remote"
+            or Path(args.remote_env_file).resolve()
+            != Path(camera_remote.DEFAULT_ENV_FILE).resolve()
+            or args.remote_base_url is not None
+            or args.remote_timeout != camera_remote.DEFAULT_TIMEOUT
+            or args.prerequisite_artifact != thermal.OPERATING_ENVELOPE_PATH
+            or args.setup_release is not None
+            or args.lineage_candidate is not None
+            or args.qualification_preparation is not None
+            or args.finalize_setup_run is not None
+            or args.orchestrate_setup
+            or args.eq_r6_prelaunch
+            or args.eq_r6_orchestrate
+            or args.eq_r6_single_candidate is not None
+            or args.eq_r6_live_plan is not None
+            or args.eq_r6_outer_pid is not None
+        ):
+            raise PermissionError(
+                "Ray R6 production launch requires its exact stage-gate CLI contract"
+            )
+        if backend_factory is None:
+            backend_factory = camera_remote.create_camera_backend
+        if g4_r6_launch_fn is None:
+            g4_r6_launch_fn = p7_td_b_r6_stage_gate.run_production_cli_launch
+        print(g4_r6_launch_fn(
+            package_dir=args.stage_gate_package,
+            repo_root=repo_root,
+            code_owner_checkpoint=args.code_checkpoint,
+            output_dir=args.output_dir,
+            run_name=args.run_name,
+            camera_backend_name=args.camera_backend,
+            camera_backend_kwargs={
+                "env_file": args.remote_env_file,
+                "base_url": args.remote_base_url,
+                "timeout": args.remote_timeout,
+            },
+            backend_factory=backend_factory,
+            delegated_run_fn=run_fn,
+        ))
+        return 0
+    if (
+        args.execute
+        and args.experiment_id == thermal.TD_B
+        and args.source == "ray"
+        and args.phase == "formal"
+        and args.setup_release is None
+        and not args.eq_r6_prelaunch
+        and not args.eq_r6_orchestrate
+        and args.eq_r6_single_candidate is None
+    ):
+        raise PermissionError(
+            "Ray TD-B formal production requires --stage-gate-package"
+        )
     if args.eq_r6_prelaunch:
         from camera_based_rgbww_optimizer.control import camera_remote
 

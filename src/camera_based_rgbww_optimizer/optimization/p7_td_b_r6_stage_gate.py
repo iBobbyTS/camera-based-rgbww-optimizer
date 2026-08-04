@@ -14,7 +14,7 @@ from pathlib import Path, PurePosixPath
 import re
 import stat
 import subprocess
-from typing import Any, Mapping, Sequence
+from typing import Any, Callable, Mapping, Sequence
 
 from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
 from camera_based_rgbww_optimizer.utils.agent_work_machine_contract import (
@@ -31,6 +31,10 @@ INPUT_SCHEMA = "p7_td_b_r6_stage_gate_input_v1"
 TASK_ID = "REF-G4-05-RAY-R6-STAGE-GATE"
 CONTRACT_ID = "G4-RAY-R6-STAGE-GATE-OFFLINE-V1"
 FUTURE_TASK_ID = "REF-G4-06-RAY-R6"
+ENGINEERING_PACKAGE_A_CONTRACT_ID = (
+    "G4-RAY-R6-PRODUCTION-CLI-LAUNCH-SEAM-PACKAGE-A-V2"
+)
+FORMAL_PACKAGE_B_CONTRACT_ID = "G4-RAY-R6-FORMAL-ACQUISITION-PACKAGE-B-V1"
 PASS_STATUS = "sealed_offline_ray_r6_stage_gate_pass_waiting_planner_review"
 FAIL_STATUS = "sealed_offline_ray_r6_stage_gate_fail_waiting_planner_review"
 RETAINED_R3_STATUS = "RETAINED_UNVALIDATED_UNCONSUMED"
@@ -60,7 +64,7 @@ TEMPLATE_AUTHORITY_SCHEMA = "p7_td_b_r6_runtime_template_authority_v1"
 PLAN_BOUND_AUTHORITY_SCHEMA = "p7_td_b_r6_plan_bound_authority_v1"
 FUTURE_ACTIVATION_SCHEMA = "p7_td_b_r6_future_plan_activation_v2"
 COMMITTED_SOURCE_ATTESTATION_SCHEMA = "p7_td_b_r6_committed_source_attestation_v1"
-ALLOWED_CODE_CHILD_SUBJECT = "feat(stage-gate): accept ray r6 launch owner"
+ALLOWED_CODE_CHILD_SUBJECT = "feat(stage-gate): route ray r6 formal launch owner"
 ALLOWED_CODE_CHILD_PATHS = (
     "src/camera_based_rgbww_optimizer/optimization/measure_p7_thermal_diagnostics.py",
     "src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py",
@@ -1416,11 +1420,10 @@ def _read_artifact(root: provenance.DirectoryIdentity, reference: Mapping[str, A
     return identity
 
 
-def replay_stage_gate_package(
+def _load_stage_gate_package(
     output_root: str | Path, *, repo_root: str | Path,
+    allow_orchestration_drift: bool,
 ) -> dict[str, Any]:
-    """Public canonical replay with bound root and file identities."""
-
     try:
         root = provenance.read_existing_root(output_root)
         inventory = provenance.list_exact_regular_children(root)
@@ -1458,8 +1461,17 @@ def replay_stage_gate_package(
         descriptor = provenance.decode_canonical_json(descriptor_identity.data)
     except provenance.ProvenanceIOError as exc:
         raise StageGateError(f"artifact_{exc.code}") from exc
-    validate_stage_gate(stage_gate, repo_root=repo_root)
-    validate_launch_descriptor(descriptor, stage_gate, repo_root=repo_root)
+    validate_stage_gate(
+        stage_gate,
+        repo_root=repo_root,
+        allow_orchestration_drift=allow_orchestration_drift,
+    )
+    validate_launch_descriptor(
+        descriptor,
+        stage_gate,
+        repo_root=repo_root,
+        allow_orchestration_drift=allow_orchestration_drift,
+    )
     return {
         "status": "pass",
         "root": _root_value(root),
@@ -1472,6 +1484,235 @@ def replay_stage_gate_package(
         "stage_gate": _native(stage_gate),
         "launch_descriptor": _native(descriptor),
     }
+
+
+def replay_stage_gate_package(
+    output_root: str | Path, *, repo_root: str | Path,
+) -> dict[str, Any]:
+    """Public canonical replay with bound root and file identities."""
+
+    return _load_stage_gate_package(
+        output_root,
+        repo_root=repo_root,
+        allow_orchestration_drift=False,
+    )
+
+
+def load_and_validate_stage_gate_package(
+    package_dir: str | Path, *, repo_root: str | Path,
+) -> dict[str, Any]:
+    """Load a sealed package while allowing only live orchestration-file drift."""
+
+    return _load_stage_gate_package(
+        package_dir,
+        repo_root=repo_root,
+        allow_orchestration_drift=True,
+    )
+
+
+def _formal_authority_contract(*, output_dir: str | Path, run_name: str) -> dict[str, Any]:
+    return {
+        "experiment_id": thermal.TD_B,
+        "source": "ray",
+        "stage": "TD-B",
+        "camera_backend": "remote",
+        "formal_execution_authorized": True,
+        "formal_root_creation_authorized": True,
+        "device_control_authorized": True,
+        "camera_authorized": True,
+        "ray_authorized": True,
+        "strip_authorized": False,
+        "capture_authorized": True,
+        "formal_root_parent": str(output_dir),
+        "formal_root_basename": run_name,
+        "formal_root_basename_regex": FORMAL_ROOT_BASENAME_REGEX,
+        "logical_capture_cap": 16,
+        "physical_cr3_cap": 16,
+        "launch_cap": 1,
+        "retry": 0,
+        "release_consumption_authorized": False,
+        "td_c_authorized": False,
+    }
+
+
+def _formal_full_mirror(authority: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "package": "B_FORMAL_ACQUISITION",
+        "contract_id": FORMAL_PACKAGE_B_CONTRACT_ID,
+        "authority_owner": "MATCHING_LIVE_PLAN_ONLY",
+        "full_top_level_non_authorizing": True,
+        "formal_authority_mirror": _native(authority),
+        "g4_07_unlocked": False,
+    }
+
+
+def _validate_production_formal_machine_contract(
+    repo_root: Path, *, output_dir: str | Path, run_name: str,
+) -> None:
+    try:
+        plan = parse_plan_machine_contract(
+            (repo_root / ".agent-work/PLAN.md").read_bytes()
+        ).value
+        full = parse_full_plan_machine_state(
+            (repo_root / ".agent-work/FULL_PLAN_REFERENCE.md").read_bytes()
+        ).value
+    except (OSError, ValueError) as exc:
+        raise StageGateError("production_machine_contract_invalid") from exc
+    authority = plan.get("formal_execution_authority")
+    expected_authority = _formal_authority_contract(
+        output_dir=output_dir, run_name=run_name,
+    )
+    if (
+        plan.get("active_task_count") != 1
+        or plan.get("active_task") != FUTURE_TASK_ID
+        or plan.get("reference_task_id") != FUTURE_TASK_ID
+        or plan.get("contract_id") != FORMAL_PACKAGE_B_CONTRACT_ID
+        or plan.get("executable") is not True
+        or not isinstance(authority, Mapping)
+        or dict(authority) != expected_authority
+        or full.get("active_task_count") != 1
+        or full.get("active_task") != FUTURE_TASK_ID
+        or full.get("current_plan_active_task_count") != 1
+        or full.get("current_plan_active_task") != FUTURE_TASK_ID
+        or full.get("active_plan_contract_id") != FORMAL_PACKAGE_B_CONTRACT_ID
+        or full.get("canonical_next_reference_task") != FUTURE_TASK_ID
+        or full.get("executable") is not False
+        or full.get("full_is_non_executable_reference") is not True
+        or full.get("release_consumption_authorized") is not False
+        or full.get("device_authorized_by_this_file") is not False
+        or full.get("camera_authorized_by_this_file") is not False
+        or full.get("ray_authorized_by_this_file") is not False
+        or full.get("strip_authorized_by_this_file") is not False
+        or full.get("formal_r6_authorized") is not False
+        or full.get("td_c_authorized") is not False
+        or full.get("g4_06_state") != _formal_full_mirror(expected_authority)
+    ):
+        raise StageGateError("production_machine_contract_drift")
+
+
+def _build_production_activation(
+    descriptor: Mapping[str, Any], template: Mapping[str, Any], *,
+    repo_root: Path, code_owner_checkpoint: str,
+    output_dir: str | Path, run_name: str,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    if _SHA40.fullmatch(code_owner_checkpoint) is None:
+        raise StageGateError("production_code_checkpoint_invalid")
+    live_checkpoint = _git_text(repo_root, "rev-parse", "HEAD")
+    probe: dict[str, Any] = {
+        "code_owner_checkpoint": code_owner_checkpoint,
+        "code_owner_tree": _git_text(
+            repo_root, "rev-parse", f"{code_owner_checkpoint}^{{tree}}",
+        ),
+        "live_activation_checkpoint": live_checkpoint,
+        "live_activation_tree": _git_text(repo_root, "rev-parse", "HEAD^{tree}"),
+    }
+    attestation = validate_committed_source_attestation(
+        descriptor, probe, repo_root=repo_root,
+    )
+    activation: dict[str, Any] = {
+        "schema": FUTURE_ACTIVATION_SCHEMA,
+        "active_task": FUTURE_TASK_ID,
+        "active_task_count": 1,
+        "execution_authorized": True,
+        "allow_device_control": True,
+        "descriptor_sha256": hashlib.sha256(
+            provenance.canonical_json_bytes(descriptor)
+        ).hexdigest(),
+        "template_sha256": runtime_plan_template_sha256(template),
+        "expected_runtime_sha256": "0" * 64,
+        **probe,
+        "committed_source_attestation": _attestation_value(attestation),
+        "formal_root_parent": str(output_dir),
+        "formal_root_basename": run_name,
+        "formal_root_basename_regex": FORMAL_ROOT_BASENAME_REGEX,
+        "launch_cap": 1,
+        "retry": 0,
+    }
+    activation["expected_runtime_sha256"] = materialized_runtime_plan_sha256(
+        template,
+        activation,
+        committed_source_attestation=attestation,
+    )
+    runtime = materialize_runtime_plan(
+        template,
+        activation,
+        committed_source_attestation=attestation,
+    )
+    validate_future_activation(
+        descriptor,
+        template,
+        runtime,
+        activation,
+        repo_root=repo_root,
+        output_dir=output_dir,
+        run_name=run_name,
+    )
+    return activation, runtime
+
+
+def run_production_cli_launch(
+    *, package_dir: str | Path, repo_root: str | Path,
+    code_owner_checkpoint: str, output_dir: str | Path, run_name: str,
+    camera_backend_name: str, camera_backend_kwargs: Mapping[str, Any],
+    backend_factory: Callable[..., Any],
+    delegated_run_fn: Callable[..., Any] | None = None,
+    validated_run_fn: Callable[..., Any] | None = None,
+) -> Any:
+    """Require future Package-B authority before materializing the CLI launch."""
+
+    root = _canonical_attestation_root(repo_root)
+    if (
+        camera_backend_name != "remote"
+        or not isinstance(camera_backend_kwargs, Mapping)
+        or set(camera_backend_kwargs) != {"env_file", "base_url", "timeout"}
+        or not callable(backend_factory)
+        or (delegated_run_fn is not None and not callable(delegated_run_fn))
+        or (validated_run_fn is not None and not callable(validated_run_fn))
+    ):
+        raise StageGateError("production_cli_dispatch_shape_drift")
+    package = load_and_validate_stage_gate_package(
+        package_dir, repo_root=root,
+    )
+    _validate_production_formal_machine_contract(
+        root, output_dir=output_dir, run_name=run_name,
+    )
+    stage_gate = package["stage_gate"]
+    descriptor = package["launch_descriptor"]
+    template = stage_gate.get("runtime_plan_template")
+    if not isinstance(template, Mapping):
+        raise StageGateError("runtime_template_missing")
+    activation, runtime = _build_production_activation(
+        descriptor,
+        template,
+        repo_root=root,
+        code_owner_checkpoint=code_owner_checkpoint,
+        output_dir=output_dir,
+        run_name=run_name,
+    )
+    camera_backend = backend_factory(
+        camera_backend_name, **dict(camera_backend_kwargs),
+    )
+    if validated_run_fn is None:
+        from camera_based_rgbww_optimizer.optimization.measure_p7_thermal_diagnostics import (
+            run_validated_td_b_r6_runtime_contract,
+        )
+
+        validated_run_fn = run_validated_td_b_r6_runtime_contract
+    kwargs: dict[str, Any] = {
+        "repo_root": root,
+        "output_dir": output_dir,
+        "run_name": run_name,
+        "camera_backend": camera_backend,
+    }
+    if delegated_run_fn is not None:
+        kwargs["delegated_run_fn"] = delegated_run_fn
+    return validated_run_fn(
+        runtime,
+        stage_gate,
+        descriptor,
+        activation,
+        **kwargs,
+    )
 
 
 def persist_stage_gate_package(
