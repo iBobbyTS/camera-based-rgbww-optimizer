@@ -1,47 +1,54 @@
-# REF-G4-04-E2 Package B reviewed acceptance
+# REF-G4-06-RAY-R6 Planner reviewed terminal acceptance
 
-**状态：** `PLANNER_REVIEWED_ACCEPTED_G4_04_COMPLETE_WAITING_ORCHESTRATOR`
+**Status:** `PLANNER_REVIEWED_ACCEPTED_PACKAGE_A_WAITING_ORCHESTRATOR_PACKAGE_B_ROUTE`
 
-**Reference task：** `REF-G4-04-E2`
+**Terminal disposition:** `ACCEPTED_PACKAGE_A_V2_SOURCE_ATTESTED_PRODUCTION_LAUNCH_SEAM`
 
-**Contract：** `G4-E2-FRESH-EVIDENCE-V1`
+**Executable:** `false`
 
-**Terminal disposition：** `ACCEPTED_G4_04_FRESH_E2_COMPLETE_G4_05_PLANNING_UNLOCKED_EXECUTION_FALSE`
+**Active task count:** `0`
 
-## Planner decision
+## Accepted controlled child
 
-Planner接受fresh E2 evidence并关闭G4-04。接受依据：
+- checkpoint：`23a20f0b5e2840c568031aef536803ebe473567b`
+- tree：`2f4ef783f69f59a652badde1e88aafbdce80dc2f`
+- direct parent：`2ed23fea80c900f8d4e9dacb53fcb533fdd03b44`
+- subject：`feat(stage-gate): route ray r6 formal launch owner`
+- changed paths exact：
+  - `src/camera_based_rgbww_optimizer/optimization/measure_p7_thermal_diagnostics.py`
+  - `src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py`
+  - `tests/test_p7_td_b_r6_stage_gate.py`
 
-- activation topology、Package A HEAD/tree/source/test/archive identity exact；
-- sole root 0700，exact two artifacts均0600且identity绑定同一root；
-- result source ledger、14 guards、formal plan、machine status与authority经repo closed owner验证；
-- terminal schema/status/result reference/authority exact；
-- Executer internal replay与independent replay均pass；Planner没有调用第三次public replay；
-- factory/evaluate/persist/internal replay/independent replay/root create=`1/1/1/1/1/1`；
-  retry/repair/alternate=`0/0/0`。
+Accepted identities：
 
-Fresh root：
+- measure：194256 bytes，SHA-256
+  `babca565fafa7492a3fdcc7a498dc7d2be129367fe40118e489b5f0f7e11b02f`
+- stage-gate：77744 bytes，SHA-256
+  `35dc455ac0b84d88a5bb827585c37aee9bcc3cdc4a551bc13c6779b5567fc500`
+- focused tests：93530 bytes，SHA-256
+  `d461eb1a427e8534096c1bdbd73c490727c917bb9add2becf8166ec6773e620b`
 
-`/Volumes/4T/temp/rgbww-optimizer/g4-e2-preformal-50bb3346b3f3-20260803T231121Z`
+Git blobs均为mode `100644`，committed bytes与current bytes逐项相同。
 
-- result：5975 bytes /
-  `1639047d72a8d0b8cc27ed598a67611357edac3ff3843bf4facb5240483769fc`；
-- terminal：473 bytes /
-  `98e514ae00cfc1fa2f3ae5ba6aa847edad6e05a4800c5faf4299ec086aac44d4`。
+## Planner phase-2 review
 
-一次Planner-only字面断言`zero_only`与repo owner真实`zero_throughout`不符；shared closed validators此前已通过，纠正审查断言后完整
-read-only review PASS。该事件没有写root、调用replay或改变artifact，不是Package B failure。
+- activation → code child direct topology、subject、exact three paths：PASS；
+- committed/current three blobs bytes/SHA/mode：PASS；
+- phase-1 exact A→C→L、legacy-subject negative、old-descriptor negative、Package-A-negative、Package-B-positive、closed authority drift evidence：ACCEPTED；
+- live PLAN/FULL review前active `1/1`且FULL顶层non-authorizing：PASS；
+- live Package-A pure probe：`production_machine_contract_drift`，activation/materializer/backend/delegate `0/0/0/0`；
+- phase-1 fresh full：`953/953` PASS；phase-2代码bytes未变，结果继承，未重复full；
+- accepted G4-05 real root、formal root、device、network、camera、Ray、strip、capture、release、TD-C访问：`0`。
 
-## Archives
+## Reviewed archives
 
-- PLAN：`.agent-work/archived/PLAN-20260803-1723.md` / 13877 bytes /
-  `7352df73dd3c5cfecbcd8e9cfe6467ec94b52187ed022c966e8763f678d7ec7c`。
-- EXECUTION_RESULT：`.agent-work/archived/EXECUTION_RESULT-20260803-1723.md` / 12354 bytes /
-  `0fc7d39858ae44c2f6e45a51be6a208b501c4ed61e803ff11fc23d1b0b9256cb`。
+- PLAN：`.agent-work/archived/PLAN-20260803-2209.md`，15539 bytes，
+  SHA-256 `b00a83db5e6702545e43876ae0b282d65b5e2dd0aeca84cedeaab6852388f0d4`
+- Executer handoff：`.agent-work/archived/EXECUTION_RESULT-20260803-2209.md`，9385 bytes，
+  SHA-256 `2bb4ae55a5ba3bc64525df25d9ccf888b33c366588848af1ddf0b0531e27532b`
 
-## Handoff locks
+## Orchestrator handoff
 
-G4-04 stage complete；G4-05 planning unlocked，execution仍false；G4-06 locked。Release consumption、device/camera/Ray/strip、formal R6与TD-C
-authority仍false/0。
+FULL仍由Orchestrator独占且本review未修改。建议将Package A记录为terminal accepted，并将live active task清零；随后Package B只能在Orchestrator route更新后由新的Planner pass单独规划。
 
-返回Orchestrator完成G4-04 terminal FULL archive/rewrite。不得从本handoff执行或起草G4-05。
+本记录不授权、不设计也不执行Package B、formal root、device、capture、release consumption或TD-C。
