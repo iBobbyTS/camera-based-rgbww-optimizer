@@ -1,7 +1,7 @@
-# REF-G4-06-RAY-R6 import-packaged diagnostic, correction and final validation
+# REF-G4-06-RAY-R6 terminal candidate acceptance
 
 **计划状态：**
-`EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION_IMPORT_PACKAGED_DIAGNOSTIC`
+`EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION_TERMINAL_CANDIDATE_ACCEPTANCE`
 
 **Executable：** `true`
 
@@ -11,234 +11,194 @@
 
 **Total contract route：** `G4-RAY-R6-FINAL-CODE-FIRST-FINAL-PACKAGE-REMINT-V1`
 
-**Current phase：**
-`FINAL_CODE_CANDIDATE_IMPORT_PACKAGED_DIAGNOSTIC_SINGLE_CORRECTION_AND_FINAL_VALIDATION`
+**Current phase：** `FINAL_CODE_CANDIDATE_TERMINAL_ACCEPTANCE`
 
 **Planner decision：**
-`ONE_STANDARD_IMPORT_PROBE_ONE_PACKAGED_DIAGNOSTIC_ONE_BOUNDED_CORRECTION_AND_COMPLETE_VALIDATION`
+`NO_CORRECTION_ONE_FOCUSED_THEN_GATES_AND_ONE_FRESH_FULL`
 
-**Planner stop：** `RETURN_FOR_G4_06_ROUTE_A_FINAL_CODE_CANDIDATE_REVIEW`
+**Planner stop：**
+`RETURN_FOR_G4_06_ROUTE_A_FINAL_CODE_CANDIDATE_ACCEPTANCE_REVIEW`
 
-`PLAN_MACHINE_CONTRACT={"schema":"planner_execution_contract_v2","contract_id":"G4-RAY-R6-FINAL-CODE-FIRST-FINAL-PACKAGE-REMINT-V1","plan_status":"EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION_IMPORT_PACKAGED_DIAGNOSTIC","executable":true,"active_task_count":1,"active_task":"REF-G4-06-RAY-R6","reference_task_id":"REF-G4-06-RAY-R6","reference_goal":"REF-G4-COMPLETE","reference_task_status":"ACTIVE_ROUTE_A_IMPORT_PACKAGED_DIAGNOSTIC_AFTER_EXACT_ACTIVATION","route":"FINAL_CODE_FIRST_FINAL_PACKAGE_REMINT_CONVERGENCE","current_phase":"FINAL_CODE_CANDIDATE_IMPORT_PACKAGED_DIAGNOSTIC_SINGLE_CORRECTION_AND_FINAL_VALIDATION","planner_decision":"ONE_STANDARD_IMPORT_PROBE_ONE_PACKAGED_DIAGNOSTIC_ONE_BOUNDED_CORRECTION_AND_COMPLETE_VALIDATION","candidate_disposition":"PRESERVED_UNACCEPTED_UNREJECTED_PENDING_IMPORT_PACKAGED_DIAGNOSTIC","reviewed_packaging_failure":{"classification":"DIAGNOSTIC_ABSOLUTE_SCRIPT_IMPORT_ROOT_PACKAGING_DEFECT","parse_only_compile_passed":true,"real_processes":1,"first_tests_import_success":false,"canonical_error":"ModuleNotFoundError: No module named 'tests'","temporary_roots_created":0,"fixture_repositories_created":0,"validator_calls":0,"oid_observations":0,"candidate_writes":0,"production_failure_increment":0,"substantive_seam_failure_increment":0,"human_or_advisor_required":false},"activation_commit":{"expected_parent":"5ed15b427c50e66336ae8c4f3af2c07ce0c4c8cc","expected_parent_tree":"b69ddc9a014645f4dc17bf29c8317a1e41e6b3dc","expected_subject":"docs(plan): fix diagnostic import packaging","expected_changed_paths":[".agent-work/EXECUTION_RESULT.md",".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/archived/EXECUTION_RESULT-20260804-2031.md",".agent-work/archived/PLAN-20260804-2031.md"],"excluded_candidate_paths":["src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","tests/test_p7_td_b_r6_stage_gate.py"],"direct_non_merge_child":true,"child_sha_recorded_in_plan":false},"required_full_machine_state":{"active_task_count":1,"active_task":"REF-G4-06-RAY-R6","active_plan_contract_id":"G4-RAY-R6-FINAL-CODE-FIRST-FINAL-PACKAGE-REMINT-V1","current_plan_active_task_count":1,"current_plan_active_task":"REF-G4-06-RAY-R6","canonical_next_reference_task":"REF-G4-06-RAY-R6","canonical_next_reference_status":"ACTIVE_ROUTE_A_IMPORT_PACKAGED_DIAGNOSTIC_CORRECTION_AND_VALIDATION","executable":false,"full_is_non_executable_reference":true,"plan_status":"ACTIVE_ROUTE_A_IMPORT_PACKAGED_DIAGNOSTIC_CORRECTION_AND_VALIDATION","g4_06_state":{"route":"FINAL_CODE_FIRST_FINAL_PACKAGE_REMINT_CONVERGENCE","total_contract_route":"G4-RAY-R6-FINAL-CODE-FIRST-FINAL-PACKAGE-REMINT-V1","status":"ACTIVE_ROUTE_A_IMPORT_PACKAGED_DIAGNOSTIC_CORRECTION_AND_VALIDATION","task_id":"REF-G4-06-RAY-R6","authority_owner":"MATCHING_LIVE_PLAN_ONLY","full_top_level_non_authorizing":true,"final_code_immutable_checkpoint":null,"final_code_tree":null,"final_package_binding":null,"production_source_frozen_no_further_code_change_before_formal":false,"formal_execution_authorized":false,"formal_root_creation_authorized":false,"device_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"capture_authorized":false,"release_consumption_authorized":false,"g4_07_unlocked":false}},"reviewed_plan_archive":{"path":".agent-work/archived/PLAN-20260804-2031.md","bytes":22175,"sha256":"15181faa2da17428bed7c805dbddcddcbc72a8bb1f38b7424095ad80cbaf0b30"},"reviewed_execution_result_archive":{"path":".agent-work/archived/EXECUTION_RESULT-20260804-2031.md","bytes":8236,"sha256":"9b80ae11b1591fd48a88e73815818557df494d99545c792494a696eadf8c8ac6"},"inherited_focused_failure":{"canonical_error":"committed_source_candidate_blob_drift","focused_tests_run":202,"duration_seconds":102.948,"error_instances":149,"independent_substantive_seam_count":1,"attribution":"UNRESOLVED_PENDING_ONE_IMPORT_PACKAGED_DIAGNOSTIC","correction_consumed":false},"candidate_before_real_diagnostic":{"source_bytes":94324,"source_sha256":"c4cd13e7fb64434914ccb12c862d1d12e81728a9a647d41ff23fb2d0d860fe83","test_bytes":133201,"test_sha256":"479dd8d5b0bb851d256045ee1535860ca23328874b7b7a1eb7de76dceb43ab6e","source_numstat":"+35/-8","test_numstat":"+67/-1","candidate_writes_from_packaging_failure":0},"frozen_diagnostic_source":{"path":"/Volumes/4T/temp/rgbww-optimizer/g4-route-a-blob-seam-diagnostic-e5c8fd7ae095-20260804T201412Z.py","materialized":true,"regular_file":true,"bytes":8678,"sha256":"f23c3a1187e07d2a557546e7af44a4b99a36b3adf77e848767b011ff28c243df","mode":384,"device":16777244,"inode":3090518,"uid":501,"gid":20,"mtime_ns":"1785874866252624621","ctime_ns":"1785874882492679249","rewrite_authorized":false,"replacement_authorized":false,"alternate_path_cap":0,"delete_cleanup_authorized":false,"preserve_as_immutable_evidence":true},"import_packaging":{"repo_cwd":"/Users/ibobby/Projects/WLED-RGBWW","repo_import_root":"/Users/ibobby/Projects/WLED-RGBWW","interpreter":"/Users/ibobby/Projects/WLED-RGBWW/.venv/bin/python","safe_path_flag":"-P","bytecode_disable_flag":"-B","per_process_pythonpath_exact":"/Users/ibobby/Projects/WLED-RGBWW","persistent_environment_mutation_allowed":false,"existing_pythonpath_capture_required":true,"original_pythonpath_inherited_into_effective_path":false,"packaging_probe_cap":1,"packaging_probe_kind":"STANDARD_LIBRARY_FIND_SPEC_NO_TEST_EXECUTION_NOT_SEMANTIC_CONTROLLER","packaging_probe_source_file_cap":0,"effective_sys_path_required":true,"module_spec_origins_required":["tests.test_p7_td_b_r6_stage_gate","tests.test_p7_td_b_r6_contract","tests.test_p7_thermal_diagnostics"],"real_diagnostic_invocation_cap":1,"runtime_monkeypatch_allowed":false,"semantic_bypass_allowed":false,"second_controller_allowed":false},"shared_parent_cache_contract":{"exact_path":"/Volumes/4T/temp/rgbww-optimizer/__pycache__","preexistence_allowed":true,"owner_and_contents_classification":"UNKNOWN_SHARED_PARENT_STATE_NOT_DIAGNOSTIC_EVIDENCE","content_read_cap":0,"list_cap":0,"delete_modify_rename_cleanup_cap":0,"follow_symlink_allowed":false,"bytecode_write_disabled":true,"cache_preexistence_is_not_a_gate":true},"diagnostic":{"in_process_run_cap":1,"synthetic_parent":"/Volumes/4T/temp/rgbww-optimizer","temporary_root_cap":1,"fixture_repo_cap":2,"auto_cleanup_required":true,"test_runner_allowed":false,"candidate_write_allowed_before_attribution":false,"output_owner":"EXECUTION_RESULT_ONLY","canonical_json_required":true,"exact_declared_actual_oid_evidence_required":true,"ambiguous_attribution_stops_before_edit":true},"correction":{"bounded_correction_cap":1,"production_line_change_soft_cap":150,"new_schema_cap":0,"second_attestation_cap":0,"third_production_owner_cap":0,"new_controller_adapter_cap":0,"successor_schema_cap":0,"global_env_monkeypatch_bypass_cap":0,"validate_current_sources_false_cap":0,"allowed_repo_write_paths":[".agent-work/EXECUTION_RESULT.md","src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","tests/test_p7_td_b_r6_stage_gate.py"]},"integrity_invariants":{"integrity_first":true,"descriptor_declared_oid_exact":true,"git_blob_oid_exact":true,"blob_bytes_sha_mode_exact":true,"current_source_identity_exact":true,"oid_validation_relaxation_allowed":false,"second_validator_allowed":false},"accepted_direct_harness":{"disposition":"ACCEPTED_REUSABLE_PACKAGING_PATTERN_ONLY_PRIOR_SCRIPT_AND_ROOT_IMMUTABLE_NOT_ACCESSED_NOT_REUSED","prior_root_access_authorized":false,"prior_root_reuse_authorized":false},"base64_launcher_disposition":"PERMANENTLY_SUPERSEDED_HISTORICAL_ONLY","fresh_validation_script":{"path":"/Volumes/4T/temp/rgbww-optimizer/g4-route-a-blob-seam-validation-5ed15b427c50-20260804T203140Z.zsh","must_not_preexist":true,"creation_after_candidate_stabilized":true,"creation_owner":"EXECUTER_APPLY_PATCH","encoding":"UTF-8","shell":"/bin/zsh","mode":384,"base64_allowed":false,"encoded_payload_allowed":false,"eval_allowed":false,"dynamic_decoded_source_allowed":false,"self_delete_allowed":false,"persist_as_harness_evidence":true},"fresh_validation_scratch":{"path":"/Volumes/4T/temp/rgbww-optimizer/g4-route-a-blob-seam-validation-5ed15b427c50-20260804T203140Z","must_not_preexist":true,"classification":"FRESH_CHANGED_CANDIDATE_VALIDATION_STDIO_LOG_ROOT_NOT_RETRY_NOT_EXPERIMENT_NOT_PACKAGE_NOT_FORMAL","inventory":["command-seal.json","validation.stdout.log","validation.stderr.log","validation.exit"],"other_files_allowed":false},"launch_token":"g4-route-a-blob-seam-validation-5ed15b427c50-20260804T203140Z","osascript_invocation_count":1,"terminal_launch_count":1,"terminal_retry_count":0,"terminal_resume_count":0,"terminal_alternate_count":0,"visible_macos_terminal_validation_owner":true,"codex_background_validation_owner":false,"three_sparse_liveness_checks_required":true,"automation_owned_by_orchestrator":true,"targeted_required_once":true,"focused_required_once":true,"compile_required_once":true,"codegraph_sync_required_once":true,"codegraph_query_required_once":true,"diff_scope_machine_required":true,"fresh_full_required_once":true,"fresh_full_retry_count":0,"same_reference":true,"new_task_ids":0,"corrective_suffixes":0,"new_engineering_routes":0,"existing_experiment_root_access":0,"formal_root_access":0,"device_authorized":false,"network_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"capture_authorized":false,"formal_execution_authorized":false,"release_consumption_authorized":false,"analysis_authorized":false,"td_c_authorized":false,"planner_stop":"RETURN_FOR_G4_06_ROUTE_A_FINAL_CODE_CANDIDATE_REVIEW"}`
+`PLAN_MACHINE_CONTRACT={"schema":"planner_execution_contract_v2","contract_id":"G4-RAY-R6-FINAL-CODE-FIRST-FINAL-PACKAGE-REMINT-V1","plan_status":"EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION_TERMINAL_CANDIDATE_ACCEPTANCE","executable":true,"active_task_count":1,"active_task":"REF-G4-06-RAY-R6","reference_task_id":"REF-G4-06-RAY-R6","reference_goal":"REF-G4-COMPLETE","reference_task_status":"ACTIVE_ROUTE_A_TERMINAL_CANDIDATE_ACCEPTANCE_AFTER_EXACT_ACTIVATION","route":"FINAL_CODE_FIRST_FINAL_PACKAGE_REMINT_CONVERGENCE","current_phase":"FINAL_CODE_CANDIDATE_TERMINAL_ACCEPTANCE","planner_decision":"NO_CORRECTION_ONE_FOCUSED_THEN_GATES_AND_ONE_FRESH_FULL","candidate_disposition":"UNCHANGED_UNACCEPTED_PENDING_TERMINAL_ACCEPTANCE","activation_commit":{"expected_parent":"b1d41bda9be7a982666d281a25708447d0c76dbc","expected_parent_tree":"180466af684049364e96418ff4117e0d49a2b794","expected_subject":"docs(plan): activate terminal candidate acceptance","expected_changed_paths":[".agent-work/EXECUTION_RESULT.md",".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/archived/EXECUTION_RESULT-20260804-2042.md",".agent-work/archived/PLAN-20260804-2042.md"],"excluded_candidate_paths":["src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","tests/test_p7_td_b_r6_stage_gate.py"],"direct_non_merge_child":true,"child_sha_recorded_in_plan":false},"required_full_machine_state":{"active_task_count":1,"active_task":"REF-G4-06-RAY-R6","active_plan_contract_id":"G4-RAY-R6-FINAL-CODE-FIRST-FINAL-PACKAGE-REMINT-V1","current_plan_active_task_count":1,"current_plan_active_task":"REF-G4-06-RAY-R6","canonical_next_reference_task":"REF-G4-06-RAY-R6","canonical_next_reference_status":"ACTIVE_ROUTE_A_TERMINAL_CANDIDATE_ACCEPTANCE","executable":false,"full_is_non_executable_reference":true,"plan_status":"ACTIVE_ROUTE_A_TERMINAL_CANDIDATE_ACCEPTANCE","g4_06_state":{"route":"FINAL_CODE_FIRST_FINAL_PACKAGE_REMINT_CONVERGENCE","total_contract_route":"G4-RAY-R6-FINAL-CODE-FIRST-FINAL-PACKAGE-REMINT-V1","status":"ACTIVE_ROUTE_A_TERMINAL_CANDIDATE_ACCEPTANCE","task_id":"REF-G4-06-RAY-R6","authority_owner":"MATCHING_LIVE_PLAN_ONLY","full_top_level_non_authorizing":true,"final_code_immutable_checkpoint":null,"final_code_tree":null,"final_package_binding":null,"production_source_frozen_no_further_code_change_before_formal":false,"formal_execution_authorized":false,"formal_root_creation_authorized":false,"device_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"capture_authorized":false,"release_consumption_authorized":false,"g4_07_unlocked":false}},"reviewed_plan_archive":{"path":".agent-work/archived/PLAN-20260804-2042.md","bytes":22585,"sha256":"3b610d2250115f8d38f67478cef7c0bd5668eba6a8946c72d2446051552d3c10"},"reviewed_execution_result_archive":{"path":".agent-work/archived/EXECUTION_RESULT-20260804-2042.md","bytes":11438,"sha256":"0553734db55dff76c03eb24cab4e574ebc1de85b71d4ea1f39337cc0c8a5fd2f"},"accepted_diagnostic":{"disposition":"ACCEPTED_PASS_PASS_NO_ATTRIBUTABLE_CORRECTION","packaging_probe_passed":true,"real_diagnostic_exit":0,"validator_status_pair":["PASS","PASS"],"module_environment_unchanged":true,"all_declared_rev_parse_ls_tree_oids_equal":true,"all_git_show_current_bytes_equal":true,"temporary_cleanup":true,"actual_fixture_shape_equivalent_to_current_synthetic_repository":true,"correction_justified":false,"correction_count":0,"historical_focused_event_disposition":"UNREPRODUCED_VALIDATION_EVENT_NOT_A_PRODUCTION_DEFECT"},"candidate_identity":{"source_path":"src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","source_bytes":94324,"source_sha256":"c4cd13e7fb64434914ccb12c862d1d12e81728a9a647d41ff23fb2d0d860fe83","source_numstat":"+35/-8","test_path":"tests/test_p7_td_b_r6_stage_gate.py","test_bytes":133201,"test_sha256":"479dd8d5b0bb851d256045ee1535860ca23328874b7b7a1eb7de76dceb43ab6e","test_numstat":"+67/-1","candidate_write_cap":0},"inherited_validation":{"targeted":{"command":".venv/bin/python -m unittest -v tests.test_p7_td_b_r6_stage_gate","passed":47,"total":47,"exit_code":0,"exact_candidate_identity":true,"rerun_authorized":false},"compile":{"command":".venv/bin/python -m py_compile src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py tests/test_p7_td_b_r6_stage_gate.py","exit_code":0,"exact_candidate_identity":true,"rerun_authorized":false}},"execution_packaging":{"repo_cwd":"/Users/ibobby/Projects/WLED-RGBWW","interpreter":"/Users/ibobby/Projects/WLED-RGBWW/.venv/bin/python","per_process_pythonpath_exact":"/Users/ibobby/Projects/WLED-RGBWW","safe_path_flag":"-P","bytecode_disable_flag":"-B","persistent_environment_mutation_allowed":false,"original_pythonpath_inherited_into_effective_path":false},"fresh_validation_script":{"path":"/Volumes/4T/temp/rgbww-optimizer/g4-route-a-terminal-candidate-acceptance-b1d41bda9be7-20260804T204210Z.zsh","must_not_preexist":true,"creation_owner":"EXECUTER_APPLY_PATCH","encoding":"UTF-8","shell":"/bin/zsh","mode":384,"base64_allowed":false,"encoded_payload_allowed":false,"eval_allowed":false,"dynamic_decoded_source_allowed":false,"self_delete_allowed":false,"persist_as_harness_evidence":true},"fresh_validation_scratch":{"path":"/Volumes/4T/temp/rgbww-optimizer/g4-route-a-terminal-candidate-acceptance-b1d41bda9be7-20260804T204210Z","must_not_preexist":true,"classification":"FRESH_TERMINAL_CANDIDATE_ACCEPTANCE_STDIO_LOG_ROOT_NOT_EXPERIMENT_NOT_PACKAGE_NOT_FORMAL","inventory":["command-seal.json","validation.stdout.log","validation.stderr.log","validation.exit"],"other_files_allowed":false},"launch_token":"g4-route-a-terminal-candidate-acceptance-b1d41bda9be7-20260804T204210Z","focused_required_once":true,"targeted_rerun_authorized":false,"compile_rerun_authorized":false,"candidate_correction_authorized":false,"codegraph_sync_required_once":true,"codegraph_query_required_once":true,"diff_scope_machine_required":true,"fresh_full_required_once":true,"fresh_full_retry_count":0,"osascript_invocation_count":1,"terminal_launch_count":1,"terminal_retry_count":0,"terminal_resume_count":0,"terminal_alternate_count":0,"visible_macos_terminal_validation_owner":true,"codex_background_validation_owner":false,"three_sparse_liveness_checks_required":true,"automation_owned_by_orchestrator":true,"same_reference":true,"new_task_ids":0,"corrective_suffixes":0,"new_engineering_routes":0,"old_root_access":0,"frozen_diagnostic_source_access":0,"existing_experiment_root_access":0,"formal_root_access":0,"device_authorized":false,"network_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"capture_authorized":false,"formal_execution_authorized":false,"release_consumption_authorized":false,"analysis_authorized":false,"td_c_authorized":false,"code_checkpoint_commit_authorized":false,"planner_stop":"RETURN_FOR_G4_06_ROUTE_A_FINAL_CODE_CANDIDATE_ACCEPTANCE_REVIEW"}`
 
-## 1. Review decision
+## 1. Planner review and disposition
 
-Canonical engineering disposition：
+Import-packaged diagnostic已经提供完整PASS/PASS证据：
 
-`DIAGNOSTIC_ABSOLUTE_SCRIPT_IMPORT_ROOT_PACKAGING_DEFECT`
+- packaging probe与真实diagnostic exit `0`；
+- before/after validator `PASS/PASS`；
+- imports前后module、binding/contract/validator helper identity与Git environment不变；
+- 两fixture的declared、`rev-parse`、`ls-tree` OID全部相等；
+- committed blob与current bytes/SHA/mode全部相等；
+- temporary root自动清理；
+- candidate writes `0`。
 
-Frozen source的parse-only `compile`已通过。首个real process使用absolute external script path时，
-`sys.path`没有可解析repo `tests` namespace的import root，因此在第一条
-`importlib.import_module("tests.test_p7_td_b_r6_stage_gate")`失败。该process在
-TemporaryDirectory、fixture、validator、OID observation与candidate write之前退出；这些计数均为`0`。
+Diagnostic使用的`SyntheticRepository`仍调用current test lines 44–91的真实fixture owner；两个candidate
+都以`candidate:{path}\n`形态写入、commit并从`rev-parse`/`ls-tree`冻结OID。81/46-byte结果正是该
+actual fixture生成的最小candidate形态，不是另一个handwritten semantic controller。
 
-因此这不是production/test semantic failure，不增加same-boundary failure count，不需要Human/Advisor，
-不创建suffix/new route。Frozen diagnostic source仍保持原path/bytes/SHA/mode，不允许修改。
+Canonical disposition：
 
-## 2. Activation and exact scope
+`DIAGNOSTIC_PASS_PASS_NO_IMPORT_OR_OID_DRIFT_HISTORICAL_FOCUSED_FAILURE_UNEXPLAINED`
+
+因此没有正当candidate correction branch。历史focused失败重分类为：
+
+`UNREPRODUCED_VALIDATION_EVENT_NOT_A_PRODUCTION_DEFECT`
+
+Candidate保持exact unchanged；本PLAN禁止source/test写入、correction、diagnostic rerun或新diagnostic。
+这不是微型rerun，而是产生stage disposition与accepted code checkpoint前置证据的terminal acceptance
+boundary。
+
+## 2. Activation and read-only candidate
 
 Orchestrator必须先创建activation commit：
 
-- parent：`5ed15b427c50e66336ae8c4f3af2c07ce0c4c8cc`；
-- parent tree：`b69ddc9a014645f4dc17bf29c8317a1e41e6b3dc`；
+- parent：`b1d41bda9be7a982666d281a25708447d0c76dbc`；
+- parent tree：`180466af684049364e96418ff4117e0d49a2b794`；
 - direct non-merge；
-- subject：`docs(plan): fix diagnostic import packaging`；
-- exact changed paths仅为ER、FULL、PLAN和本轮`2031` PLAN/ER archives；
+- subject：`docs(plan): activate terminal candidate acceptance`；
+- exact changed paths仅为ER、FULL、PLAN与本轮`2042` PLAN/ER archives；
 - candidate source/test排除在activation commit外；
-- FULL同步required state且保持non-executable；matching PLAN是唯一authority。
+- FULL更新required state但保持non-executable；PLAN是唯一authority。
 
-Repo write scope仅：
+Candidate exact identity：
 
-- `.agent-work/EXECUTION_RESULT.md`
-- `src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py`
-- `tests/test_p7_td_b_r6_stage_gate.py`
+- `src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py`：
+  `94324` bytes /
+  `c4cd13e7fb64434914ccb12c862d1d12e81728a9a647d41ff23fb2d0d860fe83` /
+  numstat `+35/-8`；
+- `tests/test_p7_td_b_r6_stage_gate.py`：
+  `133201` bytes /
+  `479dd8d5b0bb851d256045ee1535860ca23328874b7b7a1eb7de76dceb43ab6e` /
+  numstat `+67/-1`。
 
-Executer不得修改PLAN、FULL、archives、GUIDE、RESEARCH或其他repo path。需要额外path、超过约150
-production lines、新schema、第二attestation/validator、第三production owner、controller/adapter、
-successor seam或global/env monkeypatch时立即stop。
+本PLAN唯一repo write path为`.agent-work/EXECUTION_RESULT.md`。Candidate source/test只读，write cap `0`。
+其他repo path也只读；`codegraph sync`仅更新repo-owned index runtime，不能改变tracked source/docs/config。
 
 Reviewed archives：
 
-- `.agent-work/archived/PLAN-20260804-2031.md` — `22175` bytes /
-  `15181faa2da17428bed7c805dbddcddcbc72a8bb1f38b7424095ad80cbaf0b30`；
-- `.agent-work/archived/EXECUTION_RESULT-20260804-2031.md` — `8236` bytes /
-  `9b80ae11b1591fd48a88e73815818557df494d99545c792494a696eadf8c8ac6`。
+- `.agent-work/archived/PLAN-20260804-2042.md` — `22585` bytes /
+  `3b610d2250115f8d38f67478cef7c0bd5668eba6a8946c72d2446051552d3c10`；
+- `.agent-work/archived/EXECUTION_RESULT-20260804-2042.md` — `11438` bytes /
+  `0553734db55dff76c03eb24cab4e574ebc1de85b71d4ea1f39337cc0c8a5fd2f`。
 
-## 3. Frozen source and exact import packaging
+## 3. Inherited exact-candidate validation
 
-Frozen source：
+以下结果来自同一exact candidate identity，直接继承且不得重复：
 
-`/Volumes/4T/temp/rgbww-optimizer/g4-route-a-blob-seam-diagnostic-e5c8fd7ae095-20260804T201412Z.py`
+- targeted：
+  `.venv/bin/python -m unittest -v tests.test_p7_td_b_r6_stage_gate`，
+  `47/47`、exit `0`；
+- compile：
+  `.venv/bin/python -m py_compile src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py tests/test_p7_td_b_r6_stage_gate.py`，
+  exit `0`。
 
-Identity：
+若启动前candidate identity、numstat或activation topology不匹配，继承失效并立即stop；不得通过重跑
+targeted/compile来建立新baseline。
 
-- regular file，`8678` bytes；
-- SHA-256 `f23c3a1187e07d2a557546e7af44a4b99a36b3adf77e848767b011ff28c243df`；
-- mode `0600`；
-- device/inode `16777244/3090518`；
-- mtime/ctime ns `1785874866252624621/1785874882492679249`。
+## 4. Fresh plain validation harness
 
-禁止rewrite、apply_patch、chmod、replace、alternate、delete或cleanup。启动前只读核对identity，不匹配即stop。
-此前parse-only compile pass可以继承，本PLAN不再重复compile preflight。
+只可创建：
 
-Repo cwd固定为：
+Script：
 
-`/Users/ibobby/Projects/WLED-RGBWW`
+`/Volumes/4T/temp/rgbww-optimizer/g4-route-a-terminal-candidate-acceptance-b1d41bda9be7-20260804T204210Z.zsh`
 
-Per-process import contract：
+Root：
 
-- interpreter：
-  `/Users/ibobby/Projects/WLED-RGBWW/.venv/bin/python`；
-- effective `PYTHONPATH` exact：
-  `/Users/ibobby/Projects/WLED-RGBWW`；
-- flags：`-P -B`；
-- `-P`防止external script directory作为unsafe prepend path；
-- `-B`禁止bytecode cache write；
-- `PYTHONPATH`只作为单个process前缀赋值，不得`export`、修改shell profile或持久化；
-- original/existing `PYTHONPATH`只记录为input evidence，不拼入effective path，不据此改变branch。
+`/Volumes/4T/temp/rgbww-optimizer/g4-route-a-terminal-candidate-acceptance-b1d41bda9be7-20260804T204210Z`
 
-## 4. One standard-library packaging evidence probe
+Token：
 
-真实diagnostic前允许一次固定`-c` probe。它没有source file，不是semantic controller，不执行test
-module body、fixture、validator或candidate code，只用`sys.path`和`importlib.util.find_spec`核对
-import packaging。
+`g4-route-a-terminal-candidate-acceptance-b1d41bda9be7-20260804T204210Z`
 
-Probe与真实diagnostic使用相同cwd、interpreter、`PYTHONPATH`、`-P`、`-B`。Canonical evidence必须记录：
+两path必须non-following absent；任一预存在即stop，不得alternate。Script由Executer用`apply_patch`创建，
+plain UTF-8/LF、mode`0600`、`/bin/zsh -n`通过；禁止base64、encoded payload、`eval`、dynamic decode、
+self-delete。Script/root完成后保留immutable evidence。
 
-- original `PYTHONPATH` presence、exact value/bytes/SHA；
-- effective process `PYTHONPATH`；
-- exact argv、cwd、interpreter；
-- effective `sys.path`完整有序列表；
-- `tests` namespace spec；
-- 三个module spec的name/origin/submodule locations：
-  - `tests.test_p7_td_b_r6_stage_gate`
-  - `tests.test_p7_td_b_r6_contract`
-  - `tests.test_p7_thermal_diagnostics`
-- expected origins必须分别为repo内对应三个exact `tests/*.py` files；
-- probe exit、stdout唯一canonical JSON、stderr。
+Repo cwd固定`/Users/ibobby/Projects/WLED-RGBWW`。每个Python validation command使用：
 
-Probe不得import/execute三个test module，不得使用runpy、`exec`、`eval`、monkeypatch、temp file或第二
-controller。任一spec不可解析、origin越出repo或sys.path不含exact repo root时stop；不得real diagnostic。
+- per-process-only `PYTHONPATH=/Users/ibobby/Projects/WLED-RGBWW`；
+- absolute interpreter `/Users/ibobby/Projects/WLED-RGBWW/.venv/bin/python`；
+- `-P -B`；
+- 禁止`export`或persistent/global environment mutation；
+- original PYTHONPATH只记录，不并入effective path。
 
-## 5. One import-packaged real diagnostic
+Script负责exclusive root create、exact four-file inventory、stdout/stderr/exit trap、literal argv和
+`json.dump` seal。Seal绑定activation HEAD、candidate identity、script bytes/SHA/mode、exact command
+order、inherited validation identities、token、`$$`、TTY和zero retry counters。
 
-Probe通过后只执行一次exact command，cwd为repo root：
+旧validation roots/scripts、frozen diagnostic source与shared cache全部不得read/stat/list/modify/reuse/
+cleanup；access count `0`。
 
-`PYTHONPATH=/Users/ibobby/Projects/WLED-RGBWW /Users/ibobby/Projects/WLED-RGBWW/.venv/bin/python -P -B /Volumes/4T/temp/rgbww-optimizer/g4-route-a-blob-seam-diagnostic-e5c8fd7ae095-20260804T201412Z.py`
+## 5. One focused boundary then acceptance gates
 
-这是per-process environment assignment，不改变parent/global environment。执行后记录parent
-`PYTHONPATH`未变、frozen source identity未变。禁止第二real invocation、source repair或alternate。
+只允许一次`osascript`做Terminal activate、one`do script`、returned-tab TTY/front-window id readback。
+Exact Terminal command：
 
-Diagnostic canonical JSON必须与packaging probe共同提供：
+`/bin/zsh '/Volumes/4T/temp/rgbww-optimizer/g4-route-a-terminal-candidate-acceptance-b1d41bda9be7-20260804T204210Z.zsh'`
 
-- input/effective `PYTHONPATH`和effective ordered `sys.path`；
-- 三个test module expected origins；
-- diagnostic内stage-gate production module `module_file`；
-- import names、module/binding/helper identities；
-- two fixtures的declared/rev-parse/`ls-tree` OID、`git show`与current bytes/SHA/mode；
-- validator exact results及imports前后environment；
-- temporary root automatic cleanup；
-- source before/after identity。
+Human-visible Terminal shell是唯一long-task owner。顺序为：
 
-Diagnostic使用一个`/Volumes/4T/temp/rgbww-optimizer`下的自动清理TemporaryDirectory、最多两个
-synthetic Git fixture repos；不访问existing experiment root，不运行unittest/pytest，不写candidate。
+1. activation topology、PLAN/FULL parser/required subset、candidate exact identity/numstat、script/seal/root
+   precheck；
+2. focused exact一次：
 
-Process nonzero、stdout不是唯一canonical JSON、cleanup失败、evidence缺失/矛盾或attribution不明确时，
-停止before candidate edit；不得再修packaging、第二diagnostic或猜测branch。
+   `PYTHONPATH=/Users/ibobby/Projects/WLED-RGBWW /Users/ibobby/Projects/WLED-RGBWW/.venv/bin/python -P -B -m unittest -v tests.test_p7_td_b_r6_stage_gate tests.test_p7_td_b_r6_contract tests.test_p7_thermal_diagnostics`
 
-Shared `/Volumes/4T/temp/rgbww-optimizer/__pycache__`继续视为opaque preexisting state；不得
-open/list/read/walk/glob/child-stat/delete/modify/rename/cleanup。`-B`是本process不生成新bytecode cache
-的contract。
+3. focused exit非0立即stop：full/CodeGraph后续均不启动；不correction、不retry、不alternate；
+4. focused pass后核对candidate bytes/SHA/numstat exact unchanged，changed paths只能是ER+两个candidate，
+   且`git diff --check`通过；
+5. `codegraph sync`一次；
+6. CodeGraph query一次，证明existing unique stage-gate attestation owner、loader/launch path与无parallel owner；
+7. 再次运行repo-owned PLAN/FULL strict parser，证明active `1/1`、same task/contract、required FULL subset、
+   FULL non-executable、所有device/formal/release/analysis authority false；
+8. 证明source/test/config/GUIDE/RESEARCH/FULL/PLAN相对activation未变；ER是唯一repo runtime write；
+9. 只有1–8全pass才运行唯一fresh full：
 
-## 6. At most one bounded correction
+   `PYTHONPATH=/Users/ibobby/Projects/WLED-RGBWW /Users/ibobby/Projects/WLED-RGBWW/.venv/bin/python -P -B -m unittest discover -s tests`
 
-只有exact diagnostic attribution后才允许一个branch、最多一次candidate correction：
+10. full pass或fail后再次冻结candidate identity、diff、script/root/seal/log/exit identity并stop。
 
-- imports前pass、imports后declared/actual OID变化：仅修test fixture/import isolation；
-- 两fixture都证明binding形成、OID normalization或existing production comparison有同一错误：只在
-  existing stage-gate attestation owner和对应test做最小修正；
-- 两fixture都pass但focused历史无法解释，或需改变security/integrity precedence：不编辑并stop。
+不得运行targeted或compile，不得candidate edit、test edit、second focused、second full、retry、resume、
+alternate script/root或在validation中修复失败。
 
-必须保持descriptor declared OID、Git `ls-tree` OID、blob bytes/SHA/mode、current source identity exact，
-以及integrity-first/error precedence。禁止wrong OID acceptance、放宽OID validation、
-`validate_current_sources=False`、successor schema、第二validator、global/env monkeypatch bypass、
-controller/adapter或parallel owner。
+## 6. Liveness and automation
 
-Correction后不得再改candidate。同一`committed_source_candidate_blob_drift`若在focused再次命中，
-立即stop，不得第二correction。
+Executer绑定returned window/tab TTY/token与seal PID/TTY/script identity。做三次稀疏liveness check；
+若第三次仍运行，Orchestrator估算窗口、创建automation并把goal置blocked后停止轮询。Human恢复时只检查
+一次；未完成再次blocked，完成则删除automation并读取本轮new root。
 
-## 7. Fresh visible-Terminal validation
+若third check前已完成，则无需automation，直接收集evidence。Codex tool不得成为后台validation owner。
 
-Candidate稳定后才可创建：
-
-- script：
-  `/Volumes/4T/temp/rgbww-optimizer/g4-route-a-blob-seam-validation-5ed15b427c50-20260804T203140Z.zsh`
-- root：
-  `/Volumes/4T/temp/rgbww-optimizer/g4-route-a-blob-seam-validation-5ed15b427c50-20260804T203140Z`
-- token：
-  `g4-route-a-blob-seam-validation-5ed15b427c50-20260804T203140Z`。
-
-两path任一预存在即stop，不得alternate。Script由Executer用`apply_patch`创建，plain UTF-8/LF、
-mode`0600`、`/bin/zsh -n`通过；禁止base64、encoded payload、`eval`、dynamic decode、self-delete。
-Script/root保留immutable evidence。
-
-沿用accepted direct-script packaging pattern但不访问旧script/root/reserved paths。新script负责exclusive
-root、exact four-file inventory、stdout/stderr/exit trap、literal argv和`json.dump` seal。Seal绑定
-activation HEAD、candidate/script identity、argv/order、token、`$$`、TTY和zero retry counters。
-
-只允许一次`osascript`进行Terminal activate、one `do script`、returned-tab TTY/front-window id读取。
-Exact command：
-
-`/bin/zsh '/Volumes/4T/temp/rgbww-optimizer/g4-route-a-blob-seam-validation-5ed15b427c50-20260804T203140Z.zsh'`
-
-Human-visible Terminal为唯一long validation owner，顺序各一次：
-
-1. activation、PLAN/FULL parser/required subset、candidate scope identity；
-2. targeted：
-   `.venv/bin/python -m unittest -v tests.test_p7_td_b_r6_stage_gate`；
-3. focused：
-   `.venv/bin/python -m unittest -v tests.test_p7_td_b_r6_stage_gate tests.test_p7_td_b_r6_contract tests.test_p7_thermal_diagnostics`；
-4. compile：
-   `.venv/bin/python -m py_compile src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py tests/test_p7_td_b_r6_stage_gate.py`；
-5. candidate identity、exact diff scope、`git diff --check`；
-6. `codegraph sync`一次；
-7. CodeGraph query一次证明唯一attestation owner/loader/launch path；
-8. repo-owned PLAN/FULL parser、machine subset、all-authority-false、old-root access0；
-9. 仅1–8全pass后运行唯一fresh full：
-   `.venv/bin/python -m unittest discover -s tests`。
-
-任一pre-full gate失败则full不启动；full失败记录真实结果。禁止retry、resume、alternate、第二script/root、
-validation中改candidate或把offline success表达为formal/hardware readiness。
-
-## 8. Liveness, ER and stop
-
-Executer绑定returned window/tab TTY/token与seal PID/TTY/script identity。三次稀疏liveness后若仍运行，
-Orchestrator创建automation并blocked。Human恢复时只检查一次；未完成继续blocked，完成则删除automation
-并读取本轮new root。
+## 7. Acceptance evidence and stop
 
 ER必须记录：
 
-- frozen source与activation identity；
-- prior parse-only pass、original/effective `PYTHONPATH`、probe argv/cwd/sys.path/module specs；
-- 唯一diagnostic argv/exit/canonical JSON/module files/cleanup/attribution；
-- correction branch/count/line count与integrity invariants；
-- fresh script/root/seal/PID/TTY/token/liveness；
-- targeted/focused/compile/CodeGraph/diff/machine/full exact results；
-- old roots/cache contents access `0`；
-- device/network/backend/camera/Ray/strip/capture/release/formal/analysis/TD-C effect `0`；
-- candidate final identity与unaccepted disposition，交回Planner。
+- activation与PLAN/FULL machine identity；
+- inherited targeted/compile identity以及未重跑证明；
+- candidate before/after exact bytes/SHA/numstat；
+- script/root/seal/command order/window/TTY/PID/token/liveness；
+- focused exact count、test count、duration、exit与失败详情；
+- CodeGraph sync/query、diff/machine/scope/all-authority结果；
+- unique full command/count/duration/exit；
+- old root、diagnostic source、shared cache access `0`；
+- source/test writes `0`；
+- device/network/backend/camera/Ray/strip/capture/release/formal/analysis/TD-C effects `0`；
+- candidate仍为unaccepted，等待Planner terminal review。
 
-本PLAN不授权code checkpoint commit、release/package remint、formal R6、device/camera/Ray/strip/capture、
-network/backend、analysis或TD-C。
+Focused或pre-full gate失败：
 
-成功handoff：
+`READY_FOR_PLANNER_G4_06_ROUTE_A_TERMINAL_CANDIDATE_ACCEPTANCE_FAILURE_REVIEW`
 
-`READY_FOR_PLANNER_G4_06_ROUTE_A_FINAL_CODE_CANDIDATE_REVIEW`
+Full完成：
 
-失败handoff：
+`READY_FOR_PLANNER_G4_06_ROUTE_A_TERMINAL_CANDIDATE_ACCEPTANCE_REVIEW`
 
-`READY_FOR_PLANNER_G4_06_ROUTE_A_BLOB_REFERENCE_CORRECTION_FAILURE_REVIEW`
+本PLAN不授权candidate/code checkpoint commit。即使focused/full pass，accepted code checkpoint仍须Planner
+验收与Orchestrator focused commit；不得在Executer中提前宣布acceptance、formal readiness或hardware
+readiness。
 
 唯一stop：
 
-`RETURN_FOR_G4_06_ROUTE_A_FINAL_CODE_CANDIDATE_REVIEW`
+`RETURN_FOR_G4_06_ROUTE_A_FINAL_CODE_CANDIDATE_ACCEPTANCE_REVIEW`
