@@ -175,6 +175,13 @@ def _validate_execution_shutter_ledger(plan: Mapping[str, Any]) -> None:
         raise PermissionError("thermal diagnostic shutter provenance is inconsistent")
     if unresolved:
         raise PermissionError(f"thermal diagnostic execution has unresolved shutter setup: {unresolved}")
+    authorization = plan.get("execution_authorization")
+    if (
+        isinstance(authorization, Mapping)
+        and authorization.get("schema")
+        == "p7_td_b_r6_plan_bound_authority_v1"
+    ):
+        return
     if plan.get("experiment_id") == thermal.TD_B and plan.get("source") == "ray":
         setup_ref = plan.get("exposure_setup_artifact")
         if not isinstance(setup_ref, Mapping):
@@ -246,6 +253,19 @@ def validate_authorized_execution_plan(
         raise PermissionError("thermal diagnostic execution requires an exact authorized plan")
     authorization = plan.get("execution_authorization")
     if (
+        isinstance(authorization, Mapping)
+        and authorization.get("schema")
+        == "p7_td_b_r6_plan_bound_authority_v1"
+    ):
+        from camera_based_rgbww_optimizer.optimization import p7_td_b_r6_stage_gate
+
+        try:
+            p7_td_b_r6_stage_gate.validate_materialized_runtime_plan(plan)
+        except p7_td_b_r6_stage_gate.StageGateError as exc:
+            raise PermissionError(
+                "thermal diagnostic R6 PLAN-bound authority differs"
+            ) from exc
+    elif (
         not isinstance(authorization, Mapping)
         or authorization.get("human_authorization_verified") is not True
         or authorization.get("human_authorization_experiment_id") != experiment_id
@@ -1861,6 +1881,55 @@ def run_authorized_plan(
             "callback", callback
         ),
         set_capture_context_fn=lambda value: timing_context.__setitem__("local_readback_done_monotonic_s", value),
+    )
+
+
+def run_validated_td_b_r6_runtime_contract(
+    runtime_plan: Mapping[str, Any],
+    stage_gate: Mapping[str, Any],
+    launch_descriptor: Mapping[str, Any],
+    future_plan_activation: Mapping[str, Any],
+    *,
+    repo_root: str | Path,
+    output_dir: str | Path,
+    run_name: str,
+    camera_backend: Any,
+    delegated_run_fn: Callable[..., Any] = run_authorized_plan,
+) -> Any:
+    """Validate the future G4-06 seam before delegating exactly once.
+
+    G4-05 can exercise this hook only with an injected callback.  The checked
+    descriptor is deliberately non-authorizing; a separate future PLAN-bound
+    activation is required.  Device/camera execution remains in the delegated
+    production owner rather than being copied here.
+    """
+
+    from camera_based_rgbww_optimizer.optimization import p7_td_b_r6_stage_gate
+
+    p7_td_b_r6_stage_gate.validate_stage_gate(
+        stage_gate, repo_root=repo_root, allow_orchestration_drift=True,
+    )
+    template = stage_gate.get("runtime_plan_template")
+    if not isinstance(template, Mapping):
+        raise PermissionError("Ray R6 stage gate lacks its runtime-plan template")
+    p7_td_b_r6_stage_gate.validate_runtime_plan_template(template)
+    p7_td_b_r6_stage_gate.validate_launch_descriptor(
+        launch_descriptor, stage_gate, repo_root=repo_root,
+        allow_orchestration_drift=True,
+    )
+    p7_td_b_r6_stage_gate.validate_future_activation(
+        launch_descriptor, template, runtime_plan, future_plan_activation,
+        repo_root=repo_root, output_dir=output_dir, run_name=run_name,
+    )
+    p7_td_b_r6_stage_gate.validate_materialized_runtime_plan(runtime_plan)
+    validate_authorized_execution_plan(runtime_plan, camera_backend=camera_backend)
+    if not callable(delegated_run_fn):
+        raise TypeError("Ray R6 delegated production owner is not callable")
+    return delegated_run_fn(
+        runtime_plan,
+        output_dir=output_dir,
+        run_name=run_name,
+        camera_backend=camera_backend,
     )
 
 
