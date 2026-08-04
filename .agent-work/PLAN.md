@@ -1,43 +1,210 @@
-# REF-G4-06-RAY-R6 Package A terminal acceptance checkpoint
+# REF-G4-06-RAY-R6 stage-gate package binding engineering
 
-**计划状态：** `PLANNER_REVIEWED_ACCEPTED_PACKAGE_A_WAITING_ORCHESTRATOR_PACKAGE_B_ROUTE`
+**计划状态：** `EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION`
 
-**Executable：** `false`
+**Executable：** `true_after_exact_orchestrator_activation`
 
-**Active task count：** `0`
+**Active task count：** `1`
 
-**Active reference task：** `null`
+**Active reference task：** `REF-G4-06-RAY-R6`
 
-**Planner stop：** `RETURN_ORCHESTRATOR_FOR_PACKAGE_A_FULL_TRANSITION`
+**Contract：** `G4-RAY-R6-STAGE-GATE-PACKAGE-BINDING-ENGINEERING-V1`
 
-`PLAN_MACHINE_CONTRACT={"schema":"planner_terminal_checkpoint_v2","contract_id":"G4-RAY-R6-PRODUCTION-CLI-LAUNCH-SEAM-PACKAGE-A-V2","plan_status":"PLANNER_REVIEWED_ACCEPTED_PACKAGE_A_WAITING_ORCHESTRATOR_PACKAGE_B_ROUTE","executable":false,"active_task_count":0,"active_task":null,"reference_task_id":"REF-G4-06-RAY-R6","reference_goal":"REF-G4-COMPLETE","reference_task_status":"TERMINAL_ACCEPTED_PACKAGE_A_WAITING_ORCHESTRATOR_FULL_TRANSITION","terminal_disposition":"ACCEPTED_PACKAGE_A_V2_SOURCE_ATTESTED_PRODUCTION_LAUNCH_SEAM","planner_review_complete":true,"accepted_code_checkpoint":"23a20f0b5e2840c568031aef536803ebe473567b","accepted_code_tree":"2f4ef783f69f59a652badde1e88aafbdce80dc2f","controlled_child":{"parent":"2ed23fea80c900f8d4e9dacb53fcb533fdd03b44","subject":"feat(stage-gate): route ray r6 formal launch owner","changed_paths":["src/camera_based_rgbww_optimizer/optimization/measure_p7_thermal_diagnostics.py","src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","tests/test_p7_td_b_r6_stage_gate.py"],"direct_non_merge_child":true},"accepted_code_identities":{"measure":{"path":"src/camera_based_rgbww_optimizer/optimization/measure_p7_thermal_diagnostics.py","bytes":194256,"sha256":"babca565fafa7492a3fdcc7a498dc7d2be129367fe40118e489b5f0f7e11b02f","mode":420},"stage_gate":{"path":"src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","bytes":77744,"sha256":"35dc455ac0b84d88a5bb827585c37aee9bcc3cdc4a551bc13c6779b5567fc500","mode":420},"tests":{"path":"tests/test_p7_td_b_r6_stage_gate.py","bytes":93530,"sha256":"d461eb1a427e8534096c1bdbd73c490727c917bb9add2becf8166ec6773e620b","mode":420}},"reviewed_plan_archive":{"path":".agent-work/archived/PLAN-20260803-2209.md","bytes":15539,"sha256":"b00a83db5e6702545e43876ae0b282d65b5e2dd0aeca84cedeaab6852388f0d4"},"reviewed_execution_result_archive":{"path":".agent-work/archived/EXECUTION_RESULT-20260803-2209.md","bytes":9385,"sha256":"2bb4ae55a5ba3bc64525df25d9ccf888b33c366588848af1ddf0b0531e27532b"},"validation":{"phase1_targeted":"6_of_6_pass_executor_and_planner","stage_gate":"36_of_36_pass_executor","focused":"226_of_226_pass_executor_and_planner","full":"953_of_953_pass_fresh_executor","full_inherited_phase2":true,"controlled_child_blobs_current_bytes_match":true,"phase2_live_package_a_negative":"production_machine_contract_drift_downstream_zero","git_diff_check":"pass"},"package_a_stage_complete":true,"package_b_planning_route_pending_orchestrator":true,"package_b_plan_exists":false,"package_b_execution_authorized":false,"formal_root_creation_authorized":false,"release_consumption_authorized":false,"device_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"capture_authorized":false,"formal_r6_authorized":false,"td_c_authorized":false,"accepted_g4_05_root_access":0,"formal_root_access":0,"device_access":0,"network_access":0,"release_consumption":0,"full_update_pending":true,"next_owner":"Orchestrator","next_action":"ARCHIVE_AND_REWRITE_FULL_FOR_PACKAGE_A_TERMINAL_THEN_DELEGATE_SEPARATE_PACKAGE_B_PLANNER_PASS","future_reference_task":"REF-G4-06-RAY-R6","future_reference_status":"PACKAGE_B_ROUTE_WAITING_ORCHESTRATOR_NOT_EXECUTABLE","planner_stop":"RETURN_ORCHESTRATOR_FOR_PACKAGE_A_FULL_TRANSITION"}`
+**Planner stop：** `RETURN_FOR_G4_06_STAGE_GATE_BINDING_TWO_PHASE_REVIEW`
 
-## Terminal disposition
+`PLAN_MACHINE_CONTRACT={"schema":"planner_execution_contract_v2","contract_id":"G4-RAY-R6-STAGE-GATE-PACKAGE-BINDING-ENGINEERING-V1","plan_status":"EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION","executable":true,"active_task_count":1,"active_task":"REF-G4-06-RAY-R6","reference_task_id":"REF-G4-06-RAY-R6","reference_goal":"REF-G4-COMPLETE","reference_task_status":"ACTIVE_OFFLINE_STAGE_GATE_PACKAGE_BINDING_ENGINEERING_AFTER_EXACT_ORCHESTRATOR_ACTIVATION","activation_state":"WAITING_ORCHESTRATOR_FULL_ALIGNMENT_COMMIT","activation_commit":{"expected_parent":"0dbe0f375be50c67c78b4d78c44ab05a0fbe475d","expected_parent_tree":"e539a57d4069a0dbd493c0984e41df4d089226ce","expected_subject":"docs(plan): activate ray r6 package binding engineering","expected_changed_paths":[".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md"],"direct_non_merge_child":true,"child_sha_recorded_in_plan":false},"single_current_action":"extend_the_existing_stage_gate_owner_with_repo_owned_package_preparation_and_exact_plan_bound_package_identity_validation","package":"OFFLINE_ENGINEERING_PACKAGE_BINDING_ONLY","same_reference":true,"same_goal":true,"corrective_suffixes":0,"new_task_ids":0,"new_experiment_roots":0,"maximum_safe_continuous_revision":true,"human_or_advisor_blocker":false,"semantic_owner":"src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","measure_change_role":"NONE_EXISTING_DISPATCH_ALREADY_SUFFICIENT","new_modules":0,"new_test_modules":0,"controller_files":0,"candidate_code_child":{"expected_parent_is_this_activation_child":true,"expected_subject":"feat(stage-gate): bind ray r6 package identity","expected_changed_paths":["src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","tests/test_p7_td_b_r6_stage_gate.py"],"direct_non_merge_child":true,"child_sha_recorded_in_plan":false},"allowed_repo_changed_paths":[".agent-work/EXECUTION_RESULT.md","src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","tests/test_p7_td_b_r6_stage_gate.py"],"package_binding_schema":"p7_td_b_r6_stage_gate_package_binding_v1","future_formal_contract_id":"G4-RAY-R6-FORMAL-ACQUISITION-PACKAGE-B-V1","future_formal_execution_authorized":false,"formal_execution_authority_in_this_plan":null,"real_package_generation_authorized":false,"external_root_access":0,"formal_root_access":0,"formal_root_create":0,"device_access":0,"network_access":0,"camera_connect_calls":0,"ray_access":0,"strip_access":0,"capture_access":0,"nonzero_light":0,"release_consumption":0,"retained_r3_access":0,"firmware_access":0,"deployment_access":0,"td_c_access":0,"synthetic_temp_repositories_only":true,"targeted_required":true,"focused_required":true,"compile_static_required":true,"wrapper_static_required":true,"codegraph_sync_required":true,"fresh_full_suite_runs":1,"phase1_status":"RETURN_FOR_REVIEW","phase2_reuses_same_plan":true,"phase2_full_rerun":false,"third_substantive_failure_returns_to_orchestrator":true,"planner_stop":"RETURN_FOR_G4_06_STAGE_GATE_BINDING_TWO_PHASE_REVIEW","future_package":"G4_06_PACKAGE_B_FORMAL_ACQUISITION_NOT_AUTHORIZED"}`
 
-Planner独立接受Package A V2：
+## 0. Activation gate 与当前处置
 
-`ACCEPTED_PACKAGE_A_V2_SOURCE_ATTESTED_PRODUCTION_LAUNCH_SEAM`
+上一Planner pass确认的阻塞属于production package/provenance工程合同，不是Human、Advisor或科学分支：
 
-受控code child为activation `2ed23fea80c900f8d4e9dacb53fcb533fdd03b44`的direct non-merge child：
+- `run_production_cli_launch`会验证传入package自身，但matching live PLAN/FULL authority没有冻结该package的canonical root与三项artifact identity；
+- 因此另一份内容合法、source兼容但root/identity不同的package仍可能被调用方替换，并在现有machine gate后继续；
+- `persist_stage_gate_package`已有repo-owned Python owner，但尚无可审计的module CLI prepare/describe入口；不得用`python -c`、heredoc、环境注入或一次性controller补缝。
 
-- checkpoint：`23a20f0b5e2840c568031aef536803ebe473567b`；
-- tree：`2f4ef783f69f59a652badde1e88aafbdce80dc2f`；
-- subject：`feat(stage-gate): route ray r6 formal launch owner`；
-- changed paths exact：measure、stage-gate、focused tests。
+本PLAN只修复该工程seam，建立下一immutable code checkpoint。它不生成真实stage-gate package，不读取既有G4-05或其他external payload，不创建formal root，不访问设备、相机、Ray、strip、网络、release或formal stage。
 
-三项committed blobs、current bytes、bytes/SHA-256/mode与phase-1 identity完全一致。当前worktree在review前仅ER dirty；代码bytes未变，因此继承fresh `953/953`，未重复full。
+本PLAN只有在Orchestrator创建以下exact activation commit后可执行：
 
-## Reviewed archives
+- parent：`0dbe0f375be50c67c78b4d78c44ab05a0fbe475d`；
+- parent tree：`e539a57d4069a0dbd493c0984e41df4d089226ce`；
+- subject：`docs(plan): activate ray r6 package binding engineering`；
+- changed paths exact：`.agent-work/FULL_PLAN_REFERENCE.md`、`.agent-work/PLAN.md`；
+- 必须是direct non-merge child，commit后worktree仅可由Executer在下述授权路径产生变化；
+- PLAN/FULL必须active task count `1/1`、active task与canonical next均为`REF-G4-06-RAY-R6`、active contract exact为本contract；FULL仍`executable=false`且所有device/formal authority顶层为false。
 
-- `.agent-work/archived/PLAN-20260803-2209.md`：15539 bytes，
-  SHA-256 `b00a83db5e6702545e43876ae0b282d65b5e2dd0aeca84cedeaab6852388f0d4`；
-- `.agent-work/archived/EXECUTION_RESULT-20260803-2209.md`：9385 bytes，
-  SHA-256 `2bb4ae55a5ba3bc64525df25d9ccf888b33c366588848af1ddf0b0531e27532b`。
+任一activation topology、subject、path set、machine row、HEAD或worktree不符，Executer立即写ER并停止，不得修PLAN/FULL、reset、clean或猜测。
 
-两份archive均为historical non-executable。
+## 1. Ownership 与 maintainability preflight
 
-## Stop
+唯一production semantic owner继续是：
 
-本live PLAN不授权或设计Package B。Orchestrator必须先归档并重写FULL，记录Package A terminal disposition；之后若继续同一G4-06，应重新委派Planner生成唯一Package B PLAN。
+`src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py`
 
-Package B、formal root、device/camera/Ray/strip/capture、release consumption、TD-C均保持未授权。
+它已经单一拥有stage-gate input、evaluation、canonical persistence、terminal seal、replay、source attestation、future activation与production launch。本次只在同一owner内补齐package binding value、module CLI和production comparison；不得新增module、adapter、controller、serializer、validator或第二schema family。
+
+巨型`measure_p7_thermal_diagnostics.py`不得修改。现有CLI已经把`package_dir`、repo/code checkpoint、formal output bounds和backend/delegate交给`run_production_cli_launch`，无需机械touch。Wrapper、thermal scientific owner、provenance IO owner也不得修改。
+
+代码范围exact为：
+
+- `src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py`；
+- `tests/test_p7_td_b_r6_stage_gate.py`。
+
+Executer另只可写`.agent-work/EXECUTION_RESULT.md`。如果preflight发现必须修改第三个production/test/config路径才能正确实现，停止并请求Orchestrator重新判断；不得自行扩大scope。
+
+如局部实现会在stage-gate owner内复制serialization/validation、引入分叉状态机或明显恶化其协调职责，只允许在同一文件内做最小focused extraction并用既有tests保护；不得借机重构其他P7模块。
+
+## 2. Canonical package binding contract
+
+在stage-gate owner内建立唯一closed binding schema：
+
+`p7_td_b_r6_stage_gate_package_binding_v1`
+
+该binding必须只由一次成功的canonical package replay结果派生，不重新读取或手写artifact语义。closed value至少且exact包含：
+
+1. `schema`：上述literal；
+2. `package_root`：canonical absolute path、device、inode、mode；
+3. `inventory`：exact为`launch-descriptor.json`、`stage-gate.json`、`terminal-seal.json`的canonical既定顺序；
+4. `artifacts`：exact三项，无缺失或额外key；每项包含相对path、bytes、SHA-256、device、inode、mode；
+5. 不包含可变时间、stdout文本、object repr、`Path`、`mappingproxy`、bytes对象或未规范化平台值。
+
+实现必须复用`load_and_validate_stage_gate_package` / `replay_stage_gate_package`现有返回identity与provenance owner；不得另写stat/hash/json serializer。Package root必须为canonical absolute path，任何relative、alias、symlink/path substitution都不能与PLAN-bound value相等。
+
+`formal_execution_authority`的未来Package-B closed mapping必须新增且exact包含一个`stage_gate_package_binding`字段，其value为上述完整binding。`_formal_authority_contract`与`_formal_full_mirror`只能从同一repo-owned构造/normalize路径派生；不得让PLAN和FULL接受不同shape或fallback aliases。
+
+FULL顶层仍为non-authorizing：未来只有matching live executable PLAN持有实际formal authority；FULL仅保留exact nested mirror，且其device/camera/Ray/strip/formal/release/TD-C顶层authority继续false。
+
+## 3. Production activation order 与 fail-closed矩阵
+
+`run_production_cli_launch`必须遵守以下effect order：
+
+1. 校验纯CLI dispatch shape；
+2. 使用传入`package_dir`调用现有sealed package loader exact once，取得已验证package和canonical binding；
+3. 在activation build、materializer、backend factory、camera connect、validated delegate之前，将supplied binding与live PLAN的closed authority及FULL nested mirror exact比较；
+4. 只有machine task/contract/root bounds/package binding全部一致，才进入existing source attestation → activation → materializer → backend → delegate路径；
+5. 任一失败不retry、不尝试alternate root/package、不创建formal root，不调用下游。
+
+必须pre-backend fail closed的case至少包括：
+
+- 传入另一份同样有效但root不同的package；
+- 同path重新生成而root inode或artifact inode变化的valid package；
+- PLAN或FULL中的canonical root path、device、inode、mode drift；
+- 任一三项artifact的path、bytes、SHA-256、device、inode、mode drift；
+- terminal seal被替换、缺失、mode变化、bytes/SHA变化或引用漂移；
+- binding、artifact map或authority missing/extra key；
+- PLAN/FULL mirror不一致；
+- existing task/contract/formal root/retry/launch/logical/physical/strip/release/TD-C drift。
+
+失败码应保持单一、稳定且能区分package binding machine drift与package自身integrity/replay drift；但不得为了命中测试而降低现有integrity-first顺序。所有negative case必须断言activation/materializer/backend/delegate均为0；包自身读取发生在machine comparison前不计设备或formal effect。
+
+## 4. Repo-owned module CLI prepare/describe
+
+同一stage-gate module提供标准入口：
+
+`python -m camera_based_rgbww_optimizer.optimization.p7_td_b_r6_stage_gate prepare ...`
+
+以及只读：
+
+`python -m camera_based_rgbww_optimizer.optimization.p7_td_b_r6_stage_gate describe ...`
+
+`prepare`必须使用required explicit flags接收：canonical absolute repo root、40-hex source parent checkpoint、40-hex source parent tree、canonical absolute fresh/nonexistent package root。禁止repo/env默认值、glob、相对root、自动alternate、repair、retry和overwrite。
+
+单次`prepare`调用必须沿同一production owner链做到：
+
+- `build_stage_gate_input` exact once；
+- `evaluate_stage_gate` exact once；
+- `persist_stage_gate_package` exact once；
+- persist内部canonical artifacts与terminal seal exact once；
+- internal replay exact once；
+- public `replay_stage_gate_package` exact once；
+- root create exact once，retry/repair/alternate root/formal/device/release count全部0。
+
+由于当前`persist_stage_gate_package`内部拥有evaluation，允许对其做最小、兼容且单一owner的参数/私有helper extraction，使CLI能够传入刚刚由`evaluate_stage_gate`生成并已验证的gate而不二次evaluate；既有调用者不传该值时仍保持一次evaluate。不得新增第二个persist owner或复制terminal serializer/replay validator。
+
+成功stdout只输出一行canonical JSON binding summary加单个newline；stderr仅用于明确错误，exit 0/非0与结果一致。失败必须保留现有sealed failure行为，不生成success summary。
+
+`describe`只接受explicit repo root与existing canonical absolute package root，调用public canonical replay owner一次并输出相同closed binding；它不得创建、修改、repair package或访问设备。
+
+本PLAN仅通过synthetic temporary repositories/roots测试CLI。严禁用该CLI在`/Volumes/4T/temp/rgbww-optimizer`或任何真实external root生成、describe或读取package；真实Package-B root与binding只可由后续独立matching PLAN冻结和授权。
+
+## 5. 新two-path source attestation
+
+下一immutable code child必须是本activation commit的direct non-merge child：
+
+- subject exact：`feat(stage-gate): bind ray r6 package identity`；
+- changed paths exact：stage-gate owner与existing focused test这两个路径；
+- `.agent-work/EXECUTION_RESULT.md`、FULL、PLAN、archives不得进入code child。
+
+因此必须同步唯一`ALLOWED_CODE_CHILD_PATHS` / source-attestation contract为exact two paths。不能机械修改measure凑旧three-path shape。
+
+Synthetic real-Git A → C → L测试必须证明：
+
+1. A为本类activation parent；C subject exact且只改two paths；C committed blobs与descriptor candidate references逐bytes/SHA/mode一致；L只允许逐commit`.agent-work/`路径；
+2. exact two-path C通过committed source attestation；
+3. 保持其他identity有效但使用旧three-path changed set时，命中`committed_source_changed_paths_drift`或更早的明确source-contract rejection，下游0；
+4. 旧G4-05 / Package-A descriptor或synthetic three-path package不能提升本次新owner，也不能因兼容fallback进入future formal路径；
+5. 不访问真实旧package/root，只构造synthetic同形状fixture。
+
+旧accepted Package-A checkpoint `23a20f0b5e2840c568031aef536803ebe473567b`及其历史结论不被重写；它只是本次activation之前的accepted owner。新binding code child接受后才成为下一immutable code checkpoint。
+
+## 6. Meaningful tests
+
+所有测试只写existing `tests/test_p7_td_b_r6_stage_gate.py`，不得新建test module。至少覆盖：
+
+1. CLI `prepare`以synthetic repo、explicit source parent/tree和fresh root完成generation/persist/internal replay/public replay，stdout canonical binding与独立`describe`一致；所有owner count exact once；
+2. relative/noncanonical/existing root、invalid parent/tree、output collision、额外/缺失CLI argument均fail closed，无alternate/retry；
+3. binding schema、root与三artifact key set exact，canonical JSON round-trip和bytes/SHA/device/inode/mode均来自repo-owned replay identity；
+4. exact synthetic Package-B machine authority + matching supplied binding通过到injected backend/delegate each once；
+5. current engineering Package-A contract仍命中`production_machine_contract_drift`，backend/delegate 0；
+6. valid package substitution、valid regenerated stale inode、root/file identity逐字段drift、terminal seal drift、missing/extra keys、PLAN/FULL mirror divergence全部pre-backend fail；
+7. 既有完整closed authority drift矩阵、generic CLI bypass、runtime hash、inventory/mode/source attestation、delegate exception no-retry持续通过；
+8. A/C/L exact two-path positive与old three-path negative完整行为断言；
+9. measure现有narrow dispatch与wrapper argv shape回归通过，且无需修改其source；
+10. tests不得monkeypatch production semantic owner。依赖注入只可观察owner exact-once与backend/delegate downstream zero；CLI subprocess测试必须实际执行repo-owned`python -m`入口。
+
+## 7. Validation 与two-phase checkpoint
+
+Phase 1按顺序执行：
+
+1. `codegraph explore` preflight确认package/persistence/machine authority/production dispatch仍由stage-gate单一owner持有，measure无需编辑；
+2. targeted CLI、binding、substitution、identity drift、A/C/L two-path与Package-A-negative / Package-B-positive tests；
+3. focused：`tests/test_p7_td_b_r6_stage_gate.py`、`tests/test_p7_td_b_r6_contract.py`、`tests/test_p7_thermal_diagnostics.py`、`tests/test_agent_work_machine_contract.py`及相关successor provenance integration；
+4. `.venv/bin/python -m compileall -q src tests`；
+5. `zsh -n tmp/run-p7-thermal-diagnostics.zsh`，并证明wrapper bytes相对activation HEAD未变；
+6. repo-owned PLAN/FULL strict parser与exact state consistency检查；
+7. `codegraph sync`后做post-query，确认没有parallel owner或measure semantic expansion；
+8. `git diff --check`、protected-path diff、exact dirty paths、source identity与无external root/device evidence检查；
+9. semantic code冻结后执行唯一一次fresh full suite；full后不得再改stage-gate或tests。
+
+Phase 1必须记录：activation identity、CLI exact argv shape、owner call counts、binding example schema但不得记录真实external path、全部negative failure codes与downstream counters、targeted/focused/full totals、compile/wrapper/CodeGraph/diff结果、candidate files bytes/SHA/mode。
+
+全部PASS后Executer在ER返回：
+
+`READY_FOR_ORCHESTRATOR_CONTROLLED_PACKAGE_BINDING_CODE_CHILD`
+
+Orchestrator随后创建唯一code commit：
+
+- parent：本PLAN exact activation child；
+- subject：`feat(stage-gate): bind ray r6 package identity`；
+- changed paths exact：
+  - `src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py`；
+  - `tests/test_p7_td_b_r6_stage_gate.py`。
+
+Phase 2由Planner在同一PLAN下只读验收direct-child topology、subject/path set、committed blobs/current bytes、ER-only dirty与Phase-1 evidence。若semantic bytes未变，可继承该次fresh full，不重复full suite。Phase 2接受后，Planner归档reviewed PLAN/ER并返回Orchestrator更新FULL；formal Package B仍未授权，真实package/root仍不存在。
+
+## 8. Failure convergence 与hard locks
+
+这是一次最大安全连续engineering package：同一reference、一个package-identity seam、一个production owner、一个test module、一次fresh full和一个two-phase checkpoint；把CLI、identity construction、machine binding、substitution negatives与source-attestation路径同时收敛，避免留下半绑定状态。
+
+失败规则：
+
+- 第一次局部实现/测试失败可在本scope内做一次bounded correction；
+- 第二次同一具体binding seam失败，必须重新检查owner/state seam，只允许最小focused extraction和保护测试；
+- 第三次substantive同边界失败立即停止回Orchestrator；不得第四次retry、suffix、新task、新root或handwritten controller；
+- 任何需要第三路径、真实root、设备、网络、scientific interpretation或扩大formal bounds的发现立即停止，本PLAN不授权。
+
+全程hard zero：accepted G4-05 root access、任何external experiment payload/root、真实package generation/describe、formal root create、device/network/camera/Ray/strip/capture/nonzero light、release consumption、retained R3、firmware/deployment、TD-C均为0。
+
+Executer不得修改PLAN/FULL/archives/GUIDE/RESEARCH，不得commit/push/PR。只把实现、验证、failure与Planner decision request写入`.agent-work/EXECUTION_RESULT.md`。
+
+唯一Planner stop：`RETURN_FOR_G4_06_STAGE_GATE_BINDING_TWO_PHASE_REVIEW`。
