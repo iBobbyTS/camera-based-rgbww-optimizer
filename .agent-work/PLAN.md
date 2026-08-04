@@ -1,102 +1,168 @@
-# REF-G4-06-RAY-R6 visible-Terminal capability wait
+# REF-G4-06-RAY-R6 Human-authorized visible-Terminal validation
 
-**计划状态：** `WAITING_ORCHESTRATOR_HUMAN_VISIBLE_TERMINAL_CAPABILITY`
+**计划状态：**
+`EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION_HUMAN_AUTHORIZED_APPLESCRIPT_VISIBLE_TERMINAL`
 
-**Executable：** `false`
+**Executable：** `true`
 
-**Active task count：** `0`
+**Active task count：** `1`
 
 **Reference task：** `REF-G4-06-RAY-R6`
 
 **Total contract route：** `G4-RAY-R6-FINAL-CODE-FIRST-FINAL-PACKAGE-REMINT-V1`
 
-**Planner decision：**
-`INFRASTRUCTURE_UI_CAPABILITY_STOP_NO_CANDIDATE_ACCEPTANCE_OR_REJECTION`
+**Current phase：** `FINAL_CODE_CANDIDATE_VISIBLE_TERMINAL_REMAINING_VALIDATION`
 
-**Planner stop：** `WAITING_ORCHESTRATOR_HUMAN_VISIBLE_TERMINAL_CAPABILITY`
+**Planner stop：** `RETURN_FOR_G4_06_ROUTE_A_FINAL_CODE_CANDIDATE_REVIEW`
 
-`PLAN_MACHINE_CONTRACT={"schema":"planner_execution_contract_v2","contract_id":"G4-RAY-R6-FINAL-CODE-FIRST-FINAL-PACKAGE-REMINT-V1","plan_status":"WAITING_ORCHESTRATOR_HUMAN_VISIBLE_TERMINAL_CAPABILITY","executable":false,"active_task_count":0,"active_task":null,"reference_task_id":"REF-G4-06-RAY-R6","reference_goal":"REF-G4-COMPLETE","reference_task_status":"WAITING_ORCHESTRATOR_HUMAN_VISIBLE_TERMINAL_CAPABILITY","route":"FINAL_CODE_FIRST_FINAL_PACKAGE_REMINT_CONVERGENCE","planner_decision":"INFRASTRUCTURE_UI_CAPABILITY_STOP_NO_CANDIDATE_ACCEPTANCE_OR_REJECTION","candidate_disposition":"PRESERVED_UNACCEPTED_UNREJECTED_PENDING_REMAINING_VALIDATION","production_failure_count_increment":0,"test_failure_count_increment":0,"scientific_failure":false,"formal_failure":false,"device_failure":false,"state_transition_commit":{"expected_parent":"0bc7c33e78b135e17cb1471432ac8681c72e7ec6","expected_parent_tree":"e90b53e764cb05400b1adf8821fed451fa8328db","expected_subject":"docs(plan): wait for visible Terminal capability","expected_changed_paths":[".agent-work/EXECUTION_RESULT.md",".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/archived/EXECUTION_RESULT-20260804-1859.md",".agent-work/archived/PLAN-20260804-1859.md"],"excluded_candidate_paths":["src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","tests/test_p7_td_b_r6_stage_gate.py"],"direct_non_merge_child":true,"child_sha_recorded_in_plan":false},"required_full_machine_state":{"active_task_count":0,"active_task":null,"active_plan_contract_id":null,"current_plan_active_task_count":0,"current_plan_active_task":null,"canonical_next_reference_task":"REF-G4-06-RAY-R6","canonical_next_reference_status":"WAITING_ORCHESTRATOR_HUMAN_VISIBLE_TERMINAL_CAPABILITY","executable":false,"full_is_non_executable_reference":true,"plan_status":"WAITING_ORCHESTRATOR_HUMAN_VISIBLE_TERMINAL_CAPABILITY","g4_06_state":{"route":"FINAL_CODE_FIRST_FINAL_PACKAGE_REMINT_CONVERGENCE","total_contract_route":"G4-RAY-R6-FINAL-CODE-FIRST-FINAL-PACKAGE-REMINT-V1","status":"WAITING_ORCHESTRATOR_HUMAN_VISIBLE_TERMINAL_CAPABILITY","task_id":"REF-G4-06-RAY-R6","authority_owner":"MATCHING_LIVE_PLAN_ONLY","full_top_level_non_authorizing":true,"final_code_immutable_checkpoint":null,"final_code_tree":null,"final_package_binding":null,"production_source_frozen_no_further_code_change_before_formal":false,"formal_execution_authorized":false,"formal_root_creation_authorized":false,"device_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"capture_authorized":false,"release_consumption_authorized":false,"g4_07_unlocked":false}},"reviewed_plan_archive":{"path":".agent-work/archived/PLAN-20260804-1859.md","bytes":15890,"sha256":"64952e7a8c9c0b3e255d5a2ebf4f6fef5194320d6c097dc8e73f1d40b1a1a74d"},"reviewed_execution_result_archive":{"path":".agent-work/archived/EXECUTION_RESULT-20260804-1859.md","bytes":6883,"sha256":"962be0452bd8373d3d9419500e8622508e42f1e1dc7557ec070d602163248582"},"capability_handoff":{"source_bytes":5460,"source_sha256":"38232e1d192e14dffb3ff0e3cf53f6ec66670e2564f50c2114333f4a1a0059eb","status":"STOPPED_VISIBLE_TERMINAL_UI_CAPABILITY_BLOCKED_NO_LAUNCH","computer_use_bootstrap_success":true,"terminal_policy_denied":true,"alternate_terminal_available":false,"terminal_launch_count":0,"scratch_root_create_count":0,"command_seal_write_count":0,"pid_count":0,"liveness_check_count":0,"focused_start_count":0,"codegraph_sync_count":0,"codegraph_query_count":0,"fresh_full_start_count":0},"candidate_identity":{"source_path":"src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","source_bytes":94324,"source_sha256":"c4cd13e7fb64434914ccb12c862d1d12e81728a9a647d41ff23fb2d0d860fe83","test_path":"tests/test_p7_td_b_r6_stage_gate.py","test_bytes":133201,"test_sha256":"479dd8d5b0bb851d256045ee1535860ca23328874b7b7a1eb7de76dceb43ab6e","candidate_writes_authorized":0},"inherited_validation":{"targeted":{"passed":47,"total":47,"duration_seconds":182.148,"exit_code":0,"rerun_authorized":false},"compile":{"exit_code":0,"rerun_authorized":false},"focused_started":false,"fresh_full_started":false},"validation_scratch":{"path":"/Volumes/4T/temp/rgbww-optimizer/g4-route-a-terminal-validation-7214ff5eb797-20260804T184848Z","classification":"FRESH_VALIDATION_STDIO_LOG_ROOT_NOT_EXPERIMENT_NOT_PACKAGE_NOT_FORMAL","observed_absent":true,"created":false,"alternate_root_count":0},"resume_condition":"ORCHESTRATOR_PROVES_AVAILABLE_COMPLIANT_HUMAN_VISIBLE_TERMINAL_OWNER_THEN_PLANNER_REPLAYS_EXACT_ARCHIVED_CONTINUATION","replay_must_preserve_exact_candidate":true,"replay_must_preserve_exact_validation_root":true,"replay_single_launch":true,"replay_retry_resume_alternate_zero":true,"codex_background_fallback_allowed":false,"micro_validation_split_allowed":false,"applescript_bypass_allowed":false,"same_reference":true,"new_task_ids":0,"corrective_suffixes":0,"new_engineering_routes":0,"external_existing_root_access":0,"formal_root_access":0,"new_root_count":0,"device_authorized":false,"network_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"capture_authorized":false,"formal_execution_authorized":false,"release_consumption_authorized":false,"analysis_authorized":false,"td_c_authorized":false,"only_next_action":"WAIT_FOR_ORCHESTRATOR_TO_RESTORE_COMPLIANT_HUMAN_VISIBLE_TERMINAL_CAPABILITY","planner_stop":"WAITING_ORCHESTRATOR_HUMAN_VISIBLE_TERMINAL_CAPABILITY"}`
+`PLAN_MACHINE_CONTRACT={"schema":"planner_execution_contract_v2","contract_id":"G4-RAY-R6-FINAL-CODE-FIRST-FINAL-PACKAGE-REMINT-V1","plan_status":"EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION_HUMAN_AUTHORIZED_APPLESCRIPT_VISIBLE_TERMINAL","executable":true,"active_task_count":1,"active_task":"REF-G4-06-RAY-R6","reference_task_id":"REF-G4-06-RAY-R6","reference_goal":"REF-G4-COMPLETE","reference_task_status":"ACTIVE_ROUTE_A_FINAL_CODE_CANDIDATE_APPLESCRIPT_VISIBLE_TERMINAL_VALIDATION_AFTER_EXACT_ACTIVATION","route":"FINAL_CODE_FIRST_FINAL_PACKAGE_REMINT_CONVERGENCE","current_phase":"FINAL_CODE_CANDIDATE_VISIBLE_TERMINAL_REMAINING_VALIDATION","planner_decision":"REPLAY_EXACT_CONTINUATION_AFTER_HUMAN_APPLESCRIPT_AUTHORIZATION","candidate_disposition":"PRESERVED_UNACCEPTED_UNREJECTED_PENDING_REMAINING_VALIDATION","activation_commit":{"expected_parent":"11c64bffab0745babe9723784ad506610c03178d","expected_parent_tree":"edad57c0d54484a8d8ff19646e2e4f3f8efe1979","expected_subject":"docs(plan): activate Route A Terminal validation","expected_changed_paths":[".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/archived/PLAN-20260804-1925.md"],"excluded_candidate_paths":["src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","tests/test_p7_td_b_r6_stage_gate.py"],"direct_non_merge_child":true,"child_sha_recorded_in_plan":false},"required_full_machine_state":{"active_task_count":1,"active_task":"REF-G4-06-RAY-R6","active_plan_contract_id":"G4-RAY-R6-FINAL-CODE-FIRST-FINAL-PACKAGE-REMINT-V1","current_plan_active_task_count":1,"current_plan_active_task":"REF-G4-06-RAY-R6","canonical_next_reference_task":"REF-G4-06-RAY-R6","canonical_next_reference_status":"ACTIVE_ROUTE_A_FINAL_CODE_CANDIDATE_APPLESCRIPT_VISIBLE_TERMINAL_VALIDATION","executable":false,"full_is_non_executable_reference":true,"plan_status":"ACTIVE_ROUTE_A_FINAL_CODE_CANDIDATE_APPLESCRIPT_VISIBLE_TERMINAL_VALIDATION","g4_06_state":{"route":"FINAL_CODE_FIRST_FINAL_PACKAGE_REMINT_CONVERGENCE","total_contract_route":"G4-RAY-R6-FINAL-CODE-FIRST-FINAL-PACKAGE-REMINT-V1","status":"ACTIVE_ROUTE_A_FINAL_CODE_CANDIDATE_APPLESCRIPT_VISIBLE_TERMINAL_VALIDATION","task_id":"REF-G4-06-RAY-R6","authority_owner":"MATCHING_LIVE_PLAN_ONLY","full_top_level_non_authorizing":true,"final_code_immutable_checkpoint":null,"final_code_tree":null,"final_package_binding":null,"production_source_frozen_no_further_code_change_before_formal":false,"formal_execution_authorized":false,"formal_root_creation_authorized":false,"device_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"capture_authorized":false,"release_consumption_authorized":false,"g4_07_unlocked":false}},"reviewed_wait_plan_archive":{"path":".agent-work/archived/PLAN-20260804-1925.md","bytes":10743,"sha256":"78253e4464447421629b6d11a7f3782e697c07465324018f8c5dca831c49e5e1"},"replay_source_plan_archive":{"path":".agent-work/archived/PLAN-20260804-1859.md","bytes":15890,"sha256":"64952e7a8c9c0b3e255d5a2ebf4f6fef5194320d6c097dc8e73f1d40b1a1a74d"},"capability_execution_result_archive":{"path":".agent-work/archived/EXECUTION_RESULT-20260804-1859.md","bytes":6883,"sha256":"962be0452bd8373d3d9419500e8622508e42f1e1dc7557ec070d602163248582"},"human_authority":{"decision":"ALLOW_OSASCRIPT_OR_APPLESCRIPT","purpose":"ONE_HUMAN_VISIBLE_MACOS_TERMINAL_DO_SCRIPT_ACTIVATE_AND_IDENTITY_RETURN","source":"CURRENT_HUMAN_MESSAGE","osascript_invocation_cap":1,"terminal_launch_cap":1,"terminal_activate_allowed":true,"terminal_do_script_allowed":true,"window_tab_tty_identity_readback_allowed":true,"applescript_file_io_allowed":false,"applescript_network_allowed":false,"applescript_device_allowed":false,"applescript_second_launch_allowed":false},"candidate_identity":{"source_path":"src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","source_bytes":94324,"source_sha256":"c4cd13e7fb64434914ccb12c862d1d12e81728a9a647d41ff23fb2d0d860fe83","test_path":"tests/test_p7_td_b_r6_stage_gate.py","test_bytes":133201,"test_sha256":"479dd8d5b0bb851d256045ee1535860ca23328874b7b7a1eb7de76dceb43ab6e","overall_insertions":102,"overall_deletions":9,"production_insertions":35,"production_deletions":8,"candidate_writes_authorized":0},"inherited_validation":{"targeted":{"command":".venv/bin/python -m unittest -v tests.test_p7_td_b_r6_stage_gate","passed":47,"total":47,"duration_seconds":182.148,"exit_code":0,"rerun_authorized":false},"compile":{"command":".venv/bin/python -m py_compile src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py tests/test_p7_td_b_r6_stage_gate.py","exit_code":0,"rerun_authorized":false},"identity_condition":"EXACT_CANDIDATE_BYTES_SHA_AND_TWO_PATH_DIFF_MUST_REMAIN_UNCHANGED"},"validation_scratch":{"path":"/Volumes/4T/temp/rgbww-optimizer/g4-route-a-terminal-validation-7214ff5eb797-20260804T184848Z","classification":"FRESH_VALIDATION_STDIO_LOG_ROOT_NOT_EXPERIMENT_NOT_PACKAGE_NOT_FORMAL","observed_absent_at_planning":true,"must_not_preexist_at_launch":true,"inventory":["command-seal.json","validation.stdout.log","validation.stderr.log","validation.exit"],"other_files_allowed":false,"alternate_root_count":0},"osascript_invocation_count":1,"terminal_launch_count":1,"terminal_retry_count":0,"terminal_resume_count":0,"terminal_alternate_count":0,"codex_exec_validation_owner":false,"codex_background_validation_owner":false,"visible_macos_terminal_validation_owner":true,"three_sparse_liveness_checks_required":true,"liveness_osascript_calls_allowed":0,"automation_owned_by_orchestrator":true,"expected_duration_over_10_minutes":true,"focused_required_once":true,"post_change_identity_required":true,"compile_rerun_required":false,"codegraph_sync_required_once":true,"codegraph_query_required_once":true,"diff_scope_machine_required":true,"full_suite_required_once":true,"full_suite_retry_count":0,"previous_interrupted_full_reusable":false,"allowed_repo_changed_paths":[".agent-work/EXECUTION_RESULT.md","src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","tests/test_p7_td_b_r6_stage_gate.py"],"same_reference":true,"new_task_ids":0,"corrective_suffixes":0,"external_existing_root_access":0,"formal_root_access":0,"new_experiment_package_formal_roots":0,"device_authorized":false,"network_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"capture_authorized":false,"formal_execution_authorized":false,"release_consumption_authorized":false,"analysis_authorized":false,"td_c_authorized":false,"planner_stop":"RETURN_FOR_G4_06_ROUTE_A_FINAL_CODE_CANDIDATE_REVIEW"}`
 
-## 1. Review disposition
+## 1. Human capability authorization
 
-Planner接受本handoff为：
+Human已明确：
 
-`INFRASTRUCTURE_UI_CAPABILITY_STOP_NO_CANDIDATE_ACCEPTANCE_OR_REJECTION`
+`允许使用osascript或Applescript`
 
-Human-visible Terminal在任何launch、root creation或validation command之前被当前UI policy阻断。
-因此：
+本PLAN把该授权严格限制为一次`osascript`调用：
 
-- candidate不接受、不拒绝；
-- production/test failure count均不增加；
-- 不创建corrective suffix、alternate root、new task或new engineering route；
-- 不构成科学、formal、device、GUIDE hard stop或hardware readiness结论；
-- Human无需决定科学或工程合同；当前缺少的是满足既定long-task packaging的工具能力。
+1. 指示macOS Terminal `activate`；
+2. 对一个Human可见window/tab执行一次`do script`，传入本PLAN冻结的单一fail-closed shell
+   sequence；
+3. 返回该window、tab与TTY identity。
 
-## 2. Preserved evidence
+Executer在调用前生成一个唯一launch token，把同一token注入`do script` shell command并记录为
+launcher evidence；AppleScript返回的window/tab/TTY是独立的post-start launcher evidence，不反馈写入
+shell command。
 
-Exact candidate保持：
+AppleScript不得读写文件、访问网络/设备、运行验证、创建root、轮询、启动第二个tab/window/command，
+或承担long-task ownership。若这一次调用失败或未返回可验证的visible window/tab/TTY，立即写ER
+停止；不得retry、resume、alternate或改用Codex background。
 
-- source：`94324` bytes /
+## 2. Activation and frozen candidate
+
+Orchestrator先创建activation commit：
+
+- parent：`11c64bffab0745babe9723784ad506610c03178d`；
+- direct non-merge；
+- subject：`docs(plan): activate Route A Terminal validation`；
+- exact changed paths只有FULL、PLAN和本次PLAN archive三个orchestration files；
+- candidate source/test不得stage、commit或改变；
+- FULL同步`required_full_machine_state`，但始终non-executable；本matching PLAN是唯一execution
+  authority。
+
+Executer启动前用repo-owned parser与Git只读检查证明activation exact、PLAN/FULL active `1/1`、
+same task/contract、required subset exact，并重算candidate：
+
+- source `94324` bytes /
   `c4cd13e7fb64434914ccb12c862d1d12e81728a9a647d41ff23fb2d0d860fe83`；
-- test：`133201` bytes /
+- test `133201` bytes /
   `479dd8d5b0bb851d256045ee1535860ca23328874b7b7a1eb7de76dceb43ab6e`；
-- candidate writes：`0`。
+- exact two paths、overall `+102/-9`、production `+35/-8`。
 
-可继承但不得在当前wait中重跑：
+Candidate writes为0。任一identity不符，停止回Orchestrator，不得恢复或修补。
 
-- targeted：`47/47`、`182.148s`、exit `0`；
-- compile：exit `0`。
+Targeted `47/47`、`182.148s`、exit 0与compile exit 0只在exact identity下继承，禁止重跑。
 
-Focused、post-change CodeGraph、fresh full均未启动。Scratch exact path：
+## 3. Exact Terminal-owned scratch
+
+Reserved root保持：
 
 `/Volumes/4T/temp/rgbww-optimizer/g4-route-a-terminal-validation-7214ff5eb797-20260804T184848Z`
 
-已观察为absent，且root/seal/log/exit/launch/PID/liveness全部为0。External existing roots、
-device、network、camera、Ray、strip、capture、release、formal、analysis与TD-C访问/effect均为0。
+Planning intake已用exact non-following check证明absent。Terminal shell sequence必须在其自身owner内以
+exclusive create再次证明并创建；若已存在，fail closed，不得覆盖或换root。
 
-## 3. Non-executable wait
+Root只允许四个文件：
 
-本PLAN active task count为0且不授权任何execution。Orchestrator需独立把FULL同步到
-`required_full_machine_state`；FULL与PLAN均保持`executable=false`。同步state commit必须：
+- `command-seal.json`
+- `validation.stdout.log`
+- `validation.stderr.log`
+- `validation.exit`
 
-- 是`0bc7c33e78b135e17cb1471432ac8681c72e7ec6`的direct non-merge child；
-- subject精确为`docs(plan): wait for visible Terminal capability`；
-- changed paths精确为machine row中的五个orchestration paths；
-- source/test candidate保持dirty且不进入commit。
+`command-seal.json`须由Terminal shell在任何validation command前冻结unique launch token、cwd、
+activation HEAD、candidate hashes、exact argv/order、single-launch/retry/resume/alternate counters、
+shell自身读取的PID `$$`与TTY，以及三个log/exit paths。它不得宣称或包含AppleScript随后返回的
+window/tab identity。Terminal shell持有stdout/stderr并最终写overall exit。不得创建第五个文件。
 
-这只是current-state冻结，不是下一次execution activation。
+这是validation stdio/log root，不是experiment/package/formal root，也不提供hardware readiness。
+禁止读取、stat、list、describe、修改、删除或消费任何其他existing external root。
 
-## 4. Resume condition
+## 4. One visible-Terminal shell sequence
 
-唯一恢复条件：
+Human-visible Terminal内的单一shell process才是long-task owner。Codex exec/内置tool只能执行一次
+`osascript` launcher和后续稀疏read-only liveness；不得运行、代理或后台持有下列validation。
 
-`ORCHESTRATOR_PROVES_AVAILABLE_COMPLIANT_HUMAN_VISIBLE_TERMINAL_OWNER`
+Shell sequence必须按顺序、fail closed执行：
 
-满足后，Planner才能在同一`REF-G4-06-RAY-R6`、同一total contract route下重放归档的exact
-visible-Terminal continuation。重放必须保持：
+1. exclusive create exact root和four-file layout；写command seal。
+2. 重证candidate bytes/SHA/two-path numstat；不写candidate。
+3. Focused exact一次：
 
-- exact candidate bytes/SHA与candidate writes 0；
-- exact validation scratch path及four-file inventory；
-- single launch；
-- retry/resume/alternate `0/0/0`；
-- focused → static identity → CodeGraph sync/query → scope/machine → only one fresh full；
-- 三次稀疏liveness及Orchestrator-owned automation边界；
-- 同一final-code-candidate Planner review stop。
+```text
+.venv/bin/python -m unittest tests.test_p7_td_b_r6_stage_gate tests.test_p7_td_b_r6_contract tests.test_p7_thermal_diagnostics
+```
 
-不得使用Codex background owner、拆分micro validation、AppleScript/osascript绕过、alternate terminal
-root、设备路径或弱化既有single-launch bounds。若compliant visible Terminal仍不可用，继续本wait，
-不得反复生成executable PLAN。
+4. 不重跑compile；重算candidate identity、exact diff及`git diff --check`。
+5. `codegraph sync`一次；随后query一次，证明existing stage-gate source-attestation owner唯一，
+   loader/launch无parallel validator、successor seam、controller或adapter。
+6. Repo-owned PLAN/FULL parser、required subset、activation topology、exact changed scope与
+   all-authority-false检查。
+7. 只有1–6全部exit 0，运行唯一fresh full：
 
-## 5. Authority and stop
+```text
+.venv/bin/python -m unittest discover -s tests
+```
 
-本PLAN不授权修改ER/source/test/FULL，不授权Terminal、测试、CodeGraph、root creation、package remint、
-final-code checkpoint commit、existing package consumption、formal、device、network、camera、Ray、
-strip、capture、release、analysis或TD-C。
+8. 写final stdout/stderr/overall exit并terminal。
 
-唯一下一动作：
+Focused或任一pre-full gate失败时full不得启动；full失败时记录真实结果。任何分支均不得retry、
+resume、alternate、修改candidate或现场纠偏。
 
-`WAIT_FOR_ORCHESTRATOR_TO_RESTORE_COMPLIANT_HUMAN_VISIBLE_TERMINAL_CAPABILITY`
+## 5. Liveness, automation and resume
+
+一次`osascript`独立返回window/tab/TTY后，Executer读取command seal中的同一launch token、shell
+PID `$$`与shell-observed TTY，并在ER中证明：launcher invocation使用该token、returned TTY与sealed
+TTY一致、window/tab对应这次唯一`do script`，且sealed PID/TTY承载exact command。执行三次稀疏
+read-only liveness checks，持续绑定同一token/PID/TTY/window/tab，只核对进程存活、exact command
+identity和log size单调增长；不得再次调用AppleScript，不得密集轮询。
+
+第三次存活后把window/tab/TTY/PID与三次evidence写入ER并返回Orchestrator。Orchestrator估算完成窗口、
+创建一次automation、将goal标为blocked并停止轮询。
+
+Human恢复goal时只检查一次：
+
+- 未完成：保持同一Terminal owner/automation，再次blocked；
+- 完成：Orchestrator删除automation；Executer只读取exact four-file root，核对seal并finalize ER；
+  不得重启、resume或补跑。
+
+若第三次liveness前已完成，则直接核对同一Terminal owner evidence并finalize；不得为形式启动新owner。
+
+## 6. ER, authority and stop
+
+Executer只可修改`.agent-work/EXECUTION_RESULT.md`；candidate source/test只读。ER必须记录：
+
+- Human AppleScript authority、一次invocation、unique launch token，以及AppleScript返回的window/tab/
+  TTY与shell-sealed token/PID/TTY的exact binding；
+- activation/machine/candidate identity；
+- window/tab/TTY、shell PID、command seal和three liveness；
+- focused、identity/diff、CodeGraph、machine/scope、fresh full的exact顺序、exit与counts；
+- full是否started；
+- candidate writes 0和final hashes；
+- root four-file identities；
+- external/device/formal/backend effects全0；
+- 不猜测future checkpoint/tree。
+
+本PLAN不授权experiment/package/formal roots、package remint、code checkpoint commit、existing package
+consumption、device、network、camera、Ray、strip、capture、release、analysis、formal R6或TD-C。
+
+成功status：
+
+`READY_FOR_PLANNER_G4_06_ROUTE_A_FINAL_CODE_CANDIDATE_REVIEW`
+
+失败status：
+
+`READY_FOR_PLANNER_G4_06_ROUTE_A_FINAL_CODE_CANDIDATE_VALIDATION_FAILURE_REVIEW`
 
 唯一stop：
 
-`WAITING_ORCHESTRATOR_HUMAN_VISIBLE_TERMINAL_CAPABILITY`
+`RETURN_FOR_G4_06_ROUTE_A_FINAL_CODE_CANDIDATE_REVIEW`
