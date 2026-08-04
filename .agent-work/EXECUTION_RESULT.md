@@ -2,135 +2,295 @@
 
 ## Terminal status request
 
-`STOPPED_VISIBLE_TERMINAL_UI_CAPABILITY_BLOCKED_NO_LAUNCH`
+`READY_FOR_PLANNER_G4_06_ROUTE_A_FINAL_CODE_CANDIDATE_VALIDATION_FAILURE_REVIEW`
 
 - Reference task: `REF-G4-06-RAY-R6`
 - Contract: `G4-RAY-R6-FINAL-CODE-FIRST-FINAL-PACKAGE-REMINT-V1`
 - Current phase:
   `FINAL_CODE_CANDIDATE_VISIBLE_TERMINAL_REMAINING_VALIDATION`
+- Failure classification:
+  `PRE_VALIDATION_VISIBLE_TERMINAL_LAUNCHER_IDENTITY_AND_COMMAND_SEAL_PACKAGING_FAILURE`
 - Candidate disposition:
-  `PRESERVED_UNACCEPTED_UNREJECTED_PENDING_REMAINING_VALIDATION`
+  `PRESERVED_UNACCEPTED_UNREJECTED_NO_CANDIDATE_FAILURE_EVIDENCE`
 - Planner stop: `RETURN_FOR_G4_06_ROUTE_A_FINAL_CODE_CANDIDATE_REVIEW`
 
-This is a visible-Terminal UI capability stop before launch. It is not a
-candidate rejection or acceptance, production-seam failure, test failure,
-scientific/formal/device failure, GUIDE hard stop, or hardware readiness claim.
+This is a pre-validation launcher/seal packaging failure. It is not a
+candidate production-seam failure, test failure, scientific/formal/device
+failure, GUIDE hard stop, release result, or candidate acceptance/rejection.
+No validation command started and no candidate evidence changed.
 
-## Activation and machine intake
+## Human authority and activation intake
+
+The live PLAN recorded the current Human decision
+`ALLOW_OSASCRIPT_OR_APPLESCRIPT` for one Human-visible macOS Terminal
+`activate` plus one `do script` and window/tab/TTY readback. That authority did
+not permit a second invocation, retry, resume, alternate root, file I/O by
+AppleScript, or device/network action.
+
+Activation intake passed before launch:
 
 - Branch: `main`
-- HEAD: `0bc7c33e78b135e17cb1471432ac8681c72e7ec6`
-- Sole parent: `7214ff5eb797d2716d7b9d4bdb34324f5febe350`
-- Subject: `docs(plan): continue Route A validation in Terminal`
+- HEAD: `4c77fe46e9d755467f262fc63ac8e329c8847ff3`
+- Sole parent: `11c64bffab0745babe9723784ad506610c03178d`
+- Subject: `docs(plan): activate Route A Terminal validation`
 - Exact activation paths:
-  - `.agent-work/EXECUTION_RESULT.md`
   - `.agent-work/FULL_PLAN_REFERENCE.md`
   - `.agent-work/PLAN.md`
-  - `.agent-work/archived/EXECUTION_RESULT-20260804-1848.md`
-  - `.agent-work/archived/PLAN-20260804-1848.md`
-- Repo-owned strict parser evidence: PLAN/FULL active `1/1`, task
-  `REF-G4-06-RAY-R6`, contract
-  `G4-RAY-R6-FINAL-CODE-FIRST-FINAL-PACKAGE-REMINT-V1`, PLAN executable,
-  FULL `executable=false`, FULL non-executable reference true, and the PLAN
-  required FULL subset exact.
-- PLAN parser source: `14517` bytes, SHA-256
-  `00df25f4bd7fc154cf47e1d0791965f31eee6248a3193ccf20ab2372116669eb`;
-  one row at line `19`.
-- FULL parser source: `15375` bytes, SHA-256
-  `58b64eebf36db8899783e7f7678bd6aecf51c1057320b9c021fa017bcc02359a`;
-  one row at line `24`.
+  - `.agent-work/archived/PLAN-20260804-1925.md`
+- Repo-owned strict parser: PLAN/FULL active `1/1`, same task
+  `REF-G4-06-RAY-R6`, same contract, PLAN executable, FULL
+  `executable=false`, FULL non-executable reference true, and required FULL
+  subset exact.
+- PLAN parser source: `13960` bytes, SHA-256
+  `a8df10656cbd9f18c7102e0dfdaa4a565362cfe8ec72cad9e52952647599a466`;
+  one machine row at line `18`.
+- FULL parser source: `15407` bytes, SHA-256
+  `63a5d83f2f31bfde297fae4aa9b6dc4b7bbded95dff53ef5945ba787e855d7b3`;
+  one machine row at line `24`.
 
-The first parser probe passed a `Path` instead of exact bytes and failed closed
-with `source_not_exact_bytes`. The second probe correctly supplied bytes but
-attempted to subscript the returned `ParsedMachineContract` dataclass. The
-final probe used its `.value` mapping and passed all assertions. These were
-read-only intake-harness corrections with no repository or candidate write and
-no production-failure increment.
+## Frozen candidate and inherited validation
 
-## Frozen candidate identity
+The pre-launch candidate gate passed:
 
 - Source: `94324` bytes, SHA-256
   `c4cd13e7fb64434914ccb12c862d1d12e81728a9a647d41ff23fb2d0d860fe83`.
 - Test: `133201` bytes, SHA-256
   `479dd8d5b0bb851d256045ee1535860ca23328874b7b7a1eb7de76dceb43ab6e`.
-- Exact numstat:
-  - source `+35/-8`;
-  - test `+67/-1`.
-- Pre-launch worktree scope was exactly those two dirty candidate paths.
-- `git diff --check` passed.
-- Candidate source/test writes by this continuation: `0`.
+- Exact numstat: source `+35/-8`; test `+67/-1`.
+- Exact pre-launch dirty scope: those two candidate paths only.
+- Candidate writes in this continuation: `0`.
 - Inherited targeted: `47/47`, `182.148s`, exit `0`; not rerun.
 - Inherited compile: exit `0`; not rerun.
 
-## Validation scratch gate
+The Terminal shell failed before any validation command and performed no
+repository write. The candidate therefore remained unchanged from the exact
+pre-launch identity. No candidate production/test conclusion is inferred from
+the packaging failure.
 
-The PLAN-frozen exact path was checked once using non-following `lstat` and was
-absent:
+## Launcher construction and sole AppleScript invocation
+
+The initial in-memory launcher construction attempted to use an unavailable
+JavaScript `btoa` global and stopped before calling any tool or `osascript`:
+
+`ReferenceError: btoa is not defined`
+
+This consumed zero invocation budget and made no file or UI change. Per
+Orchestrator direction it was treated as a pre-launch encoding-harness
+correction. A custom ASCII/base64 encoder and decoder then proved byte-exact
+round trips for the shell payload, command-seal template, and AppleScript
+payload before the only actual invocation.
+
+- Unique launch token used in the sole `do script` command:
+  `g4-route-a-4c77fe46e9d7-msf25zmf-100f4309`
+- `/usr/bin/osascript` invocations: `1`
+- AppleScript operations: one `activate`, one `do script`, one attempted
+  window/tab/TTY identity readback.
+- Invocation exit: `1`
+- Exact launcher error:
+
+  `31014:31063: execution error: launched tab identity not found in front window (-2700)`
+
+The error occurred after `do script`, so a Terminal shell was likely launched,
+but AppleScript returned no reliable window/tab/TTY identity. No identity was
+guessed or reconstructed. The PLAN therefore required immediate failure with
+no second AppleScript invocation.
+
+## Minimal launcher-payload diagnostics
+
+The payloads were assembled inside one ephemeral V8 tool isolate. That isolate
+ended after the sole `osascript` invocation, and neither full payload was
+persisted to an authorized evidence file. The conversation retains the source
+construction logic but not the expanded base64-bearing strings as independently
+addressable byte objects. Therefore the following requested identities are
+unavailable and must not be guessed:
+
+- exact expanded AppleScript source bytes: `UNRECOVERABLE_NOT_PERSISTED`;
+- exact expanded AppleScript source SHA-256: `UNRECOVERABLE_NOT_PERSISTED`;
+- exact expanded Terminal shell payload bytes: `UNRECOVERABLE_NOT_PERSISTED`;
+- exact expanded Terminal shell payload SHA-256:
+  `UNRECOVERABLE_NOT_PERSISTED`.
+
+Before invocation, the custom ASCII/base64 encoder and decoder did prove exact
+in-memory round trips for the expanded AppleScript, shell, and seal-template
+strings. That proves encoding equality at launch construction time, but it does
+not provide a recoverable post-failure byte count or digest and is not presented
+as one.
+
+The minimal retained AppleScript identity-readback source shape was:
+
+```applescript
+tell application "Terminal"
+activate
+set launchedTab to do script "<single base64-bearing zsh command>"
+delay 2
+set launchedTTY to tty of launchedTab
+set launchedWindow to front window
+set launchedIndex to 0
+repeat with tabIndex from 1 to count of tabs of launchedWindow
+  if tty of item tabIndex of tabs of launchedWindow is launchedTTY then
+    set launchedIndex to tabIndex
+    exit repeat
+  end if
+end repeat
+if launchedIndex is 0 then error "launched tab identity not found in front window"
+return (id of launchedWindow as text) & "|" & (launchedIndex as text) & "|" & launchedTTY & "|" & "<launch token>"
+end tell
+```
+
+Angle-bracket fields above are intentional redactions of expanded values that
+were not persisted; the snippet is sufficient to reconstruct the observed
+identity bug. It selected `front window` after `do script`, then required the
+returned tab's TTY to be found among that front window's tabs. The exact
+`-2700` error proves that this search completed with `launchedIndex = 0`; it
+does not prove whether the returned tab belonged to a different window, the
+front window changed during the two-second delay, or another Terminal identity
+condition occurred.
+
+The retained shell setup order, before any validation command, was:
+
+```zsh
+set -eu
+umask 077
+mkdir -- "$validation_root"
+shell_tty=$(/usr/bin/tty)
+seal_template_b64="<expanded seal template>"
+identity_code="$(printf %s '<encoded identity code>' | /usr/bin/base64 -D)"
+machine_code="$(printf %s '<encoded machine code>' | /usr/bin/base64 -D)"
+query_text="$(printf %s '<encoded CodeGraph query>' | /usr/bin/base64 -D)"
+/usr/bin/python3 -c '<seal writer code>' "$seal_template_b64" "$$" "$shell_tty" > "$seal_path"
+: > "$stdout_path"
+: > "$stderr_path"
+write_validation_exit() { ... }
+trap write_validation_exit EXIT
+(
+  # fail-closed validation order 1 through 8
+) > "$stdout_path" 2> "$stderr_path"
+```
+
+Thus the exclusive root was created first; shell TTY and in-memory command
+inputs were derived second; the command seal was redirected and written third;
+stdout/stderr files, the EXIT trap, and all validation steps came only after a
+successful seal writer.
+
+The exact retained command-seal writer argv/source was:
+
+```zsh
+/usr/bin/python3 -c 'import base64,datetime,json,sys; d=json.loads(base64.b64decode(sys.argv[1])); d["shell_pid"]=int(sys.argv[2]); d["shell_tty"]=sys.argv[3]; d["started_at_utc"]=datetime.datetime.now(datetime.timezone.utc).isoformat(); print(json.dumps(d,sort_keys=True,separators=(",",":")))' "$seal_template_b64" "$$" "$shell_tty" > "$seal_path"
+```
+
+The zero-byte seal is explained by ordinary shell redirection semantics: the
+shell created/truncated `command-seal.json` before starting the writer command,
+and the writer did not produce stdout successfully.
+
+Human subsequently supplied the original visible-Terminal trace. That trace is
+authoritative observed evidence for this launcher attempt and supersedes the
+earlier `UNKNOWN` exact-cause statement:
+
+- the base64-decoded shell did run in the visible Terminal;
+- the command-seal writer ran under Xcode Python `3.9`;
+- its `json.loads` failed with the exact error:
+
+  `JSONDecodeError: Expecting ':' delimiter: line 1 column 2487 (char 2486)`
+
+- the Terminal then returned to its prompt without entering validation.
+
+Canonical root-cause classification:
+
+`BASE64_EMBEDDED_COMMAND_SEAL_JSON_TRANSCRIPTION_INVALID`
+
+This evidence proves that the embedded command-seal JSON presented to
+`json.loads` was syntactically invalid at character `2486`; it does not restore
+the complete expanded payload bytes or SHA-256, because those byte strings were
+not persisted. The earlier evidence statement `SEAL_WRITER_EXITED_BEFORE_STDOUT`
+remains true as the effect boundary, while its exact cause is no longer
+`UNKNOWN`.
+
+Human's explicit engineering correction directive for the next packaging pass
+is:
+
+`直接把脚本放在临时目录执行，不要用base64`
+
+Accordingly, any later authorized attempt must use a directly stored script in
+the authorized temporary directory and must not reconstruct, replay, or embed
+this base64 transport. This handoff does not itself create that script or
+authorize another launch.
+
+No diagnostic reconstruction was executed, no payload was relaunched, and no
+second AppleScript, Terminal command, seal writer, validation, retry, resume, or
+alternate root was attempted.
+
+## Exact reserved-root evidence
+
+Before launch, a non-following check proved the exact reserved path absent:
 
 `/Volumes/4T/temp/rgbww-optimizer/g4-route-a-terminal-validation-7214ff5eb797-20260804T184848Z`
 
-- Scratch root creation: `0`
-- Command seal writes: `0`
-- Log/exit file writes: `0`
-- Validation scratch inventory: no files created
-- Alternate roots: `0`
+After the failed launcher readback, one bounded forensic read of this exact
+reserved path showed that the launched shell reached exclusive root creation
+and command-seal redirection, then failed before producing a seal or installing
+the validation logging/trap sequence:
 
-No other external experiment, package, or formal root was read, listed,
-statted, described, created, modified, or consumed.
+- Root: present directory, mode `0700`.
+- Exact inventory: one file only.
+- `command-seal.json`: regular file, mode `0600`, `0` bytes, SHA-256
+  `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`.
+- `validation.stdout.log`: absent.
+- `validation.stderr.log`: absent.
+- `validation.exit`: absent.
+- Parsed command seal: unavailable because the file is empty.
+- Sealed PID: unavailable.
+- Sealed TTY: unavailable.
+- Sealed launch token: unavailable.
+- AppleScript window/tab/TTY identity: unavailable.
 
-## Computer Use capability evidence
+The partial root is retained immutable as failure evidence. It was not cleaned,
+deleted, overwritten, completed, resumed, or reused, and no alternate root was
+created. Future work must not treat it as a fresh validation root.
 
-The `computer-use` skill was read completely and its plugin-owned wrapper was
-bootstrapped through `mcp__node_repl__js`. No AppleScript, `osascript`, JXA,
-System Events, Codex background process, click, typing, or Terminal command was
-used.
+## Validation order and zero-start evidence
 
-Fresh Terminal inspection failed before any UI action:
+Because command-seal creation did not complete, all PLAN validation steps
+remained not started:
 
-`Computer Use is not allowed to use the app 'com.apple.Terminal' for safety reasons.`
-
-A read-only app inventory reported the only terminal candidate as:
-
-`{"id":"com.apple.Terminal","displayName":"终端","isRunning":true}`
-
-Per Orchestrator direction, app-name resolution was then tried without click or
-typing:
-
-- `sky.get_app_state({app: "终端"})`:
-  `Invalid app: 终端`
-- `sky.get_app_state({app: "Terminal"})`:
-  `Computer Use is not allowed to use the app 'com.apple.Terminal' for safety reasons.`
-
-There was no allowed iTerm/Warp alternative. The required Human-visible
-Terminal owner therefore could not be inspected or launched through the only
-authorized UI mechanism.
-
-## Validation state and zero effects
-
-- Visible Terminal launch/window/tab/PID: `0/none/none/none`
-- Single-sequence launch count: `0`
-- Liveness checks: `0`
+- Candidate identity step 1 starts/runs: `0/0`
 - Focused integration starts/runs: `0/0`
-- Post-focused candidate gate: not started
-- CodeGraph post-change sync/query: `0/0`
-- Pre-full machine/scope gate: not started
-- Fresh full starts/runs: `0/0`
-- Retry/resume/alternate sequence: `0/0/0`
+- Post-focused identity/diff starts/runs: `0/0`
+- CodeGraph sync/query: `0/0`
+- Strict machine/scope/authority step starts/runs: `0/0`
+- Fresh full-suite starts/runs: `0/0`
+- Liveness checks: `0`
+- Terminal process PID/TTY-bound ownership proof: unavailable
+- Full retry count: `0`
 - Previous interrupted full reused: `false`
+
+No success, failure, count, duration, or readiness result is claimed for any
+unstarted validation.
+
+## Counters and authority boundary
+
+- AppleScript invocations: `1/1`
+- Terminal `do script` launches: `1/1` likely effected before readback failure
+- Retry/resume/alternate launch: `0/0/0`
+- Alternate root: `0`
+- Candidate/source/test writes: `0`
+- Git stage/commit/push/PR: `0/0/0/0`
+- Other external experiment/package/formal root access: `0`
 - Network/device/backend/camera/Ray/strip/capture calls: `0/0/0/0/0/0/0`
 - Release/retained-R3/formal-R6/analysis/TD-C consumption or execution:
   `0/0/0/0/0`
 - Formal owner/root/device effects: `0/0/0`
-- Git stage/commit/push/PR: `0/0/0/0`
 
-PLAN, FULL, GUIDE, RESEARCH, archives, candidate source, and candidate tests
-were not modified by this continuation. Only this live execution handoff was
-written.
+PLAN, FULL, GUIDE, RESEARCH, archives, source, and tests were read-only. Only
+this live execution handoff was modified after failure.
 
-## Orchestrator handoff
+## Planner and Orchestrator handoff
 
-Resolve or repackage the Human-visible Terminal capability without converting
-the validation into a Codex-managed background owner and without weakening the
-single-launch, no-retry, frozen-candidate, or zero-device boundaries. Preserve
-the same task and candidate; do not create a corrective suffix, alternate
-validation root, or new owner. No future checkpoint or tree SHA is guessed.
+Planner should review this failure without rejecting the frozen candidate or
+incrementing its production failure count. The failure is in the visible
+Terminal launcher/tab-identity plus pre-validation command-seal packaging
+boundary. Return to Orchestrator ownership reassessment before any new action.
+
+Do not retry or resume the shell, invoke AppleScript again under this PLAN,
+reuse or clean the partial root, create an alternate root, run validation in a
+Codex background process, or create a corrective task suffix. No future code
+checkpoint or tree SHA is guessed.
