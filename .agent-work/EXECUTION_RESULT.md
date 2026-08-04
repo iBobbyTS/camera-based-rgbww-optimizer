@@ -2,170 +2,135 @@
 
 ## Terminal status request
 
-`STOPPED_FOR_ORCHESTRATOR_VISIBLE_TERMINAL_REPACKAGING_NOT_A_CANDIDATE_REJECTION`
+`STOPPED_VISIBLE_TERMINAL_UI_CAPABILITY_BLOCKED_NO_LAUNCH`
 
 - Reference task: `REF-G4-06-RAY-R6`
 - Contract: `G4-RAY-R6-FINAL-CODE-FIRST-FINAL-PACKAGE-REMINT-V1`
-- Phase reached: `TARGETED_COMPLETE_BEFORE_FOCUSED`
-- Planner stop requested: return to Orchestrator for visible-Terminal validation
-  repackaging because measured validation duration makes the original
-  under-10-minute packaging no longer credible.
+- Current phase:
+  `FINAL_CODE_CANDIDATE_VISIBLE_TERMINAL_REMAINING_VALIDATION`
+- Candidate disposition:
+  `PRESERVED_UNACCEPTED_UNREJECTED_PENDING_REMAINING_VALIDATION`
+- Planner stop: `RETURN_FOR_G4_06_ROUTE_A_FINAL_CODE_CANDIDATE_REVIEW`
 
-This is a long-task packaging stop required by PLAN section 7. It is not a
-candidate rejection, production-seam failure, scientific/formal failure,
-device failure, GUIDE hard stop, or permission request. The implementation is
-left intact for the next bounded package; it is not accepted or committed.
+This is a visible-Terminal UI capability stop before launch. It is not a
+candidate rejection or acceptance, production-seam failure, test failure,
+scientific/formal/device failure, GUIDE hard stop, or hardware readiness claim.
 
-## Activation intake
+## Activation and machine intake
 
 - Branch: `main`
-- Activation HEAD: `7214ff5eb797d2716d7b9d4bdb34324f5febe350`
-- Activation tree: `d9dc5dcf0e2177a11f2b6651fe707fdca8b8ef6e`
-- Sole parent: `f5e85bc4b2aca501725b239b8f7515513bacaee6`
-- Subject: `docs(plan): activate Route A final code first`
-- Exact activation changed paths:
+- HEAD: `0bc7c33e78b135e17cb1471432ac8681c72e7ec6`
+- Sole parent: `7214ff5eb797d2716d7b9d4bdb34324f5febe350`
+- Subject: `docs(plan): continue Route A validation in Terminal`
+- Exact activation paths:
   - `.agent-work/EXECUTION_RESULT.md`
   - `.agent-work/FULL_PLAN_REFERENCE.md`
   - `.agent-work/PLAN.md`
-  - `.agent-work/archived/EXECUTION_RESULT-20260804-1817.md`
-  - `.agent-work/archived/FULL_PLAN_REFERENCE-20260804-1820.md`
-  - `.agent-work/archived/PLAN-20260804-1817.md`
-  - `.agent-work/archived/PLAN-20260804-1827.md`
-- PLAN/FULL strict machine state at intake: active `1/1`, exact task
-  `REF-G4-06-RAY-R6`, exact contract
-  `G4-RAY-R6-FINAL-CODE-FIRST-FINAL-PACKAGE-REMINT-V1`; PLAN executable and
-  FULL non-executable; required FULL subset exact.
-- PLAN identity: `16498` bytes, SHA-256
-  `197e404da2da194a3ea44aad2ef813f58cc0ce250b05aaba20c4ab502ec13afe`.
-- FULL identity: `15183` bytes, SHA-256
-  `b565ab837ee9584f6f8384a790166701991c205c690203c96238ab8411563d22`.
+  - `.agent-work/archived/EXECUTION_RESULT-20260804-1848.md`
+  - `.agent-work/archived/PLAN-20260804-1848.md`
+- Repo-owned strict parser evidence: PLAN/FULL active `1/1`, task
+  `REF-G4-06-RAY-R6`, contract
+  `G4-RAY-R6-FINAL-CODE-FIRST-FINAL-PACKAGE-REMINT-V1`, PLAN executable,
+  FULL `executable=false`, FULL non-executable reference true, and the PLAN
+  required FULL subset exact.
+- PLAN parser source: `14517` bytes, SHA-256
+  `00df25f4bd7fc154cf47e1d0791965f31eee6248a3193ccf20ab2372116669eb`;
+  one row at line `19`.
+- FULL parser source: `15375` bytes, SHA-256
+  `58b64eebf36db8899783e7f7678bd6aecf51c1057320b9c021fa017bcc02359a`;
+  one row at line `24`.
 
-## Supervisor archive and accepted-tree restore
+The first parser probe passed a `Path` instead of exact bytes and failed closed
+with `source_not_exact_bytes`. The second probe correctly supplied bytes but
+attempted to subscript the returned `ParsedMachineContract` dataclass. The
+final probe used its `.value` mapping and passed all assertions. These were
+read-only intake-harness corrections with no repository or candidate write and
+no production-failure increment.
 
-The rejected successor candidate remains recoverable and was not reused:
+## Frozen candidate identity
 
-- Ref: `refs/archive/g4-06/source-successor-candidate-supervisor-superseded-20260804`
-- Commit/tree/parent:
-  `88185fceeed8630e5df35a83126df181bed0cd68` /
-  `35d0a46c081a91e5c0f930924cde223ada59be15` /
-  `f5e85bc4b2aca501725b239b8f7515513bacaee6`
-- Subject: `archive(g4-06): preserve supervisor-superseded source successor candidate`
-- Exact paths: the stage-gate source and its test file only.
-- Archived source: `116366` bytes, SHA-256
-  `a5ec111167fa20f34914a481face68e1d2c276688c74ead434d9effdc5e7b0d3`,
-  blob `c35684a639ab8f40200f9ed5be6c1196ad08c568`.
-- Archived test: `149152` bytes, SHA-256
-  `a6107c9f3290a63921fd94911f729c9d69dffcfc59d9e841010d4e6ee0eb009d`,
-  blob `da973e2748c2d814cb4b78354cea52e6e014458e`.
-- Binary diff: `59839` bytes, SHA-256
-  `eb907ac5b2059beed39646a0b181d43d1af37b96e25c3a9c35b12e64e7fbb9c2`.
+- Source: `94324` bytes, SHA-256
+  `c4cd13e7fb64434914ccb12c862d1d12e81728a9a647d41ff23fb2d0d860fe83`.
+- Test: `133201` bytes, SHA-256
+  `479dd8d5b0bb851d256045ee1535860ca23328874b7b7a1eb7de76dceb43ab6e`.
+- Exact numstat:
+  - source `+35/-8`;
+  - test `+67/-1`.
+- Pre-launch worktree scope was exactly those two dirty candidate paths.
+- `git diff --check` passed.
+- Candidate source/test writes by this continuation: `0`.
+- Inherited targeted: `47/47`, `182.148s`, exit `0`; not rerun.
+- Inherited compile: exit `0`; not rerun.
 
-The reviewed reverse diff was applied non-destructively with `apply_patch`.
-Both restored files then matched HEAD byte-for-byte:
+## Validation scratch gate
 
-- source: `93155` bytes, SHA-256
-  `406ac5c82ac9a098052a812af866f29083bdb2ee3fd5962964c8889100ef5d37`,
-  blob `c12c4f19bfa422a1fe38378ed3ae243f7982e9aa`, mode `100644`;
-- test: `130254` bytes, SHA-256
-  `ff3964db91ba2bd19073be16eb4a45aa7ae81a96c2ff17cb54b108f4cf2915c3`,
-  blob `a6f3432ba6ce00946901cf786bb67b26e8857356`, mode `100644`.
+The PLAN-frozen exact path was checked once using non-following `lstat` and was
+absent:
 
-One bounded tooling correction occurred: the first `apply_patch` rejected
-standard unified hunk headers and made no modification; the same reviewed
-reverse diff was resubmitted with tool-compatible hunk headers and succeeded.
-This is a patch-harness formatting correction, not a production seam failure.
+`/Volumes/4T/temp/rgbww-optimizer/g4-route-a-terminal-validation-7214ff5eb797-20260804T184848Z`
 
-## Implemented candidate and ownership
+- Scratch root creation: `0`
+- Command seal writes: `0`
+- Log/exit file writes: `0`
+- Validation scratch inventory: no files created
+- Alternate roots: `0`
 
-Maintainability preflight found that the change belongs in the existing
-`_source_attestation_binding` -> `_committed_source_contract` ->
-`_validate_descriptor_attestation_contract` ->
-`validate_committed_source_attestation` owner path. No module, controller,
-adapter, successor chain, second attestation, new schema, global override,
-environment override, or `validate_current_sources=False` mode was introduced.
+No other external experiment, package, or formal root was read, listed,
+statted, described, created, modified, or consumed.
 
-The candidate:
+## Computer Use capability evidence
 
-- admits exactly the existing preparation subject and the frozen final subject
-  `fix(stage-gate): bind final package to immutable code snapshot`;
-- adds a closed, ordered `code_child_blob_oids` declaration for the existing
-  exact two paths to the existing binding and descriptor mirror;
-- validates actual commit subject and exact paths against that immutable
-  binding;
-- validates each Git `ls-tree` blob OID before the existing mode, bytes,
-  SHA-256, and current-file identity checks;
-- preserves the single existing loader/launch attestation owner and the
-  existing delegate-exactly-once production seam.
+The `computer-use` skill was read completely and its plugin-owned wrapper was
+bootstrapped through `mcp__node_repl__js`. No AppleScript, `osascript`, JXA,
+System Events, Codex background process, click, typing, or Terminal command was
+used.
 
-Observed diff before this stop was limited to the stage-gate source and its
-test: overall `102` insertions and `9` deletions; production source accounting
-was `34` insertions and `8` deletions, below the `150`-line soft cap.
+Fresh Terminal inspection failed before any UI action:
 
-Tests add the final-subject positive production-delegation case, exact declared
-OID checks, missing OID rejection, and wrong OID rejection while preserving the
-original preparation-subject behavior and existing topology/blob/history
-negative matrices.
+`Computer Use is not allowed to use the app 'com.apple.Terminal' for safety reasons.`
 
-Final candidate source/test byte counts and SHA-256 values were not sampled
-before the mandatory long-task stop. They must be recorded by the next
-authorized package without changing the candidate first.
+A read-only app inventory reported the only terminal candidate as:
 
-## Validation evidence and duration stop
+`{"id":"com.apple.Terminal","displayName":"终端","isRunning":true}`
 
-- Compile command completed with exit `0`:
-  `.venv/bin/python -m py_compile src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py tests/test_p7_td_b_r6_stage_gate.py`
-- Targeted command completed with exit `0`:
-  `.venv/bin/python -m unittest -v tests.test_p7_td_b_r6_stage_gate`
-- Targeted result: `47/47`, `OK`, `182.148s`.
-- `git diff --check` was observed clean immediately after targeted completion.
-- A preliminary `python3 -m unittest` attempt failed to import the editable
-  package because system Python was used; it is not a PLAN validation and not a
-  product/test failure.
-- A preliminary `.venv/bin/python -m pytest` observation reported that pytest
-  is not installed. It is not a PLAN validation, dependency installation was
-  not attempted, and it is not a product/test failure.
-- Focused integration was **not started**.
-- Fresh full suite was **not started**.
-- The earlier Supervisor-interrupted full remains
-  `INTERRUPTED_UNPROVEN_NOT_REUSABLE`; it was not resumed, supplemented, or
-  interpreted.
-- CodeGraph had been synced after accepted-tree restoration and confirmed the
-  existing sole owner path before implementation. Required post-change sync and
-  query were **not run** because execution stopped before that validation phase.
+Per Orchestrator direction, app-name resolution was then tried without click or
+typing:
 
-The focused command must run the same measured 182-second stage-gate module
-again plus two additional modules, followed by the required one fresh full
-suite. At this evidence boundary it became reasonable to expect the original
-package's total validation time to exceed 10 minutes. PLAN section 7 therefore
-requires stopping before those commands and returning to Orchestrator for
-visible-Terminal repackaging. No Codex-managed background validation remains.
+- `sky.get_app_state({app: "终端"})`:
+  `Invalid app: 终端`
+- `sky.get_app_state({app: "Terminal"})`:
+  `Computer Use is not allowed to use the app 'com.apple.Terminal' for safety reasons.`
 
-## Zero-access and zero-effect counters
+There was no allowed iTerm/Warp alternative. The required Human-visible
+Terminal owner therefore could not be inspected or launched through the only
+authorized UI mechanism.
 
-- External experiment/package/formal root access/read/stat/list/create: `0`
-- Network/device/camera/Ray/strip/capture calls: `0/0/0/0/0/0`
+## Validation state and zero effects
+
+- Visible Terminal launch/window/tab/PID: `0/none/none/none`
+- Single-sequence launch count: `0`
+- Liveness checks: `0`
+- Focused integration starts/runs: `0/0`
+- Post-focused candidate gate: not started
+- CodeGraph post-change sync/query: `0/0`
+- Pre-full machine/scope gate: not started
+- Fresh full starts/runs: `0/0`
+- Retry/resume/alternate sequence: `0/0/0`
+- Previous interrupted full reused: `false`
+- Network/device/backend/camera/Ray/strip/capture calls: `0/0/0/0/0/0/0`
 - Release/retained-R3/formal-R6/analysis/TD-C consumption or execution:
   `0/0/0/0/0`
-- Backend/final-zero/cleanup/formal-owner calls: `0/0/0/0`
-- New experiment/package/formal roots: `0/0/0`
-- New task IDs/corrective suffixes/controllers/adapters: `0/0/0/0`
+- Formal owner/root/device effects: `0/0/0`
 - Git stage/commit/push/PR: `0/0/0/0`
 
-PLAN, FULL, GUIDE, RESEARCH, and archives were not modified. No hardware,
-release, formal, scientific, eligibility, or readiness claim is made.
+PLAN, FULL, GUIDE, RESEARCH, archives, candidate source, and candidate tests
+were not modified by this continuation. Only this live execution handoff was
+written.
 
 ## Orchestrator handoff
 
-Repackage only the remaining validation and evidence-finalization work under
-the visible-Terminal long-task rule. Preserve this exact candidate and the same
-reference task; do not create a corrective suffix or revive the rejected
-successor candidate. The future immutable code checkpoint subject remains:
-
-`fix(stage-gate): bind final package to immutable code snapshot`
-
-with exact commit paths:
-
-- `src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py`
-- `tests/test_p7_td_b_r6_stage_gate.py`
-
-No future checkpoint or tree SHA is guessed.
+Resolve or repackage the Human-visible Terminal capability without converting
+the validation into a Codex-managed background owner and without weakening the
+single-launch, no-retry, frozen-candidate, or zero-device boundaries. Preserve
+the same task and candidate; do not create a corrective suffix, alternate
+validation root, or new owner. No future checkpoint or tree SHA is guessed.
