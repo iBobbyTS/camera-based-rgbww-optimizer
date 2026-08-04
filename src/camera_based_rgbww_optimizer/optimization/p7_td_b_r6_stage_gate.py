@@ -1,6 +1,6 @@
 """Offline, non-authorizing stage gate for the future Ray TD-B formal R6 run.
 
-This module owns only the G4-05 launch shape and its provenance package.  The
+This module owns only the G4-06 package-evidence shape and provenance package.  The
 scientific plan remains owned by :mod:`p7_thermal_diagnostics`; device and
 capture execution remain owned by :mod:`measure_p7_thermal_diagnostics`.
 """
@@ -31,9 +31,9 @@ STAGE_GATE_SCHEMA = "p7_td_b_r6_stage_gate_v1"
 LAUNCH_DESCRIPTOR_SCHEMA = "p7_td_b_r6_launch_descriptor_v1"
 TERMINAL_SEAL_SCHEMA = "p7_td_b_r6_stage_gate_terminal_seal_v1"
 INPUT_SCHEMA = "p7_td_b_r6_stage_gate_input_v1"
-TASK_ID = "REF-G4-05-RAY-R6-STAGE-GATE"
-CONTRACT_ID = "G4-RAY-R6-STAGE-GATE-OFFLINE-V1"
-FUTURE_TASK_ID = "REF-G4-06-RAY-R6"
+TASK_ID = "REF-G4-06-RAY-R6"
+CONTRACT_ID = "G4-RAY-R6-STAGE-GATE-FRESH-PACKAGE-EVIDENCE-V1"
+FUTURE_TASK_ID = TASK_ID
 ENGINEERING_PACKAGE_A_CONTRACT_ID = (
     "G4-RAY-R6-PRODUCTION-CLI-LAUNCH-SEAM-PACKAGE-A-V2"
 )
@@ -68,7 +68,10 @@ PLAN_BOUND_AUTHORITY_SCHEMA = "p7_td_b_r6_plan_bound_authority_v1"
 FUTURE_ACTIVATION_SCHEMA = "p7_td_b_r6_future_plan_activation_v2"
 COMMITTED_SOURCE_ATTESTATION_SCHEMA = "p7_td_b_r6_committed_source_attestation_v1"
 PACKAGE_BINDING_SCHEMA = "p7_td_b_r6_stage_gate_package_binding_v1"
-ALLOWED_CODE_CHILD_SUBJECT = "feat(stage-gate): bind ray r6 package identity"
+SOURCE_ATTESTATION_BINDING_SCHEMA = (
+    "p7_td_b_r6_preparation_source_attestation_binding_v1"
+)
+ALLOWED_CODE_CHILD_SUBJECT = "fix(stage-gate): bind package preparation to g4-06"
 ALLOWED_CODE_CHILD_PATHS = (
     "src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py",
     "tests/test_p7_td_b_r6_stage_gate.py",
@@ -82,7 +85,7 @@ _HISTORICAL_TERMS = ("retained-r3", "legacy-r2", "deep-corrective")
 
 
 class StageGateError(RuntimeError):
-    """A fail-closed G4-05 boundary error with a stable code."""
+    """A fail-closed G4-06 stage-gate boundary error with a stable code."""
 
     def __init__(self, code: str) -> None:
         self.code = code
@@ -105,6 +108,7 @@ class StageGateInput:
     output_root: str
     source_references: tuple[SourceReference, ...]
     prerequisite_projection: Mapping[str, Any]
+    source_attestation_binding: Mapping[str, Any]
 
 
 @dataclass(frozen=True)
@@ -268,20 +272,131 @@ def _validate_post_child_ledger(attestation: Mapping[str, Any]) -> None:
         raise StageGateError("committed_source_post_child_ledger_drift")
 
 
-def _projection(plan: Mapping[str, Any], full: Mapping[str, Any]) -> Mapping[str, Any]:
+def _source_attestation_binding(value: object) -> dict[str, Any]:
+    expected_keys = {
+        "schema", "verified_parent_checkpoint", "verified_parent_tree",
+        "accepted_code_owner_checkpoint", "accepted_code_owner_tree",
+        "code_child_subject", "code_child_paths",
+    }
+    if not isinstance(value, Mapping) or set(value) != expected_keys:
+        raise StageGateError("source_attestation_binding_shape_drift")
+    binding = _native(value)
+    if (
+        binding.get("schema") != SOURCE_ATTESTATION_BINDING_SCHEMA
+        or _SHA40.fullmatch(str(binding.get("verified_parent_checkpoint"))) is None
+        or _SHA40.fullmatch(str(binding.get("verified_parent_tree"))) is None
+        or _SHA40.fullmatch(str(binding.get("accepted_code_owner_checkpoint"))) is None
+        or _SHA40.fullmatch(str(binding.get("accepted_code_owner_tree"))) is None
+        or binding.get("code_child_subject") != ALLOWED_CODE_CHILD_SUBJECT
+        or binding.get("code_child_paths") != list(ALLOWED_CODE_CHILD_PATHS)
+    ):
+        raise StageGateError("source_attestation_binding_drift")
+    return binding
+
+
+def _committed_source_contract(
+    source_references: Sequence[Mapping[str, Any]],
+    source_attestation_binding: Mapping[str, Any],
+) -> dict[str, Any]:
+    binding = _source_attestation_binding(source_attestation_binding)
+    return {
+        "schema": COMMITTED_SOURCE_ATTESTATION_SCHEMA,
+        "verified_parent": {
+            "checkpoint": binding["verified_parent_checkpoint"],
+            "tree": binding["verified_parent_tree"],
+            "role": "activation_parent_not_code_owner",
+        },
+        "allowed_code_owner_child": {
+            "subject": binding["code_child_subject"],
+            "direct_parent": binding["verified_parent_checkpoint"],
+            "merge_commit_allowed": False,
+            "changed_paths": binding["code_child_paths"],
+            "candidate_references": _candidate_references(source_references),
+            "child_checkpoint_recorded": False,
+            "child_tree_recorded": False,
+        },
+        "allowed_post_child_lineage": {
+            "code_owner_must_be_live_ancestor": True,
+            "changed_path_prefix": ORCHESTRATION_PATH_PREFIX,
+            "non_orchestration_changes_allowed": False,
+            "linear_direct_child_required": True,
+            "merge_commit_allowed": False,
+            "nonlinear_history_allowed": False,
+            "per_commit_adjacent_paths_required": True,
+            "live_checkpoint_recorded": False,
+            "live_tree_recorded": False,
+        },
+    }
+
+
+def _validate_preparation_source_attestation(
+    source_attestation_binding: Mapping[str, Any],
+    source_references: Sequence[SourceReference], *, repo_root: Path,
+) -> CommittedSourceAttestation:
+    binding = _source_attestation_binding(source_attestation_binding)
+    references = [_source_reference_value(item) for item in source_references]
+    descriptor = {
+        "source_references": references,
+        "source_attestation_binding": binding,
+        "committed_source_contract": _committed_source_contract(
+            references, binding,
+        ),
+    }
+    live_checkpoint = _git_text(repo_root, "rev-parse", "HEAD")
+    live_tree = _git_text(repo_root, "rev-parse", "HEAD^{tree}")
+    attestation = validate_committed_source_attestation(
+        descriptor,
+        {
+            "code_owner_checkpoint": binding["accepted_code_owner_checkpoint"],
+            "code_owner_tree": binding["accepted_code_owner_tree"],
+            "live_activation_checkpoint": live_checkpoint,
+            "live_activation_tree": live_tree,
+        },
+        repo_root=repo_root,
+    )
+    if (
+        attestation.verified_parent_checkpoint
+        != binding["verified_parent_checkpoint"]
+        or attestation.verified_parent_tree != binding["verified_parent_tree"]
+        or attestation.code_owner_checkpoint
+        != binding["accepted_code_owner_checkpoint"]
+        or attestation.code_owner_tree != binding["accepted_code_owner_tree"]
+    ):
+        raise StageGateError("source_attestation_binding_drift")
+    return attestation
+
+
+def _projection(
+    plan: Mapping[str, Any], full: Mapping[str, Any],
+) -> tuple[Mapping[str, Any], Mapping[str, Any]]:
+    plan_binding = _source_attestation_binding(
+        plan.get("source_attestation_binding")
+    )
     if (
         plan.get("active_task_count") != 1
         or full.get("active_task_count") != 1
+        or full.get("current_plan_active_task_count") != 1
         or plan.get("active_task") != TASK_ID
         or full.get("active_task") != TASK_ID
+        or full.get("current_plan_active_task") != TASK_ID
         or plan.get("reference_task_id") != TASK_ID
         or plan.get("contract_id") != CONTRACT_ID
         or full.get("active_plan_contract_id") != CONTRACT_ID
         or full.get("canonical_next_reference_task") != TASK_ID
+        or plan.get("executable") is not True
+        or full.get("executable") is not False
+        or full.get("full_is_non_executable_reference") is not True
+        or "stage_gate_root" in plan
         or full.get("retained_r3_status") != RETAINED_R3_STATUS
         or full.get("release_consumption_authorized") is not False
+        or full.get("device_authorized_by_this_file") is not False
+        or full.get("camera_authorized_by_this_file") is not False
+        or full.get("ray_authorized_by_this_file") is not False
+        or full.get("strip_authorized_by_this_file") is not False
         or full.get("formal_r6_authorized") is not False
         or full.get("td_c_authorized") is not False
+        or _native(full.get("g4_06_state"))
+        != _offline_package_evidence_full_state(plan_binding)
     ):
         raise StageGateError("machine_contract_drift")
     frozen = full.get("frozen_guide_input")
@@ -313,7 +428,67 @@ def _projection(plan: Mapping[str, Any], full: Mapping[str, Any]) -> Mapping[str
         or any(not isinstance(prerequisites[key], Mapping) for key in ("g4_01", "g4_02", "g4_03", "g4_04"))
     ):
         raise StageGateError("prerequisite_projection_drift")
-    return prerequisites
+    return prerequisites, plan_binding
+
+
+def _offline_package_evidence_full_state(
+    source_attestation_binding: Mapping[str, Any],
+) -> dict[str, Any]:
+    return {
+        "route": "G4_06_FRESH_STAGE_GATE_PACKAGE_EVIDENCE",
+        "task_id": TASK_ID,
+        "contract_id": CONTRACT_ID,
+        "authority_owner": "MATCHING_LIVE_PLAN_ONLY",
+        "offline_package_evidence_only": True,
+        "full_top_level_non_authorizing": True,
+        "formal_execution_authorized": False,
+        "device_authorized": False,
+        "release_consumption_authorized": False,
+        "g4_07_unlocked": False,
+        "source_attestation_binding": _source_attestation_binding(
+            source_attestation_binding
+        ),
+    }
+
+
+def _validate_prerequisite_projection(value: object) -> None:
+    expected_keys = {
+        "eq_r6_state_c", "g4_01", "g4_02", "g4_03", "g4_04",
+        "retained_r3_status", "canonical_validator_success", "eligibility",
+        "release_consumable", "release_consumption_authorized",
+        "device_authorized", "formal_r6_authorized", "td_c_authorized",
+    }
+    if not isinstance(value, Mapping) or set(value) != expected_keys:
+        raise StageGateError("prerequisite_projection_shape_drift")
+    if _native(value.get("eq_r6_state_c")) != {
+        "stage": "EQ-R6_STATE_C",
+        "selected_exposure": "1/2500",
+        "status": "ACCEPTED_QUALIFIED_INPUT_NOT_A_CURRENT_TASK",
+    }:
+        raise StageGateError("scientific_prerequisite_drift")
+    if (
+        value.get("retained_r3_status") != RETAINED_R3_STATUS
+        or value.get("canonical_validator_success") is not True
+        or value.get("eligibility") is not True
+        or value.get("release_consumable") is not True
+        or any(
+            value.get(key) is not False
+            for key in (
+                "release_consumption_authorized", "device_authorized",
+                "formal_r6_authorized", "td_c_authorized",
+            )
+        )
+    ):
+        raise StageGateError("prerequisite_projection_drift")
+    for key in ("g4_01", "g4_02", "g4_03", "g4_04"):
+        prerequisite = value.get(key)
+        if (
+            not isinstance(prerequisite, Mapping)
+            or type(prerequisite.get("disposition")) is not str
+            or not str(prerequisite["disposition"]).startswith("ACCEPTED_")
+            or prerequisite.get("release_consumed") is not False
+        ):
+            raise StageGateError("prerequisite_projection_drift")
 
 
 def build_stage_gate_input(
@@ -332,20 +507,28 @@ def build_stage_gate_input(
     full_source = (root / ".agent-work/FULL_PLAN_REFERENCE.md").read_bytes()
     plan = parse_plan_machine_contract(plan_source).value
     full = parse_full_plan_machine_state(full_source).value
-    expected_output_root = plan.get(
-        "new_stage_gate_root", plan.get("stage_gate_root"),
-    )
+    expected_output_root = plan.get("new_stage_gate_root")
     if expected_output_root != str(output):
         raise StageGateError("output_root_drift")
+    prerequisites, binding = _projection(plan, full)
+    if (
+        source_checkpoint != binding["verified_parent_checkpoint"]
+        or source_tree != binding["verified_parent_tree"]
+    ):
+        raise StageGateError("source_attestation_parent_argument_drift")
     references = tuple(_read_source(root, path) for path in EXPECTED_SOURCE_PATHS)
     references = tuple(sorted(references, key=lambda item: item.path.encode("utf-8")))
+    _validate_preparation_source_attestation(
+        binding, references, repo_root=root,
+    )
     return StageGateInput(
         schema=INPUT_SCHEMA,
         source_checkpoint=source_checkpoint,
         source_tree=source_tree,
         output_root=str(output),
         source_references=references,
-        prerequisite_projection=_projection(plan, full),
+        prerequisite_projection=prerequisites,
+        source_attestation_binding=binding,
     )
 
 
@@ -856,6 +1039,9 @@ def evaluate_stage_gate(value: StageGateInput, *, repo_root: str | Path) -> dict
         "source_tree": value.source_tree,
         "output_root": value.output_root,
         "source_references": [_source_reference_value(item) for item in value.source_references],
+        "source_attestation_binding": _source_attestation_binding(
+            value.source_attestation_binding
+        ),
         "prerequisites": _native(value.prerequisite_projection),
         "scientific_contract": contract,
         "runtime_plan_template": runtime_template,
@@ -927,6 +1113,13 @@ def validate_stage_gate(
         refs, repo_root=root,
         allow_orchestration_drift=allow_orchestration_drift,
     )
+    binding = _source_attestation_binding(value.get("source_attestation_binding"))
+    if (
+        value.get("source_checkpoint") != binding["verified_parent_checkpoint"]
+        or value.get("source_tree") != binding["verified_parent_tree"]
+    ):
+        raise StageGateError("source_attestation_binding_drift")
+    _validate_preparation_source_attestation(binding, refs, repo_root=root)
     canonical_plan = value.get("scientific_contract", {}).get("canonical_plan")
     if not isinstance(canonical_plan, Mapping):
         raise StageGateError("canonical_plan_missing")
@@ -946,6 +1139,7 @@ def validate_stage_gate(
     authority = value.get("authority")
     if authority != _authority_false():
         raise StageGateError("authority_drift")
+    _validate_prerequisite_projection(value.get("prerequisites"))
     if (
         value.get("schema") != STAGE_GATE_SCHEMA
         or value.get("status") != "offline_stage_gate_pass_waiting_planner_review"
@@ -973,39 +1167,17 @@ def build_launch_descriptor(stage_gate: Mapping[str, Any]) -> dict[str, Any]:
     scientific = _native(stage_gate["scientific_contract"])
     descriptor = {
         "schema": LAUNCH_DESCRIPTOR_SCHEMA,
-        "status": "non_authorizing_waiting_g4_06_plan",
-        "reference_task": FUTURE_TASK_ID,
+        "status": "non_authorizing_g4_06_fresh_package_evidence",
+        "reference_task": TASK_ID,
+        "contract_id": CONTRACT_ID,
         "source_references": _native(stage_gate["source_references"]),
-        "committed_source_contract": {
-            "schema": COMMITTED_SOURCE_ATTESTATION_SCHEMA,
-            "verified_parent": {
-                "checkpoint": stage_gate["source_checkpoint"],
-                "tree": stage_gate["source_tree"],
-                "role": "activation_parent_not_code_owner",
-            },
-            "allowed_code_owner_child": {
-                "subject": ALLOWED_CODE_CHILD_SUBJECT,
-                "direct_parent": stage_gate["source_checkpoint"],
-                "merge_commit_allowed": False,
-                "changed_paths": list(ALLOWED_CODE_CHILD_PATHS),
-                "candidate_references": _candidate_references(
-                    stage_gate["source_references"]
-                ),
-                "child_checkpoint_recorded": False,
-                "child_tree_recorded": False,
-            },
-            "allowed_post_child_lineage": {
-                "code_owner_must_be_live_ancestor": True,
-                "changed_path_prefix": ORCHESTRATION_PATH_PREFIX,
-                "non_orchestration_changes_allowed": False,
-                "linear_direct_child_required": True,
-                "merge_commit_allowed": False,
-                "nonlinear_history_allowed": False,
-                "per_commit_adjacent_paths_required": True,
-                "live_checkpoint_recorded": False,
-                "live_tree_recorded": False,
-            },
-        },
+        "source_attestation_binding": _source_attestation_binding(
+            stage_gate["source_attestation_binding"]
+        ),
+        "committed_source_contract": _committed_source_contract(
+            stage_gate["source_references"],
+            stage_gate["source_attestation_binding"],
+        ),
         "scientific_contract": scientific,
         "runtime_plan_template_sha256": stage_gate["runtime_plan_template_sha256"],
         "production_wrapper": {
@@ -1159,6 +1331,9 @@ def _worktree_status_paths(repo_root: Path) -> tuple[str, ...]:
 def _validate_descriptor_attestation_contract(
     descriptor: Mapping[str, Any],
 ) -> tuple[str, str, list[dict[str, Any]]]:
+    binding = _source_attestation_binding(
+        descriptor.get("source_attestation_binding")
+    )
     contract = descriptor.get("committed_source_contract")
     if not isinstance(contract, Mapping) or set(contract) != {
         "schema", "verified_parent", "allowed_code_owner_child",
@@ -1178,6 +1353,8 @@ def _validate_descriptor_attestation_contract(
         or set(parent) != {"checkpoint", "tree", "role"}
         or _SHA40.fullmatch(str(parent.get("checkpoint"))) is None
         or _SHA40.fullmatch(str(parent.get("tree"))) is None
+        or parent.get("checkpoint") != binding["verified_parent_checkpoint"]
+        or parent.get("tree") != binding["verified_parent_tree"]
         or parent.get("role") != "activation_parent_not_code_owner"
         or not isinstance(child, Mapping)
         or set(child) != {
@@ -1185,10 +1362,10 @@ def _validate_descriptor_attestation_contract(
             "candidate_references", "child_checkpoint_recorded",
             "child_tree_recorded",
         }
-        or child.get("subject") != ALLOWED_CODE_CHILD_SUBJECT
+        or child.get("subject") != binding["code_child_subject"]
         or child.get("direct_parent") != parent.get("checkpoint")
         or child.get("merge_commit_allowed") is not False
-        or child.get("changed_paths") != list(ALLOWED_CODE_CHILD_PATHS)
+        or child.get("changed_paths") != binding["code_child_paths"]
         or child.get("candidate_references") != candidates
         or child.get("child_checkpoint_recorded") is not False
         or child.get("child_tree_recorded") is not False
@@ -1230,6 +1407,14 @@ def validate_committed_source_attestation(
         for value in (code_checkpoint, code_tree, live_checkpoint, live_tree)
     ):
         raise StageGateError("committed_source_activation_identity_invalid")
+    binding = _source_attestation_binding(
+        descriptor.get("source_attestation_binding")
+    )
+    if (
+        code_checkpoint != binding["accepted_code_owner_checkpoint"]
+        or code_tree != binding["accepted_code_owner_tree"]
+    ):
+        raise StageGateError("committed_source_binding_drift")
     if (
         _git_text(root, "rev-parse", f"{parent_checkpoint}^{{commit}}") != parent_checkpoint
         or _git_text(root, "rev-parse", f"{parent_checkpoint}^{{tree}}") != parent_tree
@@ -1445,6 +1630,8 @@ def _load_stage_gate_package(
         not isinstance(terminal, Mapping)
         or terminal.get("schema") != TERMINAL_SEAL_SCHEMA
         or terminal.get("status") != PASS_STATUS
+        or terminal.get("reference_task") != TASK_ID
+        or terminal.get("contract_id") != CONTRACT_ID
         or terminal.get("root") != _root_value(root)
         or tuple(terminal.get("inventory_before_terminal", ())) != PRE_TERMINAL_ARTIFACTS
         or terminal.get("retry") != 0
@@ -1788,6 +1975,8 @@ def persist_stage_gate_package(
                 or gate.get("source_references")
                 != [_source_reference_value(item) for item in value.source_references]
                 or gate.get("prerequisites") != _native(value.prerequisite_projection)
+                or gate.get("source_attestation_binding")
+                != _native(value.source_attestation_binding)
             ):
                 raise StageGateError("evaluated_gate_input_binding_drift")
         stage_identity = provenance.persist_canonical_json(root, "stage-gate.json", gate)
@@ -1816,6 +2005,8 @@ def persist_stage_gate_package(
         terminal = {
             "schema": TERMINAL_SEAL_SCHEMA,
             "status": PASS_STATUS,
+            "reference_task": TASK_ID,
+            "contract_id": CONTRACT_ID,
             "root": _root_value(root),
             "inventory_before_terminal": list(PRE_TERMINAL_ARTIFACTS),
             "artifacts": {
@@ -1849,6 +2040,8 @@ def persist_stage_gate_package(
                     provenance.persist_canonical_json(root, "terminal-seal.json", {
                         "schema": TERMINAL_SEAL_SCHEMA,
                         "status": FAIL_STATUS,
+                        "reference_task": TASK_ID,
+                        "contract_id": CONTRACT_ID,
                         "root": _root_value(root),
                         "failed_phase": phase,
                         "failure_code": getattr(exc, "code", type(exc).__name__),
@@ -1974,7 +2167,8 @@ __all__ = [
     "CONTRACT_ID", "EXPECTED_ARTIFACTS", "EXPECTED_SOURCE_PATHS",
     "FORMAL_ROOT_BASENAME_REGEX", "FORMAL_ROOT_PARENT", "FUTURE_ACTIVATION_SCHEMA",
     "FUTURE_TASK_ID", "PACKAGE_BINDING_SCHEMA", "PASS_STATUS", "PLAN_BOUND_AUTHORITY_SCHEMA",
-    "RUNTIME_TEMPLATE_STATUS", "SourceReference", "StageGateError",
+    "RUNTIME_TEMPLATE_STATUS", "SOURCE_ATTESTATION_BINDING_SCHEMA",
+    "SourceReference", "StageGateError",
     "StageGateInput", "TASK_ID", "build_launch_descriptor",
     "build_runtime_plan_template", "build_stage_gate_input",
     "evaluate_stage_gate", "main", "materialize_runtime_plan",

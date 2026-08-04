@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import asdict, replace
+from contextlib import redirect_stderr, redirect_stdout
 import hashlib
 import inspect
+import io
 import json
 import os
 from pathlib import Path
@@ -40,21 +42,52 @@ def machine_row(name: str, value: dict[str, object]) -> bytes:
 
 
 class SyntheticRepository:
-    def __init__(self, root: Path, output_root: Path) -> None:
-        self.root = root
+    def __init__(
+        self, root: Path, output_root: Path, *,
+        code_child_subject: str = "fix(stage-gate): bind package preparation to g4-06",
+    ) -> None:
+        self.root = root.resolve()
         self.output_root = output_root
-        self.source_checkpoint = ACTIVATION_HEAD
-        self.source_tree = ACTIVATION_TREE
         for path in subject.EXPECTED_SOURCE_PATHS:
-            target = root / path
+            target = self.root / path
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(f"fixture:{path}\n".encode())
+        (self.root / ".agent-work/PLAN.md").write_bytes(
+            machine_row("PLAN_MACHINE_CONTRACT", {"active_task_count": 0})
+        )
+        (self.root / ".agent-work/FULL_PLAN_REFERENCE.md").write_bytes(
+            machine_row("FULL_PLAN_MACHINE_STATE", {"active_task_count": 0})
+        )
+        self.git("init", "-q")
+        self.git("config", "user.name", "G4 Synthetic")
+        self.git("config", "user.email", "g4-synthetic@example.invalid")
+        self.git("add", "-A")
+        self.git("commit", "-q", "-m", "synthetic activation parent")
+        self.source_checkpoint = self.git_text("rev-parse", "HEAD")
+        self.source_tree = self.git_text("rev-parse", "HEAD^{tree}")
+        for path in subject.ALLOWED_CODE_CHILD_PATHS:
+            (self.root / path).write_bytes(f"candidate:{path}\n".encode())
+        self.git("add", "--", *subject.ALLOWED_CODE_CHILD_PATHS)
+        self.git("commit", "-q", "-m", code_child_subject)
+        self.code_checkpoint = self.git_text("rev-parse", "HEAD")
+        self.code_tree = self.git_text("rev-parse", "HEAD^{tree}")
+        binding = {
+            "schema": subject.SOURCE_ATTESTATION_BINDING_SCHEMA,
+            "verified_parent_checkpoint": self.source_checkpoint,
+            "verified_parent_tree": self.source_tree,
+            "accepted_code_owner_checkpoint": self.code_checkpoint,
+            "accepted_code_owner_tree": self.code_tree,
+            "code_child_subject": subject.ALLOWED_CODE_CHILD_SUBJECT,
+            "code_child_paths": list(subject.ALLOWED_CODE_CHILD_PATHS),
+        }
         plan = {
             "active_task_count": 1,
             "active_task": subject.TASK_ID,
             "reference_task_id": subject.TASK_ID,
             "contract_id": subject.CONTRACT_ID,
-            "stage_gate_root": str(output_root),
+            "executable": True,
+            "new_stage_gate_root": str(output_root),
+            "source_attestation_binding": deepcopy(binding),
         }
         prerequisite = {
             "disposition": "ACCEPTED_SYNTHETIC_PREREQUISITE",
@@ -64,12 +97,21 @@ class SyntheticRepository:
         full = {
             "active_task_count": 1,
             "active_task": subject.TASK_ID,
+            "current_plan_active_task_count": 1,
+            "current_plan_active_task": subject.TASK_ID,
             "active_plan_contract_id": subject.CONTRACT_ID,
             "canonical_next_reference_task": subject.TASK_ID,
+            "executable": False,
+            "full_is_non_executable_reference": True,
             "retained_r3_status": subject.RETAINED_R3_STATUS,
             "release_consumption_authorized": False,
+            "device_authorized_by_this_file": False,
+            "camera_authorized_by_this_file": False,
+            "ray_authorized_by_this_file": False,
+            "strip_authorized_by_this_file": False,
             "formal_r6_authorized": False,
             "td_c_authorized": False,
+            "g4_06_state": subject._offline_package_evidence_full_state(binding),
             "frozen_guide_input": {
                 "stage": "EQ-R6_STATE_C",
                 "selected_exposure": "1/2500",
@@ -83,12 +125,27 @@ class SyntheticRepository:
             "eligibility": True,
             "release_consumable": True,
         }
-        (root / ".agent-work/PLAN.md").write_bytes(
+        self.plan = deepcopy(plan)
+        self.full = deepcopy(full)
+        (self.root / ".agent-work/PLAN.md").write_bytes(
             machine_row("PLAN_MACHINE_CONTRACT", plan)
         )
-        (root / ".agent-work/FULL_PLAN_REFERENCE.md").write_bytes(
+        (self.root / ".agent-work/FULL_PLAN_REFERENCE.md").write_bytes(
             machine_row("FULL_PLAN_MACHINE_STATE", full)
         )
+        self.git("add", "--", ".agent-work/PLAN.md", ".agent-work/FULL_PLAN_REFERENCE.md")
+        self.git("commit", "-q", "-m", "synthetic future evidence activation")
+        self.live_checkpoint = self.git_text("rev-parse", "HEAD")
+        self.live_tree = self.git_text("rev-parse", "HEAD^{tree}")
+
+    def git(self, *arguments: str, check: bool = True) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            ["git", *arguments], cwd=self.root, check=check,
+            capture_output=True, text=True,
+        )
+
+    def git_text(self, *arguments: str) -> str:
+        return self.git(*arguments).stdout.strip()
 
     def build_input(self) -> subject.StageGateInput:
         return subject.build_stage_gate_input(
@@ -106,31 +163,19 @@ class SyntheticGitRepository(SyntheticRepository):
         self,
         root: Path,
         *,
-        code_child_subject: str = "feat(stage-gate): bind ray r6 package identity",
+        code_child_subject: str = "fix(stage-gate): bind package preparation to g4-06",
     ) -> None:
         root = root.resolve()
-        super().__init__(root, root.parent / "offline-stage-gate")
-        self.git("init", "-q")
-        self.git("config", "user.name", "G4 Synthetic")
-        self.git("config", "user.email", "g4-synthetic@example.invalid")
-        self.git("add", "-A")
-        self.git("commit", "-q", "-m", "synthetic activation parent")
-        self.source_checkpoint = self.git_text("rev-parse", "HEAD")
-        self.source_tree = self.git_text("rev-parse", "HEAD^{tree}")
-        for path in subject.ALLOWED_CODE_CHILD_PATHS:
-            (self.root / path).write_bytes(f"candidate:{path}\n".encode())
+        super().__init__(
+            root, root.parent / "offline-stage-gate",
+            code_child_subject=code_child_subject,
+        )
         value = self.build_input()
         self.stage_gate = subject.evaluate_stage_gate(value, repo_root=self.root)
         self.descriptor = subject.build_launch_descriptor(self.stage_gate)
         subject.validate_launch_descriptor(
             self.descriptor, self.stage_gate, repo_root=self.root,
         )
-        self.git("add", "--", *subject.ALLOWED_CODE_CHILD_PATHS)
-        self.git("commit", "-q", "-m", code_child_subject)
-        self.code_checkpoint = self.git_text("rev-parse", "HEAD")
-        self.code_tree = self.git_text("rev-parse", "HEAD^{tree}")
-        self.live_checkpoint = self.code_checkpoint
-        self.live_tree = self.code_tree
 
     def git(self, *arguments: str, check: bool = True) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
@@ -436,8 +481,12 @@ class P7TdBR6StageGateTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             fixture = self.fixture(temporary)
             value = fixture.build_input()
-            self.assertEqual(value.source_checkpoint, ACTIVATION_HEAD)
-            self.assertEqual(value.source_tree, ACTIVATION_TREE)
+            self.assertEqual(value.source_checkpoint, fixture.source_checkpoint)
+            self.assertEqual(value.source_tree, fixture.source_tree)
+            self.assertEqual(
+                value.source_attestation_binding,
+                fixture.plan["source_attestation_binding"],
+            )
             self.assertEqual(
                 tuple(item.path for item in value.source_references),
                 subject.EXPECTED_SOURCE_PATHS,
@@ -507,9 +556,353 @@ class P7TdBR6StageGateTests(unittest.TestCase):
             terminal = json.loads(
                 (fixture.output_root / "terminal-seal.json").read_text("utf-8")
             )
+            stage_gate = json.loads(
+                (fixture.output_root / "stage-gate.json").read_text("utf-8")
+            )
+            descriptor = json.loads(
+                (fixture.output_root / "launch-descriptor.json").read_text("utf-8")
+            )
+            for payload in (stage_gate, descriptor, terminal):
+                self.assertEqual(payload["reference_task"], subject.TASK_ID)
+                self.assertEqual(payload["contract_id"], subject.CONTRACT_ID)
             self.assertTrue(terminal["internal_replay"])
             self.assertEqual(terminal["retry"], 0)
             self.assertEqual(terminal["alternate_root"], 0)
+
+    def test_current_g4_06_prepare_uses_each_package_owner_exactly_once(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = SyntheticGitRepository(Path(temporary).resolve() / "repo")
+            argv = (
+                "prepare", "--repo-root", str(fixture.root),
+                "--source-parent-checkpoint", fixture.source_checkpoint,
+                "--source-parent-tree", fixture.source_tree,
+                "--package-root", str(fixture.output_root),
+            )
+            stdout = io.StringIO()
+            stderr = io.StringIO()
+            with mock.patch.object(
+                subject, "build_stage_gate_input", wraps=subject.build_stage_gate_input,
+            ) as build, mock.patch.object(
+                subject, "evaluate_stage_gate", wraps=subject.evaluate_stage_gate,
+            ) as evaluate, mock.patch.object(
+                subject, "persist_stage_gate_package",
+                wraps=subject.persist_stage_gate_package,
+            ) as persist, mock.patch.object(
+                subject, "replay_stage_gate_package",
+                wraps=subject.replay_stage_gate_package,
+            ) as replay, mock.patch.object(
+                provenance, "create_exclusive_root",
+                wraps=provenance.create_exclusive_root,
+            ) as create_root, redirect_stdout(stdout), redirect_stderr(stderr):
+                result = subject.main(argv)
+            self.assertEqual(result, 0)
+            self.assertEqual(stderr.getvalue(), "")
+            binding = json.loads(stdout.getvalue())
+            self.assertEqual(binding["schema"], subject.PACKAGE_BINDING_SCHEMA)
+            build.assert_called_once()
+            evaluate.assert_called_once()
+            persist.assert_called_once()
+            replay.assert_called_once()
+            create_root.assert_called_once()
+            terminal = json.loads(
+                (fixture.output_root / "terminal-seal.json").read_text("utf-8")
+            )
+            self.assertTrue(terminal["internal_replay"])
+            self.assertEqual(terminal["reference_task"], subject.TASK_ID)
+            self.assertEqual(terminal["contract_id"], subject.CONTRACT_ID)
+
+    def test_old_g4_05_machine_is_rejected_before_root_and_downstream_owners(self):
+        old_task = "REF-G4-05-RAY-R6-STAGE-GATE"
+        old_contract = "G4-RAY-R6-STAGE-GATE-OFFLINE-V1"
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = SyntheticGitRepository(Path(temporary).resolve() / "repo")
+            plan = deepcopy(fixture.plan)
+            full = deepcopy(fixture.full)
+            plan.update(
+                active_task=old_task,
+                reference_task_id=old_task,
+                contract_id=old_contract,
+            )
+            full.update(
+                active_task=old_task,
+                current_plan_active_task=old_task,
+                active_plan_contract_id=old_contract,
+                canonical_next_reference_task=old_task,
+            )
+            (fixture.root / ".agent-work/PLAN.md").write_bytes(
+                machine_row("PLAN_MACHINE_CONTRACT", plan)
+            )
+            (fixture.root / ".agent-work/FULL_PLAN_REFERENCE.md").write_bytes(
+                machine_row("FULL_PLAN_MACHINE_STATE", full)
+            )
+            argv = (
+                "prepare", "--repo-root", str(fixture.root),
+                "--source-parent-checkpoint", fixture.source_checkpoint,
+                "--source-parent-tree", fixture.source_tree,
+                "--package-root", str(fixture.output_root),
+            )
+            stdout = io.StringIO()
+            stderr = io.StringIO()
+            with mock.patch.object(
+                subject, "evaluate_stage_gate", wraps=subject.evaluate_stage_gate,
+            ) as evaluate, mock.patch.object(
+                subject, "persist_stage_gate_package",
+                wraps=subject.persist_stage_gate_package,
+            ) as persist, mock.patch.object(
+                subject, "replay_stage_gate_package",
+                wraps=subject.replay_stage_gate_package,
+            ) as replay, mock.patch.object(
+                subject, "build_launch_descriptor",
+                wraps=subject.build_launch_descriptor,
+            ) as descriptor, mock.patch.object(
+                provenance, "create_exclusive_root",
+                wraps=provenance.create_exclusive_root,
+            ) as create_root, redirect_stdout(stdout), redirect_stderr(stderr):
+                result = subject.main(argv)
+            self.assertEqual(result, 1)
+            self.assertEqual(stdout.getvalue(), "")
+            self.assertEqual(stderr.getvalue(), "machine_contract_drift\n")
+            self.assertFalse(fixture.output_root.exists())
+            evaluate.assert_not_called()
+            persist.assert_not_called()
+            replay.assert_not_called()
+            descriptor.assert_not_called()
+            create_root.assert_not_called()
+
+    def test_source_attestation_binding_and_topology_matrix_fails_pre_root(self):
+        def plan_binding(plan: dict) -> dict:
+            return plan["source_attestation_binding"]
+
+        def full_binding(full: dict) -> dict:
+            return full["g4_06_state"]["source_attestation_binding"]
+
+        cases = {
+            "wrong_valid_parent_pair": lambda fixture, _plan, _full, argv: argv.update(
+                source_checkpoint=fixture.code_checkpoint,
+                source_tree=fixture.code_tree,
+            ),
+            "parent_as_code_owner": lambda fixture, plan, full, _argv: (
+                plan_binding(plan).__setitem__(
+                    "accepted_code_owner_checkpoint", fixture.source_checkpoint,
+                ),
+                plan_binding(plan).__setitem__(
+                    "accepted_code_owner_tree", fixture.source_tree,
+                ),
+                full_binding(full).__setitem__(
+                    "accepted_code_owner_checkpoint", fixture.source_checkpoint,
+                ),
+                full_binding(full).__setitem__(
+                    "accepted_code_owner_tree", fixture.source_tree,
+                ),
+            ),
+            "wrong_valid_code_owner": lambda fixture, plan, full, _argv: (
+                plan_binding(plan).__setitem__(
+                    "accepted_code_owner_checkpoint", fixture.live_checkpoint,
+                ),
+                plan_binding(plan).__setitem__(
+                    "accepted_code_owner_tree", fixture.live_tree,
+                ),
+                full_binding(full).__setitem__(
+                    "accepted_code_owner_checkpoint", fixture.live_checkpoint,
+                ),
+                full_binding(full).__setitem__(
+                    "accepted_code_owner_tree", fixture.live_tree,
+                ),
+            ),
+            "wrong_valid_code_owner_tree": lambda fixture, plan, full, _argv: (
+                plan_binding(plan).__setitem__(
+                    "accepted_code_owner_tree", fixture.source_tree,
+                ),
+                full_binding(full).__setitem__(
+                    "accepted_code_owner_tree", fixture.source_tree,
+                ),
+            ),
+            "plan_binding_missing": lambda _fixture, plan, _full, _argv: plan.pop(
+                "source_attestation_binding"
+            ),
+            "plan_binding_extra": lambda _fixture, plan, _full, _argv: plan_binding(
+                plan
+            ).__setitem__("extra", False),
+            "plan_binding_subject_drift": lambda _fixture, plan, _full, _argv: plan_binding(
+                plan
+            ).__setitem__("code_child_subject", "wrong subject"),
+            "plan_binding_paths_drift": lambda _fixture, plan, _full, _argv: plan_binding(
+                plan
+            )["code_child_paths"].append("extra.py"),
+            "full_binding_missing": lambda _fixture, _plan, full, _argv: full[
+                "g4_06_state"
+            ].pop("source_attestation_binding"),
+            "full_binding_extra": lambda _fixture, _plan, full, _argv: full_binding(
+                full
+            ).__setitem__("extra", False),
+            "full_binding_drift": lambda _fixture, _plan, full, _argv: full_binding(
+                full
+            ).__setitem__("accepted_code_owner_tree", "0" * 40),
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            for index, (name, mutate) in enumerate(cases.items()):
+                with self.subTest(name=name):
+                    fixture = SyntheticGitRepository(
+                        Path(temporary).resolve() / f"binding-{index:02d}" / "repo"
+                    )
+                    plan = deepcopy(fixture.plan)
+                    full = deepcopy(fixture.full)
+                    argv_values = {
+                        "source_checkpoint": fixture.source_checkpoint,
+                        "source_tree": fixture.source_tree,
+                    }
+                    mutate(fixture, plan, full, argv_values)
+                    (fixture.root / ".agent-work/PLAN.md").write_bytes(
+                        machine_row("PLAN_MACHINE_CONTRACT", plan)
+                    )
+                    (fixture.root / ".agent-work/FULL_PLAN_REFERENCE.md").write_bytes(
+                        machine_row("FULL_PLAN_MACHINE_STATE", full)
+                    )
+                    stdout = io.StringIO()
+                    stderr = io.StringIO()
+                    with mock.patch.object(
+                        subject, "evaluate_stage_gate", wraps=subject.evaluate_stage_gate,
+                    ) as evaluate, mock.patch.object(
+                        subject, "persist_stage_gate_package",
+                        wraps=subject.persist_stage_gate_package,
+                    ) as persist, mock.patch.object(
+                        subject, "replay_stage_gate_package",
+                        wraps=subject.replay_stage_gate_package,
+                    ) as replay, mock.patch.object(
+                        provenance, "create_exclusive_root",
+                        wraps=provenance.create_exclusive_root,
+                    ) as create_root, redirect_stdout(stdout), redirect_stderr(stderr):
+                        result = subject.main((
+                            "prepare", "--repo-root", str(fixture.root),
+                            "--source-parent-checkpoint",
+                            argv_values["source_checkpoint"],
+                            "--source-parent-tree", argv_values["source_tree"],
+                            "--package-root", str(fixture.output_root),
+                        ))
+                    self.assertEqual(result, 1)
+                    self.assertEqual(stdout.getvalue(), "")
+                    self.assertNotEqual(stderr.getvalue(), "")
+                    self.assertFalse(fixture.output_root.exists())
+                    evaluate.assert_not_called()
+                    persist.assert_not_called()
+                    replay.assert_not_called()
+                    create_root.assert_not_called()
+
+    def test_later_attestation_rejects_probe_code_owner_drift_from_descriptor_binding(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = SyntheticGitRepository(Path(temporary).resolve() / "repo")
+            cases = {
+                "checkpoint": {
+                    **fixture.activation_probe(),
+                    "code_owner_checkpoint": fixture.source_checkpoint,
+                    "code_owner_tree": fixture.source_tree,
+                },
+                "tree": {
+                    **fixture.activation_probe(),
+                    "code_owner_tree": fixture.source_tree,
+                },
+            }
+            for name, probe in cases.items():
+                with self.subTest(name=name), self.assertRaisesRegex(
+                    subject.StageGateError, "committed_source_binding_drift",
+                ):
+                    subject.validate_committed_source_attestation(
+                        fixture.descriptor, probe, repo_root=fixture.root,
+                    )
+
+    def test_preparation_machine_projection_drift_matrix_fails_before_root(self):
+        def plan_set(name: str, value: object):
+            return lambda plan, _full: plan.__setitem__(name, value)
+
+        def full_set(name: str, value: object):
+            return lambda _plan, full: full.__setitem__(name, value)
+
+        cases = {
+            "plan_count": plan_set("active_task_count", 0),
+            "full_count": full_set("active_task_count", 0),
+            "plan_task": plan_set("active_task", "REF-WRONG"),
+            "full_task": full_set("active_task", "REF-WRONG"),
+            "plan_reference": plan_set("reference_task_id", "REF-WRONG"),
+            "current_plan_count": full_set("current_plan_active_task_count", 0),
+            "current_plan_task": full_set("current_plan_active_task", "REF-WRONG"),
+            "plan_contract": plan_set("contract_id", "G4-WRONG"),
+            "full_contract": full_set("active_plan_contract_id", "G4-WRONG"),
+            "canonical_next": full_set("canonical_next_reference_task", "REF-WRONG"),
+            "plan_executable": plan_set("executable", False),
+            "full_executable": full_set("executable", True),
+            "full_non_authorizing": full_set("full_is_non_executable_reference", False),
+            "root_missing": lambda plan, _full: plan.pop("new_stage_gate_root"),
+            "root_drift": plan_set("new_stage_gate_root", "/different/root"),
+            "legacy_root_alias": lambda plan, _full: plan.__setitem__(
+                "stage_gate_root", plan["new_stage_gate_root"],
+            ),
+            "frozen_missing": lambda _plan, full: full.pop("frozen_guide_input"),
+            "frozen_extra": lambda _plan, full: full["frozen_guide_input"].__setitem__(
+                "extra", False,
+            ),
+            "frozen_drift": lambda _plan, full: full["frozen_guide_input"].__setitem__(
+                "selected_exposure", "1/2000",
+            ),
+            "g4_prerequisite_missing": lambda _plan, full: full.pop(
+                "g4_03_prerequisite"
+            ),
+            "g4_prerequisite_drift": lambda _plan, full: full[
+                "g4_03_prerequisite"
+            ].__setitem__("release_consumed", True),
+            "g4_state_missing": lambda _plan, full: full.pop("g4_06_state"),
+            "g4_state_extra": lambda _plan, full: full["g4_06_state"].__setitem__(
+                "extra", False,
+            ),
+            "g4_state_drift": lambda _plan, full: full["g4_06_state"].__setitem__(
+                "offline_package_evidence_only", False,
+            ),
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            for index, (name, mutate) in enumerate(cases.items()):
+                with self.subTest(name=name):
+                    fixture = SyntheticGitRepository(
+                        Path(temporary).resolve() / f"matrix-{index:02d}" / "repo"
+                    )
+                    plan = deepcopy(fixture.plan)
+                    full = deepcopy(fixture.full)
+                    mutate(plan, full)
+                    (fixture.root / ".agent-work/PLAN.md").write_bytes(
+                        machine_row("PLAN_MACHINE_CONTRACT", plan)
+                    )
+                    (fixture.root / ".agent-work/FULL_PLAN_REFERENCE.md").write_bytes(
+                        machine_row("FULL_PLAN_MACHINE_STATE", full)
+                    )
+                    with mock.patch.object(
+                        provenance, "create_exclusive_root",
+                        wraps=provenance.create_exclusive_root,
+                    ) as create_root:
+                        result = subject.main((
+                            "prepare", "--repo-root", str(fixture.root),
+                            "--source-parent-checkpoint", fixture.source_checkpoint,
+                            "--source-parent-tree", fixture.source_tree,
+                            "--package-root", str(fixture.output_root),
+                        ))
+                    self.assertEqual(result, 1)
+                    self.assertFalse(fixture.output_root.exists())
+                    create_root.assert_not_called()
+
+    def test_stage_gate_prerequisite_projection_is_closed(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = self.fixture(temporary)
+            _, gate, _ = self.gate(fixture)
+            cases = {}
+            missing = deepcopy(gate)
+            missing["prerequisites"].pop("g4_02")
+            cases["missing"] = missing
+            extra = deepcopy(gate)
+            extra["prerequisites"]["extra"] = False
+            cases["extra"] = extra
+            drift = deepcopy(gate)
+            drift["prerequisites"]["g4_04"]["release_consumed"] = True
+            cases["drift"] = drift
+            for name, altered in cases.items():
+                with self.subTest(name=name), self.assertRaises(subject.StageGateError):
+                    subject.validate_stage_gate(altered, repo_root=fixture.root)
 
     def test_module_cli_rejects_invalid_and_nonfresh_explicit_inputs(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -599,7 +992,11 @@ class P7TdBR6StageGateTests(unittest.TestCase):
                 "active_task": subject.TASK_ID,
                 "reference_task_id": subject.TASK_ID,
                 "contract_id": subject.CONTRACT_ID,
-                "stage_gate_root": str(alternate_root),
+                "executable": True,
+                "new_stage_gate_root": str(alternate_root),
+                "source_attestation_binding": deepcopy(
+                    fixture.plan["source_attestation_binding"]
+                ),
             }
             (fixture.root / ".agent-work/PLAN.md").write_bytes(
                 machine_row("PLAN_MACHINE_CONTRACT", alternate_plan)
@@ -712,7 +1109,7 @@ class P7TdBR6StageGateTests(unittest.TestCase):
             backend.connect.assert_not_called()
 
     def test_planned_subject_real_topology_binds_exact_two_committed_blobs(self):
-        planned_subject = "feat(stage-gate): bind ray r6 package identity"
+        planned_subject = "fix(stage-gate): bind package preparation to g4-06"
         self.assertEqual(subject.ALLOWED_CODE_CHILD_SUBJECT, planned_subject)
         with tempfile.TemporaryDirectory() as temporary:
             fixture = SyntheticGitRepository(Path(temporary) / "planned" / "repo")
@@ -751,14 +1148,15 @@ class P7TdBR6StageGateTests(unittest.TestCase):
                 self.assertEqual(reference["mode"], 0o644)
             self.assertEqual(attestation.code_owner_checkpoint, fixture.code_checkpoint)
             self.assertEqual(attestation.live_activation_checkpoint, fixture.live_checkpoint)
-            self.assertEqual(len(attestation.post_child_commits), 1)
-            self.assertEqual(
-                tuple(attestation.post_child_commits[0]["changed_paths"]),
-                (".agent-work/FULL_PLAN_REFERENCE.md", ".agent-work/PLAN.md"),
-            )
+            self.assertEqual(len(attestation.post_child_commits), 2)
+            self.assertTrue(all(
+                tuple(row["changed_paths"])
+                == (".agent-work/FULL_PLAN_REFERENCE.md", ".agent-work/PLAN.md")
+                for row in attestation.post_child_commits
+            ))
 
-    def test_previous_three_path_subject_with_identical_code_tree_fails_before_backend(self):
-        legacy_subject = "feat(stage-gate): route ray r6 formal launch owner"
+    def test_previous_binding_subject_with_identical_code_tree_fails_before_root(self):
+        legacy_subject = "feat(stage-gate): bind ray r6 package identity"
         with tempfile.TemporaryDirectory() as temporary:
             fixture = SyntheticGitRepository(Path(temporary) / "legacy" / "repo")
             planned_checkpoint = fixture.code_checkpoint
@@ -772,31 +1170,30 @@ class P7TdBR6StageGateTests(unittest.TestCase):
                 fixture.git_text("rev-parse", f"{legacy_checkpoint}^{{tree}}"),
             )
             fixture.set_head(legacy_checkpoint)
-            fixture.code_checkpoint = legacy_checkpoint
-            fixture.persist_production_package()
-            fixture.activate_package_b_machine()
-            factory = mock.Mock()
-            delegated = mock.Mock()
+            plan = deepcopy(fixture.plan)
+            full = deepcopy(fixture.full)
+            for binding in (
+                plan["source_attestation_binding"],
+                full["g4_06_state"]["source_attestation_binding"],
+            ):
+                binding["accepted_code_owner_checkpoint"] = legacy_checkpoint
+                binding["accepted_code_owner_tree"] = fixture.code_tree
+            (fixture.root / ".agent-work/PLAN.md").write_bytes(
+                machine_row("PLAN_MACHINE_CONTRACT", plan)
+            )
+            (fixture.root / ".agent-work/FULL_PLAN_REFERENCE.md").write_bytes(
+                machine_row("FULL_PLAN_MACHINE_STATE", full)
+            )
             with self.assertRaisesRegex(
                 subject.StageGateError, "committed_source_subject_drift",
             ):
-                subject.run_production_cli_launch(
-                    package_dir=fixture.output_root,
+                subject.build_stage_gate_input(
                     repo_root=fixture.root,
-                    code_owner_checkpoint=fixture.code_checkpoint,
-                    output_dir=Path(subject.FORMAL_ROOT_PARENT),
-                    run_name=FUTURE_RUN_NAME,
-                    camera_backend_name="remote",
-                    camera_backend_kwargs={
-                        "env_file": Path("synthetic.env"),
-                        "base_url": None,
-                        "timeout": 10.0,
-                    },
-                    backend_factory=factory,
-                    delegated_run_fn=delegated,
+                    source_checkpoint=fixture.source_checkpoint,
+                    source_tree=fixture.source_tree,
+                    output_root=fixture.output_root,
                 )
-            factory.assert_not_called()
-            delegated.assert_not_called()
+            self.assertFalse(fixture.output_root.exists())
 
     def test_previous_three_path_code_child_cannot_promote_new_binding_owner(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -817,11 +1214,18 @@ class P7TdBR6StageGateTests(unittest.TestCase):
             fixture.code_checkpoint = legacy
             fixture.code_tree = legacy_tree
             fixture.set_head(legacy)
+            descriptor = deepcopy(fixture.descriptor)
+            descriptor["source_attestation_binding"][
+                "accepted_code_owner_checkpoint"
+            ] = legacy
+            descriptor["source_attestation_binding"][
+                "accepted_code_owner_tree"
+            ] = legacy_tree
             with self.assertRaisesRegex(
                 subject.StageGateError, "committed_source_changed_paths_drift",
             ):
                 subject.validate_committed_source_attestation(
-                    fixture.descriptor,
+                    descriptor,
                     fixture.activation_probe(),
                     repo_root=fixture.root,
                 )
@@ -1260,7 +1664,7 @@ class P7TdBR6StageGateTests(unittest.TestCase):
             source = self.production_fixture(temporary, "source")
             factory = mock.Mock()
             with self.assertRaisesRegex(
-                subject.StageGateError, "committed_source_parent_drift",
+                subject.StageGateError, "committed_source_binding_drift",
             ):
                 subject.run_production_cli_launch(
                     package_dir=source.output_root,
@@ -1489,7 +1893,12 @@ class P7TdBR6StageGateTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             fixture = self.fixture(temporary)
             _, gate, descriptor = self.gate(fixture)
-            self.assertEqual(descriptor["status"], "non_authorizing_waiting_g4_06_plan")
+            self.assertEqual(
+                descriptor["status"],
+                "non_authorizing_g4_06_fresh_package_evidence",
+            )
+            self.assertEqual(descriptor["reference_task"], subject.TASK_ID)
+            self.assertEqual(descriptor["contract_id"], subject.CONTRACT_ID)
             self.assertFalse(descriptor["authority"]["execution_authorized"])
             self.assertEqual(descriptor["budgets"]["launch_cap"], 1)
             self.assertEqual(descriptor["budgets"]["retry"], 0)
@@ -1810,9 +2219,13 @@ class P7TdBR6StageGateTests(unittest.TestCase):
             activation, runtime, attestation = fixture.future_activation()
             self.assertEqual(attestation.verified_parent_checkpoint, fixture.source_checkpoint)
             self.assertEqual(attestation.code_owner_checkpoint, fixture.code_checkpoint)
-            self.assertEqual(attestation.live_activation_checkpoint, fixture.code_checkpoint)
-            self.assertEqual(attestation.post_child_changed_paths, ())
-            self.assertEqual(attestation.post_child_commits, ())
+            self.assertEqual(attestation.live_activation_checkpoint, fixture.live_checkpoint)
+            self.assertEqual(
+                attestation.post_child_changed_paths,
+                (".agent-work/FULL_PLAN_REFERENCE.md", ".agent-work/PLAN.md"),
+            )
+            self.assertEqual(len(attestation.post_child_commits), 1)
+            baseline_commit = attestation.post_child_commits[0]
             subject.validate_future_activation(
                 fixture.descriptor,
                 fixture.stage_gate["runtime_plan_template"],
@@ -1822,7 +2235,7 @@ class P7TdBR6StageGateTests(unittest.TestCase):
                 output_dir=subject.FORMAL_ROOT_PARENT,
                 run_name=FUTURE_RUN_NAME,
             )
-            parent = fixture.code_checkpoint
+            parent = fixture.live_checkpoint
             fixture.commit_orchestration_descendant("state-one.md")
             first = fixture.live_checkpoint
             first_tree = fixture.live_tree
@@ -1834,11 +2247,15 @@ class P7TdBR6StageGateTests(unittest.TestCase):
             self.assertEqual(attestation.live_activation_checkpoint, fixture.live_checkpoint)
             self.assertEqual(
                 attestation.post_child_changed_paths,
-                (".agent-work/state-one.md", ".agent-work/state-two.md"),
+                (
+                    ".agent-work/FULL_PLAN_REFERENCE.md", ".agent-work/PLAN.md",
+                    ".agent-work/state-one.md", ".agent-work/state-two.md",
+                ),
             )
             self.assertEqual(
                 attestation.post_child_commits,
                 (
+                    baseline_commit,
                     {
                         "parent_checkpoint": parent,
                         "child_checkpoint": first,
@@ -1875,6 +2292,7 @@ class P7TdBR6StageGateTests(unittest.TestCase):
                 dir=subject.FORMAL_ROOT_PARENT,
             ) as temporary:
                 fixture = SyntheticGitRepository(Path(temporary))
+                baseline_tree = fixture.live_tree
                 target = fixture.root / path
                 original = target.read_bytes() if target.exists() else None
                 target.parent.mkdir(parents=True, exist_ok=True)
@@ -1889,7 +2307,7 @@ class P7TdBR6StageGateTests(unittest.TestCase):
                 fixture.git("commit", "-q", "-m", f"restore transient {path}")
                 fixture.live_checkpoint = fixture.git_text("rev-parse", "HEAD")
                 fixture.live_tree = fixture.git_text("rev-parse", "HEAD^{tree}")
-                self.assertEqual(fixture.live_tree, fixture.code_tree)
+                self.assertEqual(fixture.live_tree, baseline_tree)
                 with self.assertRaisesRegex(
                     subject.StageGateError,
                     "committed_source_post_child_path_drift",
@@ -2036,6 +2454,13 @@ class P7TdBR6StageGateTests(unittest.TestCase):
                     descriptor["committed_source_contract"][
                         "allowed_code_owner_child"
                     ]["changed_paths"].reverse()
+                if case in {"subject", "parent", "missing_parent", "merge", "extra_path"}:
+                    descriptor["source_attestation_binding"][
+                        "accepted_code_owner_checkpoint"
+                    ] = fixture.code_checkpoint
+                    descriptor["source_attestation_binding"][
+                        "accepted_code_owner_tree"
+                    ] = fixture.code_tree
                 with self.assertRaisesRegex(subject.StageGateError, expected_code):
                     subject.validate_committed_source_attestation(
                         descriptor, fixture.activation_probe(), repo_root=fixture.root,
@@ -2064,6 +2489,9 @@ class P7TdBR6StageGateTests(unittest.TestCase):
                 }[case]
                 if case == "code_tree":
                     probe["code_owner_tree"] = "0" * 40
+                    descriptor["source_attestation_binding"][
+                        "accepted_code_owner_tree"
+                    ] = "0" * 40
                 elif case == "live_tree":
                     probe["live_activation_tree"] = "0" * 40
                 elif case == "blob":
