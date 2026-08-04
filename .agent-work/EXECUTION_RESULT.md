@@ -2,224 +2,147 @@
 
 ## Terminal status request
 
-`READY_FOR_PLANNER_G4_06_ROUTE_A_DIRECT_SCRIPT_VALIDATION_FAILURE_REVIEW`
+`READY_FOR_PLANNER_G4_06_ROUTE_A_BLOB_REFERENCE_CORRECTION_FAILURE_REVIEW`
 
 - Reference task: `REF-G4-06-RAY-R6`
 - Contract: `G4-RAY-R6-FINAL-CODE-FIRST-FINAL-PACKAGE-REMINT-V1`
-- Phase: `FINAL_CODE_CANDIDATE_DIRECT_SCRIPT_VISIBLE_TERMINAL_VALIDATION`
-- Terminal branch: `FOCUSED_FAILED_FULL_NOT_STARTED`
+- Phase: `FINAL_CODE_CANDIDATE_SINGLE_BLOB_REFERENCE_SEAM_CORRECTION`
+- Failure classification:
+  `IN_PROCESS_DIAGNOSTIC_HARNESS_SYNTAX_ERROR_STOPPED_BEFORE_ATTRIBUTION`
 - Candidate disposition:
-  `PRESERVED_UNACCEPTED_UNREJECTED_PENDING_PLANNER_FAILURE_REVIEW`
+  `PRESERVED_UNACCEPTED_UNREJECTED_NO_CORRECTION_PERFORMED`
 - Planner stop: `RETURN_FOR_G4_06_ROUTE_A_FINAL_CODE_CANDIDATE_REVIEW`
 
-The Human-directed plain-script launcher and command seal succeeded. The exact
-focused integration command then failed. This is validation evidence for the
-current frozen candidate, not a launcher/seal failure, scientific/formal/device
-failure, GUIDE hard stop, release result, or hardware-readiness claim. No
-correction, retry, resume, alternate root, third launcher attempt, or full suite
-was run.
+The sole authorized differential-diagnostic invocation failed at Python parse
+time because the inline diagnostic heredoc contained an accidental leading `+`
+before its final closing dictionary brace. The exact observed terminal error
+was:
 
-## Activation and machine intake
+```text
+File "<stdin>", line 162
+    +}
+     ^
+SyntaxError: invalid syntax
+```
+
+This is an Executer diagnostic-harness construction error. It is not evidence
+for or against the production owner, fixture, import environment, candidate
+blob contract, tests, scientific route, formal route, device, release, or
+hardware readiness.
+
+Live PLAN section 4 requires stopping when the diagnostic itself has a harness
+error. The diagnostic was not rerun, repaired, supplemented, or split into a
+second invocation. No attribution was guessed and the bounded correction was
+not consumed as a code change.
+
+## Activation and intake evidence
 
 - Branch: `main`
-- HEAD: `96d18dd24d649519d1759ac05b66e5ca97501539`
-- Sole parent: `4c77fe46e9d755467f262fc63ac8e329c8847ff3`
-- Subject: `docs(plan): activate direct Terminal script validation`
+- HEAD: `e5c8fd7ae095b8ed26b989b6df173a9f5b8f0318`
+- Sole parent: `96d18dd24d649519d1759ac05b66e5ca97501539`
+- Subject: `docs(plan): activate blob reference correction`
 - Exact activation paths:
   - `.agent-work/EXECUTION_RESULT.md`
   - `.agent-work/FULL_PLAN_REFERENCE.md`
   - `.agent-work/PLAN.md`
-  - `.agent-work/archived/EXECUTION_RESULT-20260804-1942.md`
-  - `.agent-work/archived/PLAN-20260804-1942.md`
-- Repo-owned strict parser: PLAN/FULL active `1/1`, same task and contract,
+  - `.agent-work/archived/EXECUTION_RESULT-20260804-2002.md`
+  - `.agent-work/archived/PLAN-20260804-2002.md`
+- Repo-owned machine parser: PLAN/FULL active `1/1`, same task/contract,
   PLAN executable, FULL `executable=false`, FULL non-executable reference true,
-  required FULL subset exact.
-- PLAN source: `15991` bytes, SHA-256
-  `a599ea5b297e327cadf79e2fda6b217aa1514c3846c64a0b786f8fbec2641971`;
-  one machine row at line `21`.
-- FULL source: `15457` bytes, SHA-256
-  `86018eb8458ac22eb2a067330022798afe963d8190c5e1c9000b06bece9b3612`;
-  one machine row at line `24`.
+  and required FULL subset exact.
+- New direct script and new validation root were both non-following absent.
 
-The exact new direct-script path and new validation root were both proven
-absent using non-following checks before materialization. The rejected old
-partial root was not read, statted, listed, described, modified, cleaned, or
-reused.
+Frozen candidate before and after the failed diagnostic:
 
-## Frozen candidate and inherited validation
+- source: `94324` bytes, SHA-256
+  `c4cd13e7fb64434914ccb12c862d1d12e81728a9a647d41ff23fb2d0d860fe83`;
+- test: `133201` bytes, SHA-256
+  `479dd8d5b0bb851d256045ee1535860ca23328874b7b7a1eb7de76dceb43ab6e`;
+- exact numstat: source `+35/-8`, test `+67/-1`;
+- candidate writes before diagnostic: `0`;
+- candidate writes after diagnostic: `0`.
 
-- Source: `94324` bytes, SHA-256
-  `c4cd13e7fb64434914ccb12c862d1d12e81728a9a647d41ff23fb2d0d860fe83`.
-- Test: `133201` bytes, SHA-256
-  `479dd8d5b0bb851d256045ee1535860ca23328874b7b7a1eb7de76dceb43ab6e`.
-- Exact numstat: source `+35/-8`; test `+67/-1`.
-- Candidate writes by this continuation: `0`.
-- Inherited targeted: `47/47`, `182.148s`, exit `0`; not rerun.
-- Inherited compile: exit `0`; not rerun.
+## Pre-edit CodeGraph evidence
 
-Candidate bytes/SHA and numstat passed before script creation, at script startup,
-at validation step 1, and at all three liveness boundaries. They remained exact
-when the Terminal process ended.
+The required pre-edit CodeGraph query completed before the diagnostic. It
+identified the existing unique path:
 
-## Direct script materialization
+`_source_attestation_binding` -> `_committed_source_contract` ->
+`validate_committed_source_attestation`
 
-Human correction followed:
+and the `SyntheticRepository` fixture binding in
+`tests/test_p7_td_b_r6_stage_gate.py`. No new module, schema, validator,
+successor seam, controller, adapter, environment bypass, or relaxed OID path
+was introduced.
 
-`直接把脚本放在临时目录执行，不要用base64`
+Because no candidate edit occurred, post-change `codegraph sync` was not
+applicable and was not run.
 
-Exact script:
+## Diagnostic execution boundary
 
-`/Volumes/4T/temp/rgbww-optimizer/g4-route-a-direct-terminal-4c77fe46e9d7-20260804T194205Z.zsh`
+Intended caps were one process, one auto-cleaned temporary root, at most two
+synthetic fixture repositories, no test runner, and no candidate write.
 
-- Creation owner: Executer `apply_patch`.
-- Plain UTF-8, LF-only, trailing LF present.
-- No encoded payload transport, dynamic decoded source, or `eval`.
-- Bytes: `18676`.
-- SHA-256:
-  `804ee45d35ecad359701cf15eb4f2e9e17722b04cbe84d873ebb330b562310b1`.
-- Initial mode after materialization: `0644`.
-- `/bin/zsh -n <exact-script>`: exit `0`.
-- Final launch mode: `0600`.
-- Bytes/SHA/UTF-8/LF identity after chmod: unchanged.
-- Script self-delete or post-launch rewrite: `0`.
+Actual result:
 
-The script directly contains literal zsh commands and Python heredocs. Startup
-validated its own regular-file identity and the candidate, exclusively created
-the new root, immediately established stdout/stderr/exit, installed the EXIT
-trap, wrote the command seal using literal Python data plus argv and
-`json.dump`, and validated the exact four-file inventory before focused tests.
+- in-process diagnostic invocations: `1/1`;
+- Python parse success: `false`;
+- stage-gate test module imported by diagnostic: `false`;
+- other focused modules imported by diagnostic: `false`;
+- temporary root created: `0`;
+- synthetic fixture repositories created: `0`;
+- existing external root access: `0`;
+- test runner calls: `0`;
+- validator calls: `0`;
+- declared/rev-parse/ls-tree OID observations produced: `0`;
+- production-vs-fixture-vs-environment attribution: `UNAVAILABLE`;
+- correction count: `0`;
+- correction branch selected: `none`.
 
-## Sole direct-script AppleScript launch
+The failure occurred before Python executed any diagnostic statement, so no
+temporary cleanup action was necessary and no external diagnostic artifact was
+created.
 
-- Historical rejected launcher attempt count: `1`.
-- Direct-script correction attempt count: `1/1`.
-- This PLAN's `/usr/bin/osascript` invocation count: `1/1`.
-- AppleScript operations: one Terminal `activate`, one `do script`, direct
-  returned-tab TTY readback, immediate front-window id readback.
-- `do script` command:
-  `/bin/zsh '/Volumes/4T/temp/rgbww-optimizer/g4-route-a-direct-terminal-4c77fe46e9d7-20260804T194205Z.zsh'`
-- AppleScript exit: `0`.
-- Front window id: `62300`.
-- Returned-tab TTY: `/dev/ttys020`.
-- Launch token:
-  `g4-route-a-direct-4c77fe46e9d7-20260804T194205Z`.
-- Sealed shell PID: `38797`.
-- Sealed shell TTY: `/dev/ttys020`.
-- Sealed start time: `2026-08-04T19:51:43.464050+00:00`.
+## Validation and launcher state
 
-Window/TTY/token readback matched the seal. No tab enumeration or comparison,
-second AppleScript, third launcher attempt, Codex validation owner, or
-background validation owner was used.
+The candidate never reached the stabilization or fresh-harness phase:
 
-## Exact validation root and command seal
+- new plain script writes: `0`;
+- new validation root writes: `0`;
+- targeted/focused/compile starts: `0/0/0`;
+- post-validation identity/diff: not started;
+- CodeGraph post-change sync/query: `0/0`;
+- machine/scope gate: not started;
+- fresh full starts/runs: `0/0`;
+- AppleScript invocations: `0`;
+- visible Terminal launches: `0`;
+- PID/TTY/token: `none/none/none`;
+- liveness checks: `0`;
+- automation requested: `false`;
+- retry/resume/alternate/third launcher: `0/0/0/0`.
 
-Validation root:
-
-`/Volumes/4T/temp/rgbww-optimizer/g4-route-a-direct-terminal-validation-4c77fe46e9d7-20260804T194205Z`
-
-- Root: regular directory, mode `0700`, exclusively created by the Terminal
-  script.
-- Inventory was and remains the exact four allowed files.
-- All four files are regular, non-symlink, mode `0600`.
-
-| File | Bytes | SHA-256 |
-|---|---:|---|
-| `command-seal.json` | 3587 | `d9ac8b0a08abdea8641c12a487262a383c4148cc1177b16a80c2c2be1007c93d` |
-| `validation.stdout.log` | 5451 | `b085fe9de8b5424b05e289234619679fdf525e36a9b6b3201360c8406c76ab5c` |
-| `validation.stderr.log` | 334104 | `08cb24535f816e1ed1fb331a9ca5c29c501944bb155c840b5557c6575e882309` |
-| `validation.exit` | 2 | `4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865` |
-
-The seal is canonical JSON with schema
-`g4_route_a_direct_terminal_validation_command_seal_v1`, exact activation,
-candidate and script identities, eight ordered commands, PID/TTY/token,
-single-launch and zero-retry counters, and exact output paths. The terminal
-exit file contains exact text `1\n`.
-
-The direct script and root are retained as immutable harness/validation
-evidence. They were not cleaned, deleted, overwritten, resumed, or reused.
-
-## Three sparse liveness checks
-
-All checks bound the same token, PID `38797`, TTY `/dev/ttys020`, exact script
-identity and candidate identity.
-
-1. Check 1: process alive, elapsed `00:41`; seal/stdout/stderr/exit sizes
-   `3587/5052/107/0`; exact process command
-   `/bin/zsh <exact-direct-script>`.
-2. Check 2: process alive, elapsed `01:21`; sizes
-   `3587/5052/5571/0`; logs monotonic and candidate/script unchanged.
-3. Check 3: process terminated before the check; final sizes
-   `3587/5451/334104/2`; exit `1\n`; candidate/script unchanged.
-
-Because the process completed before the third live boundary, no automation or
-additional polling was created.
-
-## Validation order and failure result
-
-Seal/inventory step 0 passed, and its begin/end markers are present. Candidate
-identity/diff step 1 passed, and its begin/end markers are present.
-
-Focused integration step 2 ran exactly once with exact argv:
-
-```text
-.venv/bin/python -m unittest tests.test_p7_td_b_r6_stage_gate tests.test_p7_td_b_r6_contract tests.test_p7_thermal_diagnostics
-```
-
-Result:
-
-- started: `2026-08-04T19:51:43Z`;
-- tests run: `202`;
-- duration: `102.948s`;
-- terminal summary: `FAILED (errors=149)`;
-- overall sequence exit: `1`;
-- repeated error boundary observed in the trace:
-  `committed_source_candidate_blob_drift`;
-- focused END-success marker: absent, as required by fail-closed execution.
-
-The error trace shows synthetic stage-gate fixture construction reaching the
-existing `validate_committed_source_attestation` owner and raising
-`StageGateError("committed_source_candidate_blob_drift")`. This handoff records
-the observed boundary without diagnosing or repairing it.
-
-Because focused failed:
-
-- post-focused candidate step 3: not started;
-- `git diff --check` step 4: not started;
-- `codegraph sync` step 5: not started;
-- CodeGraph query step 6: not started;
-- strict machine/scope/authority step 7: not started;
-- fresh full step 8: not started;
-- full-suite retries: `0`;
-- previous interrupted full reused: `false`.
-
-No offline focused failure is expressed as release, formal, scientific,
-hardware, eligibility, or readiness evidence.
+The accepted prior direct-script harness and both historical validation roots
+were not read, statted, listed, modified, cleaned, reused, or resumed.
 
 ## Scope and zero effects
 
-- Candidate/source/test writes: `0`.
+- Source/test writes: `0`.
 - PLAN/FULL/GUIDE/RESEARCH/archive writes: `0`.
 - Git stage/commit/push/PR: `0/0/0/0`.
-- Old partial root access: `0`.
-- Existing external experiment/package/formal root access: `0`.
 - Network/device/backend/camera/Ray/strip/capture calls: `0/0/0/0/0/0/0`.
-- Release/retained-R3/formal-R6/analysis/TD-C consumption or execution:
+- Release/package/formal-R6/analysis/TD-C consumption or execution:
   `0/0/0/0/0`.
 - Formal owner/root/device effects: `0/0/0`.
-- Retry/resume/alternate root/third launcher: `0/0/0/0`.
 
-Focused tests used their existing auto-cleaned synthetic temporary-fixture
-mechanisms only. They did not access or consume an existing experiment,
-package, release, device, or formal root.
+Only this live EXECUTION_RESULT handoff was written after the mandatory stop.
 
 ## Planner handoff
 
-Planner should review the exact focused failure and decide the bounded next
-engineering disposition. The candidate is not accepted, and this Executer does
-not diagnose, repair, rerun, create a successor/corrective task, or infer a
-scientific/formal branch. The direct launcher and seal are successful evidence;
-the validation failure is downstream at the committed candidate blob boundary.
+Planner should review the diagnostic-harness failure and return the package to
+Orchestrator ownership reassessment. No production/fixture/environment
+attribution exists, so the candidate must not be corrected, accepted, rejected,
+or assigned a production failure based on this invocation.
 
-Do not run a third launcher attempt, retry/resume this root, run the full suite,
-or modify the candidate under this completed PLAN. No future checkpoint or tree
-SHA is guessed.
+Do not rerun the diagnostic, modify the candidate, generate a suffix/new route,
+launch Terminal, or run validation under this completed PLAN. No future code
+checkpoint or tree SHA is guessed.
