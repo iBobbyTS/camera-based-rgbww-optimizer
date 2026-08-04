@@ -1,51 +1,162 @@
-# REF-G4-06-RAY-R6 package preparation route terminal acceptance
+# REF-G4-06-RAY-R6 fresh source-bound package evidence
 
-**计划状态：** `PLANNER_REVIEWED_ACCEPTED_PACKAGE_PREPARATION_ROUTE_WAITING_ORCHESTRATOR_FULL_TRANSITION`
+**计划状态：** `EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION`
 
-**Executable：** `false`
+**Executable：** `true_after_exact_orchestrator_activation`
 
-**Active task count：** `0`
+**Active task count：** `1`
 
-**Active reference task：** `null`
+**Active reference task：** `REF-G4-06-RAY-R6`
 
-**Planner stop：** `RETURN_ORCHESTRATOR_FOR_PACKAGE_PREPARATION_ROUTE_FULL_TRANSITION`
+**Contract：** `G4-RAY-R6-STAGE-GATE-FRESH-PACKAGE-EVIDENCE-V1`
 
-`PLAN_MACHINE_CONTRACT={"schema":"planner_terminal_checkpoint_v2","contract_id":"G4-RAY-R6-PACKAGE-PREPARATION-ROUTE-ENGINEERING-V1","plan_status":"PLANNER_REVIEWED_ACCEPTED_PACKAGE_PREPARATION_ROUTE_WAITING_ORCHESTRATOR_FULL_TRANSITION","executable":false,"active_task_count":0,"active_task":null,"reference_task_id":"REF-G4-06-RAY-R6","reference_goal":"REF-G4-COMPLETE","reference_task_status":"TERMINAL_ACCEPTED_PACKAGE_PREPARATION_ROUTE_WAITING_ORCHESTRATOR_FULL_TRANSITION","terminal_disposition":"ACCEPTED_G4_06_PACKAGE_PREPARATION_ROUTE_ENGINEERING","planner_review_complete":true,"accepted_code_checkpoint":"ebc40bf8e40c4bb59bd070367a321a2e76c3ce5c","accepted_code_tree":"9dc4b3fb70bc97b80fb1db3b2389585e349e8737","controlled_child":{"parent":"310f547c91420c34f67d1d241ad4aedaa3bc9c2c","subject":"fix(stage-gate): bind package preparation to g4-06","changed_paths":["src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","tests/test_p7_td_b_r6_stage_gate.py"],"direct_non_merge_child":true},"accepted_code_identities":{"stage_gate":{"path":"src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","bytes":93155,"sha256":"406ac5c82ac9a098052a812af866f29083bdb2ee3fd5962964c8889100ef5d37","mode":420},"tests":{"path":"tests/test_p7_td_b_r6_stage_gate.py","bytes":130254,"sha256":"ff3964db91ba2bd19073be16eb4a45aa7ae81a96c2ff17cb54b108f4cf2915c3","mode":420}},"reviewed_plan_archive":{"path":".agent-work/archived/PLAN-20260804-0027.md","bytes":17509,"sha256":"713584ae5921cd04f5a537f26e04a280a6b60582126229448dae38ba2d3e7563"},"reviewed_execution_result_archive":{"path":".agent-work/archived/EXECUTION_RESULT-20260804-0027.md","bytes":10205,"sha256":"628ce7ae304d9009a05b1c76d7dc291829b527c63e5afbe5c53f87a65241c685"},"first_rejected_candidate":{"classification":"PRODUCTION_SOURCE_ATTESTATION_BINDING_MISSING_BEFORE_EXCLUSIVE_ROOT","stage_gate_sha256":"d19195c8f50f57ea43f3969af09d4c5280dfcf0c0a891e12c0d163fc6d6f4331","tests_sha256":"c2798073af331a2ab13a5646cbfe8b3e19eeb307fefc63722fb7216aba70e5c9","fresh_full":"961_of_961_non_accepting","disposition":"REJECTED_NOT_COMMITTED"},"bounded_correction":{"used":1,"limit":1,"source_binding_schema":"p7_td_b_r6_preparation_source_attestation_binding_v1","plan_full_exact_mirror":true,"pre_root_existing_attestation_owner":true,"wrong_valid_parent_closed":true,"new_task_or_suffix":false},"validation":{"planner_phase1_representative":"8_of_8_pass","planner_wrong_valid_parent_probe":"pre_root_pass_downstream_zero","targeted":"13_of_13_pass_executor","stage_gate":"46_of_46_pass_executor","focused":"251_of_251_pass_executor","full":"963_of_963_pass_fresh_executor","full_inherited_phase2":true,"committed_current_blobs_match":true,"old_g4_05_reactivatable":false,"git_diff_check":"pass"},"future_evidence_contract_id":"G4-RAY-R6-STAGE-GATE-FRESH-PACKAGE-EVIDENCE-V1","package_preparation_route_accepted":true,"real_package_generation_authorized":false,"real_package_describe_authorized":false,"external_root_access":0,"formal_execution_authorized":false,"formal_root_creation_authorized":false,"release_consumption_authorized":false,"device_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"capture_authorized":false,"td_c_authorized":false,"full_update_pending":true,"next_owner":"Orchestrator","next_action":"ARCHIVE_AND_REWRITE_FULL_FOR_PACKAGE_PREPARATION_ROUTE_TERMINAL_THEN_DELEGATE_FRESH_PACKAGE_EVIDENCE_PLANNER_PASS","future_reference_task":"REF-G4-06-RAY-R6","future_reference_status":"FRESH_SOURCE_BOUND_PACKAGE_EVIDENCE_WAITING_ORCHESTRATOR_ROUTE_NON_EXECUTABLE","planner_stop":"RETURN_ORCHESTRATOR_FOR_PACKAGE_PREPARATION_ROUTE_FULL_TRANSITION"}`
+**Planner stop：** `RETURN_FOR_G4_06_FRESH_PACKAGE_EVIDENCE_REVIEW`
 
-## Terminal disposition
+`PLAN_MACHINE_CONTRACT={"schema":"planner_execution_contract_v2","contract_id":"G4-RAY-R6-STAGE-GATE-FRESH-PACKAGE-EVIDENCE-V1","plan_status":"EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION","executable":true,"active_task_count":1,"active_task":"REF-G4-06-RAY-R6","reference_task_id":"REF-G4-06-RAY-R6","reference_goal":"REF-G4-COMPLETE","reference_task_status":"ACTIVE_OFFLINE_FRESH_SOURCE_BOUND_PACKAGE_EVIDENCE_AFTER_EXACT_ORCHESTRATOR_ACTIVATION","activation_state":"WAITING_ORCHESTRATOR_FULL_ALIGNMENT_COMMIT","activation_commit":{"expected_parent":"1c94b5df1fa796f1d56aaa012237c064cfd541de","expected_parent_tree":"4332037fdff6a9ca6eb486a4c16646b7011e100d","expected_subject":"docs(plan): activate ray r6 fresh package evidence","expected_changed_paths":[".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md"],"direct_non_merge_child":true,"child_sha_recorded_in_plan":false},"single_current_action":"generate_persist_replay_and_independently_describe_one_fresh_source_bound_stage_gate_package","package":"OFFLINE_DURABLE_FRESH_PACKAGE_EVIDENCE_ONLY","same_reference":true,"same_goal":true,"corrective_suffixes":0,"new_task_ids":0,"new_stage_gate_root":"/Volumes/4T/temp/rgbww-optimizer/g4-ray-r6-stage-gate-ebc40bf8e40c-20260804T063700Z","source_attestation_binding":{"schema":"p7_td_b_r6_preparation_source_attestation_binding_v1","verified_parent_checkpoint":"310f547c91420c34f67d1d241ad4aedaa3bc9c2c","verified_parent_tree":"e5184c3236ba053909332fff032691c1aad167d0","accepted_code_owner_checkpoint":"ebc40bf8e40c4bb59bd070367a321a2e76c3ce5c","accepted_code_owner_tree":"9dc4b3fb70bc97b80fb1db3b2389585e349e8737","code_child_subject":"fix(stage-gate): bind package preparation to g4-06","code_child_paths":["src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","tests/test_p7_td_b_r6_stage_gate.py"]},"required_full_g4_06_state":{"route":"G4_06_FRESH_STAGE_GATE_PACKAGE_EVIDENCE","task_id":"REF-G4-06-RAY-R6","contract_id":"G4-RAY-R6-STAGE-GATE-FRESH-PACKAGE-EVIDENCE-V1","authority_owner":"MATCHING_LIVE_PLAN_ONLY","offline_package_evidence_only":true,"full_top_level_non_authorizing":true,"formal_execution_authorized":false,"device_authorized":false,"release_consumption_authorized":false,"g4_07_unlocked":false,"source_attestation_binding":{"schema":"p7_td_b_r6_preparation_source_attestation_binding_v1","verified_parent_checkpoint":"310f547c91420c34f67d1d241ad4aedaa3bc9c2c","verified_parent_tree":"e5184c3236ba053909332fff032691c1aad167d0","accepted_code_owner_checkpoint":"ebc40bf8e40c4bb59bd070367a321a2e76c3ce5c","accepted_code_owner_tree":"9dc4b3fb70bc97b80fb1db3b2389585e349e8737","code_child_subject":"fix(stage-gate): bind package preparation to g4-06","code_child_paths":["src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","tests/test_p7_td_b_r6_stage_gate.py"]}},"accepted_code_checkpoint":"ebc40bf8e40c4bb59bd070367a321a2e76c3ce5c","accepted_code_tree":"9dc4b3fb70bc97b80fb1db3b2389585e349e8737","accepted_code_full_validation":"963_of_963","code_or_test_changes_authorized":false,"allowed_repo_changed_paths":[".agent-work/EXECUTION_RESULT.md"],"allowed_external_root":"/Volumes/4T/temp/rgbww-optimizer/g4-ray-r6-stage-gate-ebc40bf8e40c-20260804T063700Z","allowed_external_artifacts":["launch-descriptor.json","stage-gate.json","terminal-seal.json"],"prepare_cli_cap":1,"describe_cli_cap":1,"build_input_cap":1,"evaluate_cap":1,"persist_cap":1,"exclusive_root_create_cap":1,"internal_replay_cap":1,"prepare_public_replay_cap":1,"independent_describe_replay_cap":1,"total_public_replay_owner_calls":2,"retry_cap":0,"alternate_root_cap":0,"repair_cap":0,"handwritten_controller_files":0,"environment_override_allowed":false,"monkeypatch_allowed":false,"real_package_generation_authorized":true,"formal_execution_authorized":false,"formal_root_creation_authorized":false,"device_authorized":false,"network_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"capture_authorized":false,"release_consumption_authorized":false,"retained_r3_access":0,"td_c_authorized":false,"targeted_rerun_required":false,"focused_rerun_required":false,"full_rerun_required":false,"read_only_repo_validation_required":true,"expected_duration_under_10_minutes":true,"visible_terminal_required":false,"planner_stop":"RETURN_FOR_G4_06_FRESH_PACKAGE_EVIDENCE_REVIEW","future_formal_package":"NOT_AUTHORIZED_UNTIL_THIS_PACKAGE_IDENTITY_IS_PLANNER_TERMINAL_ACCEPTED"}`
 
-Planner接受同一`REF-G4-06-RAY-R6`的package preparation route工程：
+## 0. Density 与activation gate
 
-`ACCEPTED_G4_06_PACKAGE_PREPARATION_ROUTE_ENGINEERING`
+本PLAN是一个最大安全连续offline evidence包。下列动作不可拆分：
 
-受控code child为activation `310f547c91420c34f67d1d241ad4aedaa3bc9c2c`的direct non-merge child：
+1. 使用accepted repo-owned preparation owner生成唯一fresh root；
+2. canonical persistence与internal replay；
+3. prepare内public replay；
+4. 独立`describe` replay；
+5. exact root/artifact binding、terminal seal与ER handoff。
 
-- checkpoint：`ebc40bf8e40c4bb59bd070367a321a2e76c3ce5c`；
-- tree：`9dc4b3fb70bc97b80fb1db3b2389585e349e8737`；
-- subject：`fix(stage-gate): bind package preparation to g4-06`；
-- changed paths exact：stage-gate owner与existing focused test。
+拆分会留下“root已生成但尚未形成两份一致canonical binding视图”的半验收状态。相反，formal acquisition必须单独规划：它只能引用Planner terminal accepted的immutable package identity，并会将authority从offline/non-authorizing切换到device/formal，因此不能与本包合并。
 
-两个committed blobs与current bytes逐项一致。Current G4-06 future-evidence machine route、旧G4-05 execution retirement、closed PLAN/FULL source-attestation binding、pre-root A/C/L与committed/current blob validation、sealed replay及formal pre-backend regressions均已通过synthetic/offline验收。
+本PLAN只有在Orchestrator创建以下exact activation commit后可执行：
 
-## Rejected first candidate 与 bounded correction
+- parent：`1c94b5df1fa796f1d56aaa012237c064cfd541de`；
+- parent tree：`4332037fdff6a9ca6eb486a4c16646b7011e100d`；
+- subject：`docs(plan): activate ray r6 fresh package evidence`；
+- changed paths exact：`.agent-work/FULL_PLAN_REFERENCE.md`、`.agent-work/PLAN.md`；
+- direct non-merge child；
+- activation后PLAN/FULL active `1/1`，active/current/canonical next均为`REF-G4-06-RAY-R6`，active contract exact为`G4-RAY-R6-STAGE-GATE-FRESH-PACKAGE-EVIDENCE-V1`；PLAN executable true，FULL executable false且顶层device/camera/Ray/strip/formal/release/TD-C authority全false。
 
-首个candidate因`PRODUCTION_SOURCE_ATTESTATION_BINDING_MISSING_BEFORE_EXCLUSIVE_ROOT`被Planner拒绝：wrong-but-valid source parent可生成无法由accepted code owner消费的sealed package。其`961/961`仅证明未覆盖该边界的测试通过，不取得acceptance，也未commit。
+Activation commit不得包含ER或任何其他路径。任一HEAD、tree、subject、path set、machine state或initial worktree不符，Executer只写ER并停止，不得reset、clean、修PLAN/FULL或访问external root。
 
-同一PLAN内唯一bounded correction将verified parent、accepted code owner/tree、subject和two paths绑定到PLAN与FULL exact mirror，并在root creation前复用existing committed-source attestation owner完整验证。Planner独立重放wrong-valid-parent后确认return 1、root不存在、evaluate/persist/replay/root-create全0。
+## 1. Frozen source binding 与FULL exact mirror
 
-Correction semantic freeze后fresh full为`963/963`；phase 2代码bytes未变，继承该结果且未重复full。
+唯一source binding exact为：
 
-## Reviewed archives
+```json
+{"schema":"p7_td_b_r6_preparation_source_attestation_binding_v1","verified_parent_checkpoint":"310f547c91420c34f67d1d241ad4aedaa3bc9c2c","verified_parent_tree":"e5184c3236ba053909332fff032691c1aad167d0","accepted_code_owner_checkpoint":"ebc40bf8e40c4bb59bd070367a321a2e76c3ce5c","accepted_code_owner_tree":"9dc4b3fb70bc97b80fb1db3b2389585e349e8737","code_child_subject":"fix(stage-gate): bind package preparation to g4-06","code_child_paths":["src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","tests/test_p7_td_b_r6_stage_gate.py"]}
+```
 
-- `.agent-work/archived/PLAN-20260804-0027.md`：17509 bytes，
-  SHA-256 `713584ae5921cd04f5a537f26e04a280a6b60582126229448dae38ba2d3e7563`；
-- `.agent-work/archived/EXECUTION_RESULT-20260804-0027.md`：10205 bytes，
-  SHA-256 `628ce7ae304d9009a05b1c76d7dc291829b527c63e5afbe5c53f87a65241c685`。
+Activation后的FULL `g4_06_state`必须逐key exact等于production `_offline_package_evidence_full_state(binding)`：
 
-两份archive均完整保留scope、first rejection、bounded correction、evidence、decision、residual risk与next branch，并明确为`historical_non_executable`。
+```json
+{"route":"G4_06_FRESH_STAGE_GATE_PACKAGE_EVIDENCE","task_id":"REF-G4-06-RAY-R6","contract_id":"G4-RAY-R6-STAGE-GATE-FRESH-PACKAGE-EVIDENCE-V1","authority_owner":"MATCHING_LIVE_PLAN_ONLY","offline_package_evidence_only":true,"full_top_level_non_authorizing":true,"formal_execution_authorized":false,"device_authorized":false,"release_consumption_authorized":false,"g4_07_unlocked":false,"source_attestation_binding":{"schema":"p7_td_b_r6_preparation_source_attestation_binding_v1","verified_parent_checkpoint":"310f547c91420c34f67d1d241ad4aedaa3bc9c2c","verified_parent_tree":"e5184c3236ba053909332fff032691c1aad167d0","accepted_code_owner_checkpoint":"ebc40bf8e40c4bb59bd070367a321a2e76c3ce5c","accepted_code_owner_tree":"9dc4b3fb70bc97b80fb1db3b2389585e349e8737","code_child_subject":"fix(stage-gate): bind package preparation to g4-06","code_child_paths":["src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","tests/test_p7_td_b_r6_stage_gate.py"]}}
+```
 
-## Stop
+Missing/extra、wrong valid parent/code owner/tree、subject/path或PLAN/FULL mirror drift都必须在root creation前fail。CLI source-parent args只允许上述verified parent/tree；code owner必须保持其direct non-merge exact-subject/two-path child，且committed/current blobs、live ancestor和post-child `.agent-work/` lineage由accepted owner验证。
 
-本live PLAN为active `0`、executable `false`的terminal stop。Orchestrator必须先归档并重写FULL；之后才可在同一G4-06重新委派Planner编写fresh source-bound real package evidence PLAN。
+## 2. 唯一fresh root
 
-真实package generation/describe、external root、formal、device、camera、Ray、strip、capture、release consumption与TD-C仍未授权。本PLAN不得执行。
+唯一授权root字符串为：
+
+`/Volumes/4T/temp/rgbww-optimizer/g4-ray-r6-stage-gate-ebc40bf8e40c-20260804T063700Z`
+
+该名称包含accepted code checkpoint前缀`ebc40bf8e40c`与Planner冻结的UTC timestamp `20260804T063700Z`。Planner未对该路径做存在性检查、读取或创建；freshness只能由`prepare`的canonical absolute/nonexistent检查与exclusive root owner决定。
+
+禁止：
+
+- 更换、缩短、补suffix或重算timestamp；
+- 预建root、mkdir parent、repair、删除、清理、rename或alternate root；
+- 读取任何旧G4-05、rejected、retained-R3、release或其他external root/payload；
+- 使用环境变量、global、symlink、relative path、glob或monkeypatch覆盖root。
+
+成功root inventory只能是exact三项regular 0600 files：
+
+- `launch-descriptor.json`；
+- `stage-gate.json`；
+- `terminal-seal.json`。
+
+## 3. Exact execution commands 与counts
+
+先执行只读repo intake：HEAD/branch/status、PLAN/FULL repo-owned parser、activation topology、accepted source parent/code-owner tree/subject/two-path、committed/current blobs及post-child仅`.agent-work/`。不得因此访问external root。
+
+Intake全部PASS后，prepare exact argv为：
+
+```text
+.venv/bin/python -m camera_based_rgbww_optimizer.optimization.p7_td_b_r6_stage_gate prepare --repo-root /Users/ibobby/Projects/WLED-RGBWW --source-parent-checkpoint 310f547c91420c34f67d1d241ad4aedaa3bc9c2c --source-parent-tree e5184c3236ba053909332fff032691c1aad167d0 --package-root /Volumes/4T/temp/rgbww-optimizer/g4-ray-r6-stage-gate-ebc40bf8e40c-20260804T063700Z
+```
+
+只能启动一次，不得使用shell wrapper、`python -c`、heredoc、redirection controller、environment override或retry。预计低于10分钟，不适用visible Terminal/automation workflow。
+
+Prepare必须exit `0`、stderr empty、stdout为一行canonical JSON binding加单newline。Accepted code checkpoint已通过`963/963`与owner-count tests；本run结合单次CLI invocation与terminal seal证明：build/evaluate/persist/exclusive-root/internal replay/prepare-public-replay各exact一次，retry/alternate/repair为0。
+
+只有prepare成功后，describe exact argv为：
+
+```text
+.venv/bin/python -m camera_based_rgbww_optimizer.optimization.p7_td_b_r6_stage_gate describe --repo-root /Users/ibobby/Projects/WLED-RGBWW --package-root /Volumes/4T/temp/rgbww-optimizer/g4-ray-r6-stage-gate-ebc40bf8e40c-20260804T063700Z
+```
+
+Describe也只能一次；它必须exit `0`、stderr empty、输出一行canonical JSON加newline，并与prepare raw stdout逐byte一致。这里的independent describe replay exact一次；连同prepare内public replay，跨两个CLI process的public replay owner调用总数为2。不得误报为同一process重复prepare。
+
+## 4. Binding、seal与evidence contract
+
+两份stdout的canonical binding必须exact包含：
+
+1. schema `p7_td_b_r6_stage_gate_package_binding_v1`；
+2. `package_root`：上述absolute path及device/inode/mode `0700`；
+3. inventory固定顺序：launch descriptor、stage gate、terminal seal；
+4. 三artifact各自exact relative path、positive bytes、64-hex SHA-256、device、inode、mode `0600`；
+5. 无missing/extra key、Path/bytes/mappingproxy/repr/timestamp或nonfinite value。
+
+Successful replay同时证明terminal seal：
+
+- schema/status/reference task/contract exact；
+- root identity exact；
+- pre-terminal inventory exact；
+- stage-gate与descriptor references exact；
+- `internal_replay=true`；
+- retry/alternate/formal capture/device/release counts全0。
+
+Executer只能修改`.agent-work/EXECUTION_RESULT.md`。ER必须记录：
+
+- activation与source topology只读intake；
+- 两条exact argv、launch count、exit、stderr bytes/SHA；
+- prepare与describe raw stdout bytes/SHA及exact equality；
+- 完整canonical binding JSON；
+- root identity与三artifact identities；
+- seal/replay/inventory结论与owner counts依据；
+- accepted code checkpoint/tree与inherited `963/963` pointer；
+- final repo dirty/protected-path以及所有side-effect counters；
+- terminal disposition request。
+
+不得在root内增加stdout、summary、log或第四artifact；不得在repo创建临时log/controller。工具调用返回与ER是stdout evidence owner。
+
+## 5. Failure stop
+
+任何一步失败立即停止：
+
+- prepare失败时不得运行describe；
+- root尚未创建时只记录stable failure code；
+- root已经创建时保留owner写入的failure/pass terminal seal与现有artifacts，不修改、不补写、不删除；
+- describe失败时保留prepare产生的sealed root，不重新describe、不重新prepare；
+- 不换root、不repair、不retry、不启动formal或请求设备。
+
+ER必须明确失败发生阶段、exit/stderr、root是否由owner创建、可见inventory/seal结论仅限CLI已返回证据，以及retry/alternate为0。不得为取证越过CLI读取payload。
+
+## 6. Validation 与stop
+
+本包不改code/tests，不重跑targeted、focused或full；继承accepted checkpoint`ebc40bf...`的fresh `963/963`。只允许以下repo只读检查：
+
+- Git activation/source topology、subject/path/tree/blob/current bytes；
+- repo-owned PLAN/FULL strict parser与exact mirror；
+- `git diff --check`；
+- protected paths和final status，要求repo dirty exact仅ER；
+- package identity只来自两次authorized CLI stdout，不做第三次root replay/read。
+
+成功条件：prepare与describe各一次且PASS、stdout byte-identical、closed binding与三artifact/terminal seal identity完整、root唯一、side-effect counters符合、repo仅ER dirty。Executer随后返回：
+
+`READY_FOR_PLANNER_G4_06_FRESH_PACKAGE_EVIDENCE_REVIEW`
+
+Planner在唯一stop验收并归档PLAN/ER；只有Planner terminal accepted后，Orchestrator才能把exact immutable package binding写入FULL并委派formal Package B Planner pass。
+
+Formal/device/network/camera/Ray/strip/capture/release/retained R3/TD-C始终为0或false，G4-07保持locked。
+
+唯一Planner stop：`RETURN_FOR_G4_06_FRESH_PACKAGE_EVIDENCE_REVIEW`。
