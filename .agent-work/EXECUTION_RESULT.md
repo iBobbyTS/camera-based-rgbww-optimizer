@@ -7,52 +7,61 @@
 - Reference task: `REF-G4-06-RAY-R6`
 - Contract: `G4-RAY-R6-FINAL-CODE-FIRST-FINAL-PACKAGE-REMINT-V1`
 - Phase:
-  `FINAL_CODE_CANDIDATE_HARDENED_DIAGNOSTIC_SINGLE_CORRECTION_AND_FINAL_VALIDATION`
+  `FINAL_CODE_CANDIDATE_FROZEN_DIAGNOSTIC_SINGLE_CORRECTION_AND_FINAL_VALIDATION`
 - Failure classification:
-  `HARDENED_DIAGNOSTIC_SIBLING_PYCACHE_PREEXISTENCE_GATE`
+  `FROZEN_DIAGNOSTIC_ABSOLUTE_SCRIPT_TEST_PACKAGE_IMPORT_PATH_FAILURE`
 - Candidate disposition:
-  `PRESERVED_UNACCEPTED_UNREJECTED_NO_REAL_DIAGNOSTIC_NO_CORRECTION`
+  `PRESERVED_UNACCEPTED_UNREJECTED_NO_ATTRIBUTION_NO_CORRECTION`
 - Planner stop: `RETURN_FOR_G4_06_ROUTE_A_FINAL_CODE_CANDIDATE_REVIEW`
 
-The fresh plain diagnostic source was materialized exactly once. Its sole
-parse-only preflight stopped before calling `compile` because the exact sibling
-path required to remain absent already existed:
-
-`/Volumes/4T/temp/rgbww-optimizer/__pycache__`
-
-Exact preflight error:
+The frozen diagnostic source passed its sole parse-only preflight. Its sole real
+invocation then exited nonzero at the first test-module import:
 
 ```text
-AssertionError: diagnostic sibling pycache preexists
+ModuleNotFoundError: No module named 'tests'
 ```
 
-The check used non-following `lstat`. The existing sibling directory was not
-listed, read, statted beyond that exact non-following existence check, modified,
-deleted, cleaned, renamed, or reused. Its owner and contents are unknown.
+Exact command:
 
-Live PLAN section 3 requires immediate stop when a sibling `__pycache__`
-appears. No source repair, alternate path, second construction, second
-preflight, real diagnostic, correction, or validation was attempted.
+```text
+.venv/bin/python -B /Volumes/4T/temp/rgbww-optimizer/g4-route-a-blob-seam-diagnostic-e5c8fd7ae095-20260804T201412Z.py
+```
+
+The traceback shows the failure at:
+
+```text
+stage_test = importlib.import_module("tests.test_p7_td_b_r6_stage_gate")
+```
+
+Because Python executed an absolute script outside the repository, the script
+directory occupied its import-path entry and the repository `tests` package was
+not resolvable in that process. The process produced no canonical JSON stdout.
+This is a diagnostic runtime/import packaging failure, not production owner,
+fixture, OID, candidate test, scientific/formal/device, release, or hardware
+evidence.
+
+Live PLAN section 4 requires immediate stop on a nonzero diagnostic process.
+No PYTHONPATH/environment patch, cwd injection, source rewrite, second
+invocation, alternate diagnostic, or guessed attribution was attempted.
 
 ## Activation and candidate intake
 
 - Branch: `main`
-- HEAD: `6705cc32ffe3a0b637ddd14a558ae0a9654a9714`
-- Sole parent: `e5c8fd7ae095b8ed26b989b6df173a9f5b8f0318`
-- Subject: `docs(plan): activate hardened blob diagnostic`
+- HEAD: `5ed15b427c50e66336ae8c4f3af2c07ce0c4c8cc`
+- Sole parent: `6705cc32ffe3a0b637ddd14a558ae0a9654a9714`
+- Subject: `docs(plan): allow frozen blob diagnostic`
 - Exact activation paths:
   - `.agent-work/EXECUTION_RESULT.md`
   - `.agent-work/FULL_PLAN_REFERENCE.md`
   - `.agent-work/PLAN.md`
-  - `.agent-work/archived/EXECUTION_RESULT-20260804-2014.md`
-  - `.agent-work/archived/PLAN-20260804-2014.md`
+  - `.agent-work/archived/EXECUTION_RESULT-20260804-2023.md`
+  - `.agent-work/archived/PLAN-20260804-2023.md`
 - Repo-owned parser: PLAN/FULL active `1/1`, same task/contract, PLAN
   executable, FULL `executable=false`, FULL non-executable reference true, and
   required FULL subset exact.
-- The diagnostic source, future direct script and future validation root were
-  all non-following absent at intake.
+- Future validation script and root were both non-following absent.
 
-Frozen candidate remained:
+Frozen candidate:
 
 - source: `94324` bytes, SHA-256
   `c4cd13e7fb64434914ccb12c862d1d12e81728a9a647d41ff23fb2d0d860fe83`;
@@ -61,52 +70,90 @@ Frozen candidate remained:
 - exact numstat: source `+35/-8`, test `+67/-1`;
 - candidate writes: `0`.
 
-## Hardened diagnostic source boundary
+## Frozen diagnostic identity
 
-Exact source path:
+Exact source:
 
 `/Volumes/4T/temp/rgbww-optimizer/g4-route-a-blob-seam-diagnostic-e5c8fd7ae095-20260804T201412Z.py`
 
-- Creation attempts: `1/1`.
-- Creation mechanism: Executer `apply_patch`.
-- Source form: plain Python file; no encoded transport, dynamic decoded source,
-  heredoc-carried source, self-delete, or runtime `eval` path.
-- Mode was set to `0600` before preflight.
-- Parse-only preflight invocations: `1/1`.
-- `compile(source, exact_path, "exec")` calls: `0`; the sibling-path gate
-  preceded source reading and compilation.
-- Diagnostic Python statements executed: `0`.
-- Diagnostic source bytes/SHA readback: `NOT_SAMPLED_BEFORE_MANDATORY_STOP`.
-- Diagnostic source correction/rewrite: `0`.
-- Diagnostic source remains preserved at the exact path as unaccepted harness
-  evidence and was not executed.
+Activation metadata matched the frozen PLAN identity exactly:
 
-No claim is made that the source parsed successfully because compilation was
-never reached. The preflight invocation itself is exhausted under this PLAN.
+- regular non-symlink file;
+- `8678` bytes;
+- SHA-256
+  `f23c3a1187e07d2a557546e7af44a4b99a36b3adf77e848767b011ff28c243df`;
+- mode `0600`;
+- device/inode `16777244/3090518`;
+- uid/gid `501/20`;
+- mtime ns `1785874866252624621`;
+- ctime ns `1785874882492679249`.
 
-## Diagnostic, correction and validation state
+The source was not rewritten, replaced, chmodded, deleted, cleaned, or moved to
+an alternate path in this package.
 
-- Real diagnostic invocations: `0`.
-- Test module imports by diagnostic: `0`.
-- Temporary diagnostic roots: `0`.
+## Parse-only and shared-cache evidence
+
+The exact shared cache path was handled as opaque shared state:
+
+`/Volumes/4T/temp/rgbww-optimizer/__pycache__`
+
+Preflight contract evidence:
+
+- source reads: `1/1`;
+- source bytes/SHA: exact frozen identity;
+- UTF-8/LF validation: pass;
+- `compile(source_text, exact_path, "exec")`: `1/1`, pass;
+- compiled object execution: `false`;
+- bytecode writing: disabled;
+- shared-cache non-following `lstat`: `2/2`;
+- cache contents read/list/walk/glob/child-stat: `0`;
+- cache delete/modify/rename/cleanup: `0`.
+
+Opaque cache metadata before and after was identical:
+
+```json
+{"ctime_ns":"1785615968803662786","device":16777244,"file_type":16384,"gid":20,"inode":2145320,"mode":493,"mtime_ns":"1785615968803662786","size":352,"uid":501}
+```
+
+No cache owner or content classification is inferred.
+
+## Real diagnostic boundary
+
+- Real diagnostic invocations: `1/1`.
+- Python flag: `-B`.
+- Exit code: `1`.
+- Diagnostic source self-check reached: yes.
+- Stage-gate test module import success: `false`.
+- Other focused test-module imports: `0`.
+- TemporaryDirectory creation: `0`.
 - Synthetic fixture repositories: `0`.
 - Test runner calls: `0`.
-- Validator calls/OID observations: `0/0`.
+- Validator calls: `0`.
+- Declared/rev-parse/ls-tree OID observations: `0`.
+- Canonical JSON stdout objects: `0`.
 - Production/fixture/environment attribution: `UNAVAILABLE`.
-- Bounded candidate correction count: `0`.
-- Source/test writes: `0`.
-- Fresh validation script/root writes: `0/0`.
+- Candidate correction count: `0`.
+- Candidate/source/test writes: `0`.
+
+The process failed before entering the temporary synthetic-fixture context, so
+there was no temporary root requiring cleanup.
+
+## Validation and launcher state
+
+The package stopped before candidate stabilization and visible-Terminal
+validation:
+
+- Fresh script/root writes: `0/0`.
 - Targeted/focused/compile starts: `0/0/0`.
-- Post-validation identity/diff: not started.
-- Post-change CodeGraph sync/query: `0/0`.
+- Candidate diff/static gate: not started.
+- CodeGraph sync/query: `0/0`.
 - Machine/scope/full starts: `0/0`.
-- AppleScript/visible Terminal launches: `0/0`.
+- AppleScript/Terminal launches: `0/0`.
 - PID/TTY/token/liveness: `none/none/none/0`.
 - Retry/resume/alternate/automation: `0/0/0/0`.
 
-The prior accepted harness root, prior direct script, rejected partial root and
-historical launcher evidence were not accessed, statted, listed, read,
-modified, cleaned, reused, or resumed.
+Prior scripts, validation roots, partial launcher root and historical evidence
+were not accessed, statted, listed, read, modified, cleaned, reused, or resumed.
 
 ## Scope and zero effects
 
@@ -118,17 +165,16 @@ modified, cleaned, reused, or resumed.
   `0/0/0/0/0`.
 - Formal owner/root/device effects: `0/0/0`.
 
-Only the exact diagnostic source materialization/mode and this live ER handoff
-were written. Candidate source/test, PLAN and FULL remained read-only.
+Only this live ER handoff was written after the mandatory stop. Candidate
+source/test and the frozen diagnostic source remained read-only.
 
 ## Planner handoff
 
-Planner should review the sibling-cache gate and return its packaging ownership
-to Orchestrator. There is still no real differential attribution, so the
-candidate must not be corrected, accepted, rejected, or assigned a production
-failure based on this preflight.
+Planner should review the absolute-script import-path packaging failure and
+return it to Orchestrator ownership reassessment. No differential attribution
+exists, so the candidate must not be corrected, accepted, rejected, or assigned
+a production failure from this invocation.
 
-Do not remove the sibling cache, alter or execute the diagnostic source, retry
-the preflight, choose an alternate path, modify the candidate, or launch
-validation under this completed PLAN. No future checkpoint or tree SHA is
-guessed.
+Do not rewrite the frozen diagnostic, patch the environment, invoke it again,
+choose an alternate path, modify the candidate, or launch validation under this
+completed PLAN. No future checkpoint or tree SHA is guessed.
