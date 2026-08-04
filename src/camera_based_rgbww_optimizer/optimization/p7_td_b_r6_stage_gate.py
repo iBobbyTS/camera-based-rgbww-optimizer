@@ -72,6 +72,13 @@ SOURCE_ATTESTATION_BINDING_SCHEMA = (
     "p7_td_b_r6_preparation_source_attestation_binding_v1"
 )
 ALLOWED_CODE_CHILD_SUBJECT = "fix(stage-gate): bind package preparation to g4-06"
+FINAL_CODE_SNAPSHOT_SUBJECT = (
+    "fix(stage-gate): bind final package to immutable code snapshot"
+)
+_ALLOWED_CODE_CHILD_SUBJECTS = (
+    ALLOWED_CODE_CHILD_SUBJECT,
+    FINAL_CODE_SNAPSHOT_SUBJECT,
+)
 ALLOWED_CODE_CHILD_PATHS = (
     "src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py",
     "tests/test_p7_td_b_r6_stage_gate.py",
@@ -276,7 +283,7 @@ def _source_attestation_binding(value: object) -> dict[str, Any]:
     expected_keys = {
         "schema", "verified_parent_checkpoint", "verified_parent_tree",
         "accepted_code_owner_checkpoint", "accepted_code_owner_tree",
-        "code_child_subject", "code_child_paths",
+        "code_child_subject", "code_child_paths", "code_child_blob_oids",
     }
     if not isinstance(value, Mapping) or set(value) != expected_keys:
         raise StageGateError("source_attestation_binding_shape_drift")
@@ -287,10 +294,21 @@ def _source_attestation_binding(value: object) -> dict[str, Any]:
         or _SHA40.fullmatch(str(binding.get("verified_parent_tree"))) is None
         or _SHA40.fullmatch(str(binding.get("accepted_code_owner_checkpoint"))) is None
         or _SHA40.fullmatch(str(binding.get("accepted_code_owner_tree"))) is None
-        or binding.get("code_child_subject") != ALLOWED_CODE_CHILD_SUBJECT
+        or binding.get("code_child_subject") not in _ALLOWED_CODE_CHILD_SUBJECTS
         or binding.get("code_child_paths") != list(ALLOWED_CODE_CHILD_PATHS)
     ):
         raise StageGateError("source_attestation_binding_drift")
+    blob_oids = binding.get("code_child_blob_oids")
+    if type(blob_oids) is not list or len(blob_oids) != len(ALLOWED_CODE_CHILD_PATHS):
+        raise StageGateError("source_attestation_binding_drift")
+    for path, row in zip(ALLOWED_CODE_CHILD_PATHS, blob_oids, strict=True):
+        if (
+            not isinstance(row, Mapping)
+            or set(row) != {"path", "oid"}
+            or row.get("path") != path
+            or _SHA40.fullmatch(str(row.get("oid"))) is None
+        ):
+            raise StageGateError("source_attestation_binding_drift")
     return binding
 
 
@@ -311,6 +329,7 @@ def _committed_source_contract(
             "direct_parent": binding["verified_parent_checkpoint"],
             "merge_commit_allowed": False,
             "changed_paths": binding["code_child_paths"],
+            "candidate_blob_oids": binding["code_child_blob_oids"],
             "candidate_references": _candidate_references(source_references),
             "child_checkpoint_recorded": False,
             "child_tree_recorded": False,
@@ -1359,13 +1378,14 @@ def _validate_descriptor_attestation_contract(
         or not isinstance(child, Mapping)
         or set(child) != {
             "subject", "direct_parent", "merge_commit_allowed", "changed_paths",
-            "candidate_references", "child_checkpoint_recorded",
+            "candidate_blob_oids", "candidate_references", "child_checkpoint_recorded",
             "child_tree_recorded",
         }
         or child.get("subject") != binding["code_child_subject"]
         or child.get("direct_parent") != parent.get("checkpoint")
         or child.get("merge_commit_allowed") is not False
         or child.get("changed_paths") != binding["code_child_paths"]
+        or child.get("candidate_blob_oids") != binding["code_child_blob_oids"]
         or child.get("candidate_references") != candidates
         or child.get("child_checkpoint_recorded") is not False
         or child.get("child_tree_recorded") is not False
@@ -1429,7 +1449,10 @@ def validate_committed_source_attestation(
     parent_row = _git_text(root, "rev-list", "--parents", "-n", "1", str(code_checkpoint)).split()
     if len(parent_row) != 2 or parent_row[1] != parent_checkpoint:
         raise StageGateError("committed_source_parent_drift")
-    if _git_text(root, "show", "-s", "--format=%s", str(code_checkpoint)) != ALLOWED_CODE_CHILD_SUBJECT:
+    if (
+        _git_text(root, "show", "-s", "--format=%s", str(code_checkpoint))
+        != binding["code_child_subject"]
+    ):
         raise StageGateError("committed_source_subject_drift")
     try:
         changed = tuple(thermal.changed_paths_between_checkpoints(
@@ -1437,8 +1460,11 @@ def validate_committed_source_attestation(
         ))
     except (OSError, subprocess.CalledProcessError, ValueError) as exc:
         raise StageGateError("committed_source_changed_paths_query_failed") from exc
-    if changed != ALLOWED_CODE_CHILD_PATHS:
+    if changed != tuple(binding["code_child_paths"]):
         raise StageGateError("committed_source_changed_paths_drift")
+    blob_oids = {
+        row["path"]: row["oid"] for row in binding["code_child_blob_oids"]
+    }
     for reference in candidates:
         path = _canonical_git_path(reference["path"])
         raw_entry = _git(root, "ls-tree", "-z", str(code_checkpoint), "--", path)
@@ -1448,14 +1474,15 @@ def validate_committed_source_attestation(
             raise StageGateError("committed_source_candidate_blob_missing")
         try:
             metadata, encoded_path = entries[0].split(b"\t", 1)
-            git_mode, git_type, _blob_oid = metadata.decode("ascii").split(" ", 2)
+            git_mode, git_type, blob_oid = metadata.decode("ascii").split(" ", 2)
             tree_path = encoded_path.decode("utf-8")
         except (UnicodeError, ValueError) as exc:
             raise StageGateError("committed_source_candidate_blob_invalid") from exc
         blob = _git(root, "show", f"{code_checkpoint}:{path}")
         assert isinstance(blob, bytes)
         if (
-            git_mode != "100644"
+            blob_oid != blob_oids[path]
+            or git_mode != "100644"
             or git_type != "blob"
             or tree_path != path
             or len(blob) != reference["bytes"]
@@ -2165,7 +2192,7 @@ __all__ = [
     "ALLOWED_CODE_CHILD_PATHS", "ALLOWED_CODE_CHILD_SUBJECT",
     "COMMITTED_SOURCE_ATTESTATION_SCHEMA", "CommittedSourceAttestation",
     "CONTRACT_ID", "EXPECTED_ARTIFACTS", "EXPECTED_SOURCE_PATHS",
-    "FORMAL_ROOT_BASENAME_REGEX", "FORMAL_ROOT_PARENT", "FUTURE_ACTIVATION_SCHEMA",
+    "FINAL_CODE_SNAPSHOT_SUBJECT", "FORMAL_ROOT_BASENAME_REGEX", "FORMAL_ROOT_PARENT", "FUTURE_ACTIVATION_SCHEMA",
     "FUTURE_TASK_ID", "PACKAGE_BINDING_SCHEMA", "PASS_STATUS", "PLAN_BOUND_AUTHORITY_SCHEMA",
     "RUNTIME_TEMPLATE_STATUS", "SOURCE_ATTESTATION_BINDING_SCHEMA",
     "SourceReference", "StageGateError",

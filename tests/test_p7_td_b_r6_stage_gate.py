@@ -71,14 +71,24 @@ class SyntheticRepository:
         self.git("commit", "-q", "-m", code_child_subject)
         self.code_checkpoint = self.git_text("rev-parse", "HEAD")
         self.code_tree = self.git_text("rev-parse", "HEAD^{tree}")
+        code_child_blob_oids = [
+            {
+                "path": path,
+                "oid": self.git_text(
+                    "rev-parse", f"{self.code_checkpoint}:{path}",
+                ),
+            }
+            for path in subject.ALLOWED_CODE_CHILD_PATHS
+        ]
         binding = {
             "schema": subject.SOURCE_ATTESTATION_BINDING_SCHEMA,
             "verified_parent_checkpoint": self.source_checkpoint,
             "verified_parent_tree": self.source_tree,
             "accepted_code_owner_checkpoint": self.code_checkpoint,
             "accepted_code_owner_tree": self.code_tree,
-            "code_child_subject": subject.ALLOWED_CODE_CHILD_SUBJECT,
+            "code_child_subject": code_child_subject,
             "code_child_paths": list(subject.ALLOWED_CODE_CHILD_PATHS),
+            "code_child_blob_oids": code_child_blob_oids,
         }
         plan = {
             "active_task_count": 1,
@@ -729,6 +739,12 @@ class P7TdBR6StageGateTests(unittest.TestCase):
             "plan_binding_paths_drift": lambda _fixture, plan, _full, _argv: plan_binding(
                 plan
             )["code_child_paths"].append("extra.py"),
+            "plan_binding_blob_oids_missing": lambda _fixture, plan, _full, _argv: plan_binding(
+                plan
+            ).pop("code_child_blob_oids"),
+            "plan_binding_blob_oid_drift": lambda _fixture, plan, _full, _argv: plan_binding(
+                plan
+            )["code_child_blob_oids"][0].__setitem__("oid", "0" * 40),
             "full_binding_missing": lambda _fixture, _plan, full, _argv: full[
                 "g4_06_state"
             ].pop("source_attestation_binding"),
@@ -1135,7 +1151,14 @@ class P7TdBR6StageGateTests(unittest.TestCase):
             candidates = fixture.descriptor["committed_source_contract"][
                 "allowed_code_owner_child"
             ]["candidate_references"]
+            declared_oids = fixture.descriptor["committed_source_contract"][
+                "allowed_code_owner_child"
+            ]["candidate_blob_oids"]
             self.assertEqual(len(candidates), 2)
+            self.assertEqual(
+                declared_oids,
+                fixture.plan["source_attestation_binding"]["code_child_blob_oids"],
+            )
             for reference in candidates:
                 blob = subprocess.run(
                     ["git", "show", f"{fixture.code_checkpoint}:{reference['path']}"],
@@ -1146,6 +1169,12 @@ class P7TdBR6StageGateTests(unittest.TestCase):
                 self.assertEqual(len(blob), reference["bytes"])
                 self.assertEqual(hashlib.sha256(blob).hexdigest(), reference["sha256"])
                 self.assertEqual(reference["mode"], 0o644)
+                self.assertEqual(
+                    next(row["oid"] for row in declared_oids if row["path"] == reference["path"]),
+                    fixture.git_text(
+                        "rev-parse", f"{fixture.code_checkpoint}:{reference['path']}",
+                    ),
+                )
             self.assertEqual(attestation.code_owner_checkpoint, fixture.code_checkpoint)
             self.assertEqual(attestation.live_activation_checkpoint, fixture.live_checkpoint)
             self.assertEqual(len(attestation.post_child_commits), 2)
@@ -1154,6 +1183,43 @@ class P7TdBR6StageGateTests(unittest.TestCase):
                 == (".agent-work/FULL_PLAN_REFERENCE.md", ".agent-work/PLAN.md")
                 for row in attestation.post_child_commits
             ))
+
+    def test_final_snapshot_subject_binds_blobs_and_production_delegates_once(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = SyntheticGitRepository(
+                Path(temporary) / "final-snapshot" / "repo",
+                code_child_subject=subject.FINAL_CODE_SNAPSHOT_SUBJECT,
+            )
+            fixture.persist_production_package()
+            fixture.activate_package_b_machine()
+            backend = FakeCapableBackend()
+            backend_factory = mock.Mock(return_value=backend)
+            delegated = mock.Mock(return_value=Path("synthetic-final-result"))
+
+            result = subject.run_production_cli_launch(
+                package_dir=fixture.output_root,
+                repo_root=fixture.root,
+                code_owner_checkpoint=fixture.code_checkpoint,
+                output_dir=Path(subject.FORMAL_ROOT_PARENT),
+                run_name=FUTURE_RUN_NAME,
+                camera_backend_name="remote",
+                camera_backend_kwargs={
+                    "env_file": Path("synthetic.env"),
+                    "base_url": None,
+                    "timeout": 10.0,
+                },
+                backend_factory=backend_factory,
+                delegated_run_fn=delegated,
+            )
+
+            self.assertEqual(result, Path("synthetic-final-result"))
+            self.assertEqual(
+                fixture.plan["source_attestation_binding"]["code_child_subject"],
+                subject.FINAL_CODE_SNAPSHOT_SUBJECT,
+            )
+            backend_factory.assert_called_once()
+            delegated.assert_called_once()
+            backend.connect.assert_not_called()
 
     def test_previous_binding_subject_with_identical_code_tree_fails_before_root(self):
         legacy_subject = "feat(stage-gate): bind ray r6 package identity"
