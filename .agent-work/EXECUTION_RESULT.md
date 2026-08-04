@@ -1,159 +1,142 @@
 # EXECUTION_RESULT
 
-## Status request
+## Terminal status request
 
-`BLOCKED_PREDEVICE_ACTIVATION_OR_SOURCE_DRIFT`
+`REJECTED_SUPERVISOR_ARCHITECTURE_SUPERSEDED_UNPROVEN`
 
 - Reference task: `REF-G4-06-RAY-R6`
-- Contract: `G4-RAY-R6-FORMAL-ACQUISITION-PACKAGE-B-V1`
-- Planner stop: `RETURN_AFTER_TERMINAL_OR_HARD_FAIL_EVIDENCE_FOR_G4_06_REVIEW`
-- Completed at: `2026-08-04T16:58:28Z`
-- Failure boundary: pre-device gate 10, accepted stage-gate package canonical replay
-- Stable failure code: `source_reference_drift`
+- Contract: `G4-RAY-R6-CANONICAL-PACKAGE-REPLAY-SOURCE-SUCCESSOR-ENGINEERING-V1`
+- Planner stop: `RETURN_FOR_G4_06_SOURCE_SUCCESSOR_ENGINEERING_REVIEW`
+- Supervisor route selection: `ROUTE_A_FINAL_CODE_FIRST_FINAL_PACKAGE_REMINT`
+- Candidate historical disposition:
+  `HISTORICAL_REJECTED_SUPERVISOR_SUPERSEDED_SOURCE_SUCCESSOR_CANDIDATE_UNPROVEN`
+- Requested Planner decision: reject the current successor-chain candidate; do
+  not accept, commit, activate, execute, or reuse it as current production
+  evidence.
 
-No fresh formal root was inspected, tested, created, listed, statted, or read.
-No visible Terminal launch, wrapper, child, device, camera, Ray, strip, capture,
-cleanup, release, retained evidence, analyzer, or formal execution occurred.
+This is a terminal handoff for the Supervisor-superseded candidate. It is not a
+scientific failure, formal attempt, device failure, package-consumption result,
+or GUIDE hard stop. It does not erase or reinterpret the earlier accepted
+pre-device `source_reference_drift` failure history preserved in the reviewed
+PLAN/EXECUTION_RESULT archives.
 
-## Pre-device gates 1–9: PASS
-
-### Activation topology
+## Frozen repository intake
 
 - Branch: `main`
-- Intake worktree: clean
-- HEAD: `f127f6eb4cc2a102ede16560224394996cb29cd5`
-- Tree: `8142e61214f2bca6692b5bbfcc02ff8ec49ccfbe`
-- Direct sole parent: `94a6e3e37f6c07632a392bc6a18030a6c4897122`
-- Merge parent count: `1`
-- Subject: `docs(plan): activate Ray R6 formal acquisition`
-- Activation changed paths, exact:
-  - `.agent-work/EXECUTION_RESULT.md`
-  - `.agent-work/FULL_PLAN_REFERENCE.md`
-  - `.agent-work/PLAN.md`
-  - `.agent-work/archived/EXECUTION_RESULT-20260804-1634.md`
-  - `.agent-work/archived/FULL_PLAN_REFERENCE-20260804-1640.md`
-  - `.agent-work/archived/PLAN-20260804-1634.md`
-  - `.agent-work/archived/PLAN-20260804-1645.md`
+- HEAD: `f5e85bc4b2aca501725b239b8f7515513bacaee6`
+- Intake dirty paths, exact:
+  - `src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py`
+  - `tests/test_p7_td_b_r6_stage_gate.py`
+- PLAN/FULL/GUIDE/RESEARCH were read-only and were not modified by this
+  Executer.
+- No source or test file was changed after the Supervisor selected Route A.
 
-### Repo-owned strict machine evidence
+## Recoverable historical candidate attestation
 
-Both repo-owned parsers received the exact live file bytes and returned once:
+The uncommitted candidate is preserved by an exact archive ref and remains
+recoverable without treating it as accepted production code:
 
-- PLAN parser: `parse_plan_machine_contract`
-  - source bytes: `21640`
-  - source SHA-256:
-    `bd6d54d748018a54383385614d9f4638e2a0ec8e657b35023eee69fed7ae4462`
-  - row line: `15`
-  - payload SHA-256:
-    `346be29845e4ded0b0461576b25c0feb5c35f08f3244fa3c00f6ddb12658f1d9`
-- FULL parser: `parse_full_plan_machine_state`
-  - source bytes: `13450`
-  - source SHA-256:
-    `e0c04b82c5f1d8ab9b478a5f16d3585930be12123fe8054479eae4f73143af5a`
-  - row line: `24`
-  - payload SHA-256:
-    `c8fdb10fb6b3ecccc0775c3127b76f6f1de256f29c0c99254067b8201a82b36a`
+- Ref:
+  `refs/archive/g4-06/source-successor-candidate-supervisor-superseded-20260804`
+- Commit: `88185fceeed8630e5df35a83126df181bed0cd68`
+- Tree: `35d0a46c081a91e5c0f930924cde223ada59be15`
+- Sole parent: `f5e85bc4b2aca501725b239b8f7515513bacaee6`
+- Subject:
+  `archive(g4-06): preserve supervisor-superseded source successor candidate`
+- Exact archived paths:
+  - `src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py`
+  - `tests/test_p7_td_b_r6_stage_gate.py`
+- Binary diff bytes from parent to archive commit: `59839`
+- Binary diff SHA-256:
+  `eb907ac5b2059beed39646a0b181d43d1af37b96e25c3a9c35b12e64e7fbb9c2`
 
-Machine comparison passed exactly:
+Exact file and blob identities:
 
-- PLAN/FULL active count: `1/1`
-- active/current/canonical task: `REF-G4-06-RAY-R6`
-- contract: `G4-RAY-R6-FORMAL-ACQUISITION-PACKAGE-B-V1`
-- PLAN executable: `true`
-- FULL executable: `false`
-- PLAN `formal_execution_authority` equals FULL
-  `g4_06_state.formal_authority_mirror`
-- FULL `g4_06_state` equals PLAN `required_full_g4_06_state`
+| Path | Archived/current file SHA-256 | Git blob |
+|---|---|---|
+| `src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py` | `a5ec111167fa20f34914a481face68e1d2c276688c74ead434d9effdc5e7b0d3` | `c35684a639ab8f40200f9ed5be6c1196ad08c568` |
+| `tests/test_p7_td_b_r6_stage_gate.py` | `a6107c9f3290a63921fd94911f729c9d69dffcfc59d9e841010d4e6ee0eb009d` | `da973e2748c2d814cb4b78354cea52e6e014458e` |
 
-### GUIDE and accepted code identity
+The current two candidate files matched the archived blobs exactly at terminal
+handoff intake. The archive is historical-only and supplies recoverability, not
+acceptance, readiness, release credit, or execution authorization.
 
-- GUIDE SHA-256:
-  `659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35`
-- Accepted checkpoint: `94a6e3e37f6c07632a392bc6a18030a6c4897122`
-- Accepted tree: `53871e389225c0992d996b354d76b2ab2b981456`
-- Accepted parent: `f0d957da554d28443e66f235ca9721ace886165f`
-- Accepted subject: `feat(formal): close Ray R6 terminal evidence`
-- Accepted commit changed paths matched the five PLAN paths exactly.
-- Current five source SHA-256 identities matched the PLAN machine row exactly:
-  - `measure_p7_thermal_diagnostics.py`:
-    `f6c5f6e4e002863d34eb39a578b56e92a31ad70c907570d3537152d73030f8e3`
-  - `p7_td_b_r6_terminal.py`:
-    `4e38d97000f7e908fb56db5ac731e28182f7759f45b394881d66a1791a144e3e`
-  - `test_p7_td_b_r6_terminal.py`:
-    `034d4b828c73880d47b390ea63251ee408299cca95bd5a0071b74be12e7cc1d5`
-  - `test_p7_thermal_diagnostics.py`:
-    `ac76eba85ab504d588a08cdee317670bd8a4b421cd6660433eb10c707baef47e`
-  - `run-p7-thermal-diagnostics.zsh`:
-    `a82a6689e6fe4b4d403f3b84c8612cf79c7d35463cd89047ccbf9febd43d52df`
+## Observed but unproven engineering validation
 
-## Pre-device gate 10: FAIL CLOSED
+Before Supervisor interruption, the following results were observed against
+the uncommitted candidate:
 
-After gates 1–9 passed, the Executer invoked the repo-owned accepted-package
-loader exactly once on the PLAN-bound package:
+- targeted stage-gate suite: `51/51` observed pass;
+- focused stage-gate/contract/thermal suite: `206/206` observed pass;
+- `py_compile`: observed pass;
+- CodeGraph sync/query: observed pass; the query showed the successor
+  schema/parser/Git proof remained in the stage-gate owner and delegated through
+  the existing measure validation owner;
+- `git diff --check`: observed pass;
+- changed-scope check: observed exact candidate code/test paths.
 
-```text
-camera_based_rgbww_optimizer.optimization.p7_td_b_r6_stage_gate
-  .load_and_validate_stage_gate_package(
-    /Volumes/4T/temp/rgbww-optimizer/
-    g4-ray-r6-stage-gate-ebc40bf8e40c-harness-replacement-20260804T141423Z,
-    repo_root=/Users/ibobby/Projects/WLED-RGBWW
-  )
-```
+These observations were not frozen in the prior live EXECUTION_RESULT before
+Supervisor intervention. They remain observations of an uncommitted,
+architecture-superseded candidate and must not be promoted to accepted evidence.
 
-The canonical replay failed before returning a validated package or binding:
+The one fresh full-suite process has terminal status:
 
-```text
-StageGateError: source_reference_drift
-```
+`INTERRUPTED_UNPROVEN_NOT_A_TEST_FAILURE_NOT_REUSABLE`
 
-Call path:
+No final test count, exit code, pass/fail result, or reusable full-suite evidence
+was produced. Interruption is not a test failure, but no success may be inferred.
+The full suite was not resumed, supplemented, or rerun after Supervisor Route A
+selection.
 
-```text
-load_and_validate_stage_gate_package
--> _load_stage_gate_package
--> validate_stage_gate
--> _validate_source_references
--> StageGateError("source_reference_drift")
-```
+## Zero-access and zero-effect counters
 
-Consequences:
-
-- accepted package loader calls: `1`
-- accepted package loader successes: `0`
-- package binding comparisons completed: `0`
-- repo-owned `_validate_production_formal_machine_contract` calls: `0`
-- fresh root checks/creates: `0/0`
-- visible Terminal launches: `0`
-- wrapper/child launches: `0/0`
-- retry/repair/resume/alternate root: `0/0/0/0`
-
-The Executer did not manually inspect package artifacts, infer a replacement
-binding, repair the package, generate a controller, or retry the owner.
-
-## Access and safety counters
-
-- Fresh formal root access/create: `0/0`
-- Historical/rejected/retained external payload access: `0`
-- Real device calls: `0`
+- Accepted external package/root read/stat/list/access: `0`
+- Reserved/fresh formal root read/stat/list/access/create: `0/0/0/0/0`
+- Network calls: `0`
+- Device calls: `0`
 - Camera calls/captures: `0/0`
 - Ray calls: `0`
-- Strip zero/nonzero/formal calls: `0/0/0`
-- Cleanup/safety-zero calls: `0/0`
-- G4-07 analyzer: `0`
-- Combined TD-B/TD-C/sentinel/P8: `0/0/0/0`
+- Strip calls/nonzero calls: `0/0`
+- Cleanup/final-zero calls: `0/0`
+- Formal owner calls/attempts: `0/0`
 - Release consumption: `0`
+- Retained-R3 access/consumption: `0/0`
+- TD-C access/execution: `0/0`
 - Firmware/flash/deploy/destructive operations: `0`
-- New task/controller/corrective suffix: `0/0/0`
-- Git commits: `0`
+- New experiment root/package: `0/0`
+- New task ID/corrective suffix/controller: `0/0/0`
+- Git stage/commit/push/PR: `0/0/0/0`
 
-`.agent-work/PLAN.md` and `.agent-work/FULL_PLAN_REFERENCE.md` were not
-modified. GUIDE/RESEARCH, code, tests, config, accepted package, and all
-external artifacts remain read-only and unchanged. The only worktree change
-made by this Executer is this current `EXECUTION_RESULT.md` handoff.
+No hardware readiness, eligibility, release consumability, formal success,
+scientific success, or device readiness is claimed.
 
-## Requested disposition
+## Prior failure-history preservation
 
-Return to the Orchestrator/Planner with
-`BLOCKED_PREDEVICE_ACTIVATION_OR_SOURCE_DRIFT`. Do not activate the formal
-launch, create the frozen root, retry/replay the stale package, or infer a new
-package route from this Executer handoff.
+The earlier controlled Package-B attempt remains a distinct historical record:
+
+- reviewed disposition:
+  `ACCEPTED_CONTROLLED_PREDEVICE_SOURCE_REFERENCE_DRIFT_NO_FORMAL_ATTEMPT`;
+- failure code: `source_reference_drift`;
+- canonical package loader calls/successes: `1/0`;
+- formal machine owner, root, device, camera, Ray, strip, capture, formal attempt:
+  all `0`;
+- reviewed archive pointers remain under `.agent-work/archived/` and were not
+  modified or rewritten by this handoff.
+
+The Supervisor rejection of this candidate does not clear that history and does
+not recast the candidate as a repair of it.
+
+## Planner handoff
+
+Planner should reject this live candidate with:
+
+`REJECTED_SUPERVISOR_ARCHITECTURE_SUPERSEDED_UNPROVEN`
+
+and preserve its historical disposition as:
+
+`HISTORICAL_REJECTED_SUPERVISOR_SUPERSEDED_SOURCE_SUCCESSOR_CANDIDATE_UNPROVEN`
+
+The next route, if activated by Orchestrator/Planner, must follow
+`ROUTE_A_FINAL_CODE_FIRST_FINAL_PACKAGE_REMINT`. This Executer does not design,
+activate, or execute that route. The archived candidate must not be restored as
+the current owner, and the interrupted full-suite observation must not be reused.
