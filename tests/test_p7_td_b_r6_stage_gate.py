@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import sys
 import tempfile
 import unittest
 from unittest import mock
@@ -105,7 +106,7 @@ class SyntheticGitRepository(SyntheticRepository):
         self,
         root: Path,
         *,
-        code_child_subject: str = "feat(stage-gate): route ray r6 formal launch owner",
+        code_child_subject: str = "feat(stage-gate): bind ray r6 package identity",
     ) -> None:
         root = root.resolve()
         super().__init__(root, root.parent / "offline-stage-gate")
@@ -163,6 +164,11 @@ class SyntheticGitRepository(SyntheticRepository):
 
     def persist_production_package(self) -> None:
         subject.persist_stage_gate_package(self.build_input(), repo_root=self.root)
+        self.package_binding = subject.stage_gate_package_binding(
+            subject.load_and_validate_stage_gate_package(
+                self.output_root, repo_root=self.root,
+            )
+        )
 
     def activate_package_a_machine(self) -> None:
         plan = {
@@ -218,6 +224,7 @@ class SyntheticGitRepository(SyntheticRepository):
             "retry": 0,
             "release_consumption_authorized": False,
             "td_c_authorized": False,
+            "stage_gate_package_binding": deepcopy(self.package_binding),
         }
         plan = {
             "active_task_count": 1,
@@ -248,7 +255,7 @@ class SyntheticGitRepository(SyntheticRepository):
                 "contract_id": subject.FORMAL_PACKAGE_B_CONTRACT_ID,
                 "authority_owner": "MATCHING_LIVE_PLAN_ONLY",
                 "full_top_level_non_authorizing": True,
-                "formal_authority_mirror": authority,
+                "formal_authority_mirror": deepcopy(authority),
                 "g4_07_unlocked": False,
             },
         }
@@ -258,7 +265,7 @@ class SyntheticGitRepository(SyntheticRepository):
         path = self.root / subject.ALLOWED_CODE_CHILD_PATHS[1]
         path.write_bytes(path.read_bytes() + b"synthetic-package-a-code-child\n")
         self.git("add", "--", subject.ALLOWED_CODE_CHILD_PATHS[1])
-        self.git("commit", "-q", "-m", "feat(stage-gate): route ray r6 formal launch owner")
+        self.git("commit", "-q", "-m", subject.ALLOWED_CODE_CHILD_SUBJECT)
         self.live_checkpoint = self.git_text("rev-parse", "HEAD")
         self.live_tree = self.git_text("rev-parse", "HEAD^{tree}")
 
@@ -445,6 +452,224 @@ class P7TdBR6StageGateTests(unittest.TestCase):
                 value.prerequisite_projection["release_consumption_authorized"]
             )
 
+    def test_module_cli_prepare_and_describe_emit_same_canonical_binding(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = SyntheticGitRepository(Path(temporary).resolve() / "repo")
+            module = (
+                "camera_based_rgbww_optimizer.optimization."
+                "p7_td_b_r6_stage_gate"
+            )
+            prepare_argv = (
+                sys.executable, "-m", module, "prepare",
+                "--repo-root", str(fixture.root),
+                "--source-parent-checkpoint", fixture.source_checkpoint,
+                "--source-parent-tree", fixture.source_tree,
+                "--package-root", str(fixture.output_root),
+            )
+            prepared = subprocess.run(
+                prepare_argv, cwd=fixture.root, capture_output=True, text=True,
+            )
+            self.assertEqual(prepared.returncode, 0, prepared.stderr)
+            self.assertEqual(prepared.stderr, "")
+            self.assertTrue(prepared.stdout.endswith("\n"))
+            self.assertEqual(prepared.stdout.count("\n"), 1)
+            binding = json.loads(prepared.stdout)
+            described = subprocess.run(
+                (
+                    sys.executable, "-m", module, "describe",
+                    "--repo-root", str(fixture.root),
+                    "--package-root", str(fixture.output_root),
+                ),
+                cwd=fixture.root, capture_output=True, text=True,
+            )
+            self.assertEqual(described.returncode, 0, described.stderr)
+            self.assertEqual(described.stderr, "")
+            self.assertEqual(described.stdout, prepared.stdout)
+            self.assertEqual(binding["schema"], subject.PACKAGE_BINDING_SCHEMA)
+            self.assertEqual(binding["package_root"]["path"], str(fixture.output_root))
+            self.assertEqual(tuple(binding["inventory"]), subject.EXPECTED_ARTIFACTS)
+            self.assertEqual(set(binding["artifacts"]), set(subject.EXPECTED_ARTIFACTS))
+            for name in subject.EXPECTED_ARTIFACTS:
+                identity = provenance.read_exact_file(
+                    fixture.output_root / name, expected_mode=0o600,
+                )
+                self.assertEqual(
+                    binding["artifacts"][name],
+                    {
+                        "path": name,
+                        "bytes": identity.byte_count,
+                        "sha256": identity.sha256,
+                        "device": identity.device,
+                        "inode": identity.inode,
+                        "mode": identity.mode,
+                    },
+                )
+            terminal = json.loads(
+                (fixture.output_root / "terminal-seal.json").read_text("utf-8")
+            )
+            self.assertTrue(terminal["internal_replay"])
+            self.assertEqual(terminal["retry"], 0)
+            self.assertEqual(terminal["alternate_root"], 0)
+
+    def test_module_cli_rejects_invalid_and_nonfresh_explicit_inputs(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = SyntheticGitRepository(Path(temporary).resolve() / "repo")
+            alias = fixture.root.parent / "parent-alias"
+            alias.symlink_to(fixture.root.parent, target_is_directory=True)
+            module = (
+                "camera_based_rgbww_optimizer.optimization."
+                "p7_td_b_r6_stage_gate"
+            )
+            base = (sys.executable, "-m", module)
+            cases = (
+                (
+                    "relative_package",
+                    (*base, "prepare", "--repo-root", str(fixture.root),
+                     "--source-parent-checkpoint", fixture.source_checkpoint,
+                     "--source-parent-tree", fixture.source_tree,
+                     "--package-root", "relative-package"),
+                    "cli_package_root_not_absolute",
+                ),
+                (
+                    "invalid_parent",
+                    (*base, "prepare", "--repo-root", str(fixture.root),
+                     "--source-parent-checkpoint", "0" * 40,
+                     "--source-parent-tree", fixture.source_tree,
+                     "--package-root", str(fixture.output_root)),
+                    "cli_source_parent_not_found",
+                ),
+                (
+                    "invalid_tree",
+                    (*base, "prepare", "--repo-root", str(fixture.root),
+                     "--source-parent-checkpoint", fixture.source_checkpoint,
+                     "--source-parent-tree", "0" * 40,
+                     "--package-root", str(fixture.output_root)),
+                    "cli_source_parent_tree_drift",
+                ),
+                (
+                    "noncanonical_package",
+                    (*base, "prepare", "--repo-root", str(fixture.root),
+                     "--source-parent-checkpoint", fixture.source_checkpoint,
+                     "--source-parent-tree", fixture.source_tree,
+                     "--package-root", str(alias / "noncanonical-stage-gate")),
+                    "cli_package_root_not_canonical",
+                ),
+                (
+                    "missing_argument",
+                    (*base, "describe", "--repo-root", str(fixture.root)),
+                    "--package-root",
+                ),
+                (
+                    "extra_argument",
+                    (*base, "describe", "--repo-root", str(fixture.root),
+                     "--package-root", str(fixture.output_root), "--extra"),
+                    "unrecognized arguments",
+                ),
+            )
+            for name, argv, error in cases:
+                with self.subTest(name=name):
+                    completed = subprocess.run(
+                        argv, cwd=fixture.root, capture_output=True, text=True,
+                    )
+                    self.assertNotEqual(completed.returncode, 0)
+                    self.assertIn(error, completed.stderr)
+                    self.assertEqual(completed.stdout, "")
+                    self.assertFalse(fixture.output_root.exists())
+            fixture.output_root.mkdir()
+            existing = subprocess.run(
+                (*base, "prepare", "--repo-root", str(fixture.root),
+                 "--source-parent-checkpoint", fixture.source_checkpoint,
+                 "--source-parent-tree", fixture.source_tree,
+                 "--package-root", str(fixture.output_root)),
+                cwd=fixture.root, capture_output=True, text=True,
+            )
+            self.assertEqual(existing.returncode, 1)
+            self.assertIn("cli_package_root_not_fresh", existing.stderr)
+            self.assertEqual(tuple(fixture.output_root.iterdir()), ())
+
+    def test_valid_package_substitution_and_same_path_regeneration_fail_pre_backend(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = SyntheticGitRepository(Path(temporary).resolve() / "repo")
+            fixture.persist_production_package()
+            bound = deepcopy(fixture.package_binding)
+            original_plan = (fixture.root / ".agent-work/PLAN.md").read_bytes()
+            alternate_root = fixture.output_root.parent / "alternate-stage-gate"
+            alternate_plan = {
+                "active_task_count": 1,
+                "active_task": subject.TASK_ID,
+                "reference_task_id": subject.TASK_ID,
+                "contract_id": subject.CONTRACT_ID,
+                "stage_gate_root": str(alternate_root),
+            }
+            (fixture.root / ".agent-work/PLAN.md").write_bytes(
+                machine_row("PLAN_MACHINE_CONTRACT", alternate_plan)
+            )
+            alternate_value = subject.build_stage_gate_input(
+                repo_root=fixture.root,
+                source_checkpoint=fixture.source_checkpoint,
+                source_tree=fixture.source_tree,
+                output_root=alternate_root,
+            )
+            subject.persist_stage_gate_package(alternate_value, repo_root=fixture.root)
+            (fixture.root / ".agent-work/PLAN.md").write_bytes(original_plan)
+            fixture.package_binding = bound
+            fixture.activate_package_b_machine()
+            factory = mock.Mock()
+            delegated = mock.Mock()
+            with self.assertRaisesRegex(
+                subject.StageGateError, "production_machine_contract_drift",
+            ):
+                subject.run_production_cli_launch(
+                    package_dir=alternate_root,
+                    repo_root=fixture.root,
+                    code_owner_checkpoint="not-a-checkpoint",
+                    output_dir=Path(subject.FORMAL_ROOT_PARENT),
+                    run_name=FUTURE_RUN_NAME,
+                    camera_backend_name="remote",
+                    camera_backend_kwargs={
+                        "env_file": Path("synthetic.env"),
+                        "base_url": None,
+                        "timeout": 10.0,
+                    },
+                    backend_factory=factory,
+                    delegated_run_fn=delegated,
+                )
+            factory.assert_not_called()
+            delegated.assert_not_called()
+
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = SyntheticGitRepository(Path(temporary).resolve() / "repo")
+            fixture.persist_production_package()
+            stale_binding = deepcopy(fixture.package_binding)
+            backup = fixture.output_root.parent / "old-stage-gate"
+            fixture.output_root.rename(backup)
+            value = fixture.build_input()
+            subject.persist_stage_gate_package(value, repo_root=fixture.root)
+            fixture.package_binding = stale_binding
+            fixture.activate_package_b_machine()
+            factory = mock.Mock()
+            delegated = mock.Mock()
+            with self.assertRaisesRegex(
+                subject.StageGateError, "production_machine_contract_drift",
+            ):
+                subject.run_production_cli_launch(
+                    package_dir=fixture.output_root,
+                    repo_root=fixture.root,
+                    code_owner_checkpoint="not-a-checkpoint",
+                    output_dir=Path(subject.FORMAL_ROOT_PARENT),
+                    run_name=FUTURE_RUN_NAME,
+                    camera_backend_name="remote",
+                    camera_backend_kwargs={
+                        "env_file": Path("synthetic.env"),
+                        "base_url": None,
+                        "timeout": 10.0,
+                    },
+                    backend_factory=factory,
+                    delegated_run_fn=delegated,
+                )
+            factory.assert_not_called()
+            delegated.assert_not_called()
+
     def test_production_cli_seam_loads_materializes_and_delegates_exactly_once(self):
         with tempfile.TemporaryDirectory() as temporary:
             fixture = SyntheticGitRepository(Path(temporary) / "repo")
@@ -486,8 +711,8 @@ class P7TdBR6StageGateTests(unittest.TestCase):
             self.assertTrue(runtime["hard_locks"]["strip_nonzero"])
             backend.connect.assert_not_called()
 
-    def test_planned_subject_real_topology_binds_exact_three_committed_blobs(self):
-        planned_subject = "feat(stage-gate): route ray r6 formal launch owner"
+    def test_planned_subject_real_topology_binds_exact_two_committed_blobs(self):
+        planned_subject = "feat(stage-gate): bind ray r6 package identity"
         self.assertEqual(subject.ALLOWED_CODE_CHILD_SUBJECT, planned_subject)
         with tempfile.TemporaryDirectory() as temporary:
             fixture = SyntheticGitRepository(Path(temporary) / "planned" / "repo")
@@ -513,7 +738,7 @@ class P7TdBR6StageGateTests(unittest.TestCase):
             candidates = fixture.descriptor["committed_source_contract"][
                 "allowed_code_owner_child"
             ]["candidate_references"]
-            self.assertEqual(len(candidates), 3)
+            self.assertEqual(len(candidates), 2)
             for reference in candidates:
                 blob = subprocess.run(
                     ["git", "show", f"{fixture.code_checkpoint}:{reference['path']}"],
@@ -532,8 +757,8 @@ class P7TdBR6StageGateTests(unittest.TestCase):
                 (".agent-work/FULL_PLAN_REFERENCE.md", ".agent-work/PLAN.md"),
             )
 
-    def test_legacy_subject_with_identical_code_tree_fails_before_backend(self):
-        legacy_subject = "feat(stage-gate): accept ray r6 launch owner"
+    def test_previous_three_path_subject_with_identical_code_tree_fails_before_backend(self):
+        legacy_subject = "feat(stage-gate): route ray r6 formal launch owner"
         with tempfile.TemporaryDirectory() as temporary:
             fixture = SyntheticGitRepository(Path(temporary) / "legacy" / "repo")
             planned_checkpoint = fixture.code_checkpoint
@@ -573,6 +798,34 @@ class P7TdBR6StageGateTests(unittest.TestCase):
             factory.assert_not_called()
             delegated.assert_not_called()
 
+    def test_previous_three_path_code_child_cannot_promote_new_binding_owner(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = SyntheticGitRepository(Path(temporary) / "three-path" / "repo")
+            measure_path = (
+                "src/camera_based_rgbww_optimizer/optimization/"
+                "measure_p7_thermal_diagnostics.py"
+            )
+            target = fixture.root / measure_path
+            target.write_bytes(target.read_bytes() + b"legacy-three-path\n")
+            fixture.git("add", "--", measure_path)
+            legacy_tree = fixture.git_text("write-tree")
+            legacy = fixture.commit_tree(
+                legacy_tree,
+                (fixture.source_checkpoint,),
+                subject.ALLOWED_CODE_CHILD_SUBJECT,
+            )
+            fixture.code_checkpoint = legacy
+            fixture.code_tree = legacy_tree
+            fixture.set_head(legacy)
+            with self.assertRaisesRegex(
+                subject.StageGateError, "committed_source_changed_paths_drift",
+            ):
+                subject.validate_committed_source_attestation(
+                    fixture.descriptor,
+                    fixture.activation_probe(),
+                    repo_root=fixture.root,
+                )
+
     def test_package_a_engineering_machine_state_is_not_production_authority(self):
         with tempfile.TemporaryDirectory() as temporary:
             fixture = self.package_a_fixture(temporary)
@@ -609,6 +862,36 @@ class P7TdBR6StageGateTests(unittest.TestCase):
                 full["g4_06_state"]["formal_authority_mirror"][name] = value
             return mutate
 
+        def mirrored_binding(path: tuple[str, ...], value: object):
+            def mutate(plan: dict, full: dict) -> None:
+                left = plan["formal_execution_authority"]["stage_gate_package_binding"]
+                right = full["g4_06_state"]["formal_authority_mirror"][
+                    "stage_gate_package_binding"
+                ]
+                for key in path[:-1]:
+                    left = left[key]
+                    right = right[key]
+                left[path[-1]] = value
+                right[path[-1]] = value
+            return mutate
+
+        def mirrored_artifact_map(action: str):
+            def mutate(plan: dict, full: dict) -> None:
+                bindings = (
+                    plan["formal_execution_authority"]["stage_gate_package_binding"],
+                    full["g4_06_state"]["formal_authority_mirror"][
+                        "stage_gate_package_binding"
+                    ],
+                )
+                for binding in bindings:
+                    if action == "missing":
+                        binding["artifacts"].pop("terminal-seal.json")
+                    else:
+                        binding["artifacts"]["extra.json"] = deepcopy(
+                            binding["artifacts"]["stage-gate.json"]
+                        )
+            return mutate
+
         cases = {
             "plan_formal_false": plan_authority("formal_execution_authorized", False),
             "plan_device_false": plan_authority("device_control_authorized", False),
@@ -622,8 +905,11 @@ class P7TdBR6StageGateTests(unittest.TestCase):
             ),
             "authority_missing": lambda plan, _full: plan["formal_execution_authority"].pop("capture_authorized"),
             "authority_extra": lambda plan, _full: plan["formal_execution_authority"].__setitem__("extra", False),
+            "binding_missing": lambda plan, _full: plan["formal_execution_authority"].pop("stage_gate_package_binding"),
+            "binding_extra": lambda plan, _full: plan["formal_execution_authority"]["stage_gate_package_binding"].__setitem__("extra", False),
             "mirror_authority_missing": lambda _plan, full: full["g4_06_state"]["formal_authority_mirror"].pop("capture_authorized"),
             "mirror_authority_extra": lambda _plan, full: full["g4_06_state"]["formal_authority_mirror"].__setitem__("extra", False),
+            "mirror_binding_missing": lambda _plan, full: full["g4_06_state"]["formal_authority_mirror"].pop("stage_gate_package_binding"),
             "package_a_contract_with_authority": lambda plan, full: (
                 plan.__setitem__("contract_id", subject.ENGINEERING_PACKAGE_A_CONTRACT_ID),
                 full.__setitem__("active_plan_contract_id", subject.ENGINEERING_PACKAGE_A_CONTRACT_ID),
@@ -677,6 +963,19 @@ class P7TdBR6StageGateTests(unittest.TestCase):
             "strip_expansion": mirrored_authority("strip_authorized", True),
             "release_expansion": mirrored_authority("release_consumption_authorized", True),
             "td_c_expansion": mirrored_authority("td_c_authorized", True),
+            "binding_root_path": mirrored_binding(("package_root", "path"), "/synthetic/other"),
+            "binding_root_device": mirrored_binding(("package_root", "device"), -1),
+            "binding_root_inode": mirrored_binding(("package_root", "inode"), -1),
+            "binding_root_mode": mirrored_binding(("package_root", "mode"), 0),
+            "binding_inventory": mirrored_binding(("inventory",), ["stage-gate.json"]),
+            "binding_artifact_missing": mirrored_artifact_map("missing"),
+            "binding_artifact_extra": mirrored_artifact_map("extra"),
+            "binding_artifact_path": mirrored_binding(("artifacts", "terminal-seal.json", "path"), "other.json"),
+            "binding_artifact_bytes": mirrored_binding(("artifacts", "terminal-seal.json", "bytes"), 1),
+            "binding_artifact_sha": mirrored_binding(("artifacts", "terminal-seal.json", "sha256"), "0" * 64),
+            "binding_artifact_device": mirrored_binding(("artifacts", "terminal-seal.json", "device"), -1),
+            "binding_artifact_inode": mirrored_binding(("artifacts", "terminal-seal.json", "inode"), -1),
+            "binding_artifact_mode": mirrored_binding(("artifacts", "terminal-seal.json", "mode"), 0),
         }
         with tempfile.TemporaryDirectory() as temporary:
             for index, (name, mutate) in enumerate(cases.items()):

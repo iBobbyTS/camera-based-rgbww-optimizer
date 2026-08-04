@@ -7,13 +7,16 @@ capture execution remain owned by :mod:`measure_p7_thermal_diagnostics`.
 
 from __future__ import annotations
 
+import argparse
 from dataclasses import asdict, dataclass
 import hashlib
+import json
 import os
 from pathlib import Path, PurePosixPath
 import re
 import stat
 import subprocess
+import sys
 from typing import Any, Callable, Mapping, Sequence
 
 from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
@@ -64,9 +67,9 @@ TEMPLATE_AUTHORITY_SCHEMA = "p7_td_b_r6_runtime_template_authority_v1"
 PLAN_BOUND_AUTHORITY_SCHEMA = "p7_td_b_r6_plan_bound_authority_v1"
 FUTURE_ACTIVATION_SCHEMA = "p7_td_b_r6_future_plan_activation_v2"
 COMMITTED_SOURCE_ATTESTATION_SCHEMA = "p7_td_b_r6_committed_source_attestation_v1"
-ALLOWED_CODE_CHILD_SUBJECT = "feat(stage-gate): route ray r6 formal launch owner"
+PACKAGE_BINDING_SCHEMA = "p7_td_b_r6_stage_gate_package_binding_v1"
+ALLOWED_CODE_CHILD_SUBJECT = "feat(stage-gate): bind ray r6 package identity"
 ALLOWED_CODE_CHILD_PATHS = (
-    "src/camera_based_rgbww_optimizer/optimization/measure_p7_thermal_diagnostics.py",
     "src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py",
     "tests/test_p7_td_b_r6_stage_gate.py",
 )
@@ -1510,7 +1513,47 @@ def load_and_validate_stage_gate_package(
     )
 
 
-def _formal_authority_contract(*, output_dir: str | Path, run_name: str) -> dict[str, Any]:
+def stage_gate_package_binding(package: Mapping[str, Any]) -> dict[str, Any]:
+    """Project one successful canonical replay into the closed machine binding."""
+
+    if (
+        not isinstance(package, Mapping)
+        or package.get("status") != "pass"
+        or not isinstance(package.get("root"), Mapping)
+        or tuple(package.get("inventory", ())) != EXPECTED_ARTIFACTS
+        or not isinstance(package.get("artifacts"), Mapping)
+        or set(package["artifacts"]) != set(EXPECTED_ARTIFACTS)
+    ):
+        raise StageGateError("package_binding_replay_shape_drift")
+    root = _native(package["root"])
+    artifacts = _native(package["artifacts"])
+    if (
+        set(root) != {"path", "device", "inode", "mode"}
+        or type(root["path"]) is not str
+        or not Path(root["path"]).is_absolute()
+        or any(
+            set(artifacts[name])
+            != {"path", "bytes", "sha256", "device", "inode", "mode"}
+            or artifacts[name]["path"] != name
+            for name in EXPECTED_ARTIFACTS
+        )
+    ):
+        raise StageGateError("package_binding_replay_identity_drift")
+    return {
+        "schema": PACKAGE_BINDING_SCHEMA,
+        "package_root": root,
+        "inventory": list(EXPECTED_ARTIFACTS),
+        "artifacts": {
+            name: artifacts[name]
+            for name in EXPECTED_ARTIFACTS
+        },
+    }
+
+
+def _formal_authority_contract(
+    *, output_dir: str | Path, run_name: str,
+    package_binding: Mapping[str, Any],
+) -> dict[str, Any]:
     return {
         "experiment_id": thermal.TD_B,
         "source": "ray",
@@ -1532,6 +1575,7 @@ def _formal_authority_contract(*, output_dir: str | Path, run_name: str) -> dict
         "retry": 0,
         "release_consumption_authorized": False,
         "td_c_authorized": False,
+        "stage_gate_package_binding": _native(package_binding),
     }
 
 
@@ -1548,6 +1592,7 @@ def _formal_full_mirror(authority: Mapping[str, Any]) -> dict[str, Any]:
 
 def _validate_production_formal_machine_contract(
     repo_root: Path, *, output_dir: str | Path, run_name: str,
+    package_binding: Mapping[str, Any],
 ) -> None:
     try:
         plan = parse_plan_machine_contract(
@@ -1561,6 +1606,7 @@ def _validate_production_formal_machine_contract(
     authority = plan.get("formal_execution_authority")
     expected_authority = _formal_authority_contract(
         output_dir=output_dir, run_name=run_name,
+        package_binding=package_binding,
     )
     if (
         plan.get("active_task_count") != 1
@@ -1569,7 +1615,7 @@ def _validate_production_formal_machine_contract(
         or plan.get("contract_id") != FORMAL_PACKAGE_B_CONTRACT_ID
         or plan.get("executable") is not True
         or not isinstance(authority, Mapping)
-        or dict(authority) != expected_authority
+        or _native(authority) != expected_authority
         or full.get("active_task_count") != 1
         or full.get("active_task") != FUTURE_TASK_ID
         or full.get("current_plan_active_task_count") != 1
@@ -1585,7 +1631,7 @@ def _validate_production_formal_machine_contract(
         or full.get("strip_authorized_by_this_file") is not False
         or full.get("formal_r6_authorized") is not False
         or full.get("td_c_authorized") is not False
-        or full.get("g4_06_state") != _formal_full_mirror(expected_authority)
+        or _native(full.get("g4_06_state")) != _formal_full_mirror(expected_authority)
     ):
         raise StageGateError("production_machine_contract_drift")
 
@@ -1673,8 +1719,10 @@ def run_production_cli_launch(
     package = load_and_validate_stage_gate_package(
         package_dir, repo_root=root,
     )
+    package_binding = stage_gate_package_binding(package)
     _validate_production_formal_machine_contract(
         root, output_dir=output_dir, run_name=run_name,
+        package_binding=package_binding,
     )
     stage_gate = package["stage_gate"]
     descriptor = package["launch_descriptor"]
@@ -1717,6 +1765,7 @@ def run_production_cli_launch(
 
 def persist_stage_gate_package(
     value: StageGateInput, *, repo_root: str | Path,
+    evaluated_gate: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Create one exclusive package and perform one internal canonical replay."""
 
@@ -1727,7 +1776,20 @@ def persist_stage_gate_package(
     try:
         root = provenance.create_exclusive_root(value.output_root)
         phase = "stage_gate"
-        gate = evaluate_stage_gate(value, repo_root=repo_root)
+        if evaluated_gate is None:
+            gate = evaluate_stage_gate(value, repo_root=repo_root)
+        else:
+            gate = _native(evaluated_gate)
+            validate_stage_gate(gate, repo_root=repo_root)
+            if (
+                gate.get("source_checkpoint") != value.source_checkpoint
+                or gate.get("source_tree") != value.source_tree
+                or gate.get("output_root") != value.output_root
+                or gate.get("source_references")
+                != [_source_reference_value(item) for item in value.source_references]
+                or gate.get("prerequisites") != _native(value.prerequisite_projection)
+            ):
+                raise StageGateError("evaluated_gate_input_binding_drift")
         stage_identity = provenance.persist_canonical_json(root, "stage-gate.json", gate)
         phase = "launch_descriptor"
         descriptor = build_launch_descriptor(gate)
@@ -1801,20 +1863,130 @@ def persist_stage_gate_package(
         raise
 
 
+def _canonical_cli_repo_root(value: str) -> Path:
+    path = Path(value)
+    if not path.is_absolute():
+        raise StageGateError("cli_repo_root_not_absolute")
+    try:
+        resolved = path.resolve(strict=True)
+    except OSError as exc:
+        raise StageGateError("cli_repo_root_invalid") from exc
+    if resolved != path or not resolved.is_dir():
+        raise StageGateError("cli_repo_root_not_canonical")
+    return resolved
+
+
+def _canonical_cli_package_root(value: str, *, must_exist: bool) -> Path:
+    path = Path(value)
+    if not path.is_absolute():
+        raise StageGateError("cli_package_root_not_absolute")
+    try:
+        if must_exist:
+            resolved = path.resolve(strict=True)
+            if resolved != path or not resolved.is_dir():
+                raise StageGateError("cli_package_root_not_canonical")
+        else:
+            parent = path.parent.resolve(strict=True)
+            resolved = parent / path.name
+            if resolved != path:
+                raise StageGateError("cli_package_root_not_canonical")
+            if path.exists() or path.is_symlink():
+                raise StageGateError("cli_package_root_not_fresh")
+    except OSError as exc:
+        raise StageGateError("cli_package_root_invalid") from exc
+    return resolved
+
+
+def _validate_cli_source_parent(repo_root: Path, checkpoint: str, tree: str) -> None:
+    if _SHA40.fullmatch(checkpoint) is None or _SHA40.fullmatch(tree) is None:
+        raise StageGateError("cli_source_parent_identity_invalid")
+    try:
+        actual_checkpoint = _git_text(repo_root, "rev-parse", f"{checkpoint}^{{commit}}")
+        actual_tree = _git_text(repo_root, "rev-parse", f"{checkpoint}^{{tree}}")
+    except (StageGateError, OSError, subprocess.CalledProcessError, ValueError) as exc:
+        raise StageGateError("cli_source_parent_not_found") from exc
+    if actual_checkpoint != checkpoint or actual_tree != tree:
+        raise StageGateError("cli_source_parent_tree_drift")
+
+
+def _canonical_binding_stdout(binding: Mapping[str, Any]) -> str:
+    return json.dumps(
+        _native(binding), sort_keys=True, separators=(",", ":"),
+        ensure_ascii=True, allow_nan=False,
+    )
+
+
+def _parse_cli(argv: Sequence[str] | None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Prepare or describe a sealed synthetic Ray R6 stage-gate package.",
+    )
+    commands = parser.add_subparsers(dest="command", required=True)
+    prepare = commands.add_parser("prepare")
+    prepare.add_argument("--repo-root", required=True)
+    prepare.add_argument("--source-parent-checkpoint", required=True)
+    prepare.add_argument("--source-parent-tree", required=True)
+    prepare.add_argument("--package-root", required=True)
+    describe = commands.add_parser("describe")
+    describe.add_argument("--repo-root", required=True)
+    describe.add_argument("--package-root", required=True)
+    return parser.parse_args(argv)
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    try:
+        args = _parse_cli(argv)
+        repo_root = _canonical_cli_repo_root(args.repo_root)
+        if args.command == "prepare":
+            package_root = _canonical_cli_package_root(
+                args.package_root, must_exist=False,
+            )
+            _validate_cli_source_parent(
+                repo_root,
+                args.source_parent_checkpoint,
+                args.source_parent_tree,
+            )
+            value = build_stage_gate_input(
+                repo_root=repo_root,
+                source_checkpoint=args.source_parent_checkpoint,
+                source_tree=args.source_parent_tree,
+                output_root=package_root,
+            )
+            gate = evaluate_stage_gate(value, repo_root=repo_root)
+            persist_stage_gate_package(
+                value, repo_root=repo_root, evaluated_gate=gate,
+            )
+            package = replay_stage_gate_package(package_root, repo_root=repo_root)
+        else:
+            package_root = _canonical_cli_package_root(
+                args.package_root, must_exist=True,
+            )
+            package = replay_stage_gate_package(package_root, repo_root=repo_root)
+        print(_canonical_binding_stdout(stage_gate_package_binding(package)))
+        return 0
+    except (StageGateError, provenance.ProvenanceIOError, OSError, ValueError) as exc:
+        print(getattr(exc, "code", type(exc).__name__), file=sys.stderr)
+        return 1
+
+
 __all__ = [
     "ALLOWED_CODE_CHILD_PATHS", "ALLOWED_CODE_CHILD_SUBJECT",
     "COMMITTED_SOURCE_ATTESTATION_SCHEMA", "CommittedSourceAttestation",
     "CONTRACT_ID", "EXPECTED_ARTIFACTS", "EXPECTED_SOURCE_PATHS",
     "FORMAL_ROOT_BASENAME_REGEX", "FORMAL_ROOT_PARENT", "FUTURE_ACTIVATION_SCHEMA",
-    "FUTURE_TASK_ID", "PASS_STATUS", "PLAN_BOUND_AUTHORITY_SCHEMA",
+    "FUTURE_TASK_ID", "PACKAGE_BINDING_SCHEMA", "PASS_STATUS", "PLAN_BOUND_AUTHORITY_SCHEMA",
     "RUNTIME_TEMPLATE_STATUS", "SourceReference", "StageGateError",
     "StageGateInput", "TASK_ID", "build_launch_descriptor",
     "build_runtime_plan_template", "build_stage_gate_input",
-    "evaluate_stage_gate", "materialize_runtime_plan",
+    "evaluate_stage_gate", "main", "materialize_runtime_plan",
     "materialized_runtime_plan_sha256", "persist_stage_gate_package",
     "replay_stage_gate_package", "runtime_plan_template_sha256",
+    "stage_gate_package_binding",
     "validate_future_activation", "validate_launch_descriptor",
     "validate_committed_source_attestation",
     "validate_materialized_runtime_plan", "validate_runtime_plan_template",
     "validate_stage_gate",
 ]
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
