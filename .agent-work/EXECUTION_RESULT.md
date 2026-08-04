@@ -2,310 +2,158 @@
 
 ## Status request
 
-`READY_FOR_PLANNER_G4_06_FORMAL_TERMINAL_EVIDENCE_ENGINEERING_REVIEW`
+`BLOCKED_PREDEVICE_ACTIVATION_OR_SOURCE_DRIFT`
 
 - Reference task: `REF-G4-06-RAY-R6`
-- Contract: `G4-RAY-R6-FORMAL-TERMINAL-EVIDENCE-ENGINEERING-V1`
-- Planner stop: `RETURN_FOR_G4_06_FORMAL_TERMINAL_ENGINEERING_REVIEW`
-- This is an engineering candidate only. No formal acquisition, device access,
-  release consumption, analysis, retained-R3 replay, or later-stage execution
-  occurred or is authorized by this handoff.
+- Contract: `G4-RAY-R6-FORMAL-ACQUISITION-PACKAGE-B-V1`
+- Planner stop: `RETURN_AFTER_TERMINAL_OR_HARD_FAIL_EVIDENCE_FOR_G4_06_REVIEW`
+- Completed at: `2026-08-04T16:58:28Z`
+- Failure boundary: pre-device gate 10, accepted stage-gate package canonical replay
+- Stable failure code: `source_reference_drift`
 
-## Activation topology
+No fresh formal root was inspected, tested, created, listed, statted, or read.
+No visible Terminal launch, wrapper, child, device, camera, Ray, strip, capture,
+cleanup, release, retained evidence, analyzer, or formal execution occurred.
 
-- Activation HEAD: `f0d957da554d28443e66f235ca9721ace886165f`
-- Direct parent: `db8188785079f15837c02d2d4632ed7a17543832`
-- Activation tree: `ca244cda8a7dc337c255e1f53359a121b64617d5`
-- Subject: `docs(plan): activate ray r6 terminal evidence engineering`
+## Pre-device gates 1–9: PASS
+
+### Activation topology
+
+- Branch: `main`
+- Intake worktree: clean
+- HEAD: `f127f6eb4cc2a102ede16560224394996cb29cd5`
+- Tree: `8142e61214f2bca6692b5bbfcc02ff8ec49ccfbe`
+- Direct sole parent: `94a6e3e37f6c07632a392bc6a18030a6c4897122`
+- Merge parent count: `1`
+- Subject: `docs(plan): activate Ray R6 formal acquisition`
 - Activation changed paths, exact:
+  - `.agent-work/EXECUTION_RESULT.md`
   - `.agent-work/FULL_PLAN_REFERENCE.md`
   - `.agent-work/PLAN.md`
-- Branch: `main`
-- Intake worktree was clean.
-- GUIDE SHA-256 remained
-  `659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35`.
+  - `.agent-work/archived/EXECUTION_RESULT-20260804-1634.md`
+  - `.agent-work/archived/FULL_PLAN_REFERENCE-20260804-1640.md`
+  - `.agent-work/archived/PLAN-20260804-1634.md`
+  - `.agent-work/archived/PLAN-20260804-1645.md`
 
-## Maintainability preflight and ownership
+### Repo-owned strict machine evidence
 
-The pre-edit CodeGraph query traced the production path through
-`run_production_cli_launch -> run_validated_td_b_r6_runtime_contract ->
-run_authorized_plan -> execute_plan`. Existing acquisition, RAW measurement,
-physical-return, cleanup, and capture-ledger owners were reusable. Putting the
-terminal replay and serialization policy directly into the already-large
-`measure_p7_thermal_diagnostics.py` would have enlarged its coordinator role,
-so the implementation added one bounded owner:
+Both repo-owned parsers received the exact live file bytes and returned once:
 
-- `p7_td_b_r6_terminal.py`: the only Ray-R6 terminal evidence owner. It owns
-  exact wrapper argv classification, capture-ledger projection/replay,
-  independent final-zero evidence, artifact identity/inventory replay, and the
-  unique terminal audit/seal.
-- `measure_p7_thermal_diagnostics.py`: only detects the exact materialized R6
-  contract, projects existing RAW quality evidence, delegates the post-capture
-  validator once, and promotes non-pass R6 Python cleanup to execution failure.
-- `run-p7-thermal-diagnostics.zsh`: only consumes the repo-owned exact mode and
-  enforces shell effect order; it does not implement terminal JSON semantics.
+- PLAN parser: `parse_plan_machine_contract`
+  - source bytes: `21640`
+  - source SHA-256:
+    `bd6d54d748018a54383385614d9f4638e2a0ec8e657b35023eee69fed7ae4462`
+  - row line: `15`
+  - payload SHA-256:
+    `346be29845e4ded0b0461576b25c0feb5c35f08f3244fa3c00f6ddb12658f1d9`
+- FULL parser: `parse_full_plan_machine_state`
+  - source bytes: `13450`
+  - source SHA-256:
+    `e0c04b82c5f1d8ab9b478a5f16d3585930be12123fe8054479eae4f73143af5a`
+  - row line: `24`
+  - payload SHA-256:
+    `c8fdb10fb6b3ecccc0775c3127b76f6f1de256f29c0c99254067b8201a82b36a`
 
-The owner reuses `thermal.validate_td_b_r6_capture_ledger`, existing RAW
-observer reports, `control.all_off`, both-off/readback semantics, and
-`p7_retained_r3_provenance_io`. No acquisition adapter, controller, scientific
-validator, serializer, release owner, or analysis owner was duplicated.
+Machine comparison passed exactly:
 
-Post-edit `codegraph sync` completed twice as the implementation converged. The
-final sync reported `Modified: 2` Python files and the final query found:
+- PLAN/FULL active count: `1/1`
+- active/current/canonical task: `REF-G4-06-RAY-R6`
+- contract: `G4-RAY-R6-FORMAL-ACQUISITION-PACKAGE-B-V1`
+- PLAN executable: `true`
+- FULL executable: `false`
+- PLAN `formal_execution_authority` equals FULL
+  `g4_06_state.formal_authority_mirror`
+- FULL `g4_06_state` equals PLAN `required_full_g4_06_state`
 
-- `validate_post_capture_ledger`: one production caller in
-  `measure_p7_thermal_diagnostics.py`;
-- `classify_wrapper_argv`, `run_independent_final_zero`, and
-  `finalize_terminal`: only the single terminal module/CLI owner;
-- no second Ray-R6 terminal seal owner.
+### GUIDE and accepted code identity
 
-## Effect-order and evidence closure
+- GUIDE SHA-256:
+  `659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35`
+- Accepted checkpoint: `94a6e3e37f6c07632a392bc6a18030a6c4897122`
+- Accepted tree: `53871e389225c0992d996b354d76b2ab2b981456`
+- Accepted parent: `f0d957da554d28443e66f235ca9721ace886165f`
+- Accepted subject: `feat(formal): close Ray R6 terminal evidence`
+- Accepted commit changed paths matched the five PLAN paths exactly.
+- Current five source SHA-256 identities matched the PLAN machine row exactly:
+  - `measure_p7_thermal_diagnostics.py`:
+    `f6c5f6e4e002863d34eb39a578b56e92a31ad70c907570d3537152d73030f8e3`
+  - `p7_td_b_r6_terminal.py`:
+    `4e38d97000f7e908fb56db5ac731e28182f7759f45b394881d66a1791a144e3e`
+  - `test_p7_td_b_r6_terminal.py`:
+    `034d4b828c73880d47b390ea63251ee408299cca95bd5a0071b74be12e7cc1d5`
+  - `test_p7_thermal_diagnostics.py`:
+    `ac76eba85ab504d588a08cdee317670bd8a4b421cd6660433eb10c707baef47e`
+  - `run-p7-thermal-diagnostics.zsh`:
+    `a82a6689e6fe4b4d403f3b84c8612cf79c7d35463cd89047ccbf9febd43d52df`
 
-Production R6 execution now follows this order:
+## Pre-device gate 10: FAIL CLOSED
 
-1. all 16 existing capture/physical-return/quality/readback/timing checks;
-2. exact formal/ambient/physical budget checks;
-3. exact R6 ledger projection bound to one root, R6 origin, frozen shutters,
-   exact IDs/order, CR3/sidecar remote identities, and 58-feature quality;
-4. one call to `thermal.validate_td_b_r6_capture_ledger(...,
-   selected_c_shutter="1/2500")` before commands audit or final completion;
-5. Python cleanup in the existing `finally`; exact status/2-step non-pass is
-   promoted to failure and leaves `run.status=failed`;
-6. wrapper waits for the child, runs shell all-off once, independent final-zero
-   once, terminal finalize once, then writes wrapper result/state and exits.
-
-Terminal replay reads exact regular evidence, replays the existing ledger
-validator once, reprojects each retained patch-statistics report, binds every
-CR3/sidecar/report and direct ledger artifact by path/bytes/SHA/device/inode/mode,
-and rejects missing, extra, cross-root, symlink, or identity-drift artifacts.
-PASS requires 16 logical/16 physical, setup 0, ambient 0, all three cleanup
-gates, child exit 0, no signal, retry 0, and analysis/strip-nonzero call count 0.
-Every tested hard failure writes only a FAIL seal with
-`accepted_hard_failed_formal_attempt`, `formal_pass=false`, and retry 0.
-
-The exact wrapper trigger requires parsed values for experiment
-`p7_td_b_command_switch_history_v1`, source `ray`, phase `formal`, stage-gate
-package, and code checkpoint. Duplicate/missing values and wrapper-owned argv
-conflicts fail closed. Wrong experiment/source/phase, setup, strip, dry-run,
-missing stage-gate, and similar strings retain legacy behavior and do not call
-the independent-zero or terminal-finalize evidence boundaries.
-
-## Positive and negative test mapping
-
-Positive coverage proves:
-
-- exact 16-row ledger replay through the existing validator;
-- validator call count one while `run.status` is still `running`;
-- exact wrapper child -> shell cleanup -> independent zero -> terminal finalize
-  -> wrapper-result/state order;
-- PASS terminal seal with complete static and dynamic artifact identities;
-- exact R6 trigger and legacy/near-miss isolation.
-
-Negative coverage proves fail-closed behavior for missing/reordered rows,
-cross-root and R5 provenance, wrong shutter, quality and physical-return drift,
-non-pass Python cleanup, shell cleanup failure, independent-zero failure, child
-failure, INT/TERM/HUP, terminal finalizer failure, missing/symlink/extra/identity-
-drift artifacts, duplicate/conflicting argv, and second seal attempts. Tests
-also assert retry/alternate root/analysis/strip nonzero/release/TD-C calls stay
-zero where applicable.
-
-## Superseded initial candidate validation
-
-All counts in this section, including the earlier `970/970` full suite, are
-`SUPERSEDED_CANDIDATE_VALIDATION`. Orchestrator review identified additional
-terminal-evidence closure requirements after that candidate. They are retained
-only as execution history and are not the final validation claim.
-
-The PLAN's requested pytest entrypoint was unavailable in the repository venv:
+After gates 1–9 passed, the Executer invoked the repo-owned accepted-package
+loader exactly once on the PLAN-bound package:
 
 ```text
-.venv/bin/python -m pytest -q tests/test_p7_td_b_r6_terminal.py
--> No module named pytest
+camera_based_rgbww_optimizer.optimization.p7_td_b_r6_stage_gate
+  .load_and_validate_stage_gate_package(
+    /Volumes/4T/temp/rgbww-optimizer/
+    g4-ray-r6-stage-gate-ebc40bf8e40c-harness-replacement-20260804T141423Z,
+    repo_root=/Users/ibobby/Projects/WLED-RGBWW
+  )
 ```
 
-No dependency was installed and no network was used. With Orchestrator
-direction, all test validation used the same `.venv/bin/python` and the
-repository's unittest-compatible test modules:
+The canonical replay failed before returning a validated package or binding:
 
-1. Targeted final:
+```text
+StageGateError: source_reference_drift
+```
 
-   ```text
-   .venv/bin/python -m unittest tests.test_p7_td_b_r6_terminal
-   Ran 5 tests in 0.286s — OK
-   ```
+Call path:
 
-2. Focused final:
+```text
+load_and_validate_stage_gate_package
+-> _load_stage_gate_package
+-> validate_stage_gate
+-> _validate_source_references
+-> StageGateError("source_reference_drift")
+```
 
-   ```text
-   .venv/bin/python -m unittest tests.test_p7_td_b_r6_terminal tests.test_p7_thermal_diagnostics tests.test_p7_td_b_r6_stage_gate tests.test_p7_td_b_r6_contract
-   Ran 205 tests in 260.251s — OK
-   ```
+Consequences:
 
-3. Compile and shell syntax:
+- accepted package loader calls: `1`
+- accepted package loader successes: `0`
+- package binding comparisons completed: `0`
+- repo-owned `_validate_production_formal_machine_contract` calls: `0`
+- fresh root checks/creates: `0/0`
+- visible Terminal launches: `0`
+- wrapper/child launches: `0/0`
+- retry/repair/resume/alternate root: `0/0/0/0`
 
-   ```text
-   .venv/bin/python -m py_compile src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_terminal.py src/camera_based_rgbww_optimizer/optimization/measure_p7_thermal_diagnostics.py tests/test_p7_td_b_r6_terminal.py tests/test_p7_thermal_diagnostics.py
-   zsh -n tmp/run-p7-thermal-diagnostics.zsh
-   PASS
-   ```
+The Executer did not manually inspect package artifacts, infer a replacement
+binding, repair the package, generate a controller, or retry the owner.
 
-4. CodeGraph:
+## Access and safety counters
 
-   ```text
-   codegraph sync
-   codegraph explore "Where are classify_wrapper_argv, validate_post_capture_ledger, run_independent_final_zero, and finalize_terminal called, and is there any second Ray R6 terminal seal owner?"
-   PASS
-   ```
-
-5. Diff and scope:
-
-   ```text
-   git diff --check
-   PASS
-   ```
-
-   Before this ER write, the only changed code/test/wrapper paths were the five
-   authorized implementation paths. The final expected path set adds only this
-   `EXECUTION_RESULT.md`, for six authorized paths total.
-
-6. Unique fresh full suite:
-
-   ```text
-   .venv/bin/python -m unittest discover -s tests
-   Ran 970 tests in 378.948s — OK
-   ```
-
-The initial focused diagnostic reported 8 failures and 8 errors. Six wrapper
-subcases were caused by a fake-harness experiment-ID constant; the remaining
-historical lineage failures came from tests reading the intentionally changed
-working wrapper instead of the immutable checkpoint bytes bound by old setup
-evidence. The bounded correction changed only test harness replay/expectations;
-the failing subset passed, and the complete focused suite then passed. This was
-not a production retry or a new task/root.
-
-## Orchestrator-review bounded correction and final validation
-
-The same `REF-G4-06-RAY-R6` terminal-evidence owner was corrected without a
-new task ID, corrective suffix, experiment root, or production/formal call.
-The final implementation now additionally proves:
-
-- every command row exactly follows the materialized-plan command grouping and
-  binds source/state/exact-command hash; both applied response and readback are
-  replayed through `hsi_source_evidence.validate_ray_readback`;
-- every isolation gate has the exact plan-derived ID/order, nonempty off command,
-  and embedded strip/Ray evidence replayed through
-  `hsi_source_evidence.validate_both_off` with the frozen curve;
-- run budgets, contiguous physical indices, unique current-root CR3/sidecar
-  paths, and unique remote capture/request IDs are recomputed rather than
-  inferred from pass markers;
-- all 16 thermal covariates are validated by
-  `thermal.validate_covariate_record`, bound to plan source/state/hash/order,
-  and checked by `thermal.audit_chronology`;
-- every retained capture reuses
-  `measure_p7_thermal_diagnostics._validate_returned_sidecar` to bind the CR3,
-  sidecar, remote IDs, bytes/SHA, timing metadata/receipt, accepted timing tier,
-  provenance/status, estimate method, and within-group observed chronology;
-- PASS inventory is closed over exact regular files plus necessary parent
-  directories, rejecting extra empty directories, symlinks, and special nodes;
-  FAIL seals preserve every safely readable regular artifact identity without
-  following unsafe entries;
-- cleanup statuses report their actual parsed Python/shell/independent-zero
-  result after non-cleanup failures;
-- exact-R6 wrapper result/state write failures return `73` and never retain a
-  completed terminal status; legacy wrapper behavior remains unchanged;
-- `returned-summary.json` is written canonically and exclusively once by the
-  terminal owner, binds the root identity, capture/physical counts and order,
-  CR3/sidecar/remote identities, and retry `0`, is included in terminal
-  audit/seal identities and the closed inventory, and records
-  `partial_or_invalid` on hard failure. A summary serialization failure is
-  attempted once and makes the finalizer return nonzero.
-
-The PLAN's GUIDE §7.7 exposure-policy alternative is satisfied by an immutable
-reference rather than a duplicated `exposure-policy.json`: the materialized
-plan binds frozen shutters plus immutable template/descriptor/source
-attestation identities. No new exposure-policy semantic owner was added.
-
-Final validation on the corrected production tree:
-
-1. Targeted:
-
-   ```text
-   .venv/bin/python -m unittest -v tests.test_p7_td_b_r6_terminal tests.test_p7_thermal_diagnostics.P7ThermalDiagnosticsTests.test_r6_wrapper_terminal_effect_order_and_failure_precedence tests.test_p7_thermal_diagnostics.P7ThermalDiagnosticsTests.test_r6_wrapper_terminal_artifact_write_failure_is_nonzero_and_not_complete
-   Ran 8 tests in 4.510s — OK
-   ```
-
-2. Focused:
-
-   ```text
-   .venv/bin/python -m unittest tests.test_p7_td_b_r6_terminal tests.test_p7_thermal_diagnostics tests.test_p7_td_b_r6_stage_gate tests.test_p7_td_b_r6_contract
-   Ran 207 tests in 256.582s — OK
-   ```
-
-3. Compile, shell, diff, and CodeGraph:
-
-   ```text
-   py_compile (both production modules and both test modules) — PASS
-   zsh -n tmp/run-p7-thermal-diagnostics.zsh — PASS
-   git diff --check — PASS
-   codegraph sync — PASS (Modified: 2; 94 nodes)
-   focused CodeGraph call-path query — PASS
-   ```
-
-4. Unique valid final full suite:
-
-   ```text
-   .venv/bin/python -m unittest discover -s tests
-   Ran 972 tests in 374.379s — OK
-   ```
-
-One full-suite process had already started when the final returned-summary
-review finding arrived. It was immediately interrupted with exit `130` and is
-explicitly superseded/incomplete, not a validation result. The `972/972` run
-above is the only valid final full-suite result for the final production tree.
-
-Final implementation/test source SHA-256 identities:
-
-- `measure_p7_thermal_diagnostics.py`:
-  `f6c5f6e4e002863d34eb39a578b56e92a31ad70c907570d3537152d73030f8e3`
-- `p7_td_b_r6_terminal.py`:
-  `4e38d97000f7e908fb56db5ac731e28182f7759f45b394881d66a1791a144e3e`
-- `run-p7-thermal-diagnostics.zsh`:
-  `a82a6689e6fe4b4d403f3b84c8612cf79c7d35463cd89047ccbf9febd43d52df`
-- `test_p7_td_b_r6_terminal.py`:
-  `034d4b828c73880d47b390ea63251ee408299cca95bd5a0071b74be12e7cc1d5`
-- `test_p7_thermal_diagnostics.py`:
-  `ac76eba85ab504d588a08cdee317670bd8a4b421cd6660433eb10c707baef47e`
-
-## Scope and access counters
-
+- Fresh formal root access/create: `0/0`
+- Historical/rejected/retained external payload access: `0`
 - Real device calls: `0`
-- Real camera calls: `0`
-- Real Ray calls: `0`
-- Real strip calls: `0`
-- Network calls: `0`
-- Formal captures/launches: `0`
-- External experiment payload/root reads: `0`
-- Retained-R3 reads/consumption: `0`
+- Camera calls/captures: `0/0`
+- Ray calls: `0`
+- Strip zero/nonzero/formal calls: `0/0/0`
+- Cleanup/safety-zero calls: `0/0`
+- G4-07 analyzer: `0`
+- Combined TD-B/TD-C/sentinel/P8: `0/0/0/0`
 - Release consumption: `0`
-- Analyzer calls: `0`
-- TD-C calls: `0`
-- Firmware/deploy operations: `0`
-- New experiment roots: `0`
-- New task IDs/corrective suffixes: `0`
-- Commits created by Executer: `0`
+- Firmware/flash/deploy/destructive operations: `0`
+- New task/controller/corrective suffix: `0/0/0`
+- Git commits: `0`
 
-Relative to activation HEAD, `.agent-work/PLAN.md`,
-`.agent-work/FULL_PLAN_REFERENCE.md`, GUIDE/RESEARCH, config, the scientific
-owner `p7_thermal_diagnostics.py`, and analyzer
-`analyze_p7_thermal_diagnostics.py` are unchanged. PLAN and FULL remain
-read-only to the Executer.
+`.agent-work/PLAN.md` and `.agent-work/FULL_PLAN_REFERENCE.md` were not
+modified. GUIDE/RESEARCH, code, tests, config, accepted package, and all
+external artifacts remain read-only and unchanged. The only worktree change
+made by this Executer is this current `EXECUTION_RESULT.md` handoff.
 
-## Proposed disposition
+## Requested disposition
 
-`READY_FOR_PLANNER_G4_06_FORMAL_TERMINAL_EVIDENCE_ENGINEERING_REVIEW`
-
-The Planner should review this candidate against the live PLAN. Acceptance here
-must remain engineering-only. The Orchestrator must create the required focused
-immutable code checkpoint before any later Planner package may authorize formal
-acquisition. No real formal execution is authorized or implied by these offline
-tests.
+Return to the Orchestrator/Planner with
+`BLOCKED_PREDEVICE_ACTIVATION_OR_SOURCE_DRIFT`. Do not activate the formal
+launch, create the frozen root, retry/replay the stale package, or infer a new
+package route from this Executer handoff.

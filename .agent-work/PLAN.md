@@ -1,6 +1,6 @@
-# REF-G4-06-RAY-R6 formal acquisition Package B
+# REF-G4-06-RAY-R6 canonical package replay source-successor engineering
 
-**计划状态：** `EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION_FORMAL_PACKAGE_B`
+**计划状态：** `EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION_SOURCE_SUCCESSOR_ENGINEERING`
 
 **Executable：** `true_after_exact_activation`
 
@@ -8,244 +8,269 @@
 
 **Active reference task：** `REF-G4-06-RAY-R6`
 
-**Contract：** `G4-RAY-R6-FORMAL-ACQUISITION-PACKAGE-B-V1`
+**Contract：** `G4-RAY-R6-CANONICAL-PACKAGE-REPLAY-SOURCE-SUCCESSOR-ENGINEERING-V1`
 
-**唯一 Planner stop：** `RETURN_AFTER_TERMINAL_OR_HARD_FAIL_EVIDENCE_FOR_G4_06_REVIEW`
+**Planner stop：** `RETURN_FOR_G4_06_SOURCE_SUCCESSOR_ENGINEERING_REVIEW`
 
-`PLAN_MACHINE_CONTRACT={"schema":"planner_execution_contract_v2","contract_id":"G4-RAY-R6-FORMAL-ACQUISITION-PACKAGE-B-V1","plan_status":"EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION_FORMAL_PACKAGE_B","executable":true,"active_task_count":1,"active_task":"REF-G4-06-RAY-R6","reference_task_id":"REF-G4-06-RAY-R6","reference_goal":"REF-G4-COMPLETE","reference_task_status":"ACTIVE_FORMAL_ACQUISITION_PACKAGE_B_AFTER_EXACT_ORCHESTRATOR_ACTIVATION","activation_state":"WAITING_ORCHESTRATOR_FULL_MIRROR_AND_ACTIVATION_COMMIT","activation_commit":{"expected_parent":"94a6e3e37f6c07632a392bc6a18030a6c4897122","expected_parent_tree":"53871e389225c0992d996b354d76b2ab2b981456","expected_subject":"docs(plan): activate Ray R6 formal acquisition","expected_changed_paths":[".agent-work/EXECUTION_RESULT.md",".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/archived/EXECUTION_RESULT-20260804-1634.md",".agent-work/archived/FULL_PLAN_REFERENCE-20260804-1640.md",".agent-work/archived/PLAN-20260804-1634.md",".agent-work/archived/PLAN-20260804-1645.md"],"direct_non_merge_child":true,"child_sha_recorded_in_plan":false},"same_reference":true,"new_task_ids":0,"corrective_suffixes":0,"single_current_action":"run_one_fresh_ray_r6_formal_acquisition_through_terminal_or_hard_fail_seal","reviewed_checkpoint_stop_archive":{"path":".agent-work/archived/PLAN-20260804-1645.md","bytes":7836,"sha256":"d056199037d06b034f831c7e0c87db4027e0d08b84a6e01b3112181136664f2c"},"guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","accepted_code_checkpoint":"94a6e3e37f6c07632a392bc6a18030a6c4897122","accepted_code_tree":"53871e389225c0992d996b354d76b2ab2b981456","accepted_code_parent":"f0d957da554d28443e66f235ca9721ace886165f","accepted_code_subject":"feat(formal): close Ray R6 terminal evidence","accepted_code_paths":["src/camera_based_rgbww_optimizer/optimization/measure_p7_thermal_diagnostics.py","src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_terminal.py","tests/test_p7_td_b_r6_terminal.py","tests/test_p7_thermal_diagnostics.py","tmp/run-p7-thermal-diagnostics.zsh"],"accepted_source_sha256":{"src/camera_based_rgbww_optimizer/optimization/measure_p7_thermal_diagnostics.py":"f6c5f6e4e002863d34eb39a578b56e92a31ad70c907570d3537152d73030f8e3","src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_terminal.py":"4e38d97000f7e908fb56db5ac731e28182f7759f45b394881d66a1791a144e3e","tests/test_p7_td_b_r6_terminal.py":"034d4b828c73880d47b390ea63251ee408299cca95bd5a0071b74be12e7cc1d5","tests/test_p7_thermal_diagnostics.py":"ac76eba85ab504d588a08cdee317670bd8a4b421cd6660433eb10c707baef47e","tmp/run-p7-thermal-diagnostics.zsh":"a82a6689e6fe4b4d403f3b84c8612cf79c7d35463cd89047ccbf9febd43d52df"},"accepted_stage_gate_package_binding":{"schema":"p7_td_b_r6_stage_gate_package_binding_v1","package_root":{"path":"/Volumes/4T/temp/rgbww-optimizer/g4-ray-r6-stage-gate-ebc40bf8e40c-harness-replacement-20260804T141423Z","device":16777244,"inode":2903750,"mode":448},"inventory":["launch-descriptor.json","stage-gate.json","terminal-seal.json"],"artifacts":{"launch-descriptor.json":{"path":"launch-descriptor.json","bytes":10890,"sha256":"9dd7da778f0bfd1d5975a7babc0341fbc32ea4a10e44edf95ed4c8fd59d6afc8","device":16777244,"inode":2903752,"mode":384},"stage-gate.json":{"path":"stage-gate.json","bytes":24805,"sha256":"e14eabd51eab182f50b6c8ff7583ec7e96294ae21e6feb447400ca4aee718ef2","device":16777244,"inode":2903751,"mode":384},"terminal-seal.json":{"path":"terminal-seal.json","bytes":980,"sha256":"a7a84fae6abf60fba3a5aef891074c4a5a99be478f8f6f8fb95a507f908aa65e","device":16777244,"inode":2903753,"mode":384}}},"formal_execution_authority":{"experiment_id":"p7_td_b_command_switch_history_v1","source":"ray","stage":"TD-B","camera_backend":"remote","formal_execution_authorized":true,"formal_root_creation_authorized":true,"device_control_authorized":true,"camera_authorized":true,"ray_authorized":true,"strip_authorized":false,"capture_authorized":true,"formal_root_parent":"/Volumes/4T/temp/rgbww-optimizer","formal_root_basename":"p7-td-b-formal-r6-94a6e3e37f6c-20260804T164500Z","formal_root_basename_regex":"^p7-td-b-formal-r6-[0-9a-f]{12}-[0-9]{8}T[0-9]{6}Z$","logical_capture_cap":16,"physical_cr3_cap":16,"launch_cap":1,"retry":0,"release_consumption_authorized":false,"td_c_authorized":false,"stage_gate_package_binding":{"schema":"p7_td_b_r6_stage_gate_package_binding_v1","package_root":{"path":"/Volumes/4T/temp/rgbww-optimizer/g4-ray-r6-stage-gate-ebc40bf8e40c-harness-replacement-20260804T141423Z","device":16777244,"inode":2903750,"mode":448},"inventory":["launch-descriptor.json","stage-gate.json","terminal-seal.json"],"artifacts":{"launch-descriptor.json":{"path":"launch-descriptor.json","bytes":10890,"sha256":"9dd7da778f0bfd1d5975a7babc0341fbc32ea4a10e44edf95ed4c8fd59d6afc8","device":16777244,"inode":2903752,"mode":384},"stage-gate.json":{"path":"stage-gate.json","bytes":24805,"sha256":"e14eabd51eab182f50b6c8ff7583ec7e96294ae21e6feb447400ca4aee718ef2","device":16777244,"inode":2903751,"mode":384},"terminal-seal.json":{"path":"terminal-seal.json","bytes":980,"sha256":"a7a84fae6abf60fba3a5aef891074c4a5a99be478f8f6f8fb95a507f908aa65e","device":16777244,"inode":2903753,"mode":384}}}},"required_full_g4_06_state":{"package":"B_FORMAL_ACQUISITION","contract_id":"G4-RAY-R6-FORMAL-ACQUISITION-PACKAGE-B-V1","authority_owner":"MATCHING_LIVE_PLAN_ONLY","full_top_level_non_authorizing":true,"formal_authority_mirror":{"experiment_id":"p7_td_b_command_switch_history_v1","source":"ray","stage":"TD-B","camera_backend":"remote","formal_execution_authorized":true,"formal_root_creation_authorized":true,"device_control_authorized":true,"camera_authorized":true,"ray_authorized":true,"strip_authorized":false,"capture_authorized":true,"formal_root_parent":"/Volumes/4T/temp/rgbww-optimizer","formal_root_basename":"p7-td-b-formal-r6-94a6e3e37f6c-20260804T164500Z","formal_root_basename_regex":"^p7-td-b-formal-r6-[0-9a-f]{12}-[0-9]{8}T[0-9]{6}Z$","logical_capture_cap":16,"physical_cr3_cap":16,"launch_cap":1,"retry":0,"release_consumption_authorized":false,"td_c_authorized":false,"stage_gate_package_binding":{"schema":"p7_td_b_r6_stage_gate_package_binding_v1","package_root":{"path":"/Volumes/4T/temp/rgbww-optimizer/g4-ray-r6-stage-gate-ebc40bf8e40c-harness-replacement-20260804T141423Z","device":16777244,"inode":2903750,"mode":448},"inventory":["launch-descriptor.json","stage-gate.json","terminal-seal.json"],"artifacts":{"launch-descriptor.json":{"path":"launch-descriptor.json","bytes":10890,"sha256":"9dd7da778f0bfd1d5975a7babc0341fbc32ea4a10e44edf95ed4c8fd59d6afc8","device":16777244,"inode":2903752,"mode":384},"stage-gate.json":{"path":"stage-gate.json","bytes":24805,"sha256":"e14eabd51eab182f50b6c8ff7583ec7e96294ae21e6feb447400ca4aee718ef2","device":16777244,"inode":2903751,"mode":384},"terminal-seal.json":{"path":"terminal-seal.json","bytes":980,"sha256":"a7a84fae6abf60fba3a5aef891074c4a5a99be478f8f6f8fb95a507f908aa65e","device":16777244,"inode":2903753,"mode":384}}}},"g4_07_unlocked":false},"fresh_formal_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-formal-r6-94a6e3e37f6c-20260804T164500Z","root_create_owner":"VISIBLE_TERMINAL_ATOMIC_MKDIR_THEN_REPO_WRAPPER","root_create_cap":1,"root_reuse":false,"root_repair":0,"alternate_root":0,"production_launch_cap":1,"logical_capture_cap":16,"physical_cr3_cap":16,"setup_capture_cap":0,"ambient_capture_cap":0,"retry":0,"analysis_authorized":false,"g4_07_authorized":false,"strip_formal_authorized":false,"combined_td_b_authorized":false,"td_c_authorized":false,"release_consumption_authorized":false,"retained_r3_access":0,"historical_root_access":0,"visible_terminal_required":true,"liveness_check_count":3,"expected_duration_over_10_minutes":true,"planner_stop":"RETURN_AFTER_TERMINAL_OR_HARD_FAIL_EVIDENCE_FOR_G4_06_REVIEW"}`
+`PLAN_MACHINE_CONTRACT={"schema":"planner_execution_contract_v2","contract_id":"G4-RAY-R6-CANONICAL-PACKAGE-REPLAY-SOURCE-SUCCESSOR-ENGINEERING-V1","plan_status":"EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION_SOURCE_SUCCESSOR_ENGINEERING","executable":true,"active_task_count":1,"active_task":"REF-G4-06-RAY-R6","reference_task_id":"REF-G4-06-RAY-R6","reference_goal":"REF-G4-COMPLETE","reference_task_status":"ACTIVE_CANONICAL_PACKAGE_REPLAY_SOURCE_SUCCESSOR_ENGINEERING_AFTER_EXACT_ACTIVATION","activation_state":"WAITING_ORCHESTRATOR_FULL_ALIGNMENT_COMMIT","activation_commit":{"expected_parent":"f127f6eb4cc2a102ede16560224394996cb29cd5","expected_parent_tree":"8142e61214f2bca6692b5bbfcc02ff8ec49ccfbe","expected_subject":"docs(plan): activate Ray R6 source successor engineering","expected_changed_paths":[".agent-work/EXECUTION_RESULT.md",".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/archived/EXECUTION_RESULT-20260804-1702.md",".agent-work/archived/PLAN-20260804-1702.md"],"direct_non_merge_child":true,"child_sha_recorded_in_plan":false},"same_reference":true,"new_task_ids":0,"corrective_suffixes":0,"single_current_action":"implement_and_validate_one_git_attested_accepted_source_successor_seam_for_canonical_stage_gate_package_replay","reviewed_disposition":"ACCEPTED_CONTROLLED_PREDEVICE_SOURCE_REFERENCE_DRIFT_NO_FORMAL_ATTEMPT","reviewed_plan_archive":{"path":".agent-work/archived/PLAN-20260804-1702.md","bytes":22676,"sha256":"0fdcb3cb0b4c818d6c4b05d186ea712c82e0c685d7c810e5588baec38030b152"},"reviewed_execution_result_archive":{"path":".agent-work/archived/EXECUTION_RESULT-20260804-1702.md","bytes":6882,"sha256":"6d85222b9b7e3bb0b358e3fd8a8adbb0e05ec2a9fbc18753f3eab27614787430"},"owner_seam":"SEALED_EBC40BF_SOURCE_REFERENCES_LACK_EXPLICIT_GIT_ATTESTED_ACCEPTED_POST_PACKAGE_CODE_SUCCESSOR_CHAIN","orchestration_drift_already_supported":true,"integrity_first_required":true,"accepted_stage_gate_package_binding":{"schema":"p7_td_b_r6_stage_gate_package_binding_v1","package_root":{"path":"/Volumes/4T/temp/rgbww-optimizer/g4-ray-r6-stage-gate-ebc40bf8e40c-harness-replacement-20260804T141423Z","device":16777244,"inode":2903750,"mode":448},"inventory":["launch-descriptor.json","stage-gate.json","terminal-seal.json"],"artifacts":{"launch-descriptor.json":{"path":"launch-descriptor.json","bytes":10890,"sha256":"9dd7da778f0bfd1d5975a7babc0341fbc32ea4a10e44edf95ed4c8fd59d6afc8","device":16777244,"inode":2903752,"mode":384},"stage-gate.json":{"path":"stage-gate.json","bytes":24805,"sha256":"e14eabd51eab182f50b6c8ff7583ec7e96294ae21e6feb447400ca4aee718ef2","device":16777244,"inode":2903751,"mode":384},"terminal-seal.json":{"path":"terminal-seal.json","bytes":980,"sha256":"a7a84fae6abf60fba3a5aef891074c4a5a99be478f8f6f8fb95a507f908aa65e","device":16777244,"inode":2903753,"mode":384}}},"sealed_package_code_owner_checkpoint":"ebc40bf8e40c4bb59bd070367a321a2e76c3ce5c","sealed_package_code_owner_tree":"9dc4b3fb70bc97b80fb1db3b2389585e349e8737","accepted_terminal_code_checkpoint":"94a6e3e37f6c07632a392bc6a18030a6c4897122","accepted_terminal_code_tree":"53871e389225c0992d996b354d76b2ab2b981456","reserved_uncreated_formal_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-formal-r6-94a6e3e37f6c-20260804T164500Z","required_full_g4_06_state":{"package":"E_CANONICAL_PACKAGE_REPLAY_SOURCE_SUCCESSOR_ENGINEERING","contract_id":"G4-RAY-R6-CANONICAL-PACKAGE-REPLAY-SOURCE-SUCCESSOR-ENGINEERING-V1","authority_owner":"MATCHING_LIVE_PLAN_ONLY","full_top_level_non_authorizing":true,"engineering_only":true,"formal_execution_authorized":false,"formal_root_creation_authorized":false,"device_authorized":false,"camera_authorized":false,"ray_authorized":false,"capture_authorized":false,"release_consumption_authorized":false,"g4_07_unlocked":false,"accepted_stage_gate_package_binding":{"schema":"p7_td_b_r6_stage_gate_package_binding_v1","package_root":{"path":"/Volumes/4T/temp/rgbww-optimizer/g4-ray-r6-stage-gate-ebc40bf8e40c-harness-replacement-20260804T141423Z","device":16777244,"inode":2903750,"mode":448},"inventory":["launch-descriptor.json","stage-gate.json","terminal-seal.json"],"artifacts":{"launch-descriptor.json":{"path":"launch-descriptor.json","bytes":10890,"sha256":"9dd7da778f0bfd1d5975a7babc0341fbc32ea4a10e44edf95ed4c8fd59d6afc8","device":16777244,"inode":2903752,"mode":384},"stage-gate.json":{"path":"stage-gate.json","bytes":24805,"sha256":"e14eabd51eab182f50b6c8ff7583ec7e96294ae21e6feb447400ca4aee718ef2","device":16777244,"inode":2903751,"mode":384},"terminal-seal.json":{"path":"terminal-seal.json","bytes":980,"sha256":"a7a84fae6abf60fba3a5aef891074c4a5a99be478f8f6f8fb95a507f908aa65e","device":16777244,"inode":2903753,"mode":384}}},"accepted_terminal_code_checkpoint":"94a6e3e37f6c07632a392bc6a18030a6c4897122","reviewed_failure_disposition":"ACCEPTED_CONTROLLED_PREDEVICE_SOURCE_REFERENCE_DRIFT_NO_FORMAL_ATTEMPT"},"allowed_repo_changed_paths":[".agent-work/EXECUTION_RESULT.md","src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","tests/test_p7_td_b_r6_stage_gate.py"],"new_production_module_cap":0,"new_controller_or_adapter_cap":0,"external_accepted_package_access":0,"formal_root_access":0,"device_authorized":false,"network_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"capture_authorized":false,"formal_execution_authorized":false,"release_consumption_authorized":false,"analysis_authorized":false,"td_c_authorized":false,"targeted_required":true,"focused_required":true,"compile_required":true,"codegraph_sync_required":true,"diff_check_required":true,"full_suite_required_once":true,"expected_duration_under_10_minutes":true,"visible_terminal_required":false,"planner_stop":"RETURN_FOR_G4_06_SOURCE_SUCCESSOR_ENGINEERING_REVIEW"}`
 
-## 0. Package decision
+## 0. Reviewed disposition
 
-本PLAN是同一reference下唯一最大安全连续Package B。它只释放一次fresh Ray R6 formal acquisition，从exclusive root create开始，经过production launch、16张capture、ledger/quality gate、三层cleanup和terminal/failure seal，到EXECUTION_RESULT handoff为止。
+Planner接受本次结果为：
 
-它不释放G4-07 analysis、strip formal、combined TD-B、TD-C、retained-R3、release consumption、firmware、flash、deploy或任何历史root。FULL继续是non-executable mirror；只有本PLAN在exact activation后授权这里列出的有界light/camera/device动作。
+`ACCEPTED_CONTROLLED_PREDEVICE_SOURCE_REFERENCE_DRIFT_NO_FORMAL_ATTEMPT`
 
-Checkpoint-stop PLAN已冻结：
+Gate 1–9全部通过；Gate 10首次且唯一调用repo-owned
+`load_and_validate_stage_gate_package`时在返回package/binding前以
+`source_reference_drift` fail closed。Fresh root、Terminal、wrapper、child、device、
+camera、Ray、strip、cleanup、capture与formal owner调用均为0。
 
-- archive：`.agent-work/archived/PLAN-20260804-1645.md`
-- bytes：`7836`
-- SHA-256：`d056199037d06b034f831c7e0c87db4027e0d08b84a6e01b3112181136664f2c`
-- disposition：`historical_non_executable`
+这不是formal attempt、scientific hard stop、Human blocker、Advisor问题或package corruption结论。
+不得请求Human/Advisor，不得创建corrective suffix、新task、新stage-gate root或formal root。
 
-## 1. Activation 与pre-device gates
+Reviewed archives：
 
-任何external root或device访问前，Executer必须只读验证并写入ER：
+- PLAN：`.agent-work/archived/PLAN-20260804-1702.md`，22676 bytes，
+  SHA-256 `0fdcb3cb0b4c818d6c4b05d186ea712c82e0c685d7c810e5588baec38030b152`；
+- ER：`.agent-work/archived/EXECUTION_RESULT-20260804-1702.md`，6882 bytes，
+  SHA-256 `6d85222b9b7e3bb0b358e3fd8a8adbb0e05ec2a9fbc18753f3eab27614787430`。
 
-1. branch `main`，worktree clean；
-2. HEAD是`94a6e3e37f6c07632a392bc6a18030a6c4897122`的direct non-merge child；
-3. activation subject exact `docs(plan): activate Ray R6 formal acquisition`；
-4. activation changed paths exact：
-   - `.agent-work/EXECUTION_RESULT.md`
-   - `.agent-work/FULL_PLAN_REFERENCE.md`
-   - `.agent-work/PLAN.md`
-   - `.agent-work/archived/EXECUTION_RESULT-20260804-1634.md`
-   - `.agent-work/archived/FULL_PLAN_REFERENCE-20260804-1640.md`
-   - `.agent-work/archived/PLAN-20260804-1634.md`
-   - `.agent-work/archived/PLAN-20260804-1645.md`
-5. repo-owned PLAN/FULL strict parser均pass；
-6. PLAN/FULL active/current/canonical均为`REF-G4-06-RAY-R6`，active count `1/1`，contract exact `G4-RAY-R6-FORMAL-ACQUISITION-PACKAGE-B-V1`，PLAN executable true、FULL executable false；
-7. PLAN `formal_execution_authority`与FULL `g4_06_state.formal_authority_mirror`逐字段exact相等，FULL `g4_06_state`逐字段exact等于本PLAN `required_full_g4_06_state`；
-8. GUIDE bytes SHA-256 exact `659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35`；
-9. accepted code checkpoint/tree、parent、subject、five paths及五个current source SHA与machine row exact；
-10. accepted stage-gate package binding的root identity、closed three-artifact inventory、每个bytes/SHA/device/inode/mode与machine row exact。
+两份archive均保存完整source body/identity并标记`historical_non_executable`。
 
-任一gate不符：不得访问stage-gate package、fresh root或设备；只写ER `BLOCKED_PREDEVICE_ACTIVATION_OR_SOURCE_DRIFT`并返回Orchestrator。禁止reset/clean、猜测、临时controller或alternate root。
+## 1. Exact owner/state seam
 
-## 2. Frozen formal authority
+Repo evidence确定：
 
-GUIDE experiment：`P7-TD-B-RAY-OP600-EXPOSURE-GUARDED-FORMAL-R6`。Production CLI的repo-owned入口实验ID固定为`p7_td_b_command_switch_history_v1`，runtime stage-gate template必须把它映射回上述GUIDE experiment；Executer不得手工生成plan或修改runtime。
+1. `_validate_source_references(..., allow_orchestration_drift=True)`已经明确跳过
+   `.agent-work/` current-byte equality；因此PLAN/FULL activation bytes本身不是缺失功能；
+2. sealed package的committed source owner是`ebc40bf8e40c...1389585e349e8737`；
+3. package之后的accepted terminal checkpoint
+   `94a6e3e37f6c...b2ab2b981456`修改了
+   `measure_p7_thermal_diagnostics.py`、`tests/test_p7_thermal_diagnostics.py`和wrapper，
+   并增加terminal owner/test；
+4. canonical loader仍要求全部non-orchestration sealed source references逐字等于current
+   working bytes，且旧attestation只允许ebc owner后的`.agent-work/` lineage；
+5. 现有negative test正确拒绝“任意later code child”。不得删除或泛化这一保护。
 
-唯一formal root：
+缺失边界是：sealed package的immutable source references与后来明确accepted的code checkpoints之间，
+没有一个由repo-owned PLAN/FULL mirror和read-only Git per-commit provenance共同授权的
+`accepted source successor chain`。
+
+## 2. Maintainability 与唯一owner
+
+实现owner保持在：
+
+`src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py`
+
+该module已有package replay、source-reference与committed-source attestation所有权。修改前做focused
+maintainability preflight；复用现有`SourceReference`、strict machine parsers、
+`validate_committed_source_attestation`、Git query与canonical provenance helpers。
+
+禁止：
+
+- 新production module、adapter、controller或parallel serializer；
+- global/env flag、monkeypatch、runtime bypass、handwritten controller；
+- hardcode只接受当前HEAD；
+- 把`allow_orchestration_drift`扩大到所有source；
+- 忽略bytes/SHA/mode、descriptor/package binding或per-commit history；
+- 修改measure/terminal/wrapper/GUIDE/RESEARCH/FULL/PLAN；
+- 重建、修补或读取accepted external package payload。
+
+若直接修改会复制Git lineage或source-reference semantics，先在同module内抽取一个窄的
+private validator/dataclass，并以tests保护；不得借机重构其他stage-gate职责。
+
+## 3. Required accepted-source-successor contract
+
+Implement一个canonical显式successor seam，供formal production loader调用。它必须同时满足：
+
+### A. Immutable package integrity first
+
+- accepted package root/artifact binding继续exact为machine row中的path/device/inode/mode、
+  ordered inventory和三artifact bytes/SHA；
+- descriptor与stage-gate的source references必须互相exact；reference set/order/type/path/mode/
+  bytes/SHA与secret/historical guards保持原有fail-closed precedence；
+- strict `replay_stage_gate_package`默认语义不放宽；
+- package artifact或descriptor reference drift在任何successor解释前失败；
+- accepted external package本轮不得被测试或Executer读取；全部使用synthetic package fixtures。
+
+### B. Explicit live PLAN/FULL mirror
+
+Formal future PLAN必须提供一个JSON-native、closed-schema
+`accepted_source_successor_chain`，FULL exact mirror同一对象。每个accepted code checkpoint至少绑定：
+
+- checkpoint/tree与exact sole parent；
+- non-merge、exact subject、exact changed-path set；
+- relevant current source path/bytes/SHA/mode；
+- predecessor role及是否为package-sealed owner或later accepted owner。
+
+Production owner只能从repo-owned strict PLAN/FULL machine rows读取该对象；不得从env、fixture、
+history prose或external controller推断。PLAN/FULL不一致、缺key、额外key、错误类型/顺序或unknown
+checkpoint必须fail closed before backend/root/device。
+
+### C. Read-only Git per-commit proof
+
+从sealed ebc owner到declared terminal accepted successor，及之后未来本工程accepted code checkpoint，
+必须逐commit验证：
+
+- linear direct-child history、no merge/no cycle；
+- 每个intermediate orchestration commit changed paths全部在`.agent-work/`；
+- 每个非orchestration commit必须在successor chain中exact列出；
+- commit tree/parent/subject/path set与declared row exact；
+- Git blob bytes/SHA/mode与declared source identities exact；
+- current accepted successor必须是live activation ancestor；
+- current worktree除PLAN允许的ER外不得有non-orchestration drift；
+- add/delete/restore、transient non-orchestration change、extra/missing/reordered path和同tree merge均拒绝。
+
+Original sealed candidate refs继续由sealed ebc Git blob验证；sealed后未改变的source必须继续current
+exact；仅chain中明确接受并绑定final Git blob/current identity的source可跨越旧reference。
+新增terminal owner/test虽不在旧reference set，也必须由accepted checkpoint row显式绑定。
+
+### D. Production integration
+
+`load_and_validate_stage_gate_package`与`run_production_cli_launch`之间必须只有一个canonical
+successor validation owner。推荐使用显式参数/value object传递strict-parsed successor contract；
+禁止loader silently读取global或自行猜测最新commit。
+
+Validation顺序必须是：
+
+```text
+package root/artifact/descriptor integrity
+-> sealed source reference structure and original Git blobs
+-> PLAN/FULL exact successor mirror
+-> per-commit accepted successor proof
+-> current source/worktree identity
+-> production formal machine authority
+-> backend construction
+```
+
+任一失败必须在backend/root/device之前，stable error code区分package integrity、successor contract、
+Git topology/blob与current source drift。
+
+## 4. Harness/fixture correction in same package
+
+现有`test_old_descriptor_does_not_promote_later_package_a_code_child`的安全含义必须保留：
+未在PLAN/FULL exact chain中接受的later child仍拒绝。
+
+在同一个test file内扩展synthetic Git fixture，加入：
+
+- sealed package owner；
+- 零个或多个orchestration-only descendants；
+- exact accepted terminal code child；
+- exact future source-successor engineering child；
+- formal PLAN/FULL activation descendant。
+
+不得另拆harness task。Fixture只能生成temporary synthetic repository/package，不得访问当前accepted
+external package或正式root。
+
+## 5. Meaningful tests
+
+Positive：
+
+1. unchanged sealed package/current source仍走原strict replay；
+2. sealed ebc package经exact PLAN/FULL accepted successor chain可在formal loader成功canonical replay，
+   returned binding仍逐字段等于immutable original binding；
+3. accepted 94a-like terminal code row与future engineering code row均以Git blob/source identities绑定；
+4. orchestration-only descendants和仅ER dirty被允许；
+5. production launch在successor+formal machine gates通过后exact once delegate，测试注入callback，
+   backend/root/device调用为0。
+
+Negative至少覆盖：
+
+- package artifact/descriptor/source-reference bytes/SHA/mode/order/set drift；
+- missing/extra/reordered/wrong-type successor row；
+- PLAN/FULL successor mirror drift；
+- arbitrary later code child、wrong parent/tree/subject/path/source SHA；
+- merge/nonlinear/cycle、intermediate non-orchestration commit；
+- add-delete-restore与相同终树的transient source drift；
+- declared source Git blob/current worktree drift；
+- accepted successor不是live ancestor；
+- global/env/monkeypatch path不存在；
+- failure全部发生在backend factory/delegate/root/device前。
+
+Assertions必须验证stable error code、effect order、call counters和returned binding；不能只断言抛异常。
+
+## 6. Exact scope
+
+Executer只可修改：
+
+- `.agent-work/EXECUTION_RESULT.md`
+- `src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py`
+- `tests/test_p7_td_b_r6_stage_gate.py`
+
+若需要其他production/test/config文件，停止回Orchestrator，不得扩大。FULL/PLAN只读。
+
+允许测试在`/Volumes/4T/temp/rgbww-optimizer`创建并自动清理temporary synthetic directories；禁止读取、
+stat、list、describe、修复或消费accepted package root与reserved formal root。Real external/device/
+network/camera/Ray/strip/formal calls全部为0。
+
+## 7. Validation
+
+按顺序：
+
+1. Targeted：
+
+```text
+.venv/bin/python -m unittest -v tests.test_p7_td_b_r6_stage_gate
+```
+
+2. Focused integration：
+
+```text
+.venv/bin/python -m unittest tests.test_p7_td_b_r6_stage_gate tests.test_p7_td_b_r6_contract tests.test_p7_thermal_diagnostics
+```
+
+3. Compile：
+
+```text
+.venv/bin/python -m py_compile src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py tests/test_p7_td_b_r6_stage_gate.py
+```
+
+4. `codegraph sync`，随后query证明canonical successor owner唯一、production loader/launch只委派一次、
+无parallel Git/source validator；
+5. `git diff --check`与exact changed-path check；
+6. 只有上述全部green后执行唯一fresh full suite：
+
+```text
+.venv/bin/python -m unittest discover -s tests
+```
+
+不得因失败重复full；普通工程修正保持同一reference/contract，不创建suffix或root。若同一具体seam第三次
+仍失败，停止回Orchestrator。
+
+## 8. ER 与acceptance
+
+ER必须记录：
+
+- activation topology和strict PLAN/FULL machine evidence；
+- reviewed pre-device failure archive pointers；
+- maintainability preflight与owner call path；
+- successor schema、effect order、original/accepted checkpoint synthetic proof；
+- positive/negative test mapping；
+- targeted/focused/compile/CodeGraph/diff/full exact命令与counts；
+- source SHA与exact diff；
+- accepted external package/formal root access0；
+- backend/root/device/network/camera/Ray/strip/capture/formal counters0；
+- proposed focused code checkpoint paths/subject。
+
+Acceptance：
+
+- immutable package/integrity-first不变；
+- arbitrary later child仍拒绝；
+- exact PLAN/FULL+Git accepted successor唯一可达；
+- production path在backend前完成全部source proof；
+- tests与full全部pass；
+- changed paths exact；
+- 无external/device/formal access。
+
+成功status request：
+
+`READY_FOR_PLANNER_G4_06_SOURCE_SUCCESSOR_ENGINEERING_REVIEW`
+
+成功后Orchestrator必须先创建focused code checkpoint；Planner随后在同一
+`REF-G4-06-RAY-R6`恢复原formal Package B，reserved root仍为：
 
 `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-formal-r6-94a6e3e37f6c-20260804T164500Z`
 
-- parent exact：`/Volumes/4T/temp/rgbww-optimizer`
-- basename必须匹配repo-owned regex `^p7-td-b-formal-r6-[0-9a-f]{12}-[0-9]{8}T[0-9]{6}Z$`
-- root create cap `1`；mode exact `0700`
-- reuse `false`；repair/retry/alternate root `0/0/0`
-- 历史、rejected、retained或其他external experiment root access count `0`
-- 不得预先`ls/stat/read/test`该路径；atomic `mkdir -m 700`本身是唯一freshness/exclusive-create gate
-- mkdir失败立即停止：launch/device/capture count必须保持0，不得换名、清空、修复或复用该路径
+本PLAN不授权formal execution。
 
-Accepted stage-gate package只允许由production owner canonical replay，不允许Executer逐文件手工解释：
-
-`/Volumes/4T/temp/rgbww-optimizer/g4-ray-r6-stage-gate-ebc40bf8e40c-harness-replacement-20260804T141423Z`
-
-它必须绑定accepted package root device/inode/mode与：
-
-- `launch-descriptor.json`：10890 bytes，SHA `9dd7da778f0bfd1d5975a7babc0341fbc32ea4a10e44edf95ed4c8fd59d6afc8`，mode `0600`
-- `stage-gate.json`：24805 bytes，SHA `e14eabd51eab182f50b6c8ff7583ec7e96294ae21e6feb447400ca4aee718ef2`，mode `0600`
-- `terminal-seal.json`：980 bytes，SHA `a7a84fae6abf60fba3a5aef891074c4a5a99be478f8f6f8fb95a507f908aa65e`，mode `0600`
-
-## 3. Exact scientific schedule 与budgets
-
-Runtime template必须由accepted stage-gate owner生成并通过production validators。冻结值：
-
-- source：Ray only；strip非零调用 `0`，strip只允许zero/off isolation与cleanup；
-- camera backend：repo default remote；禁止CLI/env/base-url/timeout override，禁止打印或序列化credential；
-- formal logical/physical：`16/16`；setup `0`；ambient `0`；
-- launch `1`；retry/repair/resume/alternate root `0/0/0/0`；
-- auto exposure、weak reacquire、mid-run shutter change：全部禁止；
-- old/new frame pooling：禁止；
-- A `H120/S100/INT100`，shutter `1/5000`；
-- D `H120/S50/INT100`，shutter `1/6400`；
-- B `H0/S0/INT100`，shutter `1/8000`；
-- C `H300/S100/INT100`，shutter `1/2500`；
-- 任一单次连续Ray-on group最大`600 s`；七个state groups nominal总Ray-on dwell上限`4200 s`；不得扩大intensity、duration或capture count。
-
-Exact capture order：
-
-1. `000-ray-a0-t600`
-2. `001-ray-d-t60`
-3. `002-ray-d-t120`
-4. `003-ray-d-t300`
-5. `004-ray-d-t600`
-6. `005-ray-a-after-d-t600`
-7. `006-ray-b-t60`
-8. `007-ray-b-t120`
-9. `008-ray-b-t300`
-10. `009-ray-b-t600`
-11. `010-ray-a-after-b-t600`
-12. `011-ray-c-t60`
-13. `012-ray-c-t120`
-14. `013-ray-c-t300`
-15. `014-ray-c-t600`
-16. `015-ray-a-after-c-t600`
-
-每次state command必须有exact applied/readback；每个plan-defined isolation gate必须验证strip五通道全零和Ray intensity零。不得跳过slot、从中间恢复或做第17张capture。
-
-## 4. Visible Terminal single launch
-
-本任务预计超过10分钟。Executer不得用Codex内置terminal/tool process作为后台owner。完成全部pre-device gates后，在一个新的、Human可见的macOS Terminal tab/window中执行且只执行以下block一次：
-
-```zsh
-(
-  set -euo pipefail
-  umask 077
-  readonly PROJECT_ROOT="/Users/ibobby/Projects/WLED-RGBWW"
-  readonly FORMAL_ROOT="/Volumes/4T/temp/rgbww-optimizer/p7-td-b-formal-r6-94a6e3e37f6c-20260804T164500Z"
-  mkdir -m 700 "$FORMAL_ROOT"
-  exec /bin/zsh "$PROJECT_ROOT/tmp/run-p7-thermal-diagnostics.zsh" "$FORMAL_ROOT" \
-    --experiment-id p7_td_b_command_switch_history_v1 \
-    --source ray \
-    --phase formal \
-    --stage-gate-package /Volumes/4T/temp/rgbww-optimizer/g4-ray-r6-stage-gate-ebc40bf8e40c-harness-replacement-20260804T141423Z \
-    --code-checkpoint 94a6e3e37f6c07632a392bc6a18030a6c4897122
-)
-```
-
-约束：
-
-- Executer不得先创建root；上述`mkdir`是唯一create attempt；
-- wrapper/child/Terminal owner各一个，不得另起第二child、helper controller或后台副本；
-- 不把命令改写成`python -c`、heredoc、temporary wrapper或external controller；
-- production launch计数只允许`1`；
-- wrapper自动加入`--execute --allow-device-control --output-dir --run-name`，并强制child -> shell all-off -> independent final-zero -> terminal finalize -> wrapper result/state顺序；
-- launch后不再操作light、camera或root内容，除下述liveness/final handoff read-only检查和明确的safety-zero分支。
-
-## 5. 三次稀疏 liveness 与 Orchestrator handoff
-
-Executer在约`t+30 s`、`t+90 s`、`t+180 s`做exact三次稀疏检查。每次只允许：
-
-- 读取同一run的parent-side `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-formal-r6-94a6e3e37f6c-20260804T164500Z.wrapper-state.json`；
-- 从canonical state取得exact wrapper PID/child PID；
-- 对这两个exact PID做一次`kill -0`/exact command-line ownership检查；
-- 确认只有同一visible Terminal owner、同一root、status为`running`，无第二launch/child；
-- 记录timestamp、state bytes/SHA、PID ownership和root identity；禁止轮询device、camera、Ray、strip或capture artifacts。
-
-若三次均存活，Executer立即把ER写成
-`RUNNING_G4_06_FORMAL_ACQUISITION_VISIBLE_TERMINAL_WAITING_ORCHESTRATOR_AUTOMATION`，记录Terminal tab/window、wrapper/child PID、launch时间、三次check与估算依据，然后停止。Nominal source dwell为4200秒，加16次remote capture/download/quality overhead；建议Orchestrator按约80–100分钟完成窗口自行估算automation wake time、创建automation并把goal标blocked。Executer不创建automation、不继续轮询。
-
-Human恢复goal时，由Orchestrator只做一次owned status检查：
-
-- 仍running：再次blocked，不追加轮询；
-- 已terminal：删除automation，取得terminal ownership/evidence后继续本PLAN的final handoff；
-- exact process消失且terminal evidence不完整：进入第7节safety-only failure分支，绝不重启experiment。
-
-## 6. Acquisition、ledger、cleanup 与terminal evidence
-
-Production owner必须逐capture完成并canonical persist：
-
-- current-root CR3/sidecar path、bytes、SHA和unique remote capture/request IDs；
-- MakerNote actual exposure、frozen nominal shutter、exact state/readback；
-- physical-return-before-acceptance；
-- 58 required features、clipped/near-noise/nonfinite/valid-pixel quality；
-- no-stale、timing/chronology、thermal covariates；
-- exact logical/physical/setup/ambient budgets；
-- `captures.jsonl`、`physical-returns.jsonl`、`commands.jsonl`、`thermal-covariates.jsonl`和measurement reports；
-- repo-owned post-capture ledger validator exact once beforecomplete。
-
-Child无论PASS/FAIL/signal都必须进入：
-
-1. Python cleanup：exact两步strip/Ray off；
-2. shell all-off cleanup：exact once；
-3. independent final-zero：exact once并验证strip五通道零、Ray intensity零；
-4. terminal finalizer：exact once；
-5. wrapper-result/wrapper-state终态写入。
-
-PASS只允许在16/16、quality/ownership/readback/timing/budget、三层cleanup、child exit、closed terminal inventory全部通过后表达。Terminal-owner closed inventory在wrapper-result写入前冻结；最终ER必须另外记录post-terminal `wrapper-result.json`及parent-side wrapper state/log identities，不能把它们伪称为terminal-seal内artifact。
-
-## 7. First hard-fail 与 safety-only branch
-
-Acquisition、quality、source isolation、readback、physical/history-chronology、cleanup、artifact identity、child/signal或terminal write任一首次失败即：
-
-- classification `accepted_hard_failed_formal_attempt`或更保守的incomplete terminal failure；
-- `formal_pass=false`、retry `0`、alternate root `0`、strip formal call `0`；
-- 停止后续capture；不从中间恢复，不生成第二root，不修复或重写root；
-- 不运行G4-07 analyzer、strip、combined TD-B、TD-C、release或retained evidence；
-- 保留所有安全可读partial artifact identities与FAIL seal；terminal write失败不得伪造seal。
-
-若owned wrapper/child已经消失、terminal seal/final-zero缺失或不可信，且无法证明两source为zero，PLAN仅授权一次safety-only
-`.venv/bin/python -m camera_based_rgbww_optimizer.control.all_off --json`。
-执行前必须证明无owned child仍运行，执行后记录raw result/exit与readback；不得capture、retry、修改root或把该cleanup称为terminal PASS。若已有可信independent-final-zero PASS，禁止额外cleanup调用。
-
-Firmware/flash、remote deployment、destructive hardware change、任何bounds widening以及PLAN外recovery始终禁止并需Human新授权。
-
-## 8. Terminal/failure ER handoff
-
-完成或hard fail后，Executer只读当前fresh root与parent-side wrapper evidence，写ER；不得写root。ER至少包含：
-
-- activation checkpoint/tree/subject/exact path set与strict machine `1/1` evidence；
-- fresh mkdir、production launch、child/capture/retry/alternate/root counters；
-- visible Terminal identity、三次liveness和automation/resume chronology；
-- exact root path/device/inode/mode；
-- final wrapper exit/result/state；
-- `run.json`与terminal audit/seal status；
-- logical/physical/setup/ambient counts；
-- exact capture IDs/order；
-- Python/shell/independent-zero statuses；
-- returned-summary与每个safe regular artifact path/bytes/SHA/device/inode/mode；
-- final inventory，unsafe symlink/special/extra entries；
-- real device/camera/Ray/strip-zero calls和所有forbidden-call counters；
-- hard-fail code/phase与是否执行safety-zero；
--明确`return_anchor_history=not_evaluated`，不得在本包解释A-return科学history；
-- root frozen immutable、formal result尚未获得Planner acceptance。
-
-Terminal PASS status request：
-
-`READY_FOR_PLANNER_G4_06_FORMAL_ACQUISITION_REVIEW`
-
-Hard-fail status request：
-
-`READY_FOR_PLANNER_G4_06_FORMAL_HARD_FAIL_REVIEW`
-
-Incomplete terminal failure status request：
-
-`READY_FOR_PLANNER_G4_06_FORMAL_INCOMPLETE_FAILURE_REVIEW`
-
-任一状态都必须回到Planner stop，不自动进入G4-07。Planner验收前G4-07仍locked。
-
-## 9. Explicit locks
-
-以下调用计数必须始终为0：
-
-- G4-07/Ray analyzer；
-- strip nonzero/formal capture；
-- combined TD-B/operating-envelope-v3；
-- TD-C/sentinel/P8；
-- release consumption、retained-R3、old R5/R6 root payload；
-- retry、repair、resume、alternate root、second launch；
-- firmware/flash/deploy/destructive change；
-- handwritten/external semantic controller。
-
-唯一stop：`RETURN_AFTER_TERMINAL_OR_HARD_FAIL_EVIDENCE_FOR_G4_06_REVIEW`。
+唯一stop：`RETURN_FOR_G4_06_SOURCE_SUCCESSOR_ENGINEERING_REVIEW`。
