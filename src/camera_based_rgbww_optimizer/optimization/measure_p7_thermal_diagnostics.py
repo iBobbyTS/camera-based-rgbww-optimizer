@@ -263,7 +263,7 @@ def validate_authorized_execution_plan(
             p7_td_b_r6_stage_gate.validate_materialized_runtime_plan(plan)
         except p7_td_b_r6_stage_gate.StageGateError as exc:
             raise PermissionError(
-                "thermal diagnostic R6 PLAN-bound authority differs"
+                f"thermal diagnostic R6 PLAN-bound authority differs: {exc.code}"
             ) from exc
     elif (
         not isinstance(authorization, Mapping)
@@ -985,7 +985,10 @@ def execute_plan(
     capture_fn: Callable[[Mapping[str, Any]], Mapping[str, Any]],
     both_off_gate_fn: Callable[[str], Mapping[str, Any]],
     cleanup_fn: Callable[[], Mapping[str, Any]],
-    post_capture_validator_fn: Callable[[Path, Mapping[str, Any]], Any] | None = None,
+    runtime_capture_settings_provenance: Mapping[str, Any] | None = None,
+    post_capture_validator_fn: Callable[
+        [Path, Mapping[str, Any], Mapping[str, Any] | None], Any
+    ] | None = None,
     bind_physical_return_observer_fn: Callable[
         [Callable[[Mapping[str, Any], Any, int], Mapping[str, Any]]],
         None,
@@ -1001,6 +1004,24 @@ def execute_plan(
     exact_r6 = p7_td_b_r6_terminal.is_r6_materialized_plan(plan)
     if exact_r6 and post_capture_validator_fn is None:
         raise PermissionError("Ray R6 execution requires its post-capture ledger owner")
+    capture_settings_provenance = copy.deepcopy(
+        runtime_capture_settings_provenance
+        if runtime_capture_settings_provenance is not None
+        else plan["camera"].get("resolved_capture_settings")
+    )
+    if exact_r6 and (
+        not isinstance(capture_settings_provenance, Mapping)
+        or set(capture_settings_provenance) != {"owner", "iso", "aperture", "image_format"}
+        or capture_settings_provenance.get("owner")
+        != "remote_backend.resolve_capture_settings"
+        or any(
+            not isinstance(capture_settings_provenance.get(key), str)
+            or not capture_settings_provenance[key].strip()
+            for key in ("iso", "aperture", "image_format")
+        )
+        or capture_settings_provenance.get("image_format") != "RAW"
+    ):
+        raise PermissionError("Ray R6 execution requires explicit resolved capture settings")
     root = Path(run_dir)
     root.mkdir(parents=True, exist_ok=True)
     if any(root.iterdir()):
@@ -1014,7 +1035,7 @@ def execute_plan(
         "physical_returned_cr3_count": 0,
         "setup_physical_cr3_count": int(plan.get("setup_physical_cr3_count", 0)),
         "physical_cr3_count": int(plan.get("setup_physical_cr3_count", 0)), "cleanup": "pending",
-        "capture_settings_provenance": copy.deepcopy(plan["camera"].get("resolved_capture_settings")),
+        "capture_settings_provenance": capture_settings_provenance,
     }
     _write_json(root / "run.json", run)
     failure: BaseException | None = None
@@ -1349,7 +1370,7 @@ def execute_plan(
             raise RuntimeError("thermal diagnostic accepted measurement ledger drifted")
         if exact_r6:
             assert post_capture_validator_fn is not None
-            post_capture_validator_fn(root, plan)
+            post_capture_validator_fn(root, plan, capture_settings_provenance)
         _write_json(root / "commands-audit.json", {
             "status": "pass", "formal_capture_count": run["completed_formal"],
             "ambient_capture_count": run["ambient_capture_count"],
@@ -1678,8 +1699,6 @@ def run_authorized_plan(
     timing_context: dict[str, float | None] = {"local_readback_done_monotonic_s": None}
     timing_connection = camera_backend.connect()
     resolved_settings, settings_provenance = _resolve_remote_capture_settings(camera_backend)
-    plan = copy.deepcopy(dict(plan))
-    plan["camera"] = {**dict(plan["camera"]), "resolved_capture_settings": settings_provenance}
     plan_steps_by_id = {
         str(step["capture_id"]): step for step in plan["captures"]
     }
@@ -1921,21 +1940,27 @@ def run_authorized_plan(
         rows = [item.to_jsonable() if hasattr(item, "to_jsonable") else dict(item) for item in steps]
         return {"status": "pass" if rows and all(item.get("ok") for item in rows) else "fail", "steps": rows}
 
+    def validate_r6_post_capture(
+        run_root: Path,
+        frozen_plan: Mapping[str, Any],
+        runtime_evidence: Mapping[str, Any] | None,
+    ) -> Any:
+        if runtime_evidence != settings_provenance:
+            raise RuntimeError("Ray R6 post-capture runtime evidence differs")
+        recorded = json.loads((run_root / "run.json").read_text(encoding="utf-8"))
+        if recorded.get("capture_settings_provenance") != runtime_evidence:
+            raise RuntimeError("Ray R6 recorded capture settings provenance differs")
+        return p7_td_b_r6_terminal.validate_post_capture_ledger(
+            run_root,
+            frozen_plan,
+            required_feature_ids=feature_ids,
+        )
+
     return execute_plan(
         plan, run_dir=root, apply_command_fn=apply, readback_fn=readback,
         capture_fn=capture, both_off_gate_fn=both_off_gate, cleanup_fn=cleanup,
-        post_capture_validator_fn=(
-            (
-                lambda run_root, frozen_plan: (
-                    p7_td_b_r6_terminal.validate_post_capture_ledger(
-                        run_root,
-                        frozen_plan,
-                        required_feature_ids=feature_ids,
-                    )
-                )
-            )
-            if exact_r6_materialized else None
-        ),
+        runtime_capture_settings_provenance=settings_provenance,
+        post_capture_validator_fn=(validate_r6_post_capture if exact_r6_materialized else None),
         bind_physical_return_observer_fn=lambda callback: physical_return_observer_slot.__setitem__(
             "callback", callback
         ),

@@ -22,6 +22,7 @@ from camera_based_rgbww_optimizer.optimization.hsi_objective import (
     TD_B_FORMAL_FEATURE_STATISTIC,
 )
 from camera_based_rgbww_optimizer.control import camera_gphoto2, camera_remote_v2
+from tests import test_p7_td_b_r6_stage_gate as r6_stage_gate_tests
 
 
 W0_TEMP_ROOT = Path("/Volumes/4T/temp/rgbww-optimizer/p7-td-a-w0-offline/test-runtime")
@@ -1143,11 +1144,17 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                         observed=float(step["requested_elapsed_s"]),
                     )
 
-                def post_capture_validator(observed_root, observed_plan):
+                runtime_provenance = {
+                    "owner": "remote_backend.resolve_capture_settings",
+                    "iso": "125", "aperture": "implicit auto", "image_format": "RAW",
+                }
+
+                def post_capture_validator(observed_root, observed_plan, runtime_evidence):
                     validator_states.append(
                         (
                             Path(observed_root),
                             observed_plan["guide_experiment_id"],
+                            runtime_evidence,
                             _read_json(root / "run.json")["status"],
                         )
                     )
@@ -1171,6 +1178,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                         "ray_verified_off": True,
                     },
                     cleanup_fn=lambda: cleanup,
+                    runtime_capture_settings_provenance=runtime_provenance,
                     post_capture_validator_fn=post_capture_validator,
                     monotonic_fn=clock.monotonic,
                     monotonic_ns_fn=lambda: int(clock.value * 1e9),
@@ -1186,7 +1194,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                     self.assertFalse((root / "terminal-seal.json").exists())
                 self.assertEqual(
                     validator_states,
-                    [(root, subject.TD_B_R6_EXPERIMENT_ID, "running")],
+                    [(root, subject.TD_B_R6_EXPERIMENT_ID, runtime_provenance, "running")],
                 )
 
     def test_rejected_post_capture_timing_retains_physical_ledger_and_failure_evidence(self):
@@ -1619,10 +1627,11 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
                 )
             self.assertEqual(backend.connect_calls, 0)
 
-    def test_authorized_runner_resolves_once_and_binds_non_null_settings_to_ambient_and_formal(self):
+    def test_authorized_runner_resolves_once_and_binds_non_null_runtime_settings_to_ambient_and_formal(self):
         for source, formal_shutter in (("ray", "1/5000"), ("strip", "1/320")):
             captured_settings = []
             executed_plans = []
+            runtime_contexts = []
             raw_steps = []
 
             class FakeCaptureComplete(Exception):
@@ -1674,6 +1683,7 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
 
             def fake_execute(resolved_plan, **kwargs):
                 executed_plans.append(resolved_plan)
+                runtime_contexts.append(kwargs["runtime_capture_settings_provenance"])
                 kwargs["set_capture_context_fn"](100.0)
                 ambient = next(step for step in resolved_plan["captures"] if step["capture_role"] == "ambient")
                 formal = next(step for step in resolved_plan["captures"] if step["formal_measurement"])
@@ -1706,7 +1716,8 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
             self.assertTrue(all(step["auto_exposure"] is False for step in raw_steps))
             self.assertIsNone(raw_steps[0]["source_exposure_cache"])
             self.assertEqual(raw_steps[1]["source_exposure_cache"], next(iter(plan["frozen_shutters"])))
-            self.assertEqual(executed_plans[0]["camera"]["resolved_capture_settings"], {
+            self.assertNotIn("resolved_capture_settings", executed_plans[0]["camera"])
+            self.assertEqual(runtime_contexts[0], {
                 "owner": "remote_backend.resolve_capture_settings",
                 "iso": "125", "aperture": "implicit auto", "image_format": "RAW",
             })
@@ -4668,6 +4679,161 @@ class P7ThermalDiagnosticsTests(unittest.TestCase):
         self.assertEqual(result, 0)
         backend_factory.assert_called_once()
         resolved_run.assert_called_once()
+
+
+class G4R6FrozenPlanRuntimeContextTests(unittest.TestCase):
+    def test_full_chain_keeps_materialized_plan_frozen_and_records_runtime_context(self):
+        with _w0_temporary_directory() as temporary:
+            base = Path(temporary)
+            formal_parent = base / "formal"
+            formal_parent.mkdir()
+            basename = "p7-td-b-formal-r6-abcdef123456-20260805T020000Z"
+            clock = _Clock()
+            effects = []
+            ray_state = {}
+
+            class FakeBackend:
+                backend_name = "remote"
+                v2_capture_capability = measure.REMOTE_V2_CAPABILITY
+
+                def connect(self):
+                    effects.append("fake_backend_connect")
+                    return camera_gphoto2.CameraConnection("fake-remote", "offline://camera")
+
+                def resolve_capture_settings(self, **kwargs):
+                    effects.append(("fake_resolve", kwargs))
+                    return camera_gphoto2.CaptureSettings(
+                        iso="125", aperture="implicit auto",
+                        shutter_speed="1/2500", image_format="RAW",
+                    )
+
+                def capture_with_timing(self, **_kwargs):
+                    raise AssertionError("fake RAW adapter owns every offline capture")
+
+            def adapter_builder(**kwargs):
+                def adapter(raw_step):
+                    step = steps[str(raw_step["capture_id"])]
+                    effects.append(("fake_capture", step["capture_id"]))
+                    result = _attach_v2_capture_evidence(
+                        run_root, step, {}, observed=float(step["requested_elapsed_s"]),
+                    )
+                    report_path = kwargs["measurements_dir"] / (
+                        f"{step['capture_id']}.patch-statistics.json"
+                    )
+                    report_path.parent.mkdir(parents=True, exist_ok=True)
+                    report_path.write_text(json.dumps(_c3_native_raw_report(
+                        feature_ids,
+                        ambient_policy=kwargs["ambient_policy"],
+                        phase=runtime["stage"],
+                    )), encoding="utf-8")
+                    result.update({
+                        "capture": {"saved_file": result["saved_file"]},
+                        "patch_statistics": str(report_path),
+                    })
+                    result["physical_return_receipt"] = kwargs[
+                        "physical_return_observer"
+                    ](result, raw_step, 1)
+                    return result
+                return adapter
+
+            def set_hsi(hue, sat, *, intensity_percent):
+                effects.append("fake_ray_set_hsi")
+                ray_state.update(
+                    hue=int(hue), sat=int(sat),
+                    intensity=int(round(float(intensity_percent) * 10)),
+                )
+                return {"code": 0}
+
+            def get_hsi():
+                effects.append("fake_ray_get_hsi")
+                return {"code": 0, "data": dict(ray_state)}
+
+            original_defaults = dict(measure.execute_plan.__kwdefaults__ or {})
+            fake_defaults = {
+                **original_defaults,
+                "monotonic_fn": clock.monotonic,
+                "monotonic_ns_fn": lambda: int(clock.value * 1e9),
+                "sleep_fn": clock.sleep,
+            }
+            with mock.patch.object(r6_stage_gate, "FORMAL_ROOT_PARENT", str(formal_parent)), \
+                    mock.patch.object(
+                        r6_stage_gate_tests, "FUTURE_RUN_NAME", basename,
+                    ):
+                fixture = r6_stage_gate_tests.SyntheticGitRepository(base / "repo")
+                activation, runtime, _ = fixture.future_activation()
+                run_root = formal_parent / basename
+                steps = {str(step["capture_id"]): step for step in runtime["captures"]}
+                feature_ids = json.loads(subject.POLICY_PATH.read_text(encoding="utf-8"))[
+                    "feature_set"
+                ]["ids"]
+                before = json.dumps(runtime, sort_keys=True, separators=(",", ":"))
+                self.__class__.frozen_plan_sha256 = hashlib.sha256(before.encode()).hexdigest()
+                measure.execute_plan.__kwdefaults__ = fake_defaults
+                try:
+                    with mock.patch(
+                        "camera_based_rgbww_optimizer.optimization."
+                        "measure_raw_observer_validation.build_native_raw_capture_step_fn",
+                        side_effect=adapter_builder,
+                    ), mock.patch(
+                        "camera_based_rgbww_optimizer.control.ray120c.set_hsi",
+                        side_effect=set_hsi,
+                    ), mock.patch(
+                        "camera_based_rgbww_optimizer.control.ray120c.get_hsi",
+                        side_effect=get_hsi,
+                    ), mock.patch(
+                        "camera_based_rgbww_optimizer.control.ray120c.set_cct",
+                        side_effect=lambda *_args, **_kwargs: effects.append("fake_ray_off") or {"code": 0},
+                    ), mock.patch(
+                        "camera_based_rgbww_optimizer.control.ray120c.get_cct",
+                        side_effect=lambda: {"code": 0, "data": {}},
+                    ), mock.patch(
+                        "camera_based_rgbww_optimizer.control.esphome.verified_light",
+                        side_effect=lambda *_args, **_kwargs: effects.append("fake_strip") or {},
+                    ), mock.patch(
+                        "camera_based_rgbww_optimizer.optimization.hsi_source_evidence.validate_both_off",
+                    ), mock.patch(
+                        "camera_based_rgbww_optimizer.control.all_off.turn_everything_off",
+                        return_value=[{"name": "esphome", "ok": True}, {"name": "ray120c", "ok": True}],
+                    ), mock.patch.object(
+                        r6_terminal, "validate_post_capture_ledger",
+                    ) as terminal_validator:
+                        result = measure.run_validated_td_b_r6_runtime_contract(
+                            runtime, fixture.stage_gate, fixture.descriptor, activation,
+                            repo_root=fixture.root, output_dir=formal_parent,
+                            run_name=basename, camera_backend=FakeBackend(),
+                        )
+                finally:
+                    measure.execute_plan.__kwdefaults__ = original_defaults
+
+            self.assertEqual(result, run_root)
+            self.assertEqual(
+                json.dumps(runtime, sort_keys=True, separators=(",", ":")), before,
+            )
+            provenance = _read_json(run_root / "run.json")["capture_settings_provenance"]
+            self.assertEqual(provenance, {
+                "owner": "remote_backend.resolve_capture_settings",
+                "iso": "125", "aperture": "implicit auto", "image_format": "RAW",
+            })
+            terminal_validator.assert_called_once()
+            self.assertIs(terminal_validator.call_args.args[1], runtime)
+            self.assertEqual(effects.count("fake_backend_connect"), 1)
+            self.assertEqual(sum(item[0] == "fake_resolve" for item in effects if isinstance(item, tuple)), 1)
+            self.assertEqual(
+                sum(item[0] == "fake_capture" for item in effects if isinstance(item, tuple)),
+                len(runtime["captures"]),
+            )
+
+    def test_unknown_runtime_template_drift_preserves_stable_outer_code_before_effects(self):
+        plan = _r6_materialized_plan_for_test(
+            "p7-td-b-formal-r6-abcdef123456-20260805T020000Z"
+        )
+        plan["unknown_runtime_field"] = True
+        with self.assertRaises(PermissionError) as raised:
+            measure.validate_authorized_execution_plan(plan)
+        cause = raised.exception.__cause__
+        self.assertIsInstance(cause, r6_stage_gate.StageGateError)
+        self.assertIn(cause.code, str(raised.exception))
+        self.assertEqual(cause.code, "runtime_template_drift")
 
 
 def _w0_temporary_directory():
