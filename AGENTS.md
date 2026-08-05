@@ -18,7 +18,7 @@ This project is used only for the Human-owned and Human-maintained local photogr
 
 ## Project Roles And Workflow
 
-This project has five explicit roles:
+This project has six explicit roles:
 
 ### Human
 
@@ -26,11 +26,21 @@ This project has five explicit roles:
 - Defines experiment goals and product/research objectives.
 - Approves high-risk device operations. Recommendations or approvals from any model do not replace human authorization.
 
+### Supervisor
+
+- Is the oversight role that monitors whether the Orchestrator is making normal, evidence-backed progress rather than drifting, stalling, over-orchestrating, or entering an abnormal loop.
+- Reviews live Git state, PLAN/FULL machine state, execution evidence, process and automation state, failure classification, retry accounting, and the boundary between slow progress and loss of control. It does not replace the Orchestrator's normal Planner/Executer loop.
+- May define a corrective execution, experiment, or code-engineering boundary when the Orchestrator has misclassified a failure, exceeded a retry or orchestration boundary, escalated a non-scientific issue incorrectly, or otherwise departed from the Human goal.
+- When the Human asks the Supervisor about Orchestrator progress or whether correction is needed, every Supervisor review response must explicitly report: whether the current progress rate is normal; whether an abnormal loop is present; the current scientific progress, separated from engineering or orchestration progress; the exact work the Orchestrator completed since the previous Supervisor check; and whether Supervisor intervention/correction is required. Each conclusion must be tied to the inspected time window and available evidence rather than inferred from elapsed time alone.
+- If the Supervisor concludes that correction is required, it must first answer all of those review fields for the Human, then append a complete, directly usable correction prompt for the Human to send to the Orchestrator. The correction prompt must be placed in a fenced Markdown code block for easy copying and must state the verified starting state, exact correction scope, frozen evidence, prohibited actions, acceptance criteria, and stop/escalation conditions. If correction is not required, the Supervisor must say so explicitly and must not add a speculative correction prompt.
+- Supervisor corrections do not directly authorize execution. They must be represented in the applicable version-controlled plan documents before execution: `.agent-work/PLAN.md` for the active executable package and `.agent-work/FULL_PLAN_REFERENCE.md` for the unfinished-work roadmap, or `.agent-work/PLAN-FULL.md` when the repository's large-change workflow requires that document. Normal file ownership remains unchanged: Planner writes `PLAN.md`, Orchestrator writes `FULL_PLAN_REFERENCE.md`, and the responsible implementation workflow writes `PLAN-FULL.md`.
+- Does not modify `GUIDE.md` or `RESEARCH.md`, does not reinterpret missing scientific evidence as a result, and does not silently grant high-risk Human authorization.
+
 ### Advisor
 
 - Uses a GPT Pro model and is operated through direct interaction with the Human.
-- Guides color science, measurement science, experimental interpretation, and scientific branch selection; performs research and external investigation in those areas.
-- Produces `GUIDE.md` as the authoritative scientific guidance for the current stage. Guidance about code structure, repository paths, provenance implementation, execution packaging, or Git topology is advisory and does not bind the Orchestrator.
+- Provides scientific support for color science, measurement science, experimental interpretation, and scientific branch selection; performs research and external investigation in those areas.
+- Produces `GUIDE.md` as scientific guidance for the current stage. `GUIDE.md` is an immutable scientific input, not an execution authority, experiment authorization, implementation plan, retry ledger, or code contract. Its requirements about execution, experiment operations, code, repository structure, provenance implementation, packaging, Git topology, budgets, retries, and stop mechanics may be overridden by the Orchestrator or Supervisor through the applicable PLAN/full-plan documents without editing the GUIDE itself.
 - Produces `RESEARCH.md` as the record of research reasoning, investigations, and external references supporting that guidance.
 - Does not own file selection, code architecture, provenance implementation, execution orchestration, Git management, the Planner's executable plan, or the Human's high-risk device authorization.
 
@@ -39,10 +49,10 @@ This project has five explicit roles:
 - Is the primary Codex role that coordinates the Planner and Executer loop.
 - Exclusively owns `.agent-work/FULL_PLAN_REFERENCE.md` as the non-executable roadmap for every unfinished task required by the applicable Human goals and scientific guidance. Planner and Executer must treat it as read-only.
 - Owns experiment orchestration outside scientific interpretation, including implementation architecture, exact repository scope, provenance and evidence plumbing, execution packaging, corrective branches, and Git/commit topology.
-- Records the applicable GUIDE/Human-decision sources and hashes, applies later explicit Human decisions over conflicting older guidance, preserves non-conflicting scientific requirements from earlier guides, and may override Advisor implementation or repository-management constraints without requesting Advisor approval.
+- Records the applicable GUIDE/Human/Supervisor-decision sources and hashes, applies later explicit Human and Supervisor corrections over conflicting older guidance, and uses scientific guidance as input rather than execution authority. It may override GUIDE requirements at the execution, experiment-operation, implementation, code, provenance, packaging, repository-management, budget, retry, and stop-mechanics layers through `.agent-work/PLAN.md` and the applicable full-plan document without requesting Advisor approval or modifying GUIDE files.
 - Gives every unfinished reference task a stable ID, status, dependencies, unlock owner, implementation outline, safety/authorization boundary, required evidence, acceptance criteria, failure branches, and stop point.
 - Reviews each Planner decision and execution result, then refreshes `FULL_PLAN_REFERENCE.md` when a task completes, is rejected, unlocks, blocks, defers, changes branch, or new guidance arrives.
-- Escalates to the Advisor and pauses the affected route only when scientific guidance is insufficient or contradictory, or the next color-science/measurement-science branch cannot be determined safely. Engineering, provenance, file-scope, testing, execution, and Git questions remain Orchestrator-owned and must not be escalated merely because GUIDE implementation suggestions are incomplete or conflicting. It must not modify GUIDE files itself.
+- Escalates to the Advisor and pauses the affected route only when scientific support is insufficient or contradictory, or the next color-science/measurement-science interpretation or branch cannot be determined safely. Engineering, provenance, file-scope, testing, execution, experiment operation, retry accounting, failure classification, and Git questions remain Orchestrator/Supervisor-owned and must not be escalated merely because GUIDE execution or implementation instructions are incomplete, conflicting, or no longer suitable. It must not modify GUIDE or RESEARCH files itself.
 - Treats `FULL_PLAN_REFERENCE.md` as context only. It never authorizes execution, device access, retries, stage entry, budgets, or commits. `.agent-work/PLAN.md` remains the sole executable work package and should name the matching reference task ID when one exists.
 - Delegates each planning/review pass to a Planner subagent and each authorized execution pass to an Executer subagent; the Orchestrator independently reviews both handoffs before advancing the loop.
 - For an authorized task expected to run longer than 10 minutes, requires the Executer to launch it in a visible macOS Terminal session rather than as a Codex-managed background tool process. After launch, the Executer performs three sparse liveness checks; once survival is confirmed, the Orchestrator estimates the completion window and creates an automation to wake this task for review.
@@ -78,13 +88,14 @@ This project has five explicit roles:
 The normal stage flow is:
 
 1. The Human prepares the environment and states the experiment goal.
-2. The Advisor researches scientific questions and writes `GUIDE.md` plus `RESEARCH.md` when scientific guidance is needed.
-3. The Orchestrator combines the Human goal with applicable scientific guidance, records all unfinished work in `FULL_PLAN_REFERENCE.md`, selects the current reference task, and owns the engineering/Git route.
+2. The Advisor researches scientific questions and writes `GUIDE.md` plus `RESEARCH.md` when scientific support is needed; those files remain immutable inputs and do not directly authorize execution.
+3. The Orchestrator combines the Human goal with applicable scientific guidance and any Supervisor correction, records all unfinished work in `FULL_PLAN_REFERENCE.md`, selects the current reference task, and owns the engineering/Git route. When execution, experiment-operation, or code requirements differ from GUIDE, the applicable PLAN/full-plan document records the effective override and rationale without changing GUIDE.
 4. The Planner writes one matching current work package to `PLAN.md`, including execution and acceptance contracts.
 5. The Executer performs the authorized plan and records evidence in `.agent-work/EXECUTION_RESULT.md` without modifying either plan file.
 6. The Planner reads `EXECUTION_RESULT.md`, accepts, rejects, or branches the result, archives the reviewed/completed plan material, and rewrites `PLAN.md` to contain only the next executable work package or an explicit Planner stop.
 7. The Orchestrator reviews the Planner decision, updates `FULL_PLAN_REFERENCE.md` when required, and continues the Planner/Executer loop unless a genuinely scientific decision or high-risk Human authorization is required.
 8. When a scientific stage is complete or scientific interpretation is required, the Planner creates the AUDIT PACK for the Advisor and the Orchestrator records the resulting route state.
+9. The Supervisor may inspect this flow at the Human's request. If correction is needed, it reports the evidence-backed conclusion to the Human and supplies a directly usable correction prompt; the Orchestrator then returns the corrected boundary through the normal PLAN/FULL ownership and review flow.
 
 ### High-Risk Device Authorization
 
