@@ -45,6 +45,8 @@ class SyntheticRepository:
     def __init__(
         self, root: Path, output_root: Path, *,
         code_child_subject: str = "fix(stage-gate): bind package preparation to g4-06",
+        engineering_subject: str = subject.ACCEPTED_ENGINEERING_SUBJECT,
+        engineering_extra_path: bool = False,
     ) -> None:
         self.root = root.resolve()
         self.output_root = output_root
@@ -62,6 +64,31 @@ class SyntheticRepository:
         self.git("config", "user.name", "G4 Synthetic")
         self.git("config", "user.email", "g4-synthetic@example.invalid")
         self.git("add", "-A")
+        self.git("commit", "-q", "-m", "synthetic engineering direct parent")
+        self.engineering_direct_parent = self.git_text("rev-parse", "HEAD")
+        for path in subject.ACCEPTED_ENGINEERING_PATHS:
+            target = self.root / path
+            target.write_bytes(target.read_bytes() + b"accepted-engineering\n")
+        engineering_paths = list(subject.ACCEPTED_ENGINEERING_PATHS)
+        if engineering_extra_path:
+            extra = self.root / "src/engineering-extra.py"
+            extra.write_text("extra\n", encoding="utf-8")
+            engineering_paths.append("src/engineering-extra.py")
+        self.git("add", "--", *engineering_paths)
+        self.git("commit", "-q", "-m", engineering_subject)
+        self.engineering_checkpoint = self.git_text("rev-parse", "HEAD")
+        self.engineering_tree = self.git_text("rev-parse", "HEAD^{tree}")
+        self.engineering_blob_oids = [
+            {"path": path, "oid": self.git_text("rev-parse", f"HEAD:{path}")}
+            for path in subject.ACCEPTED_ENGINEERING_PATHS
+        ]
+        (self.root / ".agent-work/PLAN.md").write_bytes(
+            machine_row("PLAN_MACHINE_CONTRACT", {
+                "active_task_count": 0,
+                "accepted_engineering_checkpoint": self.engineering_checkpoint,
+            })
+        )
+        self.git("add", "--", ".agent-work/PLAN.md")
         self.git("commit", "-q", "-m", "synthetic activation parent")
         self.source_checkpoint = self.git_text("rev-parse", "HEAD")
         self.source_tree = self.git_text("rev-parse", "HEAD^{tree}")
@@ -86,6 +113,12 @@ class SyntheticRepository:
             "verified_parent_tree": self.source_tree,
             "accepted_code_owner_checkpoint": self.code_checkpoint,
             "accepted_code_owner_tree": self.code_tree,
+            "accepted_engineering_checkpoint": self.engineering_checkpoint,
+            "accepted_engineering_tree": self.engineering_tree,
+            "accepted_engineering_direct_parent": self.engineering_direct_parent,
+            "accepted_engineering_subject": subject.ACCEPTED_ENGINEERING_SUBJECT,
+            "accepted_engineering_paths": list(subject.ACCEPTED_ENGINEERING_PATHS),
+            "accepted_engineering_blob_oids": deepcopy(self.engineering_blob_oids),
             "code_child_subject": code_child_subject,
             "code_child_paths": list(subject.ALLOWED_CODE_CHILD_PATHS),
             "code_child_blob_oids": code_child_blob_oids,
@@ -1123,6 +1156,187 @@ class P7TdBR6StageGateTests(unittest.TestCase):
             )
             self.assertTrue(runtime["hard_locks"]["strip_nonzero"])
             backend.connect.assert_not_called()
+
+    def test_accepted_engineering_checkpoint_binding_descriptor_and_git_identity(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = SyntheticGitRepository(Path(temporary) / "accepted" / "repo")
+            binding = fixture.descriptor["source_attestation_binding"]
+            contract = fixture.descriptor["committed_source_contract"][
+                "accepted_engineering_prerequisite"
+            ]
+            self.assertEqual(binding["accepted_engineering_checkpoint"], fixture.engineering_checkpoint)
+            self.assertEqual(binding["accepted_engineering_tree"], fixture.engineering_tree)
+            self.assertEqual(
+                binding["accepted_engineering_direct_parent"],
+                fixture.engineering_direct_parent,
+            )
+            self.assertEqual(binding["accepted_engineering_subject"], subject.ACCEPTED_ENGINEERING_SUBJECT)
+            self.assertEqual(binding["accepted_engineering_paths"], list(subject.ACCEPTED_ENGINEERING_PATHS))
+            self.assertEqual(binding["accepted_engineering_blob_oids"], fixture.engineering_blob_oids)
+            self.assertEqual(contract, {
+                "checkpoint": fixture.engineering_checkpoint,
+                "tree": fixture.engineering_tree,
+                "direct_parent": fixture.engineering_direct_parent,
+                "subject": subject.ACCEPTED_ENGINEERING_SUBJECT,
+                "changed_paths": list(subject.ACCEPTED_ENGINEERING_PATHS),
+                "blob_oids": fixture.engineering_blob_oids,
+            })
+            observed = subject.validate_committed_source_attestation(
+                fixture.descriptor, fixture.activation_probe(), repo_root=fixture.root,
+            )
+            self.assertEqual(observed.code_owner_checkpoint, fixture.code_checkpoint)
+            self.assertEqual(
+                tuple(thermal.changed_paths_between_checkpoints(
+                    fixture.source_checkpoint, fixture.code_checkpoint,
+                    project_root=fixture.root,
+                )),
+                subject.ALLOWED_CODE_CHILD_PATHS,
+            )
+            self.assertFalse(fixture.output_root.exists())
+    def test_accepted_engineering_closed_shape_and_descriptor_matrix(self):
+        cases = (
+            ("missing", "source_attestation_binding_shape_drift"),
+            ("extra", "source_attestation_binding_shape_drift"),
+            ("reordered_paths", "source_attestation_binding_drift"),
+            ("duplicate_paths", "source_attestation_binding_drift"),
+            ("missing_oid", "source_attestation_binding_drift"),
+            ("reordered_oids", "source_attestation_binding_drift"),
+            ("descriptor_missing", "committed_source_descriptor_shape_drift"),
+            ("descriptor_extra", "committed_source_descriptor_semantic_drift"),
+            ("descriptor_mismatch", "committed_source_descriptor_semantic_drift"),
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            for index, (case, expected) in enumerate(cases):
+                with self.subTest(case=case):
+                    fixture = SyntheticGitRepository(Path(temporary) / str(index) / "repo")
+                    descriptor = deepcopy(fixture.descriptor)
+                    binding = descriptor["source_attestation_binding"]
+                    engineering = descriptor["committed_source_contract"][
+                        "accepted_engineering_prerequisite"
+                    ]
+                    if case == "missing":
+                        binding.pop("accepted_engineering_checkpoint")
+                    elif case == "extra":
+                        binding["accepted_engineering_extra"] = False
+                    elif case == "reordered_paths":
+                        binding["accepted_engineering_paths"].reverse()
+                    elif case == "duplicate_paths":
+                        binding["accepted_engineering_paths"][1] = binding["accepted_engineering_paths"][0]
+                    elif case == "missing_oid":
+                        binding["accepted_engineering_blob_oids"].pop()
+                    elif case == "reordered_oids":
+                        binding["accepted_engineering_blob_oids"].reverse()
+                    elif case == "descriptor_missing":
+                        descriptor["committed_source_contract"].pop(
+                            "accepted_engineering_prerequisite"
+                        )
+                    elif case == "descriptor_extra":
+                        engineering["unexpected"] = False
+                    else:
+                        engineering["tree"] = "0" * 40
+                    with self.assertRaisesRegex(subject.StageGateError, expected):
+                        subject.validate_committed_source_attestation(
+                            descriptor, fixture.activation_probe(), repo_root=fixture.root,
+                        )
+    def test_accepted_engineering_git_failure_matrix(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            invalid = (
+                ("subject", {"engineering_subject": "wrong subject"},
+                 "committed_source_engineering_subject_drift"),
+                ("paths", {"engineering_extra_path": True},
+                 "committed_source_engineering_paths_drift"),
+            )
+            for index, (_case, kwargs, expected) in enumerate(invalid):
+                with self.subTest(case=_case):
+                    fixture = SyntheticRepository(
+                        Path(temporary) / f"invalid-{index}" / "repo",
+                        Path(temporary) / f"invalid-{index}" / "output",
+                        **kwargs,
+                    )
+                    with self.assertRaisesRegex(subject.StageGateError, expected):
+                        fixture.build_input()
+
+            fixture = SyntheticGitRepository(Path(temporary) / "matrix" / "repo")
+            for case, field, value, expected in (
+                ("tree", "accepted_engineering_tree", "0" * 40,
+                 "committed_source_engineering_tree_drift"),
+                ("parent", "accepted_engineering_direct_parent", fixture.source_checkpoint,
+                 "committed_source_engineering_parent_drift"),
+                ("blob", "accepted_engineering_blob_oids", [
+                    {**row, "oid": "0" * 40} for row in fixture.engineering_blob_oids
+                ], "committed_source_engineering_blob_drift"),
+            ):
+                with self.subTest(case=case):
+                    descriptor = deepcopy(fixture.descriptor)
+                    descriptor["source_attestation_binding"][field] = value
+                    engineering = descriptor["committed_source_contract"][
+                        "accepted_engineering_prerequisite"
+                    ]
+                    key = {"accepted_engineering_tree": "tree",
+                           "accepted_engineering_direct_parent": "direct_parent",
+                           "accepted_engineering_blob_oids": "blob_oids"}[field]
+                    engineering[key] = deepcopy(value)
+                    with self.assertRaisesRegex(subject.StageGateError, expected):
+                        subject.validate_committed_source_attestation(
+                            descriptor, fixture.activation_probe(), repo_root=fixture.root,
+                        )
+
+            with mock.patch.object(
+                thermal, "changed_paths_between_checkpoints", side_effect=OSError("query"),
+            ), self.assertRaisesRegex(
+                subject.StageGateError, "committed_source_engineering_paths_query_failed",
+            ):
+                subject.validate_committed_source_attestation(
+                    fixture.descriptor, fixture.activation_probe(), repo_root=fixture.root,
+                )
+
+            run_process = subprocess.run
+            def fail_ancestry(arguments, **kwargs):
+                if arguments[1:3] == ["merge-base", "--is-ancestor"]:
+                    return subprocess.CompletedProcess(arguments, 2)
+                return run_process(arguments, **kwargs)
+            with mock.patch.object(subject.subprocess, "run", side_effect=fail_ancestry), \
+                 self.assertRaisesRegex(
+                     subject.StageGateError, "committed_source_engineering_ancestry_query_failed",
+                 ):
+                subject.validate_committed_source_attestation(
+                    fixture.descriptor, fixture.activation_probe(), repo_root=fixture.root,
+                )
+
+            alternate = subprocess.run(
+                ["git", "commit-tree", fixture.engineering_tree, "-p",
+                 fixture.engineering_direct_parent, "-m", subject.ACCEPTED_ENGINEERING_SUBJECT],
+                cwd=fixture.root, check=True, capture_output=True, text=True,
+                env={**os.environ, "GIT_AUTHOR_DATE": "2001-01-01T00:00:00Z",
+                     "GIT_COMMITTER_DATE": "2001-01-01T00:00:00Z"},
+            ).stdout.strip()
+            descriptor = deepcopy(fixture.descriptor)
+            descriptor["source_attestation_binding"]["accepted_engineering_checkpoint"] = alternate
+            descriptor["committed_source_contract"]["accepted_engineering_prerequisite"][
+                "checkpoint"
+            ] = alternate
+            with self.assertRaisesRegex(
+                subject.StageGateError, "committed_source_engineering_lineage_drift",
+            ):
+                subject.validate_committed_source_attestation(
+                    descriptor, fixture.activation_probe(), repo_root=fixture.root,
+                )
+
+    def test_accepted_engineering_ancestry_oserror_has_stable_code(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = SyntheticGitRepository(Path(temporary) / "oserror" / "repo")
+            run_process = subprocess.run
+            def fail_ancestry(arguments, **kwargs):
+                if arguments[1:3] == ["merge-base", "--is-ancestor"]:
+                    raise OSError("synthetic ancestry query failure")
+                return run_process(arguments, **kwargs)
+            with mock.patch.object(subject.subprocess, "run", side_effect=fail_ancestry), \
+                 self.assertRaisesRegex(
+                     subject.StageGateError, "committed_source_engineering_ancestry_query_failed",
+                 ):
+                subject.validate_committed_source_attestation(
+                    fixture.descriptor, fixture.activation_probe(), repo_root=fixture.root,
+                )
 
     def test_planned_subject_real_topology_binds_exact_two_committed_blobs(self):
         planned_subject = "fix(stage-gate): bind package preparation to g4-06"

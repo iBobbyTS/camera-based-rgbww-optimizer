@@ -83,6 +83,11 @@ ALLOWED_CODE_CHILD_PATHS = (
     "src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py",
     "tests/test_p7_td_b_r6_stage_gate.py",
 )
+ACCEPTED_ENGINEERING_SUBJECT = "fix(formal): preserve frozen plan runtime context"
+ACCEPTED_ENGINEERING_PATHS = (
+    "src/camera_based_rgbww_optimizer/optimization/measure_p7_thermal_diagnostics.py",
+    "tests/test_p7_thermal_diagnostics.py",
+)
 ORCHESTRATION_PATH_PREFIX = ".agent-work/"
 _SHA40 = re.compile(r"[0-9a-f]{40}\Z")
 _SHA256 = re.compile(r"[0-9a-f]{64}\Z")
@@ -284,6 +289,9 @@ def _source_attestation_binding(value: object) -> dict[str, Any]:
         "schema", "verified_parent_checkpoint", "verified_parent_tree",
         "accepted_code_owner_checkpoint", "accepted_code_owner_tree",
         "code_child_subject", "code_child_paths", "code_child_blob_oids",
+        "accepted_engineering_checkpoint", "accepted_engineering_tree",
+        "accepted_engineering_direct_parent", "accepted_engineering_subject",
+        "accepted_engineering_paths", "accepted_engineering_blob_oids",
     }
     if not isinstance(value, Mapping) or set(value) != expected_keys:
         raise StageGateError("source_attestation_binding_shape_drift")
@@ -294,6 +302,11 @@ def _source_attestation_binding(value: object) -> dict[str, Any]:
         or _SHA40.fullmatch(str(binding.get("verified_parent_tree"))) is None
         or _SHA40.fullmatch(str(binding.get("accepted_code_owner_checkpoint"))) is None
         or _SHA40.fullmatch(str(binding.get("accepted_code_owner_tree"))) is None
+        or _SHA40.fullmatch(str(binding.get("accepted_engineering_checkpoint"))) is None
+        or _SHA40.fullmatch(str(binding.get("accepted_engineering_tree"))) is None
+        or _SHA40.fullmatch(str(binding.get("accepted_engineering_direct_parent"))) is None
+        or binding.get("accepted_engineering_subject") != ACCEPTED_ENGINEERING_SUBJECT
+        or binding.get("accepted_engineering_paths") != list(ACCEPTED_ENGINEERING_PATHS)
         or binding.get("code_child_subject") not in _ALLOWED_CODE_CHILD_SUBJECTS
         or binding.get("code_child_paths") != list(ALLOWED_CODE_CHILD_PATHS)
     ):
@@ -302,6 +315,19 @@ def _source_attestation_binding(value: object) -> dict[str, Any]:
     if type(blob_oids) is not list or len(blob_oids) != len(ALLOWED_CODE_CHILD_PATHS):
         raise StageGateError("source_attestation_binding_drift")
     for path, row in zip(ALLOWED_CODE_CHILD_PATHS, blob_oids, strict=True):
+        if (
+            not isinstance(row, Mapping)
+            or set(row) != {"path", "oid"}
+            or row.get("path") != path
+            or _SHA40.fullmatch(str(row.get("oid"))) is None
+        ):
+            raise StageGateError("source_attestation_binding_drift")
+    engineering_oids = binding.get("accepted_engineering_blob_oids")
+    if type(engineering_oids) is not list or len(engineering_oids) != len(
+        ACCEPTED_ENGINEERING_PATHS
+    ):
+        raise StageGateError("source_attestation_binding_drift")
+    for path, row in zip(ACCEPTED_ENGINEERING_PATHS, engineering_oids, strict=True):
         if (
             not isinstance(row, Mapping)
             or set(row) != {"path", "oid"}
@@ -319,6 +345,14 @@ def _committed_source_contract(
     binding = _source_attestation_binding(source_attestation_binding)
     return {
         "schema": COMMITTED_SOURCE_ATTESTATION_SCHEMA,
+        "accepted_engineering_prerequisite": {
+            "checkpoint": binding["accepted_engineering_checkpoint"],
+            "tree": binding["accepted_engineering_tree"],
+            "direct_parent": binding["accepted_engineering_direct_parent"],
+            "subject": binding["accepted_engineering_subject"],
+            "changed_paths": binding["accepted_engineering_paths"],
+            "blob_oids": binding["accepted_engineering_blob_oids"],
+        },
         "verified_parent": {
             "checkpoint": binding["verified_parent_checkpoint"],
             "tree": binding["verified_parent_tree"],
@@ -1355,11 +1389,12 @@ def _validate_descriptor_attestation_contract(
     )
     contract = descriptor.get("committed_source_contract")
     if not isinstance(contract, Mapping) or set(contract) != {
-        "schema", "verified_parent", "allowed_code_owner_child",
+        "schema", "accepted_engineering_prerequisite", "verified_parent", "allowed_code_owner_child",
         "allowed_post_child_lineage",
     }:
         raise StageGateError("committed_source_descriptor_shape_drift")
     parent = contract.get("verified_parent")
+    engineering = contract.get("accepted_engineering_prerequisite")
     child = contract.get("allowed_code_owner_child")
     lineage = contract.get("allowed_post_child_lineage")
     source_refs = descriptor.get("source_references")
@@ -1368,6 +1403,15 @@ def _validate_descriptor_attestation_contract(
     candidates = _candidate_references(source_refs)
     if (
         contract.get("schema") != COMMITTED_SOURCE_ATTESTATION_SCHEMA
+        or not isinstance(engineering, Mapping)
+        or engineering != {
+            "checkpoint": binding["accepted_engineering_checkpoint"],
+            "tree": binding["accepted_engineering_tree"],
+            "direct_parent": binding["accepted_engineering_direct_parent"],
+            "subject": binding["accepted_engineering_subject"],
+            "changed_paths": binding["accepted_engineering_paths"],
+            "blob_oids": binding["accepted_engineering_blob_oids"],
+        }
         or not isinstance(parent, Mapping)
         or set(parent) != {"checkpoint", "tree", "role"}
         or _SHA40.fullmatch(str(parent.get("checkpoint"))) is None
@@ -1430,6 +1474,57 @@ def validate_committed_source_attestation(
     binding = _source_attestation_binding(
         descriptor.get("source_attestation_binding")
     )
+    engineering_checkpoint = binding["accepted_engineering_checkpoint"]
+    engineering_tree = binding["accepted_engineering_tree"]
+    engineering_parent = binding["accepted_engineering_direct_parent"]
+    if _git_text(root, "rev-parse", f"{engineering_checkpoint}^{{tree}}") != engineering_tree:
+        raise StageGateError("committed_source_engineering_tree_drift")
+    engineering_parent_row = _git_text(
+        root, "rev-list", "--parents", "-n", "1", engineering_checkpoint,
+    ).split()
+    if len(engineering_parent_row) != 2 or engineering_parent_row[1] != engineering_parent:
+        raise StageGateError("committed_source_engineering_parent_drift")
+    if _git_text(root, "show", "-s", "--format=%s", engineering_checkpoint) != (
+        binding["accepted_engineering_subject"]
+    ):
+        raise StageGateError("committed_source_engineering_subject_drift")
+    try:
+        engineering_paths = tuple(thermal.changed_paths_between_checkpoints(
+            engineering_parent, engineering_checkpoint, project_root=root,
+        ))
+    except (OSError, subprocess.CalledProcessError, ValueError) as exc:
+        raise StageGateError("committed_source_engineering_paths_query_failed") from exc
+    if engineering_paths != tuple(binding["accepted_engineering_paths"]):
+        raise StageGateError("committed_source_engineering_paths_drift")
+    for row in binding["accepted_engineering_blob_oids"]:
+        path = _canonical_git_path(row["path"])
+        raw_entry = _git(root, "ls-tree", "-z", engineering_checkpoint, "--", path)
+        assert isinstance(raw_entry, bytes)
+        entries = [item for item in raw_entry.split(b"\0") if item]
+        if len(entries) != 1:
+            raise StageGateError("committed_source_engineering_blob_missing")
+        try:
+            metadata, encoded_path = entries[0].split(b"\t", 1)
+            git_mode, git_type, blob_oid = metadata.decode("ascii").split(" ", 2)
+            tree_path = encoded_path.decode("utf-8")
+        except (UnicodeError, ValueError) as exc:
+            raise StageGateError("committed_source_engineering_blob_invalid") from exc
+        if (
+            git_mode != "100644" or git_type != "blob" or tree_path != path
+            or blob_oid != row["oid"]
+        ):
+            raise StageGateError("committed_source_engineering_blob_drift")
+    try:
+        engineering_ancestor = subprocess.run(
+            ["git", "merge-base", "--is-ancestor", engineering_checkpoint, parent_checkpoint],
+            cwd=root, capture_output=True,
+        )
+    except OSError as exc:
+        raise StageGateError("committed_source_engineering_ancestry_query_failed") from exc
+    if engineering_ancestor.returncode not in (0, 1):
+        raise StageGateError("committed_source_engineering_ancestry_query_failed")
+    if engineering_ancestor.returncode != 0:
+        raise StageGateError("committed_source_engineering_lineage_drift")
     if (
         code_checkpoint != binding["accepted_code_owner_checkpoint"]
         or code_tree != binding["accepted_code_owner_tree"]
