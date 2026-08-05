@@ -44,7 +44,7 @@ def machine_row(name: str, value: dict[str, object]) -> bytes:
 class SyntheticRepository:
     def __init__(
         self, root: Path, output_root: Path, *,
-        code_child_subject: str = "fix(stage-gate): bind package preparation to g4-06",
+        code_child_subject: str = subject.ALLOWED_CODE_CHILD_SUBJECT,
         engineering_subject: str = subject.ACCEPTED_ENGINEERING_SUBJECT,
         engineering_extra_path: bool = False,
     ) -> None:
@@ -131,11 +131,17 @@ class SyntheticRepository:
             "executable": True,
             "new_stage_gate_root": str(output_root),
             "source_attestation_binding": deepcopy(binding),
-        }
-        prerequisite = {
-            "disposition": "ACCEPTED_SYNTHETIC_PREREQUISITE",
-            "release_consumed": False,
-            "device_or_formal_credit": False,
+            "projection_contract": {
+                "package_task_id": subject.TASK_ID,
+                "package_contract_id": subject.CONTRACT_ID,
+                "future_formal_task_id": subject.FUTURE_TASK_ID,
+                "future_task_must_differ_from_package_task": True,
+                "full_projection": subject.FULL_PROJECTION,
+                "accepted_engineering_checkpoint": self.engineering_checkpoint,
+                "accepted_engineering_tree": self.engineering_tree,
+                "retained_r3_status": subject.RETAINED_R3_STATUS,
+                "all_authority_false": True,
+            },
         }
         full = {
             "active_task_count": 1,
@@ -144,29 +150,28 @@ class SyntheticRepository:
             "current_plan_active_task": subject.TASK_ID,
             "active_plan_contract_id": subject.CONTRACT_ID,
             "canonical_next_reference_task": subject.TASK_ID,
+            "canonical_next_reference_status": subject.REPLACEMENT_PACKAGE_STATUS,
             "executable": False,
             "full_is_non_executable_reference": True,
+            "content_policy": "UNFINISHED_TASKS_AND_REQUIRED_LOCKS_ONLY",
+            "completed_content_allowed": False,
+            "accepted_engineering_checkpoint": self.engineering_checkpoint,
+            "accepted_engineering_tree": self.engineering_tree,
+            "replacement_package_task": subject._offline_package_evidence_full_state(),
             "retained_r3_status": subject.RETAINED_R3_STATUS,
+            "replacement_package_authorized": False,
+            "replacement_formal_authorized": False,
+            "formal_execution_authorized": False,
+            "formal_root_creation_authorized": False,
+            "device_authorized": False,
+            "network_authorized": False,
+            "camera_authorized": False,
+            "ray_authorized": False,
+            "strip_authorized": False,
+            "capture_authorized": False,
             "release_consumption_authorized": False,
-            "device_authorized_by_this_file": False,
-            "camera_authorized_by_this_file": False,
-            "ray_authorized_by_this_file": False,
-            "strip_authorized_by_this_file": False,
-            "formal_r6_authorized": False,
+            "g4_07_authorized": False,
             "td_c_authorized": False,
-            "g4_06_state": subject._offline_package_evidence_full_state(binding),
-            "frozen_guide_input": {
-                "stage": "EQ-R6_STATE_C",
-                "selected_exposure": "1/2500",
-                "status": "ACCEPTED_QUALIFIED_INPUT_NOT_A_CURRENT_TASK",
-            },
-            "g4_01_prerequisite": prerequisite,
-            "g4_02_prerequisite": prerequisite,
-            "g4_03_prerequisite": prerequisite,
-            "g4_04_prerequisite": prerequisite,
-            "canonical_validator_success": True,
-            "eligibility": True,
-            "release_consumable": True,
         }
         self.plan = deepcopy(plan)
         self.full = deepcopy(full)
@@ -206,7 +211,7 @@ class SyntheticGitRepository(SyntheticRepository):
         self,
         root: Path,
         *,
-        code_child_subject: str = "fix(stage-gate): bind package preparation to g4-06",
+        code_child_subject: str = subject.ALLOWED_CODE_CHILD_SUBJECT,
     ) -> None:
         root = root.resolve()
         super().__init__(
@@ -540,9 +545,23 @@ class P7TdBR6StageGateTests(unittest.TestCase):
                 value.prerequisite_projection["retained_r3_status"],
                 subject.RETAINED_R3_STATUS,
             )
-            self.assertFalse(
-                value.prerequisite_projection["release_consumption_authorized"]
+            self.assertEqual(
+                value.prerequisite_projection["accepted_engineering_checkpoint"],
+                fixture.engineering_checkpoint,
             )
+            self.assertEqual(
+                value.prerequisite_projection["accepted_engineering_tree"],
+                fixture.engineering_tree,
+            )
+            self.assertNotEqual(subject.TASK_ID, subject.FUTURE_TASK_ID)
+            self.assertEqual(
+                value.prerequisite_projection["future_formal_task_id"],
+                subject.FUTURE_TASK_ID,
+            )
+            self.assertTrue(all(
+                authority is False
+                for authority in value.prerequisite_projection["authority"].values()
+            ))
 
     def test_module_cli_prepare_and_describe_emit_same_canonical_binding(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -654,9 +673,9 @@ class P7TdBR6StageGateTests(unittest.TestCase):
             self.assertEqual(terminal["reference_task"], subject.TASK_ID)
             self.assertEqual(terminal["contract_id"], subject.CONTRACT_ID)
 
-    def test_old_g4_05_machine_is_rejected_before_root_and_downstream_owners(self):
-        old_task = "REF-G4-05-RAY-R6-STAGE-GATE"
-        old_contract = "G4-RAY-R6-STAGE-GATE-OFFLINE-V1"
+    def test_old_ray_r6_machine_is_rejected_before_root_and_downstream_owners(self):
+        old_task = "REF-G4-06-RAY-R6"
+        old_contract = "G4-RAY-R6-STAGE-GATE-FRESH-PACKAGE-EVIDENCE-V1"
         with tempfile.TemporaryDirectory() as temporary:
             fixture = SyntheticGitRepository(Path(temporary).resolve() / "repo")
             plan = deepcopy(fixture.plan)
@@ -716,9 +735,6 @@ class P7TdBR6StageGateTests(unittest.TestCase):
         def plan_binding(plan: dict) -> dict:
             return plan["source_attestation_binding"]
 
-        def full_binding(full: dict) -> dict:
-            return full["g4_06_state"]["source_attestation_binding"]
-
         cases = {
             "wrong_valid_parent_pair": lambda fixture, _plan, _full, argv: argv.update(
                 source_checkpoint=fixture.code_checkpoint,
@@ -731,12 +747,6 @@ class P7TdBR6StageGateTests(unittest.TestCase):
                 plan_binding(plan).__setitem__(
                     "accepted_code_owner_tree", fixture.source_tree,
                 ),
-                full_binding(full).__setitem__(
-                    "accepted_code_owner_checkpoint", fixture.source_checkpoint,
-                ),
-                full_binding(full).__setitem__(
-                    "accepted_code_owner_tree", fixture.source_tree,
-                ),
             ),
             "wrong_valid_code_owner": lambda fixture, plan, full, _argv: (
                 plan_binding(plan).__setitem__(
@@ -745,18 +755,9 @@ class P7TdBR6StageGateTests(unittest.TestCase):
                 plan_binding(plan).__setitem__(
                     "accepted_code_owner_tree", fixture.live_tree,
                 ),
-                full_binding(full).__setitem__(
-                    "accepted_code_owner_checkpoint", fixture.live_checkpoint,
-                ),
-                full_binding(full).__setitem__(
-                    "accepted_code_owner_tree", fixture.live_tree,
-                ),
             ),
             "wrong_valid_code_owner_tree": lambda fixture, plan, full, _argv: (
                 plan_binding(plan).__setitem__(
-                    "accepted_code_owner_tree", fixture.source_tree,
-                ),
-                full_binding(full).__setitem__(
                     "accepted_code_owner_tree", fixture.source_tree,
                 ),
             ),
@@ -778,15 +779,6 @@ class P7TdBR6StageGateTests(unittest.TestCase):
             "plan_binding_blob_oid_drift": lambda _fixture, plan, _full, _argv: plan_binding(
                 plan
             )["code_child_blob_oids"][0].__setitem__("oid", "0" * 40),
-            "full_binding_missing": lambda _fixture, _plan, full, _argv: full[
-                "g4_06_state"
-            ].pop("source_attestation_binding"),
-            "full_binding_extra": lambda _fixture, _plan, full, _argv: full_binding(
-                full
-            ).__setitem__("extra", False),
-            "full_binding_drift": lambda _fixture, _plan, full, _argv: full_binding(
-                full
-            ).__setitem__("accepted_code_owner_tree", "0" * 40),
         }
         with tempfile.TemporaryDirectory() as temporary:
             for index, (name, mutate) in enumerate(cases.items()):
@@ -867,47 +859,56 @@ class P7TdBR6StageGateTests(unittest.TestCase):
             return lambda _plan, full: full.__setitem__(name, value)
 
         cases = {
-            "plan_count": plan_set("active_task_count", 0),
-            "full_count": full_set("active_task_count", 0),
-            "plan_task": plan_set("active_task", "REF-WRONG"),
-            "full_task": full_set("active_task", "REF-WRONG"),
-            "plan_reference": plan_set("reference_task_id", "REF-WRONG"),
-            "current_plan_count": full_set("current_plan_active_task_count", 0),
-            "current_plan_task": full_set("current_plan_active_task", "REF-WRONG"),
-            "plan_contract": plan_set("contract_id", "G4-WRONG"),
-            "full_contract": full_set("active_plan_contract_id", "G4-WRONG"),
-            "canonical_next": full_set("canonical_next_reference_task", "REF-WRONG"),
-            "plan_executable": plan_set("executable", False),
-            "full_executable": full_set("executable", True),
-            "full_non_authorizing": full_set("full_is_non_executable_reference", False),
-            "root_missing": lambda plan, _full: plan.pop("new_stage_gate_root"),
-            "root_drift": plan_set("new_stage_gate_root", "/different/root"),
-            "legacy_root_alias": lambda plan, _full: plan.__setitem__(
+            "plan_count": (plan_set("active_task_count", 0), "machine_contract_drift"),
+            "full_count": (full_set("active_task_count", 0), "machine_contract_drift"),
+            "plan_task": (plan_set("active_task", "REF-WRONG"), "machine_contract_drift"),
+            "full_task": (full_set("active_task", "REF-WRONG"), "machine_contract_drift"),
+            "plan_reference": (plan_set("reference_task_id", "REF-WRONG"), "machine_contract_drift"),
+            "current_plan_count": (full_set("current_plan_active_task_count", 0), "machine_contract_drift"),
+            "current_plan_task": (full_set("current_plan_active_task", "REF-WRONG"), "machine_contract_drift"),
+            "plan_contract": (plan_set("contract_id", "G4-WRONG"), "machine_contract_drift"),
+            "full_contract": (full_set("active_plan_contract_id", "G4-WRONG"), "machine_contract_drift"),
+            "canonical_next": (full_set("canonical_next_reference_task", "REF-WRONG"), "machine_contract_drift"),
+            "plan_executable": (plan_set("executable", False), "machine_contract_drift"),
+            "full_executable": (full_set("executable", True), "machine_contract_drift"),
+            "full_non_authorizing": (full_set("full_is_non_executable_reference", False), "machine_contract_drift"),
+            "root_missing": (lambda plan, _full: plan.pop("new_stage_gate_root"), "output_root_drift"),
+            "root_drift": (plan_set("new_stage_gate_root", "/different/root"), "output_root_drift"),
+            "legacy_root_alias": (lambda plan, _full: plan.__setitem__(
                 "stage_gate_root", plan["new_stage_gate_root"],
-            ),
-            "frozen_missing": lambda _plan, full: full.pop("frozen_guide_input"),
-            "frozen_extra": lambda _plan, full: full["frozen_guide_input"].__setitem__(
-                "extra", False,
-            ),
-            "frozen_drift": lambda _plan, full: full["frozen_guide_input"].__setitem__(
-                "selected_exposure", "1/2000",
-            ),
-            "g4_prerequisite_missing": lambda _plan, full: full.pop(
-                "g4_03_prerequisite"
-            ),
-            "g4_prerequisite_drift": lambda _plan, full: full[
-                "g4_03_prerequisite"
-            ].__setitem__("release_consumed", True),
-            "g4_state_missing": lambda _plan, full: full.pop("g4_06_state"),
-            "g4_state_extra": lambda _plan, full: full["g4_06_state"].__setitem__(
-                "extra", False,
-            ),
-            "g4_state_drift": lambda _plan, full: full["g4_06_state"].__setitem__(
-                "offline_package_evidence_only", False,
-            ),
+            ), "machine_contract_drift"),
+            "projection_missing": (lambda plan, _full: plan.pop("projection_contract"), "machine_contract_drift"),
+            "projection_old_task": (lambda plan, _full: plan["projection_contract"].__setitem__(
+                "package_task_id", "REF-G4-06-RAY-R6",
+            ), "machine_contract_drift"),
+            "projection_old_contract": (lambda plan, _full: plan["projection_contract"].__setitem__(
+                "package_contract_id", "G4-RAY-R6-STAGE-GATE-FRESH-PACKAGE-EVIDENCE-V1",
+            ), "machine_contract_drift"),
+            "future_task_collapsed": (lambda plan, _full: plan["projection_contract"].__setitem__(
+                "future_formal_task_id", subject.TASK_ID,
+            ), "machine_contract_drift"),
+            "completed_projection": (full_set("completed_content_allowed", True), "machine_contract_drift"),
+            "archived_prerequisite": (full_set("g4_03_prerequisite", {
+                "disposition": "ACCEPTED_ARCHIVED", "release_consumed": False,
+            }), "machine_contract_drift"),
+            "engineering_checkpoint_missing": (lambda _plan, full: full.pop(
+                "accepted_engineering_checkpoint"
+            ), "machine_contract_drift"),
+            "engineering_tree_wrong": (full_set("accepted_engineering_tree", "0" * 40), "machine_contract_drift"),
+            "replacement_task_missing": (lambda _plan, full: full.pop(
+                "replacement_package_task"
+            ), "machine_contract_drift"),
+            "replacement_status_drift": (lambda _plan, full: full[
+                "replacement_package_task"
+            ].__setitem__("status", "COMPLETED"), "machine_contract_drift"),
+            "retained_state_drift": (full_set("retained_r3_status", "CONSUMED"), "machine_contract_drift"),
         }
+        for field in subject._FULL_AUTHORITY_FIELDS:
+            cases[f"authority_{field}"] = (
+                full_set(field, True), "machine_contract_drift",
+            )
         with tempfile.TemporaryDirectory() as temporary:
-            for index, (name, mutate) in enumerate(cases.items()):
+            for index, (name, (mutate, expected_code)) in enumerate(cases.items()):
                 with self.subTest(name=name):
                     fixture = SyntheticGitRepository(
                         Path(temporary).resolve() / f"matrix-{index:02d}" / "repo"
@@ -921,10 +922,11 @@ class P7TdBR6StageGateTests(unittest.TestCase):
                     (fixture.root / ".agent-work/FULL_PLAN_REFERENCE.md").write_bytes(
                         machine_row("FULL_PLAN_MACHINE_STATE", full)
                     )
+                    stderr = io.StringIO()
                     with mock.patch.object(
                         provenance, "create_exclusive_root",
                         wraps=provenance.create_exclusive_root,
-                    ) as create_root:
+                    ) as create_root, redirect_stderr(stderr):
                         result = subject.main((
                             "prepare", "--repo-root", str(fixture.root),
                             "--source-parent-checkpoint", fixture.source_checkpoint,
@@ -932,6 +934,7 @@ class P7TdBR6StageGateTests(unittest.TestCase):
                             "--package-root", str(fixture.output_root),
                         ))
                     self.assertEqual(result, 1)
+                    self.assertEqual(stderr.getvalue(), f"{expected_code}\n")
                     self.assertFalse(fixture.output_root.exists())
                     create_root.assert_not_called()
 
@@ -941,13 +944,13 @@ class P7TdBR6StageGateTests(unittest.TestCase):
             _, gate, _ = self.gate(fixture)
             cases = {}
             missing = deepcopy(gate)
-            missing["prerequisites"].pop("g4_02")
+            missing["prerequisites"].pop("replacement_package_task")
             cases["missing"] = missing
             extra = deepcopy(gate)
             extra["prerequisites"]["extra"] = False
             cases["extra"] = extra
             drift = deepcopy(gate)
-            drift["prerequisites"]["g4_04"]["release_consumed"] = True
+            drift["prerequisites"]["authority"]["network_authorized"] = True
             cases["drift"] = drift
             for name, altered in cases.items():
                 with self.subTest(name=name), self.assertRaises(subject.StageGateError):
@@ -1045,6 +1048,9 @@ class P7TdBR6StageGateTests(unittest.TestCase):
                 "new_stage_gate_root": str(alternate_root),
                 "source_attestation_binding": deepcopy(
                     fixture.plan["source_attestation_binding"]
+                ),
+                "projection_contract": deepcopy(
+                    fixture.plan["projection_contract"]
                 ),
             }
             (fixture.root / ".agent-work/PLAN.md").write_bytes(
@@ -1339,7 +1345,7 @@ class P7TdBR6StageGateTests(unittest.TestCase):
                 )
 
     def test_planned_subject_real_topology_binds_exact_two_committed_blobs(self):
-        planned_subject = "fix(stage-gate): bind package preparation to g4-06"
+        planned_subject = "fix(stage-gate): align replacement package owner"
         self.assertEqual(subject.ALLOWED_CODE_CHILD_SUBJECT, planned_subject)
         with tempfile.TemporaryDirectory() as temporary:
             fixture = SyntheticGitRepository(Path(temporary) / "planned" / "repo")
@@ -1398,42 +1404,22 @@ class P7TdBR6StageGateTests(unittest.TestCase):
                 for row in attestation.post_child_commits
             ))
 
-    def test_final_snapshot_subject_binds_blobs_and_production_delegates_once(self):
+    def test_old_final_snapshot_subject_is_rejected_before_package_or_backend(self):
         with tempfile.TemporaryDirectory() as temporary:
-            fixture = SyntheticGitRepository(
-                Path(temporary) / "final-snapshot" / "repo",
-                code_child_subject=subject.FINAL_CODE_SNAPSHOT_SUBJECT,
-            )
-            fixture.persist_production_package()
-            fixture.activate_package_b_machine()
-            backend = FakeCapableBackend()
-            backend_factory = mock.Mock(return_value=backend)
-            delegated = mock.Mock(return_value=Path("synthetic-final-result"))
-
-            result = subject.run_production_cli_launch(
-                package_dir=fixture.output_root,
-                repo_root=fixture.root,
-                code_owner_checkpoint=fixture.code_checkpoint,
-                output_dir=Path(subject.FORMAL_ROOT_PARENT),
-                run_name=FUTURE_RUN_NAME,
-                camera_backend_name="remote",
-                camera_backend_kwargs={
-                    "env_file": Path("synthetic.env"),
-                    "base_url": None,
-                    "timeout": 10.0,
-                },
-                backend_factory=backend_factory,
-                delegated_run_fn=delegated,
-            )
-
-            self.assertEqual(result, Path("synthetic-final-result"))
-            self.assertEqual(
-                fixture.plan["source_attestation_binding"]["code_child_subject"],
-                subject.FINAL_CODE_SNAPSHOT_SUBJECT,
-            )
-            backend_factory.assert_called_once()
-            delegated.assert_called_once()
-            backend.connect.assert_not_called()
+            output = Path(temporary) / "final-snapshot" / "offline-package"
+            with mock.patch.object(
+                provenance, "create_exclusive_root",
+                wraps=provenance.create_exclusive_root,
+            ) as create_root, self.assertRaisesRegex(
+                subject.StageGateError, "source_attestation_binding_drift",
+            ):
+                SyntheticRepository(
+                    Path(temporary) / "final-snapshot" / "repo",
+                    output,
+                    code_child_subject=subject.FINAL_CODE_SNAPSHOT_SUBJECT,
+                ).build_input()
+            self.assertFalse(output.exists())
+            create_root.assert_not_called()
 
     def test_previous_binding_subject_with_identical_code_tree_fails_before_root(self):
         legacy_subject = "feat(stage-gate): bind ray r6 package identity"
@@ -1452,12 +1438,9 @@ class P7TdBR6StageGateTests(unittest.TestCase):
             fixture.set_head(legacy_checkpoint)
             plan = deepcopy(fixture.plan)
             full = deepcopy(fixture.full)
-            for binding in (
-                plan["source_attestation_binding"],
-                full["g4_06_state"]["source_attestation_binding"],
-            ):
-                binding["accepted_code_owner_checkpoint"] = legacy_checkpoint
-                binding["accepted_code_owner_tree"] = fixture.code_tree
+            binding = plan["source_attestation_binding"]
+            binding["accepted_code_owner_checkpoint"] = legacy_checkpoint
+            binding["accepted_code_owner_tree"] = fixture.code_tree
             (fixture.root / ".agent-work/PLAN.md").write_bytes(
                 machine_row("PLAN_MACHINE_CONTRACT", plan)
             )

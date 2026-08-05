@@ -31,9 +31,13 @@ STAGE_GATE_SCHEMA = "p7_td_b_r6_stage_gate_v1"
 LAUNCH_DESCRIPTOR_SCHEMA = "p7_td_b_r6_launch_descriptor_v1"
 TERMINAL_SEAL_SCHEMA = "p7_td_b_r6_stage_gate_terminal_seal_v1"
 INPUT_SCHEMA = "p7_td_b_r6_stage_gate_input_v1"
-TASK_ID = "REF-G4-06-RAY-R6"
-CONTRACT_ID = "G4-RAY-R6-STAGE-GATE-FRESH-PACKAGE-EVIDENCE-V1"
-FUTURE_TASK_ID = TASK_ID
+TASK_ID = "REF-G4-06-REPLACEMENT-PACKAGE"
+CONTRACT_ID = "G4-R6-REPLACEMENT-PACKAGE-OWNER-V1"
+FUTURE_TASK_ID = "REF-G4-06-REPLACEMENT-R6"
+FULL_PROJECTION = "UNFINISHED_ONLY_CURRENT_G4_REPLACEMENT_STATE"
+REPLACEMENT_PACKAGE_STATUS = (
+    "ACTIVE_SECTION_2_REPLACEMENT_TASK_PROJECTION_AND_CHILD_TOPOLOGY"
+)
 ENGINEERING_PACKAGE_A_CONTRACT_ID = (
     "G4-RAY-R6-PRODUCTION-CLI-LAUNCH-SEAM-PACKAGE-A-V2"
 )
@@ -71,13 +75,9 @@ PACKAGE_BINDING_SCHEMA = "p7_td_b_r6_stage_gate_package_binding_v1"
 SOURCE_ATTESTATION_BINDING_SCHEMA = (
     "p7_td_b_r6_preparation_source_attestation_binding_v1"
 )
-ALLOWED_CODE_CHILD_SUBJECT = "fix(stage-gate): bind package preparation to g4-06"
+ALLOWED_CODE_CHILD_SUBJECT = "fix(stage-gate): align replacement package owner"
 FINAL_CODE_SNAPSHOT_SUBJECT = (
     "fix(stage-gate): bind final package to immutable code snapshot"
-)
-_ALLOWED_CODE_CHILD_SUBJECTS = (
-    ALLOWED_CODE_CHILD_SUBJECT,
-    FINAL_CODE_SNAPSHOT_SUBJECT,
 )
 ALLOWED_CODE_CHILD_PATHS = (
     "src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py",
@@ -94,6 +94,32 @@ _SHA256 = re.compile(r"[0-9a-f]{64}\Z")
 _SECRET_TERMS = ("secret", "token", "password", "credential", "private-key", ".env")
 _HISTORICAL_PREFIXES = (".agent-work/archived/", ".agent-work/PLANS/", "audit/")
 _HISTORICAL_TERMS = ("retained-r3", "legacy-r2", "deep-corrective")
+_FULL_AUTHORITY_FIELDS = (
+    "replacement_package_authorized",
+    "replacement_formal_authorized",
+    "formal_execution_authorized",
+    "formal_root_creation_authorized",
+    "device_authorized",
+    "network_authorized",
+    "camera_authorized",
+    "ray_authorized",
+    "strip_authorized",
+    "capture_authorized",
+    "release_consumption_authorized",
+    "g4_07_authorized",
+    "td_c_authorized",
+)
+_ARCHIVED_PREREQUISITE_FIELDS = (
+    "frozen_guide_input",
+    "g4_01_prerequisite",
+    "g4_02_prerequisite",
+    "g4_03_prerequisite",
+    "g4_04_prerequisite",
+    "canonical_validator_success",
+    "eligibility",
+    "release_consumable",
+    "g4_06_state",
+)
 
 
 class StageGateError(RuntimeError):
@@ -307,7 +333,7 @@ def _source_attestation_binding(value: object) -> dict[str, Any]:
         or _SHA40.fullmatch(str(binding.get("accepted_engineering_direct_parent"))) is None
         or binding.get("accepted_engineering_subject") != ACCEPTED_ENGINEERING_SUBJECT
         or binding.get("accepted_engineering_paths") != list(ACCEPTED_ENGINEERING_PATHS)
-        or binding.get("code_child_subject") not in _ALLOWED_CODE_CHILD_SUBJECTS
+        or binding.get("code_child_subject") != ALLOWED_CODE_CHILD_SUBJECT
         or binding.get("code_child_paths") != list(ALLOWED_CODE_CHILD_PATHS)
     ):
         raise StageGateError("source_attestation_binding_drift")
@@ -425,8 +451,25 @@ def _projection(
     plan_binding = _source_attestation_binding(
         plan.get("source_attestation_binding")
     )
+    projection = plan.get("projection_contract")
+    expected_projection = {
+        "package_task_id": TASK_ID,
+        "package_contract_id": CONTRACT_ID,
+        "future_formal_task_id": FUTURE_TASK_ID,
+        "future_task_must_differ_from_package_task": True,
+        "full_projection": FULL_PROJECTION,
+        "accepted_engineering_checkpoint": plan_binding[
+            "accepted_engineering_checkpoint"
+        ],
+        "accepted_engineering_tree": plan_binding["accepted_engineering_tree"],
+        "retained_r3_status": RETAINED_R3_STATUS,
+        "all_authority_false": True,
+    }
     if (
-        plan.get("active_task_count") != 1
+        not isinstance(projection, Mapping)
+        or _native(projection) != expected_projection
+        or TASK_ID == FUTURE_TASK_ID
+        or plan.get("active_task_count") != 1
         or full.get("active_task_count") != 1
         or full.get("current_plan_active_task_count") != 1
         or plan.get("active_task") != TASK_ID
@@ -440,108 +483,77 @@ def _projection(
         or full.get("executable") is not False
         or full.get("full_is_non_executable_reference") is not True
         or "stage_gate_root" in plan
+        or full.get("content_policy") != "UNFINISHED_TASKS_AND_REQUIRED_LOCKS_ONLY"
+        or full.get("completed_content_allowed") is not False
+        or full.get("canonical_next_reference_status")
+        != REPLACEMENT_PACKAGE_STATUS
+        or full.get("accepted_engineering_checkpoint")
+        != expected_projection["accepted_engineering_checkpoint"]
+        or full.get("accepted_engineering_tree")
+        != expected_projection["accepted_engineering_tree"]
+        or _native(full.get("replacement_package_task"))
+        != _offline_package_evidence_full_state()
         or full.get("retained_r3_status") != RETAINED_R3_STATUS
-        or full.get("release_consumption_authorized") is not False
-        or full.get("device_authorized_by_this_file") is not False
-        or full.get("camera_authorized_by_this_file") is not False
-        or full.get("ray_authorized_by_this_file") is not False
-        or full.get("strip_authorized_by_this_file") is not False
-        or full.get("formal_r6_authorized") is not False
-        or full.get("td_c_authorized") is not False
-        or _native(full.get("g4_06_state"))
-        != _offline_package_evidence_full_state(plan_binding)
+        or any(full.get(field) is not False for field in _FULL_AUTHORITY_FIELDS)
+        or any(field in full for field in _ARCHIVED_PREREQUISITE_FIELDS)
     ):
         raise StageGateError("machine_contract_drift")
-    frozen = full.get("frozen_guide_input")
-    if not isinstance(frozen, Mapping) or dict(frozen) != {
-        "stage": "EQ-R6_STATE_C",
-        "selected_exposure": "1/2500",
-        "status": "ACCEPTED_QUALIFIED_INPUT_NOT_A_CURRENT_TASK",
-    }:
-        raise StageGateError("scientific_prerequisite_drift")
     prerequisites: dict[str, Any] = {
-        "eq_r6_state_c": dict(frozen),
-        "g4_01": _native(full.get("g4_01_prerequisite")),
-        "g4_02": _native(full.get("g4_02_prerequisite")),
-        "g4_03": _native(full.get("g4_03_prerequisite")),
-        "g4_04": _native(full.get("g4_04_prerequisite")),
+        "full_projection": FULL_PROJECTION,
+        "package_task_id": TASK_ID,
+        "package_contract_id": CONTRACT_ID,
+        "future_formal_task_id": FUTURE_TASK_ID,
+        "accepted_engineering_checkpoint": expected_projection[
+            "accepted_engineering_checkpoint"
+        ],
+        "accepted_engineering_tree": expected_projection[
+            "accepted_engineering_tree"
+        ],
+        "replacement_package_task": _offline_package_evidence_full_state(),
         "retained_r3_status": RETAINED_R3_STATUS,
-        "canonical_validator_success": full.get("canonical_validator_success"),
-        "eligibility": full.get("eligibility"),
-        "release_consumable": full.get("release_consumable"),
-        "release_consumption_authorized": False,
-        "device_authorized": False,
-        "formal_r6_authorized": False,
-        "td_c_authorized": False,
+        "authority": {field: False for field in _FULL_AUTHORITY_FIELDS},
     }
-    if (
-        prerequisites["canonical_validator_success"] is not True
-        or prerequisites["eligibility"] is not True
-        or prerequisites["release_consumable"] is not True
-        or any(not isinstance(prerequisites[key], Mapping) for key in ("g4_01", "g4_02", "g4_03", "g4_04"))
-    ):
-        raise StageGateError("prerequisite_projection_drift")
     return prerequisites, plan_binding
 
 
-def _offline_package_evidence_full_state(
-    source_attestation_binding: Mapping[str, Any],
-) -> dict[str, Any]:
+def _offline_package_evidence_full_state() -> dict[str, Any]:
     return {
-        "route": "G4_06_FRESH_STAGE_GATE_PACKAGE_EVIDENCE",
         "task_id": TASK_ID,
-        "contract_id": CONTRACT_ID,
-        "authority_owner": "MATCHING_LIVE_PLAN_ONLY",
-        "offline_package_evidence_only": True,
-        "full_top_level_non_authorizing": True,
-        "formal_execution_authorized": False,
-        "device_authorized": False,
-        "release_consumption_authorized": False,
-        "g4_07_unlocked": False,
-        "source_attestation_binding": _source_attestation_binding(
-            source_attestation_binding
-        ),
+        "status": REPLACEMENT_PACKAGE_STATUS,
+        "root_selected": False,
+        "root_created": False,
+        "prepare_count": 0,
+        "describe_count": 0,
+        "formal_authorized": False,
     }
 
 
 def _validate_prerequisite_projection(value: object) -> None:
     expected_keys = {
-        "eq_r6_state_c", "g4_01", "g4_02", "g4_03", "g4_04",
-        "retained_r3_status", "canonical_validator_success", "eligibility",
-        "release_consumable", "release_consumption_authorized",
-        "device_authorized", "formal_r6_authorized", "td_c_authorized",
+        "full_projection", "package_task_id", "package_contract_id",
+        "future_formal_task_id", "accepted_engineering_checkpoint",
+        "accepted_engineering_tree", "replacement_package_task",
+        "retained_r3_status", "authority",
     }
     if not isinstance(value, Mapping) or set(value) != expected_keys:
         raise StageGateError("prerequisite_projection_shape_drift")
-    if _native(value.get("eq_r6_state_c")) != {
-        "stage": "EQ-R6_STATE_C",
-        "selected_exposure": "1/2500",
-        "status": "ACCEPTED_QUALIFIED_INPUT_NOT_A_CURRENT_TASK",
-    }:
-        raise StageGateError("scientific_prerequisite_drift")
     if (
-        value.get("retained_r3_status") != RETAINED_R3_STATUS
-        or value.get("canonical_validator_success") is not True
-        or value.get("eligibility") is not True
-        or value.get("release_consumable") is not True
-        or any(
-            value.get(key) is not False
-            for key in (
-                "release_consumption_authorized", "device_authorized",
-                "formal_r6_authorized", "td_c_authorized",
-            )
-        )
+        value.get("full_projection") != FULL_PROJECTION
+        or value.get("package_task_id") != TASK_ID
+        or value.get("package_contract_id") != CONTRACT_ID
+        or value.get("future_formal_task_id") != FUTURE_TASK_ID
+        or value.get("future_formal_task_id") == value.get("package_task_id")
+        or _SHA40.fullmatch(
+            str(value.get("accepted_engineering_checkpoint"))
+        ) is None
+        or _SHA40.fullmatch(str(value.get("accepted_engineering_tree"))) is None
+        or _native(value.get("replacement_package_task"))
+        != _offline_package_evidence_full_state()
+        or value.get("retained_r3_status") != RETAINED_R3_STATUS
+        or _native(value.get("authority"))
+        != {field: False for field in _FULL_AUTHORITY_FIELDS}
     ):
         raise StageGateError("prerequisite_projection_drift")
-    for key in ("g4_01", "g4_02", "g4_03", "g4_04"):
-        prerequisite = value.get(key)
-        if (
-            not isinstance(prerequisite, Mapping)
-            or type(prerequisite.get("disposition")) is not str
-            or not str(prerequisite["disposition"]).startswith("ACCEPTED_")
-            or prerequisite.get("release_consumed") is not False
-        ):
-            raise StageGateError("prerequisite_projection_drift")
 
 
 def build_stage_gate_input(
