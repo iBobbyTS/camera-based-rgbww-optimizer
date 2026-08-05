@@ -109,6 +109,28 @@ _FULL_AUTHORITY_FIELDS = (
     "g4_07_authorized",
     "td_c_authorized",
 )
+_FULL_FORBIDDEN_AUTHORITY_FIELDS = (
+    "formal_r6_authorized",
+    "device_authorized_by_this_file",
+    "camera_authorized_by_this_file",
+    "ray_authorized_by_this_file",
+    "strip_authorized_by_this_file",
+    "package_prepare_authorized",
+    "package_describe_authorized",
+    "package_root_selection_authorized",
+    "package_root_check_authorized",
+    "package_root_create_authorized",
+    "old_package_access_authorized",
+    "old_formal_root_access_authorized",
+    "cleanup_authorized",
+    "analysis_authorized",
+    "formal_authorized",
+    "device_control_authorized",
+    "execute_authorized",
+    "execution_authorized",
+    "materialized_plan_bound_authorized",
+    "run_authorized",
+)
 _ARCHIVED_PREREQUISITE_FIELDS = (
     "frozen_guide_input",
     "g4_01_prerequisite",
@@ -495,6 +517,10 @@ def _projection(
         != _offline_package_evidence_full_state()
         or full.get("retained_r3_status") != RETAINED_R3_STATUS
         or any(full.get(field) is not False for field in _FULL_AUTHORITY_FIELDS)
+        or {
+            field for field in full if field.endswith("_authorized")
+        } != set(_FULL_AUTHORITY_FIELDS)
+        or any(field in full for field in _FULL_FORBIDDEN_AUTHORITY_FIELDS)
         or any(field in full for field in _ARCHIVED_PREREQUISITE_FIELDS)
     ):
         raise StageGateError("machine_contract_drift")
@@ -528,7 +554,7 @@ def _offline_package_evidence_full_state() -> dict[str, Any]:
     }
 
 
-def _validate_prerequisite_projection(value: object) -> None:
+def _validate_prerequisite_projection(value: object) -> Mapping[str, Any]:
     expected_keys = {
         "full_projection", "package_task_id", "package_contract_id",
         "future_formal_task_id", "accepted_engineering_checkpoint",
@@ -554,6 +580,7 @@ def _validate_prerequisite_projection(value: object) -> None:
         != {field: False for field in _FULL_AUTHORITY_FIELDS}
     ):
         raise StageGateError("prerequisite_projection_drift")
+    return value
 
 
 def build_stage_gate_input(
@@ -1204,7 +1231,14 @@ def validate_stage_gate(
     authority = value.get("authority")
     if authority != _authority_false():
         raise StageGateError("authority_drift")
-    _validate_prerequisite_projection(value.get("prerequisites"))
+    prerequisites = _validate_prerequisite_projection(value.get("prerequisites"))
+    if (
+        prerequisites["accepted_engineering_checkpoint"]
+        != binding["accepted_engineering_checkpoint"]
+        or prerequisites["accepted_engineering_tree"]
+        != binding["accepted_engineering_tree"]
+    ):
+        raise StageGateError("prerequisite_projection_drift")
     if (
         value.get("schema") != STAGE_GATE_SCHEMA
         or value.get("status") != "offline_stage_gate_pass_waiting_planner_review"

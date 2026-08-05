@@ -956,6 +956,139 @@ class P7TdBR6StageGateTests(unittest.TestCase):
                 with self.subTest(name=name), self.assertRaises(subject.StageGateError):
                     subject.validate_stage_gate(altered, repo_root=fixture.root)
 
+    def test_full_projection_rejects_literal_authority_aliases_before_root_effects(self):
+        canonical_keys = (
+            "replacement_package_authorized",
+            "replacement_formal_authorized",
+            "formal_execution_authorized",
+            "formal_root_creation_authorized",
+            "device_authorized",
+            "network_authorized",
+            "camera_authorized",
+            "ray_authorized",
+            "strip_authorized",
+            "capture_authorized",
+            "release_consumption_authorized",
+            "g4_07_authorized",
+            "td_c_authorized",
+        )
+        forbidden_aliases = (
+            "formal_r6_authorized",
+            "device_authorized_by_this_file",
+            "camera_authorized_by_this_file",
+            "ray_authorized_by_this_file",
+            "strip_authorized_by_this_file",
+            "package_prepare_authorized",
+            "package_describe_authorized",
+            "package_root_selection_authorized",
+            "package_root_check_authorized",
+            "package_root_create_authorized",
+            "old_package_access_authorized",
+            "old_formal_root_access_authorized",
+            "cleanup_authorized",
+            "analysis_authorized",
+            "formal_authorized",
+            "device_control_authorized",
+            "execute_authorized",
+            "execution_authorized",
+            "materialized_plan_bound_authorized",
+            "run_authorized",
+        )
+        cases = (
+            *((f"forbidden_{name}", name, False) for name in forbidden_aliases),
+            ("unknown_suffix", "future_unlisted_authorized", False),
+            *((f"canonical_true_{name}", name, True) for name in canonical_keys),
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            for index, (name, field, value) in enumerate(cases):
+                with self.subTest(name=name):
+                    fixture = SyntheticGitRepository(
+                        Path(temporary) / f"authority-{index:02d}" / "repo"
+                    )
+                    plan = deepcopy(fixture.plan)
+                    full = deepcopy(fixture.full)
+                    full[field] = value
+                    (fixture.root / ".agent-work/PLAN.md").write_bytes(
+                        machine_row("PLAN_MACHINE_CONTRACT", plan)
+                    )
+                    (fixture.root / ".agent-work/FULL_PLAN_REFERENCE.md").write_bytes(
+                        machine_row("FULL_PLAN_MACHINE_STATE", full)
+                    )
+                    stderr = io.StringIO()
+                    with mock.patch.object(
+                        provenance, "create_exclusive_root",
+                        wraps=provenance.create_exclusive_root,
+                    ) as create_root, redirect_stderr(stderr):
+                        result = subject.main((
+                            "prepare", "--repo-root", str(fixture.root),
+                            "--source-parent-checkpoint", fixture.source_checkpoint,
+                            "--source-parent-tree", fixture.source_tree,
+                            "--package-root", str(fixture.output_root),
+                        ))
+                    self.assertEqual(result, 1)
+                    self.assertEqual(stderr.getvalue(), "machine_contract_drift\n")
+                    self.assertFalse(fixture.output_root.exists())
+                    create_root.assert_not_called()
+
+    def test_stage_gate_rejects_accepted_engineering_cross_binding_drift(self):
+        mutations = (
+            ("checkpoint", "accepted_engineering_checkpoint", "0" * 40),
+            ("tree", "accepted_engineering_tree", "1" * 40),
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            for index, (name, field, replacement) in enumerate(mutations):
+                with self.subTest(name=name):
+                    fixture = SyntheticGitRepository(
+                        Path(temporary) / f"cross-binding-{index}" / "repo"
+                    )
+                    fixture.persist_production_package()
+                    positive = subject.replay_stage_gate_package(
+                        fixture.output_root, repo_root=fixture.root,
+                    )
+                    self.assertEqual(positive["status"], "pass")
+                    fixture.activate_package_b_machine()
+                    stage_gate = deepcopy(positive["stage_gate"])
+                    self.assertNotEqual(
+                        replacement,
+                        stage_gate["source_attestation_binding"][field],
+                    )
+                    stage_gate["prerequisites"][field] = replacement
+                    descriptor = subject.build_launch_descriptor(stage_gate)
+                    self.rewrite_package_json(
+                        fixture, "stage-gate.json", stage_gate,
+                    )
+                    self.rewrite_package_json(
+                        fixture, "launch-descriptor.json", descriptor,
+                    )
+                    self.refresh_terminal_reference(fixture, "stage-gate.json")
+                    self.refresh_terminal_reference(fixture, "launch-descriptor.json")
+                    factory = mock.Mock()
+                    delegated = mock.Mock()
+                    with mock.patch.object(
+                        provenance, "create_exclusive_root",
+                        wraps=provenance.create_exclusive_root,
+                    ) as create_root, self.assertRaisesRegex(
+                        subject.StageGateError, "prerequisite_projection_drift",
+                    ):
+                        subject.run_production_cli_launch(
+                            package_dir=fixture.output_root,
+                            repo_root=fixture.root,
+                            code_owner_checkpoint=fixture.code_checkpoint,
+                            output_dir=Path(subject.FORMAL_ROOT_PARENT),
+                            run_name=FUTURE_RUN_NAME,
+                            camera_backend_name="remote",
+                            camera_backend_kwargs={
+                                "env_file": Path("synthetic.env"),
+                                "base_url": None,
+                                "timeout": 10.0,
+                            },
+                            backend_factory=factory,
+                            delegated_run_fn=delegated,
+                        )
+                    create_root.assert_not_called()
+                    factory.assert_not_called()
+                    delegated.assert_not_called()
+
     def test_module_cli_rejects_invalid_and_nonfresh_explicit_inputs(self):
         with tempfile.TemporaryDirectory() as temporary:
             fixture = SyntheticGitRepository(Path(temporary).resolve() / "repo")
