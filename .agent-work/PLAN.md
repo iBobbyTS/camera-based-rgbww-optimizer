@@ -1,165 +1,44 @@
-# REF-G4-06 immutable qualification checkpoint promotion
+# REF-G4-06 immutable qualification Q rejection stop
 
-**计划状态：** `EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION_IMMUTABLE_QUALIFICATION_PROMOTION`
+**计划状态：** `IMMUTABLE_QUALIFICATION_Q_REJECTED_RETURN_TO_ORCHESTRATION_A_SUPERVISOR_REVIEW_REQUIRED`
 
-**Executable：** `true`
+**Executable：** `false`
 
-**Active task count：** `1`
+**Active task count：** `0`
 
-**Active task：** `REF-G4-06-IMMUTABLE-QUALIFICATION-PROMOTION`
+**Active task：** `null`
 
-**Reference goal：** `REF-G4-COMPLETE`
+**Historical reviewed task：** `REF-G4-06-IMMUTABLE-QUALIFICATION-PROMOTION`
 
-**Selected architecture：** `DEDICATED_NON_PRODUCTION_QUALIFICATION_CHECKPOINT_WITH_EXACT_FAST_FORWARD_PROMOTION`
+**Planner disposition：** `REJECTED_IMMUTABLE_Q_TOPOLOGY_VALIDATION_COMMITTED_SOURCE_CANDIDATE_BLOB_DRIFT`
 
-**单一 Planner stop：** `RETURN_FOR_COMMITTED_Q_VALIDATION_REVIEW`
+**Allowed next action：** `WAIT_FOR_SUPERVISOR_AFTER_IMMUTABLE_Q_REJECTION`
 
-**Reviewed predecessor archive：** `.agent-work/archived/PLAN-20260805-1625.md`（6871 bytes；SHA-256 `ac4ee61b57ca9f881af62208b95749dbdbd815009cbe850e9e193fc80d95257b`；`historical_non_executable`）
+`PLAN_MACHINE_CONTRACT={"schema":"planner_execution_contract_v2","contract_id":"G4-R6-IMMUTABLE-QUALIFICATION-REJECTION-STOP-V1","plan_status":"IMMUTABLE_QUALIFICATION_Q_REJECTED_RETURN_TO_ORCHESTRATION_A_SUPERVISOR_REVIEW_REQUIRED","executable":false,"active_task_count":0,"active_task":null,"reference_task_id":"REF-G4-06-IMMUTABLE-QUALIFICATION-PROMOTION","reference_goal":"REF-G4-COMPLETE","reference_task_status":"HISTORICAL_REJECTED_IMMUTABLE_QUALIFICATION_Q","selected_architecture":"DEDICATED_NON_PRODUCTION_QUALIFICATION_CHECKPOINT_WITH_EXACT_FAST_FORWARD_PROMOTION","planner_disposition":"REJECTED_IMMUTABLE_Q_TOPOLOGY_VALIDATION_COMMITTED_SOURCE_CANDIDATE_BLOB_DRIFT","qualification_commit":"74f5c2ea0188bcca633193d1ee5775b951ff0a9d","qualification_status":"REJECTED_NON_PRODUCTION_HISTORICAL_ONLY","qualification_branch":"codex/g4-r6-immutable-qualification-q1","qualification_branch_historical_only_required":true,"activation_commit_a":"6ed06636d382db7a66b83096f52e8dcbfa0d3263","orchestration_branch":"codex/g4-r6-owner-alignment-large-change","orchestration_branch_required_tip":"6ed06636d382db7a66b83096f52e8dcbfa0d3263","accepted_orchestration_source_blob":"0015d7ce2f2a5dde9118478f98c929020a474a01","accepted_orchestration_test_blob":"2a60a987dda02675c2eddc7d8260d61a8f68edc3","review_evidence":{"topology_invocation_count":1,"topology_tests":12,"topology_duration_s":23.011,"topology_exit":1,"topology_errors":32,"dominant_error":"committed_source_candidate_blob_drift","full_invocation_count":0,"full_retry":0,"source_test_post_q_mutation_count":0,"package_formal_device_scientific_effects":0},"qualified_non_green_baseline_reached":false,"q_repair_allowed":false,"q_amend_allowed":false,"q2_allowed":false,"validation_rerun_allowed":false,"clean_review_count":0,"clean_reviews_authorized":false,"promotion_authorized":false,"cherry_pick_allowed":false,"merge_allowed":false,"rebase_allowed":false,"rebuild_allowed":false,"reviewed_archives":{"plan":{"path":".agent-work/archived/PLAN-20260805-2300.md","bytes":18624,"sha256":"f3bdce721916fd979ee7cf9d60acc6c3b087ac14430ef8ec06da4d694ab820bb","source_bytes":17307,"source_sha256":"37f53473c9d3c453e7e40cdb316a249f0c1875df44014826da42359f635fe010"},"execution_result":{"path":".agent-work/archived/EXECUTION_RESULT-20260805-2300.md","bytes":8000,"sha256":"58659186b84d5e1d846913f867f135d1aa9994f19e18ce2f58fabc72a679474c","source_bytes":6624,"source_sha256":"ab227e15f00897148e6862aa1d949ebf37e7eec44bd20fb859dcce818f2b5130"}},"package_prepare_authorized":false,"package_describe_authorized":false,"package_root_selection_authorized":false,"package_root_check_authorized":false,"package_root_create_authorized":false,"replacement_package_authorized":false,"replacement_formal_authorized":false,"formal_execution_authorized":false,"formal_root_creation_authorized":false,"release_consumption_authorized":false,"device_authorized":false,"network_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"capture_authorized":false,"analysis_authorized":false,"human_goal_complete":false,"guide_complete":false,"scientific_stage_complete":false,"planner_stop":"IMMUTABLE_QUALIFICATION_Q_REJECTED_RETURN_TO_ORCHESTRATION_A_SUPERVISOR_REVIEW_REQUIRED","allowed_next_action":"WAIT_FOR_SUPERVISOR_AFTER_IMMUTABLE_Q_REJECTION"}`
 
-`PLAN_MACHINE_CONTRACT={"schema":"planner_execution_contract_v2","contract_id":"G4-R6-IMMUTABLE-QUALIFICATION-PROMOTION-V1","plan_status":"EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION_IMMUTABLE_QUALIFICATION_PROMOTION","executable":true,"active_task_count":1,"active_task":"REF-G4-06-IMMUTABLE-QUALIFICATION-PROMOTION","reference_task_id":"REF-G4-06-IMMUTABLE-QUALIFICATION-PROMOTION","reference_goal":"REF-G4-COMPLETE","reference_task_status":"ACTIVE_AFTER_ORCHESTRATOR_ACTIVATION_NEW_ARCHITECTURE_ROUTE","selected_architecture":"DEDICATED_NON_PRODUCTION_QUALIFICATION_CHECKPOINT_WITH_EXACT_FAST_FORWARD_PROMOTION","old_section_2_fourth_repair":false,"corrective_suffix_created":false,"activation_state":"DRAFT_WAITING_ORCHESTRATOR_FULL_PLAN_FULL_ALIGNMENT_AND_FOCUSED_COMMIT_A","orchestration_branch":"codex/g4-r6-owner-alignment-large-change","qualification_branch":"codex/g4-r6-immutable-qualification-q1","activation_commit":{"expected_parent":"49ad47eceb1bb987eb83107deb8c892d2928c6c5","expected_subject":"docs(plan): activate immutable qualification promotion","expected_changed_paths":[".agent-work/EXECUTION_RESULT.md",".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN-FULL.md",".agent-work/PLAN.md",".agent-work/archived/FULL_PLAN_REFERENCE-20260805-1625.md",".agent-work/archived/PLAN-20260805-1625.md"],"direct_single_parent_required":true,"docs_only_required":true,"activation_sha_recorded_in_plan":false},"qualification_commit":{"source_of_truth":"QUALIFICATION_COMMIT_Q","direct_parent":"ACTIVATION_COMMIT_A","single_parent_required":true,"merge_commit_allowed":false,"subject":"fix(stage-gate): bind immutable qualification checkpoint","changed_paths":["src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","tests/test_p7_td_b_r6_stage_gate.py"],"commit_before_any_test_or_compile":true,"accepted_start_source_blob":"0015d7ce2f2a5dde9118478f98c929020a474a01","accepted_start_test_blob":"2a60a987dda02675c2eddc7d8260d61a8f68edc3","historical_candidate_input_count":0,"non_production_pending_validation":true},"identity_documentation":{"required":true,"orchestrator_owned":true,"changed_path_prefix":".agent-work/","must_record":["q_commit","q_tree","parent_a","subject","changed_paths","source_blob","source_bytes","source_sha256","source_mode","test_blob","test_bytes","test_sha256","test_mode","qualification_status"],"qualification_status":"NON_PRODUCTION_PENDING_VALIDATION","may_change_q_source_or_test":false},"validation":{"topology_probe_before_tests":true,"committed_q_bytes_only":true,"source_test_mutation_during_validation":false,"full_suite_budget":1,"full_retry":0,"full_acceptance_green":true,"qualified_non_green_exact_failures":2,"qualified_non_green_exact_errors":8,"qualified_non_green_module":"tests.test_p7_thermal_diagnostics","known_baseline_only":true,"targeted_green_substitutes_full":false},"post_validation":{"planner_review_required":true,"clean_reviews_required":2,"clean_review_model":"gpt-5.6-sol","clean_review_reasoning":"xhigh","must_fix_repair_allowed":false,"promotion_authorized_by_this_plan":false,"exact_fast_forward_only":true,"cherry_pick_allowed":false,"merge_allowed":false,"rebase_allowed":false,"rebuild_allowed":false},"historical_candidate":{"ref":"refs/heads/codex/historical-g4-r6-section2-final-snapshot-rejected","commit":"3dc2fa2639ee19b1c10ec55e2412836527c8973b","isolation_verification_allowed":true,"diff_or_file_read_allowed":false,"apply_copy_merge_cherry_pick_rebase_allowed":false,"production_package_formal_release_input_allowed":false},"package_prepare_authorized":false,"package_describe_authorized":false,"package_root_selection_authorized":false,"package_root_check_authorized":false,"package_root_create_authorized":false,"replacement_package_authorized":false,"replacement_formal_authorized":false,"formal_execution_authorized":false,"formal_root_creation_authorized":false,"release_consumption_authorized":false,"device_authorized":false,"network_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"capture_authorized":false,"analysis_authorized":false,"human_goal_complete":false,"guide_complete":false,"scientific_result_created":false,"planner_stop":"RETURN_FOR_COMMITTED_Q_VALIDATION_REVIEW"}`
+## Terminal review
 
-## 1. 单一工程阶段与职责边界
+Planner审查 live PLAN 与 Executer handoff 后，拒绝 immutable qualification Q `74f5c2ea0188bcca633193d1ee5775b951ff0a9d`。Committed-Q topology gate实际执行一次：12 tests / 23.011s / exit 1 / 32 errors，dominant stable error为 `committed_source_candidate_blob_drift`。Full suite invocation/retry为 `0/0`；AUTH/PROV、stage-gate focused、terminal focused、compile、CodeGraph和其余后续gate均因 topology fail-closed 未运行。
 
-这是 Supervisor 选择的新工程架构路线，不是已停止 Section 2 的第四次 repair，不创建 corrective suffix，也不恢复旧 candidate。一个最大安全连续包包含：A 激活、从 accepted tree 独立实现、先提交 immutable Q、记录 Q identity、只对 committed Q 做 focused/full validation，以及一次 Executer handoff。单个命令、测试、证据格式或状态文字不得再拆成新 task。
+该结果是新的 Q source/test committed-identity validation failure，超出唯一允许的 qualified non-green baseline。它不是科学失败、设备失败、formal结果、package结果或release结果，也不产生任何科学或实验credit。ER证明Q之后source/test没有mutation，package/formal/release/device/network/camera/Ray/strip/capture/analysis effects均为零，visible Terminal已结束且automation已删除。
 
-- Orchestrator 独占 FULL、Git topology、A、qualification branch 创建、Q 后 identity documentation、拒绝隔离与 eventual promotion 决策。
-- Planner 独占本 PLAN；本轮 stop 时根据 committed-Q evidence 接受或拒绝 validation 结果并归档。
-- Executer只可在 Orchestrator 已证明 A 合法且已切到 qualification branch 后修改两个授权 owner path，创建 exact Q，并在 Q 后写 `.agent-work/EXECUTION_RESULT.md`。不得修改 PLAN、FULL、PLAN-FULL、GUIDE、RESEARCH 或 archive。
-- Q 在 Planner 接受 full 且两次独立 clean review 完成前始终是 `NON_PRODUCTION_PENDING_VALIDATION`；本 PLAN 不授权 promotion。
+## Rejection disposition
 
-## 2. Frozen intake 与历史隔离
+- Q保持non-production并被拒绝；qualification branch必须转为historical-only。
+- 禁止repair、amend、Q2、rerun、alternate candidate或在Q上继续修改。
+- 两次独立clean review未解锁；exact fast-forward promotion未解锁。
+- Orchestration branch必须回到并保持activation A `6ed06636d382db7a66b83096f52e8dcbfa0d3263`，accepted source/test blobs保持 `0015d7ce2f2a5dde9118478f98c929020a474a01` / `2a60a987dda02675c2eddc7d8260d61a8f68edc3`。
+- 禁止将qualification branch/Q merge、cherry-pick、rebase、rebuild或作为production/package/formal/release input。
+- package prepare/describe/root、formal、release、device/network/camera/Ray/strip/capture/analysis全部保持锁定。
+- Human goal、GUIDE和scientific stage均未完成；不升级Advisor。
 
-Orchestrator 在执行前必须一次性 fail closed 核对：
+## Reviewed archives
 
-1. 当前 branch 为 `codex/g4-r6-owner-alignment-large-change`，HEAD 为 `49ad47eceb1bb987eb83107deb8c892d2928c6c5`；除本次 A 精确文档集外没有其他 dirty 内容。
-2. 当前 accepted owner blob 必须仍为：
-   - `src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py`：`0015d7ce2f2a5dde9118478f98c929020a474a01`；
-   - `tests/test_p7_td_b_r6_stage_gate.py`：`2a60a987dda02675c2eddc7d8260d61a8f68edc3`。
-3. Historical ref只可通过 `git show-ref --verify`、commit-ID相等和 ancestry查询验证隔离；禁止读取其 diff、tree、blob、文件正文或把它用作 patch/source。其 ref/commit为 `refs/heads/codex/historical-g4-r6-section2-final-snapshot-rejected` / `3dc2fa2639ee19b1c10ec55e2412836527c8973b`，且不得成为 A 或 Q 的祖先。
-4. GUIDE SHA-256保持 `659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35`；GUIDE/RESEARCH不可修改。
-5. 不访问旧 package、旧 formal root、任何 external experiment payload、设备或网络；process/automation不得拥有 experiment/formal/device工作。
+- PLAN：`.agent-work/archived/PLAN-20260805-2300.md`，18624 bytes，SHA-256 `f3bdce721916fd979ee7cf9d60acc6c3b087ac14430ef8ec06da4d694ab820bb`；其冻结source为17307 bytes，SHA-256 `37f53473c9d3c453e7e40cdb316a249f0c1875df44014826da42359f635fe010`。
+- EXECUTION_RESULT：`.agent-work/archived/EXECUTION_RESULT-20260805-2300.md`，8000 bytes，SHA-256 `58659186b84d5e1d846913f867f135d1aa9994f19e18ce2f58fabc72a679474c`；其冻结source为6624 bytes，SHA-256 `ab227e15f00897148e6862aa1d949ebf37e7eec44bd20fb859dcce818f2b5130`。
 
-任一 mismatch 都停止并写入 ER；禁止 reset、clean、历史 candidate 读取或现场修正。
+两份archive均为 `historical_non_executable`，不授权任何后续执行。
 
-## 3. Activation commit A（Orchestrator gate）
+## Stop
 
-Orchestrator先使 PLAN、FULL、PLAN-FULL machine state exact一致为 active task count `1`、task `REF-G4-06-IMMUTABLE-QUALIFICATION-PROMOTION`，并把 live ER复位为本 package 的空 handoff。然后创建唯一 activation commit A：
-
-- direct single parent：`49ad47eceb1bb987eb83107deb8c892d2928c6c5`；
-- subject：`docs(plan): activate immutable qualification promotion`；
-- exact changed paths：
-  - `.agent-work/EXECUTION_RESULT.md`
-  - `.agent-work/FULL_PLAN_REFERENCE.md`
-  - `.agent-work/PLAN-FULL.md`
-  - `.agent-work/PLAN.md`
-  - `.agent-work/archived/FULL_PLAN_REFERENCE-20260805-1625.md`
-  - `.agent-work/archived/PLAN-20260805-1625.md`
-- docs/orchestration only；不得包含 source、tests、config、GUIDE、RESEARCH、package 或 experiment payload。
-
-A 必须通过 parent/subject/path/tree、PLAN/FULL/PLAN-FULL parser和clean-worktree检查。Orchestrator随后从 exact A 创建新 branch `codex/g4-r6-immutable-qualification-q1`；branch 必须此前不存在，不得复用 historical branch。创建和切换 branch 本身不授权测试、package、formal或设备。
-
-## 4. Q 前实现合同：先提交，后测试
-
-Executer的 Q 前动作严格限于：
-
-1. 只读 CodeGraph/source inspection与 maintainability preflight，确认继续复用现有 `p7_td_b_r6_stage_gate.py` canonical attestation owner，不新增 module/controller/schema或并列 identity owner。
-2. 从 A 中上述 accepted blobs独立实现 selected architecture；historical candidate diff/file/read/apply/copy/merge/cherry-pick/rebase次数必须全部为 `0`。
-3. 仅修改 exact two paths：
-   - `src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py`
-   - `tests/test_p7_td_b_r6_stage_gate.py`
-4. 语义目标：qualification commit Q 的 commit/tree/blob/subject/parent成为候选身份唯一 source of truth；worktree content hash或manifest不得成为并列放行权威。保留 AUTH/PROV fail-closed保护和现有 public persist/replay owner；不放宽未知字段、authority、path、parent、subject、mode、bytes/SHA 或 current-worktree drift检查。
-5. 添加有行为断言的 real-Git synthetic regression，至少证明 exact A→Q single-parent/two-path/subject/current blob通过；错误 parent、merge、subject、额外/缺失/reordered path、旧 blob、dirty source/test、AUTH alias及 prerequisite provenance drift均在任何 package/backend/root effect前拒绝。
-6. 如直接修改会增加并行 semantic owner、宽泛 ignore/allowlist、删除 validation、复制 runner，或预计总改动超过300行，则停止回 Orchestrator；不得借此执行无关大重构。
-
-Q 前禁止运行任何候选 test、unittest discovery、compileall、py_compile、import/syntax probe或其他会把未提交 bytes当作资格输入的验证。只允许 read-only inspection、实现和 `git diff --check`/exact path scope检查。
-
-完成实现后，Executer必须在任何测试/compile之前创建 Q：
-
-- branch：`codex/g4-r6-immutable-qualification-q1`；
-- direct parent：exact A；single parent，non-merge；
-- subject：`fix(stage-gate): bind immutable qualification checkpoint`；
-- exact changed paths：上述 source/test 两个路径；
-- commit后 worktree clean；
-- package/formal/release/device/network/camera/Ray/strip/capture authority全部 false。
-
-不得先测试未提交 bytes后再假定提交身份相同；不得 amend、rebase、重建或用第二个 code commit修正Q。
-
-## 5. Q identity documentation 与测试前真实 Git gate
-
-Q 创建后，Executer先在 ER报告 Q ID，不改 source/test。Orchestrator随后以一个或多个仅 `.agent-work/` 路径的 linear direct-child documentation commit记录：
-
-- Q commit、Q tree、parent A、exact subject、exact two changed paths；
-- source/test各自 Git mode、blob OID、bytes、SHA-256；
-- `qualification_status=NON_PRODUCTION_PENDING_VALIDATION`；
-- historical candidate仍为 isolated forbidden input；
-- package/formal/release/device权限仍全部 false。
-
-Documentation commit不得改变 Q 的 source/test bytes、tree、blob、subject、parent或ancestry。验证前由 Orchestrator执行一次真实 Git topology/identity probe并把结果交回 Executer：
-
-1. Q commit存在、single parent exact A、non-merge、subject和two-path diff exact；
-2. `git ls-tree`/`git show Q:path`证明两个 mode/blob/bytes/SHA与当前工作树exact相同；
-3. A→Q后的每个 commit均为linear direct child且只改`.agent-work/`；
-4. branch HEAD包含Q为祖先，source/test仍等于Q blobs；
-5. worktree clean，或只含本 PLAN 明确允许但尚未提交的`.agent-work/EXECUTION_RESULT.md` handoff；
-6. historical ref未进入A/Q/当前tip ancestry，且未读取其diff/tree/blob/file；
-7. PLAN/FULL/PLAN-FULL machine state仍为当前task active `1/1/1`。
-
-任一 gate失败立即停止，不运行测试、不修改Q、不创建替代candidate。
-
-## 6. Committed-Q validation（full budget 1 / retry 0）
-
-所有命令必须针对 Q 的 committed source/test bytes；validation期间禁止修改、stage或commit source/test。临时输出只能位于 `/Volumes/4T/temp/rgbww-optimizer`，使用以Q短SHA派生的fresh exclusive root；不得使用repo `tmp/`或系统`/tmp`。先记录命令、UTC、exit、test count、stdout/stderr bytes/SHA，再运行下一gate。
-
-按以下单一连续包执行：
-
-1. meaningful exact topology regression：A→Q positive、single-parent/subject/two-path/current-blob positive，以及 parent/merge/subject/path/old-blob/dirty-worktree negative；
-2. AUTH/PROV regression：authority vocabulary/alias fail closed和accepted-engineering checkpoint/tree/blob prerequisite exact binding；
-3. stage-gate focused：`tests.test_p7_td_b_r6_stage_gate`；
-4. terminal focused：`tests.test_p7_td_b_r6_terminal`；
-5. compile/static：`python -m compileall -q src tests`及适用静态source/scope检查；
-6. `codegraph sync`后查询 committed-source attestation的唯一owner和调用链；
-7. `git diff --check`、branch/HEAD/worktree、Q identity、A→Q→docs linear ancestry、exact changed-path与GUIDE/RESEARCH/config/package/formal/device零变化检查；
-8. 仅一次 `python -m unittest discover -s tests` full suite；`full_suite_budget=1`，`full_retry=0`。若预计超过10分钟，必须使用可见 macOS Terminal、三次稀疏liveness与automation规则；否则仍须保存完整flat evidence和terminal seal。
-
-Focused green不得替代full acceptance。Full唯一允许的结果是：
-
-- 完全绿色；或
-- 恰好 `2 failures + 8 errors`，全部且仅属于 `tests.test_p7_thermal_diagnostics`中既知 `AGENTS.md` governance-lineage identities，无 stage-gate、terminal、changed-owner、新failure或新error。
-
-任何 identity drift、新 source/test failure、超出上述精确baseline、测试中source/test mutation、full第二次调用需求，均立即停止；不得修复Q、修改测试、重跑full或创建Q2。
-
-## 7. Executer handoff 与唯一 Planner stop
-
-Executer将以下完整写入 `.agent-work/EXECUTION_RESULT.md`：
-
-- A/Q/docs tip commit与tree、parent、subjects、每commit exact paths和ancestry probe；
-- Q source/test mode、blob、bytes、SHA和validation前后identity；
-- historical ref只做隔离检查且 diff/file/tree/blob read count `0`；
-- every validation command、exit、test count、evidence path/bytes/SHA；
-- full invocation/retry=`1/0`及精确 green或known-baseline分类；
-- source/test post-Q mutation、amend、repair、alternate candidate=`0`；
-- package/formal/root/release/device/network/camera/Ray/strip/capture/analysis access=`0`；
-- process/automation/worktree终态；
-- `CANDIDATE_Q_VALIDATION_HANDOFF_WAITING_PLANNER_REVIEW`或精确 rejection cause。
-
-然后在唯一 stop `RETURN_FOR_COMMITTED_Q_VALIDATION_REVIEW` 停止。不得自行执行两次code review或promotion。
-
-## 8. Planner review、clean-review和promotion hard locks
-
-Planner在stop后先审查 committed Q identity和full evidence：
-
-- 若出现任何新failure/identity drift/超baseline，立即拒绝Q；qualification branch改为historical-only，orchestration branch保持A，归档PLAN/ER并使PLAN/FULL/PLAN-FULL active count归零；不修复、不重跑。
-- 若full满足唯一acceptance，Planner仅可接受qualification evidence并归档；Q仍非production。随后由Orchestrator调用两次相互独立的 GPT-5.6 Sol xhigh `$code-review`。任何 Must Fix 都拒绝Q并按上述路径归零，不得在Q上修补。
-- 只有full accepted且两次连续clean review后，Orchestrator才可确认orchestration branch仍exact A并将其 exact fast-forward到qualification branch accepted tip。禁止cherry-pick、merge、rebase、rebuild或改变Q identity。
-- Promotion后的`.agent-work/`-only commit只记录 `accepted code-owner checkpoint=Q`、qualification accepted、historical candidate forbidden、package/formal/device仍锁。Promotion不授权package prepare/describe/root、formal、release consumption或设备。
-
-本 PLAN 不授权 promotion动作本身；它只冻结其必要接受条件。下一份PLAN只能在promotion完成后决定是否单独进行offline replacement package preparation。
-
-## 9. 全局禁止与科学状态
-
-- GUIDE/RESEARCH只读；不得改写科学合同。
-- 不访问旧package、旧formal root、external experiment payload、retained R3 payload或历史candidate内容。
-- package prepare/describe/replay/probe/root、replacement formal、release consumption、device/network/camera/Ray/strip/capture、analysis、G4-07、TD-C全部禁止。
-- 当前路线不产生capture、formal attempt、设备结果或科学结果；`RETAINED_UNVALIDATED_UNCONSUMED`不变。
-- Human goal complete、GUIDE complete、scientific stage complete均为false。
-- 不需要Advisor或新Human设备授权。
+当前无active executable PLAN。返回Orchestrator完成qualification branch historical-only隔离、回到A、同步FULL/PLAN-FULL与clean worktree，然后停止等待Supervisor：`WAIT_FOR_SUPERVISOR_AFTER_IMMUTABLE_Q_REJECTION`。
