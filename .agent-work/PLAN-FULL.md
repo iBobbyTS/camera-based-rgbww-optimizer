@@ -1,6 +1,6 @@
 # REF-G4-06-REPLACEMENT-PACKAGE large-change implementation plan
 
-**Document status:** `NON_EXECUTABLE_LARGE_CHANGE_SECTION_ROADMAP`
+**Document status:** `SECTION_2_ENGINEERING_CONVERGENCE_STOP_SUPERVISOR_REVIEW_REQUIRED`
 
 **Executable authority:** `false`
 
@@ -12,7 +12,24 @@
 
 **Base tree:** `e7d20cd3ac98f21d3af5cb9d43d31ed40e00ec6d`
 
-`PLAN_FULL_MACHINE_CONTRACT={"schema":"g4_large_change_plan_full_v6","document_status":"NON_EXECUTABLE_LARGE_CHANGE_SECTION_ROADMAP","executable":false,"reference_goal":"REF-G4-COMPLETE","stable_reference_task":"REF-G4-06-REPLACEMENT-PACKAGE","corrective_suffix_allowed":false,"branch":"codex/g4-r6-owner-alignment-large-change","base_checkpoint":"3c920c6d29e5c366ce3843a2532d30d80c6f0c33","base_tree":"e7d20cd3ac98f21d3af5cb9d43d31ed40e00ec6d","current_section":"SECTION_2_REPLACEMENT_TASK_PROJECTION_AND_CHILD_TOPOLOGY","section_1_accepted":{"commit":"5d01bcbb7e1a9ec1808e2fc05d238363d82a0a74","tree":"656fee670f289b0a20fea1a8c015762afd44a5c0","clean_review_streak":2},"sections":[{"section":"SECTION_1_ACCEPTED_ENGINEERING_CHECKPOINT_BINDING","status":"ACCEPTED_COMMITTED_TWO_CLEAN_REVIEWS"},{"section":"SECTION_2_REPLACEMENT_TASK_PROJECTION_AND_CHILD_TOPOLOGY","status":"ACTIVE_FINAL_SNAPSHOT_TOPOLOGY_REPAIR"}],"section_2_topology_repair":{"base_code_commit":"75d327729fdc479b6f9305e4e4a5ca3628fe2346","base_code_tree":"342e8c0b4f4444447a635132b0dfe333ef1ca483","clean_review_streak":0,"closed_findings":["REV-S2-AUTH-001","REV-S2-PROV-001"],"active_findings":["REV-S2-REPAIR-R2-001"],"final_code_snapshot_subject":"fix(stage-gate): bind final package to immutable code snapshot","history_rewrite":false,"multi_subject_fallback":false},"post_commit_review":{"skill":"code-review","model":"gpt-5.6-sol","reasoning_effort":"xhigh","consecutive_clean_reviews_required":2,"clean_streak_resets_after_repair":true,"real_git_production_validator_probe_required":true},"final_snapshot_full_collection_invocation_cap":1,"final_snapshot_full_retry_cap":0,"package_prepare_authorized":false,"package_describe_authorized":false,"package_root_selection_authorized":false,"package_root_check_authorized":false,"package_root_create_authorized":false,"old_package_access_authorized":false,"old_formal_root_access_authorized":false,"formal_execution_authorized":false,"formal_root_creation_authorized":false,"device_authorized":false,"network_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"capture_authorized":false,"cleanup_authorized":false,"release_consumption_authorized":false,"analysis_authorized":false,"g4_07_authorized":false,"td_c_authorized":false}`
+`PLAN_FULL_MACHINE_CONTRACT={"schema":"g4_large_change_plan_full_v7","document_status":"SECTION_2_ENGINEERING_CONVERGENCE_STOP_SUPERVISOR_REVIEW_REQUIRED","executable":false,"active_task_count":0,"active_task":null,"reference_goal":"REF-G4-COMPLETE","stable_reference_task":"REF-G4-06-REPLACEMENT-PACKAGE","reference_task_status":"HISTORICAL_STOPPED_SECTION_2_ENGINEERING_CONVERGENCE","corrective_suffix_allowed":false,"fourth_repair_authorized":false,"branch":"codex/g4-r6-owner-alignment-large-change","base_checkpoint":"3c920c6d29e5c366ce3843a2532d30d80c6f0c33","base_tree":"e7d20cd3ac98f21d3af5cb9d43d31ed40e00ec6d","current_section":"SECTION_2_REPLACEMENT_TASK_PROJECTION_AND_CHILD_TOPOLOGY","current_section_status":"SECTION_2_ENGINEERING_CONVERGENCE_STOP_SUPERVISOR_REVIEW_REQUIRED","section_1_accepted":{"commit":"5d01bcbb7e1a9ec1808e2fc05d238363d82a0a74","tree":"656fee670f289b0a20fea1a8c015762afd44a5c0","clean_review_streak":2},"sections":[{"section":"SECTION_1_ACCEPTED_ENGINEERING_CHECKPOINT_BINDING","status":"ACCEPTED_COMMITTED_TWO_CLEAN_REVIEWS"},{"section":"SECTION_2_REPLACEMENT_TASK_PROJECTION_AND_CHILD_TOPOLOGY","status":"SECTION_2_ENGINEERING_CONVERGENCE_STOP_SUPERVISOR_REVIEW_REQUIRED"}],"section_2_terminal":{"accepted_base_code_commit":"75d327729fdc479b6f9305e4e4a5ca3628fe2346","accepted_base_code_tree":"342e8c0b4f4444447a635132b0dfe333ef1ca483","clean_review_streak":0,"closed_findings":["REV-S2-AUTH-001","REV-S2-PROV-001"],"terminal_disposition":"REJECTED_FINAL_FULL_MASS_REGRESSION_COMMITTED_SOURCE_CANDIDATE_BLOB_DRIFT","same_boundary_failure_count":3,"historical_candidate_ref":"refs/heads/codex/historical-g4-r6-section2-final-snapshot-rejected","historical_candidate_commit":"3dc2fa2639ee19b1c10ec55e2412836527c8973b","candidate_production_input_allowed":false},"final_snapshot_full_collection_invocation_count":1,"final_snapshot_full_retry_count":0,"full_rerun_authorized":false,"post_commit_review_authorized":false,"package_prepare_authorized":false,"package_describe_authorized":false,"package_root_selection_authorized":false,"package_root_check_authorized":false,"package_root_create_authorized":false,"old_package_access_authorized":false,"old_formal_root_access_authorized":false,"formal_execution_authorized":false,"formal_root_creation_authorized":false,"device_authorized":false,"network_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"capture_authorized":false,"cleanup_authorized":false,"release_consumption_authorized":false,"analysis_authorized":false,"g4_07_authorized":false,"td_c_authorized":false,"allowed_next_action":"WAIT_FOR_SUPERVISOR_ENGINEERING_ARCHITECTURE_DECISION"}`
+
+## Section 2 terminal convergence stop
+
+The final snapshot full collection executed 982 tests and exited 1 with 4
+failures and 219 errors dominated by
+`committed_source_candidate_blob_drift`. Planner disposition is
+`REJECTED_FINAL_FULL_MASS_REGRESSION_COMMITTED_SOURCE_CANDIDATE_BLOB_DRIFT`.
+This is the third substantive same-boundary convergence failure. There is no
+active section package, no fourth repair, no full rerun, and no package/formal/
+release/device authority.
+
+The rejected candidate is retained only at
+`refs/heads/codex/historical-g4-r6-section2-final-snapshot-rejected`, commit
+`3dc2fa2639ee19b1c10ec55e2412836527c8973b`. It may not be merged,
+cherry-picked, copied, or used as production input. This non-executable roadmap
+waits for `.agent-work/SUPERVISOR_DECISION_REQUEST.md`; it does not choose an
+architecture direction.
 
 ## 1. Purpose and governing boundary
 

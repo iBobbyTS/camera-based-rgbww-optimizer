@@ -405,3 +405,70 @@ for its parent/subject/paths/tree/blobs/current bytes. The probe must also prove
 old `7d02562` cannot attest final bytes before two new xhigh reviews begin.
 
 State: `SECTION_2_FINAL_SNAPSHOT_TOPOLOGY_REPAIR_WAITING_ORCHESTRATOR_ACTIVATION`.
+
+## Section 2 final snapshot topology repair execution
+
+Activation `632cc869f6bec314fb176ca9c6c55f7b1094992f` passed its exact
+direct-parent, subject, twelve-path, base-tree/blob, review/archive hash and
+PLAN/FULL/PLAN-FULL machine gates. The existing production owner now accepts
+only the literal `fix(stage-gate): bind final package to immutable code
+snapshot`; the old alignment subject is not accepted and no fallback or second
+owner was added.
+
+The synthetic final-subject/current-blob positive and old-subject negative pass.
+The first exact old-blob invocation exposed a fixture index inherited from a
+later orchestration descendant and reached `committed_source_changed_paths_drift`.
+The sole bounded correction rebuilt that synthetic old tree from the frozen
+source checkpoint plus exactly the two old blobs. The five-test affected group
+then passed with the AUTH literal guard and PROV cross-binding guard; complete
+stage-gate passed `54/54`, terminal passed `6/6`, and compile, CodeGraph,
+machine/scope/oracle and diff checks passed.
+
+The final candidate is `82` changed lines: source `101182` bytes / SHA-256
+`f4f13a62d110da9865132a9508128a5619ff5b8b163fb66ec29ca19bc264e5c9` /
+blob `c0bc951f4643fb3fe9f4b19d59f13f84e0186266`; test `155812` bytes /
+SHA-256 `06fea3128167fb50b2f9ff3bd4b7cc2a24830e66bcae07ce05429d0271409882` /
+blob `5211dcf60e9b9d7e06431df6fc15f049bfb3f5ed`. Package/formal/device/network/
+camera/Ray/strip/capture/release effects and commits remain zero.
+
+One fresh visible-Terminal full collection is prepared with token
+`g4-r6-s2-final-snapshot-full-20260805T065009Z-632cc86`, canonical non-`-t`
+command and flat PID/TTY/log/exit/count/SHA/seal evidence directly under
+`/Volumes/4T/temp/rgbww-optimizer`. Retry remains zero. If it survives exactly
+three sparse liveness checks, Executer stops polling and returns control to the
+Orchestrator without automation.
+
+State: `SECTION_2_FINAL_SNAPSHOT_TOPOLOGY_REPAIR_FULL_PREPARED_PENDING_LAUNCH`.
+
+## Section 2 final snapshot full terminal rejection
+
+The sole fresh visible-Terminal full collection completed; it is not pending.
+The frozen flat evidence prefix is
+`/Volumes/4T/temp/rgbww-optimizer/g4-r6-s2-final-snapshot-full-20260805T065009Z-632cc86`.
+Its seal records token `g4-r6-s2-final-snapshot-full-20260805T065009Z-632cc86`,
+PID `56333`, TTY `/dev/ttys016`, start `2026-08-05T06:52:18Z`, finish
+`2026-08-05T06:56:44Z`, retry `0`, and the canonical non-`-t` discovery
+command. The run executed `982` tests in `265.291s` and exited `1` with
+`4 failures + 219 errors`. The log SHA-256 is
+`6d57da77e5d8afe690787b74aae4cbc8e8fd8998672acfa49fef68cb621b5222`;
+the `.seal`, `.sha256`, and independent hash agree.
+
+The dominant failure is `committed_source_candidate_blob_drift`. This is not
+the allowed governance-lineage-only qualified non-green baseline and creates no
+scientific, package, formal, device, release, or production acceptance credit.
+The engineering sequencing requires full validation before the final
+implementation commit while the validator simultaneously requires the final
+committed subject/blob identity. Together with the AUTH/PROV repair and the
+topology-subject repair, this is the third substantive convergence failure at
+the same Section 2 boundary.
+
+Planner disposition:
+`REJECTED_FINAL_FULL_MASS_REGRESSION_COMMITTED_SOURCE_CANDIDATE_BLOB_DRIFT`.
+No fourth repair, full rerun, candidate production commit, package operation,
+formal attempt, release consumption, or device/network/camera/Ray/strip/capture
+operation is authorized. Package/formal/device/network effects remain zero.
+The candidate must be retained only through a historical, non-production Git
+reference; the accepted branch must restore the accepted source/test tree and
+wait for a Supervisor engineering architecture decision.
+
+State: `SECTION_2_ENGINEERING_CONVERGENCE_STOP_SUPERVISOR_REVIEW_REQUIRED`.
