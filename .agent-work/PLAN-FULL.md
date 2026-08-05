@@ -1,252 +1,52 @@
-# REF-G4-06-REPLACEMENT-PACKAGE large-change implementation plan
+# REF-G4-06 immutable qualification promotion large-change roadmap
 
-**Document status:** `SECTION_2_ENGINEERING_CONVERGENCE_STOP_SUPERVISOR_REVIEW_REQUIRED`
+**Document status:** `ACTIVE_IMMUTABLE_QUALIFICATION_PROMOTION`
 
 **Executable authority:** `false`
 
-**Stable reference task:** `REF-G4-06-REPLACEMENT-PACKAGE`
+**Stable reference task:** `REF-G4-06-IMMUTABLE-QUALIFICATION-PROMOTION`
 
-**Branch:** `codex/g4-r6-owner-alignment-large-change`
+**Selected architecture:** `DEDICATED_NON_PRODUCTION_QUALIFICATION_CHECKPOINT_WITH_EXACT_FAST_FORWARD_PROMOTION`
 
-**Base checkpoint:** `3c920c6d29e5c366ce3843a2532d30d80c6f0c33`
+**Orchestration branch:** `codex/g4-r6-owner-alignment-large-change`
 
-**Base tree:** `e7d20cd3ac98f21d3af5cb9d43d31ed40e00ec6d`
+**Qualification branch:** `codex/g4-r6-immutable-qualification-q1`
 
-`PLAN_FULL_MACHINE_CONTRACT={"schema":"g4_large_change_plan_full_v7","document_status":"SECTION_2_ENGINEERING_CONVERGENCE_STOP_SUPERVISOR_REVIEW_REQUIRED","executable":false,"active_task_count":0,"active_task":null,"reference_goal":"REF-G4-COMPLETE","stable_reference_task":"REF-G4-06-REPLACEMENT-PACKAGE","reference_task_status":"HISTORICAL_STOPPED_SECTION_2_ENGINEERING_CONVERGENCE","corrective_suffix_allowed":false,"fourth_repair_authorized":false,"branch":"codex/g4-r6-owner-alignment-large-change","base_checkpoint":"3c920c6d29e5c366ce3843a2532d30d80c6f0c33","base_tree":"e7d20cd3ac98f21d3af5cb9d43d31ed40e00ec6d","current_section":"SECTION_2_REPLACEMENT_TASK_PROJECTION_AND_CHILD_TOPOLOGY","current_section_status":"SECTION_2_ENGINEERING_CONVERGENCE_STOP_SUPERVISOR_REVIEW_REQUIRED","section_1_accepted":{"commit":"5d01bcbb7e1a9ec1808e2fc05d238363d82a0a74","tree":"656fee670f289b0a20fea1a8c015762afd44a5c0","clean_review_streak":2},"sections":[{"section":"SECTION_1_ACCEPTED_ENGINEERING_CHECKPOINT_BINDING","status":"ACCEPTED_COMMITTED_TWO_CLEAN_REVIEWS"},{"section":"SECTION_2_REPLACEMENT_TASK_PROJECTION_AND_CHILD_TOPOLOGY","status":"SECTION_2_ENGINEERING_CONVERGENCE_STOP_SUPERVISOR_REVIEW_REQUIRED"}],"section_2_terminal":{"accepted_base_code_commit":"75d327729fdc479b6f9305e4e4a5ca3628fe2346","accepted_base_code_tree":"342e8c0b4f4444447a635132b0dfe333ef1ca483","clean_review_streak":0,"closed_findings":["REV-S2-AUTH-001","REV-S2-PROV-001"],"terminal_disposition":"REJECTED_FINAL_FULL_MASS_REGRESSION_COMMITTED_SOURCE_CANDIDATE_BLOB_DRIFT","same_boundary_failure_count":3,"historical_candidate_ref":"refs/heads/codex/historical-g4-r6-section2-final-snapshot-rejected","historical_candidate_commit":"3dc2fa2639ee19b1c10ec55e2412836527c8973b","candidate_production_input_allowed":false},"final_snapshot_full_collection_invocation_count":1,"final_snapshot_full_retry_count":0,"full_rerun_authorized":false,"post_commit_review_authorized":false,"package_prepare_authorized":false,"package_describe_authorized":false,"package_root_selection_authorized":false,"package_root_check_authorized":false,"package_root_create_authorized":false,"old_package_access_authorized":false,"old_formal_root_access_authorized":false,"formal_execution_authorized":false,"formal_root_creation_authorized":false,"device_authorized":false,"network_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"capture_authorized":false,"cleanup_authorized":false,"release_consumption_authorized":false,"analysis_authorized":false,"g4_07_authorized":false,"td_c_authorized":false,"allowed_next_action":"WAIT_FOR_SUPERVISOR_ENGINEERING_ARCHITECTURE_DECISION"}`
+`PLAN_FULL_MACHINE_CONTRACT={"schema":"g4_large_change_plan_full_v8","document_status":"ACTIVE_IMMUTABLE_QUALIFICATION_PROMOTION","executable":false,"active_task_count":1,"active_task":"REF-G4-06-IMMUTABLE-QUALIFICATION-PROMOTION","reference_goal":"REF-G4-COMPLETE","stable_reference_task":"REF-G4-06-IMMUTABLE-QUALIFICATION-PROMOTION","selected_architecture":"DEDICATED_NON_PRODUCTION_QUALIFICATION_CHECKPOINT_WITH_EXACT_FAST_FORWARD_PROMOTION","old_section_2_fourth_repair":false,"corrective_suffix_allowed":false,"orchestration_branch":"codex/g4-r6-owner-alignment-large-change","qualification_branch":"codex/g4-r6-immutable-qualification-q1","current_section":"IMMUTABLE_QUALIFICATION_CHECKPOINT_AND_EXACT_FAST_FORWARD_PROMOTION","current_section_status":"ACTIVE_PENDING_ACTIVATION_A","activation_a":{"expected_parent":"49ad47eceb1bb987eb83107deb8c892d2928c6c5","subject":"docs(plan): activate immutable qualification promotion","direct_single_parent":true,"docs_only":true},"qualification_q":{"status":"NOT_CREATED","direct_parent":"ACTIVATION_COMMIT_A","subject":"fix(stage-gate): bind immutable qualification checkpoint","changed_paths":["src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","tests/test_p7_td_b_r6_stage_gate.py"],"commit_before_tests":true,"source_of_truth":"QUALIFICATION_COMMIT_Q","non_production_pending_validation":true},"identity_documentation":{"required_before_validation":true,"agent_work_only":true,"status":"NOT_CREATED"},"validation":{"committed_q_only":true,"source_test_mutation_allowed":false,"full_suite_budget":1,"full_retry":0,"known_baseline_failures":2,"known_baseline_errors":8},"review":{"planner_review_required":true,"clean_review_count_required":2,"clean_review_model":"gpt-5.6-sol","clean_review_reasoning":"xhigh","must_fix_repair_allowed":false},"promotion":{"authorized":false,"exact_fast_forward_only":true,"cherry_pick_allowed":false,"merge_allowed":false,"rebase_allowed":false,"rebuild_allowed":false},"historical_candidate":{"ref":"refs/heads/codex/historical-g4-r6-section2-final-snapshot-rejected","commit":"3dc2fa2639ee19b1c10ec55e2412836527c8973b","diff_tree_blob_file_read_allowed":false,"reuse_allowed":false},"package_prepare_authorized":false,"package_describe_authorized":false,"package_root_selection_authorized":false,"package_root_check_authorized":false,"package_root_create_authorized":false,"formal_execution_authorized":false,"formal_root_creation_authorized":false,"release_consumption_authorized":false,"device_authorized":false,"network_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"capture_authorized":false,"analysis_authorized":false,"g4_07_authorized":false,"td_c_authorized":false}`
 
-## Section 2 terminal convergence stop
+## 1. Ownership and immutable inputs
 
-The final snapshot full collection executed 982 tests and exited 1 with 4
-failures and 219 errors dominated by
-`committed_source_candidate_blob_drift`. Planner disposition is
-`REJECTED_FINAL_FULL_MASS_REGRESSION_COMMITTED_SOURCE_CANDIDATE_BLOB_DRIFT`.
-This is the third substantive same-boundary convergence failure. There is no
-active section package, no fourth repair, no full rerun, and no package/formal/
-release/device authority.
+- Orchestrator owns FULL, A, branch topology, Q identity documentation, rejection isolation and eventual promotion.
+- Planner owns the single live PLAN and validation review.
+- Executer may modify only the two PLAN-authorized source/test owners, create exact Q, and write ER after Q.
+- Accepted starting blobs are source `0015d7ce2f2a5dde9118478f98c929020a474a01` and test `2a60a987dda02675c2eddc7d8260d61a8f68edc3`.
+- Historical candidate content is forbidden input. Only ref/ancestry isolation checks are allowed.
 
-The rejected candidate is retained only at
-`refs/heads/codex/historical-g4-r6-section2-final-snapshot-rejected`, commit
-`3dc2fa2639ee19b1c10ec55e2412836527c8973b`. It may not be merged,
-cherry-picked, copied, or used as production input. This non-executable roadmap
-waits for `.agent-work/SUPERVISOR_DECISION_REQUEST.md`; it does not choose an
-architecture direction.
+## 2. Activation A and qualification Q
 
-## 1. Purpose and governing boundary
+- A is a docs-only direct child of `49ad47eceb1bb987eb83107deb8c892d2928c6c5` with the exact six paths frozen by PLAN.
+- Qualification branch is created from exact A and must not pre-exist or reuse a historical ref.
+- Q is A's direct single-parent non-merge child with subject `fix(stage-gate): bind immutable qualification checkpoint` and exact stage-gate source/test paths.
+- Q must be committed before any test, compile, import or syntax probe. Pre-Q work is limited to read-only current-source inspection, implementation, path scope and diff checks.
+- No amend, Q2, repair commit, rebase, rebuild, merge or cherry-pick is allowed.
 
-This document exists because the prior non-trivial owner-alignment candidate
-reached an observed 305 changed lines. The applicable top-level AGENTS rule
-therefore requires an isolated Git branch, a PLAN-FULL section roadmap, one
-implementation subagent per section, focused commits, clean worktrees between
-sections, and post-commit review loops.
+## 3. Identity documentation and validation
 
-PLAN-FULL is context only. It does not authorize implementation, tests, commits,
-root access, package preparation, device access, formal execution, or release.
-Only the single live `.agent-work/PLAN.md` can release the current section.
+- After Q, Orchestrator records Q commit/tree/parent/subject/paths and source/test mode/blob/bytes/SHA in `.agent-work/`-only commits.
+- Real Git topology and identity must pass before validation. Q source/test remain unchanged at every later tip.
+- Focused tests, compile/static, CodeGraph and exactly one full suite run only on committed Q bytes.
+- Full acceptance is green or exactly the unrelated known `tests.test_p7_thermal_diagnostics` governance-lineage `2 failures + 8 errors` group with no new identity.
+- Any new failure, drift, mutation, extra full need or Must Fix rejects Q without repair or rerun.
 
-The rejected branch and commit are historical evidence only. An implementation
-agent may read the frozen failure/contract description but must derive its edit
-from the accepted branch source. It may not cherry-pick, apply, copy, or treat
-the rejected diff as production truth.
+## 4. Review and promotion locks
 
-## 2. Ownership and invariants shared by both sections
+- Planner reviews the committed-Q evidence at `RETURN_FOR_COMMITTED_Q_VALIDATION_REVIEW`.
+- A qualified Q requires two consecutive independent GPT-5.6 Sol xhigh clean reviews; any Must Fix rejects it.
+- Current PLAN does not authorize promotion. After acceptance, Orchestrator may only exact fast-forward the unchanged orchestration branch from A to the qualification accepted tip.
+- Promotion never unlocks package prepare/describe/root, formal, release or device operations.
 
-- Stable reference task remains `REF-G4-06-REPLACEMENT-PACKAGE`; section names
-  are workflow labels, not new task IDs.
-- Existing production owner remains
-  `camera_based_rgbww_optimizer.optimization.p7_td_b_r6_stage_gate` and its
-  existing test owner remains `tests/test_p7_td_b_r6_stage_gate.py`.
-- No new production module, schema family, runner, controller, adapter, CLI,
-  artifact, persistence owner, root-selection owner, or replay owner is allowed.
-- Existing exclusive root creation, canonical persistence, exact inventory,
-  internal replay, terminal seal, public replay and failure seal are frozen.
-- Integrity-first descriptor ordering is frozen:
-  stale bytes/SHA references fail as `descriptor_reference_drift`; the secret
-  and historical semantic guards are tested only with internally
-  reference-consistent fixtures.
-- Accepted engineering prerequisite remains commit
-  `1fbe38d17ec9885dcd5b563edd90359761c51910`, tree
-  `9535ac6bcd445898c48ff2227f659d2ea6955e60`, direct parent
-  `08e27d0bde5f92f099219683f9dab06951707c07`, subject
-  `fix(formal): preserve frozen plan runtime context`, exact measure/test paths,
-  and blobs `90000ff11a6603fc63515061d391200a46765380` /
-  `272eacf4c302af5d64483620978411998497b242`.
-- Retained R3 remains `RETAINED_UNVALIDATED_UNCONSUMED`; the historical formal
-  ledger remains `ENGINEERING_INVALIDATED_PRECAPTURE_FORMAL_ABORT` with no new
-  scientific, quality, eligibility, release, or readiness credit.
+## 5. Global locks
 
-## 3. Section 1 — accepted-engineering checkpoint binding
-
-### Independent behavior boundary
-
-Section 1 adds one closed prerequisite-attestation seam to the existing owner.
-It does not change `TASK_ID`, `FUTURE_TASK_ID`, package contract, current FULL
-projection, package status, root behavior, or future child subject/topology.
-
-The allowed implementation is limited to:
-
-1. Exact accepted-engineering subject/path constants in the existing module.
-2. Closed accepted-engineering checkpoint/tree/direct-parent/subject/path/blob
-   fields in the existing source-attestation binding.
-3. A matching descriptor contract projection.
-4. Read-only Git validation of commit/tree/direct parent/subject/exact changed
-   paths/blob OIDs and ancestry to the verified alignment parent.
-5. Synthetic real-Git positive and negative coverage in the existing test file.
-
-### Inputs and changed paths
-
-- Input branch/base: this PLAN-FULL branch at its exact activation child.
-- Frozen accepted checkpoint identity: the identity in section 2 above.
-- Only implementation paths:
-  - `src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py`
-  - `tests/test_p7_td_b_r6_stage_gate.py`
-- Handoff/debug paths are separately owned by the active PLAN.
-
-### Required tests and stop
-
-- Exact new accepted-engineering binding/descriptor/Git-validator tests.
-- Existing attestation matrix and committed-source topology negative tests.
-- Existing descriptor reference-precedence and reference-consistent
-  secret/historical tests.
-- Full `tests.test_p7_td_b_r6_stage_gate` focused suite.
-- Compile, CodeGraph sync/query, exact scope/numstat, and `git diff --check`.
-- No repository full discovery in Section 1.
-- Executer stop: `RETURN_FOR_G4_06_LARGE_CHANGE_SECTION_1_CANDIDATE_REVIEW`.
-
-### Sizing failure review
-
-The first independently derived Section 1 candidate reached 228 changed lines
-before validation and therefore breached its live PLAN's 220-line hard cap. It
-is rejected, incomplete and semantically unassessed; later mechanical
-compaction to 220 does not revoke the breach.
-
-The Section 1 behavior boundary is retained. Binding shape, descriptor
-projection, read-only Git validation and the synthetic protective fixture form
-one closed high-risk provenance contract and are not useful or safe as separate
-production commits. The planning defect was the 220-line estimate, not evidence
-of a production semantic defect. A fresh Section 1 implementation may be
-released only after the rejected source/test draft is recoverably removed. Its
-expected range is 200–260 changed lines with a 300-line hard stop. It must be
-independently derived from the accepted branch and may not apply or copy the
-rejected draft.
-
-Orchestrator has now preserved the rejected source/test snapshot as historical
-stash commit `b62eddd7563af43a20fd66a4960bae386f9ed54e`, whose first parent is the
-accepted activation `e202db90f0ffc38bbdf74a1a6ee01baa72f70e2e` and whose
-first-parent diff contains exactly the two owner paths with numstat
-`105+/1-` and `114+`. The accepted source/test worktree is clean. The stash is
-non-authorizing and the fresh Section 1 Executer is forbidden to read, apply,
-pop, drop, branch from, copy or otherwise consume it. Section 1 is therefore
-ready for a fresh independent activation; Section 2 remains locked.
-
-The fresh V2 candidate later completed at 295 changed lines with targeted
-`15/15` and one pre-late-change focused `50/50` pass. Independent Planner review
-accepts its single-owner boundary, closed shape, Git identity validation,
-descriptor-reference precedence and zero-effect ordering as correction input.
-Final qualification is nevertheless rejected: after the focused run, production
-added the stable OSError mapping around the ancestry subprocess, but the current
-test source preserves only the returncode-2 assertion. The reported one-off
-`1/1` probe is not a durable regression for this high-risk provenance error
-boundary. Section 1 remains unaccepted and uncommitted until the same section
-adds a persistent OSError assertion and requalifies the affected focused suite;
-Section 2 remains locked.
-
-Orchestrator accepts that review finding and releases only a bounded correction
-inside the same task and Section 1 label. The production source and all
-production semantics are frozen at SHA-256
-`2dd469827fff3d6137e247b179035a685b42627aea207b18898a05d36fe18c11`
-and blob `76c8821c915c58e7ad5cdb0133bf2940b51fd1f4`; source writes are zero.
-The existing test owner may add exactly one durable case in which
-`subject.subprocess.run` raises `OSError` for the ancestry query and the owner
-returns `committed_source_engineering_ancestry_query_failed`. Existing
-returncode-2 and nonancestor behavior must remain covered. Because this task is
-already inside the mandatory large-change workflow, 300 is not a repository-
-global limit: the final expected total is 300–320 changed lines and the hard
-stop is 330. The final candidate requires affected exact tests, exactly one
-fresh stage-gate focused invocation, two-file compile, CodeGraph, scope and diff
-checks; repository full discovery remains zero. No other production or test
-correction is authorized, and Section 2 stays locked.
-
-### Commit and review loop
-
-After Planner accepts the uncommitted candidate, Orchestrator creates the focused
-commit `fix(stage-gate): bind accepted engineering checkpoint`. A clean
-GPT-5.6 Sol xhigh `$code-review` pass is then run twice by independent review
-agents. Both consecutive passes must report no findings. Any accepted finding is
-repaired by a GPT-5.6 Sol high repair agent, validated and committed separately;
-the clean-review streak resets to zero. Planner does not unlock Section 2 until
-the section commit plus any repair commits have two consecutive clean reviews
-and the worktree is clean.
-
-## 4. Section 2 — replacement task, FULL projection and child topology
-
-### Unlock inputs
-
-Section 2 is locked until FULL and the next live PLAN record:
-
-- exact accepted Section 1 implementation/repair tip commit and tree;
-- focused validation ledger;
-- two independent consecutive clean-review identities;
-- clean worktree and Section 1 archive pointers.
-
-### Independent behavior boundary
-
-Starting only from the accepted Section 1 tip, Section 2:
-
-1. Changes package task identity to `REF-G4-06-REPLACEMENT-PACKAGE`.
-2. Keeps future formal identity distinct as `REF-G4-06-REPLACEMENT-R6` without
-   granting formal/device/release authority.
-3. Replaces archived completed-prerequisite expectations with the current
-   unfinished-only FULL projection: accepted engineering checkpoint/tree,
-   replacement-package task state, retained status and all authority false.
-4. Binds the future focused owner-alignment commit as a direct non-merge child of
-   the accepted Section 1 tip with exact subject, two paths and blob identities;
-   later descendants remain linear `.agent-work/`-only commits.
-5. Updates the existing synthetic Git fixtures and real behavior assertions.
-
-It must not alter the Section 1 accepted-engineering validation, persistence,
-CLI, artifact inventory, replay, terminal seal, failure seal, package-root
-behavior, or formal/runtime owners.
-
-### Required tests and stop
-
-- Current positive package task/FULL projection/topology path.
-- Old task, archived prerequisite projection, wrong authority, wrong
-  subject/path/blob/tree/lineage and merge negatives before root effects.
-- Descriptor reference drift and reference-consistent secret/historical guards.
-- Stage-gate, terminal and thermal focused suites.
-- Compile, CodeGraph sync/query, exact scope and `git diff --check`.
-- Exactly one full unittest discovery invocation for the entire PLAN-FULL.
-  Acceptance requires full green, or only the already independently attributed
-  baseline governance-lineage group with identical test identities and no new
-  failure/error; that qualified case must not be called full green.
-- Executer stop: `RETURN_FOR_G4_06_LARGE_CHANGE_SECTION_2_CANDIDATE_REVIEW`.
-
-### Commit and review loop
-
-After Planner accepts the candidate, Orchestrator creates the focused commit
-`fix(stage-gate): align replacement package owner`, then applies the same two
-consecutive clean GPT-5.6 Sol xhigh `$code-review` rule. Accepted findings use a
-GPT-5.6 Sol high repair agent and a separate focused commit, resetting the clean
-streak. A clean worktree is mandatory before section closure.
-
-## 5. Final PLAN-FULL exit
-
-Section 2 closure means only that the repo-owned offline package owner alignment
-is accepted. It does not create or validate a package, select/check/create a
-root, call public `prepare`/`describe`, grant eligibility, consume release, or
-authorize formal/device work.
-
-Planner returns to Orchestrator at
-`RETURN_FOR_ORCHESTRATOR_REPLACEMENT_PACKAGE_PLAN_SELECTION`. Orchestrator then
-archives the terminal PLAN-FULL/FULL snapshots as applicable and independently
-decides whether to request a new single package-preparation PLAN under the same
-canonical route.
-
-## 6. Global hard locks
-
-Across both sections, counts for package-root selection/check/create, public
-prepare/describe, old package/formal-root access, device, network, camera, Ray,
-strip, capture, cleanup, formal execution, release consumption, analysis, G4-07
-and TD-C remain zero. GUIDE/RESEARCH, FULL ownership, scientific contracts,
-wrappers, config, measure/thermal/terminal production owners and all external
-experiment payloads remain unchanged and inaccessible.
+- GUIDE/RESEARCH, old package/formal roots, external payloads, Retained R3 payload and all devices/network are out of scope.
+- Package/formal/release/device/camera/Ray/strip/capture/analysis authority remains false.
+- Human goal, GUIDE and scientific stage remain incomplete.
