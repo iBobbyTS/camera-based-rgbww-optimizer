@@ -2,7 +2,7 @@
 
 ## Status
 
-- State: `section_2_executable_plan_waiting_orchestrator_activation`
+- State: `section_2_frozen_candidate_final_qualification_waiting_activation`
 - Stable reference task: `REF-G4-06-REPLACEMENT-PACKAGE`
 - Branch: `codex/g4-r6-owner-alignment-large-change`
 - PLAN-FULL sections: `2`
@@ -23,7 +23,7 @@ truth.
 | section | status | commit | clean reviews |
 | --- | --- | --- | --- |
 | `SECTION_1_ACCEPTED_ENGINEERING_CHECKPOINT_BINDING` | `ACCEPTED_COMMITTED_TWO_CLEAN_REVIEWS` | `5d01bcbb7e1a9ec1808e2fc05d238363d82a0a74` | `2/2` |
-| `SECTION_2_REPLACEMENT_TASK_PROJECTION_AND_CHILD_TOPOLOGY` | `EXECUTABLE_PLAN_WAITING_ORCHESTRATOR_ACTIVATION` | none | `0/2` |
+| `SECTION_2_REPLACEMENT_TASK_PROJECTION_AND_CHILD_TOPOLOGY` | `SEMANTICALLY_ACCEPTABLE_FINAL_QUALIFICATION_WAITING_ACTIVATION` | none | `0/2` |
 
 Section 1 owns only the closed accepted-engineering checkpoint binding,
 descriptor projection and read-only Git validator seam. It cannot switch package
@@ -123,3 +123,67 @@ existing stage-gate/test owners, replacement task/FULL projection/future child
 topology, focused validation and PLAN-FULL's sole full discovery. It awaits the
 exact version-controlled activation docs checkpoint; package/root/device/formal/
 release authority remains zero.
+
+## Section 2 execution handoff
+
+Activation `1f7556d36049c33bd4f99412d945db02fe448fa8` passed exact parent,
+subject, ten-path, machine-contract and immutable Section 1 identity checks. The
+Executer changed only the existing stage-gate/test owners, binding the
+replacement package task/contract, distinct future formal task, unfinished-only
+FULL projection, all-false authority map and exact future code-child topology.
+Final candidate size is `455` changed lines (`102+/90-` source,
+`123+/140-` tests), below the `500` hard cap. Candidate worktree blobs are
+`6f7a7756687f669c067c253a5d5a30f84b5d6075` and
+`65e54f1594ed39c2be641124de71b946858c1e6b`.
+
+Targeted behavior passed `8/8`. The sole stage-gate focused run found one
+alternate-root fixture omission; the single authorized bounded correction added
+the new projection contract to that fixture, and its exact final targeted test
+passed `1/1`. Terminal passed `6/6`. Thermal reproduced the independently
+attributed governance-lineage baseline group (`2 failures + 8 errors`, all at
+`AGENTS.md` identity). Compile, CodeGraph sync/query, scope/machine and diff
+checks passed.
+
+The sole visible-Terminal full discovery used PID `62893`, TTY `/dev/ttys002`,
+token/root `g4-r6-section2-full-discovery-20260805-a91c5e2d`, and exited before
+collection with `ImportError: Start directory is not importable` for the repo
+`tests` directory. Output SHA-256 is
+`192c78c880e975096c5f4fe40292ad9c14c1c865cff1714c2fc2ba4d9e908703`.
+Retry cap is zero, so it was not rerun. Package/formal/device/network/release
+effects and commits remain zero.
+
+State: `RETURN_FOR_G4_06_LARGE_CHANGE_SECTION_2_CANDIDATE_REVIEW` with
+`VALIDATION_NON_GREEN_FULL_DISCOVERY_STARTUP_FAILURE_NO_RETRY`.
+
+## Section 2 Planner review and final qualification continuation
+
+Planner accepts the candidate semantics provisionally and rejects only final
+qualification. The source/test identities are frozen at source 99962 bytes /
+SHA-256 `0ea07b949436599097633c3514f64881e750ed7b45ee92ad88a54e7becee48e0` /
+blob `6f7a7756687f669c067c253a5d5a30f84b5d6075`, and test 146189 bytes /
+SHA-256 `540234e353e43d0a1f8c75f3a71b45dd23ace610e7e96d59e250c88b52c4d352` /
+blob `65e54f1594ed39c2be641124de71b946858c1e6b`. Production and test writes are
+now zero.
+
+The failed full command is preserved as immutable validation history, but it is
+a Planner command/harness-contract defect rather than a production semantic or
+full-suite failure: `unittest discover -s tests -t .` requires the repository's
+non-package `tests/` directory to be importable and exited before collecting any
+test. It consumed zero effective full collections and does not authorize a
+retry of that invalid command. No Human or Advisor decision is implicated.
+
+Reviewed PLAN and ER are archived at
+`.agent-work/archived/PLAN-20260805-0435.md` (SHA-256
+`0f73e25257ae85a081431745d815adcedcb673ab074713121e20c9243abd8ad5`) and
+`.agent-work/archived/EXECUTION_RESULT-20260805-0435.md` (SHA-256
+`5684e33970ad776c1cc3d14867e2688fbbd0a4513b02bbb0b6cc436845c4ad8f`).
+The same stable task and Section 2 continue without a corrective suffix, new
+package or new root. The only remaining qualification is one post-correction
+stage-gate focused invocation and one effective repository full discovery using
+the canonical non-`-t` command. Trusted targeted, terminal, thermal, compile and
+CodeGraph evidence must not be repeated. Any non-green full result is acceptable
+only if it is exactly the already attributed two failures plus eight errors,
+with every first failing frame at the pre-existing governance-lineage
+`AGENTS.md` identity boundary and no changed-owner regression.
+
+State: `SECTION_2_FROZEN_CANDIDATE_FINAL_QUALIFICATION_WAITING_ORCHESTRATOR_ACTIVATION`.
