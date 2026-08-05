@@ -2,7 +2,7 @@
 
 ## Status
 
-- State: `section_2_accepted_review_finding_repair_waiting_activation`
+- State: `section_2_final_snapshot_topology_repair_waiting_activation`
 - Stable reference task: `REF-G4-06-REPLACEMENT-PACKAGE`
 - Branch: `codex/g4-r6-owner-alignment-large-change`
 - PLAN-FULL sections: `2`
@@ -23,7 +23,7 @@ truth.
 | section | status | commit | clean reviews |
 | --- | --- | --- | --- |
 | `SECTION_1_ACCEPTED_ENGINEERING_CHECKPOINT_BINDING` | `ACCEPTED_COMMITTED_TWO_CLEAN_REVIEWS` | `5d01bcbb7e1a9ec1808e2fc05d238363d82a0a74` | `2/2` |
-| `SECTION_2_REPLACEMENT_TASK_PROJECTION_AND_CHILD_TOPOLOGY` | `ACCEPTED_REVIEW_FINDING_REPAIR_WAITING_ACTIVATION` | `7d02562db0afcffaa8f2a341345235a6310b654c` | `0/2` |
+| `SECTION_2_REPLACEMENT_TASK_PROJECTION_AND_CHILD_TOPOLOGY` | `FINAL_SNAPSHOT_TOPOLOGY_REPAIR_WAITING_ACTIVATION` | `75d327729fdc479b6f9305e4e4a5ca3628fe2346` | `0/2` |
 
 Section 1 owns only the closed accepted-engineering checkpoint binding,
 descriptor projection and read-only Git validator seam. It cannot switch package
@@ -277,3 +277,131 @@ qualifies changed repair bytes. The old invalid `-t .` invocation and base
 qualified-non-green evidence remain historical and unchanged.
 
 State: `SECTION_2_ACCEPTED_REVIEW_FINDING_REPAIR_WAITING_ORCHESTRATOR_ACTIVATION`.
+
+## Section 2 accepted-review finding repair execution
+
+Activation `110730db28d90513928c9b28bc4c49d75eee0c14` passed exact parent,
+parent-tree, subject, twelve-path, hash, base-identity and strict
+PLAN/FULL/PLAN-FULL machine checks before editing.
+
+The existing stage-gate owner now rejects every frozen legacy/global authority
+alias, any unknown top-level `*_authorized` name and any true value for the
+thirteen literal canonical keys before root creation. The independent test
+oracle spells canonical and forbidden vocabularies literally and does not derive
+coverage from the production constant. After existing strict Git/source-
+attestation validation, `validate_stage_gate` also exact-binds prerequisite
+checkpoint/tree to the normalized accepted-engineering binding with the existing
+`prerequisite_projection_drift` error.
+
+Final candidate before full: source `101205` bytes / SHA-256
+`97b0a88c338b659ca887dfb626eee11ff96f52712b16a2d6f8b8b7de059298b7` /
+blob `0015d7ce2f2a5dde9118478f98c929020a474a01` / `36+/2-`; test
+`152759` bytes / SHA-256
+`f86c8dd121b549cf33f8e537454091859e60a466ebed70ff1f077b30defe5add` /
+blob `2a60a987dda02675c2eddc7d8260d61a8f68edc3` / `133+`. Total changed
+lines are `171`; bounded code corrections are `0`.
+
+Two transparent pre-collection harness events ran zero real tests: an authority
+method command omitted repo `PYTHONPATH` under `-P`, and the PLAN-named terminal
+module `tests.test_p7_td_b_terminal` does not exist. Orchestrator classified both
+as invalid harness events, not candidate failures/effective budgets/corrections,
+and authorized the exact intended commands. Both new negative methods, the
+five-test affected group, complete stage-gate module and actual six-test R6
+terminal module completed without candidate failure. Compile, CodeGraph
+sync/query, strict scope/machine/oracle checks and `git diff --check` passed.
+
+Package/root/device/network/camera/Ray/strip/capture/formal/release effects and
+commits remain zero. The one new visible-Terminal full collection is pending and
+is not an old-candidate retry.
+
+The new full collection launched in visible Terminal with token
+`g4-r6-section2-review-repair-full-20260805-110730d`, PID `96863` and TTY
+`/dev/ttys014`. Exactly three sparse liveness checks found it running with log
+sizes `1672`, `4044` and `4060` bytes. The Executer stopped polling after the
+third check and did not create automation; Orchestrator owns completion review.
+
+The full collection completed from `2026-08-05T05:51:07Z` through
+`2026-08-05T06:00:00Z`, exit `1`, `valid_collection=true`, retry `0`. It ran
+`981` tests in `533.229s` with exactly `2 failures + 8 errors`. The log is
+`32046` bytes with SHA-256
+`e99753370bb43e8580c17bf22b2a4e519460089edba83059a2f681949e1b1c93`.
+All ten non-green identities are the prior `test_p7_thermal_diagnostics`
+`AGENTS.md` governance-lineage group; no repair, stage-gate, terminal or
+additional failure/error appeared. This is qualified non-green and never full
+green. Candidate identities, zero correction count and all zero external-effect
+counters remain unchanged.
+
+State: `RETURN_FOR_G4_06_SECTION_2_ACCEPTED_REVIEW_FINDING_REPAIR_REVIEW`.
+
+## Section 2 Planner repair review
+
+Planner independently inspected the production guards and persistent tests and
+accepts both findings as closed. AUTH owns independent literal canonical and
+forbidden vocabularies, rejects unknown authority aliases pre-root and is
+covered by a literal oracle that does not derive from production constants.
+PROV exact-binds prerequisite checkpoint/tree to the already Git-validated
+source-attestation binding, and reference/seal-consistent mutations reach
+`prerequisite_projection_drift` before backend/delegate effects.
+
+The accepted repair candidate remains source 101205 bytes / SHA-256
+`97b0a88c338b659ca887dfb626eee11ff96f52712b16a2d6f8b8b7de059298b7` /
+blob `0015d7ce2f2a5dde9118478f98c929020a474a01`, test 152759 bytes /
+SHA-256 `f86c8dd121b549cf33f8e537454091859e60a466ebed70ff1f077b30defe5add` /
+blob `2a60a987dda02675c2eddc7d8260d61a8f68edc3`. Repair size is `171`;
+bounded correction count is zero.
+
+Reviewed archives:
+
+- `.agent-work/archived/PLAN-20260805-0612.md`, SHA-256
+  `c3e31f53360dd135679cac6a6444e201bd181e57e39114b68cd01febf1f14459`;
+- `.agent-work/archived/EXECUTION_RESULT-20260805-0612.md`, SHA-256
+  `01cda6e74d68b8ed04f7194d96795081cab8487241fff039dcad73e600c11867`.
+
+The full result remains qualified non-green, not full green: `981` tests in
+`533.229s`, with only the exact prior `AGENTS.md` governance-lineage `2F+8E`
+group. The two zero-real-test harness events stay preserved and do not count as
+candidate failures or corrections.
+
+Live PLAN is a non-executable terminal stop. Orchestrator must create the exact
+two-path direct child of `110730db28d90513928c9b28bc4c49d75eee0c14` with
+subject `fix(stage-gate): close section 2 review findings`, then obtain two
+consecutive independent GPT-5.6 Sol xhigh clean reviews from streak zero.
+
+State: `RETURN_FOR_ORCHESTRATOR_SECTION_2_EXACT_REPAIR_COMMIT_AND_TWO_CLEAN_REVIEWS`.
+
+## Section 2 final snapshot topology finding and plan
+
+Orchestrator committed the AUTH/PROV repair as
+`75d327729fdc479b6f9305e4e4a5ca3628fe2346`. Round 1 found that delta clean for
+the two prior roots, but Round 2 opened Agent-Fixable Must Fix
+`REV-S2-REPAIR-R2-001`: the actual repair subject/current blobs cannot satisfy
+the still-old single code-owner subject rule. AUTH and PROV remain closed;
+clean-review streak resets to zero.
+
+Immutable repair reviews:
+
+- `.agent-work/reviews/20260805-g4-r6-section2-repair-round1.md`, SHA-256
+  `34d54753d091da3dd639b8be3bc949b4d2d90b8108cd2cc96b3202a704c7fdb3`;
+- `.agent-work/reviews/20260805-g4-r6-section2-repair-round2.md`, SHA-256
+  `7b5305d804725121e16b670de6e229fadab7f4530a96edc1fd707301f497b9e6`.
+
+Superseded terminal PLAN/ER are archived at
+`.agent-work/archived/PLAN-20260805-0630.md` / SHA-256
+`1b846d1985481f4e9c98f783a884dc5fd4cd7e3d6f3cdf991f2b887f2d1005a2`
+and `.agent-work/archived/EXECUTION_RESULT-20260805-0630.md` / SHA-256
+`e798aa471cf0c07a45b5f913970417a2252d707f4ac0d79b339232e83dfb0bb9`.
+
+Planner issued one same-task/Section 2 executable topology repair. It makes the
+existing literal `fix(stage-gate): bind final package to immutable code
+snapshot` the sole accepted code-child subject, removes acceptance of the old
+alignment subject, and adds durable synthetic positive/current-blob plus old-
+subject/old-blob negatives. No history rewrite, suffix, root, module, schema,
+controller, second owner or multi-subject fallback is allowed.
+
+Synthetic tests cannot prove a future real commit. After Planner acceptance,
+Orchestrator must create a new governance activation child, then the exact final
+two-path snapshot child, and run a read-only production-validator real-Git probe
+for its parent/subject/paths/tree/blobs/current bytes. The probe must also prove
+old `7d02562` cannot attest final bytes before two new xhigh reviews begin.
+
+State: `SECTION_2_FINAL_SNAPSHOT_TOPOLOGY_REPAIR_WAITING_ORCHESTRATOR_ACTIVATION`.
