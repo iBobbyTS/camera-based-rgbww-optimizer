@@ -2,7 +2,7 @@
 
 ## Status
 
-- State: `section_1_fresh_reimplementation_waiting_orchestrator_reactivation`
+- State: `section_1_bounded_durable_oserror_regression_waiting_activation`
 - Stable reference task: `REF-G4-06-REPLACEMENT-PACKAGE`
 - Branch: `codex/g4-r6-owner-alignment-large-change`
 - PLAN-FULL sections: `2`
@@ -22,7 +22,7 @@ truth.
 
 | section | status | commit | clean reviews |
 | --- | --- | --- | --- |
-| `SECTION_1_ACCEPTED_ENGINEERING_CHECKPOINT_BINDING` | `FRESH_REIMPLEMENTATION_PENDING_ACTIVATION` | none | `0/2` |
+| `SECTION_1_ACCEPTED_ENGINEERING_CHECKPOINT_BINDING` | `BOUNDED_DURABLE_OSERROR_REGRESSION_WAITING_ACTIVATION` | none | `0/2` |
 | `SECTION_2_REPLACEMENT_TASK_PROJECTION_AND_CHILD_TOPOLOGY` | `LOCKED` | none | `0/2` |
 
 Section 1 owns only the closed accepted-engineering checkpoint binding,
@@ -55,7 +55,37 @@ must remain zero.
 
 ## Next action
 
-Orchestrator independently reviews the fresh PLAN, synchronizes FULL to active
-fresh Section 1 and creates the exact eight-path reactivation child. Then one
-medium Executer independently implements from accepted clean source. Section 2
-remains locked.
+Fresh V2 activation `e48cc084a6f4ebdf61c26c1b426d64522030e791`
+passed every identity/machine/CodeGraph preflight. A new Executer independently
+implemented the closed accepted-engineering binding/descriptor/read-only Git
+seam from the clean accepted source without reading the forbidden stash or
+rejected branch. The frozen candidate is `96+/1-` source plus `198+` tests,
+`295` total changed lines; targeted `15/15`, focused `50/50`, final affected
+probe `1/1`, compile, CodeGraph and diff/scope checks pass. Harness corrections
+remain `0`; package/root/device/network/formal/release effects remain zero.
+
+State: `READY_FOR_PLANNER_G4_06_LARGE_CHANGE_SECTION_1_CANDIDATE_REVIEW`.
+Planner must review before Orchestrator may commit or begin the two-clean-review
+loop. Section 2 remains locked.
+
+Planner review rejects final qualification while preserving the candidate as
+unaccepted correction input. Ownership, closed shapes, Git validation,
+descriptor precedence and zero-effect ordering are accepted for this limited
+purpose. The focused `50/50` result predates the late ancestry OSError mapping;
+the one-off `1/1` probe is not a durable repository regression, and current test
+source covers returncode 2 but not raised `OSError`. The same Section 1 must add
+that durable assertion and re-run the affected test plus one focused suite before
+commit consideration. Section 2 stays locked.
+
+Orchestrator accepted that single validation finding for a same-task,
+same-section bounded correction. The current source identity is frozen at
+99811 bytes / SHA-256
+`2dd469827fff3d6137e247b179035a685b42627aea207b18898a05d36fe18c11` /
+blob `76c8821c915c58e7ad5cdb0133bf2940b51fd1f4`; source writes and semantic
+changes are forbidden. The current test identity is 144723 bytes / SHA-256
+`2a412e2b405c7ddf59146fb522da3afaf84e66b106e50b3989552371dad30d17` /
+blob `efe7a16ff415b6e1397c8d11865423314662a82c`. Only that existing test owner
+may add the durable raised-`OSError` regression while preserving returncode-2
+and nonancestor cases. Final expected changed lines are 300–320 with hard cap
+330; focused final-candidate invocation cap is one and full discovery stays
+zero. Section 2 remains locked.
