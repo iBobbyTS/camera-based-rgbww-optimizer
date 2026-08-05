@@ -2,7 +2,7 @@
 
 ## Status
 
-- State: `section_1_bounded_durable_oserror_regression_waiting_activation`
+- State: `section_2_executable_plan_waiting_orchestrator_activation`
 - Stable reference task: `REF-G4-06-REPLACEMENT-PACKAGE`
 - Branch: `codex/g4-r6-owner-alignment-large-change`
 - PLAN-FULL sections: `2`
@@ -22,8 +22,8 @@ truth.
 
 | section | status | commit | clean reviews |
 | --- | --- | --- | --- |
-| `SECTION_1_ACCEPTED_ENGINEERING_CHECKPOINT_BINDING` | `BOUNDED_DURABLE_OSERROR_REGRESSION_WAITING_ACTIVATION` | none | `0/2` |
-| `SECTION_2_REPLACEMENT_TASK_PROJECTION_AND_CHILD_TOPOLOGY` | `LOCKED` | none | `0/2` |
+| `SECTION_1_ACCEPTED_ENGINEERING_CHECKPOINT_BINDING` | `ACCEPTED_COMMITTED_TWO_CLEAN_REVIEWS` | `5d01bcbb7e1a9ec1808e2fc05d238363d82a0a74` | `2/2` |
+| `SECTION_2_REPLACEMENT_TASK_PROJECTION_AND_CHILD_TOPOLOGY` | `EXECUTABLE_PLAN_WAITING_ORCHESTRATOR_ACTIVATION` | none | `0/2` |
 
 Section 1 owns only the closed accepted-engineering checkpoint binding,
 descriptor projection and read-only Git validator seam. It cannot switch package
@@ -89,3 +89,37 @@ may add the durable raised-`OSError` regression while preserving returncode-2
 and nonancestor cases. Final expected changed lines are 300–320 with hard cap
 330; focused final-candidate invocation cap is one and full discovery stays
 zero. Section 2 remains locked.
+
+The bounded durable-regression pass completed on activation
+`6a5e2836b802940c3b58803a7a88b565b6050d37`. Production source had zero writes
+and retained its frozen identity. The existing test owner added one durable
+raised-`OSError` ancestry regression while preserving returncode-2 and
+nonancestor cases. Final candidate size is `311` changed lines (`96+/1-` source,
+`214+` tests). Affected tests pass `2/2`, the single final-candidate focused
+suite passes `51/51`, and compile/CodeGraph/scope/diff checks pass. Full
+discovery and all package/root/device/network/formal/release effects remain
+zero.
+
+State: `READY_FOR_PLANNER_G4_06_LARGE_CHANGE_SECTION_1_DURABLE_REGRESSION_REVIEW`.
+Section 2 remains locked pending Planner acceptance, Orchestrator commit and
+the required two consecutive independent clean xhigh reviews.
+
+Planner accepted the final uncommitted candidate as
+`ACCEPTED_SECTION_1_DURABLE_OSERROR_REGRESSION_QUALIFIED_PENDING_ORCHESTRATOR_CHECKPOINT`.
+The reviewed PLAN and ER are frozen at
+`.agent-work/archived/PLAN-20260805-0345.md` and
+`.agent-work/archived/EXECUTION_RESULT-20260805-0345.md`. Live PLAN is now a
+non-executable terminal stop. Orchestrator must verify the exact identities,
+create the exact two-owner-path checkpoint, and obtain two consecutive
+independent clean xhigh reviews. Section 2 remains locked until all three gates
+are recorded.
+
+Orchestrator recorded Section 1 checkpoint
+`5d01bcbb7e1a9ec1808e2fc05d238363d82a0a74`, tree
+`656fee670f289b0a20fea1a8c015762afd44a5c0`, and two independent clean
+reviews. FULL and PLAN-FULL agree on `READY_FOR_SECTION_2_PLANNER_PASS`.
+Planner issued one same-task executable Section 2 package covering only the
+existing stage-gate/test owners, replacement task/FULL projection/future child
+topology, focused validation and PLAN-FULL's sole full discovery. It awaits the
+exact version-controlled activation docs checkpoint; package/root/device/formal/
+release authority remains zero.
