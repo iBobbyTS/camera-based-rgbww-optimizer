@@ -1,6 +1,6 @@
 # Advisor 4.GUIDE unfinished work reference
 
-**文档状态：** `IMMUTABLE_QUALIFICATION_Q_REJECTED_SUPERVISOR_REVIEW_REQUIRED`
+**文档状态：** `ACTIVE_SOURCE_ATTESTATION_V2_ENGINEERING`
 
 **快照日期：** `2026-08-05`
 
@@ -8,34 +8,37 @@
 
 **执行属性：** `non_executable_reference`
 
-**适用 Advisor GUIDE：** `advisor/4/4.GUIDE.md`（immutable scientific input）
+**适用 Advisor GUIDE：** `advisor/4/4.GUIDE.md`（SHA-256 `659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35`；immutable scientific input）
 
-**Supervisor decision：** `SUPERVISOR_SELECT_IMMUTABLE_QUALIFICATION_CHECKPOINT_PROMOTION`
+**Human continuation：** `ORCHESTRATOR_RESUME_EXISTING_HUMAN_GOAL_AUTONOMOUSLY`
 
-**Selected architecture result：** `REJECTED_IMMUTABLE_Q_TOPOLOGY_VALIDATION_COMMITTED_SOURCE_CANDIDATE_BLOB_DRIFT`
+**当前可执行任务数：** `1`（执行权仅来自 matching live PLAN；FULL 本身不授权执行）
 
-**Archived pre-rewrite FULL：** `.agent-work/archived/FULL_PLAN_REFERENCE-20260805-2303.md`（7993 bytes；SHA-256 `7c249c7ea2761aebd680b38c764800de5bdc5838bcd0df46824323897c734f97`）
+**当前 active task：** `REF-G4-06-SOURCE-ATTESTATION-V2`
 
-**当前可执行任务数：** `0`
+**唯一 canonical next reference：** `REF-G4-06-SOURCE-ATTESTATION-V2`（`ACTIVE_SOURCE_ATTESTATION_V2_ENGINEERING`）
 
-**当前 active task：** `null`
+`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_guide4_g4_06_attestation_v2_v1","snapshot_date":"2026-08-05","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","human_continuation":"ORCHESTRATOR_RESUME_EXISTING_HUMAN_GOAL_AUTONOMOUSLY","content_policy":"UNFINISHED_TASKS_AND_REQUIRED_LOCKS_ONLY","completed_content_allowed":false,"active_task_count":1,"active_task":"REF-G4-06-SOURCE-ATTESTATION-V2","active_plan_contract_id":"G4-R6-SOURCE-ATTESTATION-V2-ENGINEERING-V1","current_plan_active_task_count":1,"current_plan_active_task":"REF-G4-06-SOURCE-ATTESTATION-V2","canonical_next_reference_task":"REF-G4-06-SOURCE-ATTESTATION-V2","canonical_next_reference_status":"ACTIVE_SOURCE_ATTESTATION_V2_ENGINEERING","executable":false,"full_is_non_executable_reference":true,"plan_status":"EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION_SOURCE_ATTESTATION_V2_ENGINEERING","reference_goal":"REF-G4-COMPLETE","live_intake":{"branch":"codex/g4-r6-owner-alignment-large-change","checkpoint":"641482706e5efebc81f1f55dba284cffd58b8355","tree":"d1db4d447ec8554683f1e60368f8dcee1d746d69","accepted_source_blob":"0015d7ce2f2a5dde9118478f98c929020a474a01","accepted_test_blob":"2a60a987dda02675c2eddc7d8260d61a8f68edc3"},"source_attestation_v2_task":{"task_id":"REF-G4-06-SOURCE-ATTESTATION-V2","status":"ACTIVE_SOURCE_ATTESTATION_V2_ENGINEERING","owner_boundary":"SINGLE_REPO_OWNED_SOURCE_ATTESTATION_SEAM","architecture":"VALIDATE_FROZEN_CANDIDATE_BYTES_THEN_ATTEST_EXACT_COMMIT_BLOBS_BEFORE_SEPARATE_PACKAGE_PREPARATION","reason":"DECOUPLE_ENGINEERING_CANDIDATE_QUALIFICATION_FROM_FUTURE_PACKAGE_DESCRIPTOR_IDENTITY","allowed_scope":["src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","tests/test_p7_td_b_r6_stage_gate.py","optional_minimal_owner_extraction_if_maintainability_preflight_requires","agent_work_execution_evidence"],"historical_q1_input_allowed":false,"package_or_formal_effect_allowed":false,"device_or_network_effect_allowed":false,"planner_stop":"RETURN_FOR_G4_06_SOURCE_ATTESTATION_V2_ENGINEERING_REVIEW"},"historical_q1":{"disposition":"REJECTED_IMMUTABLE_Q_TOPOLOGY_VALIDATION_COMMITTED_SOURCE_CANDIDATE_BLOB_DRIFT","ref":"refs/heads/codex/historical-g4-r6-immutable-qualification-q1-rejected","commit":"b5839d38ffa0c27bd5a6232a890cca3af0b8e7d9","implementation_read_or_reuse_allowed":false,"merge_cherry_pick_rebase_copy_allowed":false,"production_package_formal_release_input_allowed":false,"planner_archive":".agent-work/archived/PLAN-20260805-2300.md","execution_archive":".agent-work/archived/EXECUTION_RESULT-20260805-2300.md","full_archive":".agent-work/archived/FULL_PLAN_REFERENCE-20260805-2303.md"},"frozen_scientific_prerequisite":{"eq_r6_state":"C","exposure_qualification":"qualified_1_2500","scientific_credit_from_current_task":false},"historical_formal_ledger":{"classification":"ENGINEERING_INVALIDATED_PRECAPTURE_FORMAL_ABORT","formal_launch_count":1,"formal_attempt_count":1,"formal_root_create_count":1,"production_loader_count":1,"logical_capture_count":0,"physical_capture_count":0,"retry":0,"alternate_root":0,"strip_zero_proven":true,"ray_zero_proven":false,"scientific_or_quality_credit":false},"retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","human_goal_complete":false,"guide_complete":false,"scientific_result_created":false,"candidate_implementation_authorized":true,"candidate_commit_authorized":false,"full_suite_authorized":true,"package_prepare_authorized":false,"package_describe_authorized":false,"package_root_selection_authorized":false,"package_root_check_authorized":false,"package_root_create_authorized":false,"replacement_package_authorized":false,"replacement_formal_authorized":false,"formal_execution_authorized":false,"formal_root_creation_authorized":false,"device_authorized":false,"network_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"capture_authorized":false,"release_consumption_authorized":false,"analysis_authorized":false,"g4_07_authorized":false,"td_c_authorized":false,"allowed_next_action":"EXECUTER_EXECUTE_SOURCE_ATTESTATION_V2_ENGINEERING_PACKAGE"}`
 
-**唯一 canonical next reference：** `null`（`WAIT_FOR_SUPERVISOR_AFTER_IMMUTABLE_Q_REJECTION`）
+## Current unfinished route
 
-`FULL_PLAN_MACHINE_STATE={"schema":"orchestrator_full_plan_guide4_supervisor_replacement_r6_v56","snapshot_date":"2026-08-05","guide_path":"advisor/4/4.GUIDE.md","guide_sha256":"659152f6c0ae69c90c701de4e57c352d771e4f0bf75cf9410271ba0a94200e35","supervisor_decision":"SUPERVISOR_SELECT_IMMUTABLE_QUALIFICATION_CHECKPOINT_PROMOTION","selected_architecture":"DEDICATED_NON_PRODUCTION_QUALIFICATION_CHECKPOINT_WITH_EXACT_FAST_FORWARD_PROMOTION","content_policy":"UNFINISHED_TASKS_AND_REQUIRED_LOCKS_ONLY","completed_content_allowed":false,"active_task_count":0,"active_task":null,"active_plan_contract_id":"G4-R6-IMMUTABLE-QUALIFICATION-REJECTION-STOP-V1","current_plan_active_task_count":0,"current_plan_active_task":null,"canonical_next_reference_task":null,"canonical_next_reference_status":"WAIT_FOR_SUPERVISOR_AFTER_IMMUTABLE_Q_REJECTION","executable":false,"full_is_non_executable_reference":true,"plan_status":"IMMUTABLE_QUALIFICATION_Q_REJECTED_RETURN_TO_ORCHESTRATION_A_SUPERVISOR_REVIEW_REQUIRED","accepted_engineering_checkpoint":"1fbe38d17ec9885dcd5b563edd90359761c51910","accepted_engineering_tree":"9535ac6bcd445898c48ff2227f659d2ea6955e60","activation_commit_a":"6ed06636d382db7a66b83096f52e8dcbfa0d3263","orchestration_branch":"codex/g4-r6-owner-alignment-large-change","qualification_branch":"codex/g4-r6-immutable-qualification-q1","qualification_historical_ref":"refs/heads/codex/historical-g4-r6-immutable-qualification-q1-rejected","immutable_qualification_terminal_disposition":{"task_id":"REF-G4-06-IMMUTABLE-QUALIFICATION-PROMOTION","status":"REJECTED_IMMUTABLE_Q_TOPOLOGY_VALIDATION_COMMITTED_SOURCE_CANDIDATE_BLOB_DRIFT","q_commit":"74f5c2ea0188bcca633193d1ee5775b951ff0a9d","q_tree":"c50e09129e61bcf1e02b2cd7397ffb1321345a63","q_parent":"6ed06636d382db7a66b83096f52e8dcbfa0d3263","q_subject":"fix(stage-gate): bind immutable qualification checkpoint","qualification_status":"REJECTED_NON_PRODUCTION_HISTORICAL_ONLY","topology_invocation_count":1,"topology_test_count":12,"topology_error_count":32,"topology_exit":1,"dominant_error":"committed_source_candidate_blob_drift","full_invocation_count":0,"full_retry":0,"source_test_post_q_mutation_count":0,"clean_review_count":0,"promotion_completed":false,"scientific_credit":false},"reviewed_archives":{"plan":{"path":".agent-work/archived/PLAN-20260805-2300.md","bytes":18624,"sha256":"f3bdce721916fd979ee7cf9d60acc6c3b087ac14430ef8ec06da4d694ab820bb"},"execution_result":{"path":".agent-work/archived/EXECUTION_RESULT-20260805-2300.md","bytes":8000,"sha256":"58659186b84d5e1d846913f867f135d1aa9994f19e18ce2f58fabc72a679474c"},"full":{"path":".agent-work/archived/FULL_PLAN_REFERENCE-20260805-2303.md","bytes":7993,"sha256":"7c249c7ea2761aebd680b38c764800de5bdc5838bcd0df46824323897c734f97"}},"historical_candidate":{"ref":"refs/heads/codex/historical-g4-r6-section2-final-snapshot-rejected","commit":"3dc2fa2639ee19b1c10ec55e2412836527c8973b","isolation_verification_allowed":true,"diff_tree_blob_file_read_count":0,"reuse_count":0,"production_package_formal_release_input_allowed":false},"historical_formal_ledger":{"classification":"ENGINEERING_INVALIDATED_PRECAPTURE_FORMAL_ABORT","formal_launch_count":1,"formal_attempt_count":1,"formal_root_create_count":1,"production_loader_count":1,"logical_capture_count":0,"physical_capture_count":0,"retry":0,"alternate_root":0,"strip_zero_proven":true,"ray_zero_proven":false,"scientific_or_quality_credit":false},"retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","human_goal_complete":false,"guide_complete":false,"scientific_result_created":false,"candidate_implementation_authorized":false,"candidate_commit_authorized":false,"qualification_validation_authorized":false,"full_suite_authorized":false,"clean_reviews_authorized":false,"promotion_authorized":false,"package_prepare_authorized":false,"package_describe_authorized":false,"package_root_selection_authorized":false,"package_root_check_authorized":false,"package_root_create_authorized":false,"replacement_package_authorized":false,"replacement_formal_authorized":false,"formal_execution_authorized":false,"formal_root_creation_authorized":false,"device_authorized":false,"network_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"capture_authorized":false,"release_consumption_authorized":false,"analysis_authorized":false,"g4_07_authorized":false,"td_c_authorized":false,"allowed_next_action":"WAIT_FOR_SUPERVISOR_AFTER_IMMUTABLE_Q_REJECTION"}`
+| Reference ID | 状态 | 目标边界 | Planner stop |
+| --- | --- | --- | --- |
+| `REF-G4-06-SOURCE-ATTESTATION-V2` | `ACTIVE_SOURCE_ATTESTATION_V2_ENGINEERING` | 在 accepted tree 上独立建立单一 source-attestation v2 seam；候选验证与未来 package descriptor identity 分离 | `RETURN_FOR_G4_06_SOURCE_ATTESTATION_V2_ENGINEERING_REVIEW` |
+| `REF-G4-06-REPLACEMENT-PACKAGE` | `LOCKED_PENDING_ACCEPTED_V2_CODE_CHECKPOINT` | 仅在 v2 工程 owner terminal accepted 且 exact commit/blob attestation 后，由新 PLAN 决定 offline package preparation | package/root/formal/device全锁 |
+| `REF-G4-06-REPLACEMENT-R6` | `LOCKED_PENDING_SEPARATE_FUTURE_PLAN` | 仅在 replacement package 与 zero safety gate 分别接受后，才可讨论 formal launch | formal/device/capture全锁 |
 
-## Terminal route disposition
+## Engineering boundary
 
-`REF-G4-06-IMMUTABLE-QUALIFICATION-PROMOTION` 已由 Planner 终局拒绝。Committed-Q topology gate 实际运行一次：12 tests / 23.011s / exit 1 / 32 errors，dominant stable error为 `committed_source_candidate_blob_drift`。Full suite invocation/retry为 `0/0`，两次clean review与exact fast-forward promotion均未解锁。
-
-Q `74f5c2ea0188bcca633193d1ee5775b951ff0a9d` 保持 non-production、rejected、historical-only。不得repair、amend、Q2、rerun、merge、cherry-pick、rebase、rebuild，也不得作为production、package、formal、release输入。Accepted orchestration source/test必须保持activation A中的blobs `0015d7ce2f2a5dde9118478f98c929020a474a01` / `2a60a987dda02675c2eddc7d8260d61a8f68edc3`。
-
-该失败不是科学、设备、formal、package或release结果，不产生科学credit。Human goal、GUIDE和scientific stage均未完成。
+- 新路线不是 Q1 rename、repair 或 retry，不读取、不复制、不合并 historical Q1 implementation。
+- 资格验证首先冻结当前 candidate source/test bytes 和 exact scope；targeted/focused/full只验证这组冻结bytes。代码接受后由 Orchestrator 创建 focused commit，并以 read-only Git probe证明 commit blobs与已测bytes exact一致。
+- Downstream package descriptor只能在该 code checkpoint terminal accepted 后由后续独立 PLAN 构造；当前工程包不得 prepare、describe、probe、选择或创建 package root。
+- `p7_td_b_r6_stage_gate.py` 是大型 owner。Planner必须先做 maintainability preflight；若直接修改会增加 god-object、并行 semantic owner或重复 serialization/validation，允许一个最小 canonical extraction并配套 regression，但不得无关重构。
+- 普通 harness/fixture问题可在同一 package 内做一次 bounded correction；只有真实 source-attestation owner缺陷重复成立才累计 same-boundary failure。
 
 ## Current locks
 
-- 当前无active executable PLAN，canonical next为空，只允许等待Supervisor决定。
+- GUIDE/RESEARCH immutable；不需要 Advisor。
 - Package prepare/describe/root、replacement formal、release consumption、device/network/camera/Ray/strip/capture/analysis、G4-07、TD-C全部为false。
-- Retained R3仍为 `RETAINED_UNVALIDATED_UNCONSUMED`。
-- 旧formal ledger保持 `ENGINEERING_INVALIDATED_PRECAPTURE_FORMAL_ABORT`，不得删除或改写。
-- GUIDE/RESEARCH保持immutable；不升级Advisor。
+- Retained R3保持 `RETAINED_UNVALIDATED_UNCONSUMED`；旧formal ledger保持不变。
+- Human goal、GUIDE、scientific stage均未完成。
