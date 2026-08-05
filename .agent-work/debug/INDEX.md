@@ -12,7 +12,6 @@ may be resumed merely because its debug record is under `active/` or
 
 | file | summary |
 | --- | --- |
-| active/20260805-g4-r6-frozen-plan-runtime-context.md | G4 R6 production loader passed, but run_authorized_plan injected resolved capture settings into the frozen materialized plan before execute_plan revalidated it; recover with one explicit runtime-context seam and fake-backend end-to-end regression. |
 | active/20260727-p7-r3-lineage-path-classification.md | C3E6F11 failed on an unpassed fresh-root value, then contaminated the root by retrying and serialized contradictory content-read counters; C3E6F12 must unify lifecycle and accounting ownership. |
 | active/20260725-platform-cyber-risk-false-positive.md | Platform flagged the authorized local calibration chat; highest-impact suspects are a hard-coded Ray OpenAPI key and oversized remote/rejection-heavy project context. |
 | active/20260722-p7-td-b-prerequisite-path-identity.md | PATH-R1 owns the raw relative/absolute operating-envelope identity mismatch; canonical producer, setup gate, and analyzer replay must close it before the single authorized setup retry. |
@@ -32,6 +31,7 @@ may be resumed merely because its debug record is under `active/` or
 
 | file | summary |
 | --- | --- |
+| resolved/20260805-g4-r6-frozen-plan-runtime-context.md | Planner accepted the bounded frozen-plan/runtime-context candidate: real execute_plan preserves the frozen authority object, explicit provenance reaches run.json/post-capture validation, targeted/stage-gate/terminal checks pass, and the ten governance-lineage full-suite failures are independently attributed to pre-existing AGENTS.md baseline drift. |
 | resolved/20260803-g4-05-committed-source-lineage-history.md | G4-05 now validates every linear C-to-L descendant commit and rejects restored-tree non-orchestration history; commit d813cba passed 25/9/215/942 checks and phase2 acceptance. |
 | resolved/20260731-p7-retained-r3-b2-controller-contract-drift.md | P5/P6/P7 now own runtime effects, deterministic construction, and runnable template semantics; P7 passed 11/93/778 validation and the next fresh synthetic integration must compose only those accepted owners. |
 | resolved/20260727-p7-eq-r6-feature-selection-and-failure-accounting.md | Commit f37517a closes ordered 92-to-58 policy selection and atomic post-return failure accounting; exact-12 evidence and immutable 1650 replay pass, while any fresh live EQ attempt remains Human-checkpointed. |
