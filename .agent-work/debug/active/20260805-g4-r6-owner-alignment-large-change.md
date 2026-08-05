@@ -2,11 +2,11 @@
 
 ## Status
 
-- State: `section_2_frozen_candidate_final_qualification_waiting_activation`
+- State: `section_2_accepted_review_finding_repair_waiting_activation`
 - Stable reference task: `REF-G4-06-REPLACEMENT-PACKAGE`
 - Branch: `codex/g4-r6-owner-alignment-large-change`
 - PLAN-FULL sections: `2`
-- Current section: `SECTION_1_ACCEPTED_ENGINEERING_CHECKPOINT_BINDING`
+- Current section: `SECTION_2_REPLACEMENT_TASK_PROJECTION_AND_CHILD_TOPOLOGY`
 - Package/root/device/formal/release authority: none
 
 ## Frozen cause and rejected input
@@ -23,7 +23,7 @@ truth.
 | section | status | commit | clean reviews |
 | --- | --- | --- | --- |
 | `SECTION_1_ACCEPTED_ENGINEERING_CHECKPOINT_BINDING` | `ACCEPTED_COMMITTED_TWO_CLEAN_REVIEWS` | `5d01bcbb7e1a9ec1808e2fc05d238363d82a0a74` | `2/2` |
-| `SECTION_2_REPLACEMENT_TASK_PROJECTION_AND_CHILD_TOPOLOGY` | `SEMANTICALLY_ACCEPTABLE_FINAL_QUALIFICATION_WAITING_ACTIVATION` | none | `0/2` |
+| `SECTION_2_REPLACEMENT_TASK_PROJECTION_AND_CHILD_TOPOLOGY` | `ACCEPTED_REVIEW_FINDING_REPAIR_WAITING_ACTIVATION` | `7d02562db0afcffaa8f2a341345235a6310b654c` | `0/2` |
 
 Section 1 owns only the closed accepted-engineering checkpoint binding,
 descriptor projection and read-only Git validator seam. It cannot switch package
@@ -187,3 +187,93 @@ with every first failing frame at the pre-existing governance-lineage
 `AGENTS.md` identity boundary and no changed-owner regression.
 
 State: `SECTION_2_FROZEN_CANDIDATE_FINAL_QUALIFICATION_WAITING_ORCHESTRATOR_ACTIVATION`.
+
+## Section 2 final qualification result
+
+Activation `4e94594c117cd684e76b3607815f340cd2ca5919` passed the exact
+direct-parent, eight-path, machine/archive and frozen-candidate identity gates.
+The candidate remained dirty/unstaged with unchanged source/test SHA-256
+`0ea07b949436599097633c3514f64881e750ed7b45ee92ad88a54e7becee48e0` /
+`540234e353e43d0a1f8c75f3a71b45dd23ace610e7e96d59e250c88b52c4d352`.
+Final-qualification source/test/other implementation writes were all zero.
+
+The sole post-correction stage-gate focused run passed `51/51` in `329.308s`.
+The sole valid visible-Terminal full collection used PID `27393`, TTY
+`/dev/ttys002`, token `g4-r6-section2-valid-full-20260805-b73d91f4`, and the
+canonical non-`-t` discovery command. It collected `979` tests in `487.070s`
+and exited `1` with exactly `2 failures + 8 errors`. Log SHA-256 is
+`e71af39fc5e43d4f6affbe324c1742b4eeefbeb7a5e46883562a930f282dedea`.
+
+All ten non-green identities are the already attributed
+`test_p7_thermal_diagnostics` governance-lineage group and reach the current
+`AGENTS.md` path-identity rejection. No stage-gate, terminal, changed-owner or
+additional failure/error occurred. The result is therefore
+`QUALIFIED_NON_GREEN_EXACT_GOVERNANCE_LINEAGE_BASELINE`, not full green. The
+historical invalid `-t .` zero-collection invocation remains preserved and was
+not counted as a valid run or retry. All package/formal/device/network/release
+effects and commits remain zero.
+
+State: `RETURN_FOR_G4_06_LARGE_CHANGE_SECTION_2_FINAL_QUALIFICATION_REVIEW`.
+
+## Section 2 Planner final-qualification review
+
+Planner independently verified the activation topology, candidate bytes/SHA/
+blob/numstat, exact terminal argv and seal, all ten full-suite non-green test
+identities, and zero external effects. The focused result is `51/51 PASS`; the
+valid full result is `979` tests in `487.070s` with exactly the pre-existing
+`test_p7_thermal_diagnostics` governance-lineage `2 failures + 8 errors` group.
+There is no changed-owner, stage-gate, terminal or additional failure/error.
+
+Decision: `ACCEPTED_SECTION_2_QUALIFIED_NON_GREEN`. This is never full green,
+formal readiness, package usability or device readiness. The residual risk is
+the unchanged ten-test current-`AGENTS.md` lineage baseline.
+
+Reviewed archives:
+
+- `.agent-work/archived/PLAN-20260805-0515.md`, SHA-256
+  `bab9cfb9c9e8d8def1ee4cbcf71c0052c29f465f6206d7998aa35f01d608d617`;
+- `.agent-work/archived/EXECUTION_RESULT-20260805-0515.md`, SHA-256
+  `1702149cb72db4d242b8626a76ae6138c6142dbb1d92f8de299a2dd5b05a2d1b`.
+
+Live PLAN is a non-executable terminal stop. Orchestrator must commit exactly
+the frozen source/test owner paths with subject
+`fix(stage-gate): align replacement package owner` as a direct non-merge child
+of `4e94594c117cd684e76b3607815f340cd2ca5919`, then obtain two consecutive
+independent GPT-5.6 Sol xhigh clean reviews. No test rerun, implementation edit,
+package/root, device, formal or release operation is authorized.
+
+State: `RETURN_FOR_ORCHESTRATOR_SECTION_2_EXACT_CODE_COMMIT_AND_TWO_CLEAN_REVIEWS`.
+
+## Section 2 post-commit review findings and repair plan
+
+Orchestrator committed the qualified candidate as
+`7d02562db0afcffaa8f2a341345235a6310b654c`, exact two owner paths and subject
+`fix(stage-gate): align replacement package owner`. Independent reviews then
+found two Agent-Fixable trust-boundary roots and reset the clean streak to zero:
+
+- `REV-S2-AUTH-001`: Round 2 `REV-S2-R2-001`; noncanonical authority keys and
+  legacy aliases can bypass the current thirteen-key all-false projection.
+- `REV-S2-PROV-001`: merged Round 1 `REV-S2-001` and Round 2
+  `REV-S2-R2-002`; prerequisite checkpoint/tree are not exact-bound to the
+  already validated source-attestation binding.
+
+Review reports are immutable at
+`.agent-work/reviews/20260805-g4-r6-section2-round1.md` (SHA-256
+`cdb6ea0246f0f0c0c32f18901262c55396e429c872f6db02cca9647c59a04657`) and
+`.agent-work/reviews/20260805-g4-r6-section2-round2.md` (SHA-256
+`8e3b945ba2f6d68479fefdb002e0f793ea8db46cbbade5952b100a2a7a9a5c58`).
+The superseded terminal PLAN/ER are archived at
+`.agent-work/archived/PLAN-20260805-0530.md` / SHA-256
+`66ce56f1a16da799d4d8c8c7f3232f34dc87e4094193d755bbb86d19a4fe2d70`
+and `.agent-work/archived/EXECUTION_RESULT-20260805-0530.md` / SHA-256
+`7445e2cd12b6324edea5177382602267591ccf79c26701da1d9d5eb2e6ba3ae7`.
+
+Planner issued one same-task, same-Section 2 executable repair package. It keeps
+the existing source/test owners; adds no suffix, root, schema, controller or
+owner; requires an independent literal authority vocabulary/test oracle and an
+exact checkpoint/tree cross-binding inside `validate_stage_gate`; and grants one
+new final valid full collection because base-commit validation no longer
+qualifies changed repair bytes. The old invalid `-t .` invocation and base
+qualified-non-green evidence remain historical and unchanged.
+
+State: `SECTION_2_ACCEPTED_REVIEW_FINDING_REPAIR_WAITING_ORCHESTRATOR_ACTIVATION`.

@@ -12,7 +12,7 @@ may be resumed merely because its debug record is under `active/` or
 
 | file | summary |
 | --- | --- |
-| active/20260805-g4-r6-owner-alignment-large-change.md | Planner found the Section 2 candidate semantically acceptable but not finally qualified: the preserved `-t .` discovery failure collected zero tests and is a Planner harness-contract defect, so the frozen same-task continuation permits only one canonical full discovery and one post-correction stage-gate focused run with source/test writes and package/device/formal effects fixed at zero. |
+| active/20260805-g4-r6-owner-alignment-large-change.md | Section 2 commit `7d02562` retained its qualified-non-green baseline, but two accepted reviews reset the clean streak: the same-task repair now closes noncanonical authority aliases and accepted-engineering prerequisite/source-attestation cross-binding inside the existing owner, with no new suffix/root/owner and all package/device/formal effects zero. |
 | active/20260727-p7-r3-lineage-path-classification.md | C3E6F11 failed on an unpassed fresh-root value, then contaminated the root by retrying and serialized contradictory content-read counters; C3E6F12 must unify lifecycle and accounting ownership. |
 | active/20260725-platform-cyber-risk-false-positive.md | Platform flagged the authorized local calibration chat; highest-impact suspects are a hard-coded Ray OpenAPI key and oversized remote/rejection-heavy project context. |
 | active/20260722-p7-td-b-prerequisite-path-identity.md | PATH-R1 owns the raw relative/absolute operating-envelope identity mismatch; canonical producer, setup gate, and analyzer replay must close it before the single authorized setup retry. |
