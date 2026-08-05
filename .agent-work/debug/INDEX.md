@@ -12,7 +12,7 @@ may be resumed merely because its debug record is under `active/` or
 
 | file | summary |
 | --- | --- |
-| active/20260805-g4-r6-owner-alignment-large-change.md | Mandatory large-change workflow for the same stable replacement-package task: Section 1 binds the accepted engineering checkpoint; Section 2 remains locked pending its focused commit and two clean independent reviews. |
+| active/20260805-g4-r6-owner-alignment-large-change.md | Section 1 sizing failure is preserved in a forbidden historical stash; accepted source/tests are clean and a fresh independent same-section 300-cap reimplementation awaits exact reactivation while Section 2 stays locked. |
 | active/20260727-p7-r3-lineage-path-classification.md | C3E6F11 failed on an unpassed fresh-root value, then contaminated the root by retrying and serialized contradictory content-read counters; C3E6F12 must unify lifecycle and accounting ownership. |
 | active/20260725-platform-cyber-risk-false-positive.md | Platform flagged the authorized local calibration chat; highest-impact suspects are a hard-coded Ray OpenAPI key and oversized remote/rejection-heavy project context. |
 | active/20260722-p7-td-b-prerequisite-path-identity.md | PATH-R1 owns the raw relative/absolute operating-envelope identity mismatch; canonical producer, setup gate, and analyzer replay must close it before the single authorized setup retry. |
