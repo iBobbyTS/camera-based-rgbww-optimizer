@@ -12,7 +12,6 @@ may be resumed merely because its debug record is under `active/` or
 
 | file | summary |
 | --- | --- |
-| active/20260805-g4-r6-replacement-package-owner-alignment.md | Align the existing stage-gate package owner with the stable replacement-package task/current unfinished-only FULL and exact accepted runtime-context checkpoint, under a 300-line source/test cap and with no package-root or device authority. |
 | active/20260727-p7-r3-lineage-path-classification.md | C3E6F11 failed on an unpassed fresh-root value, then contaminated the root by retrying and serialized contradictory content-read counters; C3E6F12 must unify lifecycle and accounting ownership. |
 | active/20260725-platform-cyber-risk-false-positive.md | Platform flagged the authorized local calibration chat; highest-impact suspects are a hard-coded Ray OpenAPI key and oversized remote/rejection-heavy project context. |
 | active/20260722-p7-td-b-prerequisite-path-identity.md | PATH-R1 owns the raw relative/absolute operating-envelope identity mismatch; canonical producer, setup gate, and analyzer replay must close it before the single authorized setup retry. |
@@ -24,6 +23,7 @@ may be resumed merely because its debug record is under `active/` or
 
 | file | summary |
 | --- | --- |
+| unresolved/20260805-g4-r6-replacement-package-owner-alignment.md | Planner rejected the incomplete/unvalidated owner-alignment candidate after the observed 305-line hard-cap breach; preserve it only as a historical branch draft while Orchestrator establishes the mandatory same-task large-change branch plus PLAN-FULL section/review workflow. |
 | unresolved/20260720-p7-td-a-runner-settings.md | TD-A is blocked before device access because dry plans leak a future TD-B shutter requirement and production timed captures serialize ISO/aperture as null. |
 | unresolved/20260720-p7-actual-exposure-start-adapter.md | Deployed bridge contract and local remote client expose no verifiable actual exposure-start field; Advisor must decide whether to change the bridge or timing contract. |
 | unresolved/20260721-p7-td-b-ray-h120-s50-setup.md | R0S closes the offline seed/schema/ledger contract, but production CLI/wrapper still lacks retained-v2 setup, post-wrapper canonical finalization and formal resume; E0X owns this final execution boundary. |

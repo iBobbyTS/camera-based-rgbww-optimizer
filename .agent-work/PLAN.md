@@ -1,141 +1,71 @@
-# REF-G4-06-REPLACEMENT-PACKAGE owner-alignment engineering package
+# REF-G4-06-REPLACEMENT-PACKAGE Planner failure stop
 
-**计划状态：** `EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION_PACKAGE_OWNER_ALIGNMENT`
+**计划状态：** `NON_EXECUTABLE_WAITING_ORCHESTRATOR_LARGE_CHANGE_WORKFLOW`
 
-**Executable：** `true_after_exact_activation`
+**Executable：** `false`
 
-**Active task count：** `1`
+**Active task count：** `0`
 
-**Active reference task：** `REF-G4-06-REPLACEMENT-PACKAGE`
+**Reference task：** `REF-G4-06-REPLACEMENT-PACKAGE`
 
-**Contract：** `G4-R6-REPLACEMENT-PACKAGE-OWNER-ALIGNMENT-V1`
+**Reviewed contract：** `G4-R6-REPLACEMENT-PACKAGE-OWNER-ALIGNMENT-V1`
 
-**唯一 Planner stop：** `RETURN_FOR_PACKAGE_OWNER_ALIGNMENT_CANDIDATE_REVIEW`
+**唯一 Planner stop：** `RETURN_FOR_ORCHESTRATOR_LARGE_CHANGE_BRANCH_AND_PLAN_FULL`
 
-`PLAN_MACHINE_CONTRACT={"schema":"planner_execution_contract_v2","contract_id":"G4-R6-REPLACEMENT-PACKAGE-OWNER-ALIGNMENT-V1","plan_status":"EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION_PACKAGE_OWNER_ALIGNMENT","executable":true,"active_task_count":1,"active_task":"REF-G4-06-REPLACEMENT-PACKAGE","reference_task_id":"REF-G4-06-REPLACEMENT-PACKAGE","reference_goal":"REF-G4-COMPLETE","reference_task_status":"ACTIVE_AFTER_EXACT_ORCHESTRATOR_ACTIVATION_OWNER_ALIGNMENT_ONLY","single_current_action":"align_existing_stage_gate_owner_with_current_replacement_task_projection_and_accepted_engineering_checkpoint","planner_stop":"RETURN_FOR_PACKAGE_OWNER_ALIGNMENT_CANDIDATE_REVIEW","activation_commit":{"expected_parent":"a7fd401fe5761d00233d7cef2f65c7532a8e8067","expected_parent_tree":"0b4be2e4a27f392fa5efacc6c08c4996ccb24c10","expected_subject":"docs(plan): activate replacement package owner alignment","expected_changed_paths":[".agent-work/EXECUTION_RESULT.md",".agent-work/FULL_PLAN_REFERENCE.md",".agent-work/PLAN.md",".agent-work/archived/FULL_PLAN_REFERENCE-20260805-0204.md",".agent-work/archived/PLAN-20260805-0204.md",".agent-work/debug/INDEX.md",".agent-work/debug/active/20260805-g4-r6-replacement-package-owner-alignment.md"],"direct_non_merge_child":true,"orchestration_and_debug_only":true,"excluded_prefixes":["advisor/","config/","tmp/","src/","tests/"],"child_sha_recorded_in_plan":false},"reviewed_plan_archive":{"path":".agent-work/archived/PLAN-20260805-0204.md","bytes":10663,"sha256":"cad684da7e6b5e46441a0396c3a4634b587165d2f485cb60cb05bd4045123574"},"reviewed_execution_result_archive":{"path":".agent-work/archived/EXECUTION_RESULT-20260805-0144.md","bytes":8376,"sha256":"ed963caacf72a0f803b976999d6275dcee71b0c4dcff54b1d5c2225a3e149f4f","new_archive_created":false,"reason":"LIVE_ER_BODY_ALREADY_REVIEWED_AND_ARCHIVED"},"active_debug_note":{"path":".agent-work/debug/active/20260805-g4-r6-replacement-package-owner-alignment.md","bytes":3657,"sha256":"7c09e0192a0f6f4255428d0c47452aa6856b98ba67fa7d09a226733f13d1bc24"},"debug_index":{"path":".agent-work/debug/INDEX.md","bytes":9336,"sha256":"b2c11122f32888dcbfdad1beecc6ee3e55f16be255d55f15a0867c21cdc78580"},"maintainability_preflight":{"owner_path":"src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","owner_lines":2213,"test_path":"tests/test_p7_td_b_r6_stage_gate.py","test_lines":2660,"seam":"CLOSED_PACKAGE_TASK_PROJECTION_AND_COMMITTED_SOURCE_ATTESTATION","ownership":"EXISTING_SINGLE_STAGE_GATE_OWNER","estimated_combined_changed_lines_min":140,"estimated_combined_changed_lines_max":260,"hard_stop_over_combined_changed_lines":300,"new_module_allowed":false,"new_schema_allowed":false,"new_runner_allowed":false,"new_controller_allowed":false,"enabling_extraction_required":false},"accepted_engineering_checkpoint":{"checkpoint":"1fbe38d17ec9885dcd5b563edd90359761c51910","tree":"9535ac6bcd445898c48ff2227f659d2ea6955e60","parent":"08e27d0bde5f92f099219683f9dab06951707c07","subject":"fix(formal): preserve frozen plan runtime context","exact_changed_paths":["src/camera_based_rgbww_optimizer/optimization/measure_p7_thermal_diagnostics.py","tests/test_p7_thermal_diagnostics.py"],"blob_oids":[{"path":"src/camera_based_rgbww_optimizer/optimization/measure_p7_thermal_diagnostics.py","oid":"90000ff11a6603fc63515061d391200a46765380"},{"path":"tests/test_p7_thermal_diagnostics.py","oid":"272eacf4c302af5d64483620978411998497b242"}]},"baseline_owner_identity":{"source_path":"src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","source_bytes":94324,"source_sha256":"c4cd13e7fb64434914ccb12c862d1d12e81728a9a647d41ff23fb2d0d860fe83","source_blob":"d47c2ab2655d3e5ec2d425cb225d628d31fd32f2","test_path":"tests/test_p7_td_b_r6_stage_gate.py","test_bytes":133201,"test_sha256":"479dd8d5b0bb851d256045ee1535860ca23328874b7b7a1eb7de76dceb43ab6e","test_blob":"f41d1aa44056efed3e51847f25d3186b769664fd"},"target_owner_contract":{"package_task_id":"REF-G4-06-REPLACEMENT-PACKAGE","future_formal_task_id":"REF-G4-06-REPLACEMENT-R6","package_contract_id":"G4-RAY-R6-STAGE-GATE-FRESH-PACKAGE-EVIDENCE-V1","schema_changes":0,"public_cli_changes":0,"artifact_inventory_changes":0,"persistence_order_changes":0,"accepted_engineering_checkpoint_binding_required":true,"future_owner_alignment_child_binding_required":true,"old_task_current_acceptance":false},"allowed_repo_changed_paths":[".agent-work/EXECUTION_RESULT.md",".agent-work/debug/INDEX.md",".agent-work/debug/active/20260805-g4-r6-replacement-package-owner-alignment.md","src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","tests/test_p7_td_b_r6_stage_gate.py"],"source_write_cap":1,"test_write_cap":1,"semantic_candidate_cap":1,"ordinary_harness_correction_cap":1,"combined_production_test_changed_line_cap":300,"full_unittest_discovery_cap":1,"package_root_selection_count":0,"package_root_check_count":0,"package_root_create_count":0,"public_prepare_count":0,"public_describe_count":0,"old_package_access_count":0,"old_formal_root_access_count":0,"required_full_machine_state":{"active_task_count":1,"active_task":"REF-G4-06-REPLACEMENT-PACKAGE","current_plan_active_task_count":1,"current_plan_active_task":"REF-G4-06-REPLACEMENT-PACKAGE","active_plan_contract_id":"G4-R6-REPLACEMENT-PACKAGE-OWNER-ALIGNMENT-V1","canonical_next_reference_task":"REF-G4-06-REPLACEMENT-PACKAGE","canonical_next_reference_status":"ACTIVE_PACKAGE_OWNER_ALIGNMENT_ENGINEERING","executable":false,"full_is_non_executable_reference":true,"plan_status":"EXECUTABLE_PENDING_ORCHESTRATOR_ACTIVATION_PACKAGE_OWNER_ALIGNMENT","accepted_engineering_checkpoint":"1fbe38d17ec9885dcd5b563edd90359761c51910","accepted_engineering_tree":"9535ac6bcd445898c48ff2227f659d2ea6955e60","retained_r3_status":"RETAINED_UNVALIDATED_UNCONSUMED","replacement_package_authorized":false,"replacement_formal_authorized":false,"formal_execution_authorized":false,"formal_root_creation_authorized":false,"device_authorized":false,"network_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"capture_authorized":false,"release_consumption_authorized":false,"g4_07_authorized":false,"td_c_authorized":false,"replacement_package_task":{"task_id":"REF-G4-06-REPLACEMENT-PACKAGE","status":"ACTIVE_PACKAGE_OWNER_ALIGNMENT_ENGINEERING","owner_module":"camera_based_rgbww_optimizer.optimization.p7_td_b_r6_stage_gate","owner_alignment_required":true,"owner_alignment_scope":["src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py","tests/test_p7_td_b_r6_stage_gate.py"],"root_selected":false,"root_created":false,"prepare_count":0,"describe_count":0,"old_package_access_authorized":false,"old_formal_root_access_authorized":false,"device_authorized":false,"network_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"capture_authorized":false,"formal_authorized":false}},"historical_formal_ledger":{"classification":"ENGINEERING_INVALIDATED_PRECAPTURE_FORMAL_ABORT","formal_launch_count":1,"formal_attempt_count":1,"formal_root_create_count":1,"production_loader_count":1,"logical_capture_count":0,"physical_capture_count":0,"ray_nonzero_count":0,"strip_nonzero_count":0,"retry":0,"alternate_root":0,"strip_zero_proven":true,"ray_zero_proven":false,"ray_zero_status":"UNPROVEN_CONNECTION_REFUSED","old_formal_root_access_authorized":false,"old_package_access_authorized":false,"scientific_or_quality_credit":false},"package_prepare_authorized":false,"package_describe_authorized":false,"formal_execution_authorized":false,"formal_root_creation_authorized":false,"device_authorized":false,"network_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"capture_authorized":false,"cleanup_authorized":false,"release_consumption_authorized":false,"analysis_authorized":false,"g4_07_authorized":false,"td_c_authorized":false,"expected_duration_under_10_minutes":true,"visible_terminal_required":false}`
+`PLAN_MACHINE_CONTRACT={"schema":"planner_execution_contract_v2","contract_id":"G4-R6-REPLACEMENT-PACKAGE-OWNER-ALIGNMENT-FAILURE-REVIEW-V1","plan_status":"NON_EXECUTABLE_WAITING_ORCHESTRATOR_LARGE_CHANGE_WORKFLOW","executable":false,"active_task_count":0,"active_task":null,"reference_task_id":"REF-G4-06-REPLACEMENT-PACKAGE","reference_goal":"REF-G4-COMPLETE","reference_task_status":"WAITING_ORCHESTRATOR_LARGE_CHANGE_BRANCH_AND_PLAN_FULL","single_current_action":"orchestrator_preserve_rejected_dirty_candidate_and_activate_required_repo_large_change_workflow","planner_stop":"RETURN_FOR_ORCHESTRATOR_LARGE_CHANGE_BRANCH_AND_PLAN_FULL","review_disposition":"REJECTED_SOURCE_TEST_CHANGED_LINE_HARD_CAP_BREACHED_CANDIDATE_INCOMPLETE_UNVALIDATED","reviewed_plan_archive":{"path":".agent-work/archived/PLAN-20260805-0226.md","bytes":18343,"sha256":"650cb336d3cb195d86321a2d56e94d97527048a614f6f983b5d8e608d5f3b317"},"reviewed_execution_result_archive":{"path":".agent-work/archived/EXECUTION_RESULT-20260805-0226.md","bytes":7390,"sha256":"2a5aec2db4120cb6a3fd91d5cf9c6c0f72226884a582011d3b048cbb17a0ba24"},"observed_candidate_numstat":{"historical_source_added":131,"historical_source_deleted":68,"historical_test_added":70,"historical_test_deleted":36,"historical_total":305,"live_source_added":126,"live_source_deleted":68,"live_test_added":70,"live_test_deleted":36,"live_total":300,"hard_cap":300,"breach_not_revoked_by_later_compaction":true},"validation":{"targeted_run":false,"focused_run":false,"full_discovery_invocation_count":0,"candidate_complete":false,"candidate_validated":false,"candidate_committed":false},"authority_counts":{"package_root_selection":0,"package_root_check":0,"package_root_create":0,"public_prepare":0,"public_describe":0,"old_package_access":0,"old_formal_root_access":0,"device":0,"network":0,"camera":0,"ray":0,"strip":0,"capture":0,"cleanup":0,"formal":0,"release":0},"dirty_candidate_disposition":{"preserve_as_rejected_branch_snapshot":true,"accepted_input":false,"production_truth":false,"commit_to_main":false,"reuse_as_read_only_design_input_only":true,"destructive_reset_clean_checkout_allowed":false,"archive_branch":"codex/g4-r6-owner-alignment-rejected-305","large_change_branch":"codex/g4-r6-owner-alignment-large-change","stable_reference_task":"REF-G4-06-REPLACEMENT-PACKAGE","corrective_suffix_allowed":false},"large_change_workflow":{"applicable_top_level_agents_over_300_rule_found":true,"required":true,"git_branch_required":true,"plan_full_required":true,"section_subagent_commit_clean_review_loop_required":true,"ordinary_bounded_candidate_rerelease_allowed":false,"smaller_complete_design_proven":false,"reason":"nontrivial_candidate_observed_305_and_effective_top_level_agents_rule_requires_large_change_workflow_at_300_or_more"},"descriptor_guard_contract":{"descriptor_reference_drift_precedence_retained":true,"reference_drift_test_expected_code":"descriptor_reference_drift","reference_consistent_secret_fixture_required":true,"reference_consistent_historical_fixture_required":true},"package_prepare_authorized":false,"package_describe_authorized":false,"formal_execution_authorized":false,"formal_root_creation_authorized":false,"device_authorized":false,"network_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"capture_authorized":false,"cleanup_authorized":false,"release_consumption_authorized":false,"analysis_authorized":false,"g4_07_authorized":false,"td_c_authorized":false}`
 
-## 1. Purpose and preflight
+## 1. Planner review disposition
 
-这是同一稳定reference下的一次ordinary engineering/provenance owner alignment，不是package creation、formal retry或corrective suffix。
+当前 candidate 被拒绝，精确处置为：
 
-Maintainability preflight确认：
+`REJECTED_SOURCE_TEST_CHANGED_LINE_HARD_CAP_BREACHED_CANDIDATE_INCOMPLETE_UNVALIDATED`
 
-- production owner 2213行、test owner 2660行，属于大文件和高风险 provenance seam；
-- 目标仅涉及closed task/projection/committed-source attestation，现有single owner、Git topology validator、exclusive persistence和test fixture均可复用；
-- 不需要新module、schema、runner、controller或跨模块重构；
-- 预计production+test changed lines 140–260，硬停止为300。实施前或实施中一旦预计超过300，立即只写ER/debug并返回，不得开始/继续代码修改。
+理由是同一次 candidate 曾观测到 production/test 合计 `305` changed lines，超过 PLAN 冻结的 `300` hard cap。已经发出的机械压缩把 live numstat 降到 `300`，但不能撤销已经命中的 hard stop。Candidate 在停止时仍不完整、未验证、未提交；targeted、focused、compile、post-change CodeGraph 和 full discovery 均未运行。因此不得验收、不得继续 Executer 修补、不得把 live `300` 解释为重新获得授权。
 
-## 2. Activation prerequisite
+这是工程变更规模与执行合同失败，不是 scientific、formal、quality、release、device 或 Human/Advisor 阻塞。所有 package-root、public prepare/describe、historical-root、device、network、camera、Ray、strip、capture、formal 和 release 调用均为 `0`。
 
-Executer开始前必须验证：
+## 2. Test-contract finding retained for the next engineering design
 
-1. HEAD是 `a7fd401fe5761d00233d7cef2f65c7532a8e8067` 的direct non-merge child；
-2. parent tree为 `0b4be2e4a27f392fa5efacc6c08c4996ccb24c10`；
-3. subject exact为 `docs(plan): activate replacement package owner alignment`；
-4. changed paths exact等于machine row七个orchestration/debug paths，不含code/test/config/tmp/GUIDE/RESEARCH；
-5. PLAN/FULL strict parser均通过，active `1/1`，task和contract exact相同，FULL executable false；
-6. accepted engineering checkpoint、tree、subject、two paths、blob identities与machine row exact；
-7. active debug note与INDEX identity exact。
+完整性优先的 `descriptor_reference_drift` 行为必须保留。一个同时修改 `frozen-inputs.json` 内容却仍引用旧 bytes/SHA 的 fixture，首先违反跨文件引用完整性；它应明确期待 `descriptor_reference_drift`。
 
-任一不符，只写ER并停止；不得编辑production/tests。
+专属内容 guard 必须使用内部引用一致的独立 fixture 才可达：
 
-## 3. Single implementation hypothesis
+- reference-consistent secret fixture → `secret_material_prohibited`；
+- reference-consistent historical fixture → `historical_input_prohibited`。
 
-仅修改现有 owner/test：
+这四个入口/内容组合是同一错误优先级合同，不是四个安全缺陷。该事实不撤销本次 305-line hard stop，也不授权在当前 candidate 上继续修改。
 
-- `src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py`
-- `tests/test_p7_td_b_r6_stage_gate.py`
+## 3. Required dirty-candidate disposition
 
-目标行为：
+Orchestrator 必须以可恢复、非破坏方式处理当前 dirty source/test draft：
 
-1. Package preparation task identity改为 `REF-G4-06-REPLACEMENT-PACKAGE`。
-2. Future formal task identity独立保留为 `REF-G4-06-REPLACEMENT-R6`；不得让package task获得formal/device authority。
-3. 保留既有package contract/schema/CLI/artifact inventory/persistence order。不得新增schema、CLI command或artifact。
-4. `_projection`只接受current unfinished-only FULL所需closed fields：matching active/current/canonical task与package contract、accepted engineering prerequisite、replacement-package state、retained状态及all authority false；不得要求已归档旧 `g4_01..g4_04` 或旧 `g4_06_state`。
-5. Existing source-attestation binding在原schema内做最小closed extension：
-   - 继续绑定future focused stage-gate owner-alignment child的exact parent/tree/subject/two paths/blob identities；
-   - 同时绑定accepted engineering checkpoint `1fbe38d...` 的exact tree、direct parent、subject、two paths和blob identities；
-   - 验证accepted engineering checkpoint是future alignment parent lineage的ancestor；
-   - future alignment child后仍只允许linear、non-merge、adjacent `.agent-work/` descendants。
-6. Git/source identity、descriptor-reference integrity、secret/historical guards和strict fail-closed顺序保持；禁止wide ignore、optional fallback、old/new dual acceptance或validator bypass。
-7. Exclusive root create、canonical persist、preterminal inventory、internal replay、terminal seal、public replay、artifact mode和failure seal实现不得修改。
-8. 本candidate不得调用public `prepare`/`describe`，不得选择、检查或创建production replacement package root。Unit tests可在 `/Volumes/4T/temp/rgbww-optimizer` 的自动清理synthetic scratch中间接覆盖既有CLI/persistence语义，但不得留下durable package或接触任何external historical root。
+1. 在当前 `main` activation HEAD 上创建本地历史分支 `codex/g4-r6-owner-alignment-rejected-305`。
+2. 只 stage 并 commit 两个 source/test dirty paths，作为明确 rejected、incomplete、unvalidated 的 draft snapshot；不得提交到 `main`，不得宣称 accepted，也不得消费其输出。
+3. Planner review docs、archives、debug disposition 保持 unstaged，然后使用 `git switch main`。因为 main ref 未移动，source/test 会随分支切换回到 accepted activation tree，Planner docs 可作为未提交工作继续携带；不得使用 destructive reset、clean、checkout 或 restore。
+4. Orchestrator 在 `main` 独立审查并提交 Planner review docs，更新 FULL 后，从该 clean review commit 创建 `codex/g4-r6-owner-alignment-large-change`。
+5. Rejected branch 只允许作为 historical/read-only design input；禁止直接 cherry-pick 其 source/test candidate 为 production truth。
 
-若需要其它production/test文件、新schema/module/runner/controller、artifact或persistence语义改变，立即停止。
+## 4. Required next orchestration state
 
-## 4. Required regression
+Orchestrator 应在 FULL 中把同一稳定 task `REF-G4-06-REPLACEMENT-PACKAGE` 设为等待 required repo large-change workflow，不创建 corrective suffix 或新实验 root。需要的状态至少包括：
 
-在existing stage-gate test file内新增/更新真实行为断言。
+- status: `WAITING_ORCHESTRATOR_LARGE_CHANGE_BRANCH_AND_PLAN_FULL`；
+- current PLAN active task count: `0`；
+- current PLAN executable: `false`；
+- canonical next: `REF-G4-06-REPLACEMENT-PACKAGE`；
+- rejected candidate disposition及其本地历史分支/commit identity；
+- 当前有效顶层AGENTS明确要求非平凡修改可能达到或超过300行时使用Git branch、PLAN-FULL及section/subagent/commit/clean-review loop；historical305已触发该强制流程；
+- large-change branch identity；
+- `PLAN-FULL` required，按section/subagent/commit/clean-review loop收敛；
+- package root、prepare/describe、formal、device、network、camera、Ray、strip、capture、release全部未授权；
+- retained R3和历史 formal ledger不变。
 
-Positive current topology必须经machine parser/projection与real local Git验证：
+当前没有足够证据证明一个完整、可验证且不规避阈值的更小设计可以重新按普通 `<=300` candidate 释放。后续仍在同一个reference task内解决，但必须由Orchestrator建立branch + PLAN-FULL + section/subagent/commit/clean-review workflow；不需要Human或Advisor。
 
-- current package task/contract/current unfinished-only FULL projection通过；
-- accepted engineering checkpoint parent/tree/subject/exact measure+test paths/blob OIDs通过；
-- future stage-gate alignment child parent/tree/subject/exact stage-gate+test paths/blob OIDs通过；
-- package task与future formal task identity不同；
-- evaluation不调用device/network/camera/Ray/strip/formal owner。
+## 5. Frozen locks
 
-Negative cases均须在exclusive root/package effect之前fail closed：
+本 PLAN 不授权 Executer、代码修改、测试运行、package root、public prepare/describe、旧 package/formal root、device/network/camera/Ray/strip/capture/cleanup/formal、release consumption、analysis、G4-07、TD-C 或 Git commit。
 
-- old `REF-G4-06-RAY-R6` task或old prerequisite/`g4_06_state` projection；
-- wrong accepted checkpoint/tree/parent/subject/path/blob；
-- wrong future child subject/path/blob/lineage/merge；
-- unknown task/projection/attestation field；
-- current package task获得formal/device/release authority。
+唯一 stop 为：
 
-必须保留并运行：
-
-- descriptor reference drift优先；
-- reference-consistent secret → `secret_material_prohibited`；
-- reference-consistent historical → `historical_input_prohibited`；
-- fresh-root/exclusive persistence/inventory/internal replay/terminal seal/public replay/first-failure seal；
-- synthetic effect ledger证明real device/network/camera/Ray/strip/formal calls均0。
-
-测试不得只断言常量。
-
-## 5. Validation ladder
-
-所有scratch位于一个fresh、自动清理的 `/Volumes/4T/temp/rgbww-optimizer/g4-owner-alignment-test-*` test root；它不是replacement package root。不得使用repo `tmp/`或system `/tmp`。
-
-1. 新owner-alignment targeted class或exact test names：
-   `PYTHONPATH=/Users/ibobby/Projects/WLED-RGBWW TMPDIR=<FRESH_TEST_SCRATCH> .venv/bin/python -P -B -m unittest <EXACT_NEW_OWNER_ALIGNMENT_TESTS>`
-2. Stage-gate focused：
-   `PYTHONPATH=... TMPDIR=<FRESH_TEST_SCRATCH> .venv/bin/python -P -B -m unittest tests.test_p7_td_b_r6_stage_gate`
-3. Terminal focused：
-   `PYTHONPATH=... TMPDIR=<FRESH_TEST_SCRATCH> .venv/bin/python -P -B -m unittest tests.test_p7_td_b_r6_terminal`
-4. Thermal focused：
-   `PYTHONPATH=... TMPDIR=<FRESH_TEST_SCRATCH> .venv/bin/python -P -B -m unittest tests.test_p7_thermal_diagnostics`
-5. Compile：
-   `PYTHONPATH=/Users/ibobby/Projects/WLED-RGBWW .venv/bin/python -P -B -m compileall -q src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py tests/test_p7_td_b_r6_stage_gate.py`
-6. `codegraph sync`，再query projection/attestation/call path，确认single owner且persistence path未分叉。
-7. Scope：changed paths为allowed subset；production+test added/deleted≤300；PLAN/FULL/GUIDE/RESEARCH/config/tmp/wrapper/measure/thermal/terminal source未变；`git diff --check` pass。
-8. 唯一一次full discovery：
-   `PYTHONPATH=/Users/ibobby/Projects/WLED-RGBWW TMPDIR=<FRESH_TEST_SCRATCH> .venv/bin/python -P -B -m unittest discover -s tests -p 'test_*.py'`
-
-Full invocation cap为1，不得rerun。已知baseline governance group只有在仍精确为同十项、共同先失败于current `AGENTS.md` governance path identity且无新增failure/error时可qualified；不得称full green，也不得在本task修复。任何新增failure/error均reject。
-
-允许最多一个ordinary harness correction，必须不改production semantics且仍≤300行。第二个semantic scheme、第二次同一seam失败、full rerun或scope widening均立即停止。
-
-预计小于10分钟，前台tool执行；不得启动visible Terminal、后台process或automation。
-
-## 6. EXECUTION_RESULT and debug handoff
-
-Executer只能写两个source/test paths、live ER、debug INDEX和本active note；PLAN/FULL/archives/GUIDE/RESEARCH只读。
-
-ER必须记录activation identity、actual numstat、before/after identities、package/future task IDs、accepted checkpoint Git identity、synthetic topology、guards/effect ledger、全部validation commands/counts/duration/exit、full invocation count、diff/scope和debug identities。
-
-Package root selection/check/create、public prepare/describe、old package/root access及所有device/formal counters必须为`0`。Candidate未commit、未获Planner acceptance、未授权package creation/formal。
-
-成功：`READY_FOR_PLANNER_G4_06_PACKAGE_OWNER_ALIGNMENT_CANDIDATE_REVIEW`
-
-失败：`READY_FOR_PLANNER_G4_06_PACKAGE_OWNER_ALIGNMENT_FAILURE_REVIEW`
-
-唯一stop：`RETURN_FOR_PACKAGE_OWNER_ALIGNMENT_CANDIDATE_REVIEW`
-
-## 7. Frozen locks
-
-历史formal ledger保持 `ENGINEERING_INVALIDATED_PRECAPTURE_FORMAL_ABORT`：launch/attempt/root/loader `1/1/1/1`，capture/nonzero `0/0`，retry/alternate `0/0`；replacement计数未变化。
-
-本PLAN不授权production package root、standalone public `prepare`/`describe`、旧package/root、device/network/camera/Ray/strip/capture/cleanup/formal、release consumption、analysis、G4-07、TD-C、GUIDE/RESEARCH/config/wrapper/measure/thermal/terminal code修改或Git commit。
-
-Planner只在一个bounded candidate后验收并停；不得自动设计或执行package plan。
+`RETURN_FOR_ORCHESTRATOR_LARGE_CHANGE_BRANCH_AND_PLAN_FULL`

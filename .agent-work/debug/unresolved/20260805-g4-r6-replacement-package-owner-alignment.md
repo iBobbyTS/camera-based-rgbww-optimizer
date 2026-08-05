@@ -2,7 +2,7 @@
 
 ## Status
 
-- State: `active`
+- State: `unresolved`
 - Reference task: `REF-G4-06-REPLACEMENT-PACKAGE`
 - Scope: existing stage-gate owner plus its existing test file; offline fake/synthetic evidence only
 - Root/package/device/formal authority: none
@@ -15,6 +15,10 @@
 4. Its current package task/projection remains bound to `REF-G4-06-RAY-R6`, old prerequisite fields and a stage-gate-only code-child attestation; it cannot consume the current unfinished-only FULL or accepted runtime-context checkpoint.
 5. Existing negative tests already cover projection drift before root creation, source-attestation topology/path/blob drift, descriptor reference integrity precedence, specialized secret/historical guards, fresh-root rejection, artifact inventory, replay and terminal seal.
 6. Owner file is 2213 lines and test file is 2660 lines. The seam is local but high-risk provenance state; direct change is acceptable only if it reuses these owners, stays under 300 combined changed lines and adds closed positive/negative regression coverage.
+7. Activation `c02b4e2b92cdb98407883b38131c7bd8a8941e39` passed exact parent/tree/subject/seven-path, clean-worktree, PLAN/FULL `1/1`, archive/debug, baseline source/test, and accepted engineering checkpoint identity checks.
+8. During the single candidate, observed source/test numstat reached `131+68+70+36=305`, exceeding the PLAN hard cap. This is a terminal package failure even though an already-issued mechanical compaction left the live diff at exactly `126+68+70+36=300` when execution stopped.
+9. No targeted, focused, compile, CodeGraph sync, diff acceptance, or full discovery validation was run after the cap breach. The live candidate is incomplete and unvalidated; it must not be accepted, committed, or used to authorize package preparation.
+10. Package-root selection/check/create, public prepare/describe, old package/root access, and device/network/camera/Ray/strip/capture/formal/release calls remained `0`.
 
 ## Root-cause hypothesis
 
@@ -37,4 +41,24 @@ The production persistence owner is sound; only its closed orchestration project
 
 ## Next action
 
-Executer implements one bounded source/test candidate, runs the frozen offline validation ladder once, writes `.agent-work/EXECUTION_RESULT.md`, updates this note with evidence and returns to the sole Planner review stop.
+Planner rejected the incomplete candidate as
+`REJECTED_SOURCE_TEST_CHANGED_LINE_HARD_CAP_BREACHED_CANDIDATE_INCOMPLETE_UNVALIDATED`.
+Executer must not compress further, validate, commit, or start a second semantic
+scheme. Orchestrator owns recoverable preservation of the dirty source/test
+draft on a rejected historical branch, restoration of the accepted main tree by
+branch switching, and activation of the required repository large-change branch
+plus PLAN-FULL section/subagent/commit/clean-review workflow under the same
+stable reference task. The applicable top-level AGENTS instruction requires
+that workflow for a non-trivial change that may reach 300 lines or more, and the
+historical candidate reached 305.
+
+Reviewed evidence is immutable at:
+
+- `.agent-work/archived/PLAN-20260805-0226.md`, SHA-256
+  `650cb336d3cb195d86321a2d56e94d97527048a614f6f983b5d8e608d5f3b317`;
+- `.agent-work/archived/EXECUTION_RESULT-20260805-0226.md`, SHA-256
+  `2a5aec2db4120cb6a3fd91d5cf9c6c0f72226884a582011d3b048cbb17a0ba24`.
+
+The next stop is
+`RETURN_FOR_ORCHESTRATOR_LARGE_CHANGE_BRANCH_AND_PLAN_FULL`. This remains an
+engineering/orchestration issue, not a scientific/formal/Human/Advisor blocker.
