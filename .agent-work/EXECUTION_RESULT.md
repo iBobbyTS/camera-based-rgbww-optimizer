@@ -1,17 +1,14 @@
 # EXECUTION_RESULT
 
-## REF-G4-06 atomic materialized runtime consumer migration
+## REF-G4-06 independent Strategy B candidate 2
 
 **Contract:** `G4-R6-ATOMIC-MATERIALIZED-RUNTIME-CONSUMER-MIGRATION-V1`
 
-**Status:** `READY_FOR_EXECUTER_INTAKE`
+**Status:** `READY_FOR_EXECUTER_INTAKE_CANDIDATE_2`
 
 **Planner stop:** `RETURN_FOR_G4_06_ATOMIC_MATERIALIZED_RUNTIME_CONSUMER_MIGRATION_REVIEW`
 
-## Frozen activation handoff
-
-- Execution authority is limited to the matching active `.agent-work/PLAN.md`.
-- The previous exact Executer handoff remains immutable at historical commit `4a39f9ab377d7568c37eeea8aaa78d82aaa14535` with SHA-256 `7a040b64f4913833e8626280072c23d635522ecaf9e0e3a2c35ce363e8f9ef55`; its reviewed archive remains `.agent-work/archived/EXECUTION_RESULT-20260806-0257.md`.
-- Historical implementation is forbidden as input. Package, formal, release, device, network, camera, Ray, strip, capture, analysis, G4-07 and TD-C permissions remain false.
-
-Executer must replace this intake with the complete PLAN-required evidence and stop at the Planner review boundary.
+- Prior targeted candidate is rejected and preserved only at `refs/heads/codex/historical-g4-r6-atomic-consumer-migration-targeted-rejected` / `7bcc9db0f48e1d798b207e4507c674ea12d3e129`; its implementation and bytes are forbidden inputs.
+- Accepted source/test tree was restored from activation `ecfa0ec71aef02aeb8b48edad4496009bcae74b8`; no package, formal, release, device, network, camera, Ray, strip, capture or scientific effects occurred.
+- The only absorbed correction fact is the immutable `mappingproxy` decode boundary. Candidate 2 must compare through `json_native_value` while preserving immutability; production schema must remain strict.
+- Executer must write complete candidate-2 preflight, implementation, validation and stop evidence here and must not modify PLAN/FULL/PF or commit.
