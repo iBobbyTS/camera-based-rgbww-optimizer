@@ -22,22 +22,40 @@ adding root-level compatibility wrappers.
 
 ## Role and Ownership Core
 
+- Keep engineering ceremony proportional to the active GUIDE objective. This
+  repository may skip generic non-trivial-change branching or mandatory review
+  loops when they do not materially improve scientific correctness, safety,
+  evidence integrity, or maintainability; retain only the smallest meaningful
+  validation and evidence needed for the stage.
+- Each PLAN-FULL milestone and active PLAN must state the next scientific action
+  and its `science_delta`. A code change, passing test, provenance artifact, or
+  Git commit is not scientific progress by itself. Allow one engineering-only
+  package before the next scientific action; a second needs a newly exposed,
+  concrete blocker, and a third consecutive engineering-only package is a route
+  failure that requires simplification rather than more orchestration.
 - Human owns the physical lab, experiment goal, and dangerous-operation
   authorization.
 - Advisor researches color science, measurement science, and scientific branch
   selection and owns `GUIDE.md`/`RESEARCH.md`. Scientific guidance is authoritative
   for those questions; implementation, file scope, provenance plumbing, execution
   packaging, and Git topology remain Orchestrator-owned.
-- Orchestrator alone owns `.agent-work/FULL_PLAN_REFERENCE.md`, the complete
-  non-executable roadmap of unfinished Human-goal and scientifically guided work.
-  It also owns engineering architecture, repository scope, corrective execution,
-  and Git management, and may override non-scientific Advisor implementation advice.
-- Planner reads that roadmap and applicable scientific guidance, writes exactly one
-  active executable package to `.agent-work/PLAN.md`, reviews evidence, and archives
-  reviewed work. Non-scientific contradictions return to the Orchestrator.
-- Executer treats GUIDE, PLAN, FULL reference, debug records, and archives as
-  read-only; executes only active PLAN bounds and appends results to
-  `.agent-work/EXECUTION_RESULT.md`.
+- `[@sol_max](subagent://sol_max)` drafts and maintains `.agent-work/PLAN-FULL.md`
+  from the active GUIDE and Human goal. It is the concise, non-executable total
+  arrangement for the current GUIDE stage; it is not a command journal or a
+  second executable plan.
+- Orchestrator owns the low-density execution route, engineering boundaries,
+  repository scope, corrective execution, and Git management, and may override
+  non-scientific Advisor implementation advice without editing GUIDE/RESEARCH.
+- Planner uses a higher reasoning-effort profile than Executer, reads PLAN-FULL
+  and applicable scientific guidance, writes exactly one small active executable
+  package to `.agent-work/PLAN.md`, and reviews the complete batch result. It
+  archives only terminal package dispositions; intermediate corrections stay in
+  the active PLAN and execution evidence. Non-scientific contradictions return to
+  the Orchestrator.
+- Executer treats GUIDE, PLAN, PLAN-FULL, debug records, and archives as
+  read-only; uses a lower-cost reasoning profile for deterministic execution,
+  executes only active PLAN bounds, and appends results to
+  `.agent-work/EXECUTION_RESULT.md` without replanning.
 
 Only the active PLAN authorizes a task, device operation, retry, budget, or
 stage entry. Pause for Advisor direction only when a safe scientific branch
@@ -89,7 +107,7 @@ the existing cleanup and provenance owners.
 | Hardware assumptions, commands, calibration decisions, validation workflow | `docs/README.md` |
 | Local connection/configuration/credential boundary | `docs/local-lab-connection-boundary.md` |
 | Current executable work | `.agent-work/PLAN.md` plus the applicable `GUIDE.md` |
-| Orchestrator roadmap or dependency status | `.agent-work/FULL_PLAN_REFERENCE.md` (read-only except Orchestrator) |
+| GUIDE-stage roadmap or dependency status | `.agent-work/PLAN-FULL.md` (read-only except `sol_max`) |
 | P7 TD-B provenance or historical regression | `docs/engineering/p7-td-b-contract-history.md`, then only relevant archives/evidence |
 | Exact production behavior | The relevant module and focused tests |
 
