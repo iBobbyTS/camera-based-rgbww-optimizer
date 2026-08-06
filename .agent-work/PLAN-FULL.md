@@ -1,24 +1,16 @@
-# REF-G4-06 source-attestation v2 large-change roadmap
+# REF-G4-06 engineering roadmap terminal state
 
-**Document status:** `ACTIVE_SOURCE_ATTESTATION_V2_ENGINEERING`
+**Document status:** `SOURCE_ATTESTATION_V2_REJECTED_CROSS_ARCHITECTURE_OWNER_REASSESSMENT_REQUIRED`
 
 **Executable authority:** `false`
 
-**Stable reference task:** `REF-G4-06-SOURCE-ATTESTATION-V2`
+**Stable reference task:** `null`
 
-**Architecture:** `VALIDATE_FROZEN_CANDIDATE_BYTES_THEN_ATTEST_EXACT_COMMIT_BLOBS_BEFORE_SEPARATE_PACKAGE_PREPARATION`
+`PLAN_FULL_MACHINE_CONTRACT={"schema":"g4_large_change_plan_full_v12","document_status":"SOURCE_ATTESTATION_V2_REJECTED_CROSS_ARCHITECTURE_OWNER_REASSESSMENT_REQUIRED","terminal_status":"SOURCE_ATTESTATION_V2_REJECTED_CROSS_ARCHITECTURE_OWNER_REASSESSMENT_REQUIRED","executable":false,"active_task_count":0,"active_task":null,"reference_goal":"REF-G4-COMPLETE","stable_reference_task":null,"current_section":null,"current_section_status":"CROSS_ARCHITECTURE_OWNER_REASSESSMENT_REQUIRED","orchestration_branch":"codex/g4-r6-owner-alignment-large-change","accepted_source_blob":"0015d7ce2f2a5dde9118478f98c929020a474a01","accepted_test_blob":"2a60a987dda02675c2eddc7d8260d61a8f68edc3","rejected_task":"REF-G4-06-SOURCE-ATTESTATION-V2","rejected_historical_ref":"refs/heads/codex/historical-g4-r6-source-attestation-v2-rejected","rejected_historical_commit":"ca6895a7172a38a1095358bfdc89d846d1d79c7a","historical_input_allowed":false,"planner_disposition":"REJECTED_SOURCE_ATTESTATION_V2_FULL_ORDER_INTEGRATION_MASS_REGRESSION","full_suite_invocation_count":1,"full_retry":0,"candidate_implementation_authorized":false,"candidate_commit_authorized":false,"package_prepare_authorized":false,"package_describe_authorized":false,"package_root_selection_authorized":false,"package_root_check_authorized":false,"package_root_create_authorized":false,"formal_execution_authorized":false,"formal_root_creation_authorized":false,"release_consumption_authorized":false,"device_authorized":false,"network_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"capture_authorized":false,"analysis_authorized":false,"g4_07_authorized":false,"td_c_authorized":false,"human_goal_complete":false,"guide_complete":false,"scientific_stage_complete":false,"process_active":false,"automation_active":false,"allowed_next_action":"ORCHESTRATOR_CROSS_ARCHITECTURE_OWNER_STATE_REASSESSMENT"}`
 
-`PLAN_FULL_MACHINE_CONTRACT={"schema":"g4_large_change_plan_full_v11","document_status":"ACTIVE_SOURCE_ATTESTATION_V2_ENGINEERING","executable":false,"active_task_count":1,"active_task":"REF-G4-06-SOURCE-ATTESTATION-V2","reference_goal":"REF-G4-COMPLETE","stable_reference_task":"REF-G4-06-SOURCE-ATTESTATION-V2","current_section":"SOURCE_ATTESTATION_V2_OWNER_SEAM","current_section_status":"ACTIVE_SOURCE_ATTESTATION_V2_ENGINEERING","architecture":"VALIDATE_FROZEN_CANDIDATE_BYTES_THEN_ATTEST_EXACT_COMMIT_BLOBS_BEFORE_SEPARATE_PACKAGE_PREPARATION","orchestration_branch":"codex/g4-r6-owner-alignment-large-change","intake_checkpoint":"641482706e5efebc81f1f55dba284cffd58b8355","accepted_source_blob":"0015d7ce2f2a5dde9118478f98c929020a474a01","accepted_test_blob":"2a60a987dda02675c2eddc7d8260d61a8f68edc3","historical_q1_ref":"refs/heads/codex/historical-g4-r6-immutable-qualification-q1-rejected","historical_q1_input_allowed":false,"maintainability_preflight_required":true,"parallel_attestation_owner_allowed":false,"candidate_bytes_must_be_frozen_for_validation":true,"post_validation_commit_blob_attestation_required":true,"package_preparation_in_current_section":false,"full_suite_budget":1,"full_retry":0,"candidate_implementation_authorized":true,"candidate_commit_authorized":false,"package_prepare_authorized":false,"package_describe_authorized":false,"package_root_selection_authorized":false,"package_root_check_authorized":false,"package_root_create_authorized":false,"formal_execution_authorized":false,"formal_root_creation_authorized":false,"release_consumption_authorized":false,"device_authorized":false,"network_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"capture_authorized":false,"analysis_authorized":false,"g4_07_authorized":false,"td_c_authorized":false,"human_goal_complete":false,"guide_complete":false,"scientific_stage_complete":false,"allowed_next_action":"EXECUTER_EXECUTE_SOURCE_ATTESTATION_V2_ENGINEERING_PACKAGE"}`
+## Terminal disposition
 
-## Current section
-
-Planner应把以下内容合并为一个 bounded engineering package：maintainability preflight、单一 v2 attestation owner/seam、内部一致的 real-Git fixtures、positive/negative behavior probes、targeted/focused/compile/static/CodeGraph/scope checks，以及唯一 full suite和 Executer handoff。
-
-候选资格与 future package construction是两个不同状态边界。本 section 只接受工程 owner；package preparation、root和formal必须等待 accepted exact code commit/blob checkpoint 后由下一 PLAN决定。
-
-## Hard locks
-
-- 不读取或复用 historical Q1 implementation，不创建 Q1 repair/Q2/corrective suffix。
-- 不新增 parallel controller、宽泛 ignore/allowlist或第二个 identity source of truth。
-- 不访问 package/formal roots、external experiment payload、设备或网络。
-- Full budget/retry为 `1/0`；相同真实owner缺陷失败时 fail closed，harness自身问题单独归因。
+- Current source-attestation v2 candidate is rejected and historical-only.
+- Accepted source/test blobs are restored on the orchestration branch.
+- The next route must use a materially different owner/state architecture derived from the accepted tree; no candidate repair, retry, suffix, Q2, package preparation, formal execution, device access, or scientific claim is authorized here.
+- Pre-rewrite PLAN-FULL remains recoverable at commit `ca6895a7172a38a1095358bfdc89d846d1d79c7a`, path `.agent-work/PLAN-FULL.md`, SHA-256 `5104f6e4de4ef71d444391a8763ebc8326f1f8a2ef186a1a3fc270f93f18e5d1`.
