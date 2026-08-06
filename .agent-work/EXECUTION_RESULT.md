@@ -1,14 +1,12 @@
 # EXECUTION_RESULT
 
-## REF-G4-06 independent Strategy B candidate 2
+## REF-G4-06 targeted harness stop
 
-**Contract:** `G4-R6-ATOMIC-MATERIALIZED-RUNTIME-CONSUMER-MIGRATION-V1`
+**Status:** `ACCEPTED_CONTROLLED_INVALID_HARNESS_METHOD_SELECTOR_NO_CANDIDATE_GATE`
 
-**Status:** `READY_FOR_EXECUTER_INTAKE_CANDIDATE_2`
+**Planner stop:** `RETURN_TO_ORCHESTRATOR_FOR_HARNESS_AND_ROUTE_REASSESSMENT`
 
-**Planner stop:** `RETURN_FOR_G4_06_ATOMIC_MATERIALIZED_RUNTIME_CONSUMER_MIGRATION_REVIEW`
-
-- Prior targeted candidate is rejected and preserved only at `refs/heads/codex/historical-g4-r6-atomic-consumer-migration-targeted-rejected` / `7bcc9db0f48e1d798b207e4507c674ea12d3e129`; its implementation and bytes are forbidden inputs.
-- Accepted source/test tree was restored from activation `ecfa0ec71aef02aeb8b48edad4496009bcae74b8`; no package, formal, release, device, network, camera, Ray, strip, capture or scientific effects occurred.
-- The only absorbed correction fact is the immutable `mappingproxy` decode boundary. Candidate 2 must compare through `json_native_value` while preserving immutability; production schema must remain strict.
-- Executer must write complete candidate-2 preflight, implementation, validation and stop evidence here and must not modify PLAN/FULL/PF or commit.
+- Candidate 2 never entered a candidate test body. First invalid class selector log SHA-256: `649217ee4cc29cb8886d019f1961636e047a79fa8e165f81f1b310d70fa65c3e`; second invalid method selector log SHA-256: `eb70923f85acdb15d9d96ff91ab6bd18f63751c186cbc1d7d478ec975b82333d`.
+- Both commands exited naturally with `Ran 2`, `errors=1`, exit `1`; later gates `0/0`; no production, package, formal, release, device, network, camera, Ray, strip, capture or scientific effect.
+- Candidate 2 source/test/support is not accepted and is forbidden as future implementation input. Accepted source/test tree was restored from `eca2d426d58e501fddcef03d7c89e8dc796ad3c1`.
+- No third selector, retry, focused/full gate or new executable PLAN is authorized. Next action is read-only exact test-identity inventory by Orchestrator.
