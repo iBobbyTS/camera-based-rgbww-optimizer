@@ -24,6 +24,7 @@ may be resumed merely because its debug record is under `active/` or
 
 | file | summary |
 | --- | --- |
+| unresolved/20260806-g4-r6-materialized-runtime-consumer-migration.md | Read-only cross-owner reassessment selects one atomic public-contract migration: stage-gate remains the sole materialization/serialization/validation owner, all thermal/terminal production consumers and three rule-of-three fixture builders must migrate together, and no rejected implementation may be reused. |
 | unresolved/20260805-g4-r6-replacement-package-owner-alignment.md | Planner rejected the incomplete/unvalidated owner-alignment candidate after the observed 305-line hard-cap breach; preserve it only as a historical branch draft while Orchestrator establishes the mandatory same-task large-change branch plus PLAN-FULL section/review workflow. |
 | unresolved/20260720-p7-td-a-runner-settings.md | TD-A is blocked before device access because dry plans leak a future TD-B shutter requirement and production timed captures serialize ISO/aperture as null. |
 | unresolved/20260720-p7-actual-exposure-start-adapter.md | Deployed bridge contract and local remote client expose no verifiable actual exposure-start field; Advisor must decide whether to change the bridge or timing contract. |
