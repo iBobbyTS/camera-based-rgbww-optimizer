@@ -1,37 +1,37 @@
 # Advisor GUIDE 4 当前阶段科学路线图
 
-**Document status:** `RAY_R6_SCIENTIFIC_ACTION_WAITING_HUMAN_RELEASE_NO_ACTIVE_PLAN`
+**Document status:** `TERMINAL_ENGINEERING_RUNTIME_ALIGNMENT_MISMATCH_REPORT_TO_HUMAN`
 
 **Executable authority:** `false`
 
 **Active task count:** `0`
 
-**Current milestone:** `G4-R6-SCIENTIFIC-ACTION`
+**Current milestone:** `G4-RUNTIME-ALIGNMENT-TERMINAL-STOP`
 
 **Frozen scientific prerequisite:** `config/hsi/p7-ray-td-b-exposure-policy-v2.json`，`qualified_1_2500`，SHA-256 `c9080d18571f617cb7d323ade843ff9c86bf92e3795d23e3999e26d413968681`
 
 **Accepted engineering reference:** `REF-G4-06-MATERIALIZED-RUNTIME-CONSUMER-MIGRATION`
 
-`PLAN_FULL_MACHINE_CONTRACT={"schema":"g4_scientific_stage_plan_full_v3","document_status":"RAY_R6_SCIENTIFIC_ACTION_WAITING_HUMAN_RELEASE_NO_ACTIVE_PLAN","executable":false,"active_task_count":0,"active_task":null,"current_milestone":"G4-R6-SCIENTIFIC-ACTION","frozen_eq_r6":"qualified_1_2500","accepted_successor_release":true,"accepted_predevice":true,"accepted_zero_readiness":true,"accepted_fresh_e2":true,"allowed_next_action":"WAIT_FOR_EXPLICIT_HUMAN_FORMAL_DEVICE_RELEASE","engineering_only_plan_budget_before_science":0,"engineering_only_plan_budget_consumed":1,"package_prepare_authorized":false,"formal_execution_authorized":false,"release_consumption_authorized":false,"device_authorized":false,"network_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"capture_authorized":false,"analysis_authorized":false,"td_c_authorized":false,"human_goal_complete":false,"guide_complete":false,"scientific_stage_complete":false}`
+`PLAN_FULL_MACHINE_CONTRACT={"schema":"g4_scientific_stage_plan_full_v4","document_status":"TERMINAL_ENGINEERING_RUNTIME_ALIGNMENT_MISMATCH_REPORT_TO_HUMAN","executable":false,"active_task_count":0,"active_task":null,"current_milestone":"G4-RUNTIME-ALIGNMENT-TERMINAL-STOP","frozen_eq_r6":"qualified_1_2500","accepted_successor_release":true,"accepted_predevice":true,"accepted_zero_readiness":true,"accepted_fresh_e2":true,"accepted_runtime_consumer_package_commit":"21754a3","allowed_next_action":"REPORT_EXACT_RUNTIME_ALIGNMENT_MISMATCH_TO_HUMAN_NO_EXECUTION","engineering_only_plan_budget_before_science":0,"engineering_only_plan_budget_consumed":1,"engineering_only_correction_budget":1,"second_engineering_package_allowed":false,"package_prepare_authorized":false,"formal_execution_authorized":false,"release_consumption_authorized":false,"device_authorized":false,"network_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"capture_authorized":false,"analysis_authorized":false,"td_c_authorized":false,"human_goal_complete":false,"guide_complete":false,"scientific_stage_complete":false}`
 
-EQ-R6 `1/2500`、successor policy/release、predevice、zero/readiness 与 fresh E2 均已有 accepted/frozen evidence，不得重跑、补拍、重建或修改。历史 formal attempt 的 captures 为 0，是工程 invalidation，不是科学质量结果。当前唯一 engineering blocker 是 accepted tree 上 runtime materialization/consumer chain 尚未通过已 inventory 的真实测试体；Candidate 2、所有 historical rejected candidate 与无效 selector 记录只能作证据，禁止作为实现输入。R5 11 帧仍 diagnostic-only，禁止 old/new pooling。
+EQ-R6 `1/2500`、successor policy/release、predevice、zero/readiness 与 fresh E2 均已有 accepted/frozen evidence，不得重跑、补拍、重建或修改。runtime materialization/consumer chain 曾由四个真实测试体 `Ran 4 / OK` 并在提交 `21754a3` 接受；后续唯一 PLAN/PLAN-FULL runtime-alignment correction 已 terminal rejected：69 tests、83.091 s、exit 1、1 failure + 213 errors。exact mismatches 是 production import migration 移除了 `build_stage_gate_input` 仍需的旧 parser，触发 `NameError`，且新 parser wrapper 未加入 `__all__`。retry=0，engineering budget 已消耗 1，第二 correction/package 禁止。该结果没有 capture 或 science delta；Ray R6 保持 locked。Candidate 2 与所有 historical rejected candidate 仍只能作证据，禁止作为实现输入。
 
-## G4-FORMAL-ENTRY-RUNTIME-CONSUMER-CLEARANCE — 解除 formal 前唯一工程 blocker（当前）
+## G4-RUNTIME-ALIGNMENT-TERMINAL-STOP — exact mismatch 回报 Human（当前）
 
-- **scientific_target:** 让 GUIDE 要求的完整新 Ray R6 16-frame 实验成为下一项可执行科学动作；不再重复 EQ-R6 或扩大 owner/framework/provenance 设计。
-- **next_scientific_action:** `P7-TD-B-RAY-OP600-EXPOSURE-GUARDED-FORMAL-R6`（本 milestone 完成后直接进入）。
-- **science_delta:** 真正解锁 Ray R6 16-frame acquisition；本 milestone 的代码、测试、checkpoint、release 或 Git 记录本身不计科学进展。
-- **最小 engineering prerequisite:** 使用已完成 inventory 的真实 class/method/module identities，在 accepted tree 上批量验证并最小修复 runtime materialization/consumer chain，使既有 successor release/readiness 能安全到达 formal capture；仅保留现有 owner，禁止创建新的 owner-seam candidate、framework、attestation/provenance 层或泛化 coordinator。不得修复、重试、读取或复制 Candidate 2/历史 rejected candidate。
-- **safety/authorization lock:** 当前 package、release consumption、formal、device、network、camera、Ray、strip、capture 与 analysis 全部未授权。active PLAN 必须单独声明 exact release/root/launch bounds；不得由 release eligibility 推导 Human authorization。selector 不进入真实测试体时立即停止，只做一次 read-only reconciliation，不猜 selector。
-- **acceptance evidence:** 已 inventory 的精确测试身份与实际测试体结果、runtime materialization/consumer chain targeted evidence、accepted-tree source/test scope、既有 successor/readiness artifact hashes 的只读绑定、`git diff --check` 与 focused accepted commit；仅当这些证据证明下一 PLAN 能安全释放一次 Ray formal launch 才算解锁。一个 engineering-only PLAN 后仍有新 blocker，才允许一次额外 bounded correction；第三次禁止。
+- **scientific_target:** 保持 GUIDE 科学输入与下一 Ray R6 目标冻结，同时向 Human 精确报告唯一 runtime-alignment correction 的 terminal engineering mismatch。
+- **next_scientific_action:** 无可执行科学动作；仅 `REPORT_EXACT_RUNTIME_ALIGNMENT_MISMATCH_TO_HUMAN_NO_EXECUTION`，Ray R6 保持 locked。
+- **science_delta:** `none`；69-test terminal engineering rejection、PLAN/PLAN-FULL 状态或 Git/evidence 都不是科学进展。
+- **最小 engineering prerequisite:** 不再执行 engineering prerequisite。保留 exact mismatch：旧 parser 被 production import migration 移除导致 `build_stage_gate_input` `NameError`，新 parser wrapper 缺少 `__all__` export；不得修复、retry、重跑、开启第二 correction 或改换 package。
+- **safety/authorization lock:** PLAN-FULL non-executable、active=0；package、formal、release consumption、device、network、camera、Ray、strip、capture、analysis 与 TD-C 权限全部 false。Ray R6 不得启动；只有新的 Human direction 才能改变 terminal stop，但本文件不推导任何新执行权。
+- **acceptance evidence:** terminal evidence 固定为 69 tests / 83.091 s / exit 1 / 1 failure + 213 errors，且 exact mismatches 为 `build_stage_gate_input` 的旧 parser `NameError` 与新 parser wrapper 缺少 `__all__`；engineering budget consumed=1、retry=0、second package=false、science result=0。Human report 完成即停止，不创建 repair PLAN。
 
-## G4-R6 — 完整新 Ray 16-frame acquisition 与 Ray-only analysis（等待 Human formal/device release）
+## G4-R6 — 完整新 Ray 16-frame acquisition 与 Ray-only analysis
 
 - **scientific_target:** 依据 frozen EQ-R6 shutter 和 GUIDE exact sequence，取得 Ray-only operational-600 的完整新 16 帧并判断 quality、chronology 与 A-return history compatibility。
 - **next_scientific_action:** 在新 unique root 按 exact `000..015` 顺序运行一次 formal R6；仅 16/16 quality pass 后运行 Ray analyzer。
 - **science_delta:** 新的 16 张 Ray captures 及 Ray-only chronology/history analysis，或首次 hard-failure 的科学有效 negative result；出口为 acquisition fail、`stop_history_model_required` 或 `accepted_for_strip_entry`。
-- **最小 engineering prerequisite:** G4-FORMAL-ENTRY-READINESS accepted；active PLAN 固定 A/D/B exact frozen shutters、C=`1/2500`、16-frame physical cap、launch=1、retry=0、no auto-exposure/reacquire、strip zero 与 cleanup。
-- **safety/authorization lock:** 当前等待明确 Human formal/device release；在 release 到达并写入 active PLAN 前，不得创建 formal root、启动 visible-Terminal、访问 Ray/相机或 capture。获得 release 后仅该 active PLAN 可释放一次 visible-Terminal Ray/camera formal operation；任一 capture failure 即终止、strip 保持 zero，不得复用 R5 frame、从中间恢复或重试。
+- **最小 engineering prerequisite:** 当前 terminal engineering stop 未解除；本 milestone 不可进入。
+- **safety/authorization lock:** Ray R6 locked；formal、device、camera、Ray、capture 与 analysis 权限均为 false，不得创建 root、启动 visible-Terminal、连接设备或执行 capture。
 - **acceptance evidence:** formal root、每帧 CR3/sidecar/hash/MakerNote/state/readback/quality、physical chronology、双 cleanup/final-zero/terminal seal，以及 600 s return-anchor compatibility 与 `steady_status=not_demonstrated` chronology report。
 
 ## G4-STRIP-TD-B — 条件执行新 strip 16-frame TD-B

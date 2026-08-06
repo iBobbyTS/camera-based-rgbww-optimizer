@@ -50,3 +50,32 @@
   strip/capture/analysis command was invoked.
 - `git diff --check`: pass. No source or test files changed; only this execution
   record is in the package scope. Accepted package commit: `21754a3`.
+
+## G4 PLAN runtime-alignment correction terminal stop (2026-08-06)
+
+- Executed the first and only permitted class-level command exactly once:
+  `.venv/bin/python -m unittest tests.test_agent_work_machine_contract.AgentWorkMachineContractTests tests.test_p7_td_b_r6_stage_gate.P7TdBR6StageGateTests`.
+- Selectors resolved to real test bodies. Result: `Ran 69 tests in 83.091s`, exit
+  `1`, `failures=1`, `errors=213`; this is an engineering failure, not a harness
+  selector failure or scientific result.
+- Dominant failure: `build_stage_gate_input()` still calls
+  `parse_full_plan_machine_state` at `p7_td_b_r6_stage_gate.py:601` after the
+  production import was migrated to `parse_plan_full_machine_contract`, causing
+  `NameError` before the affected stage-gate test bodies can exercise their intended
+  contract assertions. The parser public-surface test also reports the new wrapper
+  absent from `__all__`.
+- Per active PLAN: zero retry, no second implementation/correction, no second
+  command (including the four-test command), no full suite, and no device/network/
+  camera/Ray/strip/capture/formal/root/release action. Return to Orchestrator for a
+  terminal semantic disposition and route reassessment.
+
+## Rejected candidate historical-only preservation
+
+- Ref: `refs/heads/codex/historical-g4-r6-plan-full-runtime-alignment-rejected`.
+- Commit: `f1ca21ce5df4a92ba9ebfbbb786d2d22c09269ba`.
+- Tree: `03a504568b98d383f5d960be7a82b57a3144d469`.
+- `implementation_input_allowed=false`.
+- Live accepted source/test tree was restored without `reset` or `clean`.
+- The historical ref is evidence only; it is not accepted production source and
+  must not be merged, cherry-picked, copied, repaired, or used as future
+  implementation input. Terminal rejection and all authority locks are unchanged.

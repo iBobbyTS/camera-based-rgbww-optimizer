@@ -1,88 +1,87 @@
-# P7-TD-B-RAY-OP600-EXPOSURE-GUARDED-FORMAL-R6
+# G4 PLAN/PLAN-FULL runtime alignment — terminal rejected Human report stop
 
-## Active package and authorization state
+## Terminal disposition
 
-- **reference:** `P7-TD-B-RAY-OP600-EXPOSURE-GUARDED-FORMAL-R6`
-- **plan_status:** `PLANNER_STOP_WAITING_EXPLICIT_HUMAN_FORMAL_DEVICE_RELEASE`
+- **status:** `REJECTED_TERMINAL_PLAN_FULL_RUNTIME_ALIGNMENT_ENGINEERING_FAILURE`
 - **executable:** `false`
 - **active_task_count:** `0`
-- **engineering_only_plan_budget:** `1` consumed and terminally accepted by
-  package commit `21754a3`; no additional engineering-only package is inserted.
-- This is the next scientific package after accepted runtime-consumer clearance.
-  It remains locked until Human explicitly authorizes the named formal/device
-  operation and Orchestrator records the release in this active PLAN. No release
-  eligibility, prior evidence or archive implies authorization.
+- **active_task:** `null`
+- **planner_stop:** `HUMAN_REPORT_REQUIRED_EXACT_RUNTIME_ALIGNMENT_MISMATCH_NO_SECOND_CORRECTION`
+- **engineering correction budget:** `1/1` consumed; retry `0`; second correction
+  package prohibited.
 
-## Scientific contract
+## Exact reviewed evidence
 
-- **scientific_target:** obtain a new Ray-only operational-600 R6 sequence and
-  evaluate its quality, chronology, and A-return history compatibility.
-- **next_scientific_action:** once explicitly released, run exactly one formal R6
-  acquisition in the exact new root below, slots `000..015` in the frozen release
-  sequence; run Ray-only analysis only after all 16 captures pass quality.
-- **science_delta:** 16 new Ray captures plus Ray-only chronology/history analysis,
-  or the first scientifically valid hard-failure result. Engineering, Git,
-  release, or PLAN records are not science results.
+The first and only authorized command resolved to real test bodies and completed:
 
-## Frozen inputs and exact launch bounds
+- `Ran 69 tests in 83.091s`
+- natural exit `1`
+- `failures=1`
+- `errors=213`
 
-Read-only identity bindings (must match before any release):
+The dominant engineering mismatch is exact and bounded:
 
-| artifact | SHA-256 |
-| --- | --- |
-| `config/hsi/p7-ray-td-b-exposure-policy-v2.json` | `c9080d18571f617cb7d323ade843ff9c86bf92e3795d23e3999e26d413968681` |
-| `release/frozen-inputs.json` | `8a81a906d2a94903a365f54b33c224a8ec99ce8d519ae2317cdc213c6e0264f8` |
-| `release/r6-formal-plan.json` | `dea5f979950909d5b3e8fd93c3a76e4fd18c0242158eade7967c4c62ec72cc3b` |
-| `release/release-descriptor.json` | `6843ef5007b9ebe3bfef1f7c8c1864ed0b86b3000d3d72caa8f08f67ce3bb452` |
-| `release/terminal-seal.json` | `d9d7b784a4ec910d7c7740bc560ed87f2b99ab1744c19df42097d5683b668850` |
-| `release/validation-summary.json` | `07e831616c303e68f9bf863a722b8b640c3726556f47143db8299083f941cc07` |
-| frozen zero-readiness terminal seal | `c6fc7b2a14cfce2474e1a1369721ebbdf660aa60baccb4caf237873a1af2a39d` |
+1. The candidate removed the production import of
+   `parse_full_plan_machine_state`, while the accepted
+   `build_stage_gate_input()` path still calls that name in
+   `p7_td_b_r6_stage_gate.py`, causing `NameError` across affected stage-gate
+   tests before their intended assertions.
+2. The parser public-surface test proves the newly added PLAN-FULL parser wrapper
+   is absent from `agent_work_machine_contract.__all__`.
 
-Exact operation bounds after release:
+This is an engineering failure, not a selector/harness failure and not a scientific
+result. The second four-test command, full suite, CodeGraph sync and final diff gate
+were not run. No device, network, camera, Ray, strip, capture, formal, package/root,
+release-consumption, analysis or scientific effect occurred.
 
-- **root:** `/Volumes/4T/temp/rgbww-optimizer/p7-td-b-formal-r6-ray-only-20260806T0012Z`
-  (must be absent and freshly created; collision is an immediate stop).
-- **source:** Ray only; ESPHome strip is zero throughout and ambient is zero.
-- **camera:** existing `control.camera_remote.RemoteCameraBackend`; no credentials
-  in args, logs, or artifacts; no auto-exposure or weak reacquire.
-- **sequence:** consume `release/r6-formal-plan.json` exact capture IDs/order
-  `000..015`, frozen A/D/B commands and C=`1/2500`; no guessed state, shutter, or
-  timing substitution.
-- **caps:** physical/formal captures `16`, launch `1`, retry `0`; no second root,
-  resume, replacement frame, or old/new pooling.
-- **dispatch:** one visible macOS Terminal launch only; no Codex background runner.
-- **cleanup:** Python and shell cleanup, independent final-zero/readback, and
-  terminal seal are mandatory on success or failure.
+## Candidate and accepted-tree boundary
 
-## Ordered execution, once authorized
+The current uncommitted changes under these paths are retained as rejected evidence
+only and are not accepted implementation:
 
-1. Verify Human authorization covers this exact root, Ray-only source, camera,
-   16-frame cap, frozen shutter, launch/retry caps, abort and cleanup. Verify every
-   frozen artifact hash above and that the root is absent. Any mismatch stops before
-   device or camera connection.
-2. Launch the existing formal R6 runner once in visible Terminal. Capture the exact
-   frozen `000..015` sequence, preserving each CR3, sidecar, SHA-256, MakerNote actual
-   exposure, command/readback, physical ledger, quality result, and chronology.
-3. If any capture is invalid or missing, stop immediately, force both sources zero,
-   seal the hard failure, and do not retry or analyze. This is a scientific negative
-   result only if the capture-quality/chronology evidence is complete and sealed.
-4. Only for 16/16 quality pass, run the existing Ray-only analyzer named by the
-   frozen release/runner contract; do not invent a selector or analyzer path. Record
-   A-return compatibility and `steady_status=not_demonstrated`.
+- `src/camera_based_rgbww_optimizer/utils/agent_work_machine_contract.py`
+- `src/camera_based_rgbww_optimizer/optimization/p7_td_b_r6_stage_gate.py`
+- `tests/test_agent_work_machine_contract.py`
+- `tests/test_p7_td_b_r6_stage_gate.py`
 
-## Acceptance and stop
+They must not be repaired, copied, cherry-picked, used as implementation input, or
+treated as a partial pass. Candidate 2 and every historical rejected candidate
+remain evidence-only as well. The accepted runtime-consumer package commit remains
+`21754a3`; no new accepted code/test commit exists.
 
-Acceptance requires a fresh root, 16/16 ordered captures or a sealed hard failure,
-per-frame identity/quality/readback evidence, chronology and A-return anchors, exact
-exposure/source/physical ledger, double cleanup/final-zero/terminal seal, and a
-Ray-only analysis artifact when quality passes. No strip entry is unlocked by this
-PLAN; it requires the GUIDE conditional `accepted_for_strip_entry` result.
+The rejected source/test candidate is now preserved historical-only at:
 
-Until the Human authorization is explicit and recorded here, the following remain
-`false`: `formal_execution_authorized`, `device_authorized`, `release_consumption_authorized`,
-`camera_authorized`, `ray_authorized`, `strip_authorized`, `capture_authorized`,
-`analysis_authorized`, `network_authorized`, `td_c_authorized`. Planner stop is
-`WAIT_FOR_EXPLICIT_HUMAN_FORMAL_DEVICE_RELEASE`; do not execute tests, formal,
-release consumption, or device operations while stopped.
+- ref: `refs/heads/codex/historical-g4-r6-plan-full-runtime-alignment-rejected`
+- commit: `f1ca21ce5df4a92ba9ebfbbb786d2d22c09269ba`
+- tree: `03a504568b98d383f5d960be7a82b57a3144d469`
+- `implementation_input_allowed=false`
 
-`PLAN_MACHINE_CONTRACT={"schema":"planner_execution_contract_v2","contract_id":"P7-TD-B-RAY-OP600-EXPOSURE-GUARDED-FORMAL-R6-V1","plan_status":"PLANNER_STOP_WAITING_EXPLICIT_HUMAN_FORMAL_DEVICE_RELEASE","executable":false,"active_task_count":0,"active_task":null,"engineering_only_plan_budget_consumed":1,"formal_execution_authorized":false,"device_authorized":false,"release_consumption_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"capture_authorized":false,"analysis_authorized":false,"network_authorized":false,"td_c_authorized":false,"formal_root":"/Volumes/4T/temp/rgbww-optimizer/p7-td-b-formal-r6-ray-only-20260806T0012Z","formal_capture_cap":16,"launch_cap":1,"retry":0,"scientific_result_created":false,"planner_stop":"WAIT_FOR_EXPLICIT_HUMAN_FORMAL_DEVICE_RELEASE"}`
+The live branch accepted source/test tree has been restored without `reset` or
+`clean`. The historical ref is recoverable evidence only and must not be merged,
+cherry-picked, copied, repaired, or consumed by any future implementation route.
+
+## Scientific status and required stop
+
+- **scientific_target:** unchanged — obtain the new Ray R6 16-frame operational-600
+  acquisition and Ray-only analysis.
+- **science_delta:** none; captures remain `0` and no scientific negative result was
+  created.
+- **next_scientific_action:** remains
+  `P7-TD-B-RAY-OP600-EXPOSURE-GUARDED-FORMAL-R6`, but it is not unlocked by this
+  rejected candidate.
+- **required next action:** report the exact runtime-alignment mismatch to Human.
+  Do not create a second correction, infer a repair, or resume formal execution.
+  Orchestrator may create one terminal semantic commit preserving this disposition;
+  that commit does not authorize further work.
+
+All authorities remain false: `package_prepare`, `release_consumption`,
+`formal_execution`, `device`, `network`, `camera`, `ray`, `strip`, `capture`,
+`analysis`, `root_creation`, and `td_c`. GUIDE, RESEARCH and
+`FULL_PLAN_REFERENCE.md` remain unchanged by this review.
+
+Reviewed terminal archives:
+
+- `.agent-work/archived/PLAN-20260806-0822.md`
+- `.agent-work/archived/EXECUTION_RESULT-20260806-0822.md`
+
+`PLAN_MACHINE_CONTRACT={"schema":"planner_execution_contract_v2","contract_id":"G4-PLAN-RUNTIME-ALIGNMENT-CORRECTION-V1","plan_status":"REJECTED_TERMINAL_PLAN_FULL_RUNTIME_ALIGNMENT_ENGINEERING_FAILURE","executable":false,"active_task_count":0,"active_task":null,"reference_task_id":"G4-PLAN-RUNTIME-ALIGNMENT-CORRECTION","engineering_only_plan_budget_consumed":1,"engineering_retry":0,"second_engineering_package_allowed":false,"accepted_runtime_consumer_package_commit":"21754a3","candidate_status":"RETAINED_REJECTED_EVIDENCE_ONLY_FORBIDDEN_AS_IMPLEMENTATION_INPUT","candidate_historical_ref":"refs/heads/codex/historical-g4-r6-plan-full-runtime-alignment-rejected","candidate_historical_commit":"f1ca21ce5df4a92ba9ebfbbb786d2d22c09269ba","candidate_historical_tree":"03a504568b98d383f5d960be7a82b57a3144d469","implementation_input_allowed":false,"live_accepted_source_test_restored":true,"package_prepare_authorized":false,"release_consumption_authorized":false,"formal_execution_authorized":false,"device_authorized":false,"network_authorized":false,"camera_authorized":false,"ray_authorized":false,"strip_authorized":false,"capture_authorized":false,"analysis_authorized":false,"root_creation_authorized":false,"td_c_authorized":false,"scientific_result_created":false,"planner_stop":"HUMAN_REPORT_REQUIRED_EXACT_RUNTIME_ALIGNMENT_MISMATCH_NO_SECOND_CORRECTION"}`
