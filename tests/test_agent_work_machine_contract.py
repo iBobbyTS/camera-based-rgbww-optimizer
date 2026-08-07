@@ -291,12 +291,14 @@ class AgentWorkMachineContractTests(unittest.TestCase):
         expected = {
             "PLAN_MACHINE_MARKER",
             "FULL_PLAN_MACHINE_MARKER",
+            "PLAN_FULL_MACHINE_MARKER",
             "MachineContractValidationError",
             "MachineContractEvidence",
             "ParsedMachineContract",
             "parse_machine_row",
             "parse_plan_machine_contract",
             "parse_full_plan_machine_state",
+            "parse_plan_full_machine_contract",
         }
         self.assertEqual(set(subject.__all__), expected)
         self.assertEqual(
@@ -306,6 +308,7 @@ class AgentWorkMachineContractTests(unittest.TestCase):
         for parser in (
             subject.parse_plan_machine_contract,
             subject.parse_full_plan_machine_state,
+            subject.parse_plan_full_machine_contract,
         ):
             self.assertEqual(tuple(inspect.signature(parser).parameters), ("source",))
 

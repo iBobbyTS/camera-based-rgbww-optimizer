@@ -21,7 +21,7 @@ from typing import Any, Callable, Mapping, Sequence
 
 from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
 from camera_based_rgbww_optimizer.utils.agent_work_machine_contract import (
-    parse_full_plan_machine_state,
+    parse_plan_full_machine_contract,
     parse_plan_machine_contract,
 )
 from camera_based_rgbww_optimizer.utils import p7_retained_r3_provenance_io as provenance
@@ -52,7 +52,7 @@ EXPECTED_ARTIFACTS = (
 )
 PRE_TERMINAL_ARTIFACTS = ("launch-descriptor.json", "stage-gate.json")
 EXPECTED_SOURCE_PATHS = (
-    ".agent-work/FULL_PLAN_REFERENCE.md",
+    ".agent-work/PLAN-FULL.md",
     ".agent-work/PLAN.md",
     "advisor/4/4.GUIDE.md",
     "src/camera_based_rgbww_optimizer/optimization/measure_p7_thermal_diagnostics.py",
@@ -596,9 +596,9 @@ def build_stage_gate_input(
     if not output.is_absolute() or str(output) != os.fspath(output_root):
         raise StageGateError("output_root_invalid")
     plan_source = (root / ".agent-work/PLAN.md").read_bytes()
-    full_source = (root / ".agent-work/FULL_PLAN_REFERENCE.md").read_bytes()
+    full_source = (root / ".agent-work/PLAN-FULL.md").read_bytes()
     plan = parse_plan_machine_contract(plan_source).value
-    full = parse_full_plan_machine_state(full_source).value
+    full = parse_plan_full_machine_contract(full_source).value
     expected_output_root = plan.get("new_stage_gate_root")
     if expected_output_root != str(output):
         raise StageGateError("output_root_drift")
@@ -1953,8 +1953,8 @@ def _validate_production_formal_machine_contract(
         plan = parse_plan_machine_contract(
             (repo_root / ".agent-work/PLAN.md").read_bytes()
         ).value
-        full = parse_full_plan_machine_state(
-            (repo_root / ".agent-work/FULL_PLAN_REFERENCE.md").read_bytes()
+        full = parse_plan_full_machine_contract(
+            (repo_root / ".agent-work/PLAN-FULL.md").read_bytes()
         ).value
     except (OSError, ValueError) as exc:
         raise StageGateError("production_machine_contract_invalid") from exc

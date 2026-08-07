@@ -57,8 +57,8 @@ class SyntheticRepository:
         (self.root / ".agent-work/PLAN.md").write_bytes(
             machine_row("PLAN_MACHINE_CONTRACT", {"active_task_count": 0})
         )
-        (self.root / ".agent-work/FULL_PLAN_REFERENCE.md").write_bytes(
-            machine_row("FULL_PLAN_MACHINE_STATE", {"active_task_count": 0})
+        (self.root / ".agent-work/PLAN-FULL.md").write_bytes(
+            machine_row("PLAN_FULL_MACHINE_CONTRACT", {"active_task_count": 0})
         )
         self.git("init", "-q")
         self.git("config", "user.name", "G4 Synthetic")
@@ -178,10 +178,10 @@ class SyntheticRepository:
         (self.root / ".agent-work/PLAN.md").write_bytes(
             machine_row("PLAN_MACHINE_CONTRACT", plan)
         )
-        (self.root / ".agent-work/FULL_PLAN_REFERENCE.md").write_bytes(
-            machine_row("FULL_PLAN_MACHINE_STATE", full)
+        (self.root / ".agent-work/PLAN-FULL.md").write_bytes(
+            machine_row("PLAN_FULL_MACHINE_CONTRACT", full)
         )
-        self.git("add", "--", ".agent-work/PLAN.md", ".agent-work/FULL_PLAN_REFERENCE.md")
+        self.git("add", "--", ".agent-work/PLAN.md", ".agent-work/PLAN-FULL.md")
         self.git("commit", "-q", "-m", "synthetic future evidence activation")
         self.live_checkpoint = self.git_text("rev-parse", "HEAD")
         self.live_tree = self.git_text("rev-parse", "HEAD^{tree}")
@@ -366,10 +366,10 @@ class SyntheticGitRepository(SyntheticRepository):
         (self.root / ".agent-work/PLAN.md").write_bytes(
             machine_row("PLAN_MACHINE_CONTRACT", plan)
         )
-        (self.root / ".agent-work/FULL_PLAN_REFERENCE.md").write_bytes(
-            machine_row("FULL_PLAN_MACHINE_STATE", full)
+        (self.root / ".agent-work/PLAN-FULL.md").write_bytes(
+            machine_row("PLAN_FULL_MACHINE_CONTRACT", full)
         )
-        self.git("add", "--", ".agent-work/PLAN.md", ".agent-work/FULL_PLAN_REFERENCE.md")
+        self.git("add", "--", ".agent-work/PLAN.md", ".agent-work/PLAN-FULL.md")
         self.git("commit", "-q", "-m", commit_subject)
         self.live_checkpoint = self.git_text("rev-parse", "HEAD")
         self.live_tree = self.git_text("rev-parse", "HEAD^{tree}")
@@ -694,8 +694,8 @@ class P7TdBR6StageGateTests(unittest.TestCase):
             (fixture.root / ".agent-work/PLAN.md").write_bytes(
                 machine_row("PLAN_MACHINE_CONTRACT", plan)
             )
-            (fixture.root / ".agent-work/FULL_PLAN_REFERENCE.md").write_bytes(
-                machine_row("FULL_PLAN_MACHINE_STATE", full)
+            (fixture.root / ".agent-work/PLAN-FULL.md").write_bytes(
+                machine_row("PLAN_FULL_MACHINE_CONTRACT", full)
             )
             argv = (
                 "prepare", "--repo-root", str(fixture.root),
@@ -796,8 +796,8 @@ class P7TdBR6StageGateTests(unittest.TestCase):
                     (fixture.root / ".agent-work/PLAN.md").write_bytes(
                         machine_row("PLAN_MACHINE_CONTRACT", plan)
                     )
-                    (fixture.root / ".agent-work/FULL_PLAN_REFERENCE.md").write_bytes(
-                        machine_row("FULL_PLAN_MACHINE_STATE", full)
+                    (fixture.root / ".agent-work/PLAN-FULL.md").write_bytes(
+                        machine_row("PLAN_FULL_MACHINE_CONTRACT", full)
                     )
                     stdout = io.StringIO()
                     stderr = io.StringIO()
@@ -919,8 +919,8 @@ class P7TdBR6StageGateTests(unittest.TestCase):
                     (fixture.root / ".agent-work/PLAN.md").write_bytes(
                         machine_row("PLAN_MACHINE_CONTRACT", plan)
                     )
-                    (fixture.root / ".agent-work/FULL_PLAN_REFERENCE.md").write_bytes(
-                        machine_row("FULL_PLAN_MACHINE_STATE", full)
+                    (fixture.root / ".agent-work/PLAN-FULL.md").write_bytes(
+                        machine_row("PLAN_FULL_MACHINE_CONTRACT", full)
                     )
                     stderr = io.StringIO()
                     with mock.patch.object(
@@ -1011,8 +1011,8 @@ class P7TdBR6StageGateTests(unittest.TestCase):
                     (fixture.root / ".agent-work/PLAN.md").write_bytes(
                         machine_row("PLAN_MACHINE_CONTRACT", plan)
                     )
-                    (fixture.root / ".agent-work/FULL_PLAN_REFERENCE.md").write_bytes(
-                        machine_row("FULL_PLAN_MACHINE_STATE", full)
+                    (fixture.root / ".agent-work/PLAN-FULL.md").write_bytes(
+                        machine_row("PLAN_FULL_MACHINE_CONTRACT", full)
                     )
                     stderr = io.StringIO()
                     with mock.patch.object(
@@ -1533,7 +1533,7 @@ class P7TdBR6StageGateTests(unittest.TestCase):
             self.assertEqual(len(attestation.post_child_commits), 2)
             self.assertTrue(all(
                 tuple(row["changed_paths"])
-                == (".agent-work/FULL_PLAN_REFERENCE.md", ".agent-work/PLAN.md")
+                == (".agent-work/PLAN-FULL.md", ".agent-work/PLAN.md")
                 for row in attestation.post_child_commits
             ))
 
@@ -1577,8 +1577,8 @@ class P7TdBR6StageGateTests(unittest.TestCase):
             (fixture.root / ".agent-work/PLAN.md").write_bytes(
                 machine_row("PLAN_MACHINE_CONTRACT", plan)
             )
-            (fixture.root / ".agent-work/FULL_PLAN_REFERENCE.md").write_bytes(
-                machine_row("FULL_PLAN_MACHINE_STATE", full)
+            (fixture.root / ".agent-work/PLAN-FULL.md").write_bytes(
+                machine_row("PLAN_FULL_MACHINE_CONTRACT", full)
             )
             with self.assertRaisesRegex(
                 subject.StageGateError, "committed_source_subject_drift",
@@ -1788,8 +1788,8 @@ class P7TdBR6StageGateTests(unittest.TestCase):
                     (fixture.root / ".agent-work/PLAN.md").write_bytes(
                         machine_row("PLAN_MACHINE_CONTRACT", plan)
                     )
-                    (fixture.root / ".agent-work/FULL_PLAN_REFERENCE.md").write_bytes(
-                        machine_row("FULL_PLAN_MACHINE_STATE", full)
+                    (fixture.root / ".agent-work/PLAN-FULL.md").write_bytes(
+                        machine_row("PLAN_FULL_MACHINE_CONTRACT", full)
                     )
                     factory = mock.Mock()
                     delegated = mock.Mock()
@@ -2618,7 +2618,7 @@ class P7TdBR6StageGateTests(unittest.TestCase):
             self.assertEqual(attestation.live_activation_checkpoint, fixture.live_checkpoint)
             self.assertEqual(
                 attestation.post_child_changed_paths,
-                (".agent-work/FULL_PLAN_REFERENCE.md", ".agent-work/PLAN.md"),
+                (".agent-work/PLAN-FULL.md", ".agent-work/PLAN.md"),
             )
             self.assertEqual(len(attestation.post_child_commits), 1)
             baseline_commit = attestation.post_child_commits[0]
@@ -2644,7 +2644,7 @@ class P7TdBR6StageGateTests(unittest.TestCase):
             self.assertEqual(
                 attestation.post_child_changed_paths,
                 (
-                    ".agent-work/FULL_PLAN_REFERENCE.md", ".agent-work/PLAN.md",
+                    ".agent-work/PLAN-FULL.md", ".agent-work/PLAN.md",
                     ".agent-work/state-one.md", ".agent-work/state-two.md",
                 ),
             )

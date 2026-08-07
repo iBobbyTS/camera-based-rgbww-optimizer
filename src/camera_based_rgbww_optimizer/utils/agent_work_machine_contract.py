@@ -11,17 +11,20 @@ from typing import Mapping, NoReturn
 
 PLAN_MACHINE_MARKER = b"`PLAN_MACHINE_CONTRACT="
 FULL_PLAN_MACHINE_MARKER = b"`FULL_PLAN_MACHINE_STATE="
+PLAN_FULL_MACHINE_MARKER = b"`PLAN_FULL_MACHINE_CONTRACT="
 _EVIDENCE_SCHEMA = "agent_work_machine_contract_scan_evidence_v1"
 
 __all__ = [
     "PLAN_MACHINE_MARKER",
     "FULL_PLAN_MACHINE_MARKER",
+    "PLAN_FULL_MACHINE_MARKER",
     "MachineContractValidationError",
     "MachineContractEvidence",
     "ParsedMachineContract",
     "parse_machine_row",
     "parse_plan_machine_contract",
     "parse_full_plan_machine_state",
+    "parse_plan_full_machine_contract",
 ]
 
 
@@ -303,4 +306,12 @@ def parse_full_plan_machine_state(source: bytes) -> ParsedMachineContract:
         source,
         owner="FULL",
         literal_marker=FULL_PLAN_MACHINE_MARKER[1:],
+    )
+
+
+def parse_plan_full_machine_contract(source: bytes) -> ParsedMachineContract:
+    return _parse_machine_row(
+        source,
+        owner="PLAN_FULL",
+        literal_marker=PLAN_FULL_MACHINE_MARKER[1:],
     )
