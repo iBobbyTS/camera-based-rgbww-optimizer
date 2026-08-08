@@ -34,18 +34,36 @@ from camera_based_rgbww_optimizer.optimization.analyze_hsi_reference_repeatabili
 )
 
 
+POST_FIX_REVALIDATION_SCHEMA = "p7_direct_ray_r6_post_fix_revalidation_v1"
+LEGACY_EXPOSURE_FAILURE_MESSAGE = (
+    "direct Ray R6 recorded exposure differs from frozen shutter"
+)
+POST_FIX_REVALIDATION_FILE = "post-fix-revalidation.json"
+POST_FIX_ORIGINAL_FILES = (
+    "experiment-spec.json", "input-checkpoint.json", "run.json",
+    "failure.json", "wrapper-result.json", "all-off-python.json",
+    "all-off-shell.json", "all-off-shell.exit-status.txt",
+)
+
+
 def analyze_thermal_run(
     run_dir: str | Path,
     *, feature_ids: Sequence[str],
     compatibility_fn: Callable[[Sequence[float], Sequence[float]], bool] | None = None,
+    post_fix_revalidation: bool = False,
 ) -> dict[str, Any]:
     root = Path(run_dir).resolve()
     plan = _load_json(root / "experiment-spec.json")
     run = _load_json(root / "run.json")
+    revalidation = (
+        _validate_post_fix_revalidation(root, run)
+        if post_fix_revalidation
+        else None
+    )
     if (
         plan.get("experiment_id") not in thermal.EXPERIMENT_IDS
         or run.get("experiment_id") != plan.get("experiment_id")
-        or run.get("status") != "complete"
+        or (run.get("status") != "complete" and revalidation is None)
         or run.get("cleanup") != "pass"
         or run.get("capture_settings_provenance")
         != plan.get("camera", {}).get("resolved_capture_settings")
@@ -127,7 +145,9 @@ def analyze_thermal_run(
         ):
             raise ValueError("direct Ray R6 quality artifact did not pass")
         _validate_commands_and_gates(plan, root)
-        _validate_cleanup_and_wrapper(root)
+        _validate_cleanup_and_wrapper(
+            root, post_fix_revalidation=post_fix_revalidation,
+        )
         formal = []
         for row in captures:
             capture = row.get("capture")
@@ -142,7 +162,7 @@ def analyze_thermal_run(
         result = analyze_td_b(
             formal, feature_ids=feature_ids, r6_operational_contract=True,
         )
-        return {
+        report = {
             "schema": thermal.ANALYSIS_SCHEMA_V2,
             "status": "pass",
             "experiment_id": thermal.TD_B,
@@ -150,6 +170,16 @@ def analyze_thermal_run(
             "direct_artifact_validation": "pass",
             **result,
         }
+        if revalidation is not None:
+            report["engineering_revalidation"] = {
+                "schema": revalidation["schema"],
+                "status": revalidation["status"],
+                "artifact": POST_FIX_REVALIDATION_FILE,
+                "sha256": _sha256(root / POST_FIX_REVALIDATION_FILE),
+            }
+        return report
+    if post_fix_revalidation:
+        raise ValueError("post-fix revalidation only supports direct Ray R6")
     if str(plan.get("execution_authorization", {}).get("schema", "")).startswith("direct_"):
         prerequisite = plan.get("scientific_prerequisite")
         if (
@@ -441,7 +471,9 @@ def _execution_groups(
     return groups
 
 
-def _validate_commands_and_gates(plan: Mapping[str, Any], root: Path) -> None:
+def _validate_commands_and_gates(
+    plan: Mapping[str, Any], root: Path, *, require_audit: bool = True,
+) -> None:
     groups = _execution_groups(str(plan["experiment_id"]), plan["captures"])
     command_steps = [group[0] for group in groups if group[0]["capture_role"] != "ambient"]
     commands = _load_jsonl(root / "commands.jsonl")
@@ -492,16 +524,26 @@ def _validate_commands_and_gates(plan: Mapping[str, Any], root: Path) -> None:
         ):
             raise ValueError("direct strip-only gate contains a Ray-off command")
 
-    audit = _load_json(root / "commands-audit.json")
-    if (
-        audit.get("status") != "pass"
-        or audit.get("formal_capture_count") != int(plan["budgets"]["formal_cap"])
-        or audit.get("ambient_capture_count") != int(plan["budgets"]["ambient_cap"])
-    ):
-        raise ValueError("direct command audit differs from protocol budgets")
+    if require_audit:
+        audit = _load_json(root / "commands-audit.json")
+        if (
+            audit.get("status") != "pass"
+            or audit.get("formal_capture_count") != int(plan["budgets"]["formal_cap"])
+            or audit.get("ambient_capture_count") != int(plan["budgets"]["ambient_cap"])
+        ):
+            raise ValueError("direct command audit differs from protocol budgets")
+        if audit.get("derived_after_original_child_failure") is True:
+            sources = audit.get("source_artifacts")
+            expected_sources = ("commands.jsonl", "isolation-gates.jsonl", "captures.jsonl")
+            if (
+                not isinstance(sources, Mapping)
+                or set(sources) != set(expected_sources)
+                or any(sources[name] != _sha256(root / name) for name in expected_sources)
+            ):
+                raise ValueError("derived direct command audit source hashes drifted")
 
 
-def _validate_cleanup_and_wrapper(root: Path) -> None:
+def _validate_cleanup(root: Path) -> None:
     python_cleanup = _load_json(root / "all-off-python.json")
     python_steps = python_cleanup.get("steps")
     if (
@@ -523,7 +565,16 @@ def _validate_cleanup_and_wrapper(root: Path) -> None:
         != "0"
     ):
         raise ValueError("direct shell cleanup artifact did not pass")
+
+
+def _validate_cleanup_and_wrapper(
+    root: Path, *, post_fix_revalidation: bool = False,
+) -> None:
+    _validate_cleanup(root)
     wrapper = _load_json(root / "wrapper-result.json")
+    if post_fix_revalidation:
+        _validate_post_fix_revalidation(root, _load_json(root / "run.json"))
+        return
     if (
         wrapper.get("status") != "complete"
         or wrapper.get("child_exit_code") != 0
@@ -532,6 +583,177 @@ def _validate_cleanup_and_wrapper(root: Path) -> None:
         or wrapper.get("signal") is not None
     ):
         raise ValueError("direct wrapper artifact did not prove a clean exit")
+
+
+def revalidate_direct_ray_r6_exposure_failure(
+    run_dir: str | Path,
+    *,
+    feature_ids: Sequence[str],
+    validator_commit: str,
+) -> dict[str, Any]:
+    """Revalidate one retained 16/16 run stopped by the superseded exposure gate."""
+
+    root = Path(run_dir).resolve()
+    if not _is_commit_id(validator_commit):
+        raise ValueError("post-fix validator commit must be a 40-character hexadecimal ID")
+    revalidation_path = root / POST_FIX_REVALIDATION_FILE
+    commands_audit_path = root / "commands-audit.json"
+    if revalidation_path.exists() or commands_audit_path.exists():
+        raise FileExistsError("post-fix revalidation is one-shot and requires absent derived artifacts")
+
+    plan = _load_json(root / "experiment-spec.json")
+    run = _load_json(root / "run.json")
+    failure = _load_json(root / "failure.json")
+    wrapper = _load_json(root / "wrapper-result.json")
+    _validate_legacy_exposure_failure(run, failure, wrapper)
+    expected = thermal.build_ray_r6_spec()
+    if plan != expected:
+        raise ValueError("post-fix revalidation requires the exact direct Ray R6 spec")
+    frozen_feature_ids = tuple(
+        _feature_ids_from_artifact(thermal.POLICY_PATH)
+    )
+    if tuple(feature_ids) != frozen_feature_ids:
+        raise ValueError("post-fix revalidation requires the frozen feature identity")
+
+    original_hashes = {name: _sha256(root / name) for name in POST_FIX_ORIGINAL_FILES}
+    _validate_reproducibility_checkpoint(root, plan, run)
+    captures = _load_jsonl(root / "captures.jsonl")
+    physical = _load_jsonl(root / "physical-returns.jsonl")
+    _validate_run_counts(run, plan, captures, physical)
+    _validate_physical_rows(root, captures, physical)
+    _validate_commands_and_gates(plan, root, require_audit=False)
+    _validate_cleanup(root)
+
+    from camera_based_rgbww_optimizer.optimization import (
+        measure_p7_thermal_diagnostics as measure,
+    )
+
+    quality_path = root / "quality.json"
+    if not quality_path.is_file() or quality_path.is_symlink():
+        raise ValueError("post-fix revalidation requires the retained quality artifact")
+    quality_hash = _sha256(quality_path)
+    quality = measure.validate_direct_ray_r6_post_capture(root, plan, None)
+    if _sha256(quality_path) != quality_hash:
+        raise ValueError("post-fix revalidation must not rewrite retained quality evidence")
+    if quality.get("capture_count") != 16:
+        raise ValueError("post-fix revalidation quality count differs from the frozen run")
+
+    commands_audit = {
+        "status": "pass",
+        "formal_capture_count": int(plan["budgets"]["formal_cap"]),
+        "ambient_capture_count": int(plan["budgets"]["ambient_cap"]),
+        "derived_after_original_child_failure": True,
+        "source_artifacts": {
+            name: _sha256(root / name)
+            for name in ("commands.jsonl", "isolation-gates.jsonl", "captures.jsonl")
+        },
+    }
+    _write_text_atomic(
+        commands_audit_path,
+        json.dumps(commands_audit, indent=2, sort_keys=True, allow_nan=False) + "\n",
+    )
+    try:
+        _validate_commands_and_gates(plan, root)
+        if any(_sha256(root / name) != digest for name, digest in original_hashes.items()):
+            raise ValueError("post-fix revalidation changed original execution evidence")
+        evidence = {
+            "schema": POST_FIX_REVALIDATION_SCHEMA,
+            "status": "pass",
+            "reason": "legacy_exact_float_exposure_setting_gate_superseded",
+            "run_root": str(root),
+            "validator_commit": validator_commit,
+            "acquisition_git": dict(run["git"]),
+            "original_failure_preserved": True,
+            "original_child_exit": int(wrapper["child_exit_code"]),
+            "original_artifacts": original_hashes,
+            "derived_artifacts": {
+                "quality.json": quality_hash,
+                "commands-audit.json": _sha256(commands_audit_path),
+            },
+            "validated": [
+                "exact_failure_identity", "reproducibility_checkpoint",
+                "capture_and_physical_integrity", "command_and_isolation_sequence",
+                "recorded_exposure_setting", "quality", "python_and_shell_cleanup",
+            ],
+        }
+        _write_text_atomic(
+            revalidation_path,
+            json.dumps(evidence, indent=2, sort_keys=True, allow_nan=False) + "\n",
+        )
+        _validate_post_fix_revalidation(root, run)
+        return evidence
+    except BaseException:
+        revalidation_path.unlink(missing_ok=True)
+        commands_audit_path.unlink(missing_ok=True)
+        raise
+
+
+def _validate_post_fix_revalidation(
+    root: Path, run: Mapping[str, Any],
+) -> dict[str, Any]:
+    evidence = _load_json(root / POST_FIX_REVALIDATION_FILE)
+    failure = _load_json(root / "failure.json")
+    wrapper = _load_json(root / "wrapper-result.json")
+    _validate_legacy_exposure_failure(run, failure, wrapper)
+    if (
+        evidence.get("schema") != POST_FIX_REVALIDATION_SCHEMA
+        or evidence.get("status") != "pass"
+        or evidence.get("reason") != "legacy_exact_float_exposure_setting_gate_superseded"
+        or evidence.get("run_root") != str(root)
+        or evidence.get("original_failure_preserved") is not True
+        or evidence.get("original_child_exit") != 1
+        or not _is_commit_id(evidence.get("validator_commit"))
+        or evidence.get("acquisition_git") != run.get("git")
+    ):
+        raise ValueError("post-fix revalidation evidence is invalid")
+    originals = evidence.get("original_artifacts")
+    derived = evidence.get("derived_artifacts")
+    if (
+        not isinstance(originals, Mapping)
+        or set(originals) != set(POST_FIX_ORIGINAL_FILES)
+        or not isinstance(derived, Mapping)
+        or set(derived) != {"quality.json", "commands-audit.json"}
+    ):
+        raise ValueError("post-fix revalidation hashes are missing")
+    for name in POST_FIX_ORIGINAL_FILES:
+        if originals[name] != _sha256(root / name):
+            raise ValueError("post-fix original artifact hash drifted")
+    for name in ("quality.json", "commands-audit.json"):
+        if derived.get(name) != _sha256(root / name):
+            raise ValueError("post-fix derived artifact hash drifted")
+    return evidence
+
+
+def _validate_legacy_exposure_failure(
+    run: Mapping[str, Any], failure: Mapping[str, Any], wrapper: Mapping[str, Any],
+) -> None:
+    if (
+        run.get("status") != "failed"
+        or run.get("cleanup") != "pass"
+        or failure.get("type") != "ValueError"
+        or failure.get("message") != LEGACY_EXPOSURE_FAILURE_MESSAGE
+        or not isinstance(failure.get("at"), str)
+        or wrapper.get("status") != "child_failed"
+        or wrapper.get("child_exit_code") != 1
+        or wrapper.get("wrapper_exit_code") != 1
+        or wrapper.get("shell_cleanup_exit_code") != 0
+        or wrapper.get("signal") is not None
+    ):
+        raise ValueError("retained run is not the exact legacy exposure-only failure")
+
+
+def _sha256(path: Path) -> str:
+    if path.is_symlink() or not path.is_file():
+        raise ValueError(f"missing or unsafe artifact: {path}")
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _is_commit_id(value: Any) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == 40
+        and all(character in "0123456789abcdef" for character in value.lower())
+    )
 
 
 def _replay_timing_evidence(
@@ -901,6 +1123,8 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("run_dir", type=Path)
     parser.add_argument("--feature-ids", type=Path)
     parser.add_argument("--derive-r1-output", type=Path)
+    parser.add_argument("--revalidate-exposure-failure", action="store_true")
+    parser.add_argument("--validator-commit")
     return parser.parse_args(argv)
 
 
@@ -913,7 +1137,21 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.feature_ids is None:
         raise ValueError("--feature-ids is required for thermal run analysis")
     feature_ids = _feature_ids_from_artifact(args.feature_ids)
-    report = analyze_thermal_run(args.run_dir, feature_ids=feature_ids)
+    if args.revalidate_exposure_failure:
+        if args.validator_commit is None:
+            raise ValueError("--validator-commit is required for post-fix revalidation")
+        revalidate_direct_ray_r6_exposure_failure(
+            args.run_dir,
+            feature_ids=feature_ids,
+            validator_commit=args.validator_commit,
+        )
+    elif args.validator_commit is not None:
+        raise ValueError("--validator-commit requires --revalidate-exposure-failure")
+    report = analyze_thermal_run(
+        args.run_dir,
+        feature_ids=feature_ids,
+        post_fix_revalidation=args.revalidate_exposure_failure,
+    )
     output = args.run_dir / "analysis.json"
     _write_text_atomic(output, json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n")
     print(output)

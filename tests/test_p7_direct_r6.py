@@ -288,24 +288,109 @@ class DirectR6Tests(unittest.TestCase):
             self.assertEqual(report["direct_artifact_validation"], "pass")
             self.assertTrue(report["formal_pass"])
 
+            run_path = root / "run.json"
+            run_payload = json.loads(run_path.read_text())
+            run_payload["status"] = "failed"
+            run_path.write_text(json.dumps(run_payload))
+            (root / "failure.json").write_text(json.dumps({
+                "type": "ValueError",
+                "message": analyze.LEGACY_EXPOSURE_FAILURE_MESSAGE,
+                "at": "2026-08-08T00:00:00+00:00",
+            }))
+            (root / "wrapper-result.json").write_text(json.dumps({
+                "status": "child_failed", "child_exit_code": 1,
+                "shell_cleanup_exit_code": 0, "wrapper_exit_code": 1,
+                "signal": None,
+            }))
+            (root / "commands-audit.json").unlink()
+            original_names = (
+                "experiment-spec.json", "input-checkpoint.json", "run.json",
+                "failure.json", "wrapper-result.json", "all-off-python.json",
+                "all-off-shell.json", "all-off-shell.exit-status.txt",
+            )
+            original_hashes = {
+                name: hashlib.sha256((root / name).read_bytes()).hexdigest()
+                for name in original_names
+            }
+            original_quality_hash = hashlib.sha256(
+                (root / "quality.json").read_bytes()
+            ).hexdigest()
+            with self.assertRaisesRegex(ValueError, "completed exact experiment"):
+                analyze.analyze_thermal_run(root, feature_ids=feature_ids)
+
             captures_path = root / "captures.jsonl"
             original_capture_lines = captures_path.read_text().splitlines()
+            tampered_capture = json.loads(original_capture_lines[0])
+            tampered_capture["capture"]["recorded_exposure"]["seconds"] = 1 / 6400
+            captures_path.write_text(
+                "\n".join([json.dumps(tampered_capture), *original_capture_lines[1:]]) + "\n"
+            )
+            with self.assertRaisesRegex(ValueError, "different shutter setting"):
+                analyze.revalidate_direct_ray_r6_exposure_failure(
+                    root, feature_ids=feature_ids, validator_commit="1" * 40,
+                )
+            captures_path.write_text("\n".join(original_capture_lines) + "\n")
+
+            cleanup_path = root / "all-off-python.json"
+            original_cleanup = cleanup_path.read_bytes()
+            cleanup_path.write_text(json.dumps({"status": "fail", "steps": []}))
+            with self.assertRaisesRegex(ValueError, "Python cleanup"):
+                analyze.revalidate_direct_ray_r6_exposure_failure(
+                    root, feature_ids=feature_ids, validator_commit="1" * 40,
+                )
+            cleanup_path.write_bytes(original_cleanup)
+
+            self.assertEqual(analyze.main([
+                str(root), "--feature-ids", str(thermal.POLICY_PATH),
+                "--revalidate-exposure-failure", "--validator-commit", "1" * 40,
+            ]), 0)
+            revalidation = json.loads(
+                (root / analyze.POST_FIX_REVALIDATION_FILE).read_text()
+            )
+            self.assertEqual(revalidation["status"], "pass")
+            self.assertEqual(revalidation["original_child_exit"], 1)
+            self.assertTrue(revalidation["original_failure_preserved"])
+            self.assertEqual(
+                hashlib.sha256((root / "quality.json").read_bytes()).hexdigest(),
+                original_quality_hash,
+            )
+            self.assertEqual(
+                original_hashes,
+                {
+                    name: hashlib.sha256((root / name).read_bytes()).hexdigest()
+                    for name in original_names
+                },
+            )
+            derived_audit = json.loads((root / "commands-audit.json").read_text())
+            self.assertTrue(derived_audit["derived_after_original_child_failure"])
+            revalidated_report = json.loads((root / "analysis.json").read_text())
+            self.assertTrue(revalidated_report["formal_pass"])
+            self.assertEqual(
+                revalidated_report["engineering_revalidation"]["status"], "pass",
+            )
+
             tampered_capture = json.loads(original_capture_lines[0])
             tampered_capture["capture"]["recorded_exposure"]["seconds"] = 1.0
             tampered_capture_lines = [json.dumps(tampered_capture), *original_capture_lines[1:]]
             captures_path.write_text("\n".join(tampered_capture_lines) + "\n")
             with self.assertRaises(ValueError):
-                analyze.analyze_thermal_run(root, feature_ids=feature_ids)
+                analyze.analyze_thermal_run(
+                    root, feature_ids=feature_ids, post_fix_revalidation=True,
+                )
             captures_path.write_text("\n".join(original_capture_lines) + "\n")
             location_copy = root / "inputs/location.json"
             original_location = location_copy.read_bytes()
             location_copy.write_bytes(original_location + b"\n")
             with self.assertRaises(ValueError):
-                analyze.analyze_thermal_run(root, feature_ids=feature_ids)
+                analyze.analyze_thermal_run(
+                    root, feature_ids=feature_ids, post_fix_revalidation=True,
+                )
             location_copy.write_bytes(original_location)
             (root / "quality.json").unlink()
             with self.assertRaises(ValueError):
-                analyze.analyze_thermal_run(root, feature_ids=feature_ids)
+                analyze.analyze_thermal_run(
+                    root, feature_ids=feature_ids, post_fix_revalidation=True,
+                )
             self.assertEqual(report["capture_count"], 16)
 
     def test_runtime_owner_keeps_ray_on_between_first_state_and_cleanup(self):

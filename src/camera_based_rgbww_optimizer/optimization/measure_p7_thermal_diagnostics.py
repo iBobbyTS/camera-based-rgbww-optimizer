@@ -853,7 +853,13 @@ def validate_direct_ray_r6_post_capture(
         "capture_count": len(quality_rows),
         "rows": quality_rows,
     }
-    _write_json(root / "quality.json", quality)
+    quality_path = root / "quality.json"
+    if quality_path.exists():
+        retained_quality = json.loads(quality_path.read_text(encoding="utf-8"))
+        if retained_quality != quality:
+            raise ValueError("retained direct Ray R6 quality artifact differs from revalidation")
+    else:
+        _write_json(quality_path, quality)
     return quality
 
 
