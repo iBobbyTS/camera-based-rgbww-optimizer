@@ -921,15 +921,46 @@ def analyze_td_b(
         source=source, state="A", feature_ids=feature_ids,
     )
     state_points: dict[str, dict[int, list[Mapping[str, float]]]] = defaultdict(lambda: defaultdict(list))
-    anchors: list[np.ndarray] = []
+    anchor_labels = {
+        "initial_anchor": "A0",
+        "return_after_D": "A_after_D",
+        "return_after_B": "A_after_B",
+        "return_after_C": "A_after_C",
+    }
+    anchors: list[tuple[str, np.ndarray]] = []
     for row in captures:
         step = row["plan_step"]
         feature = _features(row, feature_ids)
-        if step.get("role") in {"initial_anchor", "return_after_D", "return_after_B", "return_after_C"}:
-            anchors.append(_unit(feature, feature_ids))
+        if step.get("role") in anchor_labels:
+            anchors.append((anchor_labels[str(step["role"])], _unit(feature, feature_ids)))
         else:
             state_points[str(step["state_id"])][int(step["requested_elapsed_s"])].append(feature)
-    history_pass = len(anchors) == 4 and thermal._all_pairs(anchors, anchor_compatibility)
+    anchor_pair_diagnostics = []
+    for left_index in range(len(anchors)):
+        for right_index in range(left_index + 1, len(anchors)):
+            left_label, left = anchors[left_index]
+            right_label, right = anchors[right_index]
+            if compatibility_fn is None:
+                diagnostic = frozen_same_state_compatibility_diagnostic(
+                    left, right, source=source, state="A", feature_ids=feature_ids,
+                )
+            else:
+                passed = bool(anchor_compatibility(left, right))
+                diagnostic = {
+                    "statistic": "injected_same_state_compatibility",
+                    "decision": "pass" if passed else "fail",
+                }
+            anchor_pair_diagnostics.append({
+                "left": left_label,
+                "right": right_label,
+                **diagnostic,
+            })
+    history_pass = (
+        [label for label, _ in anchors]
+        == ["A0", "A_after_D", "A_after_B", "A_after_C"]
+        and len(anchor_pair_diagnostics) == 6
+        and all(item["decision"] == "pass" for item in anchor_pair_diagnostics)
+    )
     state_results = {
         state: thermal.settle_from_cycles(
             {"switch": points}, feature_ids,
@@ -940,6 +971,12 @@ def analyze_td_b(
         for state, points in state_points.items()
     }
     if r6_operational_contract:
+        chronology = {
+            state: _r6_state_chronology_diagnostic(
+                points, feature_ids, source=source, state=state,
+            )
+            for state, points in sorted(state_points.items())
+        }
         nonstationary_states = sorted(
             state for state, result in state_results.items()
             if result.get("t_settle_s") is None
@@ -952,6 +989,13 @@ def analyze_td_b(
             "formal_pass": bool(history_pass),
             "return_anchor_history": "pass" if history_pass else "fail",
             "return_anchor_history_effect": "pass" if history_pass else "fail",
+            "return_anchor_history_compatibility": {
+                "status": "pass" if history_pass else "fail",
+                "anchor_order": [label for label, _ in anchors],
+                "pair_count": len(anchor_pair_diagnostics),
+                "pairwise": anchor_pair_diagnostics,
+            },
+            "chronology_by_state": chronology,
             "steady_status": "not_demonstrated",
             "time_dependent_within_600": bool(nonstationary_states),
             "operational_endpoint_600_valid": bool(history_pass),
@@ -1063,25 +1107,123 @@ def _unit(row: Mapping[str, float], feature_ids: Sequence[str]) -> np.ndarray:
     return ordered_unit_shape(row, feature_ids)
 
 
-def frozen_same_state_compatibility(
-    *, source: str, feature_ids: Sequence[str], state: str = "A",
-) -> Callable[[Sequence[float], Sequence[float]], bool]:
+def _same_state_variance(*, source: str, state: str) -> np.ndarray:
     policy = _load_json(thermal.POLICY_PATH)
     if source == "ray":
-        variance = np.asarray(policy["reference_policy"]["ray_within_state_diagonal_variance"], dtype=float)
+        variance = np.asarray(
+            policy["reference_policy"]["ray_within_state_diagonal_variance"],
+            dtype=float,
+        )
     else:
         class_name = {
             "A": "sat100_fullscale", "D": "mid_sat_fullscale",
             "B": "neutral_fullscale", "C": "sat100_fullscale",
         }[state]
-        variance = np.asarray(policy["repeatability_policy"]["classes"][class_name]["p1_floor_diagonal_variance"], dtype=float)
-    pair_variance = 2.0 * variance
+        variance = np.asarray(
+            policy["repeatability_policy"]["classes"][class_name]["p1_floor_diagonal_variance"],
+            dtype=float,
+        )
+    return variance
 
+
+def _same_state_pair_variance(*, source: str, state: str) -> np.ndarray:
+    return 2.0 * _same_state_variance(source=source, state=state)
+
+
+def frozen_same_state_compatibility_diagnostic(
+    left: Sequence[float], right: Sequence[float], *,
+    source: str, state: str, feature_ids: Sequence[str],
+) -> dict[str, Any]:
+    pair_variance = _same_state_pair_variance(source=source, state=state)
+    if pair_variance.shape != (len(feature_ids),):
+        raise ValueError("frozen same-state covariance differs from feature contract")
+    left_values = np.asarray(left, dtype=float)
+    right_values = np.asarray(right, dtype=float)
+    limits = calibrate_direct_limits(left_values, pair_variance, samples=1000)
+    score = direct_whitened_norm(right_values - left_values, pair_variance)
+    passed = score <= float(limits["guarded_limit"])
+    return {
+        "statistic": str(limits["statistic"]),
+        "score": score,
+        "guarded_limit": float(limits["guarded_limit"]),
+        "unguarded_limit": float(limits["unguarded_limit"]),
+        "decision": "pass" if passed else "fail",
+    }
+
+
+def _r6_state_chronology_diagnostic(
+    points: Mapping[int, Sequence[Mapping[str, float]]],
+    feature_ids: Sequence[str],
+    *, source: str, state: str,
+) -> dict[str, Any]:
+    expected_points = tuple(thermal.TIMED_POINTS)
+    if tuple(sorted(points)) != expected_points or any(len(points[point]) != 1 for point in expected_points):
+        raise ValueError("Ray R6 chronology requires one 60/120/300/600 capture per switched state")
+    ordered_features = [points[point][0] for point in expected_points]
+    normalized = np.vstack([_unit(features, feature_ids) for features in ordered_features])
+    chronology_axis = np.linspace(-0.5, 0.5, len(normalized))
+    centered = normalized - np.mean(normalized, axis=0)
+    slope = (chronology_axis @ centered) / float(chronology_axis @ chronology_axis)
+    dominant_index = int(np.argmax(np.abs(slope)))
+    variance = _same_state_variance(source=source, state=state)
+    if variance.shape != (len(feature_ids),):
+        raise ValueError("frozen chronology covariance differs from feature contract")
+    trend_score = direct_whitened_norm(slope, variance)
+    energy = np.sum(centered * centered / variance, axis=1)
+    total_energy = float(np.sum(energy))
+    dominance = (
+        0.0 if total_energy <= 0.0
+        else float(np.max(energy) / total_energy)
+    )
+    trend_limit = float(thermal.AUDIT_THRESHOLDS["trend_whitened_limit"])
+    dominance_limit = float(
+        thermal.AUDIT_THRESHOLDS["maximum_single_frame_variance_fraction"]
+    )
+    return {
+        "elapsed_s": list(expected_points),
+        "normalized_feature_values": [
+            {feature_id: float(row[index]) for index, feature_id in enumerate(feature_ids)}
+            for row in normalized
+        ],
+        "trend": {
+            "score": trend_score,
+            "limit": trend_limit,
+            "decision": "pass" if trend_score <= trend_limit else "fail",
+            "hard_gate_for_operational_600": False,
+        },
+        "dominance": {
+            "maximum_single_frame_variance_fraction": dominance,
+            "limit": dominance_limit,
+            "decision": "pass" if dominance <= dominance_limit else "fail",
+            "hard_gate_for_operational_600": False,
+        },
+        "direction": {
+            "semantics": "least_squares_slope_over_ordered_60_120_300_600_unit_shapes",
+            "slope_by_feature": {
+                feature_id: float(slope[index])
+                for index, feature_id in enumerate(feature_ids)
+            },
+            "dominant_feature_id": str(feature_ids[dominant_index]),
+            "dominant_signed_slope": float(slope[dominant_index]),
+            "l2": float(np.linalg.norm(slope)),
+        },
+        "audit_status": (
+            "pass"
+            if trend_score <= trend_limit and dominance <= dominance_limit
+            else "scientific_chronology_signal_present"
+        ),
+        "covariance": "frozen_same_state_per_capture_diagonal_variance",
+    }
+
+
+def frozen_same_state_compatibility(
+    *, source: str, feature_ids: Sequence[str], state: str = "A",
+) -> Callable[[Sequence[float], Sequence[float]], bool]:
     def compatible(left: Sequence[float], right: Sequence[float]) -> bool:
-        left_values = np.asarray(left, dtype=float)
-        limits = calibrate_direct_limits(left_values, pair_variance, samples=1000)
-        score = direct_whitened_norm(np.asarray(right, dtype=float) - left_values, pair_variance)
-        return score <= float(limits["guarded_limit"])
+        diagnostic = frozen_same_state_compatibility_diagnostic(
+            left, right, source=source, state=state, feature_ids=feature_ids,
+        )
+        return diagnostic["decision"] == "pass"
 
     return compatible
 

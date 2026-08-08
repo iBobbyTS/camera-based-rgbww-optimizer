@@ -14,6 +14,16 @@
   direct spec says `f/4`, while the remote backend and all 16 retained captures
   say `implicit auto`. The CR3 has manual exposure but no electronic lens/FNumber,
   and the frozen P6 reference run also uses ISO 100 plus `implicit auto`.
+- Explicit revalidation now passes and the analyzer reaches a deterministic
+  Ray R6 scientific result. The first analysis reported `history fail`, but it
+  omitted the six A-anchor pair diagnostics and the D/B/C trend, dominance and
+  direction fields required by GUIDE 4 sections 8.1-8.2.
+- A first reporting implementation incorrectly reused the multi-group
+  repeatability audit for each single R6 state and failed because D/B/C each
+  contain one four-point chronology, not two independent repeatability groups.
+  The corrected implementation uses the frozen per-capture same-state variance
+  with the existing `4.0` trend and `0.5` dominance definitions; it does not
+  synthesize an extra group or change the operational history gate.
 
 ## Root-cause hypothesis
 
@@ -31,7 +41,9 @@ camera-setting mismatch.
    direct Ray R6 run.
 2. Prove default analysis rejects it, wrong exposure and failed cleanup reject
    revalidation, and exact exposure-only failure passes.
-3. Preserve original artifact hashes, generate a small revalidation record, then
-   run the analyzer once with explicit opt-in.
+3. Preserve original artifact hashes and the accepted revalidation record.
+4. Add report-only diagnostics derived from the existing frozen covariance and
+   chronology thresholds, without changing the pass/fail decision.
+5. Rerun only the deterministic analyzer on the retained root.
 
 No device or acquisition action belongs to this debugging boundary.

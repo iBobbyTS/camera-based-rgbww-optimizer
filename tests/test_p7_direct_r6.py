@@ -291,6 +291,18 @@ class DirectR6Tests(unittest.TestCase):
             report = analyze.analyze_thermal_run(root, feature_ids=feature_ids)
             self.assertEqual(report["direct_artifact_validation"], "pass")
             self.assertTrue(report["formal_pass"])
+            history = report["return_anchor_history_compatibility"]
+            self.assertEqual(history["anchor_order"], ["A0", "A_after_D", "A_after_B", "A_after_C"])
+            self.assertEqual(history["pair_count"], 6)
+            self.assertTrue(all(row["decision"] == "pass" for row in history["pairwise"]))
+            self.assertEqual(set(report["chronology_by_state"]), {"B", "C", "D"})
+            for chronology in report["chronology_by_state"].values():
+                self.assertEqual(chronology["elapsed_s"], [60, 120, 300, 600])
+                self.assertIn("score", chronology["trend"])
+                self.assertIn("maximum_single_frame_variance_fraction", chronology["dominance"])
+                self.assertEqual(
+                    set(chronology["direction"]["slope_by_feature"]), set(feature_ids),
+                )
 
             run_path = root / "run.json"
             run_payload = json.loads(run_path.read_text())
@@ -377,6 +389,9 @@ class DirectR6Tests(unittest.TestCase):
                 revalidated_report["capture_settings_reconciliation"]["status"],
                 "accepted_uniform_implicit_aperture",
             )
+            self.assertEqual(
+                revalidated_report["return_anchor_history_compatibility"]["pair_count"], 6,
+            )
             retained_revalidation_hash = hashlib.sha256(
                 (root / analyze.POST_FIX_REVALIDATION_FILE).read_bytes()
             ).hexdigest()
@@ -414,6 +429,49 @@ class DirectR6Tests(unittest.TestCase):
                     root, feature_ids=feature_ids, post_fix_revalidation=True,
                 )
             self.assertEqual(report["capture_count"], 16)
+
+    def test_r6_history_failure_names_each_incompatible_anchor_pair(self):
+        feature_ids = tuple(
+            json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"]
+        )
+        rows = []
+        for step in thermal.build_ray_r6_spec()["captures"]:
+            values = {feature_id: 1.0 for feature_id in feature_ids}
+            if step["role"] == "return_after_C":
+                values[feature_ids[0]] = 2.0
+            rows.append({
+                "capture_id": step["capture_id"],
+                "plan_step": step,
+                "feature_values": values,
+                "engineering_quality_status": "pass",
+                "origin": "ray_r6",
+                "run_root": "/same/root",
+            })
+
+        report = analyze.analyze_td_b(
+            rows,
+            feature_ids=feature_ids,
+            compatibility_fn=lambda left, right: all(
+                abs(float(a) - float(b)) < 1e-12 for a, b in zip(left, right)
+            ),
+            r6_operational_contract=True,
+        )
+
+        self.assertFalse(report["formal_pass"])
+        self.assertEqual(report["status"], "history_dependent_at_operational_dwell_600")
+        failed = {
+            (row["left"], row["right"])
+            for row in report["return_anchor_history_compatibility"]["pairwise"]
+            if row["decision"] == "fail"
+        }
+        self.assertEqual(
+            failed,
+            {
+                ("A0", "A_after_C"),
+                ("A_after_D", "A_after_C"),
+                ("A_after_B", "A_after_C"),
+            },
+        )
 
     def test_runtime_owner_keeps_ray_on_between_first_state_and_cleanup(self):
         spec = thermal.build_ray_r6_spec()
