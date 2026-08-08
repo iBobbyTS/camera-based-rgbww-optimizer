@@ -24,6 +24,7 @@ from camera_based_rgbww_optimizer.measurement.recorded_exposure import (
     parse_nominal_exposure,
 )
 from camera_based_rgbww_optimizer.control import camera_remote_v2
+from camera_based_rgbww_optimizer.control import esphome
 from camera_based_rgbww_optimizer.measurement.ray_hsi_manifold import RayHsiManifold
 
 from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
@@ -106,7 +107,7 @@ def analyze_thermal_run(
                 not isinstance(requested_zero, Mapping)
                 or any(int(value) != 0 for value in requested_zero.values())
                 or not isinstance(observed_zero, Mapping)
-                or any(int(observed_zero.get(key, -1)) != 0 for key in ("cw", "ww", "r", "g", "b"))
+                or any(int(observed_zero.get(key, -1)) != 0 for key in esphome.PAYLOAD_CHANNELS)
             ):
                 raise ValueError("direct Ray R6 capture lacks verified strip-zero evidence")
             if capture_id not in physical_by_id:
@@ -239,7 +240,7 @@ def analyze_thermal_run(
                     not isinstance(requested, Mapping)
                     or any(int(value) != 0 for value in requested.values())
                     or not isinstance(observed, Mapping)
-                    or any(int(observed.get(key, -1)) != 0 for key in ("cw", "ww", "r", "g", "b"))
+                    or any(int(observed.get(key, -1)) != 0 for key in esphome.PAYLOAD_CHANNELS)
                 ):
                     raise ValueError("direct Ray capture lacks verified strip-zero evidence")
             if capture_id not in physical_by_id:

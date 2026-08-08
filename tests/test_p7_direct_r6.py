@@ -75,7 +75,8 @@ class DirectR6Tests(unittest.TestCase):
                         "warm_white": 0, "cold_white": 0,
                     },
                     "device_snapshot": {
-                        "cw": 0, "ww": 0, "r": 0, "g": 0, "b": 0,
+                        "red": 0, "green": 0, "blue": 0,
+                        "warm_white": 0, "cold_white": 0,
                     },
                 }
             return output
@@ -209,7 +210,8 @@ class DirectR6Tests(unittest.TestCase):
                             "warm_white": 0, "cold_white": 0,
                         },
                         "device_snapshot": {
-                            "cw": 0, "ww": 0, "r": 0, "g": 0, "b": 0,
+                            "red": 0, "green": 0, "blue": 0,
+                            "warm_white": 0, "cold_white": 0,
                         },
                     },
                 }
@@ -338,7 +340,10 @@ class DirectR6Tests(unittest.TestCase):
                 "red": 0, "green": 0, "blue": 0,
                 "warm_white": 0, "cold_white": 0,
             },
-            "device_snapshot": {"cw": 0, "ww": 0, "r": 0, "g": 0, "b": 0},
+            "device_snapshot": {
+                "red": 0, "green": 0, "blue": 0,
+                "warm_white": 0, "cold_white": 0,
+            },
         }
 
         def set_hsi(hue, sat, *, intensity_percent):

@@ -14,7 +14,7 @@ from typing import Any, Callable, Mapping, Sequence
 
 from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
 from camera_based_rgbww_optimizer.optimization import measure_raw_observer_validation as raw_validation
-from camera_based_rgbww_optimizer.control import camera_remote_v2
+from camera_based_rgbww_optimizer.control import camera_remote_v2, esphome
 from camera_based_rgbww_optimizer.paths import PROJECT_ROOT, PROJECT_TMP_DIR
 
 
@@ -836,7 +836,7 @@ def validate_direct_ray_r6_post_capture(
             not isinstance(requested_zero, Mapping)
             or any(int(value) != 0 for value in requested_zero.values())
             or not isinstance(observed_zero, Mapping)
-            or any(int(observed_zero.get(key, -1)) != 0 for key in ("cw", "ww", "r", "g", "b"))
+            or any(int(observed_zero.get(key, -1)) != 0 for key in esphome.PAYLOAD_CHANNELS)
         ):
             raise ValueError("direct Ray R6 capture lacks verified strip-zero evidence")
         nominal = parse_nominal_exposure(str(step["nominal_shutter"]))
@@ -914,7 +914,7 @@ def validate_direct_protocol_post_capture(
                 not isinstance(requested, Mapping)
                 or any(int(value) != 0 for value in requested.values())
                 or not isinstance(observed, Mapping)
-                or any(int(observed.get(key, -1)) != 0 for key in ("cw", "ww", "r", "g", "b"))
+                or any(int(observed.get(key, -1)) != 0 for key in esphome.PAYLOAD_CHANNELS)
             ):
                 raise ValueError("direct Ray capture lacks verified strip-zero evidence")
         physical_row = physical_by_id.get(str(row["capture_id"]))
@@ -1517,7 +1517,7 @@ def run_authorized_plan(
     def source_isolation_check(gate_id: str) -> Mapping[str, Any]:
         strip = esphome.verified_light(0, 0, 0, 0, 0, curve_path=thermal.CURVE_PATH)
         snapshot = strip.get("device_snapshot", {})
-        if any(int(snapshot.get(key, -1)) != 0 for key in ("cw", "ww", "r", "g", "b")):
+        if any(int(snapshot.get(key, -1)) != 0 for key in esphome.PAYLOAD_CHANNELS):
             raise RuntimeError(f"strip did not remain zero at source-isolation gate: {gate_id}")
         load_segments["strip"].append((time.monotonic(), 0.0))
         return {
