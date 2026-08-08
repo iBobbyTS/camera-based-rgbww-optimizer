@@ -195,6 +195,10 @@ class DirectR6Tests(unittest.TestCase):
                 return {
                     "capture_id": step["capture_id"], "saved_file": str(raw),
                     "remote_metadata_path": str(sidecar), "physical_capture_count": 1,
+                    "capture": {
+                        "iso": "100", "aperture": "implicit auto",
+                        "image_format": "RAW",
+                    },
                     "timing_evidence": timing, "thermal_covariates": covariates,
                     "feature_values": {feature_id: 1.0 for feature_id in feature_ids},
                     "direct_quality": {
@@ -291,6 +295,7 @@ class DirectR6Tests(unittest.TestCase):
             run_path = root / "run.json"
             run_payload = json.loads(run_path.read_text())
             run_payload["status"] = "failed"
+            run_payload["capture_settings_provenance"]["aperture"] = "implicit auto"
             run_path.write_text(json.dumps(run_payload))
             (root / "failure.json").write_text(json.dumps({
                 "type": "ValueError",
@@ -367,6 +372,23 @@ class DirectR6Tests(unittest.TestCase):
             self.assertTrue(revalidated_report["formal_pass"])
             self.assertEqual(
                 revalidated_report["engineering_revalidation"]["status"], "pass",
+            )
+            self.assertEqual(
+                revalidated_report["capture_settings_reconciliation"]["status"],
+                "accepted_uniform_implicit_aperture",
+            )
+            retained_revalidation_hash = hashlib.sha256(
+                (root / analyze.POST_FIX_REVALIDATION_FILE).read_bytes()
+            ).hexdigest()
+            self.assertEqual(analyze.main([
+                str(root), "--feature-ids", str(thermal.POLICY_PATH),
+                "--revalidate-exposure-failure", "--validator-commit", "1" * 40,
+            ]), 0)
+            self.assertEqual(
+                hashlib.sha256(
+                    (root / analyze.POST_FIX_REVALIDATION_FILE).read_bytes()
+                ).hexdigest(),
+                retained_revalidation_hash,
             )
 
             tampered_capture = json.loads(original_capture_lines[0])

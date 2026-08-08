@@ -65,8 +65,11 @@ def analyze_thermal_run(
         or run.get("experiment_id") != plan.get("experiment_id")
         or (run.get("status") != "complete" and revalidation is None)
         or run.get("cleanup") != "pass"
-        or run.get("capture_settings_provenance")
-        != plan.get("camera", {}).get("resolved_capture_settings")
+        or (
+            revalidation is None
+            and run.get("capture_settings_provenance")
+            != plan.get("camera", {}).get("resolved_capture_settings")
+        )
     ):
         raise ValueError("thermal analyzer requires a completed exact experiment")
     if plan.get("execution_authorization", {}).get("schema") == "direct_ray_r6_authority_v1":
@@ -84,6 +87,10 @@ def analyze_thermal_run(
         if [row.get("capture_id") for row in physical] != expected["capture_ids"]:
             raise ValueError("direct Ray R6 physical order drifted")
         _validate_run_counts(run, plan, captures, physical)
+        capture_settings = _validate_capture_settings_provenance(
+            plan, run, captures,
+            allow_implicit_aperture_reconciliation=revalidation is not None,
+        )
         physical_by_id = _validate_physical_rows(root, captures, physical)
         expected_steps = {str(row["capture_id"]): row for row in expected["captures"]}
         for row in captures:
@@ -177,6 +184,7 @@ def analyze_thermal_run(
                 "artifact": POST_FIX_REVALIDATION_FILE,
                 "sha256": _sha256(root / POST_FIX_REVALIDATION_FILE),
             }
+            report["capture_settings_reconciliation"] = capture_settings
         return report
     if post_fix_revalidation:
         raise ValueError("post-fix revalidation only supports direct Ray R6")
@@ -398,6 +406,47 @@ def _validate_run_counts(
         != int(plan.get("setup_physical_cr3_count", 0)) + len(physical)
     ):
         raise ValueError("direct run counters differ from retained artifacts")
+
+
+def _validate_capture_settings_provenance(
+    plan: Mapping[str, Any],
+    run: Mapping[str, Any],
+    captures: Sequence[Mapping[str, Any]],
+    *,
+    allow_implicit_aperture_reconciliation: bool,
+) -> dict[str, Any]:
+    planned = plan.get("camera", {}).get("resolved_capture_settings")
+    runtime = run.get("capture_settings_provenance")
+    if not isinstance(planned, Mapping) or not isinstance(runtime, Mapping):
+        raise ValueError("direct capture settings provenance is missing")
+    if planned == runtime:
+        return {"status": "exact", "runtime": dict(runtime)}
+    if not allow_implicit_aperture_reconciliation or any(
+        runtime.get(key) != planned.get(key)
+        for key in ("owner", "iso", "image_format")
+    ) or planned.get("aperture") != "f/4" or runtime.get("aperture") != "implicit auto":
+        raise ValueError("direct capture settings differ from the frozen spec")
+    actual_rows = []
+    for row in captures:
+        capture = row.get("capture")
+        device_capture = capture.get("capture") if isinstance(capture, Mapping) else None
+        if (
+            not isinstance(device_capture, Mapping)
+            or device_capture.get("iso") != runtime["iso"]
+            or device_capture.get("image_format") != runtime["image_format"]
+            or device_capture.get("aperture") != runtime["aperture"]
+        ):
+            raise ValueError("direct capture settings are not uniform across retained frames")
+        actual_rows.append(str(row.get("capture_id")))
+    return {
+        "status": "accepted_uniform_implicit_aperture",
+        "planned_aperture_projection": planned["aperture"],
+        "runtime_aperture": runtime["aperture"],
+        "iso": runtime["iso"],
+        "image_format": runtime["image_format"],
+        "capture_count": len(actual_rows),
+        "scientific_interpretation": "aperture_setting_unchanged_value_not_reported",
+    }
 
 
 def _validate_physical_rows(
@@ -1140,11 +1189,19 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.revalidate_exposure_failure:
         if args.validator_commit is None:
             raise ValueError("--validator-commit is required for post-fix revalidation")
-        revalidate_direct_ray_r6_exposure_failure(
-            args.run_dir,
-            feature_ids=feature_ids,
-            validator_commit=args.validator_commit,
-        )
+        revalidation_path = args.run_dir.resolve() / POST_FIX_REVALIDATION_FILE
+        if revalidation_path.exists():
+            retained = _validate_post_fix_revalidation(
+                args.run_dir.resolve(), _load_json(args.run_dir.resolve() / "run.json"),
+            )
+            if retained.get("validator_commit") != args.validator_commit:
+                raise ValueError("retained revalidation belongs to a different validator commit")
+        else:
+            revalidate_direct_ray_r6_exposure_failure(
+                args.run_dir,
+                feature_ids=feature_ids,
+                validator_commit=args.validator_commit,
+            )
     elif args.validator_commit is not None:
         raise ValueError("--validator-commit requires --revalidate-exposure-failure")
     report = analyze_thermal_run(
