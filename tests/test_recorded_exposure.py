@@ -87,6 +87,37 @@ class RecordedExposureTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "required for P1"):
             recorded_exposure.require_recorded(fallback, purpose="P1")
 
+    def test_setting_gate_accepts_small_canon_tv_difference(self):
+        recorded_exposure.validate_recorded_exposure_setting(
+            {
+                "status": "recorded",
+                "source": "Canon:ExposureTime",
+                "seconds": 0.000193774542476587,
+            },
+            "1/5000",
+        )
+
+    def test_setting_gate_rejects_an_adjacent_shutter_setting(self):
+        with self.assertRaisesRegex(ValueError, "different shutter setting"):
+            recorded_exposure.validate_recorded_exposure_setting(
+                {
+                    "status": "recorded",
+                    "source": "Canon:ExposureTime",
+                    "seconds": 1 / 6400,
+                },
+                "1/5000",
+            )
+
+    def test_setting_gate_rejects_invalid_or_unrecorded_metadata(self):
+        for payload in (
+            {"status": "fallback_nominal", "source": "nominal_shutter_speed", "seconds": 1 / 5000},
+            {"status": "recorded", "source": "Canon:ExposureTime", "seconds": float("nan")},
+            {"status": "recorded", "source": "ExifIFD:ExposureTime", "seconds": 1 / 5000},
+        ):
+            with self.subTest(payload=payload):
+                with self.assertRaisesRegex(ValueError, "missing or invalid"):
+                    recorded_exposure.validate_recorded_exposure_setting(payload, "1/5000")
+
     def test_white_calibration_region_measurement_uses_recorded_duration(self):
         with tempfile.TemporaryDirectory() as tempdir:
             root = Path(tempdir)

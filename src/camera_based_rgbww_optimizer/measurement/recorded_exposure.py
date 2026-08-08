@@ -13,6 +13,10 @@ ExiftoolRunner = Callable[[Sequence[str]], subprocess.CompletedProcess[str]]
 
 CANON_EXPOSURE_KEYS = ("Canon:ExposureTime", "MakerNotes:ExposureTime")
 STANDARD_EXPOSURE_KEYS = ("ExifIFD:ExposureTime", "EXIF:ExposureTime")
+# Keep the acceptance band narrower than half of a conventional 1/3-stop
+# shutter step, while allowing Canon's internal Tv encoding to differ slightly
+# from the displayed nominal shutter fraction.
+MAX_EXPOSURE_SETTING_ERROR_EV = 1.0 / 8.0
 
 
 @dataclass(frozen=True)
@@ -129,6 +133,43 @@ def require_recorded(exposure: RecordedExposure, *, purpose: str) -> RecordedExp
             f"({exposure.diagnostic or exposure.source})"
         )
     return exposure
+
+
+def validate_recorded_exposure_setting(
+    recorded: Mapping[str, Any],
+    nominal_shutter_speed: str,
+    *,
+    allowed_sources: Sequence[str] = CANON_EXPOSURE_KEYS,
+    max_error_ev: float = MAX_EXPOSURE_SETTING_ERROR_EV,
+) -> None:
+    """Validate the selected shutter setting without claiming physical timing.
+
+    Canon MakerNote exposure values encode the camera's internal Tv value and
+    may differ slightly from the conventional fraction shown in standard EXIF.
+    The gate therefore compares in exposure-value space and only rejects a
+    discrepancy large enough to indicate a different shutter setting.
+    """
+
+    seconds = recorded.get("seconds") if isinstance(recorded, Mapping) else None
+    if (
+        not isinstance(recorded, Mapping)
+        or recorded.get("status") != "recorded"
+        or recorded.get("source") not in allowed_sources
+        or isinstance(seconds, bool)
+        or not isinstance(seconds, (int, float))
+        or not math.isfinite(float(seconds))
+        or float(seconds) <= 0.0
+    ):
+        raise ValueError("recorded exposure metadata is missing or invalid")
+    if not math.isfinite(max_error_ev) or max_error_ev < 0.0:
+        raise ValueError("exposure-setting tolerance must be finite and nonnegative")
+    nominal_seconds = parse_nominal_exposure(nominal_shutter_speed)
+    error_ev = abs(math.log2(float(seconds) / nominal_seconds))
+    if error_ev > max_error_ev:
+        raise ValueError(
+            "recorded exposure indicates a different shutter setting "
+            f"({error_ev:.6f} EV > {max_error_ev:.6f} EV)"
+        )
 
 
 def _recorded(

@@ -803,7 +803,9 @@ def validate_direct_ray_r6_post_capture(
     if len(captures) != 16 or len(physical) != 16:
         raise ValueError("direct Ray R6 requires exactly 16 physical and accepted captures")
     feature_ids = tuple(json.loads(thermal.POLICY_PATH.read_text(encoding="utf-8"))["feature_set"]["ids"])
-    from camera_based_rgbww_optimizer.measurement.recorded_exposure import parse_nominal_exposure
+    from camera_based_rgbww_optimizer.measurement.recorded_exposure import (
+        validate_recorded_exposure_setting,
+    )
 
     quality_rows: list[dict[str, Any]] = []
     physical_by_id = {str(row["capture_id"]): row for row in physical}
@@ -827,7 +829,7 @@ def validate_direct_ray_r6_post_capture(
         ):
             raise ValueError("direct Ray R6 capture lacks accepted RAW feature quality")
         recorded = capture.get("recorded_exposure")
-        if not isinstance(recorded, Mapping) or recorded.get("source") != "Canon:ExposureTime" or recorded.get("status") != "recorded":
+        if not isinstance(recorded, Mapping):
             raise ValueError("direct Ray R6 capture lacks recorded Canon exposure evidence")
         strip_zero = capture.get("strip_zero_before_capture")
         requested_zero = strip_zero.get("requested_payload") if isinstance(strip_zero, Mapping) else None
@@ -839,9 +841,7 @@ def validate_direct_ray_r6_post_capture(
             or any(int(observed_zero.get(key, -1)) != 0 for key in esphome.PAYLOAD_CHANNELS)
         ):
             raise ValueError("direct Ray R6 capture lacks verified strip-zero evidence")
-        nominal = parse_nominal_exposure(str(step["nominal_shutter"]))
-        if not math.isclose(float(recorded.get("seconds")), nominal, rel_tol=1e-6, abs_tol=1e-9):
-            raise ValueError("direct Ray R6 recorded exposure differs from frozen shutter")
+        validate_recorded_exposure_setting(recorded, str(step["nominal_shutter"]))
         physical_row = physical_by_id.get(str(row["capture_id"]))
         if physical_row is None or physical_row.get("cr3_byte_count", 0) <= 0 or not physical_row.get("cr3_sha256"):
             raise ValueError("direct Ray R6 physical CR3 evidence is incomplete")

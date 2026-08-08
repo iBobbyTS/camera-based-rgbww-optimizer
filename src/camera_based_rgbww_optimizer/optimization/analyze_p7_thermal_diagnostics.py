@@ -22,6 +22,7 @@ from camera_based_rgbww_optimizer.measurement.hsi_uncertainty import (
 )
 from camera_based_rgbww_optimizer.measurement.recorded_exposure import (
     parse_nominal_exposure,
+    validate_recorded_exposure_setting,
 )
 from camera_based_rgbww_optimizer.control import camera_remote_v2
 from camera_based_rgbww_optimizer.control import esphome
@@ -403,19 +404,9 @@ def _validate_recorded_exposure(
     capture: Mapping[str, Any], nominal_shutter: str,
 ) -> None:
     recorded = capture.get("recorded_exposure")
-    seconds = recorded.get("seconds") if isinstance(recorded, Mapping) else None
-    if (
-        not isinstance(recorded, Mapping)
-        or recorded.get("source") != "Canon:ExposureTime"
-        or recorded.get("status") != "recorded"
-        or isinstance(seconds, bool)
-        or not isinstance(seconds, (int, float))
-        or not math.isclose(
-            float(seconds), parse_nominal_exposure(nominal_shutter),
-            rel_tol=1e-6, abs_tol=1e-9,
-        )
-    ):
-        raise ValueError("direct recorded exposure differs from the frozen shutter")
+    if not isinstance(recorded, Mapping):
+        raise ValueError("direct recorded exposure metadata is missing")
+    validate_recorded_exposure_setting(recorded, nominal_shutter)
 
 
 def _execution_groups(

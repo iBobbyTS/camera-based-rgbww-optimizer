@@ -202,7 +202,7 @@ class DirectR6Tests(unittest.TestCase):
                     },
                     "recorded_exposure": {
                         "source": "Canon:ExposureTime", "status": "recorded",
-                        "seconds": {"A": 1 / 5000, "D": 1 / 6400, "B": 1 / 8000, "C": 1 / 2500}[step["state_id"]],
+                        "seconds": 0.97 * {"A": 1 / 5000, "D": 1 / 6400, "B": 1 / 8000, "C": 1 / 2500}[step["state_id"]],
                     },
                     "strip_zero_before_capture": {
                         "requested_payload": {
