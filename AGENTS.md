@@ -99,14 +99,31 @@ machine-state owners or sequential approval gates.
   form a separate approval loop. Ordinary issues are fixed in the current E1/E2
   worktree until the meaningful behavior tests pass.
 
-### Local scratch and evidence
+### Versioned plans, evidence, and reproducibility
 
-- `.agent-work/PLAN.md`, `.agent-work/PLAN-FULL.md`, debug notes and review notes are
-  optional local scratch. They are not production inputs, test inputs, Git commit
-  authorities, or release gates. Keep scratch notes short and disposable.
-- Reproducibility belongs in experiment specs, input/config hashes, run/ledger/
-  cleanup artifacts, source commit metadata, and analyzer outputs. A scratch plan
-  may summarize these but cannot authorize or block production code.
+- `.agent-work/PLAN.md`, `.agent-work/PLAN-FULL.md`, execution results, debug notes,
+  reviews, and terminal evidence are versioned project records. They may be
+  tracked by Git and should be retained when they explain a GUIDE decision,
+  engineering blocker, experiment attempt, or recovery boundary.
+- PLAN and PLAN-FULL remain collaboration context rather than a production
+  runtime state machine, test input, or hidden authorization gate. Tracking them
+  preserves reviewability; it does not make them executable authority.
+- Track project material by default: source, tests, documentation, plans,
+  configuration, small validation logs, reports, manifests, hashes, analysis,
+  and cleanup evidence. PLAN/PLAN-FULL are therefore eligible for Git tracking.
+- Do not track experimental payloads, firmware artifacts, compile/build output,
+  generated archives, or other large generated files. Firmware source/configuration
+  remains trackable when it is the small reproducible input rather than the
+  generated firmware itself.
+- Experimental payloads include TIFF/JPEG/PNG derivatives, decoded camera arrays,
+  rawpy per-capture JSON, white-LUT calibration datasets, and equivalent bulk
+  measurement records. Markdown experiment reports and small manifests, hashes,
+  quality summaries, analysis, and cleanup evidence remain trackable.
+- Keep credentials, local environments, caches, OS metadata, and raw experimental
+  media (CR3/RAW/NEF/ARW/DNG and equivalent large capture payloads) outside Git.
+  Store raw experiment data under `/Volumes/4T/temp/rgbww-optimizer` and retain
+  the small run manifest, hashes, quality report, analysis, and cleanup evidence
+  needed to reproduce and audit it.
 
 The normal flow is a single Orchestrator-owned batch: understand GUIDE and the
 existing owner, implement the smallest direct behavior, add meaningful behavior
@@ -147,8 +164,11 @@ not a generated machine-state contract.
 - Do not add root-level CLI compatibility wrappers. Use `python -m camera_based_rgbww_optimizer...` module commands and document them in `docs/README.md`.
 - The project uses a minimal `pyproject.toml`; install locally with `.venv/bin/python -m pip install -e .`.
 - Prefer local execution. Use Docker only when a concrete dependency requires it; if Docker is needed, use Colima and prefer `docker-compose`.
-- Put all temporary data, probe outputs, decoded images, scratch virtual environments, logs, and other disposable artifacts under `/Volumes/4T/temp/rgbww-optimizer`. Do not create new temporary data under this repository's `tmp/` directory or the system `/tmp`.
-- Repository `tmp/*.zsh` files are version-controlled execution wrappers, not temporary data; keep those wrapper sources in the repository while their run directories and logs live under `/Volumes/4T/temp/rgbww-optimizer`.
+- Put raw experiment data, disposable caches, local environments, credentials,
+  firmware artifacts, and compile/build output under `/Volumes/4T/temp/rgbww-optimizer`.
+  Repository `tmp/` may contain versioned non-raw evidence, reports, and execution
+  logs; do not put raw CR3/RAW capture payloads or generated build artifacts there.
+- Repository `tmp/*.zsh` files remain version-controlled execution wrappers; non-raw logs and reports may be versioned beside them.
 
 ## Documentation
 

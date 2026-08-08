@@ -54,6 +54,7 @@ def analyze_thermal_run(
         if plan != expected:
             raise ValueError("direct Ray R6 spec drifted")
         _validate_required_execution_artifacts(root)
+        _validate_reproducibility_checkpoint(root, plan, run)
         captures = _load_jsonl(root / "captures.jsonl")
         physical = _load_jsonl(root / "physical-returns.jsonl")
         if len(captures) != 16 or len(physical) != 16:
@@ -177,6 +178,7 @@ def analyze_thermal_run(
         if _stable_spec(plan) != _stable_spec(expected):
             raise ValueError("direct run spec differs from the canonical protocol")
         _validate_required_execution_artifacts(root)
+        _validate_reproducibility_checkpoint(root, plan, run)
         captures = _load_jsonl(root / "captures.jsonl")
         physical = _load_jsonl(root / "physical-returns.jsonl")
         expected_ids = [str(step["capture_id"]) for step in expected["captures"]]
@@ -295,12 +297,53 @@ def _validate_required_execution_artifacts(root: Path) -> None:
         "commands.jsonl", "commands-audit.json", "isolation-gates.jsonl",
         "all-off-python.json", "all-off-shell.json",
         "all-off-shell.exit-status.txt", "wrapper-result.json",
+        "input-checkpoint.json",
     )
     if any(
         not (root / name).is_file() or (root / name).is_symlink()
         for name in required
     ):
         raise ValueError("direct run lacks a required execution artifact")
+
+
+def _validate_reproducibility_checkpoint(
+    root: Path, plan: Mapping[str, Any], run: Mapping[str, Any],
+) -> None:
+    checkpoint = _load_json(root / "input-checkpoint.json")
+    git = checkpoint.get("git")
+    if (
+        checkpoint.get("schema") != "p7_direct_reproducibility_checkpoint_v1"
+        or not isinstance(git, Mapping)
+        or not isinstance(git.get("commit"), str)
+        or not git["commit"]
+        or git.get("dirty") is not False
+        or run.get("git") != dict(git)
+        or run.get("reproducibility_checkpoint") != "input-checkpoint.json"
+    ):
+        raise ValueError("direct run Git checkpoint is missing or dirty")
+    plan_inputs = plan.get("inputs")
+    checkpoint_inputs = checkpoint.get("inputs")
+    if not isinstance(plan_inputs, Mapping) or not isinstance(checkpoint_inputs, Mapping):
+        raise ValueError("direct run reproducibility inputs are missing")
+    for name in ("location", "code_duty_curve"):
+        reference = plan_inputs.get(name)
+        item = checkpoint_inputs.get(name)
+        if (
+            not isinstance(reference, Mapping)
+            or not isinstance(item, Mapping)
+            or item.get("sha256") != reference.get("sha256")
+            or not isinstance(item.get("run_path"), str)
+        ):
+            raise ValueError(f"direct run {name} checkpoint differs from its spec")
+        path = (root / item["run_path"]).resolve()
+        if (
+            path.is_symlink()
+            or not path.is_file()
+            or not path.is_relative_to(root)
+            or item.get("byte_count") != path.stat().st_size
+            or hashlib.sha256(path.read_bytes()).hexdigest() != item["sha256"]
+        ):
+            raise ValueError(f"direct run {name} checkpoint payload drifted")
 
 
 def _validate_run_counts(
@@ -426,17 +469,18 @@ def _validate_commands_and_gates(plan: Mapping[str, Any], root: Path) -> None:
         ):
             raise ValueError("direct command ledger content differs from protocol transitions")
 
-    expected_gate_ids = ["run_start"]
+    direct_r6 = plan.get("execution_authorization", {}).get("schema") == "direct_ray_r6_authority_v1"
+    expected_gates: list[tuple[str, str]] = [("run_start", "both_off")]
     for group in groups:
         first = group[0]
         if first["capture_role"] == "ambient":
-            expected_gate_ids.append(str(first["isolation_gate_before"]))
+            expected_gates.append((str(first["isolation_gate_before"]), "both_off"))
         else:
             gate_after = group[-1].get("isolation_gate_after")
             if gate_after:
-                expected_gate_ids.append(str(gate_after))
+                expected_gates.append((str(gate_after), "strip_zero_only" if direct_r6 else "both_off"))
     gates = _load_jsonl(root / "isolation-gates.jsonl")
-    if [str(row.get("gate_id")) for row in gates] != expected_gate_ids:
+    if [(str(row.get("gate_id")), str(row.get("gate_kind"))) for row in gates] != expected_gates:
         raise ValueError("direct isolation gate sequence differs from protocol")
     for row in gates:
         evidence = row.get("evidence")
@@ -445,9 +489,16 @@ def _validate_commands_and_gates(plan: Mapping[str, Any], root: Path) -> None:
             or not isinstance(evidence, Mapping)
             or evidence.get("status") != "pass"
             or evidence.get("strip_verified_off") is not True
-            or evidence.get("ray_verified_off") is not True
         ):
-            raise ValueError("direct isolation gate did not prove both sources off")
+            raise ValueError("direct isolation gate did not prove strip zero")
+        if row.get("gate_kind") == "both_off":
+            if evidence.get("ray_verified_off") is not True or not isinstance(evidence.get("ray_off_command"), Mapping):
+                raise ValueError("direct both-off gate did not prove Ray off")
+        elif (
+            evidence.get("ray_off_command") is not None
+            or evidence.get("ray_verified_off") is True
+        ):
+            raise ValueError("direct strip-only gate contains a Ray-off command")
 
     audit = _load_json(root / "commands-audit.json")
     if (

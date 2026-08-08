@@ -2,6 +2,7 @@ import hashlib
 import json
 import tempfile
 import unittest
+from types import SimpleNamespace
 from camera_based_rgbww_optimizer.measurement.recorded_exposure import parse_nominal_exposure
 from pathlib import Path
 from unittest.mock import patch
@@ -101,7 +102,7 @@ class DirectR6Tests(unittest.TestCase):
         def gate(_gate_id):
             return {
                 "status": "pass", "strip_verified_off": True,
-                "ray_verified_off": True,
+                "ray_verified_off": True, "ray_off_command": {"status": "pass"},
             }
 
         with patch.object(measure, "_validate_returned_sidecar", side_effect=fake_sidecar):
@@ -112,6 +113,7 @@ class DirectR6Tests(unittest.TestCase):
                 capture_fn=capture, both_off_gate_fn=gate,
                 cleanup_fn=lambda: {"status": "pass", "steps": [{"ok": True}]},
                 runtime_capture_settings_provenance=plan["camera"]["resolved_capture_settings"],
+                runtime_git_provenance={"commit": "0" * 40, "dirty": False, "dirty_entries": []},
                 post_capture_validator_fn=measure.validate_direct_protocol_post_capture,
                 sleep_fn=lambda _seconds: None,
             )
@@ -122,6 +124,8 @@ class DirectR6Tests(unittest.TestCase):
         self.assertEqual(len(spec["captures"]), 16)
         self.assertEqual({r["nominal_shutter"] for r in spec["captures"]}, {"1/5000", "1/6400", "1/8000", "1/2500"})
         self.assertTrue(all(r["exposure_mode"] == "fixed" and not r["weak_reacquire"] for r in spec["captures"]))
+        groups = measure._ledger_groups(thermal.TD_B, spec["captures"])
+        self.assertEqual([group[0]["state_id"] for group in groups], ["A", "D", "A", "B", "A", "C", "A"])
 
     def test_direct_main_uses_injected_runner(self):
         called = {}
@@ -210,9 +214,20 @@ class DirectR6Tests(unittest.TestCase):
                     },
                 }
 
-            def gate(g): return {"status": "pass", "strip_verified_off": True, "ray_verified_off": True}
+            def gate(g):
+                calls.append(("ray_off", g))
+                return {
+                    "status": "pass", "strip_verified_off": True,
+                    "ray_verified_off": True, "ray_off_command": {"status": "pass"},
+                }
+            def source_isolation(g):
+                calls.append(("strip_zero", g))
+                return {
+                    "status": "pass", "strip_verified_off": True,
+                    "ray_off_command": None,
+                }
             def cleanup():
-                calls.append(("cleanup",)); return {"status": "pass", "steps": [{"ok": True}]}
+                calls.append(("ray_off", "cleanup")); return {"status": "pass", "steps": [{"ok": True}]}
 
             def fake_sidecar(payload, *, raw_path, raw_payload=None, run_root):
                 sidecar = Path(str(payload["remote_metadata_path"]))
@@ -234,17 +249,33 @@ class DirectR6Tests(unittest.TestCase):
             with patch.object(measure, "_validate_returned_sidecar", side_effect=fake_sidecar):
                 path = measure.execute_plan(
                     spec, run_dir=root, apply_command_fn=apply, readback_fn=readback,
-                    capture_fn=capture, both_off_gate_fn=gate, cleanup_fn=cleanup,
+                    capture_fn=capture, both_off_gate_fn=gate,
+                    source_isolation_check_fn=source_isolation, cleanup_fn=cleanup,
                     runtime_capture_settings_provenance=spec["camera"]["resolved_capture_settings"],
+                    runtime_git_provenance={"commit": "0" * 40, "dirty": False, "dirty_entries": []},
                     post_capture_validator_fn=measure.validate_direct_ray_r6_post_capture,
                     sleep_fn=lambda _: None,
                 )
             self.assertTrue(path.is_dir())
             self.assertEqual(sum(1 for c in calls if c[0] == "capture"), 16)
-            self.assertTrue(any(c[0] == "cleanup" for c in calls))
+            ray_off_indices = [index for index, call in enumerate(calls) if call[0] == "ray_off"]
+            first_ray_on = next(index for index, call in enumerate(calls) if call[0] == "apply")
+            self.assertEqual(len(ray_off_indices), 2)
+            self.assertLess(ray_off_indices[0], first_ray_on)
+            self.assertEqual(ray_off_indices[-1], len(calls) - 1)
+            self.assertFalse(any(call[0] == "ray_off" for call in calls[first_ray_on:ray_off_indices[-1]]))
             self.assertEqual(len((root / "physical-returns.jsonl").read_text().splitlines()), 16)
             self.assertEqual(len((root / "captures.jsonl").read_text().splitlines()), 16)
             self.assertEqual(len(sidecar_result_by_capture), 16)
+            covariates = [
+                json.loads(line)
+                for line in (root / "thermal-covariates.jsonl").read_text().splitlines()
+                if line.strip()
+            ]
+            self.assertEqual(covariates[0]["previous_state_id"], None)
+            self.assertEqual(covariates[5]["previous_state_id"], "D")
+            self.assertEqual(covariates[6]["previous_state_id"], "A")
+            self.assertTrue(all(float(row["previous_state_dwell_s"]) >= 0 for row in covariates[1:]))
             (root / "all-off-shell.json").write_text(json.dumps([{"ok": True}]))
             (root / "all-off-shell.exit-status.txt").write_text("0\n")
             (root / "wrapper-result.json").write_text(json.dumps({
@@ -264,10 +295,82 @@ class DirectR6Tests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 analyze.analyze_thermal_run(root, feature_ids=feature_ids)
             captures_path.write_text("\n".join(original_capture_lines) + "\n")
+            location_copy = root / "inputs/location.json"
+            original_location = location_copy.read_bytes()
+            location_copy.write_bytes(original_location + b"\n")
+            with self.assertRaises(ValueError):
+                analyze.analyze_thermal_run(root, feature_ids=feature_ids)
+            location_copy.write_bytes(original_location)
             (root / "quality.json").unlink()
             with self.assertRaises(ValueError):
                 analyze.analyze_thermal_run(root, feature_ids=feature_ids)
             self.assertEqual(report["capture_count"], 16)
+
+    def test_runtime_owner_keeps_ray_on_between_first_state_and_cleanup(self):
+        spec = thermal.build_ray_r6_spec()
+        events = []
+
+        class FakeBackend:
+            backend_name = "remote"
+            v2_capture_capability = measure.REMOTE_V2_CAPABILITY
+
+            def connect(self):
+                return object()
+
+            def resolve_capture_settings(self, **_kwargs):
+                return SimpleNamespace(iso="100", aperture="f/4", image_format="RAW")
+
+            def capture_with_timing(self, **_kwargs):
+                raise AssertionError("sequence wiring test must not capture")
+
+        def fake_execute(plan, **kwargs):
+            kwargs["both_off_gate_fn"]("run_start")
+            for group in measure._ledger_groups(thermal.TD_B, plan["captures"]):
+                step = group[0]
+                kwargs["apply_command_fn"](step)
+                kwargs["readback_fn"](step)
+                kwargs["source_isolation_check_fn"](str(group[-1]["isolation_gate_after"]))
+            kwargs["cleanup_fn"]()
+            return Path("/fake/ray-r6")
+
+        zero = {
+            "requested_payload": {
+                "red": 0, "green": 0, "blue": 0,
+                "warm_white": 0, "cold_white": 0,
+            },
+            "device_snapshot": {"cw": 0, "ww": 0, "r": 0, "g": 0, "b": 0},
+        }
+
+        def set_hsi(hue, sat, *, intensity_percent):
+            events.append(("ray_on", hue, sat, intensity_percent))
+            return {"status": "pass"}
+
+        def set_cct(*_args, **_kwargs):
+            events.append(("ray_off",))
+            return {"status": "pass"}
+
+        with (
+            patch.object(measure, "execute_plan", side_effect=fake_execute),
+            patch("camera_based_rgbww_optimizer.optimization.measure_raw_observer_validation.build_native_raw_capture_step_fn", return_value=lambda _step: None),
+            patch("camera_based_rgbww_optimizer.control.esphome.verified_light", return_value=zero),
+            patch("camera_based_rgbww_optimizer.control.ray120c.set_hsi", side_effect=set_hsi),
+            patch("camera_based_rgbww_optimizer.control.ray120c.get_hsi", return_value={"data": {"hue": 0, "sat": 0, "intensity": 255}}),
+            patch("camera_based_rgbww_optimizer.control.ray120c.set_cct", side_effect=set_cct),
+            patch("camera_based_rgbww_optimizer.control.ray120c.get_cct", return_value={"data": {"cct": 5600, "gm": 100, "intensity": 0}}),
+            patch("camera_based_rgbww_optimizer.optimization.measure_ray_hsi_manifold._verify_readback"),
+            patch("camera_based_rgbww_optimizer.optimization.hsi_source_evidence.validate_both_off"),
+            patch("camera_based_rgbww_optimizer.control.all_off.turn_everything_off", side_effect=lambda **_kwargs: (events.append(("ray_off",)) or [{"name": "all_off", "ok": True}])),
+        ):
+            measure.run_authorized_plan(
+                spec, output_dir=Path("/fake"), run_name="ray-r6",
+                camera_backend=FakeBackend(),
+            )
+
+        self.assertEqual([event[0] for event in events], ["ray_off", *(["ray_on"] * 7), "ray_off"])
+        self.assertEqual(
+            [(event[1], event[2]) for event in events if event[0] == "ray_on"],
+            [(120, 100), (120, 50), (120, 100), (0, 0), (120, 100), (300, 100), (120, 100)],
+        )
 
     def test_downstream_direct_specs_use_scientific_prerequisites(self):
         strip = thermal.build_direct_plan(thermal.TD_B, source="strip")

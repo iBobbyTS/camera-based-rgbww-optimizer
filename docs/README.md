@@ -62,13 +62,19 @@ not part of the current project interface.
 - ESPHome firmware files live under `firmware/esphome/` and use the same
   `bedroom-rgbww-strip` device name.
 
-## Temporary Data
+## Data and Reproducibility
 
-All project temporary data, captures, decoded images, probe outputs, and scratch
-artifacts must live under `/Volumes/4T/temp/rgbww-optimizer`. Do not create new
-temporary data under the repository `tmp/` directory or the system `/tmp`.
-Repository `tmp/*.zsh` files remain version-controlled wrapper sources; their
-run directories and logs belong on the external temporary volume.
+Raw captures, decoded images, disposable caches, local environments, credentials,
+generated firmware, compile/build output and large generated archives belong under
+`/Volumes/4T/temp/rgbww-optimizer` and remain outside Git. Small reproducibility
+inputs and non-raw project material are intentionally reviewable: PLAN/PLAN-FULL,
+source, tests, configuration, execution evidence, reports, logs, manifests,
+hashes, quality and analysis may live in the repository and should be tracked.
+Repository `tmp/*.zsh` files remain version-controlled wrappers; do not put raw
+CR3/RAW capture payloads or generated build artifacts in the repository `tmp/` tree.
+TIFF/JPEG/PNG derivatives, decoded camera arrays, rawpy per-capture JSON and
+white-LUT calibration datasets are experiment payloads and remain untracked;
+Markdown experiment reports and small audit metadata remain versioned.
 
 Scripts that can leave the RGBWW fixture on must turn it off before exiting,
 except explicit light-on/control tools.
@@ -823,11 +829,17 @@ start/end ambient frames. The TD-C core therefore owns 8 formal plus 8 ambient
 captures, a physical core cap of 16, and a total diagnostic allocation of 128
 under the Advisor's 130 ceiling. Exact order, capture owner, role, exposure,
 ambient diagnostic, covariate, and physical counts are replayed by the public
-analyzer. Independent Ray-plus-strip all-off/readback evidence is required at
-run start, before each ambient, and after source/state transitions. TD-B and
-TD-C unresolved dependency times remain null/deferred and are rejected by the
-runner until an accepted prerequisite artifact freezes a value in
-60/120/300 seconds.
+analyzer. Legacy ambient and paired-source protocols retain independent
+Ray-plus-strip all-off/readback gates. The direct Ray R6 protocol is different:
+it performs both-source off/readback only at run start, then keeps Ray
+continuous through `A -> D -> A -> B -> A -> C -> A`; each inter-state gate
+verifies only the strip is zero and never sends a Ray-off command. Python
+normal/exception cleanup and the wrapper's signal cleanup remain the only
+later all-off paths. Every direct run copies `location` and `code-duty-curve`
+into `inputs/`, and records `input-checkpoint.json` plus Git `commit` and
+`dirty=false` in `run.json`. TD-B and TD-C unresolved dependency times remain
+null/deferred and are rejected by the runner until an accepted prerequisite
+artifact freezes a value in 60/120/300 seconds.
 
 TD-B v2 is the single experiment-aware exception to the shared native RAW
 ambient requirement. Its exact formal owner uses

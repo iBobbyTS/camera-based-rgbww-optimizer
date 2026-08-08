@@ -1,28 +1,51 @@
 *.DS_Store
-.agent-work/
 __pycache__/
 *.py[cod]
 *.egg-info/
 .venv/
 .env
 !.env.example
-firmware/esphome/build/
-firmware/esphome/.esphome/
 firmware/esphome/secrets.yaml
-tmp/*
-!tmp/*.zsh
-config/*
-!config/camera/
-config/camera/*
-!config/camera/raw-observer.json
-!config/camera/cct-multipatch-pilot.json
-!config/hsi/
-config/hsi/*
-!config/hsi/ray-hsi-manifold.json
-!config/hsi/strip-hsi-pilot.json
-!config/hsi/strip-hsi-pilot-v2.json
-!config/hsi/strip-hsi-uncertainty.json
-!config/hsi/strip-hsi-policy-v2-waiting.json
-!config/hsi/p7-operating-envelope-v1.json
+
+# Versioned project records and small, non-raw evidence are intentionally
+# trackable. Keep experimental payloads, firmware artifacts, build output and
+# other large generated files out of Git; plans, reports, logs, configs and
+# source remain available for post-GUIDE review.
+**/*.CR3
+**/*.cr3
+**/*.RAW
+**/*.raw
+**/*.NEF
+**/*.ARW
+**/*.DNG
+**/*.npy
+**/*.TIF
+**/*.tif
+**/*.TIFF
+**/*.tiff
+
+# Experiment payloads under tmp stay local. Markdown reports, logs, manifests,
+# hashes, quality summaries and analysis documents remain trackable.
+tmp/**/*.jpg
+tmp/**/*.jpeg
+tmp/**/*.png
+tmp/**/*.rawpy-linear-camera-rgb16.json
+tmp/**/location-picker-preview.json
+tmp/**/white-endpoints.json
+**/white-lut-calibration.json
+
+**/*.bin
+**/*.elf
+**/*.hex
+**/*.uf2
+**/*.zip
+**/*.tar
+**/*.tar.gz
+**/*.tgz
+**/*.7z
+firmware/esphome/.esphome/
+firmware/esphome/build/
+**/__pycache__/
+**/*.py[cod]
 # 人工编写的测试代码。
 test.py

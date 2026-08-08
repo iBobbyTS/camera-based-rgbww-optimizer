@@ -6,6 +6,7 @@ import hashlib
 import json
 import math
 import os
+import subprocess
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -14,7 +15,7 @@ from typing import Any, Callable, Mapping, Sequence
 from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
 from camera_based_rgbww_optimizer.optimization import measure_raw_observer_validation as raw_validation
 from camera_based_rgbww_optimizer.control import camera_remote_v2
-from camera_based_rgbww_optimizer.paths import PROJECT_TMP_DIR
+from camera_based_rgbww_optimizer.paths import PROJECT_ROOT, PROJECT_TMP_DIR
 
 
 DEFAULT_OUTPUT = PROJECT_TMP_DIR / "p7-thermal-diagnostics-offline"
@@ -244,6 +245,61 @@ def write_dry_run(
     return root / "experiment-spec.json"
 
 
+def _runtime_git_provenance() -> dict[str, Any]:
+    commit = subprocess.run(
+        ("git", "rev-parse", "HEAD"), cwd=PROJECT_ROOT, check=True,
+        capture_output=True, text=True, timeout=30,
+    ).stdout.strip()
+    dirty_output = subprocess.run(
+        ("git", "status", "--porcelain"), cwd=PROJECT_ROOT, check=True,
+        capture_output=True, text=True, timeout=30,
+    ).stdout
+    return {
+        "commit": commit,
+        "dirty": bool(dirty_output.strip()),
+        "dirty_entries": dirty_output.splitlines(),
+    }
+
+
+def _write_reproducibility_checkpoint(
+    root: Path, plan: Mapping[str, Any], git_provenance: Mapping[str, Any],
+) -> dict[str, Any]:
+    inputs = plan.get("inputs")
+    if not isinstance(inputs, Mapping):
+        raise PermissionError("direct thermal execution lacks reproducible input references")
+    checkpoint_inputs: dict[str, Any] = {}
+    for name, destination in (
+        ("location", "inputs/location.json"),
+        ("code_duty_curve", "inputs/code-duty-curve.json"),
+    ):
+        reference = inputs.get(name)
+        if not isinstance(reference, Mapping) or not isinstance(reference.get("path"), str):
+            raise PermissionError(f"direct thermal execution lacks {name} input reference")
+        source = Path(reference["path"]).resolve()
+        if source.is_symlink() or not source.is_file():
+            raise PermissionError(f"direct thermal execution cannot read {name} input")
+        payload = source.read_bytes()
+        digest = hashlib.sha256(payload).hexdigest()
+        if reference.get("sha256") != digest:
+            raise PermissionError(f"direct thermal execution {name} input hash drifted")
+        target = root / destination
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(payload)
+        checkpoint_inputs[name] = {
+            "source_path": str(source),
+            "run_path": destination,
+            "sha256": digest,
+            "byte_count": len(payload),
+        }
+    checkpoint = {
+        "schema": "p7_direct_reproducibility_checkpoint_v1",
+        "git": dict(git_provenance),
+        "inputs": checkpoint_inputs,
+    }
+    _write_json(root / "input-checkpoint.json", checkpoint)
+    return checkpoint
+
+
 def execute_plan(
     plan: Mapping[str, Any], *, run_dir: str | Path,
     apply_command_fn: Callable[[Mapping[str, Any]], Mapping[str, Any]],
@@ -251,7 +307,9 @@ def execute_plan(
     capture_fn: Callable[[Mapping[str, Any]], Mapping[str, Any]],
     both_off_gate_fn: Callable[[str], Mapping[str, Any]],
     cleanup_fn: Callable[[], Mapping[str, Any]],
+    source_isolation_check_fn: Callable[[str], Mapping[str, Any]] | None = None,
     runtime_capture_settings_provenance: Mapping[str, Any] | None = None,
+    runtime_git_provenance: Mapping[str, Any] | None = None,
     post_capture_validator_fn: Callable[
         [Path, Mapping[str, Any], Mapping[str, Any] | None], Any
     ] | None = None,
@@ -270,6 +328,17 @@ def execute_plan(
     )
     if direct_execution and post_capture_validator_fn is None:
         raise PermissionError("direct thermal execution requires its post-capture validator")
+    direct_ray_r6 = (
+        isinstance(plan.get("execution_authorization"), Mapping)
+        and plan["execution_authorization"].get("schema") == "direct_ray_r6_authority_v1"
+    )
+    if direct_ray_r6 and source_isolation_check_fn is None:
+        raise PermissionError("direct Ray R6 execution requires a strip-only isolation check")
+    git_provenance = copy.deepcopy(
+        runtime_git_provenance if runtime_git_provenance is not None else _runtime_git_provenance()
+    )
+    if direct_execution and git_provenance.get("dirty") is not False:
+        raise PermissionError("direct thermal execution requires a clean Git checkpoint")
     capture_settings_provenance = copy.deepcopy(
         runtime_capture_settings_provenance
         if runtime_capture_settings_provenance is not None
@@ -293,6 +362,10 @@ def execute_plan(
     if any(root.iterdir()):
         raise FileExistsError(f"thermal run directory must be empty: {root}")
     _write_json(root / "experiment-spec.json", dict(plan))
+    reproducibility_checkpoint = (
+        _write_reproducibility_checkpoint(root, plan, git_provenance)
+        if direct_execution else None
+    )
     run = {
         "schema": "p7_thermal_diagnostic_run_v2", "experiment_id": plan["experiment_id"],
         "status": "running", "started_at": _utc_now(), "completed_formal": 0,
@@ -302,6 +375,10 @@ def execute_plan(
         "setup_physical_cr3_count": int(plan.get("setup_physical_cr3_count", 0)),
         "physical_cr3_count": int(plan.get("setup_physical_cr3_count", 0)), "cleanup": "pending",
         "capture_settings_provenance": capture_settings_provenance,
+        "git": git_provenance,
+        "reproducibility_checkpoint": (
+            None if reproducibility_checkpoint is None else "input-checkpoint.json"
+        ),
     }
     _write_json(root / "run.json", run)
     failure: BaseException | None = None
@@ -317,7 +394,23 @@ def execute_plan(
         evidence = dict(both_off_gate_fn(gate_id))
         if evidence.get("status") != "pass" or evidence.get("strip_verified_off") is not True or evidence.get("ray_verified_off") is not True:
             raise RuntimeError(f"both-source off/readback gate failed: {gate_id}")
-        _append_jsonl(root / "isolation-gates.jsonl", {"gate_id": gate_id, "evidence": evidence, "at": _utc_now()})
+        _append_jsonl(root / "isolation-gates.jsonl", {
+            "gate_id": gate_id, "gate_kind": "both_off", "evidence": evidence, "at": _utc_now(),
+        })
+
+    def record_source_isolation_gate(gate_id: str) -> None:
+        if source_isolation_check_fn is None:
+            raise RuntimeError("strip-only source isolation owner is not bound")
+        evidence = dict(source_isolation_check_fn(gate_id))
+        if (
+            evidence.get("status") != "pass"
+            or evidence.get("strip_verified_off") is not True
+            or evidence.get("ray_off_command") is not None
+        ):
+            raise RuntimeError(f"strip-only source isolation check failed: {gate_id}")
+        _append_jsonl(root / "isolation-gates.jsonl", {
+            "gate_id": gate_id, "gate_kind": "strip_zero_only", "evidence": evidence, "at": _utc_now(),
+        })
 
     def ensure_physical_capacity() -> None:
         if run["physical_cr3_count"] >= int(plan["budgets"]["physical_cr3_cap"]):
@@ -624,7 +717,10 @@ def execute_plan(
             previous_dwell = monotonic_fn() - owner_start
             gate_after = item[-1].get("isolation_gate_after")
             if gate_after:
-                record_gate(str(gate_after))
+                if direct_ray_r6:
+                    record_source_isolation_gate(str(gate_after))
+                else:
+                    record_gate(str(gate_after))
         if run["completed_formal"] != int(plan["budgets"]["formal_cap"]):
             raise RuntimeError("thermal diagnostic formal count differs from frozen cap")
         if run["ambient_capture_count"] != int(plan["budgets"]["ambient_cap"]):
@@ -1158,6 +1254,14 @@ def run_authorized_plan(
     ] = {"callback": None}
     session_start = time.monotonic()
     load_segments: dict[str, list[tuple[float, float]]] = {"ray": [], "strip": []}
+    thermal_context: dict[str, Any] = {
+        "ray_started_monotonic_s": None,
+        "ray_off_since_monotonic_s": None,
+        "state_id": None,
+        "state_started_monotonic_s": None,
+        "previous_state_id": None,
+        "previous_state_dwell_s": None,
+    }
 
     def load_level(source: str, command: Mapping[str, Any]) -> float:
         if source == "strip":
@@ -1175,6 +1279,7 @@ def run_authorized_plan(
 
     def apply(step: Mapping[str, Any]) -> Mapping[str, Any]:
         command = step["command"]
+        applied_at = time.monotonic()
         if step["source_id"] == "ray":
             response = ray120c.set_hsi(
                 int(command["hue"]), int(command["sat"]),
@@ -1185,7 +1290,20 @@ def run_authorized_plan(
                 *(int(command[channel]) for channel in thermal.CHANNELS),
                 curve_path=thermal.CURVE_PATH,
             )
-        load_segments[str(step["source_id"])].append((time.monotonic(), load_level(str(step["source_id"]), command)))
+        if step["source_id"] == "ray":
+            prior_state = thermal_context["state_id"]
+            prior_started = thermal_context["state_started_monotonic_s"]
+            thermal_context["previous_state_id"] = prior_state
+            thermal_context["previous_state_dwell_s"] = (
+                None if prior_started is None else max(0.0, applied_at - float(prior_started))
+            )
+            thermal_context["state_id"] = str(step["state_id"])
+            thermal_context["state_started_monotonic_s"] = applied_at
+            if thermal_context["ray_started_monotonic_s"] is None:
+                thermal_context["ray_started_monotonic_s"] = applied_at
+            else:
+                thermal_context["ray_off_since_monotonic_s"] = None
+        load_segments[str(step["source_id"])].append((applied_at, load_level(str(step["source_id"]), command)))
         applied[str(step["capture_id"])] = dict(response)
         return response
 
@@ -1248,7 +1366,9 @@ def run_authorized_plan(
 
     raw_capture = raw_validation.build_native_raw_capture_step_fn(
         camera_dir=root / "camera", measurements_dir=root / "measurements", scratch_dir=root / "scratch",
-        location_config_path=thermal.LOCATION_PATH, observer_config_path=thermal.OBSERVER_PATH,
+        location_config_path=(
+            root / "inputs/location.json" if direct_r6 else thermal.LOCATION_PATH
+        ), observer_config_path=thermal.OBSERVER_PATH,
         iso=str(resolved_settings.iso), aperture=str(resolved_settings.aperture),
         image_format=str(resolved_settings.image_format), camera_backend=camera_backend,
         recorded_exposure_purpose=str(plan["experiment_id"]),
@@ -1300,14 +1420,27 @@ def run_authorized_plan(
             window: integrated_history(source, exposure_start, window) for window in (60, 300, 900)
         }
         command = step["command"] or {"strip": "off", "ray": "off"}
+        covariate_timestamp = exposure_start
+        state_started = thermal_context["state_started_monotonic_s"]
+        ray_started = thermal_context["ray_started_monotonic_s"]
+        ray_off_since = thermal_context["ray_off_since_monotonic_s"]
         covariate = thermal.build_covariate_record(
             source_id=source, state_id=state, command=command,
             sequence_index=int(step["capture_id"].split("-", 1)[0]),
             capture_order=int(step["capture_id"].split("-", 1)[0]),
             source_order=int(step.get("source_order", 1)), monotonic_timestamp_ns=time.monotonic_ns(),
-            wall_clock_timestamp=_utc_now(), session_elapsed_s=exposure_start - session_start,
-            source_on_elapsed_s=elapsed, state_on_elapsed_s=elapsed,
-            off_duration_before_s=0.0, previous_state_id=None, previous_state_dwell_s=None,
+            wall_clock_timestamp=_utc_now(), session_elapsed_s=covariate_timestamp - session_start,
+            source_on_elapsed_s=(
+                0.0 if ray_started is None else max(0.0, covariate_timestamp - float(ray_started))
+            ) if source == "ray" else 0.0,
+            state_on_elapsed_s=(
+                0.0 if state_started is None else max(0.0, covariate_timestamp - float(state_started))
+            ),
+            off_duration_before_s=(
+                0.0 if ray_off_since is None else max(0.0, covariate_timestamp - float(ray_off_since))
+            ) if source == "ray" else 0.0,
+            previous_state_id=thermal_context["previous_state_id"],
+            previous_state_dwell_s=thermal_context["previous_state_dwell_s"],
             shutter_seconds=float(exposure["seconds"]),
             raw_black_levels=raw_metadata["black_level_per_channel"],
             raw_white_level=float(raw_metadata["white_level"]), load_history=load,
@@ -1370,13 +1503,27 @@ def run_authorized_plan(
         ray_set = ray120c.set_cct(5600, intensity=0, gm=100)
         ray_readback = ray120c.get_cct()
         validate_both_off(strip, ray_readback, curve)
-        load_segments["ray"].append((time.monotonic(), 0.0))
-        load_segments["strip"].append((time.monotonic(), 0.0))
+        off_at = time.monotonic()
+        load_segments["ray"].append((off_at, 0.0))
+        load_segments["strip"].append((off_at, 0.0))
+        thermal_context["ray_off_since_monotonic_s"] = off_at
         return {
             "status": "pass", "gate_id": gate_id,
             "strip_verified_off": True, "ray_verified_off": True,
             "strip_device_evidence": dict(strip), "ray_off_command": dict(ray_set),
             "ray_readback": dict(ray_readback),
+        }
+
+    def source_isolation_check(gate_id: str) -> Mapping[str, Any]:
+        strip = esphome.verified_light(0, 0, 0, 0, 0, curve_path=thermal.CURVE_PATH)
+        snapshot = strip.get("device_snapshot", {})
+        if any(int(snapshot.get(key, -1)) != 0 for key in ("cw", "ww", "r", "g", "b")):
+            raise RuntimeError(f"strip did not remain zero at source-isolation gate: {gate_id}")
+        load_segments["strip"].append((time.monotonic(), 0.0))
+        return {
+            "status": "pass", "gate_id": gate_id,
+            "strip_verified_off": True, "ray_off_command": None,
+            "strip_device_evidence": dict(strip),
         }
 
     def cleanup() -> Mapping[str, Any]:
@@ -1398,7 +1545,9 @@ def run_authorized_plan(
 
     return execute_plan(
         plan, run_dir=root, apply_command_fn=apply, readback_fn=readback,
-        capture_fn=capture, both_off_gate_fn=both_off_gate, cleanup_fn=cleanup,
+        capture_fn=capture, both_off_gate_fn=both_off_gate,
+        source_isolation_check_fn=(source_isolation_check if direct_r6 else None),
+        cleanup_fn=cleanup,
         runtime_capture_settings_provenance=settings_provenance,
         post_capture_validator_fn=(validate_direct_post_capture if direct_protocol else None),
         bind_physical_return_observer_fn=lambda callback: physical_return_observer_slot.__setitem__(

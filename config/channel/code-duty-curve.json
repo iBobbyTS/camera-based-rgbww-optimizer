@@ -1,0 +1,976 @@
+{
+  "brightness_key": "max_ambient_subtracted_mean_per_second",
+  "channels": {
+    "b": {
+      "discarded_measurement_count": 0,
+      "discarded_points": [],
+      "full_scale_code": 4095,
+      "full_scale_response_per_second": 1438935.186781267,
+      "max_code": 4095,
+      "measured_points": [
+        {
+          "code": 8,
+          "duty": 0.0019536019536019536,
+          "response_per_second": 256.0028494085465
+        },
+        {
+          "code": 12,
+          "duty": 0.0029304029304029304,
+          "response_per_second": 343.1897149234947
+        },
+        {
+          "code": 16,
+          "duty": 0.003907203907203907,
+          "response_per_second": 606.3307952207831
+        },
+        {
+          "code": 24,
+          "duty": 0.005860805860805861,
+          "response_per_second": 2039.1659486633464
+        },
+        {
+          "code": 32,
+          "duty": 0.007814407814407814,
+          "response_per_second": 4935.315340637119
+        },
+        {
+          "code": 48,
+          "duty": 0.011721611721611722,
+          "response_per_second": 11116.51015551485
+        },
+        {
+          "code": 64,
+          "duty": 0.01562881562881563,
+          "response_per_second": 16977.283585626858
+        },
+        {
+          "code": 96,
+          "duty": 0.023443223443223443,
+          "response_per_second": 27941.510765918705
+        },
+        {
+          "code": 128,
+          "duty": 0.03125763125763126,
+          "response_per_second": 41055.30477022726
+        },
+        {
+          "code": 192,
+          "duty": 0.046886446886446886,
+          "response_per_second": 66742.18125439266
+        },
+        {
+          "code": 256,
+          "duty": 0.06251526251526252,
+          "response_per_second": 90879.04643438382
+        },
+        {
+          "code": 384,
+          "duty": 0.09377289377289377,
+          "response_per_second": 141230.40338010277
+        },
+        {
+          "code": 512,
+          "duty": 0.12503052503052503,
+          "response_per_second": 187482.23414146647
+        },
+        {
+          "code": 768,
+          "duty": 0.18754578754578755,
+          "response_per_second": 283868.81710412336
+        },
+        {
+          "code": 1024,
+          "duty": 0.25006105006105006,
+          "response_per_second": 372616.84750543465
+        },
+        {
+          "code": 1536,
+          "duty": 0.3750915750915751,
+          "response_per_second": 525157.9318305466
+        },
+        {
+          "code": 2048,
+          "duty": 0.5001221001221001,
+          "response_per_second": 734938.8825720163
+        },
+        {
+          "code": 3072,
+          "duty": 0.7501831501831502,
+          "response_per_second": 1038538.501995232
+        },
+        {
+          "code": 4095,
+          "duty": 1.0,
+          "response_per_second": 1438935.186781267
+        }
+      ],
+      "measurement_count": 19,
+      "points": [
+        {
+          "pwm_code": 0,
+          "target_code": 0.0
+        },
+        {
+          "pwm_code": 8,
+          "target_code": 0.728547
+        },
+        {
+          "pwm_code": 12,
+          "target_code": 0.976668
+        },
+        {
+          "pwm_code": 16,
+          "target_code": 1.725529
+        },
+        {
+          "pwm_code": 24,
+          "target_code": 5.803169
+        },
+        {
+          "pwm_code": 32,
+          "target_code": 14.045189
+        },
+        {
+          "pwm_code": 48,
+          "target_code": 31.635969
+        },
+        {
+          "pwm_code": 64,
+          "target_code": 48.314877
+        },
+        {
+          "pwm_code": 96,
+          "target_code": 79.517471
+        },
+        {
+          "pwm_code": 128,
+          "target_code": 116.837419
+        },
+        {
+          "pwm_code": 192,
+          "target_code": 189.938529
+        },
+        {
+          "pwm_code": 256,
+          "target_code": 258.628532
+        },
+        {
+          "pwm_code": 384,
+          "target_code": 401.921162
+        },
+        {
+          "pwm_code": 512,
+          "target_code": 533.547137
+        },
+        {
+          "pwm_code": 768,
+          "target_code": 807.849316
+        },
+        {
+          "pwm_code": 1024,
+          "target_code": 1060.413287
+        },
+        {
+          "pwm_code": 1536,
+          "target_code": 1494.522999
+        },
+        {
+          "pwm_code": 2048,
+          "target_code": 2091.529036
+        },
+        {
+          "pwm_code": 3072,
+          "target_code": 2955.529342
+        },
+        {
+          "pwm_code": 4095,
+          "target_code": 4095.0
+        }
+      ],
+      "usable_measurement_count": 19
+    },
+    "cw": {
+      "discarded_measurement_count": 1,
+      "discarded_points": [
+        {
+          "code": 12,
+          "duty": 0.0029304029304029304,
+          "reason": "non_monotonic_response",
+          "response_per_second": 199.2774454142354
+        }
+      ],
+      "full_scale_code": 4095,
+      "full_scale_response_per_second": 832262.8153729764,
+      "max_code": 4095,
+      "measured_points": [
+        {
+          "code": 8,
+          "duty": 0.0019536019536019536,
+          "response_per_second": 256.08830469112655
+        },
+        {
+          "code": 16,
+          "duty": 0.003907203907203907,
+          "response_per_second": 381.22061949871306
+        },
+        {
+          "code": 24,
+          "duty": 0.005860805860805861,
+          "response_per_second": 1115.103800497482
+        },
+        {
+          "code": 32,
+          "duty": 0.007814407814407814,
+          "response_per_second": 2634.10227064728
+        },
+        {
+          "code": 48,
+          "duty": 0.011721611721611722,
+          "response_per_second": 5825.875549271151
+        },
+        {
+          "code": 64,
+          "duty": 0.01562881562881563,
+          "response_per_second": 8871.761104184032
+        },
+        {
+          "code": 96,
+          "duty": 0.023443223443223443,
+          "response_per_second": 15481.11062714963
+        },
+        {
+          "code": 128,
+          "duty": 0.03125763125763126,
+          "response_per_second": 22219.90510850606
+        },
+        {
+          "code": 192,
+          "duty": 0.046886446886446886,
+          "response_per_second": 36720.035698424595
+        },
+        {
+          "code": 256,
+          "duty": 0.06251526251526252,
+          "response_per_second": 54112.63335037862
+        },
+        {
+          "code": 384,
+          "duty": 0.09377289377289377,
+          "response_per_second": 79254.93640381908
+        },
+        {
+          "code": 512,
+          "duty": 0.12503052503052503,
+          "response_per_second": 113453.79001286569
+        },
+        {
+          "code": 768,
+          "duty": 0.18754578754578755,
+          "response_per_second": 162114.0333517796
+        },
+        {
+          "code": 1024,
+          "duty": 0.25006105006105006,
+          "response_per_second": 204752.21967539244
+        },
+        {
+          "code": 1536,
+          "duty": 0.3750915750915751,
+          "response_per_second": 321898.0869183297
+        },
+        {
+          "code": 2048,
+          "duty": 0.5001221001221001,
+          "response_per_second": 439634.9696841485
+        },
+        {
+          "code": 3072,
+          "duty": 0.7501831501831502,
+          "response_per_second": 595708.066008672
+        },
+        {
+          "code": 4095,
+          "duty": 1.0,
+          "response_per_second": 832262.8153729764
+        }
+      ],
+      "measurement_count": 19,
+      "points": [
+        {
+          "pwm_code": 0,
+          "target_code": 0.0
+        },
+        {
+          "pwm_code": 8,
+          "target_code": 1.260037
+        },
+        {
+          "pwm_code": 16,
+          "target_code": 1.875728
+        },
+        {
+          "pwm_code": 24,
+          "target_code": 5.486668
+        },
+        {
+          "pwm_code": 32,
+          "target_code": 12.960628
+        },
+        {
+          "pwm_code": 48,
+          "target_code": 28.665176
+        },
+        {
+          "pwm_code": 64,
+          "target_code": 43.65191
+        },
+        {
+          "pwm_code": 96,
+          "target_code": 76.17203
+        },
+        {
+          "pwm_code": 128,
+          "target_code": 109.32906
+        },
+        {
+          "pwm_code": 192,
+          "target_code": 180.674354
+        },
+        {
+          "pwm_code": 256,
+          "target_code": 266.251513
+        },
+        {
+          "pwm_code": 384,
+          "target_code": 389.959708
+        },
+        {
+          "pwm_code": 512,
+          "target_code": 558.229037
+        },
+        {
+          "pwm_code": 768,
+          "target_code": 797.653042
+        },
+        {
+          "pwm_code": 1024,
+          "target_code": 1007.446595
+        },
+        {
+          "pwm_code": 1536,
+          "target_code": 1583.841836
+        },
+        {
+          "pwm_code": 2048,
+          "target_code": 2163.145064
+        },
+        {
+          "pwm_code": 3072,
+          "target_code": 2931.074758
+        },
+        {
+          "pwm_code": 4095,
+          "target_code": 4095.0
+        }
+      ],
+      "usable_measurement_count": 18
+    },
+    "g": {
+      "discarded_measurement_count": 0,
+      "discarded_points": [],
+      "full_scale_code": 4095,
+      "full_scale_response_per_second": 1159856.2090419384,
+      "max_code": 4095,
+      "measured_points": [
+        {
+          "code": 8,
+          "duty": 0.0019536019536019536,
+          "response_per_second": 256.07373875734714
+        },
+        {
+          "code": 12,
+          "duty": 0.0029304029304029304,
+          "response_per_second": 267.27490132805315
+        },
+        {
+          "code": 16,
+          "duty": 0.003907203907203907,
+          "response_per_second": 511.3203482974899
+        },
+        {
+          "code": 24,
+          "duty": 0.005860805860805861,
+          "response_per_second": 2263.4999150626813
+        },
+        {
+          "code": 32,
+          "duty": 0.007814407814407814,
+          "response_per_second": 5421.834076087337
+        },
+        {
+          "code": 48,
+          "duty": 0.011721611721611722,
+          "response_per_second": 11973.230635012642
+        },
+        {
+          "code": 64,
+          "duty": 0.01562881562881563,
+          "response_per_second": 17735.403326631968
+        },
+        {
+          "code": 96,
+          "duty": 0.023443223443223443,
+          "response_per_second": 27914.619158968897
+        },
+        {
+          "code": 128,
+          "duty": 0.03125763125763126,
+          "response_per_second": 39792.96299445912
+        },
+        {
+          "code": 192,
+          "duty": 0.046886446886446886,
+          "response_per_second": 65043.72080435052
+        },
+        {
+          "code": 256,
+          "duty": 0.06251526251526252,
+          "response_per_second": 83759.30447683827
+        },
+        {
+          "code": 384,
+          "duty": 0.09377289377289377,
+          "response_per_second": 132188.6975597227
+        },
+        {
+          "code": 512,
+          "duty": 0.12503052503052503,
+          "response_per_second": 167472.25042694926
+        },
+        {
+          "code": 768,
+          "duty": 0.18754578754578755,
+          "response_per_second": 233959.68342147846
+        },
+        {
+          "code": 1024,
+          "duty": 0.25006105006105006,
+          "response_per_second": 325564.486898716
+        },
+        {
+          "code": 1536,
+          "duty": 0.3750915750915751,
+          "response_per_second": 493998.0907009813
+        },
+        {
+          "code": 2048,
+          "duty": 0.5001221001221001,
+          "response_per_second": 596057.2637012546
+        },
+        {
+          "code": 3072,
+          "duty": 0.7501831501831502,
+          "response_per_second": 933459.039726248
+        },
+        {
+          "code": 4095,
+          "duty": 1.0,
+          "response_per_second": 1159856.2090419384
+        }
+      ],
+      "measurement_count": 19,
+      "points": [
+        {
+          "pwm_code": 0,
+          "target_code": 0.0
+        },
+        {
+          "pwm_code": 8,
+          "target_code": 0.904097
+        },
+        {
+          "pwm_code": 12,
+          "target_code": 0.943643
+        },
+        {
+          "pwm_code": 16,
+          "target_code": 1.805273
+        },
+        {
+          "pwm_code": 24,
+          "target_code": 7.991536
+        },
+        {
+          "pwm_code": 32,
+          "target_code": 19.142382
+        },
+        {
+          "pwm_code": 48,
+          "target_code": 42.272809
+        },
+        {
+          "pwm_code": 64,
+          "target_code": 62.616793
+        },
+        {
+          "pwm_code": 96,
+          "target_code": 98.555635
+        },
+        {
+          "pwm_code": 128,
+          "target_code": 140.493435
+        },
+        {
+          "pwm_code": 192,
+          "target_code": 229.644015
+        },
+        {
+          "pwm_code": 256,
+          "target_code": 295.721443
+        },
+        {
+          "pwm_code": 384,
+          "target_code": 466.706745
+        },
+        {
+          "pwm_code": 512,
+          "target_code": 591.279212
+        },
+        {
+          "pwm_code": 768,
+          "target_code": 826.020412
+        },
+        {
+          "pwm_code": 1024,
+          "target_code": 1149.441253
+        },
+        {
+          "pwm_code": 1536,
+          "target_code": 1744.114629
+        },
+        {
+          "pwm_code": 2048,
+          "target_code": 2104.445772
+        },
+        {
+          "pwm_code": 3072,
+          "target_code": 3295.679876
+        },
+        {
+          "pwm_code": 4095,
+          "target_code": 4095.0
+        }
+      ],
+      "usable_measurement_count": 19
+    },
+    "r": {
+      "discarded_measurement_count": 0,
+      "discarded_points": [],
+      "full_scale_code": 4095,
+      "full_scale_response_per_second": 518744.3038653096,
+      "max_code": 4095,
+      "measured_points": [
+        {
+          "code": 8,
+          "duty": 0.0019536019536019536,
+          "response_per_second": 187.01693603132844
+        },
+        {
+          "code": 12,
+          "duty": 0.0029304029304029304,
+          "response_per_second": 263.38296175619115
+        },
+        {
+          "code": 16,
+          "duty": 0.003907203907203907,
+          "response_per_second": 278.37117024033853
+        },
+        {
+          "code": 24,
+          "duty": 0.005860805860805861,
+          "response_per_second": 965.492521668801
+        },
+        {
+          "code": 32,
+          "duty": 0.007814407814407814,
+          "response_per_second": 2097.4678074552485
+        },
+        {
+          "code": 48,
+          "duty": 0.011721611721611722,
+          "response_per_second": 5160.254617987209
+        },
+        {
+          "code": 64,
+          "duty": 0.01562881562881563,
+          "response_per_second": 7700.203608229368
+        },
+        {
+          "code": 96,
+          "duty": 0.023443223443223443,
+          "response_per_second": 12382.533232345873
+        },
+        {
+          "code": 128,
+          "duty": 0.03125763125763126,
+          "response_per_second": 17453.7204613434
+        },
+        {
+          "code": 192,
+          "duty": 0.046886446886446886,
+          "response_per_second": 26270.616091410844
+        },
+        {
+          "code": 256,
+          "duty": 0.06251526251526252,
+          "response_per_second": 36316.70114880531
+        },
+        {
+          "code": 384,
+          "duty": 0.09377289377289377,
+          "response_per_second": 57289.2098547415
+        },
+        {
+          "code": 512,
+          "duty": 0.12503052503052503,
+          "response_per_second": 71846.71447914989
+        },
+        {
+          "code": 768,
+          "duty": 0.18754578754578755,
+          "response_per_second": 111320.25313107824
+        },
+        {
+          "code": 1024,
+          "duty": 0.25006105006105006,
+          "response_per_second": 138390.93381690566
+        },
+        {
+          "code": 1536,
+          "duty": 0.3750915750915751,
+          "response_per_second": 198973.067225425
+        },
+        {
+          "code": 2048,
+          "duty": 0.5001221001221001,
+          "response_per_second": 266189.8682859685
+        },
+        {
+          "code": 3072,
+          "duty": 0.7501831501831502,
+          "response_per_second": 385318.17124834505
+        },
+        {
+          "code": 4095,
+          "duty": 1.0,
+          "response_per_second": 518744.3038653096
+        }
+      ],
+      "measurement_count": 19,
+      "points": [
+        {
+          "pwm_code": 0,
+          "target_code": 0.0
+        },
+        {
+          "pwm_code": 8,
+          "target_code": 1.476323
+        },
+        {
+          "pwm_code": 12,
+          "target_code": 2.079162
+        },
+        {
+          "pwm_code": 16,
+          "target_code": 2.197479
+        },
+        {
+          "pwm_code": 24,
+          "target_code": 7.621658
+        },
+        {
+          "pwm_code": 32,
+          "target_code": 16.557542
+        },
+        {
+          "pwm_code": 48,
+          "target_code": 40.735373
+        },
+        {
+          "pwm_code": 64,
+          "target_code": 60.785889
+        },
+        {
+          "pwm_code": 96,
+          "target_code": 97.748492
+        },
+        {
+          "pwm_code": 128,
+          "target_code": 137.780762
+        },
+        {
+          "pwm_code": 192,
+          "target_code": 207.381888
+        },
+        {
+          "pwm_code": 256,
+          "target_code": 286.686312
+        },
+        {
+          "pwm_code": 384,
+          "target_code": 452.244608
+        },
+        {
+          "pwm_code": 512,
+          "target_code": 567.162461
+        },
+        {
+          "pwm_code": 768,
+          "target_code": 878.769045
+        },
+        {
+          "pwm_code": 1024,
+          "target_code": 1092.466693
+        },
+        {
+          "pwm_code": 1536,
+          "target_code": 1570.705845
+        },
+        {
+          "pwm_code": 2048,
+          "target_code": 2101.31948
+        },
+        {
+          "pwm_code": 3072,
+          "target_code": 3041.725759
+        },
+        {
+          "pwm_code": 4095,
+          "target_code": 4095.0
+        }
+      ],
+      "usable_measurement_count": 19
+    },
+    "ww": {
+      "discarded_measurement_count": 0,
+      "discarded_points": [],
+      "full_scale_code": 4095,
+      "full_scale_response_per_second": 729355.1029812898,
+      "max_code": 4095,
+      "measured_points": [
+        {
+          "code": 8,
+          "duty": 0.0019536019536019536,
+          "response_per_second": 187.6379382640838
+        },
+        {
+          "code": 12,
+          "duty": 0.0029304029304029304,
+          "response_per_second": 206.59381332147166
+        },
+        {
+          "code": 16,
+          "duty": 0.003907203907203907,
+          "response_per_second": 360.07039361258904
+        },
+        {
+          "code": 24,
+          "duty": 0.005860805860805861,
+          "response_per_second": 894.169888691973
+        },
+        {
+          "code": 32,
+          "duty": 0.007814407814407814,
+          "response_per_second": 2239.3500084559278
+        },
+        {
+          "code": 48,
+          "duty": 0.011721611721611722,
+          "response_per_second": 4959.710531182359
+        },
+        {
+          "code": 64,
+          "duty": 0.01562881562881563,
+          "response_per_second": 7508.792256071507
+        },
+        {
+          "code": 96,
+          "duty": 0.023443223443223443,
+          "response_per_second": 13175.987908824085
+        },
+        {
+          "code": 128,
+          "duty": 0.03125763125763126,
+          "response_per_second": 18881.72863187094
+        },
+        {
+          "code": 192,
+          "duty": 0.046886446886446886,
+          "response_per_second": 30177.40716036557
+        },
+        {
+          "code": 256,
+          "duty": 0.06251526251526252,
+          "response_per_second": 43535.291772382436
+        },
+        {
+          "code": 384,
+          "duty": 0.09377289377289377,
+          "response_per_second": 68894.27820912459
+        },
+        {
+          "code": 512,
+          "duty": 0.12503052503052503,
+          "response_per_second": 92266.5086741806
+        },
+        {
+          "code": 768,
+          "duty": 0.18754578754578755,
+          "response_per_second": 141150.8600229761
+        },
+        {
+          "code": 1024,
+          "duty": 0.25006105006105006,
+          "response_per_second": 186107.25215786265
+        },
+        {
+          "code": 1536,
+          "duty": 0.3750915750915751,
+          "response_per_second": 281289.1704385775
+        },
+        {
+          "code": 2048,
+          "duty": 0.5001221001221001,
+          "response_per_second": 369745.68081635225
+        },
+        {
+          "code": 3072,
+          "duty": 0.7501831501831502,
+          "response_per_second": 524257.5990060033
+        },
+        {
+          "code": 4095,
+          "duty": 1.0,
+          "response_per_second": 729355.1029812898
+        }
+      ],
+      "measurement_count": 19,
+      "points": [
+        {
+          "pwm_code": 0,
+          "target_code": 0.0
+        },
+        {
+          "pwm_code": 8,
+          "target_code": 1.053502
+        },
+        {
+          "pwm_code": 12,
+          "target_code": 1.159931
+        },
+        {
+          "pwm_code": 16,
+          "target_code": 2.021633
+        },
+        {
+          "pwm_code": 24,
+          "target_code": 5.020361
+        },
+        {
+          "pwm_code": 32,
+          "target_code": 12.57294
+        },
+        {
+          "pwm_code": 48,
+          "target_code": 27.846538
+        },
+        {
+          "pwm_code": 64,
+          "target_code": 42.158482
+        },
+        {
+          "pwm_code": 96,
+          "target_code": 73.97723
+        },
+        {
+          "pwm_code": 128,
+          "target_code": 106.012392
+        },
+        {
+          "pwm_code": 192,
+          "target_code": 169.432533
+        },
+        {
+          "pwm_code": 256,
+          "target_code": 244.431031
+        },
+        {
+          "pwm_code": 384,
+          "target_code": 386.810304
+        },
+        {
+          "pwm_code": 512,
+          "target_code": 518.034839
+        },
+        {
+          "pwm_code": 768,
+          "target_code": 792.498427
+        },
+        {
+          "pwm_code": 1024,
+          "target_code": 1044.908296
+        },
+        {
+          "pwm_code": 1536,
+          "target_code": 1579.311844
+        },
+        {
+          "pwm_code": 2048,
+          "target_code": 2075.955261
+        },
+        {
+          "pwm_code": 3072,
+          "target_code": 2943.470004
+        },
+        {
+          "pwm_code": 4095,
+          "target_code": 4095.0
+        }
+      ],
+      "usable_measurement_count": 19
+    }
+  },
+  "created_at": "2026-06-06T15:49:26.240679+00:00",
+  "input": "linear_brightness_code",
+  "kind": "wled_rgbww_code_duty_curve",
+  "max_code": 4095,
+  "notes": [
+    "Input values are desired linear brightness codes in 0..max_code.",
+    "Output values are PWM codes interpolated from measured ambient-subtracted camera response.",
+    "Non-monotonic low-end measurements are discarded before building inverse curves."
+  ],
+  "output": "pwm_code",
+  "source_created_at": "2026-06-06T15:10:12.715343+00:00",
+  "source_files": [
+    {
+      "channel_map": {
+        "cw": "ww"
+      },
+      "created_at": "2026-06-06T06:15:11.623825+00:00",
+      "path": "/Users/ibobby/Projects/WLED-RGBWW/tmp/channel-response/channel-response-20260606-001511/channel-response.json",
+      "run_dir": "/Users/ibobby/Projects/WLED-RGBWW/tmp/channel-response/channel-response-20260606-001511",
+      "status": "running"
+    },
+    {
+      "channel_map": {
+        "ww": "cw"
+      },
+      "created_at": "2026-06-06T06:40:59.669096+00:00",
+      "path": "/Users/ibobby/Projects/WLED-RGBWW/tmp/channel-response/channel-response-ww-rgb-20260606-004059/channel-response.json",
+      "run_dir": "/Users/ibobby/Projects/WLED-RGBWW/tmp/channel-response/channel-response-ww-rgb-20260606-004059",
+      "status": "complete"
+    }
+  ],
+  "source_kind": "merged_wled_rgbww_channel_code_response",
+  "version": 1
+}

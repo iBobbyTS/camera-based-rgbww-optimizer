@@ -1,0 +1,805 @@
+{
+  "blocks": [
+    {
+      "index": 1,
+      "patch": {
+        "block_index": 1,
+        "label": "K",
+        "name": "black",
+        "roles": [
+          "neutral",
+          "black",
+          "ambient_check"
+        ],
+        "standard_index": 24
+      },
+      "points": [
+        {
+          "x": 625.513,
+          "y": 579.188
+        },
+        {
+          "x": 981.07,
+          "y": 572.233
+        },
+        {
+          "x": 990.276,
+          "y": 915.285
+        },
+        {
+          "x": 633.985,
+          "y": 921.645
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "patch": {
+        "block_index": 2,
+        "label": "N3.5",
+        "name": "neutral_3_5",
+        "roles": [
+          "neutral",
+          "gray"
+        ],
+        "standard_index": 23
+      },
+      "points": [
+        {
+          "x": 1134.326,
+          "y": 569.304
+        },
+        {
+          "x": 1490.25,
+          "y": 562.341
+        },
+        {
+          "x": 1499.318,
+          "y": 906.129
+        },
+        {
+          "x": 1142.85,
+          "y": 912.492
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "patch": {
+        "block_index": 3,
+        "label": "N5",
+        "name": "neutral_5",
+        "roles": [
+          "neutral",
+          "gray"
+        ],
+        "standard_index": 22
+      },
+      "points": [
+        {
+          "x": 1644.699,
+          "y": 559.389
+        },
+        {
+          "x": 1998.008,
+          "y": 552.478
+        },
+        {
+          "x": 2006.733,
+          "y": 897.002
+        },
+        {
+          "x": 1653.282,
+          "y": 903.311
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "patch": {
+        "block_index": 4,
+        "label": "N6.5",
+        "name": "neutral_6_5",
+        "roles": [
+          "neutral",
+          "gray"
+        ],
+        "standard_index": 21
+      },
+      "points": [
+        {
+          "x": 2150.747,
+          "y": 549.559
+        },
+        {
+          "x": 2502.74,
+          "y": 542.673
+        },
+        {
+          "x": 2511.543,
+          "y": 887.922
+        },
+        {
+          "x": 2159.276,
+          "y": 894.21
+        }
+      ]
+    },
+    {
+      "index": 5,
+      "patch": {
+        "block_index": 5,
+        "label": "N8",
+        "name": "neutral_8",
+        "roles": [
+          "neutral",
+          "gray"
+        ],
+        "standard_index": 20
+      },
+      "points": [
+        {
+          "x": 2653.176,
+          "y": 539.799
+        },
+        {
+          "x": 3004.989,
+          "y": 532.916
+        },
+        {
+          "x": 3013.409,
+          "y": 878.895
+        },
+        {
+          "x": 2661.851,
+          "y": 885.17
+        }
+      ]
+    },
+    {
+      "index": 6,
+      "patch": {
+        "block_index": 6,
+        "label": "W",
+        "name": "white",
+        "roles": [
+          "neutral",
+          "white",
+          "exposure"
+        ],
+        "standard_index": 19
+      },
+      "points": [
+        {
+          "x": 3152.583,
+          "y": 530.097
+        },
+        {
+          "x": 3499.98,
+          "y": 523.301
+        },
+        {
+          "x": 3508.56,
+          "y": 869.988
+        },
+        {
+          "x": 3161.362,
+          "y": 876.186
+        }
+      ]
+    },
+    {
+      "index": 7,
+      "patch": {
+        "block_index": 7,
+        "label": "C",
+        "name": "cyan",
+        "roles": [
+          "rgbcmy",
+          "hue_anchor",
+          "cyan"
+        ],
+        "standard_index": 18
+      },
+      "points": [
+        {
+          "x": 637.2,
+          "y": 1048.425
+        },
+        {
+          "x": 993.575,
+          "y": 1041.178
+        },
+        {
+          "x": 1002.884,
+          "y": 1388.061
+        },
+        {
+          "x": 645.807,
+          "y": 1396.325
+        }
+      ]
+    },
+    {
+      "index": 8,
+      "patch": {
+        "block_index": 8,
+        "label": "M",
+        "name": "magenta",
+        "roles": [
+          "rgbcmy",
+          "hue_anchor",
+          "magenta"
+        ],
+        "standard_index": 17
+      },
+      "points": [
+        {
+          "x": 1146.024,
+          "y": 1037.963
+        },
+        {
+          "x": 1502.546,
+          "y": 1030.713
+        },
+        {
+          "x": 1511.665,
+          "y": 1376.401
+        },
+        {
+          "x": 1154.635,
+          "y": 1384.664
+        }
+      ]
+    },
+    {
+      "index": 9,
+      "patch": {
+        "block_index": 9,
+        "label": "Y",
+        "name": "yellow",
+        "roles": [
+          "rgbcmy",
+          "hue_anchor",
+          "yellow"
+        ],
+        "standard_index": 16
+      },
+      "points": [
+        {
+          "x": 1656.394,
+          "y": 1027.47
+        },
+        {
+          "x": 2009.841,
+          "y": 1020.282
+        },
+        {
+          "x": 2018.565,
+          "y": 1364.784
+        },
+        {
+          "x": 1665.016,
+          "y": 1372.966
+        }
+      ]
+    },
+    {
+      "index": 10,
+      "patch": {
+        "block_index": 10,
+        "label": "R",
+        "name": "red",
+        "roles": [
+          "rgbcmy",
+          "hue_anchor",
+          "red"
+        ],
+        "standard_index": 15
+      },
+      "points": [
+        {
+          "x": 2162.345,
+          "y": 1017.067
+        },
+        {
+          "x": 2514.625,
+          "y": 1009.903
+        },
+        {
+          "x": 2523.379,
+          "y": 1353.215
+        },
+        {
+          "x": 2170.866,
+          "y": 1361.373
+        }
+      ]
+    },
+    {
+      "index": 11,
+      "patch": {
+        "block_index": 11,
+        "label": "G",
+        "name": "green",
+        "roles": [
+          "rgbcmy",
+          "hue_anchor",
+          "green"
+        ],
+        "standard_index": 14
+      },
+      "points": [
+        {
+          "x": 2664.875,
+          "y": 1006.734
+        },
+        {
+          "x": 3016.375,
+          "y": 999.586
+        },
+        {
+          "x": 3024.702,
+          "y": 1341.726
+        },
+        {
+          "x": 2673.494,
+          "y": 1349.854
+        }
+      ]
+    },
+    {
+      "index": 12,
+      "patch": {
+        "block_index": 12,
+        "label": "B",
+        "name": "blue",
+        "roles": [
+          "rgbcmy",
+          "hue_anchor",
+          "blue"
+        ],
+        "standard_index": 13
+      },
+      "points": [
+        {
+          "x": 3164.391,
+          "y": 996.464
+        },
+        {
+          "x": 3511.539,
+          "y": 989.404
+        },
+        {
+          "x": 3519.978,
+          "y": 1330.376
+        },
+        {
+          "x": 3173.065,
+          "y": 1338.404
+        }
+      ]
+    },
+    {
+      "index": 13,
+      "patch": {
+        "block_index": 13,
+        "label": "OY",
+        "name": "orange_yellow",
+        "roles": [
+          "color"
+        ],
+        "standard_index": 12
+      },
+      "points": [
+        {
+          "x": 648.939,
+          "y": 1519.723
+        },
+        {
+          "x": 1006.113,
+          "y": 1511.349
+        },
+        {
+          "x": 1015.441,
+          "y": 1858.961
+        },
+        {
+          "x": 657.56,
+          "y": 1868.18
+        }
+      ]
+    },
+    {
+      "index": 14,
+      "patch": {
+        "block_index": 14,
+        "label": "YG",
+        "name": "yellow_green",
+        "roles": [
+          "color"
+        ],
+        "standard_index": 11
+      },
+      "points": [
+        {
+          "x": 1157.748,
+          "y": 1507.699
+        },
+        {
+          "x": 1514.85,
+          "y": 1499.327
+        },
+        {
+          "x": 1523.993,
+          "y": 1845.955
+        },
+        {
+          "x": 1166.378,
+          "y": 1855.167
+        }
+      ]
+    },
+    {
+      "index": 15,
+      "patch": {
+        "block_index": 15,
+        "label": "Purple",
+        "name": "purple",
+        "roles": [
+          "color"
+        ],
+        "standard_index": 10
+      },
+      "points": [
+        {
+          "x": 1668.091,
+          "y": 1495.64
+        },
+        {
+          "x": 2021.655,
+          "y": 1487.351
+        },
+        {
+          "x": 2030.409,
+          "y": 1833.003
+        },
+        {
+          "x": 1676.738,
+          "y": 1842.114
+        }
+      ]
+    },
+    {
+      "index": 16,
+      "patch": {
+        "block_index": 16,
+        "label": "MR",
+        "name": "moderate_red",
+        "roles": [
+          "color"
+        ],
+        "standard_index": 9
+      },
+      "points": [
+        {
+          "x": 2173.921,
+          "y": 1483.687
+        },
+        {
+          "x": 2526.467,
+          "y": 1475.422
+        },
+        {
+          "x": 2535.256,
+          "y": 1820.092
+        },
+        {
+          "x": 2182.471,
+          "y": 1829.18
+        }
+      ]
+    },
+    {
+      "index": 17,
+      "patch": {
+        "block_index": 17,
+        "label": "PB",
+        "name": "purplish_blue",
+        "roles": [
+          "color"
+        ],
+        "standard_index": 8
+      },
+      "points": [
+        {
+          "x": 2676.528,
+          "y": 1471.81
+        },
+        {
+          "x": 3027.696,
+          "y": 1463.577
+        },
+        {
+          "x": 3036.061,
+          "y": 1807.284
+        },
+        {
+          "x": 2685.182,
+          "y": 1816.323
+        }
+      ]
+    },
+    {
+      "index": 18,
+      "patch": {
+        "block_index": 18,
+        "label": "Orange",
+        "name": "orange",
+        "roles": [
+          "color"
+        ],
+        "standard_index": 7
+      },
+      "points": [
+        {
+          "x": 3176.127,
+          "y": 1460.005
+        },
+        {
+          "x": 3523.009,
+          "y": 1451.872
+        },
+        {
+          "x": 3531.492,
+          "y": 1794.614
+        },
+        {
+          "x": 3184.841,
+          "y": 1803.544
+        }
+      ]
+    },
+    {
+      "index": 19,
+      "patch": {
+        "block_index": 19,
+        "label": "BG",
+        "name": "bluish_green",
+        "roles": [
+          "color"
+        ],
+        "standard_index": 6
+      },
+      "points": [
+        {
+          "x": 660.747,
+          "y": 1993.787
+        },
+        {
+          "x": 1018.72,
+          "y": 1984.096
+        },
+        {
+          "x": 1028.082,
+          "y": 2332.978
+        },
+        {
+          "x": 669.401,
+          "y": 2343.592
+        }
+      ]
+    },
+    {
+      "index": 20,
+      "patch": {
+        "block_index": 20,
+        "label": "Flower",
+        "name": "blue_flower",
+        "roles": [
+          "memory_color"
+        ],
+        "standard_index": 5
+      },
+      "points": [
+        {
+          "x": 1169.534,
+          "y": 1979.911
+        },
+        {
+          "x": 1527.213,
+          "y": 1970.228
+        },
+        {
+          "x": 1536.388,
+          "y": 2318.04
+        },
+        {
+          "x": 1178.196,
+          "y": 2328.639
+        }
+      ]
+    },
+    {
+      "index": 21,
+      "patch": {
+        "block_index": 21,
+        "label": "Foliage",
+        "name": "foliage",
+        "roles": [
+          "memory_color"
+        ],
+        "standard_index": 4
+      },
+      "points": [
+        {
+          "x": 1679.843,
+          "y": 1965.994
+        },
+        {
+          "x": 2033.52,
+          "y": 1956.42
+        },
+        {
+          "x": 2042.302,
+          "y": 2303.172
+        },
+        {
+          "x": 1688.519,
+          "y": 2313.64
+        }
+      ]
+    },
+    {
+      "index": 22,
+      "patch": {
+        "block_index": 22,
+        "label": "Sky",
+        "name": "blue_sky",
+        "roles": [
+          "memory_color"
+        ],
+        "standard_index": 3
+      },
+      "points": [
+        {
+          "x": 2185.543,
+          "y": 1952.202
+        },
+        {
+          "x": 2538.352,
+          "y": 1942.651
+        },
+        {
+          "x": 2547.167,
+          "y": 2288.334
+        },
+        {
+          "x": 2194.12,
+          "y": 2298.781
+        }
+      ]
+    },
+    {
+      "index": 23,
+      "patch": {
+        "block_index": 23,
+        "label": "Skin L",
+        "name": "light_skin",
+        "roles": [
+          "skin",
+          "memory_color"
+        ],
+        "standard_index": 2
+      },
+      "points": [
+        {
+          "x": 2688.221,
+          "y": 1938.493
+        },
+        {
+          "x": 3039.052,
+          "y": 1928.996
+        },
+        {
+          "x": 3047.439,
+          "y": 2273.632
+        },
+        {
+          "x": 2696.9,
+          "y": 2284.005
+        }
+      ]
+    },
+    {
+      "index": 24,
+      "patch": {
+        "block_index": 24,
+        "label": "Skin D",
+        "name": "dark_skin",
+        "roles": [
+          "skin",
+          "memory_color"
+        ],
+        "standard_index": 1
+      },
+      "points": [
+        {
+          "x": 3187.896,
+          "y": 1924.866
+        },
+        {
+          "x": 3534.506,
+          "y": 1915.483
+        },
+        {
+          "x": 3543.01,
+          "y": 2259.068
+        },
+        {
+          "x": 3196.634,
+          "y": 2269.318
+        }
+      ]
+    }
+  ],
+  "capture": {
+    "aperture": "implicit auto",
+    "decoded": {
+      "black_level_per_channel": [
+        0,
+        41,
+        114,
+        81
+      ],
+      "camera_white_level_per_channel": [
+        155,
+        155,
+        155,
+        155
+      ],
+      "exposure_metric": 27607.0,
+      "image_channel_max": [
+        27465,
+        39993,
+        25541
+      ],
+      "image_dtype": "uint16",
+      "image_max": 39993,
+      "image_shape": [
+        2879,
+        4319,
+        3
+      ],
+      "metadata_file": "/Users/ibobby/Projects/WLED-RGBWW/tmp/location-ui/20260714-211617/decoded/20260714-211713-location-final003.rawpy-linear-camera-rgb16.json",
+      "output_files": [
+        "/Users/ibobby/Projects/WLED-RGBWW/tmp/location-ui/20260714-211617/decoded/20260714-211713-location-final003.rawpy-linear-camera-rgb16.npy",
+        "/Users/ibobby/Projects/WLED-RGBWW/tmp/location-ui/20260714-211617/decoded/20260714-211713-location-final003.rawpy-linear-camera-rgb16.json"
+      ],
+      "raw_visible_max": 10039,
+      "source_file": "/Users/ibobby/Projects/WLED-RGBWW/tmp/location-ui/20260714-211617/camera/20260714-211713-location-final003.cr3",
+      "white_level": 16383
+    },
+    "image_format": "RAW",
+    "iso": "100",
+    "model": "Canon EOS R6 Mark III via r6-camera-bridge",
+    "port": "http://ibobby-rpi-4.local:8088",
+    "saved_file": "/Users/ibobby/Projects/WLED-RGBWW/tmp/location-ui/20260714-211617/camera/20260714-211713-location-final003.cr3",
+    "shutter_speed": "1/320"
+  },
+  "chart": {
+    "cols": 6,
+    "detected_order": "image_row_major",
+    "orientation_degrees": 180,
+    "rows": 4,
+    "standard_index_formula": "25 - block_index",
+    "type": "colorchecker_classic_24"
+  },
+  "created_at": "2026-07-15T03:17:59.012738+00:00",
+  "image": {
+    "height": 2880,
+    "width": 4320
+  },
+  "target_block_count": 24,
+  "version": 1
+}

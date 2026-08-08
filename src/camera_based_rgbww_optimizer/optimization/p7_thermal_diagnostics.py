@@ -375,6 +375,8 @@ def build_ray_r6_spec(policy: Mapping[str, Any] | None = None) -> dict[str, Any]
             "code_duty_curve": file_reference(CURVE_PATH),
         },
         "strip": "zero_throughout", "ambient": 0,
+        "source_isolation_contract": "strip_zero_between_states_ray_continuous_until_final_cleanup",
+        "continuous_ray_state_order": ["A", "D", "A", "B", "A", "C", "A"],
         "native_raw_ambient_policy": AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
         "timing_contract": timing_contract(2), "captures": captures,
         "capture_ids": [row["capture_id"] for row in captures],

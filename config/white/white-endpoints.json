@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "created_at": "2026-07-09T08:32:58.561231+00:00",
+  "measurement": {
+    "kind": "camera_based_rgbww_optimizer_white_endpoint_ray_match",
+    "source_run": "tmp/white-endpoints/20260709-023258",
+    "environment_note": "User confirmed this run was captured in the best achievable environment."
+  },
+  "ray_endpoint_matches": {
+    "ww": {
+      "best": {
+        "cct": 2931,
+        "gm": 176,
+        "cct_error_K": 5.614150416705797,
+        "duv_error": 0.008389201445608382,
+        "absolute_cct_error_K": 5.614150416705797,
+        "absolute_duv_error": 0.008389201445608382,
+        "goal_score": 0.8389201445608382,
+        "within_goal": true,
+        "ray_white_point": {
+          "cct_K": 2904.5231100554765,
+          "duv": 0.0020442452974001354
+        }
+      },
+      "ranked": []
+    },
+    "cw": {
+      "best": {
+        "cct": 7702,
+        "gm": 160,
+        "cct_error_K": -4.100520940099159,
+        "duv_error": 0.005491473763020994,
+        "absolute_cct_error_K": 4.100520940099159,
+        "absolute_duv_error": 0.005491473763020994,
+        "goal_score": 0.5491473763020994,
+        "within_goal": true,
+        "ray_white_point": {
+          "cct_K": 5548.455055481032,
+          "duv": 0.006313515253977526
+        }
+      },
+      "ranked": []
+    }
+  },
+  "white_range": {
+    "low_cct": 2931,
+    "high_cct": 7702,
+    "ww": {
+      "cct": 2931,
+      "gm": 176
+    },
+    "cw": {
+      "cct": 7702,
+      "gm": 160
+    }
+  }
+}

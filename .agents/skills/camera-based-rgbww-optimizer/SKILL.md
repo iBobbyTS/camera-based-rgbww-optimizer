@@ -40,13 +40,21 @@ adding root-level compatibility wrappers.
 - Ordinary implementation or test problems are fixed in the current E1/E2
   worktree until meaningful behavior tests pass. Do not stop merely because a
   validation count, review count or correction budget would have been exhausted.
-- `.agent-work/PLAN.md`, `.agent-work/PLAN-FULL.md`, debug notes and reviews are
-  optional local scratch. They must remain untracked/ignored and must never be
-  read by production code, tests, release tooling or Git commit logic.
-- Reproducibility belongs in experiment specs, frozen input/config hashes,
-  run/command/capture/quality/physical/cleanup artifacts, source commit metadata
-  and analyzer outputs. A scratch plan may summarize these but never authorizes or
-  blocks production execution.
+- `.agent-work/PLAN.md`, `.agent-work/PLAN-FULL.md`, debug notes, reviews and
+  execution results are versioned records. They may be tracked by Git so the
+  completed GUIDE stage can be reconstructed; they remain collaboration context,
+  not production runtime state, test input, or hidden authorization.
+- Track project material by default: source, tests, docs, plans, configuration,
+  small logs, reports, manifests, hashes, analysis and cleanup evidence. PLAN and
+  PLAN-FULL may be versioned for post-GUIDE reconstruction.
+- Keep experimental payloads, generated firmware, compile/build output, archives
+  and other large generated files out of Git. Small firmware source/configuration
+  remains trackable as reproducible input. Raw experiment data belongs under
+  `/Volumes/4T/temp/rgbww-optimizer`; retain the small manifests, hashes, quality,
+  analysis and cleanup evidence needed for audit.
+- Treat TIFF/JPEG/PNG derivatives, decoded camera arrays, rawpy per-capture JSON,
+  white-LUT datasets and equivalent bulk measurement records as experiment data.
+  Keep Markdown experiment reports and small audit metadata versioned.
 - Supervisor is invoked only when Human asks for a point-in-time check. It reports
   progress speed, abnormal loops, scientific progress and whether intervention is
   needed; it does not dispatch routine work. It may ask Human to engage Advisor
@@ -64,8 +72,10 @@ adding root-level compatibility wrappers.
 - Start new channel tests at low PWM, verify order and thermal behavior, then
   ramp only within the plan. Any script that can leave the fixture on must turn
   it off before exit unless it is an explicit light-on/control tool.
-- Keep disposable outputs under `/Volumes/4T/temp/rgbww-optimizer`.
-  Repository `tmp/*.zsh` files are versioned wrappers, not data directories.
+- Keep raw experimental outputs and disposable caches under
+  `/Volumes/4T/temp/rgbww-optimizer`. Repository `tmp/` may hold versioned
+  non-raw logs, reports and compile evidence; `tmp/*.zsh` files are versioned
+  wrappers.
 - Ray120c is the CCT/G-M reference. Never infer its CCT from camera RGB.
 - Formal camera work uses `control.camera_remote.RemoteCameraBackend`; do not
   expose credentials in arguments, logs, artifacts, or source.
@@ -98,7 +108,7 @@ the existing cleanup and provenance owners.
 | Hardware assumptions, commands, calibration decisions, validation workflow | `docs/README.md` |
 | Local connection/configuration/credential boundary | `docs/local-lab-connection-boundary.md` |
 | Current executable work | The Orchestrator's current execution notes plus the applicable `GUIDE.md` |
-| GUIDE-stage roadmap or dependency status | Optional local scratch only; never a production authority |
+| GUIDE-stage roadmap or dependency status | `.agent-work/PLAN-FULL.md` and relevant tracked evidence; context only, never production authority |
 | P7 TD-B provenance or historical regression | `docs/engineering/p7-td-b-contract-history.md`, then only relevant archives/evidence |
 | Exact production behavior | The relevant module and focused tests |
 
