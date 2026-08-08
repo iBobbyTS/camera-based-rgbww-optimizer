@@ -20,54 +20,45 @@ adding root-level compatibility wrappers.
 - Ray120c CCT/G-M, HSI, RGB, reference matching, or thermal diagnostics.
 - Planning, executing, or reviewing experiment packages for this repository.
 
-## Role and Ownership Core
+## Execution Policy and Ownership
 
-- Keep engineering ceremony proportional to the active GUIDE objective. This
-  repository may skip generic non-trivial-change branching or mandatory review
-  loops when they do not materially improve scientific correctness, safety,
-  evidence integrity, or maintainability; retain only the smallest meaningful
-  validation and evidence needed for the stage.
-- Each PLAN-FULL milestone and active PLAN must state the next scientific action
-  and its `science_delta`. A code change, passing test, provenance artifact, or
-  Git commit is not scientific progress by itself. Allow one engineering-only
-  package before the next scientific action; a second needs a newly exposed,
-  concrete blocker, and a third consecutive engineering-only package is a route
-  failure that requires simplification rather than more orchestration.
-- Human owns the physical lab, experiment goal, and dangerous-operation
-  authorization.
-- Advisor researches color science, measurement science, and scientific branch
-  selection and owns `GUIDE.md`/`RESEARCH.md`. Scientific guidance is authoritative
-  for those questions; implementation, file scope, provenance plumbing, execution
-  packaging, and Git topology remain Orchestrator-owned.
-- `[@sol_max](subagent://sol_max)` drafts and maintains `.agent-work/PLAN-FULL.md`
-  from the active GUIDE and Human goal. It is the concise, non-executable total
-  arrangement for the current GUIDE stage; it is not a command journal or a
-  second executable plan.
-- Orchestrator owns the low-density execution route, engineering boundaries,
-  repository scope, corrective execution, and Git management, and may override
-  non-scientific Advisor implementation advice without editing GUIDE/RESEARCH.
-- Planner uses a higher reasoning-effort profile than Executer, reads PLAN-FULL
-  and applicable scientific guidance, writes exactly one small active executable
-  package to `.agent-work/PLAN.md`, and reviews the complete batch result. It
-  archives only terminal package dispositions; intermediate corrections stay in
-  the active PLAN and execution evidence. Non-scientific contradictions return to
-  the Orchestrator.
-- Executer treats GUIDE, PLAN, PLAN-FULL, debug records, and archives as
-  read-only; uses a lower-cost reasoning profile for deterministic execution,
-  executes only active PLAN bounds, and appends results to
-  `.agent-work/EXECUTION_RESULT.md` without replanning.
-
-Only the active PLAN authorizes a task, device operation, retry, budget, or
-stage entry. Pause for Advisor direction only when a safe scientific branch
-cannot be determined. Engineering, provenance, file, test, execution, and Git
-questions are resolved by the Orchestrator. For an authorized command expected to exceed 10 minutes,
-use the visible Terminal/liveness/automation workflow required by `AGENTS.md`.
+- Keep engineering ceremony proportional to the active GUIDE objective. No
+  mandatory orchestration or acceptance-artifact workflow is required when it
+  does not materially improve scientific correctness, safety or reproducibility.
+- Scientific progress is an accepted measurement/capture/analysis result, a valid
+  scientific negative, or a newly unlocked GUIDE experiment. Code, tests, plans,
+  provenance and commits are engineering evidence only.
+- Human owns the physical lab, experiment goal and dangerous-operation
+  authorization. Advisor owns scientific guidance and immutable `GUIDE.md`/
+  `RESEARCH.md`; it is consulted only for color science, measurement science,
+  interpretation or scientific branch selection.
+- Orchestrator owns the direct low-density implementation and experiment route,
+  repository scope, evidence files and Git commits. It may use Planner and
+  Executer as optional cost roles: Planner can spend more reasoning on the
+  smallest useful boundary, while Executer can perform deterministic edits and
+  checks at lower cost. Neither role is a required approval stage.
+- Ordinary implementation or test problems are fixed in the current E1/E2
+  worktree until meaningful behavior tests pass. Do not stop merely because a
+  validation count, review count or correction budget would have been exhausted.
+- `.agent-work/PLAN.md`, `.agent-work/PLAN-FULL.md`, debug notes and reviews are
+  optional local scratch. They must remain untracked/ignored and must never be
+  read by production code, tests, release tooling or Git commit logic.
+- Reproducibility belongs in experiment specs, frozen input/config hashes,
+  run/command/capture/quality/physical/cleanup artifacts, source commit metadata
+  and analyzer outputs. A scratch plan may summarize these but never authorizes or
+  blocks production execution.
+- Supervisor is invoked only when Human asks for a point-in-time check. It reports
+  progress speed, abnormal loops, scientific progress and whether intervention is
+  needed; it does not dispatch routine work. It may ask Human to engage Advisor
+  only for an unresolved scientific question.
+- For commands expected to exceed 10 minutes, use the visible Terminal/liveness/
+  automation workflow required by `AGENTS.md`.
 
 ## Core Safety and Runtime Rules
 
 - Remote firmware upload/deployment, destructive hardware changes, and device
-  work outside active PLAN bounds require Human authorization.
-- Bounded light output already selected by PLAN and zero/off cleanup do not
+  work outside the current written execution scope require Human authorization.
+- Bounded light output already selected by the current execution notes and zero/off cleanup do not
   require a separate approval. Keep exact target, intensity, duration, abort,
   isolation, and Python/shell cleanup bounds.
 - Start new channel tests at low PWM, verify order and thermal behavior, then
@@ -106,11 +97,11 @@ the existing cleanup and provenance owners.
 | --- | --- |
 | Hardware assumptions, commands, calibration decisions, validation workflow | `docs/README.md` |
 | Local connection/configuration/credential boundary | `docs/local-lab-connection-boundary.md` |
-| Current executable work | `.agent-work/PLAN.md` plus the applicable `GUIDE.md` |
-| GUIDE-stage roadmap or dependency status | `.agent-work/PLAN-FULL.md` (read-only except `sol_max`) |
+| Current executable work | The Orchestrator's current execution notes plus the applicable `GUIDE.md` |
+| GUIDE-stage roadmap or dependency status | Optional local scratch only; never a production authority |
 | P7 TD-B provenance or historical regression | `docs/engineering/p7-td-b-contract-history.md`, then only relevant archives/evidence |
 | Exact production behavior | The relevant module and focused tests |
 
 Do not preload P7 history for ordinary work. The history note is a reference,
-not authorization; its current route is paused until a future active PLAN
-explicitly releases work.
+not authorization; the current route follows the Orchestrator's written execution
+scope and the immutable scientific guidance.
