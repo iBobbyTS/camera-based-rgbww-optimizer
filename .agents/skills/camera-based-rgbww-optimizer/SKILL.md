@@ -20,7 +20,7 @@ adding root-level compatibility wrappers.
 - Ray120c CCT/G-M, HSI, RGB, reference matching, or thermal diagnostics.
 - Planning, executing, or reviewing experiment packages for this repository.
 
-## Execution Policy and Ownership
+## Role and Ownership Core
 
 - Keep engineering ceremony proportional to the active GUIDE objective. No
   mandatory orchestration or acceptance-artifact workflow is required when it
