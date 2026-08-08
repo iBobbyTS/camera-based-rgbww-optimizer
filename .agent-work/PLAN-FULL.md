@@ -8,11 +8,11 @@
 
 **当前分支：** `codex/guide4-science-path-v3`
 
-**当前代码 HEAD：** `ce065a3fec5efd74842d3eaff4d648741653ee35`
+**Ray analyzer 代码 checkpoint：** `a3f2b864860a3b524999bd003c2b01f26748086a`
 
-**路线状态：** `WAITING_SAME_ROOT_OFFLINE_REVALIDATION_AND_RAY_ANALYSIS`
+**路线状态：** `M1_RAY_R6_HISTORY_FAIL_PRESCRIBED_STOP_WAITING_ADVISOR`
 
-**唯一下一动作：** 对现有 Ray R6 root 做一次显式、可审计的离线重新验收；通过后对同一 root 运行一次 Ray-only analyzer
+**唯一下一动作：** Advisor 审阅 Ray R6 history-dependent 结果并选择新的科学模型或实验方向；strip、combined 与 TD-C 不得进入
 
 > 本文件只描述依赖关系、科学分支与复现边界。真正执行设备动作前，Orchestrator 仍需在当前执行说明中写清本次实验的目标、状态、强度、时长、预算、source isolation、abort 与 cleanup。不得由本文件推导设备授权。
 
@@ -98,29 +98,29 @@ cleanup = pass
 | `all-off-shell.json` | `d254329059b2e6553210c19418ef0977b56a833d2d0884adfd3ac464408da4d7` | cleanup pass |
 | `quality.json` | `ed4050b4cba2b53133ec9cb4e51c139ba6128e3051ca3dd541183b4df6915b3f` | 修复后派生，16/16 pass |
 
-当前缺少：
+已从同一 root 完成并保留：
 
 ```text
-commands-audit.json
-post-fix-revalidation.json
-analysis.json
+commands-audit.json        sha256=98a1df5311ce789b6eff0e20a9ada8521efda83efbf3d999d71c0d566c298178
+post-fix-revalidation.json sha256=9d531419ed94bcc1a0c5af29933eb82131082dbe0eea0d9f05f9dcfdec473e2e
+analysis.json              sha256=7cb6ef267496342ae1145bb83295510438ea9bf45946187168ffb21e8b0e267b
 ```
 
-`commands-audit.json` 因旧 post-capture validator 在 runner 写入该派生文件之前退出而缺失。它可以从同一 root 的 immutable spec/commands/gates/captures/physical/cleanup 离线派生，但必须明确标注为 post-fix derived evidence。
+`commands-audit.json` 是从同一 root 的 immutable spec/commands/gates/captures/physical/cleanup 离线派生，并明确标注为 post-fix derived evidence。原 `run/failure/wrapper` 仍保持失败身份和原 hash。
 
 ### 1.4 当前科学状态
 
 ```text
 science_delta = retained_new_ray_r6_acquisition_16_of_16
 ray_measurement_quality = 16_of_16_pass_after_fixed_gate
-ray_history_conclusion = not_evaluated
-ray_formal_pass = not_claimed
+ray_history_conclusion = history_dependent_at_operational_dwell_600
+ray_formal_pass = false
 strip_td_b = locked
 combined_operational_600 = locked
 td_c_core = locked
 ```
 
-已经取得完整新 Ray R6 数据集，但尚未得到 Ray history 的科学 pass/fail。不得把工程质量重新验收称为 Ray scientific pass，也不得在 analyzer 之前进入 strip。
+完整新 Ray R6 数据集已得到合法科学负结果：六组 A-anchor 比较中，`A0` 对 `A_after_C` 的 score=`11.3712740731`，超过 guarded limit=`9.5439242182`；其余五组兼容。D/B/C chronology trend 分别为 `6.2989992683 / 8.1503454161 / 12.2215869835`，均超过 `4.0`，而 dominance 分别为 `0.4009237037 / 0.4733067736 / 0.4548462651`，均低于 `0.5`。trend 只作 chronology report，不单独改变 operational gate；真正 blocking 的是 A return history incompatibility。按 GUIDE 8.3 必须停止且不得运行 strip。
 
 ---
 
@@ -219,6 +219,15 @@ Gate-6 / P8 / default LUT install 始终锁定
 - revalidation pass 后运行现有 Ray-only analyzer **一次**，输出 `analysis.json` 与 SHA-256；
 - 记录 analyzer argv、feature-set artifact/hash、input root/hash 集合与判定理由；
 - repo 只追踪小型摘要/manifest/hash，不追踪 CR3、sidecar 或大测量 payload。
+
+### 完成结果（2026-08-08）
+
+- same-root explicit revalidation：pass；原 child exit 仍为 `1`，原 failure preserved；
+- acquisition/physical/quality：`16/16 / 16/16 / 16/16`；
+- Ray analyzer：`formal_pass=false`、`return_anchor_history_effect=fail`、`steady_status=not_demonstrated`；
+- scientific status：`history_dependent_at_operational_dwell_600`；
+- M2/M3/M4：未进入并保持 locked；
+- Advisor handoff：`.agent-work/ADVISOR_HANDOFF-20260808-RAY-R6-HISTORY-FAIL.md`。
 
 ### Pass/fail branch
 

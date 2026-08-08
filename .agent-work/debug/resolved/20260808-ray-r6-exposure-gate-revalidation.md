@@ -47,3 +47,14 @@ camera-setting mismatch.
 5. Rerun only the deterministic analyzer on the retained root.
 
 No device or acquisition action belongs to this debugging boundary.
+
+## Resolution
+
+- Focused validation: 28 tests passed; compileall and `git diff --check` passed.
+- Same-root explicit revalidation remained byte-preserving and passed.
+- Final deterministic analyzer SHA-256:
+  `7cb6ef267496342ae1145bb83295510438ea9bf45946187168ffb21e8b0e267b`.
+- Scientific result: `history_dependent_at_operational_dwell_600` because
+  `A0` versus `A_after_C` failed frozen same-state coverage.
+- This is a GUIDE-defined valid scientific negative, not an engineering error.
+  Strip, combined and TD-C remain locked pending Advisor guidance.
