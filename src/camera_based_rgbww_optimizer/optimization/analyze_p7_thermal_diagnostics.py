@@ -543,8 +543,9 @@ def _validate_commands_and_gates(
         ):
             raise ValueError("direct command ledger content differs from protocol transitions")
 
-    direct_continuous_ray = plan.get("execution_authorization", {}).get("schema") in {
+    direct_continuous_source = plan.get("execution_authorization", {}).get("schema") in {
         "direct_ray_r6_authority_v1", "direct_ray_history_session_v1",
+        "direct_strip_history_session_v1",
     }
     expected_gates: list[tuple[str, str]] = [("run_start", "both_off")]
     for group in groups:
@@ -556,7 +557,7 @@ def _validate_commands_and_gates(
             if gate_after:
                 expected_gates.append((
                     str(gate_after),
-                    "strip_zero_only" if direct_continuous_ray else "both_off",
+                    "strip_zero_only" if direct_continuous_source else "both_off",
                 ))
     gates = _load_jsonl(root / "isolation-gates.jsonl")
     if [(str(row.get("gate_id")), str(row.get("gate_kind"))) for row in gates] != expected_gates:
@@ -567,17 +568,20 @@ def _validate_commands_and_gates(
             not isinstance(row.get("at"), str)
             or not isinstance(evidence, Mapping)
             or evidence.get("status") != "pass"
-            or evidence.get("strip_verified_off") is not True
+            or not (
+                evidence.get("strip_verified_off") is True
+                or evidence.get("source_verified_zero") is True
+            )
         ):
             raise ValueError("direct isolation gate did not prove strip zero")
         if row.get("gate_kind") == "both_off":
             if evidence.get("ray_verified_off") is not True or not isinstance(evidence.get("ray_off_command"), Mapping):
                 raise ValueError("direct both-off gate did not prove Ray off")
-        elif (
-            evidence.get("ray_off_command") is not None
-            or evidence.get("ray_verified_off") is True
-        ):
-            raise ValueError("direct strip-only gate contains a Ray-off command")
+        elif plan.get("execution_authorization", {}).get("schema") == "direct_strip_history_session_v1":
+            if evidence.get("source_verified") != "ray" or evidence.get("ray_verified_off") is not True:
+                raise ValueError("direct strip history gate did not prove Ray zero")
+        elif evidence.get("ray_off_command") is not None or evidence.get("ray_verified_off") is True:
+            raise ValueError("direct Ray history gate contains a Ray-off command")
 
     if require_audit:
         audit = _load_json(root / "commands-audit.json")
@@ -1650,37 +1654,48 @@ def analyze_ray_history_experiment(
     experiment_root: str | Path,
     *,
     feature_ids: Sequence[str],
-    r6_vector_artifact: str | Path,
+    r6_vector_artifact: str | Path | None,
+    source: str = "ray",
 ) -> dict[str, Any]:
-    """Classify the frozen 3x3 Ray history experiment without pooling R6 frames."""
+    """Classify one frozen 3x3 history experiment without pooling R6 frames."""
     root = Path(experiment_root).resolve()
     ids = tuple(feature_ids)
     frozen_ids = tuple(_feature_ids_from_artifact(thermal.POLICY_PATH))
     if ids != frozen_ids:
-        raise ValueError("Ray history analysis requires the frozen 58-feature identity")
-    drift_path = Path(r6_vector_artifact).resolve()
-    drift_artifact = _load_json(drift_path)
-    direction_map = drift_artifact.get("r6_drift_direction", {}).get("values_by_feature")
-    whitening = drift_artifact.get("common_whitening", {})
-    if (
-        drift_artifact.get("scientific_interpretation", {}).get("r6_formal_pass") is not False
-        or drift_artifact.get("scientific_interpretation", {}).get("r6_reclassification_allowed") is not False
-        or not isinstance(direction_map, Mapping)
-        or tuple(direction_map) != ids
-        or tuple(whitening.get("feature_ids", ())) != ids
-    ):
-        raise ValueError("Ray history analysis requires the frozen negative-R6 direction artifact")
-    direction = np.asarray([direction_map[name] for name in ids], dtype=float)
-    if not np.all(np.isfinite(direction)) or not math.isclose(
-        float(np.linalg.norm(direction)), 1.0, rel_tol=1e-8, abs_tol=1e-8,
-    ):
-        raise ValueError("frozen R6 drift direction is not a finite unit vector")
-    pair_variance = np.asarray(whitening.get("diagonal_variance"), dtype=float)
-    expected_pair_variance = _same_state_pair_variance(source="ray", state="A")
+        raise ValueError("history analysis requires the frozen 58-feature identity")
+    if source not in {"ray", "strip"}:
+        raise ValueError("history analysis source must be ray or strip")
+    drift_path: Path | None = None
+    drift_artifact: Mapping[str, Any] = {}
+    if source == "ray":
+        if r6_vector_artifact is None:
+            raise ValueError("Ray history analysis requires the frozen R6 direction artifact")
+        drift_path = Path(r6_vector_artifact).resolve()
+        drift_artifact = _load_json(drift_path)
+        direction_map = drift_artifact.get("r6_drift_direction", {}).get("values_by_feature")
+        whitening = drift_artifact.get("common_whitening", {})
+        if (
+            drift_artifact.get("scientific_interpretation", {}).get("r6_formal_pass") is not False
+            or drift_artifact.get("scientific_interpretation", {}).get("r6_reclassification_allowed") is not False
+            or not isinstance(direction_map, Mapping)
+            or tuple(direction_map) != ids
+            or tuple(whitening.get("feature_ids", ())) != ids
+        ):
+            raise ValueError("Ray history analysis requires the frozen negative-R6 direction artifact")
+        direction = np.asarray([direction_map[name] for name in ids], dtype=float)
+        if not np.all(np.isfinite(direction)) or not math.isclose(
+            float(np.linalg.norm(direction)), 1.0, rel_tol=1e-8, abs_tol=1e-8,
+        ):
+            raise ValueError("frozen R6 drift direction is not a finite unit vector")
+        pair_variance = np.asarray(whitening.get("diagonal_variance"), dtype=float)
+    else:
+        direction = np.zeros(len(ids), dtype=float)
+        pair_variance = _same_state_pair_variance(source="strip", state="A")
+    expected_pair_variance = _same_state_pair_variance(source=source, state="A")
     if pair_variance.shape != (len(ids),) or not np.allclose(
         pair_variance, expected_pair_variance, rtol=0.0, atol=0.0,
     ):
-        raise ValueError("R6 common whitening differs from the frozen Ray covariance")
+        raise ValueError("history common whitening differs from the frozen source covariance")
 
     observations: list[dict[str, Any]] = []
     baseline_centers: list[np.ndarray] = []
@@ -1689,7 +1704,11 @@ def analyze_ray_history_experiment(
         session_root = root / f"session-{session_index}"
         plan = _load_json(session_root / "experiment-spec.json")
         run = _load_json(session_root / "run.json")
-        expected = thermal.build_ray_history_session_spec(
+        builder = (
+            thermal.build_ray_history_session_spec
+            if source == "ray" else thermal.build_strip_history_session_spec
+        )
+        expected = builder(
             session_index, device_control_enabled=True,
             session_start_condition=plan.get("session_start_condition"),
         )
@@ -1705,7 +1724,10 @@ def analyze_ray_history_experiment(
         _validate_cleanup_and_wrapper(session_root)
         quality = _load_json(session_root / "quality.json")
         if (
-            quality.get("schema") != "guide4_ray_history_session_quality_v1"
+            quality.get("schema") not in {
+                "guide4_ray_history_session_quality_v1",
+                "guide5_strip_history_session_quality_v1",
+            }
             or quality.get("status") != "pass"
             or quality.get("session_index") != session_index
             or quality.get("capture_count") != 7
@@ -1740,23 +1762,25 @@ def analyze_ray_history_experiment(
             ):
                 raise ValueError("Ray history capture quality did not pass")
             _validate_recorded_exposure(capture, str(expected_step["nominal_shutter"]))
-            strip_zero = capture.get("strip_zero_before_capture")
-            requested_zero = (
-                strip_zero.get("requested_payload") if isinstance(strip_zero, Mapping) else None
-            )
-            observed_zero = (
-                strip_zero.get("device_snapshot") if isinstance(strip_zero, Mapping) else None
-            )
-            if (
-                not isinstance(requested_zero, Mapping)
-                or any(int(value) != 0 for value in requested_zero.values())
-                or not isinstance(observed_zero, Mapping)
-                or any(
-                    int(observed_zero.get(key, -1)) != 0
-                    for key in esphome.PAYLOAD_CHANNELS
+            if source == "ray":
+                strip_zero = capture.get("strip_zero_before_capture")
+                requested_zero = (
+                    strip_zero.get("requested_payload") if isinstance(strip_zero, Mapping) else None
                 )
-            ):
-                raise ValueError("Ray history capture lacks verified strip-zero evidence")
+                observed_zero = (
+                    strip_zero.get("device_snapshot") if isinstance(strip_zero, Mapping) else None
+                )
+                if (
+                    not isinstance(requested_zero, Mapping)
+                    or any(int(value) != 0 for value in requested_zero.values())
+                    or not isinstance(observed_zero, Mapping)
+                    or any(int(observed_zero.get(key, -1)) != 0 for key in esphome.PAYLOAD_CHANNELS)
+                ):
+                    raise ValueError("Ray history capture lacks verified strip-zero evidence")
+            else:
+                ray_zero = capture.get("ray_zero_before_capture")
+                if not isinstance(ray_zero, Mapping):
+                    raise ValueError("strip history capture lacks verified Ray-zero evidence")
             if expected_step["role"] in {"initial_anchor", "return_anchor"}:
                 by_role[str(expected_step["anchor_label"])] = values
         baseline = _unit(by_role["A0"], ids)
@@ -1894,14 +1918,20 @@ def analyze_ray_history_experiment(
     return {
         "schema": "guide4_ray_history_order_balanced_analysis_v1",
         "status": "classified_waiting_advisor_review",
-        "experiment_id": thermal.RAY_HISTORY_3X3_EXPERIMENT_ID,
+        "experiment_id": (
+            thermal.RAY_HISTORY_3X3_EXPERIMENT_ID
+            if source == "ray" else thermal.STRIP_HISTORY_3X3_EXPERIMENT_ID
+        ),
         "classification": classification,
         "r6_formal_result_preserved": "valid_scientific_negative",
         "r6_frames_pooled": False,
-        "frozen_r6_direction": {
-            "artifact": str(drift_path), "sha256": _sha256(drift_path),
-            "direction_sha256": drift_artifact["r6_drift_direction"]["sha256"],
-        },
+        "frozen_r6_direction": (
+            {
+                "artifact": str(drift_path), "sha256": _sha256(drift_path),
+                "direction_sha256": drift_artifact["r6_drift_direction"]["sha256"],
+            }
+            if source == "ray" else None
+        ),
         "measurement_contract": {
             "feature_count": len(ids), "observer": "frozen",
             "operational_dwell_s": thermal.RAY_HISTORY_OPERATIONAL_DWELL_S,
@@ -1934,12 +1964,14 @@ def analyze_ray_history_experiment(
 
 def analyze_ray_history_experiment_v2(
     experiment_root: str | Path,
-    *, feature_ids: Sequence[str], r6_vector_artifact: str | Path,
+    *, feature_ids: Sequence[str], r6_vector_artifact: str | Path | None,
+    source: str = "ray",
 ) -> dict[str, Any]:
     """Derive the Advisor-5 common-reentry classification without changing v1 evidence."""
     legacy = analyze_ray_history_experiment(
         experiment_root, feature_ids=feature_ids,
         r6_vector_artifact=r6_vector_artifact,
+        source=source,
     )
     diagnostics = legacy["diagnostics"]
     contrasts = legacy["model"]["contrasts"]
@@ -1968,7 +2000,7 @@ def analyze_ray_history_experiment_v2(
         "experiment_id": legacy["experiment_id"],
         "legacy_classification": legacy["classification"],
         "classification": classification,
-        "r6_rank1_direction_transfer": "rejected",
+        "r6_rank1_direction_transfer": "rejected" if source == "ray" else "not_applicable",
         "r6_frames_pooled": False,
         "original_analysis_sha256": _sha256(original) if original.is_file() else None,
         "frozen_r6_direction": legacy["frozen_r6_direction"],
@@ -2009,6 +2041,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--ray-history-analysis", action="store_true")
     parser.add_argument("--ray-history-analysis-v2", action="store_true")
     parser.add_argument("--ray-history-analysis-output", type=Path)
+    parser.add_argument("--history-source", choices=("ray", "strip"), default="ray")
     parser.add_argument("--r6-vector-artifact", type=Path)
     return parser.parse_args(argv)
 
@@ -2023,7 +2056,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         raise ValueError("--feature-ids is required for thermal run analysis")
     feature_ids = _feature_ids_from_artifact(args.feature_ids)
     if args.ray_history_analysis_v2:
-        if args.r6_vector_artifact is None:
+        if args.history_source == "ray" and args.r6_vector_artifact is None:
             raise ValueError("Ray history analysis requires --r6-vector-artifact")
         if args.ray_history_analysis:
             raise ValueError("v1 and v2 Ray history analysis are mutually exclusive")
@@ -2033,6 +2066,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         report = analyze_ray_history_experiment_v2(
             args.run_dir, feature_ids=feature_ids,
             r6_vector_artifact=args.r6_vector_artifact,
+            source=args.history_source,
         )
         _write_text_atomic(
             output.resolve(), json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n",

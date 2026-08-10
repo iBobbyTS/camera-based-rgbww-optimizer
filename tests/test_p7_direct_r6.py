@@ -147,6 +147,10 @@ class DirectR6Tests(unittest.TestCase):
                         "warm_white": 0, "cold_white": 0,
                     },
                 }
+            elif plan["execution_authorization"]["schema"] == "direct_strip_history_session_v1":
+                output["ray_zero_before_capture"] = {
+                    "response": {"data": {"intensity": 0}},
+                }
             return output
 
         def fake_sidecar(payload, *, raw_path, raw_payload=None, run_root):
@@ -175,14 +179,21 @@ class DirectR6Tests(unittest.TestCase):
             }
 
         def source_isolation(_gate_id):
+            if plan["execution_authorization"]["schema"] == "direct_strip_history_session_v1":
+                return {
+                    "status": "pass", "source_verified_zero": True,
+                    "source_verified": "ray", "strip_verified_off": False,
+                    "ray_verified_off": True, "ray_off_command": {"status": "pass"},
+                }
             return {
                 "status": "pass", "strip_verified_off": True,
-                "ray_off_command": None,
+                "source_verified_zero": True, "ray_off_command": None,
             }
 
         direct_ray_continuous = plan["execution_authorization"]["schema"] in {
             "direct_ray_r6_authority_v1",
             "direct_ray_history_session_v1",
+            "direct_strip_history_session_v1",
         }
 
         with patch.object(measure, "_validate_returned_sidecar", side_effect=fake_sidecar):
@@ -201,6 +212,9 @@ class DirectR6Tests(unittest.TestCase):
                     measure.validate_direct_ray_history_session_post_capture
                     if plan["execution_authorization"]["schema"]
                     == "direct_ray_history_session_v1"
+                    else measure.validate_direct_strip_history_session_post_capture
+                    if plan["execution_authorization"]["schema"]
+                    == "direct_strip_history_session_v1"
                     else measure.validate_direct_protocol_post_capture
                 ),
                 sleep_fn=lambda _seconds: None,
@@ -860,6 +874,44 @@ class DirectR6Tests(unittest.TestCase):
                     root, feature_ids=feature_ids, r6_vector_artifact=drift,
                 )
             captures_path.write_text(original)
+
+    def test_strip_history_session_reuses_scheduler_and_requires_ray_zero(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "strip-history"
+            for session_index in (1, 2, 3):
+                plan = thermal.build_strip_history_session_spec(
+                    session_index,
+                    device_control_enabled=True,
+                    session_start_condition=thermal.RAY_HISTORY_SESSION_START_CONDITION,
+                )
+                self.assertEqual(plan["source"], "strip")
+                self.assertFalse(plan["execution_authorization"]["human_authorization_required"])
+                self.assertEqual([step["source_id"] for step in plan["captures"]], ["strip"] * 7)
+                run = self._execute_fake_protocol(plan, root / f"session-{session_index}")
+                (run / "all-off-shell.json").write_text(json.dumps([{"ok": True}]))
+                (run / "all-off-shell.exit-status.txt").write_text("0\n")
+                (run / "wrapper-result.json").write_text(json.dumps({
+                    "status": "complete", "child_exit_code": 0,
+                    "shell_cleanup_exit_code": 0, "wrapper_exit_code": 0,
+                    "signal": None,
+                }))
+                rows = [json.loads(line) for line in (run / "captures.jsonl").read_text().splitlines()]
+                self.assertEqual(len(rows), 7)
+                self.assertTrue(all(
+                    row["capture"].get("ray_zero_before_capture", {}).get("response", {}).get("data", {}).get("intensity") == 0
+                    for row in rows
+                ))
+                gates = [json.loads(line) for line in (run / "isolation-gates.jsonl").read_text().splitlines()]
+                self.assertTrue(any(gate["gate_kind"] == "strip_zero_only" for gate in gates))
+            report = analyze.analyze_ray_history_experiment_v2(
+                root,
+                feature_ids=tuple(json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"]),
+                r6_vector_artifact=None,
+                source="strip",
+            )
+            self.assertEqual(report["experiment_id"], thermal.STRIP_HISTORY_3X3_EXPERIMENT_ID)
+            self.assertEqual(report["classification"], "no_history_effect_detected")
+            self.assertEqual(report["r6_rank1_direction_transfer"], "not_applicable")
 
     def test_equal_dwell_repeated_state_visits_do_not_share_observed_chronology(self):
         plan = thermal.build_ray_history_session_spec(

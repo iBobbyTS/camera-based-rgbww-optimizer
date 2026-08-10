@@ -209,7 +209,11 @@ def validate_authorized_execution_plan(
         isinstance(authorization, Mapping)
         and authorization.get("schema") == "direct_ray_history_session_v1"
     )
-    if direct_ray_history:
+    direct_strip_history = (
+        isinstance(authorization, Mapping)
+        and authorization.get("schema") == "direct_strip_history_session_v1"
+    )
+    if direct_ray_history or direct_strip_history:
         valid_execution_scope = (
             authorization.get("bounded_device_scope") is True
             and authorization.get("human_authorization_required") is False
@@ -353,6 +357,11 @@ def execute_plan(
             "direct_ray_r6_authority_v1", "direct_ray_history_session_v1",
         }
     )
+    direct_strip_history = (
+        isinstance(plan.get("execution_authorization"), Mapping)
+        and plan["execution_authorization"].get("schema")
+        == "direct_strip_history_session_v1"
+    )
     if direct_ray_continuous and source_isolation_check_fn is None:
         raise PermissionError("direct continuous-Ray execution requires a strip-only isolation check")
     git_provenance = copy.deepcopy(
@@ -423,10 +432,12 @@ def execute_plan(
         if source_isolation_check_fn is None:
             raise RuntimeError("strip-only source isolation owner is not bound")
         evidence = dict(source_isolation_check_fn(gate_id))
-        if (
-            evidence.get("status") != "pass"
-            or evidence.get("strip_verified_off") is not True
-            or evidence.get("ray_off_command") is not None
+        legacy_zero = (
+            evidence.get("strip_verified_off") is True
+            and evidence.get("ray_off_command") is None
+        )
+        if evidence.get("status") != "pass" or not (
+            evidence.get("source_verified_zero") is True or legacy_zero
         ):
             raise RuntimeError(f"strip-only source isolation check failed: {gate_id}")
         _append_jsonl(root / "isolation-gates.jsonl", {
@@ -749,7 +760,7 @@ def execute_plan(
             previous_dwell = monotonic_fn() - owner_start
             gate_after = item[-1].get("isolation_gate_after")
             if gate_after:
-                if direct_ray_continuous:
+                if direct_ray_continuous or direct_strip_history:
                     record_source_isolation_gate(str(gate_after))
                 else:
                     record_gate(str(gate_after))
@@ -943,6 +954,54 @@ def validate_direct_ray_history_session_post_capture(
     return quality
 
 
+def validate_direct_strip_history_session_post_capture(
+    run_root: str | Path,
+    plan: Mapping[str, Any],
+    runtime_evidence: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    """Validate one exact GUIDE5 strip-only seven-capture session."""
+    root = Path(run_root).resolve()
+    session_index = plan.get("session_index")
+    if type(session_index) is not int:
+        raise ValueError("strip history session lacks an integer session index")
+    expected = thermal.build_strip_history_session_spec(
+        session_index, device_control_enabled=True,
+        session_start_condition=plan.get("session_start_condition"),
+    )
+    immutable_fields = (
+        "guide_experiment_id", "session_order", "capture_ids", "frozen_shutters",
+        "budgets", "analysis_contract", "execution_authorization",
+    )
+    if any(plan.get(key) != expected.get(key) for key in immutable_fields):
+        raise ValueError("direct strip history session specification drifted")
+    quality = validate_direct_protocol_post_capture(root, plan, runtime_evidence)
+    captures = [
+        json.loads(line) for line in (root / "captures.jsonl").read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    if len(captures) != 7:
+        raise ValueError("direct strip history session requires exactly seven captures")
+    returns = [row for row in captures if (row.get("plan_step") or {}).get("role") == "return_anchor"]
+    if [
+        (row["plan_step"].get("sequence_position"), row["plan_step"].get("immediate_predecessor_state"))
+        for row in returns
+    ] != list(enumerate(expected["session_order"], start=1)):
+        raise ValueError("direct strip history return anchors differ from the balanced design")
+    for row in captures:
+        evidence = (row.get("capture") or {}).get("ray_zero_before_capture")
+        if not isinstance(evidence, Mapping):
+            raise ValueError("strip history capture lacks Ray-zero evidence")
+    quality = {
+        **quality,
+        "schema": "guide5_strip_history_session_quality_v1",
+        "guide_experiment_id": thermal.STRIP_HISTORY_3X3_EXPERIMENT_ID,
+        "session_index": session_index,
+        "session_order": expected["session_order"],
+    }
+    _write_json(root / "quality.json", quality)
+    return quality
+
+
 def validate_direct_protocol_post_capture(
     run_root: str | Path,
     plan: Mapping[str, Any],
@@ -1003,6 +1062,13 @@ def validate_direct_protocol_post_capture(
                 or any(int(observed.get(key, -1)) != 0 for key in esphome.PAYLOAD_CHANNELS)
             ):
                 raise ValueError("direct Ray capture lacks verified strip-zero evidence")
+        elif (
+            (plan.get("execution_authorization") or {}).get("schema")
+            == "direct_strip_history_session_v1"
+        ):
+            ray_zero = capture.get("ray_zero_before_capture")
+            if not isinstance(ray_zero, Mapping):
+                raise ValueError("direct strip history capture lacks Ray-zero evidence")
         physical_row = physical_by_id.get(str(row["capture_id"]))
         if physical_row is None or int(physical_row.get("cr3_byte_count", 0)) <= 0:
             raise ValueError("direct protocol physical CR3 artifact is missing")
@@ -1332,6 +1398,11 @@ def run_authorized_plan(
             "direct_ray_r6_authority_v1", "direct_ray_history_session_v1",
         }
     )
+    direct_strip_history = (
+        isinstance(plan.get("execution_authorization"), Mapping)
+        and plan["execution_authorization"].get("schema")
+        == "direct_strip_history_session_v1"
+    )
     direct_protocol = (
         isinstance(plan.get("execution_authorization"), Mapping)
         and str(plan["execution_authorization"].get("schema", "")).startswith("direct_")
@@ -1368,7 +1439,7 @@ def run_authorized_plan(
     def apply(step: Mapping[str, Any]) -> Mapping[str, Any]:
         command = step["command"]
         applied_at = time.monotonic()
-        if step["source_id"] == "ray":
+        if step["source_id"] in {"ray", "strip"}:
             response = ray120c.set_hsi(
                 int(command["hue"]), int(command["sat"]),
                 intensity_percent=float(command["intensity_percent"]),
@@ -1470,10 +1541,21 @@ def run_authorized_plan(
         source = str(step["source_id"])
         state = str(step["state_id"])
         strip_zero_evidence = None
+        ray_zero_evidence = None
         if source == "ray":
             strip_zero_evidence = esphome.verified_light(
                 0, 0, 0, 0, 0, curve_path=thermal.CURVE_PATH,
             )
+        elif direct_strip_history:
+            ray_zero_evidence = ray120c.set_cct(5600, intensity=0, gm=100)
+            ray_readback = ray120c.get_cct()
+            intensity = (
+                ray_readback.get("data")
+                or ((ray_readback.get("response") or {}).get("data"))
+                or {}
+            ).get("intensity")
+            if int(intensity) != 0:
+                raise RuntimeError("strip history capture lacks Ray-zero readback")
         if source == "ambient":
             cache_key = None
         elif source == "ray":
@@ -1520,13 +1602,13 @@ def run_authorized_plan(
             wall_clock_timestamp=_utc_now(), session_elapsed_s=covariate_timestamp - session_start,
             source_on_elapsed_s=(
                 0.0 if ray_started is None else max(0.0, covariate_timestamp - float(ray_started))
-            ) if source == "ray" else 0.0,
+            ) if source in {"ray", "strip"} else 0.0,
             state_on_elapsed_s=(
                 0.0 if state_started is None else max(0.0, covariate_timestamp - float(state_started))
             ),
             off_duration_before_s=(
                 0.0 if ray_off_since is None else max(0.0, covariate_timestamp - float(ray_off_since))
-            ) if source == "ray" else 0.0,
+            ) if source in {"ray", "strip"} else 0.0,
             previous_state_id=thermal_context["previous_state_id"],
             previous_state_dwell_s=thermal_context["previous_state_dwell_s"],
             shutter_seconds=float(exposure["seconds"]),
@@ -1541,6 +1623,7 @@ def run_authorized_plan(
             "timing_metadata": dict(captured_result.get("timing_metadata") or {}),
             "thermal_covariates": covariate,
             "strip_zero_before_capture": strip_zero_evidence,
+            "ray_zero_before_capture": ray_zero_evidence,
         }
         if source == "ambient":
             output["ambient_diagnostic"] = {
@@ -1603,6 +1686,22 @@ def run_authorized_plan(
         }
 
     def source_isolation_check(gate_id: str) -> Mapping[str, Any]:
+        if direct_strip_history:
+            ray_set = ray120c.set_cct(5600, intensity=0, gm=100)
+            ray_readback = ray120c.get_cct()
+            intensity = (
+                ray_readback.get("data")
+                or ((ray_readback.get("response") or {}).get("data"))
+                or {}
+            ).get("intensity")
+            if int(intensity) != 0:
+                raise RuntimeError(f"Ray did not remain zero at source-isolation gate: {gate_id}")
+            return {
+                "status": "pass", "gate_id": gate_id,
+                "source_verified_zero": True, "source_verified": "ray",
+                "strip_verified_off": False, "ray_verified_off": True,
+                "ray_off_command": dict(ray_set), "ray_readback": dict(ray_readback),
+            }
         strip = esphome.verified_light(0, 0, 0, 0, 0, curve_path=thermal.CURVE_PATH)
         snapshot = strip.get("device_snapshot", {})
         if any(int(snapshot.get(key, -1)) != 0 for key in esphome.PAYLOAD_CHANNELS):
@@ -1610,7 +1709,7 @@ def run_authorized_plan(
         load_segments["strip"].append((time.monotonic(), 0.0))
         return {
             "status": "pass", "gate_id": gate_id,
-            "strip_verified_off": True, "ray_off_command": None,
+            "source_verified_zero": True, "strip_verified_off": True, "ray_off_command": None,
             "strip_device_evidence": dict(strip),
         }
 
@@ -1634,12 +1733,16 @@ def run_authorized_plan(
             return validate_direct_ray_history_session_post_capture(
                 run_root, frozen_plan, runtime_evidence,
             )
+        if schema == "direct_strip_history_session_v1":
+            return validate_direct_strip_history_session_post_capture(
+                run_root, frozen_plan, runtime_evidence,
+            )
         return validate_direct_protocol_post_capture(run_root, frozen_plan, runtime_evidence)
 
     return execute_plan(
         plan, run_dir=root, apply_command_fn=apply, readback_fn=readback,
         capture_fn=capture, both_off_gate_fn=both_off_gate,
-        source_isolation_check_fn=(source_isolation_check if direct_ray_continuous else None),
+        source_isolation_check_fn=(source_isolation_check if (direct_ray_continuous or direct_strip_history) else None),
         cleanup_fn=cleanup,
         runtime_capture_settings_provenance=settings_provenance,
         post_capture_validator_fn=(validate_direct_post_capture if direct_protocol else None),
@@ -1676,7 +1779,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         required=True,
     )
     parser.add_argument("--source", choices=("ray", "strip"))
-    parser.add_argument("--variant", choices=("core", "expansion"), default="core")
+    parser.add_argument("--variant", choices=("core", "expansion", "history"), default="core")
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--run-name", required=True)
     parser.add_argument("--phase", choices=("formal",), default="formal")
@@ -1688,6 +1791,10 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     direct.add_argument(
         "--direct-ray-history-3x3", action="store_true",
         help="prepare or execute one session of the three-session Ray history experiment",
+    )
+    direct.add_argument(
+        "--direct-strip-history-3x3", action="store_true",
+        help="prepare or execute one session of the GUIDE5 strip history experiment",
     )
     direct.add_argument("--direct-strip-td-b", action="store_true", help="execute direct strip TD-B path")
     direct.add_argument("--direct-td-c-core", action="store_true", help="execute direct TD-C core path")
@@ -1706,12 +1813,14 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
     direct_kind = (
         "ray-r6" if args.direct_r6 else
         "ray-history-3x3" if args.direct_ray_history_3x3 else
+        "strip-history-3x3" if args.direct_strip_history_3x3 else
         "strip-td-b" if args.direct_strip_td_b else
         "td-c-core"
     )
     expected_scope = {
         "ray-r6": (thermal.TD_B, "ray", "core"),
         "ray-history-3x3": (thermal.RAY_HISTORY_3X3_EXPERIMENT_ID, "ray", "core"),
+        "strip-history-3x3": (thermal.TD_B, "strip", "history"),
         "strip-td-b": (thermal.TD_B, "strip", "core"),
         "td-c-core": (thermal.TD_C, None, "core"),
     }[direct_kind]
@@ -1727,6 +1836,15 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
             _write_json(output, thermal.build_ray_history_experiment_spec())
             print(output)
             return 0
+        if direct_kind == "strip-history-3x3":
+            if args.session_index is not None:
+                raise PermissionError("strip history dry-run describes one selected session only")
+            root = (Path(args.output_dir) / args.run_name).resolve()
+            root.mkdir(parents=True, exist_ok=False)
+            output = root / "experiment-spec.json"
+            _write_json(output, thermal.build_strip_history_session_spec(1))
+            print(output)
+            return 0
         output = write_dry_run(
             experiment_id=args.experiment_id, output_dir=args.output_dir,
             run_name=args.run_name, source=args.source, variant=args.variant,
@@ -1735,13 +1853,18 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
         return 0
     if not (args.execute and args.allow_device_control):
         raise PermissionError(f"{direct_kind} requires --execute and --allow-device-control")
-    if direct_kind == "ray-history-3x3":
+    if direct_kind in {"ray-history-3x3", "strip-history-3x3"}:
         if args.session_index is None:
-            raise PermissionError("Ray history execution requires one exact --session-index")
+            raise PermissionError("history execution requires one exact --session-index")
         if not isinstance(args.session_start_condition, str) or not args.session_start_condition.strip():
             raise PermissionError("Ray history execution requires the observed independent session start condition")
         prerequisite = None
-        plan = thermal.build_ray_history_session_spec(
+        builder = (
+            thermal.build_ray_history_session_spec
+            if direct_kind == "ray-history-3x3"
+            else thermal.build_strip_history_session_spec
+        )
+        plan = builder(
             args.session_index, device_control_enabled=True,
             session_start_condition=args.session_start_condition,
         )

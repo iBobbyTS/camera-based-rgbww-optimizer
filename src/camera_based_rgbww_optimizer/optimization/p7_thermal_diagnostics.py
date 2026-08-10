@@ -83,6 +83,7 @@ RAY_HISTORY_DWELL_POLICY_PATH = PROJECT_ROOT / "config/hsi/p7-human-dwell-policy
 TD_B_EXPOSURE_POLICY_V2_SCHEMA = "p7_ray_td_b_exposure_policy_v2"
 TD_B_R6_EXPERIMENT_ID = "P7-TD-B-RAY-OP600-EXPOSURE-GUARDED-FORMAL-R6"
 RAY_HISTORY_3X3_EXPERIMENT_ID = "GUIDE4-RAY-HISTORY-ORDER-BALANCED-3X3-OP120-COLD600-V3"
+STRIP_HISTORY_3X3_EXPERIMENT_ID = "GUIDE5-STRIP-HISTORY-ORDER-BALANCED-3X3-OP120-RESET600-V1"
 RAY_HISTORY_3X3_SESSION_ORDERS = (("D", "B", "C"), ("C", "D", "B"), ("B", "C", "D"))
 RAY_HISTORY_OPERATIONAL_DWELL_S = 120
 RAY_HISTORY_SESSION_COLD_PROXY_S = 600
@@ -600,6 +601,78 @@ def build_ray_history_experiment_spec(
         "r6_frame_pooling": False,
         "sessions": sessions,
     }
+
+
+def build_strip_history_session_spec(
+    session_index: int,
+    *,
+    device_control_enabled: bool = False,
+    session_start_condition: str | None = None,
+) -> dict[str, Any]:
+    """Build the GUIDE5 strip-only counterpart using the same seven-step scheduler."""
+    plan = build_ray_history_session_spec(
+        session_index, device_control_enabled=device_control_enabled,
+        session_start_condition=session_start_condition,
+    )
+    commands = load_r1_commands()
+    shutters = load_r1_shutters()
+    state_shutters = {
+        state: shutters[f"strip-{STRIP_COMMAND_KEYS[state]}"]
+        for state in ("A", "D", "B", "C")
+    }
+    for step in plan["captures"]:
+        state = str(step["state_id"])
+        step["capture_id"] = step["capture_id"].replace("-ray-", "-strip-")
+        step["source_id"] = "strip"
+        step["command"] = _command("strip", state, commands)
+        step["exact_command_hash"] = canonical_sha256(step["command"])
+        step["nominal_shutter"] = state_shutters[state]
+        step["strip_zero_required"] = False
+        step["ray_zero_required"] = True
+        step["isolation_gate_after"] = (
+            f"s{session_index}-{step['anchor_label']}-ray-zero"
+        )
+    frozen = {
+        shutter_cache_key_for_step(step): state_shutters[str(step["state_id"])]
+        for step in plan["captures"]
+    }
+    frozen = {key: frozen[key] for key in sorted(frozen)}
+    plan.update({
+        "experiment_id": TD_B,
+        "guide_experiment_id": STRIP_HISTORY_3X3_EXPERIMENT_ID,
+        "source": "strip",
+        "variant": "history-identification",
+        "strip": "continuous_command_sequence",
+        "ray": "zero_throughout",
+        "source_isolation_contract": "ray_zero_between_states_strip_continuous_until_final_cleanup",
+        "continuous_ray_state_order": [],
+        "frozen_shutters": frozen,
+        "execution_authorization": {
+            "schema": "direct_strip_history_session_v1",
+            "bounded_device_scope": device_control_enabled,
+            "human_authorization_required": False,
+            "experiment_id": STRIP_HISTORY_3X3_EXPERIMENT_ID,
+            "remote_v2_capability": True,
+        },
+        "analysis_contract": {
+            "response": "session_A_return_minus_session_A0",
+            "model": "common_reentry_plus_session_plus_sequence_position_plus_immediate_predecessor",
+            "operational_dwell_s": RAY_HISTORY_OPERATIONAL_DWELL_S,
+            "session_cold_proxy_s": RAY_HISTORY_SESSION_COLD_PROXY_S,
+            "session_cold_proxy_thermal_error": "human_accepted",
+            "thermal_error": "human_accepted",
+            "steady_claim": False,
+            "r6_frame_pooling": False,
+            "r6_use": "none",
+        },
+    })
+    plan["capture_ids"] = [step["capture_id"] for step in plan["captures"]]
+    plan["shutter_ledger_provenance"] = {
+        "owner": "experiment_capture_steps",
+        "required_cache_keys": list(frozen),
+        "frozen_shutters_sha256": canonical_sha256(frozen),
+    }
+    return plan
 
 
 def build_direct_plan(
