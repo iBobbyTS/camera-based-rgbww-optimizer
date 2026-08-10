@@ -841,6 +841,24 @@ into `inputs/`, and records `input-checkpoint.json` plus Git `commit` and
 null/deferred and are rejected by the runner until an accepted prerequisite
 artifact freezes a value in 60/120/300 seconds.
 
+The accepted negative Ray R6 result is hypothesis-generation evidence, not a
+demonstration of C-specific carryover. Its retained-anchor vector reanalysis
+freezes one common-whitened drift direction without changing the R6 failure or
+pooling any R6 frame into later inference. The next Ray-only identification
+protocol is `GUIDE4-RAY-HISTORY-ORDER-BALANCED-3X3-V1`: three independent
+seven-capture sessions with orders `D-B-C`, `C-D-B`, and `B-C-D`. Each session
+captures only `A0`, each 600-second predecessor endpoint, and its 600-second
+return A. The direct CLI executes exactly one session per wrapper launch and
+requires the exact Human token, `--session-index`, and a truthful
+`--session-start-condition`; its default dry-run remains device-locked. Each
+session starts and ends with all-off cleanup, keeps Ray on between those points,
+and uses strip-zero-only inter-state checks. The analyzer fits the frozen
+`session + sequence_position + immediate_predecessor_state` screening model
+with shared-A0 covariance and emits only `period-only`, `C-carryover-only`,
+`mixed`, `nonlinear/non-additive`, or `R6-not-reproduced`. Strip, combined TD-B,
+TD-C, sentinel, and later stages remain locked until that classification is
+reviewed.
+
 TD-B v2 is the single experiment-aware exception to the shared native RAW
 ambient requirement. Its exact formal owner uses
 `native_raw_ambient_policy=unsubtracted_no_ambient`, schedules 16 formal and

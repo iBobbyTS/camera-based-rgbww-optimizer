@@ -543,7 +543,9 @@ def _validate_commands_and_gates(
         ):
             raise ValueError("direct command ledger content differs from protocol transitions")
 
-    direct_r6 = plan.get("execution_authorization", {}).get("schema") == "direct_ray_r6_authority_v1"
+    direct_continuous_ray = plan.get("execution_authorization", {}).get("schema") in {
+        "direct_ray_r6_authority_v1", "direct_ray_history_session_v1",
+    }
     expected_gates: list[tuple[str, str]] = [("run_start", "both_off")]
     for group in groups:
         first = group[0]
@@ -552,7 +554,10 @@ def _validate_commands_and_gates(
         else:
             gate_after = group[-1].get("isolation_gate_after")
             if gate_after:
-                expected_gates.append((str(gate_after), "strip_zero_only" if direct_r6 else "both_off"))
+                expected_gates.append((
+                    str(gate_after),
+                    "strip_zero_only" if direct_continuous_ray else "both_off",
+                ))
     gates = _load_jsonl(root / "isolation-gates.jsonl")
     if [(str(row.get("gate_id")), str(row.get("gate_kind"))) for row in gates] != expected_gates:
         raise ValueError("direct isolation gate sequence differs from protocol")
@@ -1627,6 +1632,299 @@ def _formal_groups(
     return groups
 
 
+def _guarded_zero_diagnostic(
+    value: np.ndarray, variance: np.ndarray, *, center: np.ndarray,
+) -> dict[str, Any]:
+    if value.shape != variance.shape or np.any(variance <= 0.0):
+        raise ValueError("Ray history contrast covariance differs from the feature contract")
+    limits = calibrate_direct_limits(center, variance, samples=1000)
+    score = direct_whitened_norm(value, variance)
+    limit = float(limits["guarded_limit"])
+    return {
+        "score": score, "guarded_limit": limit,
+        "decision": "detected" if score > limit else "compatible_with_zero",
+    }
+
+
+def analyze_ray_history_experiment(
+    experiment_root: str | Path,
+    *,
+    feature_ids: Sequence[str],
+    r6_vector_artifact: str | Path,
+) -> dict[str, Any]:
+    """Classify the frozen 3x3 Ray history experiment without pooling R6 frames."""
+    root = Path(experiment_root).resolve()
+    ids = tuple(feature_ids)
+    frozen_ids = tuple(_feature_ids_from_artifact(thermal.POLICY_PATH))
+    if ids != frozen_ids:
+        raise ValueError("Ray history analysis requires the frozen 58-feature identity")
+    drift_path = Path(r6_vector_artifact).resolve()
+    drift_artifact = _load_json(drift_path)
+    direction_map = drift_artifact.get("r6_drift_direction", {}).get("values_by_feature")
+    whitening = drift_artifact.get("common_whitening", {})
+    if (
+        drift_artifact.get("scientific_interpretation", {}).get("r6_formal_pass") is not False
+        or drift_artifact.get("scientific_interpretation", {}).get("r6_reclassification_allowed") is not False
+        or not isinstance(direction_map, Mapping)
+        or tuple(direction_map) != ids
+        or tuple(whitening.get("feature_ids", ())) != ids
+    ):
+        raise ValueError("Ray history analysis requires the frozen negative-R6 direction artifact")
+    direction = np.asarray([direction_map[name] for name in ids], dtype=float)
+    if not np.all(np.isfinite(direction)) or not math.isclose(
+        float(np.linalg.norm(direction)), 1.0, rel_tol=1e-8, abs_tol=1e-8,
+    ):
+        raise ValueError("frozen R6 drift direction is not a finite unit vector")
+    pair_variance = np.asarray(whitening.get("diagonal_variance"), dtype=float)
+    expected_pair_variance = _same_state_pair_variance(source="ray", state="A")
+    if pair_variance.shape != (len(ids),) or not np.allclose(
+        pair_variance, expected_pair_variance, rtol=0.0, atol=0.0,
+    ):
+        raise ValueError("R6 common whitening differs from the frozen Ray covariance")
+
+    observations: list[dict[str, Any]] = []
+    baseline_centers: list[np.ndarray] = []
+    session_artifacts: list[dict[str, Any]] = []
+    for session_index in (1, 2, 3):
+        session_root = root / f"session-{session_index}"
+        plan = _load_json(session_root / "experiment-spec.json")
+        run = _load_json(session_root / "run.json")
+        expected = thermal.build_ray_history_session_spec(
+            session_index, human_authorization_verified=True,
+            session_start_condition=plan.get("session_start_condition"),
+        )
+        if plan != expected:
+            raise ValueError("Ray history session differs from its exact cyclic design")
+        _validate_required_execution_artifacts(session_root)
+        _validate_reproducibility_checkpoint(session_root, plan, run)
+        captures = _load_jsonl(session_root / "captures.jsonl")
+        physical = _load_jsonl(session_root / "physical-returns.jsonl")
+        _validate_run_counts(run, plan, captures, physical)
+        _validate_physical_rows(session_root, captures, physical)
+        _validate_commands_and_gates(plan, session_root)
+        _validate_cleanup_and_wrapper(session_root)
+        quality = _load_json(session_root / "quality.json")
+        if (
+            quality.get("schema") != "guide4_ray_history_session_quality_v1"
+            or quality.get("status") != "pass"
+            or quality.get("session_index") != session_index
+            or quality.get("capture_count") != 7
+        ):
+            raise ValueError("Ray history session quality artifact did not pass")
+        by_role: dict[str, Mapping[str, Any]] = {}
+        for row, expected_step in zip(captures, expected["captures"], strict=True):
+            capture = row.get("capture")
+            step = row.get("plan_step")
+            if (
+                not isinstance(capture, Mapping)
+                or not isinstance(step, Mapping)
+                or dict(step) != dict(expected_step)
+                or str(row.get("capture_id")) != expected_step["capture_id"]
+            ):
+                raise ValueError("Ray history capture differs from its exact session spec")
+            values = capture.get("feature_values")
+            if (
+                not isinstance(values, Mapping)
+                or tuple(values) != ids
+                or any(
+                    isinstance(value, bool) or not isinstance(value, (int, float))
+                    or not math.isfinite(float(value)) for value in values.values()
+                )
+            ):
+                raise ValueError("Ray history capture lacks the frozen feature vector")
+            direct_quality = capture.get("direct_quality")
+            if (
+                not isinstance(direct_quality, Mapping)
+                or direct_quality.get("status") != "pass"
+                or direct_quality.get("feature_count") != len(ids)
+            ):
+                raise ValueError("Ray history capture quality did not pass")
+            _validate_recorded_exposure(capture, str(expected_step["nominal_shutter"]))
+            strip_zero = capture.get("strip_zero_before_capture")
+            requested_zero = (
+                strip_zero.get("requested_payload") if isinstance(strip_zero, Mapping) else None
+            )
+            observed_zero = (
+                strip_zero.get("device_snapshot") if isinstance(strip_zero, Mapping) else None
+            )
+            if (
+                not isinstance(requested_zero, Mapping)
+                or any(int(value) != 0 for value in requested_zero.values())
+                or not isinstance(observed_zero, Mapping)
+                or any(
+                    int(observed_zero.get(key, -1)) != 0
+                    for key in esphome.PAYLOAD_CHANNELS
+                )
+            ):
+                raise ValueError("Ray history capture lacks verified strip-zero evidence")
+            if expected_step["role"] in {"initial_anchor", "return_anchor"}:
+                by_role[str(expected_step["anchor_label"])] = values
+        baseline = _unit(by_role["A0"], ids)
+        baseline_centers.append(baseline)
+        for position, predecessor in enumerate(expected["session_order"], start=1):
+            label = f"A_after_{predecessor}"
+            delta = _unit(by_role[label], ids) - baseline
+            whitened_delta = delta / np.sqrt(pair_variance)
+            projection = float(whitened_delta @ direction)
+            orthogonal = whitened_delta - projection * direction
+            observations.append({
+                "session": session_index, "position": position,
+                "predecessor": predecessor, "delta": delta,
+                "whitened_delta": whitened_delta,
+                "projection": projection,
+                "orthogonal_norm": float(np.linalg.norm(orthogonal)),
+            })
+        session_artifacts.append({
+            "session": session_index, "root": str(session_root),
+            "order": expected["session_order"], "quality_sha256": _sha256(session_root / "quality.json"),
+        })
+
+    # Treatment coding: intercept, session 2/3, position 2/3, predecessor B/C.
+    design = np.asarray([
+        [
+            1.0,
+            float(row["session"] == 2), float(row["session"] == 3),
+            float(row["position"] == 2), float(row["position"] == 3),
+            float(row["predecessor"] == "B"), float(row["predecessor"] == "C"),
+        ]
+        for row in observations
+    ])
+    response = np.vstack([row["delta"] for row in observations])
+    calibration_center = np.mean(np.vstack(baseline_centers), axis=0)
+    response_covariance = np.eye(9)
+    for left in range(9):
+        for right in range(9):
+            if left != right and observations[left]["session"] == observations[right]["session"]:
+                response_covariance[left, right] = 0.5
+    covariance_inverse = np.linalg.inv(response_covariance)
+    information = design.T @ covariance_inverse @ design
+    coefficient_covariance = np.linalg.inv(information)
+    coefficients = coefficient_covariance @ design.T @ covariance_inverse @ response
+    fitted = design @ coefficients
+    residuals = response - fitted
+
+    def contrast(name: str, vector: Sequence[float]) -> dict[str, Any]:
+        row = np.asarray(vector, dtype=float)
+        effect = row @ coefficients
+        variance_scalar = float(row @ coefficient_covariance @ row)
+        diagnostic = _guarded_zero_diagnostic(
+            effect, variance_scalar * pair_variance, center=calibration_center,
+        )
+        return {
+            "name": name,
+            "projection_on_r6_direction": float(
+                (effect / np.sqrt(pair_variance)) @ direction
+            ),
+            "variance_scalar_relative_to_one_delta": variance_scalar,
+            **diagnostic,
+        }
+
+    contrasts = {
+        "position_2_minus_1": contrast("position_2_minus_1", (0, 0, 0, 1, 0, 0, 0)),
+        "position_3_minus_2": contrast("position_3_minus_2", (0, 0, 0, -1, 1, 0, 0)),
+        "C_minus_D": contrast("C_minus_D", (0, 0, 0, 0, 0, 0, 1)),
+        "C_minus_B": contrast("C_minus_B", (0, 0, 0, 0, 0, -1, 1)),
+        "B_minus_D": contrast("B_minus_D", (0, 0, 0, 0, 0, 1, 0)),
+    }
+    position_projections = [
+        0.0,
+        float((coefficients[3] / np.sqrt(pair_variance)) @ direction),
+        float((coefficients[4] / np.sqrt(pair_variance)) @ direction),
+    ]
+    period_detected = (
+        position_projections[0] < position_projections[1] < position_projections[2]
+        and all(
+            contrasts[name]["decision"] == "detected"
+            for name in ("position_2_minus_1", "position_3_minus_2")
+        )
+    )
+    c_detected = all(
+        contrasts[name]["decision"] == "detected"
+        for name in ("C_minus_D", "C_minus_B")
+    )
+    other_state_effect = contrasts["B_minus_D"]["decision"] == "detected"
+    orthogonal_large = any(
+        _guarded_zero_diagnostic(
+            (row["whitened_delta"] - row["projection"] * direction)
+            * np.sqrt(pair_variance),
+            pair_variance,
+            center=calibration_center,
+        )["decision"] == "detected"
+        for row in observations
+    )
+    residual_large = False
+    residual_rows = []
+    residual_maker = np.eye(9) - design @ coefficient_covariance @ design.T @ covariance_inverse
+    residual_covariance = residual_maker @ response_covariance @ residual_maker.T
+    for index, residual in enumerate(residuals):
+        variance_scalar = max(float(residual_covariance[index, index]), 1e-15)
+        diagnostic = _guarded_zero_diagnostic(
+            residual, variance_scalar * pair_variance, center=calibration_center,
+        )
+        residual_large |= diagnostic["decision"] == "detected"
+        residual_rows.append({
+            "session": observations[index]["session"],
+            "position": observations[index]["position"],
+            "predecessor": observations[index]["predecessor"],
+            **diagnostic,
+        })
+    return_compatible = all(
+        _guarded_zero_diagnostic(
+            row["delta"], pair_variance, center=calibration_center,
+        )["decision"]
+        == "compatible_with_zero"
+        for row in observations
+    )
+    nonlinear = residual_large or orthogonal_large or other_state_effect
+    if nonlinear:
+        classification = "nonlinear/non-additive"
+    elif period_detected and c_detected:
+        classification = "mixed"
+    elif period_detected:
+        classification = "period-only"
+    elif c_detected:
+        classification = "C-carryover-only"
+    elif return_compatible:
+        classification = "R6-not-reproduced"
+    else:
+        classification = "nonlinear/non-additive"
+    return {
+        "schema": "guide4_ray_history_order_balanced_analysis_v1",
+        "status": "classified_waiting_advisor_review",
+        "experiment_id": thermal.RAY_HISTORY_3X3_EXPERIMENT_ID,
+        "classification": classification,
+        "r6_formal_result_preserved": "valid_scientific_negative",
+        "r6_frames_pooled": False,
+        "frozen_r6_direction": {
+            "artifact": str(drift_path), "sha256": _sha256(drift_path),
+            "direction_sha256": drift_artifact["r6_drift_direction"]["sha256"],
+        },
+        "measurement_contract": {
+            "feature_count": len(ids), "observer": "frozen",
+            "covariance": "frozen_ray_within_state_diagonal_with_shared_A0_block_covariance",
+            "guarded_coverage": "frozen_direct_limits",
+        },
+        "sessions": session_artifacts,
+        "model": {
+            "formula": "return_anchor_delta = session + sequence_position + immediate_predecessor_state + residual",
+            "observation_count": 9, "parameter_count": 7, "residual_degrees_of_freedom": 2,
+            "position_projections_on_r6_direction": position_projections,
+            "contrasts": contrasts, "residuals": residual_rows,
+        },
+        "diagnostics": {
+            "period_detected": period_detected, "C_carryover_detected": c_detected,
+            "other_state_effect_detected": other_state_effect,
+            "large_orthogonal_residual": orthogonal_large,
+            "additive_model_rejected": residual_large,
+            "all_return_deltas_compatible_with_zero": return_compatible,
+        },
+        "locks": {
+            "strip": True, "combined_td_b": True, "td_c": True,
+            "sentinel_and_later": True, "until": "classification_review_complete",
+        },
+    }
+
+
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Analyze P7 thermal diagnostics or derive P7-R1 epoch-v2 evidence.")
     parser.add_argument("run_dir", type=Path)
@@ -1638,6 +1936,8 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--source-bundle-sha256")
     parser.add_argument("--source-bundle-member")
     parser.add_argument("--analyzer-commit")
+    parser.add_argument("--ray-history-analysis", action="store_true")
+    parser.add_argument("--r6-vector-artifact", type=Path)
     return parser.parse_args(argv)
 
 
@@ -1650,6 +1950,21 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.feature_ids is None:
         raise ValueError("--feature-ids is required for thermal run analysis")
     feature_ids = _feature_ids_from_artifact(args.feature_ids)
+    if args.ray_history_analysis:
+        if args.r6_vector_artifact is None:
+            raise ValueError("Ray history analysis requires --r6-vector-artifact")
+        report = analyze_ray_history_experiment(
+            args.run_dir, feature_ids=feature_ids,
+            r6_vector_artifact=args.r6_vector_artifact,
+        )
+        output = args.run_dir.resolve() / "analysis.json"
+        _write_text_atomic(
+            output, json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n",
+        )
+        print(output)
+        return 0
+    if args.r6_vector_artifact is not None:
+        raise ValueError("--r6-vector-artifact requires --ray-history-analysis")
     if args.r6_vector_reanalysis_output is not None:
         if args.revalidate_exposure_failure or args.validator_commit is not None:
             raise ValueError("R6 vector reanalysis does not rerun exposure revalidation")

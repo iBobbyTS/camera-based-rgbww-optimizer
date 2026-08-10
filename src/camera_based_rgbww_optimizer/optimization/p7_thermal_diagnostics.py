@@ -81,6 +81,8 @@ CURVE_PATH = PROJECT_ROOT / "config/channel/code-duty-curve.json"
 TD_B_EXPOSURE_POLICY_V2_PATH = PROJECT_ROOT / "config/hsi/p7-ray-td-b-exposure-policy-v2.json"
 TD_B_EXPOSURE_POLICY_V2_SCHEMA = "p7_ray_td_b_exposure_policy_v2"
 TD_B_R6_EXPERIMENT_ID = "P7-TD-B-RAY-OP600-EXPOSURE-GUARDED-FORMAL-R6"
+RAY_HISTORY_3X3_EXPERIMENT_ID = "GUIDE4-RAY-HISTORY-ORDER-BALANCED-3X3-V1"
+RAY_HISTORY_3X3_SESSION_ORDERS = (("D", "B", "C"), ("C", "D", "B"), ("B", "C", "D"))
 TD_B_R5_PLAN_SHA256 = "94da09f240e2d0ca84ce545c52748522dfbaa9a674bf96ffcef5c8e74473ba9f"
 TD_B_R5_SHUTTERS_SHA256 = "b49dd52ebc1eabc8ae6ae0e3713884e5e939428d0682e6d7234eea8c17626e71"
 TD_B_FEATURE_IDS_SHA256 = "4a37bf13a1dcfa6b652bd4ce6a7793aa8ac0344c293d1a7fc73ff7fad763ab86"
@@ -402,6 +404,175 @@ def build_ray_r6_spec(policy: Mapping[str, Any] | None = None) -> dict[str, Any]
             "history_semantics": "analyze_td_b_r6_operational_contract",
             "old_new_frame_combination": "prohibited",
         },
+    }
+
+
+def build_ray_history_session_spec(
+    session_index: int,
+    *,
+    policy: Mapping[str, Any] | None = None,
+    human_authorization_verified: bool = False,
+    session_start_condition: str | None = None,
+) -> dict[str, Any]:
+    """Build one self-contained seven-capture order-balanced Ray session.
+
+    Each returned plan is consumed by the existing direct measurement runner.
+    The three sessions are independent runs; R6 contributes no frames or fit data.
+    """
+    if session_index not in (1, 2, 3):
+        raise ValueError("Ray history session index must be 1, 2, or 3")
+    if human_authorization_verified and (
+        not isinstance(session_start_condition, str) or not session_start_condition.strip()
+    ):
+        raise ValueError("authorized Ray history session requires its observed independent start condition")
+    exposure = dict(policy or load_td_b_exposure_policy_v2())
+    validate_td_b_exposure_policy_v2(exposure)
+    shutters = {
+        state: exposure["states"][state]["formal_shutter"]
+        for state in ("A", "D", "B", "C")
+    }
+    order = RAY_HISTORY_3X3_SESSION_ORDERS[session_index - 1]
+    sequence: list[tuple[str, str, str, int, str | None]] = [
+        ("A", "initial_anchor", "A0", 0, None),
+    ]
+    for position, predecessor in enumerate(order, start=1):
+        sequence.extend((
+            (predecessor, "predecessor", predecessor, position, None),
+            ("A", "return_anchor", f"A_after_{predecessor}", position, predecessor),
+        ))
+    captures: list[dict[str, Any]] = []
+    for sequence_index, (state, role, anchor_label, position, immediate_predecessor) in enumerate(sequence):
+        capture_id = (
+            f"{sequence_index:03d}-s{session_index}-ray-"
+            f"{anchor_label.lower()}-t600"
+        )
+        command = dict(RAY_STATES[state])
+        captures.append({
+            "capture_id": capture_id,
+            "sequence_index": sequence_index,
+            "capture_role": "formal",
+            "formal_measurement": True,
+            "source_id": "ray",
+            "state_id": state,
+            "role": role,
+            "anchor_label": anchor_label,
+            "session_index": session_index,
+            "sequence_position": position,
+            "immediate_predecessor_state": immediate_predecessor,
+            "command": command,
+            "exact_command_hash": canonical_sha256(command),
+            "nominal_shutter": shutters[state],
+            "exposure_mode": "fixed",
+            "weak_reacquire": False,
+            "mid_run_shutter_change": False,
+            "requested_elapsed_s": 600,
+            "timing_acceptance": "observed_elapsed_record_only",
+            "strip_zero_required": True,
+            "ambient_cap": 0,
+            "isolation_gate_after": f"s{session_index}-{anchor_label}-strip-zero",
+        })
+    frozen = {
+        shutter_cache_key_for_step(row): shutters[row["state_id"]]
+        for row in captures
+    }
+    frozen = {key: frozen[key] for key in sorted(frozen)}
+    return {
+        "schema": PLAN_SCHEMA_V2,
+        "status": "execute_authorized" if human_authorization_verified else "device_locked",
+        "experiment_id": TD_B,
+        "guide_experiment_id": RAY_HISTORY_3X3_EXPERIMENT_ID,
+        "stage": "TD-B",
+        "source": "ray",
+        "variant": "history-identification",
+        "phase": "formal",
+        "session_index": session_index,
+        "session_order": list(order),
+        "session_start_condition": (
+            None if session_start_condition is None else session_start_condition.strip()
+        ),
+        "inputs": {
+            "location": file_reference(LOCATION_PATH),
+            "policy": file_reference(POLICY_PATH),
+            "uncertainty": file_reference(UNCERTAINTY_PATH),
+            "manifold": file_reference(MANIFOLD_PATH),
+            "code_duty_curve": file_reference(CURVE_PATH),
+        },
+        "strip": "zero_throughout",
+        "ambient": 0,
+        "source_isolation_contract": "strip_zero_between_states_ray_continuous_until_final_cleanup",
+        "continuous_ray_state_order": [row["state_id"] for row in captures],
+        "native_raw_ambient_policy": AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+        "timing_contract": timing_contract(2),
+        "captures": captures,
+        "capture_ids": [row["capture_id"] for row in captures],
+        "frozen_shutters": frozen,
+        "exposure_setup_required": [],
+        "shutter_ledger_provenance": {
+            "owner": "experiment_capture_steps",
+            "required_cache_keys": list(frozen),
+            "frozen_shutters_sha256": canonical_sha256(frozen),
+        },
+        "budgets": {
+            "formal_cap": 7, "ambient_cap": 0, "physical_cr3_cap": 7,
+            "setup_physical_cr3_cap": 0,
+        },
+        "camera": {
+            "backend": "remote", "v2_capture_timing_capability_available": True,
+            "v2_capture_capability": "remote_v2_capture_timing_v1",
+            "resolved_capture_settings": {
+                "owner": "remote_backend.resolve_capture_settings",
+                "iso": "100", "aperture": "f/4", "image_format": "RAW",
+            },
+        },
+        "execution_authorization": {
+            "schema": "direct_ray_history_session_v1",
+            "human_authorization_verified": human_authorization_verified,
+            "human_authorization_experiment_id": RAY_HISTORY_3X3_EXPERIMENT_ID,
+            "remote_v2_capability": True,
+        },
+        "cleanup": {
+            "python_finally": "required", "shell_trap": "EXIT_INT_TERM_HUP_required",
+        },
+        "analysis_contract": {
+            "response": "session_A_return_minus_session_A0",
+            "model": "session_plus_sequence_position_plus_immediate_predecessor",
+            "r6_frame_pooling": False,
+            "r6_use": "frozen_drift_direction_only",
+        },
+    }
+
+
+def build_ray_history_experiment_spec(
+    *, human_authorization_verified: bool = False,
+    session_start_conditions: Sequence[str] | None = None,
+) -> dict[str, Any]:
+    """Build the exact three-session, 21-capture scientific experiment."""
+    if human_authorization_verified and (
+        session_start_conditions is None or len(session_start_conditions) != 3
+    ):
+        raise ValueError("authorized Ray history experiment requires three session start conditions")
+    sessions = [
+        build_ray_history_session_spec(
+            index,
+            human_authorization_verified=human_authorization_verified,
+            session_start_condition=(
+                None if session_start_conditions is None
+                else session_start_conditions[index - 1]
+            ),
+        )
+        for index in (1, 2, 3)
+    ]
+    return {
+        "schema": "guide4_ray_history_order_balanced_3x3_v1",
+        "experiment_id": RAY_HISTORY_3X3_EXPERIMENT_ID,
+        "status": "execute_authorized" if human_authorization_verified else "device_locked",
+        "orders": [list(order) for order in RAY_HISTORY_3X3_SESSION_ORDERS],
+        "session_count": 3,
+        "formal_capture_count": 21,
+        "session_launch_count": 3,
+        "retry_count": 0,
+        "r6_frame_pooling": False,
+        "sessions": sessions,
     }
 
 

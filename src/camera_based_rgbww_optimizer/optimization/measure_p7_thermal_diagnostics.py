@@ -328,12 +328,14 @@ def execute_plan(
     )
     if direct_execution and post_capture_validator_fn is None:
         raise PermissionError("direct thermal execution requires its post-capture validator")
-    direct_ray_r6 = (
+    direct_ray_continuous = (
         isinstance(plan.get("execution_authorization"), Mapping)
-        and plan["execution_authorization"].get("schema") == "direct_ray_r6_authority_v1"
+        and plan["execution_authorization"].get("schema") in {
+            "direct_ray_r6_authority_v1", "direct_ray_history_session_v1",
+        }
     )
-    if direct_ray_r6 and source_isolation_check_fn is None:
-        raise PermissionError("direct Ray R6 execution requires a strip-only isolation check")
+    if direct_ray_continuous and source_isolation_check_fn is None:
+        raise PermissionError("direct continuous-Ray execution requires a strip-only isolation check")
     git_provenance = copy.deepcopy(
         runtime_git_provenance if runtime_git_provenance is not None else _runtime_git_provenance()
     )
@@ -717,7 +719,7 @@ def execute_plan(
             previous_dwell = monotonic_fn() - owner_start
             gate_after = item[-1].get("isolation_gate_after")
             if gate_after:
-                if direct_ray_r6:
+                if direct_ray_continuous:
                     record_source_isolation_gate(str(gate_after))
                 else:
                     record_gate(str(gate_after))
@@ -860,6 +862,54 @@ def validate_direct_ray_r6_post_capture(
             raise ValueError("retained direct Ray R6 quality artifact differs from revalidation")
     else:
         _write_json(quality_path, quality)
+    return quality
+
+
+def validate_direct_ray_history_session_post_capture(
+    run_root: str | Path,
+    plan: Mapping[str, Any],
+    runtime_evidence: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    """Validate one exact seven-frame order-balanced session."""
+    root = Path(run_root).resolve()
+    session_index = plan.get("session_index")
+    if type(session_index) is not int:
+        raise ValueError("Ray history session lacks an integer session index")
+    expected = thermal.build_ray_history_session_spec(
+        session_index, human_authorization_verified=True,
+        session_start_condition=plan.get("session_start_condition"),
+    )
+    immutable_fields = (
+        "guide_experiment_id", "session_order", "capture_ids", "frozen_shutters",
+        "budgets", "analysis_contract",
+    )
+    if any(plan.get(key) != expected.get(key) for key in immutable_fields):
+        raise ValueError("direct Ray history session specification drifted")
+    quality = validate_direct_protocol_post_capture(root, plan, runtime_evidence)
+    captures = [
+        json.loads(line)
+        for line in (root / "captures.jsonl").read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    if len(captures) != 7:
+        raise ValueError("direct Ray history session requires exactly seven captures")
+    return_anchors = [
+        row for row in captures
+        if (row.get("plan_step") or {}).get("role") == "return_anchor"
+    ]
+    if [
+        (row["plan_step"].get("sequence_position"), row["plan_step"].get("immediate_predecessor_state"))
+        for row in return_anchors
+    ] != list(enumerate(expected["session_order"], start=1)):
+        raise ValueError("direct Ray history return anchors differ from the balanced design")
+    quality = {
+        **quality,
+        "schema": "guide4_ray_history_session_quality_v1",
+        "guide_experiment_id": thermal.RAY_HISTORY_3X3_EXPERIMENT_ID,
+        "session_index": session_index,
+        "session_order": expected["session_order"],
+    }
+    _write_json(root / "quality.json", quality)
     return quality
 
 
@@ -1246,9 +1296,11 @@ def run_authorized_plan(
     plan_steps_by_id = {
         str(step["capture_id"]): step for step in plan["captures"]
     }
-    direct_r6 = (
+    direct_ray_continuous = (
         isinstance(plan.get("execution_authorization"), Mapping)
-        and plan["execution_authorization"].get("schema") == "direct_ray_r6_authority_v1"
+        and plan["execution_authorization"].get("schema") in {
+            "direct_ray_r6_authority_v1", "direct_ray_history_session_v1",
+        }
     )
     direct_protocol = (
         isinstance(plan.get("execution_authorization"), Mapping)
@@ -1373,7 +1425,7 @@ def run_authorized_plan(
     raw_capture = raw_validation.build_native_raw_capture_step_fn(
         camera_dir=root / "camera", measurements_dir=root / "measurements", scratch_dir=root / "scratch",
         location_config_path=(
-            root / "inputs/location.json" if direct_r6 else thermal.LOCATION_PATH
+            root / "inputs/location.json" if direct_ray_continuous else thermal.LOCATION_PATH
         ), observer_config_path=thermal.OBSERVER_PATH,
         iso=str(resolved_settings.iso), aperture=str(resolved_settings.aperture),
         image_format=str(resolved_settings.image_format), camera_backend=camera_backend,
@@ -1545,14 +1597,19 @@ def run_authorized_plan(
         frozen_plan: Mapping[str, Any],
         runtime_evidence: Mapping[str, Any] | None,
     ) -> Any:
-        if direct_r6:
+        schema = (frozen_plan.get("execution_authorization") or {}).get("schema")
+        if schema == "direct_ray_r6_authority_v1":
             return validate_direct_ray_r6_post_capture(run_root, frozen_plan, runtime_evidence)
+        if schema == "direct_ray_history_session_v1":
+            return validate_direct_ray_history_session_post_capture(
+                run_root, frozen_plan, runtime_evidence,
+            )
         return validate_direct_protocol_post_capture(run_root, frozen_plan, runtime_evidence)
 
     return execute_plan(
         plan, run_dir=root, apply_command_fn=apply, readback_fn=readback,
         capture_fn=capture, both_off_gate_fn=both_off_gate,
-        source_isolation_check_fn=(source_isolation_check if direct_r6 else None),
+        source_isolation_check_fn=(source_isolation_check if direct_ray_continuous else None),
         cleanup_fn=cleanup,
         runtime_capture_settings_provenance=settings_provenance,
         post_capture_validator_fn=(validate_direct_post_capture if direct_protocol else None),
@@ -1583,7 +1640,11 @@ def _utc_now() -> str:
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     from camera_based_rgbww_optimizer.control import camera_remote
     parser = argparse.ArgumentParser(description="Execute direct P7 thermal diagnostic protocols.")
-    parser.add_argument("--experiment-id", choices=thermal.EXPERIMENT_IDS, required=True)
+    parser.add_argument(
+        "--experiment-id",
+        choices=(*thermal.EXPERIMENT_IDS, thermal.RAY_HISTORY_3X3_EXPERIMENT_ID),
+        required=True,
+    )
     parser.add_argument("--source", choices=("ray", "strip"))
     parser.add_argument("--variant", choices=("core", "expansion"), default="core")
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
@@ -1594,10 +1655,16 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     mode.add_argument("--execute", action="store_true")
     direct = parser.add_mutually_exclusive_group(required=True)
     direct.add_argument("--direct-r6", action="store_true", help="execute direct Ray R6 path")
+    direct.add_argument(
+        "--direct-ray-history-3x3", action="store_true",
+        help="prepare or execute one session of the three-session Ray history experiment",
+    )
     direct.add_argument("--direct-strip-td-b", action="store_true", help="execute direct strip TD-B path")
     direct.add_argument("--direct-td-c-core", action="store_true", help="execute direct TD-C core path")
     parser.add_argument("--prerequisite-analysis", type=Path)
     parser.add_argument("--human-authorization")
+    parser.add_argument("--session-index", type=int, choices=(1, 2, 3))
+    parser.add_argument("--session-start-condition")
     parser.add_argument("--allow-device-control", action="store_true")
     camera_remote.add_camera_backend_arguments(parser, default="remote")
     return parser.parse_args(argv)
@@ -1608,17 +1675,28 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
     args = parse_args(argv)
     direct_kind = (
         "ray-r6" if args.direct_r6 else
+        "ray-history-3x3" if args.direct_ray_history_3x3 else
         "strip-td-b" if args.direct_strip_td_b else
         "td-c-core"
     )
     expected_scope = {
         "ray-r6": (thermal.TD_B, "ray", "core"),
+        "ray-history-3x3": (thermal.RAY_HISTORY_3X3_EXPERIMENT_ID, "ray", "core"),
         "strip-td-b": (thermal.TD_B, "strip", "core"),
         "td-c-core": (thermal.TD_C, None, "core"),
     }[direct_kind]
     if (args.experiment_id, args.source, args.variant) != expected_scope or args.phase != "formal":
         raise PermissionError(f"{direct_kind} arguments do not match its direct protocol scope")
     if args.dry_run:
+        if direct_kind == "ray-history-3x3":
+            if args.session_index is not None:
+                raise PermissionError("Ray history dry-run describes all three sessions")
+            root = (Path(args.output_dir) / args.run_name).resolve()
+            root.mkdir(parents=True, exist_ok=False)
+            output = root / "experiment-spec.json"
+            _write_json(output, thermal.build_ray_history_experiment_spec())
+            print(output)
+            return 0
         output = write_dry_run(
             experiment_id=args.experiment_id, output_dir=args.output_dir,
             run_name=args.run_name, source=args.source, variant=args.variant,
@@ -1627,15 +1705,30 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
         return 0
     if not (args.execute and args.allow_device_control):
         raise PermissionError(f"{direct_kind} requires --execute and --allow-device-control")
+    if direct_kind == "ray-history-3x3":
+        if args.human_authorization != thermal.RAY_HISTORY_3X3_EXPERIMENT_ID:
+            raise PermissionError("Ray history experiment requires the exact Human authorization token")
+        if args.session_index is None:
+            raise PermissionError("Ray history execution requires one exact --session-index")
+        if not isinstance(args.session_start_condition, str) or not args.session_start_condition.strip():
+            raise PermissionError("Ray history execution requires the observed independent session start condition")
+        prerequisite = None
+        plan = thermal.build_ray_history_session_spec(
+            args.session_index, human_authorization_verified=True,
+            session_start_condition=args.session_start_condition,
+        )
+    else:
+        plan = None
     if direct_kind == "ray-r6" and args.human_authorization != thermal.TD_B_R6_EXPERIMENT_ID:
         raise PermissionError("Ray R6 requires the exact Human experiment authorization token")
-    if direct_kind != "ray-r6":
+    if direct_kind not in {"ray-r6", "ray-history-3x3"}:
         if args.prerequisite_analysis is None:
             raise PermissionError(f"{direct_kind} requires a prior scientific analysis artifact")
         prerequisite = validate_scientific_prerequisite(args.prerequisite_analysis, kind=direct_kind)
-    else:
+    elif direct_kind == "ray-r6":
         prerequisite = None
-    plan = thermal.build_direct_plan(args.experiment_id, source=args.source, variant=args.variant)
+    if plan is None:
+        plan = thermal.build_direct_plan(args.experiment_id, source=args.source, variant=args.variant)
     if prerequisite is not None:
         plan["scientific_prerequisite"] = prerequisite
     if backend_factory is None:

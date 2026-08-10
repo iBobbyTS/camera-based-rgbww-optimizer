@@ -169,16 +169,31 @@ class DirectR6Tests(unittest.TestCase):
                 "ray_verified_off": True, "ray_off_command": {"status": "pass"},
             }
 
+        def source_isolation(_gate_id):
+            return {
+                "status": "pass", "strip_verified_off": True,
+                "ray_off_command": None,
+            }
+
+        ray_history = (
+            plan["execution_authorization"]["schema"]
+            == "direct_ray_history_session_v1"
+        )
+
         with patch.object(measure, "_validate_returned_sidecar", side_effect=fake_sidecar):
             return measure.execute_plan(
                 plan, run_dir=root,
                 apply_command_fn=lambda step: {"status": "pass"},
                 readback_fn=lambda step: {"status": "pass"},
                 capture_fn=capture, both_off_gate_fn=gate,
+                source_isolation_check_fn=(source_isolation if ray_history else None),
                 cleanup_fn=lambda: {"status": "pass", "steps": [{"ok": True}]},
                 runtime_capture_settings_provenance=plan["camera"]["resolved_capture_settings"],
                 runtime_git_provenance={"commit": "0" * 40, "dirty": False, "dirty_entries": []},
-                post_capture_validator_fn=measure.validate_direct_protocol_post_capture,
+                post_capture_validator_fn=(
+                    measure.validate_direct_ray_history_session_post_capture
+                    if ray_history else measure.validate_direct_protocol_post_capture
+                ),
                 sleep_fn=lambda _seconds: None,
             )
 
@@ -190,6 +205,50 @@ class DirectR6Tests(unittest.TestCase):
         self.assertTrue(all(r["exposure_mode"] == "fixed" and not r["weak_reacquire"] for r in spec["captures"]))
         groups = measure._ledger_groups(thermal.TD_B, spec["captures"])
         self.assertEqual([group[0]["state_id"] for group in groups], ["A", "D", "A", "B", "A", "C", "A"])
+
+    def test_ray_history_spec_is_exact_balanced_and_device_locked(self):
+        experiment = thermal.build_ray_history_experiment_spec()
+        self.assertEqual(experiment["status"], "device_locked")
+        self.assertEqual(experiment["formal_capture_count"], 21)
+        self.assertEqual(experiment["orders"], [["D", "B", "C"], ["C", "D", "B"], ["B", "C", "D"]])
+        self.assertEqual(sum(len(session["captures"]) for session in experiment["sessions"]), 21)
+        for session_index, session in enumerate(experiment["sessions"], start=1):
+            self.assertEqual(session["status"], "device_locked")
+            self.assertEqual({step["requested_elapsed_s"] for step in session["captures"]}, {600})
+            self.assertEqual([step["state_id"] for step in session["captures"]][::2], ["A", "A", "A", "A"])
+            returns = [step for step in session["captures"] if step["role"] == "return_anchor"]
+            self.assertEqual(
+                [(step["sequence_position"], step["immediate_predecessor_state"]) for step in returns],
+                list(enumerate(session["session_order"], start=1)),
+            )
+            authorized = thermal.build_ray_history_session_spec(
+                session_index, human_authorization_verified=True,
+                session_start_condition="Ray and strip off for 1800 s; zero readback passed",
+            )
+            self.assertEqual(authorized["status"], "execute_authorized")
+            self.assertTrue(authorized["execution_authorization"]["human_authorization_verified"])
+
+    def test_ray_history_cli_requires_exact_human_scope_and_one_session(self):
+        called = {}
+
+        def runner(plan, **_kwargs):
+            called["plan"] = plan
+            return Path("/fake/session")
+
+        base = [
+            "--experiment-id", thermal.RAY_HISTORY_3X3_EXPERIMENT_ID,
+            "--source", "ray", "--variant", "core", "--phase", "formal",
+            "--run-name", "session-2", "--execute", "--allow-device-control",
+            "--direct-ray-history-3x3", "--session-index", "2",
+            "--session-start-condition", "Ray and strip off for 1800 s; zero readback passed",
+        ]
+        with self.assertRaises(PermissionError):
+            measure.main(base, run_fn=runner, backend_factory=lambda: object())
+        self.assertEqual(measure.main([
+            *base, "--human-authorization", thermal.RAY_HISTORY_3X3_EXPERIMENT_ID,
+        ], run_fn=runner, backend_factory=lambda: object()), 0)
+        self.assertEqual(called["plan"]["session_index"], 2)
+        self.assertEqual(called["plan"]["session_order"], ["C", "D", "B"])
 
     def test_direct_main_uses_injected_runner(self):
         called = {}
@@ -690,6 +749,78 @@ class DirectR6Tests(unittest.TestCase):
             evidence = measure.validate_scientific_prerequisite(valid, kind="strip-td-b")
             self.assertEqual(evidence["status"], "pass")
             self.assertEqual(len(evidence["sha256"]), 64)
+
+    def test_ray_history_sessions_use_real_scheduler_and_classify_no_reproduction(self):
+        feature_ids = tuple(
+            json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"]
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "history"
+            root.mkdir()
+            for session_index in (1, 2, 3):
+                plan = thermal.build_ray_history_session_spec(
+                    session_index, human_authorization_verified=True,
+                    session_start_condition="Ray and strip off for 1800 s; zero readback passed",
+                )
+                run = self._execute_fake_protocol(
+                    plan, root / f"session-{session_index}",
+                )
+                self.assertEqual(len((run / "captures.jsonl").read_text().splitlines()), 7)
+                gates = [
+                    json.loads(line)
+                    for line in (run / "isolation-gates.jsonl").read_text().splitlines()
+                ]
+                self.assertEqual(gates[0]["gate_kind"], "both_off")
+                self.assertTrue(all(
+                    row["gate_kind"] == "strip_zero_only" for row in gates[1:]
+                ))
+                self.assertTrue(all(
+                    row["evidence"].get("ray_off_command") is None for row in gates[1:]
+                ))
+                (run / "all-off-shell.json").write_text(json.dumps([{"ok": True}]))
+                (run / "all-off-shell.exit-status.txt").write_text("0\n")
+                (run / "wrapper-result.json").write_text(json.dumps({
+                    "status": "complete", "child_exit_code": 0,
+                    "shell_cleanup_exit_code": 0, "wrapper_exit_code": 0,
+                    "signal": None,
+                }))
+            direction = {feature_id: 0.0 for feature_id in feature_ids}
+            direction[feature_ids[0]] = 1.0
+            drift = root / "r6-vector.json"
+            drift.write_text(json.dumps({
+                "r6_drift_direction": {
+                    "values_by_feature": direction, "sha256": "a" * 64,
+                },
+                "common_whitening": {
+                    "feature_ids": list(feature_ids),
+                    "diagonal_variance": analyze._same_state_pair_variance(
+                        source="ray", state="A",
+                    ).tolist(),
+                },
+                "scientific_interpretation": {
+                    "r6_formal_pass": False,
+                    "r6_reclassification_allowed": False,
+                },
+            }))
+            report = analyze.analyze_ray_history_experiment(
+                root, feature_ids=feature_ids, r6_vector_artifact=drift,
+            )
+            self.assertEqual(report["classification"], "R6-not-reproduced")
+            self.assertFalse(report["r6_frames_pooled"])
+            self.assertEqual(report["model"]["observation_count"], 9)
+            self.assertEqual(report["model"]["residual_degrees_of_freedom"], 2)
+            self.assertTrue(all(report["locks"].values()))
+
+            captures_path = root / "session-1" / "captures.jsonl"
+            original = captures_path.read_text()
+            rows = [json.loads(line) for line in original.splitlines()]
+            rows[0]["capture"]["strip_zero_before_capture"]["device_snapshot"]["red"] = 1
+            captures_path.write_text("".join(json.dumps(row) + "\n" for row in rows))
+            with self.assertRaisesRegex(ValueError, "strip-zero"):
+                analyze.analyze_ray_history_experiment(
+                    root, feature_ids=feature_ids, r6_vector_artifact=drift,
+                )
+            captures_path.write_text(original)
 
     def test_strip_and_td_c_use_the_real_scheduler_with_fake_callbacks(self):
         with tempfile.TemporaryDirectory() as tmp:
