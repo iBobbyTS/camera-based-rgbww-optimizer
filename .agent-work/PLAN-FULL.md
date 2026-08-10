@@ -6,7 +6,7 @@
 
 **当前分支：** `codex/guide4-science-path-v3`
 
-**路线状态：** `R6_VECTOR_REANALYSIS_COMPLETE_READY_FOR_21_FRAME_DEVICE_EXECUTION`
+**路线状态：** `OP120_HUMAN_OVERRIDE_RESTART_READY_FOR_21_FRAME_DEVICE_EXECUTION`
 
 **唯一下一科学动作：** 执行一个新的、自包含的三 session / 21-frame cyclic order-balanced Ray-only history identification experiment
 
@@ -142,7 +142,7 @@ fake-backend behavior tests 已证明：
 
 1. exact 3 sessions 与 exact order；
 2. 每 session 7 captures，总计 21；
-3. 每个 Q 和 return A 都是 600 s；
+3. 每个 Q 和 return A 都是 Human override 后的 120 s；
 4. session 开始和结束执行 all-off/zero cleanup；
 5. session 内从首次 Ray on 到结束 cleanup 不发送 Ray-off；
 6. strip 始终 zero/readback；
@@ -161,6 +161,27 @@ Focused 行为验证：`12/12 passed`（新 5 项 + 未依赖外置卷的既有 
 Compileall、dry-run exact 3-session inspection 与 `git diff --check` 通过。
 
 不插入新的 readiness、review package、selector budget、candidate rejection 或 architecture boundary。
+
+---
+
+## 3.1 Human 120-second dwell override and restart
+
+Human 于 2026-08-10 明确决定：当前及未来同类颜色/状态切换后的拍照等待从
+`600 s` 缩短为 `120 s`，以节省时间和用电，并明确接受增加的热误差。
+
+权威记录：
+
+- `config/hsi/p7-human-dwell-policy-v1.json`
+- `.agent-work/HUMAN_DECISION-20260810-OP120.md`
+
+旧 root
+`/Volumes/4T/temp/rgbww-optimizer/guide4-ray-history-3x3-20260810-015022`
+在 Session 1 完成 7/7、Session 2 完成 2/7 后按 Human 决定安全终止；shell cleanup
+exit 0，独立 all-off 再次通过。该 root 是 superseded historical-only evidence，
+不得继续、重试、补拍或进入 OP120 fit。
+
+新 acquisition 必须从全新 root、Session 1、零 pooled frame 重新开始。3600-second
+between-session cold proxy 未改变。
 
 ---
 
@@ -184,13 +205,13 @@ both-source zero readback passes at run start
 已冻结且无需再次决策的执行范围：
 
 ```text
-experiment = GUIDE4-RAY-HISTORY-ORDER-BALANCED-3X3-V1
+experiment = GUIDE4-RAY-HISTORY-ORDER-BALANCED-3X3-OP120-V2
 device = Ray120c + Canon camera; strip zero-only
 sessions = 3
 formal captures = 21
 session launches = 3
 retry = 0
-per-state dwell = 600 s
+per-state dwell = 120 s
 Ray intensity = 100%
 orders = DBC / CDB / BCD
 cleanup = Python + shell all-off and zero readback per session
@@ -206,7 +227,7 @@ cleanup = Python + shell all-off and zero readback per session
 ### 5.1 新实验身份
 
 ```text
-experiment_id = GUIDE4-RAY-HISTORY-ORDER-BALANCED-3X3-V1
+experiment_id = GUIDE4-RAY-HISTORY-ORDER-BALANCED-3X3-OP120-V2
 source = Ray only
 new experiment root = one
 session subroots = three
@@ -225,10 +246,10 @@ Session 3: B → C → D
 每 session：
 
 ```text
-A0@600
-Q1@600 → A_after_Q1@600
-Q2@600 → A_after_Q2@600
-Q3@600 → A_after_Q3@600
+A0@120
+Q1@120 → A_after_Q1@120
+Q2@120 → A_after_Q2@120
+Q3@120 → A_after_Q3@120
 ```
 
 ```text
@@ -239,7 +260,10 @@ ambient/setup = 0/0
 retry = 0
 ```
 
-不拍 60/120/300；本实验不再询问 settled，只识别固定 operational 600 endpoint 下的 position 与 immediate predecessor effect。
+不拍其他时间点；本实验不再询问 settled，只识别 Human 选择的 fixed operational
+120-second endpoint 下的 position 与 immediate predecessor effect。Human 明确接受
+缩短 dwell 带来的热误差，以节省时间和用电；不得声称 settled/steady，也不得把旧
+600-second frames 与新 120-second fit 混合。
 
 ### 5.3 Frozen measurement contract
 

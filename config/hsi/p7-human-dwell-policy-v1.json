@@ -1,0 +1,15 @@
+{
+  "schema": "p7_human_operational_dwell_policy_v1",
+  "status": "active",
+  "decision_owner": "Human",
+  "recorded_at": "2026-08-10",
+  "scope": "current_ray_history_experiment_and_future_similar_state_to_capture_waits",
+  "operational_dwell_s": 120,
+  "supersedes_for_new_acquisitions_s": 600,
+  "retained_600s_evidence": "historical_unchanged_not_poolable_with_120s_runs",
+  "thermal_error": "explicitly_accepted_to_reduce_time_and_power",
+  "settled_or_steady_claim_allowed": false,
+  "session_cold_proxy_s": 3600,
+  "session_cold_proxy_changed": false,
+  "future_default": "use_120s_for_similar_color_or_state_hold_before_capture_unless_later_explicitly_overridden"
+}

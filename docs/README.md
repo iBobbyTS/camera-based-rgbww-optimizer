@@ -845,10 +845,13 @@ The accepted negative Ray R6 result is hypothesis-generation evidence, not a
 demonstration of C-specific carryover. Its retained-anchor vector reanalysis
 freezes one common-whitened drift direction without changing the R6 failure or
 pooling any R6 frame into later inference. The next Ray-only identification
-protocol is `GUIDE4-RAY-HISTORY-ORDER-BALANCED-3X3-V1`: three independent
+protocol is `GUIDE4-RAY-HISTORY-ORDER-BALANCED-3X3-OP120-V2`: three independent
 seven-capture sessions with orders `D-B-C`, `C-D-B`, and `B-C-D`. Each session
-captures only `A0`, each 600-second predecessor endpoint, and its 600-second
-return A. The direct CLI executes exactly one session per wrapper launch and
+captures only `A0`, each 120-second predecessor endpoint, and its 120-second
+return A. This is a 2026-08-10 Human override for new acquisitions: the shorter
+wait deliberately accepts additional thermal error to reduce time and power,
+does not claim steady state, and must not pool retained 600-second frames. The
+direct CLI executes exactly one session per wrapper launch and
 requires `--session-index` and a truthful, scientifically pre-frozen
 `--session-start-condition`; its default dry-run remains device-locked. Local
 bounded Ray/camera acquisition does not require a separate Human token; firmware

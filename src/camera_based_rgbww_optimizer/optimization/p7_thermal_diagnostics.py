@@ -79,10 +79,12 @@ MANIFOLD_PATH = PROJECT_ROOT / "config/hsi/ray-hsi-manifold.json"
 LOCATION_PATH = PROJECT_ROOT / "config/location/locations-20260714-211759.json"
 CURVE_PATH = PROJECT_ROOT / "config/channel/code-duty-curve.json"
 TD_B_EXPOSURE_POLICY_V2_PATH = PROJECT_ROOT / "config/hsi/p7-ray-td-b-exposure-policy-v2.json"
+RAY_HISTORY_DWELL_POLICY_PATH = PROJECT_ROOT / "config/hsi/p7-human-dwell-policy-v1.json"
 TD_B_EXPOSURE_POLICY_V2_SCHEMA = "p7_ray_td_b_exposure_policy_v2"
 TD_B_R6_EXPERIMENT_ID = "P7-TD-B-RAY-OP600-EXPOSURE-GUARDED-FORMAL-R6"
-RAY_HISTORY_3X3_EXPERIMENT_ID = "GUIDE4-RAY-HISTORY-ORDER-BALANCED-3X3-V1"
+RAY_HISTORY_3X3_EXPERIMENT_ID = "GUIDE4-RAY-HISTORY-ORDER-BALANCED-3X3-OP120-V2"
 RAY_HISTORY_3X3_SESSION_ORDERS = (("D", "B", "C"), ("C", "D", "B"), ("B", "C", "D"))
+RAY_HISTORY_OPERATIONAL_DWELL_S = 120
 RAY_HISTORY_SESSION_START_CONDITION = (
     "Ray and strip continuously off for at least 3600 s after prior high load; "
     "both-source zero readback passes at run start"
@@ -429,6 +431,17 @@ def build_ray_history_session_spec(
         raise ValueError("Ray history device session requires the frozen 3600 s cold-proxy condition")
     exposure = dict(policy or load_td_b_exposure_policy_v2())
     validate_td_b_exposure_policy_v2(exposure)
+    dwell_policy = json.loads(RAY_HISTORY_DWELL_POLICY_PATH.read_text(encoding="utf-8"))
+    if (
+        dwell_policy.get("schema") != "p7_human_operational_dwell_policy_v1"
+        or dwell_policy.get("status") != "active"
+        or dwell_policy.get("decision_owner") != "Human"
+        or dwell_policy.get("operational_dwell_s") != RAY_HISTORY_OPERATIONAL_DWELL_S
+        or dwell_policy.get("thermal_error")
+        != "explicitly_accepted_to_reduce_time_and_power"
+        or dwell_policy.get("settled_or_steady_claim_allowed") is not False
+    ):
+        raise ValueError("Ray history Human dwell policy differs from the frozen 120 s decision")
     shutters = {
         state: exposure["states"][state]["formal_shutter"]
         for state in ("A", "D", "B", "C")
@@ -446,7 +459,7 @@ def build_ray_history_session_spec(
     for sequence_index, (state, role, anchor_label, position, immediate_predecessor) in enumerate(sequence):
         capture_id = (
             f"{sequence_index:03d}-s{session_index}-ray-"
-            f"{anchor_label.lower()}-t600"
+            f"{anchor_label.lower()}-t{RAY_HISTORY_OPERATIONAL_DWELL_S}"
         )
         command = dict(RAY_STATES[state])
         captures.append({
@@ -467,7 +480,7 @@ def build_ray_history_session_spec(
             "exposure_mode": "fixed",
             "weak_reacquire": False,
             "mid_run_shutter_change": False,
-            "requested_elapsed_s": 600,
+            "requested_elapsed_s": RAY_HISTORY_OPERATIONAL_DWELL_S,
             "timing_acceptance": "observed_elapsed_record_only",
             "strip_zero_required": True,
             "ambient_cap": 0,
@@ -498,6 +511,7 @@ def build_ray_history_session_spec(
             "uncertainty": file_reference(UNCERTAINTY_PATH),
             "manifold": file_reference(MANIFOLD_PATH),
             "code_duty_curve": file_reference(CURVE_PATH),
+            "human_dwell_policy": file_reference(RAY_HISTORY_DWELL_POLICY_PATH),
         },
         "strip": "zero_throughout",
         "ambient": 0,
@@ -539,6 +553,9 @@ def build_ray_history_session_spec(
         "analysis_contract": {
             "response": "session_A_return_minus_session_A0",
             "model": "session_plus_sequence_position_plus_immediate_predecessor",
+            "operational_dwell_s": RAY_HISTORY_OPERATIONAL_DWELL_S,
+            "thermal_error": "human_accepted",
+            "steady_claim": False,
             "r6_frame_pooling": False,
             "r6_use": "frozen_drift_direction_only",
         },

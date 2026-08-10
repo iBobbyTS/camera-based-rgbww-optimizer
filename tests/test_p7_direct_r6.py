@@ -214,7 +214,12 @@ class DirectR6Tests(unittest.TestCase):
         self.assertEqual(sum(len(session["captures"]) for session in experiment["sessions"]), 21)
         for session_index, session in enumerate(experiment["sessions"], start=1):
             self.assertEqual(session["status"], "device_locked")
-            self.assertEqual({step["requested_elapsed_s"] for step in session["captures"]}, {600})
+            self.assertEqual({step["requested_elapsed_s"] for step in session["captures"]}, {120})
+            self.assertTrue(all(step["capture_id"].endswith("-t120") for step in session["captures"]))
+            self.assertEqual(session["analysis_contract"]["operational_dwell_s"], 120)
+            self.assertEqual(session["analysis_contract"]["thermal_error"], "human_accepted")
+            self.assertFalse(session["analysis_contract"]["steady_claim"])
+            self.assertIn("human_dwell_policy", session["inputs"])
             self.assertEqual([step["state_id"] for step in session["captures"]][::2], ["A", "A", "A", "A"])
             returns = [step for step in session["captures"] if step["role"] == "return_anchor"]
             self.assertEqual(

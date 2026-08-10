@@ -1901,6 +1901,9 @@ def analyze_ray_history_experiment(
         },
         "measurement_contract": {
             "feature_count": len(ids), "observer": "frozen",
+            "operational_dwell_s": thermal.RAY_HISTORY_OPERATIONAL_DWELL_S,
+            "thermal_error": "human_accepted_to_reduce_time_and_power",
+            "steady_or_settled_claim": False,
             "covariance": "frozen_ray_within_state_diagonal_with_shared_A0_block_covariance",
             "guarded_coverage": "frozen_direct_limits",
         },
