@@ -6,11 +6,11 @@
 
 **当前分支：** `codex/guide4-science-path-v3`
 
-**路线状态：** `R6_VECTOR_REANALYSIS_COMPLETE_WAITING_21_FRAME_DEVICE_AUTHORIZATION`
+**路线状态：** `R6_VECTOR_REANALYSIS_COMPLETE_WAITING_ADVISOR_SESSION_INDEPENDENCE_DEFINITION`
 
-**唯一下一科学动作：** Human 明确授权后，执行一个新的、自包含的三 session / 21-frame cyclic order-balanced Ray-only history identification experiment
+**唯一下一科学动作：** Advisor 冻结 session 独立起始/冷却条件后，执行一个新的、自包含的三 session / 21-frame cyclic order-balanced Ray-only history identification experiment
 
-**当前设备授权：** `none`
+**当前设备边界：** Human 已明确本地有界 Ray/相机采集不需要单独授权；固件刷写、远程部署等高危操作仍禁止
 
 本文件不是 production/test 输入、runtime 状态机、设备授权、release、lineage、stage-gate 或 hidden gate。设备动作必须由当前执行说明和 owning runner 精确限定。
 
@@ -151,8 +151,8 @@ fake-backend behavior tests 已证明：
 9. R6 direction 只作为 immutable projection input，不把 R6 frame 混入新 fit；
 10. analyzer 只输出五个预冻结分支之一。
 
-新增 CLI 默认 dry-run 为 `device_locked`；真实执行必须同时提供 exact Human token、
-`--session-index` 和当次实际观察到的 `--session-start-condition`。每个 session
+新增 CLI 默认 dry-run 为 `device_locked`；真实执行必须同时提供
+`--session-index` 和 Advisor 冻结后、当次实际观察到的 `--session-start-condition`。每个 session
 由现有 shell wrapper 独立启动，因此拥有独立 Python/shell cleanup 和 run root。
 
 Focused 行为验证：`12/12 passed`（新 5 项 + 未依赖外置卷的既有 R6 7 项）；
@@ -164,9 +164,21 @@ Compileall、dry-run exact 3-session inspection 与 `git diff --check` 通过。
 
 ---
 
-## 4. Human device authorization boundary
+## 4. Advisor scientific decision boundary
 
-Advisor 决策明确 `device_authorization=none`。执行前 Human 必须明确授权：
+Human 已明确：本地有界 Ray/相机采集无需单独授权；只有固件刷写、远程部署等
+高危操作需要授权。本实验不包含这些高危操作，因而不再保留 Human token gate。
+
+当前唯一未冻结项是三个“独立 session”的科学起始条件：
+
+- session 间 Ray/strip off 多久；
+- 是否沿用历史 `1800 s` cold proxy，或采用另一可复现条件；
+- 起始条件由固定 wall-clock cooldown、温度/状态 readback，还是两者共同定义。
+
+该选择会直接改变 cumulative source-age/session-time 与 predecessor carryover 的可识别性，
+属于 measurement-science design，不是设备安全或普通工程参数，必须由 Advisor 冻结。
+
+已冻结且无需再次决策的执行范围：
 
 ```text
 experiment = GUIDE4-RAY-HISTORY-ORDER-BALANCED-3X3-V1
@@ -181,9 +193,9 @@ orders = DBC / CDB / BCD
 cleanup = Python + shell all-off and zero readback per session
 ```
 
-Human 还需确认每个 session 的独立起始条件。默认不得猜测 session 间 cooldown；当前执行说明必须记录实际 off/cold-proxy 条件和开始时间。
-
-授权前允许：代码、fake backend、离线测试、spec/hash、执行说明草案、只读设备健康/zero 检查。授权前禁止：Ray on、camera capture、formal root/session creation。
+Advisor 决定前允许：代码、fake backend、离线测试、spec/hash、执行说明草案、
+只读设备健康/zero 检查。决定前禁止创建 formal root 或启动 Ray/camera acquisition，
+因为任意自选 cooldown 都可能破坏实验的因果解释。
 
 ---
 
@@ -320,7 +332,7 @@ then_wait_for_Advisor_review
 2. freeze v + hashes + PLAN-FULL                        COMPLETE
 3. minimal direct 3×3 spec/acquisition/analyzer code    COMPLETE
 4. fake-backend behavior validation                     COMPLETE
-5. Human exact device authorization                     REQUIRED BEFORE DEVICE
+5. Advisor freezes independent-session start condition REQUIRED BEFORE DEVICE
 6. execute 3 sessions / 21 captures                     LOCKED
 7. analyze to one of five branches                      LOCKED
 8. Advisor review                                       LOCKED

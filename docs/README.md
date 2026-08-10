@@ -849,8 +849,11 @@ protocol is `GUIDE4-RAY-HISTORY-ORDER-BALANCED-3X3-V1`: three independent
 seven-capture sessions with orders `D-B-C`, `C-D-B`, and `B-C-D`. Each session
 captures only `A0`, each 600-second predecessor endpoint, and its 600-second
 return A. The direct CLI executes exactly one session per wrapper launch and
-requires the exact Human token, `--session-index`, and a truthful
-`--session-start-condition`; its default dry-run remains device-locked. Each
+requires `--session-index` and a truthful, scientifically pre-frozen
+`--session-start-condition`; its default dry-run remains device-locked. Local
+bounded Ray/camera acquisition does not require a separate Human token; firmware
+flashing, remote deployment, destructive hardware changes, or scope expansion
+remain separately controlled. Each
 session starts and ends with all-off cleanup, keeps Ray on between those points,
 and uses strip-zero-only inter-state checks. The analyzer fits the frozen
 `session + sequence_position + immediate_predecessor_state` screening model

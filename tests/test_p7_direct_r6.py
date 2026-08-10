@@ -222,13 +222,14 @@ class DirectR6Tests(unittest.TestCase):
                 list(enumerate(session["session_order"], start=1)),
             )
             authorized = thermal.build_ray_history_session_spec(
-                session_index, human_authorization_verified=True,
+                session_index, device_control_enabled=True,
                 session_start_condition="Ray and strip off for 1800 s; zero readback passed",
             )
             self.assertEqual(authorized["status"], "execute_authorized")
-            self.assertTrue(authorized["execution_authorization"]["human_authorization_verified"])
+            self.assertTrue(authorized["execution_authorization"]["bounded_device_scope"])
+            self.assertFalse(authorized["execution_authorization"]["human_authorization_required"])
 
-    def test_ray_history_cli_requires_exact_human_scope_and_one_session(self):
+    def test_ray_history_cli_requires_bounded_scope_and_one_session(self):
         called = {}
 
         def runner(plan, **_kwargs):
@@ -243,10 +244,10 @@ class DirectR6Tests(unittest.TestCase):
             "--session-start-condition", "Ray and strip off for 1800 s; zero readback passed",
         ]
         with self.assertRaises(PermissionError):
-            measure.main(base, run_fn=runner, backend_factory=lambda: object())
-        self.assertEqual(measure.main([
-            *base, "--human-authorization", thermal.RAY_HISTORY_3X3_EXPERIMENT_ID,
-        ], run_fn=runner, backend_factory=lambda: object()), 0)
+            measure.main(base[:-2], run_fn=runner, backend_factory=lambda: object())
+        self.assertEqual(
+            measure.main(base, run_fn=runner, backend_factory=lambda: object()), 0,
+        )
         self.assertEqual(called["plan"]["session_index"], 2)
         self.assertEqual(called["plan"]["session_order"], ["C", "D", "B"])
 
@@ -759,7 +760,7 @@ class DirectR6Tests(unittest.TestCase):
             root.mkdir()
             for session_index in (1, 2, 3):
                 plan = thermal.build_ray_history_session_spec(
-                    session_index, human_authorization_verified=True,
+                    session_index, device_control_enabled=True,
                     session_start_condition="Ray and strip off for 1800 s; zero readback passed",
                 )
                 run = self._execute_fake_protocol(

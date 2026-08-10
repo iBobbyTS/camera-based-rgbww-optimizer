@@ -1690,7 +1690,7 @@ def analyze_ray_history_experiment(
         plan = _load_json(session_root / "experiment-spec.json")
         run = _load_json(session_root / "run.json")
         expected = thermal.build_ray_history_session_spec(
-            session_index, human_authorization_verified=True,
+            session_index, device_control_enabled=True,
             session_start_condition=plan.get("session_start_condition"),
         )
         if plan != expected:

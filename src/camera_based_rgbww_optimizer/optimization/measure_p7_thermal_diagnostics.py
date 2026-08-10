@@ -205,14 +205,33 @@ def validate_authorized_execution_plan(
     expected_authorization_experiment = (
         plan.get("guide_experiment_id") or experiment_id
     )
+    direct_ray_history = (
+        isinstance(authorization, Mapping)
+        and authorization.get("schema") == "direct_ray_history_session_v1"
+    )
+    if direct_ray_history:
+        valid_execution_scope = (
+            authorization.get("bounded_device_scope") is True
+            and authorization.get("human_authorization_required") is False
+            and authorization.get("experiment_id") == expected_authorization_experiment
+            and authorization.get("remote_v2_capability") is True
+        )
+    else:
+        valid_execution_scope = (
+            isinstance(authorization, Mapping)
+            and str(authorization.get("schema", "")).startswith("direct_")
+            and authorization.get("human_authorization_verified") is True
+            and authorization.get("human_authorization_experiment_id")
+            == expected_authorization_experiment
+            and authorization.get("remote_v2_capability") is True
+        )
+    if not valid_execution_scope:
+        raise PermissionError("thermal diagnostic execution lacks its exact bounded/v2 scope")
     if (
         not isinstance(authorization, Mapping)
         or not str(authorization.get("schema", "")).startswith("direct_")
-        or authorization.get("human_authorization_verified") is not True
-        or authorization.get("human_authorization_experiment_id") != expected_authorization_experiment
-        or authorization.get("remote_v2_capability") is not True
     ):
-        raise PermissionError("thermal diagnostic execution lacks exact Human/v2 authorization evidence")
+        raise PermissionError("thermal diagnostic execution lacks a direct execution scope")
     camera = plan.get("camera")
     if (
         not isinstance(camera, Mapping)
@@ -876,7 +895,7 @@ def validate_direct_ray_history_session_post_capture(
     if type(session_index) is not int:
         raise ValueError("Ray history session lacks an integer session index")
     expected = thermal.build_ray_history_session_spec(
-        session_index, human_authorization_verified=True,
+        session_index, device_control_enabled=True,
         session_start_condition=plan.get("session_start_condition"),
     )
     immutable_fields = (
@@ -1706,15 +1725,13 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
     if not (args.execute and args.allow_device_control):
         raise PermissionError(f"{direct_kind} requires --execute and --allow-device-control")
     if direct_kind == "ray-history-3x3":
-        if args.human_authorization != thermal.RAY_HISTORY_3X3_EXPERIMENT_ID:
-            raise PermissionError("Ray history experiment requires the exact Human authorization token")
         if args.session_index is None:
             raise PermissionError("Ray history execution requires one exact --session-index")
         if not isinstance(args.session_start_condition, str) or not args.session_start_condition.strip():
             raise PermissionError("Ray history execution requires the observed independent session start condition")
         prerequisite = None
         plan = thermal.build_ray_history_session_spec(
-            args.session_index, human_authorization_verified=True,
+            args.session_index, device_control_enabled=True,
             session_start_condition=args.session_start_condition,
         )
     else:

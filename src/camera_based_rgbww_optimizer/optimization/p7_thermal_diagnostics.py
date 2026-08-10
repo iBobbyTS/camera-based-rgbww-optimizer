@@ -411,7 +411,7 @@ def build_ray_history_session_spec(
     session_index: int,
     *,
     policy: Mapping[str, Any] | None = None,
-    human_authorization_verified: bool = False,
+    device_control_enabled: bool = False,
     session_start_condition: str | None = None,
 ) -> dict[str, Any]:
     """Build one self-contained seven-capture order-balanced Ray session.
@@ -421,10 +421,10 @@ def build_ray_history_session_spec(
     """
     if session_index not in (1, 2, 3):
         raise ValueError("Ray history session index must be 1, 2, or 3")
-    if human_authorization_verified and (
+    if device_control_enabled and (
         not isinstance(session_start_condition, str) or not session_start_condition.strip()
     ):
-        raise ValueError("authorized Ray history session requires its observed independent start condition")
+        raise ValueError("Ray history device session requires its observed independent start condition")
     exposure = dict(policy or load_td_b_exposure_policy_v2())
     validate_td_b_exposure_policy_v2(exposure)
     shutters = {
@@ -478,7 +478,7 @@ def build_ray_history_session_spec(
     frozen = {key: frozen[key] for key in sorted(frozen)}
     return {
         "schema": PLAN_SCHEMA_V2,
-        "status": "execute_authorized" if human_authorization_verified else "device_locked",
+        "status": "execute_authorized" if device_control_enabled else "device_locked",
         "experiment_id": TD_B,
         "guide_experiment_id": RAY_HISTORY_3X3_EXPERIMENT_ID,
         "stage": "TD-B",
@@ -526,8 +526,9 @@ def build_ray_history_session_spec(
         },
         "execution_authorization": {
             "schema": "direct_ray_history_session_v1",
-            "human_authorization_verified": human_authorization_verified,
-            "human_authorization_experiment_id": RAY_HISTORY_3X3_EXPERIMENT_ID,
+            "bounded_device_scope": device_control_enabled,
+            "human_authorization_required": False,
+            "experiment_id": RAY_HISTORY_3X3_EXPERIMENT_ID,
             "remote_v2_capability": True,
         },
         "cleanup": {
@@ -543,18 +544,18 @@ def build_ray_history_session_spec(
 
 
 def build_ray_history_experiment_spec(
-    *, human_authorization_verified: bool = False,
+    *, device_control_enabled: bool = False,
     session_start_conditions: Sequence[str] | None = None,
 ) -> dict[str, Any]:
     """Build the exact three-session, 21-capture scientific experiment."""
-    if human_authorization_verified and (
+    if device_control_enabled and (
         session_start_conditions is None or len(session_start_conditions) != 3
     ):
-        raise ValueError("authorized Ray history experiment requires three session start conditions")
+        raise ValueError("Ray history device experiment requires three session start conditions")
     sessions = [
         build_ray_history_session_spec(
             index,
-            human_authorization_verified=human_authorization_verified,
+            device_control_enabled=device_control_enabled,
             session_start_condition=(
                 None if session_start_conditions is None
                 else session_start_conditions[index - 1]
@@ -565,7 +566,7 @@ def build_ray_history_experiment_spec(
     return {
         "schema": "guide4_ray_history_order_balanced_3x3_v1",
         "experiment_id": RAY_HISTORY_3X3_EXPERIMENT_ID,
-        "status": "execute_authorized" if human_authorization_verified else "device_locked",
+        "status": "execute_authorized" if device_control_enabled else "device_locked",
         "orders": [list(order) for order in RAY_HISTORY_3X3_SESSION_ORDERS],
         "session_count": 3,
         "formal_capture_count": 21,
