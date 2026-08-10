@@ -1,0 +1,268 @@
+{
+  "covariance": "frozen_ray_within_state_diagonal_with_shared_A0_block_covariance",
+  "experiment_id": "GUIDE5-RAY-FAST-OP120-TARGETS-V1",
+  "full_manifold_transfer": false,
+  "members": {
+    "A_initial120_excluded": [
+      {
+        "anchor_label": "A0",
+        "capture_id": "000-s1-ray-a0-t120",
+        "capture_role": "formal",
+        "exact_command_hash": "88de37b2161c25b401d616a34c105199243afe21c15545fe5a27691adbdbc96c",
+        "plan_step_sha256": "494de7cbebabe32d7274d4c310b6a2edb4b10c5d1031373c2c9bf960681b4c20",
+        "raw_sha256": "d7924cf844d36ed6511896e728e695f1fb901f1205cf599ebed967d4018742fc",
+        "session": 1,
+        "state": "A"
+      },
+      {
+        "anchor_label": "A0",
+        "capture_id": "000-s2-ray-a0-t120",
+        "capture_role": "formal",
+        "exact_command_hash": "88de37b2161c25b401d616a34c105199243afe21c15545fe5a27691adbdbc96c",
+        "plan_step_sha256": "497d33a966fff30f908318c6ecee5624df4da668e1aadd336f07b2d900f2bbc3",
+        "raw_sha256": "9754981f02d496f2ddb552adc6aab339380755a6588760c831ce3fba1217219d",
+        "session": 2,
+        "state": "A"
+      },
+      {
+        "anchor_label": "A0",
+        "capture_id": "000-s3-ray-a0-t120",
+        "capture_role": "formal",
+        "exact_command_hash": "88de37b2161c25b401d616a34c105199243afe21c15545fe5a27691adbdbc96c",
+        "plan_step_sha256": "22148a94994c8df98947791218cb99a3890b0577aac8487cfff6a38421bd2436",
+        "raw_sha256": "047dbb734e8507f7842ad582e0fe94a0e11fd2867fe18f6e07a32e0d84e4f695",
+        "session": 3,
+        "state": "A"
+      }
+    ],
+    "A_warm_return120": [
+      {
+        "anchor_label": "A_after_D",
+        "capture_id": "002-s1-ray-a_after_d-t120",
+        "capture_role": "formal",
+        "exact_command_hash": "88de37b2161c25b401d616a34c105199243afe21c15545fe5a27691adbdbc96c",
+        "plan_step_sha256": "098cdf999e3141379164b439e29d277b7061003df639c899d4d7961e35e2b5c4",
+        "raw_sha256": "a1c319d8e3bc56a3f2f10c2fb05455820306499c9d791ffd832225f6277e1d17",
+        "session": 1,
+        "state": "A"
+      },
+      {
+        "anchor_label": "A_after_B",
+        "capture_id": "004-s1-ray-a_after_b-t120",
+        "capture_role": "formal",
+        "exact_command_hash": "88de37b2161c25b401d616a34c105199243afe21c15545fe5a27691adbdbc96c",
+        "plan_step_sha256": "cdb669e1921c2b856efcaf6dd1a9ff1cafaa9c0bab859fe434b0416d71d3b4bd",
+        "raw_sha256": "30182daa680bc31498d75b6ca2b4be8828ce2559649e4587d793959e83f90ffe",
+        "session": 1,
+        "state": "A"
+      },
+      {
+        "anchor_label": "A_after_C",
+        "capture_id": "006-s1-ray-a_after_c-t120",
+        "capture_role": "formal",
+        "exact_command_hash": "88de37b2161c25b401d616a34c105199243afe21c15545fe5a27691adbdbc96c",
+        "plan_step_sha256": "25ffaa3aabd9646014fb67d621ee993a310d4a1efcd7d662831edd3e431e650c",
+        "raw_sha256": "93b9fbd860baa0097b6b5e90de6de37bc8c76da4dc4db3224d392ce131a1e1d7",
+        "session": 1,
+        "state": "A"
+      },
+      {
+        "anchor_label": "A_after_C",
+        "capture_id": "002-s2-ray-a_after_c-t120",
+        "capture_role": "formal",
+        "exact_command_hash": "88de37b2161c25b401d616a34c105199243afe21c15545fe5a27691adbdbc96c",
+        "plan_step_sha256": "44c5698a8333720e5c913d119b1eaa3ae084df0e6445515aaeba41da70ee6d2d",
+        "raw_sha256": "5d7dab6450b66332063fc67823693a0a9a35681aad25cc2061ef989d4fbd5983",
+        "session": 2,
+        "state": "A"
+      },
+      {
+        "anchor_label": "A_after_D",
+        "capture_id": "004-s2-ray-a_after_d-t120",
+        "capture_role": "formal",
+        "exact_command_hash": "88de37b2161c25b401d616a34c105199243afe21c15545fe5a27691adbdbc96c",
+        "plan_step_sha256": "071d0663b1b6af169407bb871ed732d1e80eca244cedb0f2faa265a16ef1c39c",
+        "raw_sha256": "29e641afb7d05efc9a835b1ece240fe95b6e5517465cd869a57147ee284e308d",
+        "session": 2,
+        "state": "A"
+      },
+      {
+        "anchor_label": "A_after_B",
+        "capture_id": "006-s2-ray-a_after_b-t120",
+        "capture_role": "formal",
+        "exact_command_hash": "88de37b2161c25b401d616a34c105199243afe21c15545fe5a27691adbdbc96c",
+        "plan_step_sha256": "0b91766ff85f029ca467a338b6e79543e201ed4f872050b7c34245b8659b922a",
+        "raw_sha256": "a57a3dcecac0d4c13b2a6aa220dd58088a9715fb7068f01d3c74545fdb01782a",
+        "session": 2,
+        "state": "A"
+      },
+      {
+        "anchor_label": "A_after_B",
+        "capture_id": "002-s3-ray-a_after_b-t120",
+        "capture_role": "formal",
+        "exact_command_hash": "88de37b2161c25b401d616a34c105199243afe21c15545fe5a27691adbdbc96c",
+        "plan_step_sha256": "0f706a46e221c28103752e76e019a061ea1abc297fedb5d628aa0e00afdb17e5",
+        "raw_sha256": "43faf8b7fadf605e72366184ca70a32a00b54ef657756a59f36f8705c69e64c7",
+        "session": 3,
+        "state": "A"
+      },
+      {
+        "anchor_label": "A_after_C",
+        "capture_id": "004-s3-ray-a_after_c-t120",
+        "capture_role": "formal",
+        "exact_command_hash": "88de37b2161c25b401d616a34c105199243afe21c15545fe5a27691adbdbc96c",
+        "plan_step_sha256": "55b9b03f512ddf1569147349df9c1fb480368a1cc02c947dd57c27be39063d6c",
+        "raw_sha256": "ca88149ccbbb56c38affb4d080564adf16cd083cb60d3ee0ab94d180fa18f664",
+        "session": 3,
+        "state": "A"
+      },
+      {
+        "anchor_label": "A_after_D",
+        "capture_id": "006-s3-ray-a_after_d-t120",
+        "capture_role": "formal",
+        "exact_command_hash": "88de37b2161c25b401d616a34c105199243afe21c15545fe5a27691adbdbc96c",
+        "plan_step_sha256": "48d430f9900ef26987a05487e373afe88d8e1c8f99f91da631dd13f41cf53a1d",
+        "raw_sha256": "f1d73b109d297878cc3c595e34d5683813c814dee6f0d06217e8b0f5f627a2f8",
+        "session": 3,
+        "state": "A"
+      }
+    ],
+    "B": [
+      {
+        "anchor_label": "B",
+        "capture_id": "003-s1-ray-b-t120",
+        "capture_role": "formal",
+        "exact_command_hash": "9f01cf8b6d7087cde479c369364ef9a1d6bc04654db904791336a0414716d51c",
+        "plan_step_sha256": "36900e4ec248f84f86bcd79288ba8db5ea816beb65ec01ca8c9cebd0907a6761",
+        "raw_sha256": "9b97d776dca2211fc562fd7a9f88a523db5655fe2da297a7c2c5a771745f270e",
+        "session": 1,
+        "state": "B"
+      },
+      {
+        "anchor_label": "B",
+        "capture_id": "005-s2-ray-b-t120",
+        "capture_role": "formal",
+        "exact_command_hash": "9f01cf8b6d7087cde479c369364ef9a1d6bc04654db904791336a0414716d51c",
+        "plan_step_sha256": "7b5bfa92812d5c5cb291868903631186ea1993de7ab116eb8d7707aeedec17b1",
+        "raw_sha256": "82542a92314f6c6ac8e565e64478b2616ceb28c18920b2d213ecf5aee2023231",
+        "session": 2,
+        "state": "B"
+      },
+      {
+        "anchor_label": "B",
+        "capture_id": "001-s3-ray-b-t120",
+        "capture_role": "formal",
+        "exact_command_hash": "9f01cf8b6d7087cde479c369364ef9a1d6bc04654db904791336a0414716d51c",
+        "plan_step_sha256": "a4047d3521ee76f2db04950eac1426a152e2e5b87ebe0531c78f2f137027064b",
+        "raw_sha256": "35ca55ebb5a5f570254c4607d060af456dcaabeb255c68f3fe414b6e3a10f140",
+        "session": 3,
+        "state": "B"
+      }
+    ],
+    "C": [
+      {
+        "anchor_label": "C",
+        "capture_id": "005-s1-ray-c-t120",
+        "capture_role": "formal",
+        "exact_command_hash": "75fa5bee5d21f8aed9ecbc01968ee262208b59311e1c8004567e9f1bf3b06e74",
+        "plan_step_sha256": "dcf5972d2a6e602c9c653327e598b22d20cbf3cbbaaa72fd5e1971c79f43331e",
+        "raw_sha256": "7a2147b4277641ff903175343abe23ebc543ea2fc754936be8cd832c81fbd960",
+        "session": 1,
+        "state": "C"
+      },
+      {
+        "anchor_label": "C",
+        "capture_id": "001-s2-ray-c-t120",
+        "capture_role": "formal",
+        "exact_command_hash": "75fa5bee5d21f8aed9ecbc01968ee262208b59311e1c8004567e9f1bf3b06e74",
+        "plan_step_sha256": "b70f1a6f39a6447832164764e20be137f0b38cfebbad640561670e50862930f7",
+        "raw_sha256": "a16480933b8fd289f915226833fc0d09c48637314a7dc3efd9b57fee2510259c",
+        "session": 2,
+        "state": "C"
+      },
+      {
+        "anchor_label": "C",
+        "capture_id": "003-s3-ray-c-t120",
+        "capture_role": "formal",
+        "exact_command_hash": "75fa5bee5d21f8aed9ecbc01968ee262208b59311e1c8004567e9f1bf3b06e74",
+        "plan_step_sha256": "3f411e3e933e4ac57d6585b66cbe9e8055c156de39c34da65d60fa0a21cc58d7",
+        "raw_sha256": "5026681c69d772995022f26f3b17d44c319e7cbea1293a0b5ebf9b54751e5652",
+        "session": 3,
+        "state": "C"
+      }
+    ],
+    "D": [
+      {
+        "anchor_label": "D",
+        "capture_id": "001-s1-ray-d-t120",
+        "capture_role": "formal",
+        "exact_command_hash": "6e5a92a7182d768ea38412c77c43ac332b624e07d3759b0cb8943bf7a7e16453",
+        "plan_step_sha256": "36e5316502d3dd9e69b05ad82a28f5f5525119938ac5677502560b59b7a39c05",
+        "raw_sha256": "84100f9cc14c0017a90560547085fc1a9c8875d866d827c15e91a44bb7f0da09",
+        "session": 1,
+        "state": "D"
+      },
+      {
+        "anchor_label": "D",
+        "capture_id": "003-s2-ray-d-t120",
+        "capture_role": "formal",
+        "exact_command_hash": "6e5a92a7182d768ea38412c77c43ac332b624e07d3759b0cb8943bf7a7e16453",
+        "plan_step_sha256": "8c314b696cc8f135881e0cb7662ce09659572d408dc6388862f23b26c4d94a61",
+        "raw_sha256": "3f432a02113a98829d560265e31e1b72a1dfb5c406f89ba3e01e60dadddf03da",
+        "session": 2,
+        "state": "D"
+      },
+      {
+        "anchor_label": "D",
+        "capture_id": "005-s3-ray-d-t120",
+        "capture_role": "formal",
+        "exact_command_hash": "6e5a92a7182d768ea38412c77c43ac332b624e07d3759b0cb8943bf7a7e16453",
+        "plan_step_sha256": "47f835d3771e0f0ce5c91aa805c68412ecebc2f1a6daf6f54fcf2ab66ec1ba20",
+        "raw_sha256": "7b1d0417c78340138f7e5d8e7b0bacba32157a3a0d67aa2a64bde49403e0e62b",
+        "session": 3,
+        "state": "D"
+      }
+    ]
+  },
+  "observer": {
+    "feature_count": 58,
+    "feature_policy": "frozen",
+    "name": "Canon native-Bayer"
+  },
+  "protocol": {
+    "name": "fast_op120_reset600_v1",
+    "operational_dwell_class": "human_bounded_op120",
+    "operational_dwell_s": 120,
+    "reset_class": "human_bounded_reset_600",
+    "reset_proxy_s": 600,
+    "steady_or_settled_claim": false
+  },
+  "r6_frames_pooled": false,
+  "schema": "guide5_ray_fast_op120_targets_v1",
+  "solver_allowed": false,
+  "source_analysis_v2": "/Volumes/4T/temp/rgbww-optimizer/guide4-ray-history-3x3-op120-cold600-v3-20260810-081551/analysis-v2-common-reentry-derived.json",
+  "source_analysis_v2_sha256": "3f23ed6c949217c104121b43e20300e21b0a70a60349f80ffeb95844797d9986",
+  "source_experiment_id": "GUIDE4-RAY-HISTORY-ORDER-BALANCED-3X3-OP120-COLD600-V3",
+  "source_root": "/Volumes/4T/temp/rgbww-optimizer/guide4-ray-history-3x3-op120-cold600-v3-20260810-081551",
+  "states": {
+    "A": {
+      "exclude": "all A_initial120 captures",
+      "include": "A_after_Q captures only",
+      "label": "H120-S100",
+      "purpose": "warm_return command-switch anchor"
+    },
+    "B": {
+      "label": "H0-S0",
+      "purpose": "direct state after A"
+    },
+    "C": {
+      "label": "H300-S100",
+      "purpose": "direct state after A"
+    },
+    "D": {
+      "label": "H120-S50",
+      "purpose": "direct state after A"
+    }
+  },
+  "status": "derived_offline_not_device_authorization"
+}

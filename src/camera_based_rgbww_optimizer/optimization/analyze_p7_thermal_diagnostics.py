@@ -1820,6 +1820,9 @@ def analyze_ray_history_experiment(
         }
 
     contrasts = {
+        "common_warm_reentry_effect": contrast(
+            "common_warm_reentry_effect", (1, 0, 0, 0, 0, 0, 0),
+        ),
         "position_2_minus_1": contrast("position_2_minus_1", (0, 0, 0, 1, 0, 0, 0)),
         "position_3_minus_2": contrast("position_3_minus_2", (0, 0, 0, -1, 1, 0, 0)),
         "C_minus_D": contrast("C_minus_D", (0, 0, 0, 0, 0, 0, 1)),
@@ -1918,12 +1921,76 @@ def analyze_ray_history_experiment(
             "period_detected": period_detected, "C_carryover_detected": c_detected,
             "other_state_effect_detected": other_state_effect,
             "large_orthogonal_residual": orthogonal_large,
+            "orthogonal_to_frozen_r6_direction_detected": orthogonal_large,
             "additive_model_rejected": residual_large,
             "all_return_deltas_compatible_with_zero": return_compatible,
         },
         "locks": {
             "strip": True, "combined_td_b": True, "td_c": True,
             "sentinel_and_later": True, "until": "classification_review_complete",
+        },
+    }
+
+
+def analyze_ray_history_experiment_v2(
+    experiment_root: str | Path,
+    *, feature_ids: Sequence[str], r6_vector_artifact: str | Path,
+) -> dict[str, Any]:
+    """Derive the Advisor-5 common-reentry classification without changing v1 evidence."""
+    legacy = analyze_ray_history_experiment(
+        experiment_root, feature_ids=feature_ids,
+        r6_vector_artifact=r6_vector_artifact,
+    )
+    diagnostics = legacy["diagnostics"]
+    contrasts = legacy["model"]["contrasts"]
+    additive_residual = bool(diagnostics["additive_model_rejected"])
+    period = bool(diagnostics["period_detected"])
+    predecessor = bool(
+        diagnostics["C_carryover_detected"]
+        or diagnostics["other_state_effect_detected"]
+    )
+    common = contrasts["common_warm_reentry_effect"]["decision"] == "detected"
+    raw_compatible = bool(diagnostics["all_return_deltas_compatible_with_zero"])
+    if additive_residual:
+        classification = "interaction_or_nonadditive_unresolved"
+    elif common and not period and not predecessor:
+        classification = "common_warm_reentry_shift"
+    elif period or predecessor:
+        classification = "additive_period_or_carryover_effect"
+    elif raw_compatible:
+        classification = "no_history_effect_detected"
+    else:
+        classification = "underpowered_or_unclassified"
+    original = Path(experiment_root).resolve() / "analysis.json"
+    return {
+        "schema": "guide4_ray_history_order_balanced_analysis_v2",
+        "status": "classified_waiting_advisor_review",
+        "experiment_id": legacy["experiment_id"],
+        "legacy_classification": legacy["classification"],
+        "classification": classification,
+        "r6_rank1_direction_transfer": "rejected",
+        "r6_frames_pooled": False,
+        "original_analysis_sha256": _sha256(original) if original.is_file() else None,
+        "frozen_r6_direction": legacy["frozen_r6_direction"],
+        "measurement_contract": legacy["measurement_contract"],
+        "sessions": legacy["sessions"],
+        "model": legacy["model"],
+        "diagnostics": {
+            "common_warm_reentry_detected": common,
+            "period_main_effect_detected": period,
+            "predecessor_main_effect_detected": predecessor,
+            "additive_model_rejected": additive_residual,
+            "nonlinear_interaction_demonstrated": additive_residual,
+            "raw_return_deltas_compatible_with_zero": raw_compatible,
+            "orthogonal_to_frozen_r6_direction_detected": bool(
+                diagnostics["orthogonal_to_frozen_r6_direction_detected"]
+            ),
+        },
+        "locks": {
+            "strip_history_only": classification != "common_warm_reentry_shift",
+            "combined_td_b": True, "td_c": True,
+            "sentinel_and_later": True,
+            "until": "advisor_review_complete",
         },
     }
 
@@ -1940,6 +2007,8 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--source-bundle-member")
     parser.add_argument("--analyzer-commit")
     parser.add_argument("--ray-history-analysis", action="store_true")
+    parser.add_argument("--ray-history-analysis-v2", action="store_true")
+    parser.add_argument("--ray-history-analysis-output", type=Path)
     parser.add_argument("--r6-vector-artifact", type=Path)
     return parser.parse_args(argv)
 
@@ -1953,6 +2022,23 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.feature_ids is None:
         raise ValueError("--feature-ids is required for thermal run analysis")
     feature_ids = _feature_ids_from_artifact(args.feature_ids)
+    if args.ray_history_analysis_v2:
+        if args.r6_vector_artifact is None:
+            raise ValueError("Ray history analysis requires --r6-vector-artifact")
+        if args.ray_history_analysis:
+            raise ValueError("v1 and v2 Ray history analysis are mutually exclusive")
+        output = args.ray_history_analysis_output
+        if output is None:
+            raise ValueError("v2 Ray history analysis requires --ray-history-analysis-output")
+        report = analyze_ray_history_experiment_v2(
+            args.run_dir, feature_ids=feature_ids,
+            r6_vector_artifact=args.r6_vector_artifact,
+        )
+        _write_text_atomic(
+            output.resolve(), json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n",
+        )
+        print(output.resolve())
+        return 0
     if args.ray_history_analysis:
         if args.r6_vector_artifact is None:
             raise ValueError("Ray history analysis requires --r6-vector-artifact")

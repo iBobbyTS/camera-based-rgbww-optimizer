@@ -839,6 +839,16 @@ class DirectR6Tests(unittest.TestCase):
             self.assertEqual(report["model"]["observation_count"], 9)
             self.assertEqual(report["model"]["residual_degrees_of_freedom"], 2)
             self.assertTrue(all(report["locks"].values()))
+            derived = analyze.analyze_ray_history_experiment_v2(
+                root, feature_ids=feature_ids, r6_vector_artifact=drift,
+            )
+            self.assertEqual(derived["schema"], "guide4_ray_history_order_balanced_analysis_v2")
+            self.assertEqual(derived["classification"], "no_history_effect_detected")
+            self.assertEqual(
+                derived["legacy_classification"], "R6-not-reproduced",
+            )
+            self.assertFalse(derived["diagnostics"]["common_warm_reentry_detected"])
+            self.assertFalse(derived["diagnostics"]["nonlinear_interaction_demonstrated"])
 
             captures_path = root / "session-1" / "captures.jsonl"
             original = captures_path.read_text()
