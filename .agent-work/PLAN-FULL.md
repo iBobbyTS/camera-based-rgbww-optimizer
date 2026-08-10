@@ -10,15 +10,15 @@ production/test 输入、runtime 状态机、设备授权或 hidden gate。
 `nonlinear/non-additive` 已由 Advisor 明确拒绝为过强分类，原始
 `analysis.json` 保持不可变。
 
-**当前路线状态：** `HUMAN_GATE_REQUIRED_FOR_STRIP_AND_LONG_BRIDGE`
+**当前路线状态：** `READY_FOR_NEXT_SCIENTIFIC_ACTION`
 
-**当前唯一下一步：** Human 分别授权以下两个已冻结的有界设备实验后，才能启动其中
-一个；未授权前不访问设备、不创建实验 root：
+**当前下一步：** 从以下两个已冻结的有界设备实验中选择一个执行；依据 AGENTS.md
+的 Human-authorization precedence，二者均不需要额外 Human authorization：
 
 1. `GUIDE5-STRIP-HISTORY-ORDER-BALANCED-3X3-OP120-RESET600-V1`
 2. `GUIDE5-RAY-FAST-LONG-BRIDGE-OP120-OP600-RESET600-RESET1800-V1`
 
-Advisor 要求两者不并行，使用独立 root；Orchestrator 可在 Human 授权后按顺序执行。
+两者不得并行，必须使用独立 root；Orchestrator 可直接按当前 GUIDE/PLAN 的边界执行。
 
 ## 1. 不可变科学合同
 
@@ -100,10 +100,11 @@ C / H300-S100  = 3 个 direct captures
 该 artifact 只支持四个直接状态，不外推完整 P6 manifold；继续使用冻结 covariance，
 不得从 3 或 9 个样本估计新 covariance。
 
-## 4. B — strip-only fast history（待 Human 授权）
+## 4. B — strip-only fast history（已解锁）
 
-仅在 A1 canonical 输出为 `common_warm_reentry_shift` 且证据检查通过后解锁；当前
-科学条件已满足，但 GUIDE5 要求单独 Human authorization。
+A1 canonical 输出为 `common_warm_reentry_shift` 且证据检查已通过，当前已解锁。
+GUIDE5 中额外的 Human authorization 要求与 AGENTS.md 的授权优先级冲突，按
+AGENTS.md 不构成停止门；高危操作仍按高风险授权条款执行。
 
 ```text
 experiment_id = GUIDE5-STRIP-HISTORY-ORDER-BALANCED-3X3-OP120-RESET600-V1
@@ -128,9 +129,10 @@ fast-history model；`additive_period_or_carryover_effect`、
 `interaction_or_nonadditive_unresolved` 或 measurement failure 均在 combined 之前
 回 Advisor。
 
-## 5. C — paired fast-vs-long Ray bridge（待 Human 授权）
+## 5. C — paired fast-vs-long Ray bridge（已解锁）
 
-与 B 使用独立 root，不并行；不训练 fast target，不改变 covariance。
+与 B 使用独立 root，不并行；不训练 fast target，不改变 covariance。该实验是有界
+Ray/相机采集，不属于 AGENTS.md 定义的高危操作。
 
 ```text
 states = C (H300/S100) and B (H0/S0)
@@ -169,7 +171,7 @@ exposure/frame selection、把 R6 PC1 transfer failure写成 nonlinear interacti
   quality、analysis、cleanup 和报告可追踪。
 - 设备任务超过 10 分钟使用 visible Terminal、三次 liveness 检查与 automation。
 - 只有明确的 `HUMAN_GATE_REQUIRED` 或 `ADVISOR_GATE_REQUIRED` 才停止路线；当前
- 仅因 GUIDE5 要求授权而处于 `HUMAN_GATE_REQUIRED`，不是工程失败。
+  没有任一 gate。高危操作授权缺失时才进入 `HUMAN_GATE_REQUIRED`。
 
 ## 8. 交付要求
 

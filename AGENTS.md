@@ -27,9 +27,13 @@ This project is used only for the Human-owned and Human-maintained local photogr
   add process without materially improving scientific correctness, safety,
   evidence integrity, or maintainability. Keep the smallest implementation,
   validation, and evidence package that safely advances the GUIDE stage.
-- This exception does not waive Human authorization for high-risk operations,
-  real cleanup requirements, credential protection, GUIDE/RESEARCH immutability,
-  or validation needed to support a scientific conclusion.
+- For authorization conflicts, this file is authoritative: GUIDE, RESEARCH,
+  PLAN and PLAN-FULL may describe scientific bounds, but they may not add a
+  Human-authorization gate for an operation that this file classifies as
+  non-high-risk. Human authorization remains mandatory only for the high-risk
+  operations listed below. This precedence does not waive real cleanup,
+  credential protection, GUIDE/RESEARCH immutability, or validation needed to
+  support a scientific conclusion.
 
 ## Scientific Throughput Guardrails
 
@@ -68,10 +72,12 @@ This project is used only for the Human-owned and Human-maintained local photogr
   indeterminate after the safe, relevant diagnostics have been exhausted. Record the
   attempts and why they were materially unchanged or why the cause is indeterminate.
 - An unfinished GUIDE route may stop only at one of two explicit unresolved gates:
-  - `HUMAN_GATE_REQUIRED`: Human authorization, physical intervention, execution
-    scope/policy choice, or a non-scientific engineering/operational impasse is
-    required. Three materially unchanged non-scientific attempts or an indeterminate
-    non-scientific cause are classified here.
+  - `HUMAN_GATE_REQUIRED`: Human authorization for a high-risk operation,
+    physical intervention, or an explicit goal/policy choice that cannot be
+    resolved from the active GUIDE/PLAN is required. A GUIDE-only request for
+    extra approval of bounded light/camera work is not this gate. Three materially
+    unchanged non-scientific attempts or an indeterminate non-scientific cause
+    are classified here.
   - `ADVISOR_GATE_REQUIRED`: a genuinely unresolved scientific interpretation,
     protocol, measurement-science, or scientific branch decision is required. Three
     materially unchanged attempts whose blocker is scientific, or an indeterminate
@@ -97,6 +103,9 @@ machine-state owners or sequential approval gates.
 - Owns the lab, scientific objective, and high-risk device authorization.
 - May explicitly override non-scientific execution instructions in GUIDE without
   editing GUIDE/RESEARCH.
+- Human-authorization decisions are governed by this file's high-risk boundary;
+  an extra authorization request written only in GUIDE/PLAN does not create a
+  second gate for bounded light or camera work.
 
 ### Advisor
 
@@ -181,16 +190,37 @@ not a generated machine-state contract.
 
 ### High-Risk Device Authorization
 
-- Human authorization is required for dangerous state-changing operations, including remote firmware upload or flash, remote deployment, destructive hardware changes, and any device operation outside the current written execution scope.
+- Human authorization is required only for high-risk operations: device firmware
+  upload/flash, remote service update or deployment, destructive hardware change,
+  credential/secret rotation, or an equivalent irreversible external mutation.
+  A new bounded experiment selected by the active GUIDE/PLAN is not high-risk by
+  itself.
 - Creating, validating, replaying, or consuming an offline setup/lineage release is a computation and provenance operation. It does not require Human authorization, and `production_release_usable=true` is not itself a hardware or formal-execution authorization.
 - Read-only remote health/config/capability checks, device identity/state readback, and zero-state verification do not require separate Human authorization when they are explicitly bounded by the current execution notes and do not change device state beyond the declared zero/off cleanup.
-- Turning Ray120c or the RGBWW fixture on or off does not require a separate Human authorization. This exception applies to light output control itself, including starting a bounded light operation already selected by the current execution notes, zero-state setup, and Python/shell cleanup.
-- The current execution notes and the owning runner must still define or enforce the target, intensity, duration, source isolation, abort behavior, and Python/shell cleanup for any light operation. Removing the separate approval step does not permit widening those bounds.
-- No role may infer authorization for firmware upload, remote deployment, destructive hardware changes, a broader intensity/range/duration, a new experiment, or a later stage from a release, a prior authorization, or a light-control exception.
+- Turning Ray120c or the RGBWW fixture on or off, and operating the camera for a
+  bounded experiment, does not require Human authorization. This applies to a
+  bounded light/camera operation already selected by the active GUIDE/PLAN,
+  including zero-state setup and Python/shell cleanup.
+- The current execution notes and owning runner must still define or enforce the
+  target, intensity, duration, source isolation, abort behavior, and cleanup.
+  Removing the separate approval step does not permit widening those bounds.
+- No role may infer permission to widen intensity, range, duration, target, recovery
+  path, or later-stage scope from a release, prior operation, or light-control
+  exception. A new bounded experiment still needs to be explicitly selected by
+  the active GUIDE/PLAN, but does not need a separate Human authorization unless
+  it contains a high-risk operation.
 - Computation and other work that does not access or control devices does not require Human approval.
-- If Human approval is required for an operation outside the light-control exception, the Orchestrator records the authorized operation and its scope or bounds in the current execution notes. The same authorization must not be requested again for that exact operation.
-- If a dangerous non-exempt operation is absent, ambiguous, expired, or does not cover the target, range, intensity, duration, or recovery path, the Orchestrator stops and asks the Human before proceeding. This stop does not apply to the release, read-only checks, or light-control exceptions listed above.
-- Authorization for one named experiment or device operation does not authorize another experiment, firmware upload, broader range, higher output, or later stage unless the current execution notes explicitly say so. The light-control exception does not remove those scope and safety boundaries.
+- For a high-risk operation, the Orchestrator records the Human authorization and
+  its exact scope in the current execution notes; the same authorization must
+  not be requested again for that exact operation.
+- If a high-risk operation lacks clear, current authorization or exceeds its
+  approved target, range, intensity, duration, or recovery path, the Orchestrator
+  stops and asks the Human. This stop does not apply to bounded light/camera work,
+  read-only checks, cleanup, or offline computation.
+- Authorization for one high-risk operation never authorizes another firmware
+  upload, remote update, destructive change, or secret rotation. Bounded light
+  and camera work remain governed by the active written scientific scope and
+  cleanup contract, without an additional Human gate.
 
 ## Development Model
 
