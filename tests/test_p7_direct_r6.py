@@ -223,7 +223,7 @@ class DirectR6Tests(unittest.TestCase):
             )
             authorized = thermal.build_ray_history_session_spec(
                 session_index, device_control_enabled=True,
-                session_start_condition="Ray and strip off for 1800 s; zero readback passed",
+                session_start_condition=thermal.RAY_HISTORY_SESSION_START_CONDITION,
             )
             self.assertEqual(authorized["status"], "execute_authorized")
             self.assertTrue(authorized["execution_authorization"]["bounded_device_scope"])
@@ -241,7 +241,7 @@ class DirectR6Tests(unittest.TestCase):
             "--source", "ray", "--variant", "core", "--phase", "formal",
             "--run-name", "session-2", "--execute", "--allow-device-control",
             "--direct-ray-history-3x3", "--session-index", "2",
-            "--session-start-condition", "Ray and strip off for 1800 s; zero readback passed",
+            "--session-start-condition", thermal.RAY_HISTORY_SESSION_START_CONDITION,
         ]
         with self.assertRaises(PermissionError):
             measure.main(base[:-2], run_fn=runner, backend_factory=lambda: object())
@@ -761,7 +761,7 @@ class DirectR6Tests(unittest.TestCase):
             for session_index in (1, 2, 3):
                 plan = thermal.build_ray_history_session_spec(
                     session_index, device_control_enabled=True,
-                    session_start_condition="Ray and strip off for 1800 s; zero readback passed",
+                    session_start_condition=thermal.RAY_HISTORY_SESSION_START_CONDITION,
                 )
                 run = self._execute_fake_protocol(
                     plan, root / f"session-{session_index}",

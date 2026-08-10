@@ -83,6 +83,10 @@ TD_B_EXPOSURE_POLICY_V2_SCHEMA = "p7_ray_td_b_exposure_policy_v2"
 TD_B_R6_EXPERIMENT_ID = "P7-TD-B-RAY-OP600-EXPOSURE-GUARDED-FORMAL-R6"
 RAY_HISTORY_3X3_EXPERIMENT_ID = "GUIDE4-RAY-HISTORY-ORDER-BALANCED-3X3-V1"
 RAY_HISTORY_3X3_SESSION_ORDERS = (("D", "B", "C"), ("C", "D", "B"), ("B", "C", "D"))
+RAY_HISTORY_SESSION_START_CONDITION = (
+    "Ray and strip continuously off for at least 3600 s after prior high load; "
+    "both-source zero readback passes at run start"
+)
 TD_B_R5_PLAN_SHA256 = "94da09f240e2d0ca84ce545c52748522dfbaa9a674bf96ffcef5c8e74473ba9f"
 TD_B_R5_SHUTTERS_SHA256 = "b49dd52ebc1eabc8ae6ae0e3713884e5e939428d0682e6d7234eea8c17626e71"
 TD_B_FEATURE_IDS_SHA256 = "4a37bf13a1dcfa6b652bd4ce6a7793aa8ac0344c293d1a7fc73ff7fad763ab86"
@@ -421,10 +425,8 @@ def build_ray_history_session_spec(
     """
     if session_index not in (1, 2, 3):
         raise ValueError("Ray history session index must be 1, 2, or 3")
-    if device_control_enabled and (
-        not isinstance(session_start_condition, str) or not session_start_condition.strip()
-    ):
-        raise ValueError("Ray history device session requires its observed independent start condition")
+    if device_control_enabled and session_start_condition != RAY_HISTORY_SESSION_START_CONDITION:
+        raise ValueError("Ray history device session requires the frozen 3600 s cold-proxy condition")
     exposure = dict(policy or load_td_b_exposure_policy_v2())
     validate_td_b_exposure_policy_v2(exposure)
     shutters = {

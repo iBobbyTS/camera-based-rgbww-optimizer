@@ -862,6 +862,13 @@ with shared-A0 covariance and emits only `period-only`, `C-carryover-only`,
 TD-C, sentinel, and later stages remain locked until that classification is
 reviewed.
 
+For this experiment, the exact independent-session start condition applies the
+existing uninstrumented cold proxy in `p7-operating-envelope-v2.json` at its
+conservative high-load bound: Ray and strip continuously off for at least 3600
+seconds after prior high load, followed by a passing both-source zero readback at
+run start. This is the retained 45–60 minute cold-proxy range, not a newly fitted
+settling threshold; `steady=true` remains prohibited.
+
 TD-B v2 is the single experiment-aware exception to the shared native RAW
 ambient requirement. Its exact formal owner uses
 `native_raw_ambient_policy=unsubtracted_no_ambient`, schedules 16 formal and

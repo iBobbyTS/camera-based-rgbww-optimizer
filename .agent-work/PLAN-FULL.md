@@ -6,9 +6,9 @@
 
 **当前分支：** `codex/guide4-science-path-v3`
 
-**路线状态：** `R6_VECTOR_REANALYSIS_COMPLETE_WAITING_ADVISOR_SESSION_INDEPENDENCE_DEFINITION`
+**路线状态：** `R6_VECTOR_REANALYSIS_COMPLETE_READY_FOR_21_FRAME_DEVICE_EXECUTION`
 
-**唯一下一科学动作：** Advisor 冻结 session 独立起始/冷却条件后，执行一个新的、自包含的三 session / 21-frame cyclic order-balanced Ray-only history identification experiment
+**唯一下一科学动作：** 执行一个新的、自包含的三 session / 21-frame cyclic order-balanced Ray-only history identification experiment
 
 **当前设备边界：** Human 已明确本地有界 Ray/相机采集不需要单独授权；固件刷写、远程部署等高危操作仍禁止
 
@@ -164,19 +164,22 @@ Compileall、dry-run exact 3-session inspection 与 `git diff --check` 通过。
 
 ---
 
-## 4. Advisor scientific decision boundary
+## 4. Session independence decision
 
 Human 已明确：本地有界 Ray/相机采集无需单独授权；只有固件刷写、远程部署等
 高危操作需要授权。本实验不包含这些高危操作，因而不再保留 Human token gate。
 
-当前唯一未冻结项是三个“独立 session”的科学起始条件：
+现行 `config/hsi/p7-operating-envelope-v2.json` 已给出 uninstrumented cold proxy：
+高负载后 off `45–60 min`，且最低 off `30 min`。每个新 session 都包含约 70 分钟
+Ray 100% 高负载，因此使用既有范围的保守上限，冻结为：
 
-- session 间 Ray/strip off 多久；
-- 是否沿用历史 `1800 s` cold proxy，或采用另一可复现条件；
-- 起始条件由固定 wall-clock cooldown、温度/状态 readback，还是两者共同定义。
+```text
+Ray and strip continuously off for at least 3600 s after prior high load;
+both-source zero readback passes at run start
+```
 
-该选择会直接改变 cumulative source-age/session-time 与 predecessor carryover 的可识别性，
-属于 measurement-science design，不是设备安全或普通工程参数，必须由 Advisor 冻结。
+这不是新增阈值或 Advisor 合同变更，而是直接采用既有 cold-proxy 区间。无需 Advisor
+介入；每个 session 的 spec 必须记录 exact condition，wrapper launch 前必须实际满足。
 
 已冻结且无需再次决策的执行范围：
 
@@ -193,9 +196,8 @@ orders = DBC / CDB / BCD
 cleanup = Python + shell all-off and zero readback per session
 ```
 
-Advisor 决定前允许：代码、fake backend、离线测试、spec/hash、执行说明草案、
-只读设备健康/zero 检查。决定前禁止创建 formal root 或启动 Ray/camera acquisition，
-因为任意自选 cooldown 都可能破坏实验的因果解释。
+外置卷已挂载，bounded device scope 已就绪。允许按本节 exact cold proxy 创建三个
+独立 session root 并启动 Ray/camera acquisition；仍禁止任何 firmware/deployment 动作。
 
 ---
 
@@ -332,8 +334,8 @@ then_wait_for_Advisor_review
 2. freeze v + hashes + PLAN-FULL                        COMPLETE
 3. minimal direct 3×3 spec/acquisition/analyzer code    COMPLETE
 4. fake-backend behavior validation                     COMPLETE
-5. Advisor freezes independent-session start condition REQUIRED BEFORE DEVICE
-6. execute 3 sessions / 21 captures                     LOCKED
+5. freeze existing 3600 s cold-proxy condition          COMPLETE
+6. execute 3 sessions / 21 captures                     NEXT
 7. analyze to one of five branches                      LOCKED
 8. Advisor review                                       LOCKED
 ```
