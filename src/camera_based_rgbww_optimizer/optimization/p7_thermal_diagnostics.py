@@ -82,11 +82,12 @@ TD_B_EXPOSURE_POLICY_V2_PATH = PROJECT_ROOT / "config/hsi/p7-ray-td-b-exposure-p
 RAY_HISTORY_DWELL_POLICY_PATH = PROJECT_ROOT / "config/hsi/p7-human-dwell-policy-v1.json"
 TD_B_EXPOSURE_POLICY_V2_SCHEMA = "p7_ray_td_b_exposure_policy_v2"
 TD_B_R6_EXPERIMENT_ID = "P7-TD-B-RAY-OP600-EXPOSURE-GUARDED-FORMAL-R6"
-RAY_HISTORY_3X3_EXPERIMENT_ID = "GUIDE4-RAY-HISTORY-ORDER-BALANCED-3X3-OP120-V2"
+RAY_HISTORY_3X3_EXPERIMENT_ID = "GUIDE4-RAY-HISTORY-ORDER-BALANCED-3X3-OP120-COLD600-V3"
 RAY_HISTORY_3X3_SESSION_ORDERS = (("D", "B", "C"), ("C", "D", "B"), ("B", "C", "D"))
 RAY_HISTORY_OPERATIONAL_DWELL_S = 120
+RAY_HISTORY_SESSION_COLD_PROXY_S = 600
 RAY_HISTORY_SESSION_START_CONDITION = (
-    "Ray and strip continuously off for at least 3600 s after prior high load; "
+    "Ray and strip continuously off for at least 600 s after prior high load; "
     "both-source zero readback passes at run start"
 )
 TD_B_R5_PLAN_SHA256 = "94da09f240e2d0ca84ce545c52748522dfbaa9a674bf96ffcef5c8e74473ba9f"
@@ -428,7 +429,7 @@ def build_ray_history_session_spec(
     if session_index not in (1, 2, 3):
         raise ValueError("Ray history session index must be 1, 2, or 3")
     if device_control_enabled and session_start_condition != RAY_HISTORY_SESSION_START_CONDITION:
-        raise ValueError("Ray history device session requires the frozen 3600 s cold-proxy condition")
+        raise ValueError("Ray history device session requires the frozen 600 s cold-proxy condition")
     exposure = dict(policy or load_td_b_exposure_policy_v2())
     validate_td_b_exposure_policy_v2(exposure)
     dwell_policy = json.loads(RAY_HISTORY_DWELL_POLICY_PATH.read_text(encoding="utf-8"))
@@ -439,9 +440,12 @@ def build_ray_history_session_spec(
         or dwell_policy.get("operational_dwell_s") != RAY_HISTORY_OPERATIONAL_DWELL_S
         or dwell_policy.get("thermal_error")
         != "explicitly_accepted_to_reduce_time_and_power"
+        or dwell_policy.get("session_cold_proxy_s") != RAY_HISTORY_SESSION_COLD_PROXY_S
+        or dwell_policy.get("session_cold_proxy_changed") is not True
+        or dwell_policy.get("session_cold_proxy_supersedes_s") != 3600
         or dwell_policy.get("settled_or_steady_claim_allowed") is not False
     ):
-        raise ValueError("Ray history Human dwell policy differs from the frozen 120 s decision")
+        raise ValueError("Ray history Human dwell/cold-proxy policy differs from the frozen Human decision")
     shutters = {
         state: exposure["states"][state]["formal_shutter"]
         for state in ("A", "D", "B", "C")
@@ -554,6 +558,8 @@ def build_ray_history_session_spec(
             "response": "session_A_return_minus_session_A0",
             "model": "session_plus_sequence_position_plus_immediate_predecessor",
             "operational_dwell_s": RAY_HISTORY_OPERATIONAL_DWELL_S,
+            "session_cold_proxy_s": RAY_HISTORY_SESSION_COLD_PROXY_S,
+            "session_cold_proxy_thermal_error": "human_accepted",
             "thermal_error": "human_accepted",
             "steady_claim": False,
             "r6_frame_pooling": False,

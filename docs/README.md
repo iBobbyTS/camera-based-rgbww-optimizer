@@ -845,7 +845,7 @@ The accepted negative Ray R6 result is hypothesis-generation evidence, not a
 demonstration of C-specific carryover. Its retained-anchor vector reanalysis
 freezes one common-whitened drift direction without changing the R6 failure or
 pooling any R6 frame into later inference. The next Ray-only identification
-protocol is `GUIDE4-RAY-HISTORY-ORDER-BALANCED-3X3-OP120-V2`: three independent
+protocol is `GUIDE4-RAY-HISTORY-ORDER-BALANCED-3X3-OP120-COLD600-V3`: three independent
 seven-capture sessions with orders `D-B-C`, `C-D-B`, and `B-C-D`. Each session
 captures only `A0`, each 120-second predecessor endpoint, and its 120-second
 return A. This is a 2026-08-10 Human override for new acquisitions: the shorter
@@ -865,12 +865,12 @@ with shared-A0 covariance and emits only `period-only`, `C-carryover-only`,
 TD-C, sentinel, and later stages remain locked until that classification is
 reviewed.
 
-For this experiment, the exact independent-session start condition applies the
-existing uninstrumented cold proxy in `p7-operating-envelope-v2.json` at its
-conservative high-load bound: Ray and strip continuously off for at least 3600
-seconds after prior high load, followed by a passing both-source zero readback at
-run start. This is the retained 45–60 minute cold-proxy range, not a newly fitted
-settling threshold; `steady=true` remains prohibited.
+For this experiment, Human has explicitly overridden the independent-session
+cold-proxy minimum to 600 seconds to save time and power, accepting additional
+thermal error. Ray and strip must be continuously off for at least 600 seconds
+after prior high load, followed by a passing both-source zero readback at run
+start. This is an operational minimum, not a newly fitted settling threshold;
+`steady=true` remains prohibited.
 
 TD-B v2 is the single experiment-aware exception to the shared native RAW
 ambient requirement. Its exact formal owner uses

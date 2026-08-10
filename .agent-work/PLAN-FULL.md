@@ -6,9 +6,9 @@
 
 **当前分支：** `codex/guide4-science-path-v3`
 
-**路线状态：** `OP120_CHRONOLOGY_FIX_VALIDATED_FRESH_RETRY_READY`
+**路线状态：** `OP120_COLD600_HUMAN_OVERRIDE_RESTART_READY`
 
-**唯一下一科学动作：** 执行一个新的、自包含的三 session / 21-frame cyclic order-balanced Ray-only history identification experiment
+**唯一下一科学动作：** 执行一个新的、自包含的三 session / 21-frame cyclic order-balanced Ray-only history identification experiment（COLD600）
 
 **当前设备边界：** Human 已明确本地有界 Ray/相机采集不需要单独授权；固件刷写、远程部署等高危操作仍禁止
 
@@ -180,8 +180,10 @@ Human 于 2026-08-10 明确决定：当前及未来同类颜色/状态切换后�
 exit 0，独立 all-off 再次通过。该 root 是 superseded historical-only evidence，
 不得继续、重试、补拍或进入 OP120 fit。
 
-新 acquisition 必须从全新 root、Session 1、零 pooled frame 重新开始。3600-second
-between-session cold proxy 未改变。
+新 acquisition 必须从全新 root、Session 1、零 pooled frame 重新开始。Human 于
+2026-08-10 随后将 between-session cold proxy 从 `3600 s` 缩短为 `600 s`，明确接受
+额外热误差以节省时间和用电；详见 `.agent-work/HUMAN_DECISION-20260810-COLD600.md`。
+已完成的 V2 Session 1（3600 s 条件）保留为 historical-only，不与新实验混合。
 
 ### 3.2 OP120 attempt 1 engineering-invalid closure
 
@@ -211,21 +213,21 @@ Human 已明确：本地有界 Ray/相机采集无需单独授权；只有固件
 高危操作需要授权。本实验不包含这些高危操作，因而不再保留 Human token gate。
 
 现行 `config/hsi/p7-operating-envelope-v2.json` 已给出 uninstrumented cold proxy：
-高负载后 off `45–60 min`，且最低 off `30 min`。每个新 session 都包含约 70 分钟
-Ray 100% 高负载，因此使用既有范围的保守上限，冻结为：
+高负载后 off `45–60 min`，且最低 off `30 min`。Human 为节省时间和用电覆盖为
+`600 s`，并接受额外热误差；这不是新拟合的科学阈值，且不声称 settled/steady。
 
 ```text
-Ray and strip continuously off for at least 3600 s after prior high load;
+Ray and strip continuously off for at least 600 s after prior high load;
 both-source zero readback passes at run start
 ```
 
-这不是新增阈值或 Advisor 合同变更，而是直接采用既有 cold-proxy 区间。无需 Advisor
-介入；每个 session 的 spec 必须记录 exact condition，wrapper launch 前必须实际满足。
+这是 Human 执行覆盖，不需要 Advisor 介入；每个 session 的 spec 必须记录 exact
+condition，wrapper launch 前必须实际满足。
 
 已冻结且无需再次决策的执行范围：
 
 ```text
-experiment = GUIDE4-RAY-HISTORY-ORDER-BALANCED-3X3-OP120-V2
+experiment = GUIDE4-RAY-HISTORY-ORDER-BALANCED-3X3-OP120-COLD600-V3
 device = Ray120c + Canon camera; strip zero-only
 sessions = 3
 formal captures = 21
@@ -247,7 +249,7 @@ cleanup = Python + shell all-off and zero readback per session
 ### 5.1 新实验身份
 
 ```text
-experiment_id = GUIDE4-RAY-HISTORY-ORDER-BALANCED-3X3-OP120-V2
+experiment_id = GUIDE4-RAY-HISTORY-ORDER-BALANCED-3X3-OP120-COLD600-V3
 source = Ray only
 new experiment root = one
 session subroots = three
@@ -380,8 +382,8 @@ then_wait_for_Advisor_review
 2. freeze v + hashes + PLAN-FULL                        COMPLETE
 3. minimal direct 3×3 spec/acquisition/analyzer code    COMPLETE
 4. fake-backend behavior validation                     COMPLETE
-5. freeze existing 3600 s cold-proxy condition          COMPLETE
-6. execute 3 sessions / 21 captures                     NEXT
+5. Human override: freeze 600 s cold-proxy condition   COMPLETE
+6. execute fresh 3 sessions / 21 captures (COLD600)     NEXT
 7. analyze to one of five branches                      LOCKED
 8. Advisor review                                       LOCKED
 ```

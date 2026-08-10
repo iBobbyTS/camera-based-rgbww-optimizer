@@ -9,7 +9,9 @@
   "retained_600s_evidence": "historical_unchanged_not_poolable_with_120s_runs",
   "thermal_error": "explicitly_accepted_to_reduce_time_and_power",
   "settled_or_steady_claim_allowed": false,
-  "session_cold_proxy_s": 3600,
-  "session_cold_proxy_changed": false,
+  "session_cold_proxy_s": 600,
+  "session_cold_proxy_changed": true,
+  "session_cold_proxy_supersedes_s": 3600,
+  "session_cold_proxy_rationale": "Human accepts additional thermal error to reduce elapsed time and power",
   "future_default": "use_120s_for_similar_color_or_state_hold_before_capture_unless_later_explicitly_overridden"
 }

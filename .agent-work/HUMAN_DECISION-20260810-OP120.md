@@ -17,6 +17,10 @@ existing 3600-second between-session cold proxy.
 Canonical machine-readable record:
 `config/hsi/p7-human-dwell-policy-v1.json`.
 
+Subsequent Human decision `HUMAN_DECISION-20260810-COLD600.md` supersedes this
+record's 3600-second between-session cold proxy for new acquisitions. The 120
+second operational dwell decision remains in force.
+
 Interrupted historical root:
 `/Volumes/4T/temp/rgbww-optimizer/guide4-ray-history-3x3-20260810-015022`.
 

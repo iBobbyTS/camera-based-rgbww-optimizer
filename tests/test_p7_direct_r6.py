@@ -226,6 +226,11 @@ class DirectR6Tests(unittest.TestCase):
             self.assertEqual({step["requested_elapsed_s"] for step in session["captures"]}, {120})
             self.assertTrue(all(step["capture_id"].endswith("-t120") for step in session["captures"]))
             self.assertEqual(session["analysis_contract"]["operational_dwell_s"], 120)
+            self.assertEqual(
+                session["analysis_contract"]["session_cold_proxy_s"],
+                thermal.RAY_HISTORY_SESSION_COLD_PROXY_S,
+            )
+            self.assertEqual(session["analysis_contract"]["session_cold_proxy_thermal_error"], "human_accepted")
             self.assertEqual(session["analysis_contract"]["thermal_error"], "human_accepted")
             self.assertFalse(session["analysis_contract"]["steady_claim"])
             self.assertIn("human_dwell_policy", session["inputs"])
@@ -242,6 +247,15 @@ class DirectR6Tests(unittest.TestCase):
             self.assertEqual(authorized["status"], "execute_authorized")
             self.assertTrue(authorized["execution_authorization"]["bounded_device_scope"])
             self.assertFalse(authorized["execution_authorization"]["human_authorization_required"])
+        with self.assertRaisesRegex(ValueError, "600 s cold-proxy"):
+            thermal.build_ray_history_session_spec(
+                1,
+                device_control_enabled=True,
+                session_start_condition=(
+                    "Ray and strip continuously off for at least 3600 s after prior high load; "
+                    "both-source zero readback passes at run start"
+                ),
+            )
 
     def test_ray_history_cli_requires_bounded_scope_and_one_session(self):
         called = {}
