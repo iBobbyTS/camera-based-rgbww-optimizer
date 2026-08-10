@@ -87,10 +87,44 @@ This project is used only for the Human-owned and Human-maintained local photogr
   answer it. Planner review, Supervisor review, architecture-boundary language,
   retry/correction budgets, terminal candidate states, or ordinary test failures are
   not additional stop gates.
-- Cleanup, zero-state restoration, cooling, scheduled waiting, and automation handoff
-  are temporary execution states rather than unresolved stops. After they complete,
-  the Orchestrator resumes the current route unless a named Human or Advisor gate is
-  actually present.
+- A `HUMAN_GATE_REQUIRED` or `ADVISOR_GATE_REQUIRED` stop depends on an external
+  decision and must not configure an automation merely to poll or self-wake for that
+  decision. Record the exact unresolved question, mark the Goal `blocked`, and wait
+  for the Human or Advisor response. The incoming response, not an automation, is
+  what resumes the route.
+
+### Long-running Goal handoff
+
+- This section applies only to work that is expected to complete by itself, such as
+  experiment execution, cooling, scheduled waiting, or long computation. It does
+  not apply to `HUMAN_GATE_REQUIRED` or `ADVISOR_GATE_REQUIRED`.
+- Any such self-completing task expected to take more than 10 minutes must run in a
+  visible Terminal (for device or other long-running external work) or its
+  equivalent persistent process.
+  Before handing it off, perform three independent liveness checks; all three must
+  pass. Then estimate the remaining completion time and configure a thread
+  automation that can wake this thread and inspect the task state. Do not mark the
+  Goal `blocked` until the automation has been created successfully.
+- This `blocked` state is a temporary scheduling handoff, not a scientific or
+  authorization stop. It does not replace `HUMAN_GATE_REQUIRED` or
+  `ADVISOR_GATE_REQUIRED`, and it must not be used merely to hide an unresolved
+  implementation failure. If the product Goal API imposes an additional system
+  condition before changing a Goal to `blocked`, follow that system condition.
+- When the thread is woken by the automation, or when the user sends a
+  task-related message, first inspect whether the long-running task has completed.
+  If it is incomplete, report only the current progress and end that response; keep
+  the Goal in its scheduling handoff state. If it is complete, change the Goal back
+  to `active` and continue the next PLAN step.
+- When the user manually changes the Goal to `active`, first inspect completion. If
+  incomplete, report progress, verify that the existing automation still covers the
+  task (recreate it if necessary), and change the Goal back to `blocked` only after
+  the self-wakeup path is confirmed. If complete, keep it `active` and continue the
+  subsequent PLAN step.
+- If a user message is unrelated to the active task, answer that message directly
+  without inspecting or changing the task state.
+- Cooling, zero-state restoration, scheduled waiting, and automation handoff are
+  therefore temporary execution states; they are not unresolved scientific gates,
+  but long-running work must use the handoff procedure above.
 
 ## Execution Policy (without a runtime state machine)
 
