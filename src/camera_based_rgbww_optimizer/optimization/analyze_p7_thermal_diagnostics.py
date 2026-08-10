@@ -39,6 +39,7 @@ LEGACY_EXPOSURE_FAILURE_MESSAGE = (
     "direct Ray R6 recorded exposure differs from frozen shutter"
 )
 POST_FIX_REVALIDATION_FILE = "post-fix-revalidation.json"
+R6_VECTOR_REANALYSIS_SCHEMA = "p7_ray_r6_vector_reanalysis_v1"
 POST_FIX_ORIGINAL_FILES = (
     "experiment-spec.json", "input-checkpoint.json", "run.json",
     "failure.json", "wrapper-result.json", "all-off-python.json",
@@ -1019,6 +1020,323 @@ def analyze_td_b(
     }
 
 
+def analyze_r6_anchor_vectors(
+    evidence_dir: str | Path,
+    *,
+    feature_ids: Sequence[str],
+    source_bundle_sha256: str | None = None,
+    source_bundle_member: str | None = None,
+    analyzer_commit: str | None = None,
+) -> dict[str, Any]:
+    """Diagnose retained R6 anchor geometry without reclassifying the failed run."""
+    root = Path(evidence_dir).resolve()
+    analysis = _load_json(root / "analysis.json")
+    quality = _load_json(root / "quality.json")
+    revalidation = _load_json(root / POST_FIX_REVALIDATION_FILE)
+    captures = _load_jsonl(root / "captures.jsonl")
+    covariates = _load_jsonl(root / "thermal-covariates.jsonl")
+    if (
+        analysis.get("status") != "history_dependent_at_operational_dwell_600"
+        or analysis.get("formal_pass") is not False
+        or analysis.get("return_anchor_history") != "fail"
+        or analysis.get("operational_endpoint_600_valid") is not False
+    ):
+        raise ValueError("R6 vector reanalysis requires the retained history-negative analysis")
+    if (
+        quality.get("status") != "pass"
+        or quality.get("capture_count") != 16
+        or revalidation.get("status") != "pass"
+        or revalidation.get("original_child_exit") != 1
+        or revalidation.get("original_failure_preserved") is not True
+    ):
+        raise ValueError("R6 vector reanalysis requires accepted quality and preserved revalidation")
+    if (
+        len(captures) != 16
+        or len(covariates) != 16
+        or tuple(str(row.get("capture_id")) for row in captures)
+        != thermal.TD_B_R6_CAPTURE_IDS
+    ):
+        raise ValueError("R6 vector reanalysis requires the exact retained 16-frame order")
+    anchor_labels = {
+        "initial_anchor": "A0",
+        "return_after_D": "A_after_D",
+        "return_after_B": "A_after_B",
+        "return_after_C": "A_after_C",
+    }
+    anchors: list[dict[str, Any]] = []
+    covariate_reconciliations: list[dict[str, Any]] = []
+    for index, (row, covariate) in enumerate(zip(captures, covariates)):
+        capture = row.get("capture")
+        step = row.get("plan_step")
+        if not isinstance(capture, Mapping) or not isinstance(step, Mapping):
+            raise ValueError("R6 vector reanalysis capture lacks its retained owners")
+        embedded_covariate = dict(capture.get("thermal_covariates") or {})
+        if set(embedded_covariate) != set(covariate):
+            raise ValueError("R6 vector reanalysis covariate key identity drifted")
+        differing_covariates = {
+            key for key in covariate
+            if embedded_covariate.get(key) != covariate.get(key)
+        }
+        if differing_covariates - {"previous_state_dwell_s"}:
+            raise ValueError("R6 vector reanalysis covariate ledger differs outside the corrected dwell field")
+        if differing_covariates:
+            covariate_reconciliations.append({
+                "sequence_index": index,
+                "field": "previous_state_dwell_s",
+                "embedded_value": embedded_covariate.get("previous_state_dwell_s"),
+                "canonical_ledger_value": covariate.get("previous_state_dwell_s"),
+            })
+        if int(covariate.get("sequence_index", -1)) != index:
+            raise ValueError("R6 vector reanalysis covariate chronology drifted")
+        role = str(step.get("role"))
+        if role not in anchor_labels:
+            continue
+        values = capture.get("feature_values")
+        if not isinstance(values, Mapping) or tuple(values) != tuple(feature_ids):
+            raise ValueError("R6 vector reanalysis anchor differs from the frozen feature identity")
+        anchors.append({
+            "label": anchor_labels[role],
+            "capture_id": str(row["capture_id"]),
+            "unit_shape": ordered_unit_shape(values, feature_ids),
+            "session_elapsed_s": float(covariate["session_elapsed_s"]),
+            "source_on_elapsed_s": float(covariate["source_on_elapsed_s"]),
+            "previous_state_id": covariate.get("previous_state_id"),
+        })
+    expected_labels = ["A0", "A_after_D", "A_after_B", "A_after_C"]
+    if [str(anchor["label"]) for anchor in anchors] != expected_labels:
+        raise ValueError("R6 vector reanalysis requires the exact four retained A anchors")
+
+    pair_variance = _same_state_pair_variance(source="ray", state="A")
+    if pair_variance.shape != (len(feature_ids),):
+        raise ValueError("R6 common whitening covariance differs from feature identity")
+    whitening_scale = np.sqrt(pair_variance)
+    whitened = np.vstack([
+        np.asarray(anchor["unit_shape"], dtype=float) / whitening_scale
+        for anchor in anchors
+    ])
+    relative_whitened = whitened - whitened[0]
+    centered = relative_whitened - np.mean(relative_whitened, axis=0)
+    _u, singular_values, vh = np.linalg.svd(centered, full_matrices=False)
+    variance_components = singular_values * singular_values
+    total_variance = float(np.sum(variance_components))
+    if total_variance <= 0.0:
+        raise ValueError("R6 anchors do not identify a drift direction")
+    explained = variance_components / total_variance
+    direction = np.asarray(vh[0], dtype=float)
+    if float((whitened[-1] - whitened[0]) @ direction) < 0.0:
+        direction = -direction
+    anchor_projections = centered @ direction
+
+    step_vectors = np.diff(whitened, axis=0)
+    step_pairs = (
+        ("A0_to_A_after_D", 0),
+        ("A_after_D_to_A_after_B", 1),
+        ("A_after_B_to_A_after_C", 2),
+    )
+    step_diagnostics = [
+        {
+            "name": name,
+            "norm": float(np.linalg.norm(step_vectors[index])),
+            "projection_on_r6_drift_direction": float(step_vectors[index] @ direction),
+            "orthogonal_residual_norm": float(np.linalg.norm(
+                step_vectors[index] - (step_vectors[index] @ direction) * direction
+            )),
+        }
+        for name, index in step_pairs
+    ]
+    step_cosines = []
+    for left in range(len(step_vectors)):
+        for right in range(left + 1, len(step_vectors)):
+            step_cosines.append({
+                "left": step_pairs[left][0],
+                "right": step_pairs[right][0],
+                "cosine": _vector_cosine(step_vectors[left], step_vectors[right]),
+            })
+
+    deltas = whitened - whitened[0]
+    anchor_diagnostics = []
+    for index, anchor in enumerate(anchors):
+        projection = float(deltas[index] @ direction)
+        residual = deltas[index] - projection * direction
+        anchor_diagnostics.append({
+            "label": anchor["label"],
+            "capture_id": anchor["capture_id"],
+            "previous_state_id": anchor["previous_state_id"],
+            "session_elapsed_s": anchor["session_elapsed_s"],
+            "source_on_elapsed_s": anchor["source_on_elapsed_s"],
+            "projection_on_r6_drift_direction": projection,
+            "orthogonal_residual_norm": float(np.linalg.norm(residual)),
+        })
+
+    mds = _classical_mds(whitened)
+    chronology_relations = {}
+    chronology = analysis.get("chronology_by_state")
+    if not isinstance(chronology, Mapping) or set(chronology) != {"B", "C", "D"}:
+        raise ValueError("R6 vector reanalysis requires complete D/B/C chronology evidence")
+    for state in ("D", "B", "C"):
+        state_value = chronology[state]
+        slope_values = (
+            state_value.get("direction", {}).get("slope_by_feature")
+            if isinstance(state_value, Mapping) else None
+        )
+        if not isinstance(slope_values, Mapping) or tuple(slope_values) != tuple(feature_ids):
+            raise ValueError("R6 chronology direction differs from frozen feature identity")
+        common_whitened_slope = np.asarray(
+            [float(slope_values[feature_id]) for feature_id in feature_ids], dtype=float,
+        ) / whitening_scale
+        chronology_relations[state] = {
+            "cosine_with_r6_drift_direction": _vector_cosine(
+                direction, common_whitened_slope,
+            ),
+            "projection_on_r6_drift_direction": float(common_whitened_slope @ direction),
+            "orthogonal_residual_norm": float(np.linalg.norm(
+                common_whitened_slope
+                - (common_whitened_slope @ direction) * direction
+            )),
+        }
+
+    elapsed = np.asarray([float(anchor["session_elapsed_s"]) for anchor in anchors])
+    source_on = np.asarray([float(anchor["source_on_elapsed_s"]) for anchor in anchors])
+    monotonic_projection = bool(np.all(np.diff(anchor_projections) > 0.0))
+    pc1_dominates_remainder = bool(float(explained[0]) > float(np.sum(explained[1:])))
+    support = pc1_dominates_remainder and monotonic_projection
+    return {
+        "schema": R6_VECTOR_REANALYSIS_SCHEMA,
+        "status": (
+            "rank1_drift_hypothesis_supported"
+            if support else "rank1_drift_hypothesis_unsupported"
+        ),
+        "scientific_interpretation": {
+            "history_dependence_observed": True,
+            "history_origin": "not_identifiable_between_cumulative_period_effect_and_predecessor_carryover",
+            "preferred_working_hypothesis": "approximately_rank1_cumulative_source_age_or_session_time_drift",
+            "c_specific_carryover": "unproven",
+            "causal_confounding_resolved": False,
+            "r6_formal_pass": False,
+            "r6_reclassification_allowed": False,
+            "r6_use_for_new_experiment": "hypothesis_generation_and_frozen_drift_direction_only",
+            "strip_combined_td_c": "locked",
+        },
+        "input_identity": {
+            "evidence_dir": str(root),
+            "evidence_dir_is_authority": source_bundle_sha256 is None,
+            "source_bundle_sha256": source_bundle_sha256,
+            "source_bundle_member": source_bundle_member,
+            "analyzer_commit": analyzer_commit,
+            "feature_ids_sha256": hashlib.sha256(
+                ("\n".join(feature_ids) + "\n").encode("utf-8")
+            ).hexdigest(),
+            "artifacts": {
+                name: _sha256(root / name)
+                for name in (
+                    "analysis.json", "captures.jsonl", "thermal-covariates.jsonl",
+                    "quality.json", POST_FIX_REVALIDATION_FILE,
+                )
+            },
+        },
+        "covariate_reconciliation": {
+            "canonical_owner": "thermal-covariates.jsonl",
+            "allowed_differing_field": "previous_state_dwell_s",
+            "difference_count": len(covariate_reconciliations),
+            "differences": covariate_reconciliations,
+            "all_other_fields_exact": True,
+        },
+        "common_whitening": {
+            "space": "ordered_58_feature_unit_shape",
+            "covariance": "two_times_frozen_ray_within_state_diagonal_variance",
+            "feature_ids": list(feature_ids),
+            "diagonal_variance": pair_variance.tolist(),
+        },
+        "difference_vector_cosines": step_cosines,
+        "step_vectors": step_diagnostics,
+        "pca": {
+            "rank": int(np.linalg.matrix_rank(centered)),
+            "singular_values": singular_values.tolist(),
+            "explained_variance_ratio": explained.tolist(),
+            "pc1_dominates_remainder": pc1_dominates_remainder,
+        },
+        "classical_mds": mds,
+        "r6_drift_direction": {
+            "orientation": "A0_toward_A_after_C_positive",
+            "values_by_feature": {
+                feature_id: float(direction[index])
+                for index, feature_id in enumerate(feature_ids)
+            },
+            "sha256": hashlib.sha256(
+                np.asarray(direction, dtype="<f8").tobytes()
+            ).hexdigest(),
+            "source": "R6_hypothesis_generation_only_frozen_before_new_experiment",
+        },
+        "anchor_projections": anchor_diagnostics,
+        "time_relations": {
+            "session_elapsed_s": _linear_relation(elapsed, anchor_projections),
+            "source_on_elapsed_s": _linear_relation(source_on, anchor_projections),
+            "sample_count": 4,
+            "causal_claim_allowed": False,
+        },
+        "chronology_direction_relations": chronology_relations,
+        "support_rule": {
+            "kind": "diagnostic_non_gating_structural_rule",
+            "pc1_dominates_sum_of_remaining_components": pc1_dominates_remainder,
+            "anchor_projection_strictly_monotonic_in_observed_order": monotonic_projection,
+            "measurement_threshold_changed": False,
+        },
+    }
+
+
+def _vector_cosine(left: Sequence[float], right: Sequence[float]) -> float:
+    left_values = np.asarray(left, dtype=float)
+    right_values = np.asarray(right, dtype=float)
+    denominator = float(np.linalg.norm(left_values) * np.linalg.norm(right_values))
+    if denominator <= 0.0:
+        raise ValueError("R6 vector cosine requires nonzero vectors")
+    return float((left_values @ right_values) / denominator)
+
+
+def _linear_relation(x: Sequence[float], y: Sequence[float]) -> dict[str, float]:
+    x_values = np.asarray(x, dtype=float)
+    y_values = np.asarray(y, dtype=float)
+    design = np.column_stack((np.ones(len(x_values)), x_values))
+    coefficients, *_ = np.linalg.lstsq(design, y_values, rcond=None)
+    fitted = design @ coefficients
+    residual = y_values - fitted
+    total = float(np.sum((y_values - np.mean(y_values)) ** 2))
+    return {
+        "intercept": float(coefficients[0]),
+        "slope_per_second": float(coefficients[1]),
+        "pearson_correlation": float(np.corrcoef(x_values, y_values)[0, 1]),
+        "r_squared": 1.0 if total <= 0.0 else float(1.0 - np.sum(residual * residual) / total),
+    }
+
+
+def _classical_mds(values: np.ndarray) -> dict[str, Any]:
+    count = len(values)
+    squared_distances = np.sum(
+        (values[:, None, :] - values[None, :, :]) ** 2, axis=2,
+    )
+    centering = np.eye(count) - np.ones((count, count)) / count
+    gram = -0.5 * centering @ squared_distances @ centering
+    eigenvalues, eigenvectors = np.linalg.eigh(gram)
+    order = np.argsort(eigenvalues)[::-1]
+    eigenvalues = eigenvalues[order]
+    eigenvectors = eigenvectors[:, order]
+    tolerance = max(float(eigenvalues[0]), 1.0) * np.finfo(float).eps * count
+    positive = eigenvalues > tolerance
+    positive_values = eigenvalues[positive]
+    coordinates = eigenvectors[:, positive] * np.sqrt(positive_values)
+    if coordinates.size and coordinates[-1, 0] < coordinates[0, 0]:
+        coordinates[:, 0] *= -1.0
+    return {
+        "rank": int(np.sum(positive)),
+        "eigenvalues": eigenvalues.tolist(),
+        "positive_explained_variance_ratio": (
+            [] if not len(positive_values)
+            else (positive_values / np.sum(positive_values)).tolist()
+        ),
+        "coordinates": coordinates.tolist(),
+    }
+
+
 def analyze_td_c(
     captures: Sequence[Mapping[str, Any]], *, ambients: Sequence[Mapping[str, Any]],
     feature_ids: Sequence[str],
@@ -1316,6 +1634,10 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--derive-r1-output", type=Path)
     parser.add_argument("--revalidate-exposure-failure", action="store_true")
     parser.add_argument("--validator-commit")
+    parser.add_argument("--r6-vector-reanalysis-output", type=Path)
+    parser.add_argument("--source-bundle-sha256")
+    parser.add_argument("--source-bundle-member")
+    parser.add_argument("--analyzer-commit")
     return parser.parse_args(argv)
 
 
@@ -1328,6 +1650,34 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.feature_ids is None:
         raise ValueError("--feature-ids is required for thermal run analysis")
     feature_ids = _feature_ids_from_artifact(args.feature_ids)
+    if args.r6_vector_reanalysis_output is not None:
+        if args.revalidate_exposure_failure or args.validator_commit is not None:
+            raise ValueError("R6 vector reanalysis does not rerun exposure revalidation")
+        if (
+            args.analyzer_commit is None
+            or len(args.analyzer_commit) != 40
+            or any(character not in "0123456789abcdef" for character in args.analyzer_commit)
+        ):
+            raise ValueError("R6 vector reanalysis requires an exact analyzer commit")
+        report = analyze_r6_anchor_vectors(
+            args.run_dir,
+            feature_ids=feature_ids,
+            source_bundle_sha256=args.source_bundle_sha256,
+            source_bundle_member=args.source_bundle_member,
+            analyzer_commit=args.analyzer_commit,
+        )
+        output = args.r6_vector_reanalysis_output.resolve()
+        _write_text_atomic(
+            output, json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n",
+        )
+        print(output)
+        return 0
+    if (
+        args.source_bundle_sha256 is not None
+        or args.source_bundle_member is not None
+        or args.analyzer_commit is not None
+    ):
+        raise ValueError("source bundle identity requires --r6-vector-reanalysis-output")
     if args.revalidate_exposure_failure:
         if args.validator_commit is None:
             raise ValueError("--validator-commit is required for post-fix revalidation")

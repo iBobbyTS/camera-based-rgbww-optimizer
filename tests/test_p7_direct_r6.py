@@ -13,6 +13,69 @@ from camera_based_rgbww_optimizer.optimization import analyze_p7_thermal_diagnos
 
 
 class DirectR6Tests(unittest.TestCase):
+    def _write_r6_vector_evidence(self, root):
+        feature_ids = tuple(
+            json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"]
+        )
+        captures = []
+        covariates = []
+        anchor_offset = {
+            "initial_anchor": 0.0,
+            "return_after_D": 0.01,
+            "return_after_B": 0.02,
+            "return_after_C": 0.03,
+        }
+        for index, step in enumerate(thermal.build_ray_r6_spec()["captures"]):
+            values = {feature_id: 1.0 for feature_id in feature_ids}
+            if step["role"] in anchor_offset:
+                values[feature_ids[0]] += anchor_offset[step["role"]]
+            covariate = {
+                "sequence_index": index,
+                "session_elapsed_s": float(600 + index * 600),
+                "source_on_elapsed_s": float(600 + index * 599),
+                "previous_state_dwell_s": None,
+                "previous_state_id": {
+                    "return_after_D": "D",
+                    "return_after_B": "B",
+                    "return_after_C": "C",
+                }.get(step["role"]),
+            }
+            covariates.append(covariate)
+            captures.append({
+                "capture_id": step["capture_id"],
+                "plan_step": step,
+                "capture": {
+                    "feature_values": values,
+                    "thermal_covariates": covariate,
+                },
+            })
+        (root / "captures.jsonl").write_text(
+            "".join(json.dumps(row) + "\n" for row in captures)
+        )
+        (root / "thermal-covariates.jsonl").write_text(
+            "".join(json.dumps(row) + "\n" for row in covariates)
+        )
+        (root / "quality.json").write_text(json.dumps({
+            "status": "pass", "capture_count": 16,
+        }))
+        (root / analyze.POST_FIX_REVALIDATION_FILE).write_text(json.dumps({
+            "status": "pass", "original_child_exit": 1,
+            "original_failure_preserved": True,
+        }))
+        slope = {feature_id: 0.0 for feature_id in feature_ids}
+        slope[feature_ids[0]] = 1.0
+        (root / "analysis.json").write_text(json.dumps({
+            "status": "history_dependent_at_operational_dwell_600",
+            "formal_pass": False,
+            "return_anchor_history": "fail",
+            "operational_endpoint_600_valid": False,
+            "chronology_by_state": {
+                state: {"direction": {"slope_by_feature": slope}}
+                for state in ("D", "B", "C")
+            },
+        }))
+        return feature_ids
+
     def _execute_fake_protocol(self, plan, root):
         feature_ids = tuple(json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"])
         curve = json.loads(thermal.CURVE_PATH.read_text())
@@ -472,6 +535,69 @@ class DirectR6Tests(unittest.TestCase):
                 ("A_after_B", "A_after_C"),
             },
         )
+
+    def test_r6_vector_reanalysis_freezes_rank1_direction_without_reclassifying(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            feature_ids = self._write_r6_vector_evidence(root)
+
+            report = analyze.analyze_r6_anchor_vectors(
+                root, feature_ids=feature_ids, source_bundle_sha256="a" * 64,
+                source_bundle_member="bundle/run",
+                analyzer_commit="b" * 40,
+            )
+
+            self.assertEqual(report["status"], "rank1_drift_hypothesis_supported")
+            self.assertGreater(report["pca"]["explained_variance_ratio"][0], 0.99)
+            self.assertGreater(
+                report["classical_mds"]["positive_explained_variance_ratio"][0],
+                0.99,
+            )
+            self.assertTrue(all(
+                row["cosine"] > 0.99
+                for row in report["difference_vector_cosines"]
+            ))
+            projections = [
+                row["projection_on_r6_drift_direction"]
+                for row in report["anchor_projections"]
+            ]
+            self.assertEqual(projections, sorted(projections))
+            interpretation = report["scientific_interpretation"]
+            self.assertFalse(interpretation["r6_formal_pass"])
+            self.assertFalse(interpretation["r6_reclassification_allowed"])
+            self.assertEqual(interpretation["c_specific_carryover"], "unproven")
+            self.assertEqual(interpretation["strip_combined_td_c"], "locked")
+            self.assertFalse(report["input_identity"]["evidence_dir_is_authority"])
+            self.assertEqual(report["input_identity"]["source_bundle_member"], "bundle/run")
+            self.assertEqual(report["input_identity"]["analyzer_commit"], "b" * 40)
+
+    def test_r6_vector_reanalysis_rejects_reclassified_input(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            feature_ids = self._write_r6_vector_evidence(root)
+            analysis_path = root / "analysis.json"
+            payload = json.loads(analysis_path.read_text())
+            payload["formal_pass"] = True
+            analysis_path.write_text(json.dumps(payload))
+
+            with self.assertRaisesRegex(ValueError, "history-negative"):
+                analyze.analyze_r6_anchor_vectors(root, feature_ids=feature_ids)
+
+    def test_r6_vector_reanalysis_uses_corrected_dwell_ledger_only(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            feature_ids = self._write_r6_vector_evidence(root)
+            ledger_path = root / "thermal-covariates.jsonl"
+            rows = [json.loads(line) for line in ledger_path.read_text().splitlines()]
+            rows[5]["previous_state_dwell_s"] = 600.0
+            ledger_path.write_text("".join(json.dumps(row) + "\n" for row in rows))
+
+            report = analyze.analyze_r6_anchor_vectors(root, feature_ids=feature_ids)
+
+            reconciliation = report["covariate_reconciliation"]
+            self.assertEqual(reconciliation["difference_count"], 1)
+            self.assertEqual(reconciliation["differences"][0]["sequence_index"], 5)
+            self.assertEqual(reconciliation["canonical_owner"], "thermal-covariates.jsonl")
 
     def test_runtime_owner_keeps_ray_on_between_first_state_and_cleanup(self):
         spec = thermal.build_ray_r6_spec()
