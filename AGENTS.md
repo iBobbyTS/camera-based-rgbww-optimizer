@@ -69,7 +69,11 @@ This project is used only for the Human-owned and Human-maintained local photogr
     missing fields/files, wrapper or analyzer defects, malformed commands, and
     contract mismatches that prevent the intended scientific protocol from running.
     Record `science_delta=none`, diagnose the concrete cause, fix it in the current
-    worktree, add or update a meaningful behavior test, and use a fresh run root.
+    worktree, add or update a meaningful behavior test, and first determine whether
+    the existing run root and completed artifacts can be safely recovered. If they
+    are intact and the protocol can resume without duplicating or mutating prior
+    scientific observations, continue from that root; create a fresh root only when
+    recovery is impossible or would make the evidence ambiguous.
   - `VALID_SCIENTIFIC_NEGATIVE`: the intended protocol actually ran and its frozen
     quality, history, coverage, or analysis criterion failed with trustworthy
     evidence. Preserve it as scientific progress. Do not weaken thresholds, alter
@@ -86,8 +90,9 @@ This project is used only for the Human-owned and Human-maintained local photogr
     concrete question to Human or Advisor according to the gate definitions below.
 - A retry is never a blind rerun. Before retrying, state the diagnosed cause, the
   substantive correction or discriminating change, the evidence expected to prove
-  it, and why the new attempt is safe. Run the smallest meaningful behavior check
-  first, then start a fresh attempt without pooling or silently replacing prior data.
+  it, and why the resumed or new attempt is safe. Run the smallest meaningful
+  behavior check first, then recover the existing attempt when possible; otherwise
+  start a fresh attempt without pooling or silently replacing prior data.
 - Attempt counts apply to actual attempts at the same failure boundary, not to
   read-only inspection, cleanup, or a test that never entered the intended body.
   A changed stack trace alone is not scientific progress, but a demonstrated cause,
@@ -163,11 +168,12 @@ This project is used only for the Human-owned and Human-maintained local photogr
 - If the terminated task is an `ENGINEERING_OR_HARNESS_FAILURE` with an identified
   cause and no Human or Advisor gate, continue in the same resumed turn: make the
   smallest direct fix, add or update the meaningful behavior test, validate it,
-  create the focused Git commit, and start the justified fresh experiment attempt.
+  create the focused Git commit, and resume the recoverable experiment attempt (or
+  start a fresh one only when the prior result cannot be safely recovered).
   Do not stop after merely reporting the code error or ask the Human to reactivate
-  the Goal. When the fresh attempt becomes a self-completing task expected to exceed
-  10 minutes, perform the three liveness checks, create its replacement automation,
-  and only then return the Goal to `blocked` and end the response.
+  the Goal. When the resumed or fresh attempt becomes a self-completing task expected
+  to exceed 10 minutes, perform the three liveness checks, create its replacement
+  automation, and only then return the Goal to `blocked` and end the response.
 - After a monitored failure, ending the resumed turn without continuing the route is
   permitted only when exactly one unresolved `HUMAN_GATE_REQUIRED` or
   `ADVISOR_GATE_REQUIRED` has been established, or after a newly started live task
