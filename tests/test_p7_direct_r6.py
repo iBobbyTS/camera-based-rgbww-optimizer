@@ -76,7 +76,7 @@ class DirectR6Tests(unittest.TestCase):
         }))
         return feature_ids
 
-    def _execute_fake_protocol(self, plan, root):
+    def _execute_fake_protocol(self, plan, root, *, observed_elapsed_fn=None):
         feature_ids = tuple(json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"])
         curve = json.loads(thermal.CURVE_PATH.read_text())
 
@@ -87,10 +87,15 @@ class DirectR6Tests(unittest.TestCase):
             raw.write_bytes(f"fake-{index}".encode())
             sidecar = raw.with_suffix(raw.suffix + ".metadata.json")
             sidecar.write_text("{}")
+            observed_elapsed = (
+                float(index + 1)
+                if observed_elapsed_fn is None
+                else float(observed_elapsed_fn(step, index))
+            )
             timing = {
                 "tier": "tier_b", "status": "accepted_best_effort_anchor",
                 "provenance": thermal.TIMING_CONTRACT_V2["provenance"],
-                "best_effort_elapsed_s": float(index + 1),
+                "best_effort_elapsed_s": observed_elapsed,
             }
             command = step["command"] or {"strip": "off", "ray": "off"}
             covariates = thermal.build_covariate_record(
@@ -175,10 +180,10 @@ class DirectR6Tests(unittest.TestCase):
                 "ray_off_command": None,
             }
 
-        ray_history = (
-            plan["execution_authorization"]["schema"]
-            == "direct_ray_history_session_v1"
-        )
+        direct_ray_continuous = plan["execution_authorization"]["schema"] in {
+            "direct_ray_r6_authority_v1",
+            "direct_ray_history_session_v1",
+        }
 
         with patch.object(measure, "_validate_returned_sidecar", side_effect=fake_sidecar):
             return measure.execute_plan(
@@ -186,13 +191,17 @@ class DirectR6Tests(unittest.TestCase):
                 apply_command_fn=lambda step: {"status": "pass"},
                 readback_fn=lambda step: {"status": "pass"},
                 capture_fn=capture, both_off_gate_fn=gate,
-                source_isolation_check_fn=(source_isolation if ray_history else None),
+                source_isolation_check_fn=(
+                    source_isolation if direct_ray_continuous else None
+                ),
                 cleanup_fn=lambda: {"status": "pass", "steps": [{"ok": True}]},
                 runtime_capture_settings_provenance=plan["camera"]["resolved_capture_settings"],
                 runtime_git_provenance={"commit": "0" * 40, "dirty": False, "dirty_entries": []},
                 post_capture_validator_fn=(
                     measure.validate_direct_ray_history_session_post_capture
-                    if ray_history else measure.validate_direct_protocol_post_capture
+                    if plan["execution_authorization"]["schema"]
+                    == "direct_ray_history_session_v1"
+                    else measure.validate_direct_protocol_post_capture
                 ),
                 sleep_fn=lambda _seconds: None,
             )
@@ -827,6 +836,50 @@ class DirectR6Tests(unittest.TestCase):
                     root, feature_ids=feature_ids, r6_vector_artifact=drift,
                 )
             captures_path.write_text(original)
+
+    def test_equal_dwell_repeated_state_visits_do_not_share_observed_chronology(self):
+        plan = thermal.build_ray_history_session_spec(
+            1,
+            device_control_enabled=True,
+            session_start_condition=thermal.RAY_HISTORY_SESSION_START_CONDITION,
+        )
+        observed_by_index = (130.0, 126.0, 127.0, 126.5, 125.0, 126.25, 124.5)
+        with tempfile.TemporaryDirectory() as tmp:
+            run = self._execute_fake_protocol(
+                plan,
+                Path(tmp) / "history",
+                observed_elapsed_fn=lambda _step, index: observed_by_index[index],
+            )
+            rows = [
+                json.loads(line)
+                for line in (run / "captures.jsonl").read_text().splitlines()
+            ]
+            self.assertEqual(len(rows), 7)
+            self.assertEqual(
+                [row["best_effort_exposure_start_elapsed_s"] for row in rows],
+                list(observed_by_index),
+            )
+
+    def test_multi_timepoint_group_still_requires_increasing_observed_chronology(self):
+        plan = thermal.build_ray_r6_spec()
+
+        def observed_elapsed(step, index):
+            if step["capture_id"] == "001-ray-d-t60":
+                return 61.0
+            if step["capture_id"] == "002-ray-d-t120":
+                return 60.0
+            return float(index + 100)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaisesRegex(
+                RuntimeError,
+                "non-increasing observed chronology for 002-ray-d-t120",
+            ):
+                self._execute_fake_protocol(
+                    plan,
+                    Path(tmp) / "r6",
+                    observed_elapsed_fn=observed_elapsed,
+                )
 
     def test_strip_and_td_c_use_the_real_scheduler_with_fake_callbacks(self):
         with tempfile.TemporaryDirectory() as tmp:

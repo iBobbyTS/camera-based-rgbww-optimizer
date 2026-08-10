@@ -406,7 +406,7 @@ def execute_plan(
     session_start = monotonic_fn()
     previous_state: str | None = None
     previous_dwell: float | None = None
-    last_observed_by_group: dict[tuple[Any, ...], float] = {}
+    last_observed_by_group: dict[int, float] = {}
     owned_cr3_paths: set[Path] = set()
     physical_returns_by_capture: dict[str, dict[str, Any]] = {}
     rejected_capture: dict[str, Any] | None = None
@@ -571,7 +571,7 @@ def execute_plan(
 
     def retain_capture(
         step: Mapping[str, Any], capture: Mapping[str, Any],
-        *, owner_start: float | None,
+        *, owner_start: float | None, chronology_group_index: int,
     ) -> None:
         nonlocal rejected_capture
         reported_physical = capture.get("physical_capture_count")
@@ -665,12 +665,11 @@ def execute_plan(
         nominal = step.get("requested_elapsed_s")
         offset = None if nominal is None or observed is None else float(observed) - float(nominal)
         if step["formal_measurement"]:
-            group = thermal.timing_sequence_identity(str(plan["experiment_id"]), step)
-            previous_observed = last_observed_by_group.get(group)
+            previous_observed = last_observed_by_group.get(chronology_group_index)
             if previous_observed is not None and float(observed) <= previous_observed:
                 rejected_capture["timing_evidence"] = dict(timing)
                 raise RuntimeError(f"non-increasing observed chronology for {step['capture_id']}")
-            last_observed_by_group[group] = float(observed)
+            last_observed_by_group[chronology_group_index] = float(observed)
         record = {
             "capture_id": step["capture_id"], "source_id": step["source_id"],
             "state_id": step["state_id"], "capture_role": step["capture_role"],
@@ -705,14 +704,21 @@ def execute_plan(
 
     try:
         record_gate("run_start")
-        for item in _ledger_groups(str(plan["experiment_id"]), plan["captures"]):
+        for chronology_group_index, item in enumerate(
+            _ledger_groups(str(plan["experiment_id"]), plan["captures"])
+        ):
             if len(item) == 1 and item[0]["capture_role"] == "ambient":
                 step = item[0]
                 record_gate(str(step["isolation_gate_before"]))
                 if set_capture_context_fn is not None:
                     set_capture_context_fn(monotonic_fn())
                 ensure_physical_capacity()
-                retain_capture(step, dict(capture_fn(step)), owner_start=None)
+                retain_capture(
+                    step,
+                    dict(capture_fn(step)),
+                    owner_start=None,
+                    chronology_group_index=chronology_group_index,
+                )
                 continue
             first = item[0]
             if plan["stage"] == "TD-A":
@@ -733,7 +739,12 @@ def execute_plan(
                 if remaining > 0:
                     sleep_fn(remaining)
                 ensure_physical_capacity()
-                retain_capture(step, dict(capture_fn(step)), owner_start=owner_start)
+                retain_capture(
+                    step,
+                    dict(capture_fn(step)),
+                    owner_start=owner_start,
+                    chronology_group_index=chronology_group_index,
+                )
             previous_state = str(first["state_id"])
             previous_dwell = monotonic_fn() - owner_start
             gate_after = item[-1].get("isolation_gate_after")

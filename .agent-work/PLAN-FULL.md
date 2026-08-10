@@ -6,7 +6,7 @@
 
 **当前分支：** `codex/guide4-science-path-v3`
 
-**路线状态：** `OP120_HUMAN_OVERRIDE_RESTART_READY_FOR_21_FRAME_DEVICE_EXECUTION`
+**路线状态：** `OP120_CHRONOLOGY_FIX_VALIDATED_FRESH_RETRY_READY`
 
 **唯一下一科学动作：** 执行一个新的、自包含的三 session / 21-frame cyclic order-balanced Ray-only history identification experiment
 
@@ -183,6 +183,26 @@ exit 0，独立 all-off 再次通过。该 root 是 superseded historical-only e
 新 acquisition 必须从全新 root、Session 1、零 pooled frame 重新开始。3600-second
 between-session cold proxy 未改变。
 
+### 3.2 OP120 attempt 1 engineering-invalid closure
+
+首次 OP120 root
+`/Volumes/4T/temp/rgbww-optimizer/guide4-ray-history-3x3-op120-20260810-053413`
+在 Session 1 的第五个 physical return 被错误 chronology 门禁拒绝。该门禁把多个
+独立 A 状态访问按 scientific identity 合并，并错误要求它们各自的 120-second
+observed dwell 全局递增。实际每个 A 都是新的 command/readback 和新的 dwell clock；
+此比较不成立。
+
+该 root 已安全 cleanup、Ray/strip zero，Session 2/3 未启动；它是 immutable failed
+engineering evidence，science delta 为 none，不进入 fit。权威小型记录：
+`.agent-work/EXECUTION_RESULT-20260810-OP120-ATTEMPT1.md`。
+
+实现已作实质修正：observed chronology 只在一个连续 `_ledger_groups()` command
+occurrence 内比较。回归测试同时证明：独立等 dwell A visits 可有非单调 observed
+elapsed，而真实 multi-timepoint uninterrupted group 仍严格拒绝 chronology 倒退。
+
+依据 `AGENTS.md` retry policy，本次不是 Human/Advisor gate。允许从新的空 root、
+Session 1、零 pooled frame 发起 corrected retry；仍不得覆盖、补拍或续写失败 root。
+
 ---
 
 ## 4. Session independence decision
@@ -328,7 +348,9 @@ Analyzer 必须输出且只输出：
 5. `R6-not-reproduced`
    - period 与 C effect 均未超过 frozen coverage，三个 session 的 A returns 兼容。
 
-任何 engineering invalid 都不是第六个科学分支；它必须 fail closed，保留 evidence，不自动 retry。
+任何 engineering invalid 都不是第六个科学分支；它必须先 fail closed、保留 evidence，
+随后按 `AGENTS.md` 修复和重试规则继续。只有明确的 `HUMAN_GATE_REQUIRED` 或
+`ADVISOR_GATE_REQUIRED` 才允许未完成路线停止。
 
 ---
 
