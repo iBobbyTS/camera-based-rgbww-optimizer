@@ -146,10 +146,26 @@ This project is used only for the Human-owned and Human-maintained local photogr
 - Any such self-completing task expected to take more than 10 minutes must run in a
   visible Terminal (for device or other long-running external work) or its
   equivalent persistent process.
-  Before handing it off, perform three independent liveness checks; all three must
-  pass. Then estimate the remaining completion time and configure a thread
-  automation that can wake this thread and inspect the task state. Do not mark the
-  Goal `blocked` until the automation has been created successfully.
+  Liveness is counted across Goal turns, not by polling repeatedly in one turn.
+  In each of the three Goal turns, wait 60 seconds before performing exactly one
+  independent liveness check. If the process is alive and the task is incomplete,
+  report that single result and end the turn; the next Goal continuation waits 60
+  seconds and performs the next liveness check. Three
+  consecutive Goal turns that each confirm the same process is alive are the
+  project's three liveness observations and simultaneously satisfy the system's
+  three-consecutive-turn blocked evidence. Do not perform an additional audit
+  after those three checks. After the third check, estimate the remaining
+  completion time, configure a thread automation that can wake this thread, and
+  mark the Goal `blocked` immediately after the automation is created successfully.
+  A live process is not a reason to keep the Goal `active` or to poll again in the
+  same turn.
+- If the current thread has no Goal, there are no Goal turns or Goal state to use
+  for the cross-turn handoff above. In that case, perform all three independent
+  liveness checks in the current turn, with 60 seconds between consecutive checks.
+  After the third successful check, estimate the remaining completion time and
+  configure the thread automation. Do not create a Goal merely to represent the
+  wait, and do not claim to have set a nonexistent Goal to `blocked`; end the turn
+  after the automation has been created successfully.
 - This `blocked` state is a temporary scheduling handoff, not a scientific or
   authorization stop. It does not replace `HUMAN_GATE_REQUIRED` or
   `ADVISOR_GATE_REQUIRED`, and it must not be used merely to hide an unresolved
