@@ -790,6 +790,69 @@ class DirectR6Tests(unittest.TestCase):
             [(120, 100), (120, 50), (120, 100), (0, 0), (120, 100), (300, 100), (120, 100)],
         )
 
+    def test_runtime_owner_routes_strip_commands_to_esphome_not_ray_hsi(self):
+        spec = thermal.build_strip_history_session_spec(
+            1,
+            device_control_enabled=True,
+            session_start_condition=thermal.RAY_HISTORY_SESSION_START_CONDITION,
+        )
+        events = []
+
+        class FakeBackend:
+            backend_name = "remote"
+            v2_capture_capability = measure.REMOTE_V2_CAPABILITY
+
+            def connect(self):
+                return object()
+
+            def resolve_capture_settings(self, **_kwargs):
+                return SimpleNamespace(iso="100", aperture="f/4", image_format="RAW")
+
+            def capture_with_timing(self, **_kwargs):
+                raise AssertionError("strip routing test must not capture")
+
+        def fake_execute(_plan, **kwargs):
+            kwargs["both_off_gate_fn"]("run_start")
+            for step in _plan["captures"]:
+                kwargs["apply_command_fn"](step)
+                kwargs["readback_fn"](step)
+                kwargs["source_isolation_check_fn"](step["isolation_gate_after"])
+            kwargs["cleanup_fn"]()
+            return Path("/fake/strip-history")
+
+        zero = {
+            "requested_payload": {
+                "red": 0, "green": 0, "blue": 0,
+                "warm_white": 0, "cold_white": 0,
+            },
+            "device_snapshot": {
+                "red": 0, "green": 0, "blue": 0,
+                "warm_white": 0, "cold_white": 0,
+            },
+        }
+
+        def verified_light(*channels, **_kwargs):
+            events.append(("strip", channels))
+            return zero
+
+        with (
+            patch.object(measure, "execute_plan", side_effect=fake_execute),
+            patch("camera_based_rgbww_optimizer.optimization.measure_raw_observer_validation.build_native_raw_capture_step_fn", return_value=lambda _step: None),
+            patch("camera_based_rgbww_optimizer.control.esphome.verified_light", side_effect=verified_light),
+            patch("camera_based_rgbww_optimizer.control.ray120c.set_hsi", side_effect=AssertionError("strip command reached Ray HSI")),
+            patch("camera_based_rgbww_optimizer.control.ray120c.set_cct", return_value={"status": "pass"}),
+            patch("camera_based_rgbww_optimizer.control.ray120c.get_cct", return_value={"data": {"cct": 5600, "gm": 100, "intensity": 0}}),
+            patch("camera_based_rgbww_optimizer.optimization.hsi_source_evidence.validate_both_off"),
+            patch("camera_based_rgbww_optimizer.control.all_off.turn_everything_off", return_value=[{"name": "all_off", "ok": True}]),
+        ):
+            measure.run_authorized_plan(
+                spec, output_dir=Path("/fake"), run_name="strip-history",
+                camera_backend=FakeBackend(),
+            )
+
+        self.assertEqual(len([event for event in events if event[0] == "strip"]), 1 + 7)
+        self.assertTrue(all(len(event[1]) == 5 for event in events if event[0] == "strip"))
+
     def test_downstream_direct_specs_use_scientific_prerequisites(self):
         strip = thermal.build_direct_plan(thermal.TD_B, source="strip")
         td_c = thermal.build_direct_plan(thermal.TD_C)

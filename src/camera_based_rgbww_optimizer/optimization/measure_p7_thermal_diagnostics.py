@@ -1439,7 +1439,7 @@ def run_authorized_plan(
     def apply(step: Mapping[str, Any]) -> Mapping[str, Any]:
         command = step["command"]
         applied_at = time.monotonic()
-        if step["source_id"] in {"ray", "strip"}:
+        if step["source_id"] == "ray":
             response = ray120c.set_hsi(
                 int(command["hue"]), int(command["sat"]),
                 intensity_percent=float(command["intensity_percent"]),
