@@ -51,6 +51,41 @@ This project is used only for the Human-owned and Human-maintained local photogr
   engineering progress separately from `science_delta`; it does not dispatch routine
   work. Advisor input is requested only for unresolved scientific questions.
 
+### Retry policy and the only permitted unresolved stop gates
+
+- An implementation, validation, device, capture, or experiment attempt that fails
+  is not by itself a terminal condition. Preserve the failed attempt and cleanup
+  evidence, fix or narrow the identified cause, then retry in a fresh safe attempt.
+  A run-level `retry=0` prohibits hidden in-run reacquisition or reusing/overwriting a
+  failed root; it does not prohibit a new attempt after a substantive correction.
+- Continue diagnosis and corrected retries while each attempt produces a substantive
+  change: a different tested hypothesis, a corrected implementation or protocol, new
+  discriminating evidence, or measurable movement of the failure boundary. Do not
+  treat retry counts, validation budgets, review counts, candidate status, or an
+  automation's fail-closed cleanup as permanent authorization barriers.
+- Prohibit another retry only when either (a) three consecutive attempts at the same
+  boundary produce no substantive change, or (b) the cause remains genuinely
+  indeterminate after the safe, relevant diagnostics have been exhausted. Record the
+  attempts and why they were materially unchanged or why the cause is indeterminate.
+- An unfinished GUIDE route may stop only at one of two explicit unresolved gates:
+  - `HUMAN_GATE_REQUIRED`: Human authorization, physical intervention, execution
+    scope/policy choice, or a non-scientific engineering/operational impasse is
+    required. Three materially unchanged non-scientific attempts or an indeterminate
+    non-scientific cause are classified here.
+  - `ADVISOR_GATE_REQUIRED`: a genuinely unresolved scientific interpretation,
+    protocol, measurement-science, or scientific branch decision is required. Three
+    materially unchanged attempts whose blocker is scientific, or an indeterminate
+    scientific cause, are classified here.
+- Every unresolved stop must name exactly one of those gates, state the concrete
+  question or action needed to clear it, and explain why continued safe work cannot
+  answer it. Planner review, Supervisor review, architecture-boundary language,
+  retry/correction budgets, terminal candidate states, or ordinary test failures are
+  not additional stop gates.
+- Cleanup, zero-state restoration, cooling, scheduled waiting, and automation handoff
+  are temporary execution states rather than unresolved stops. After they complete,
+  the Orchestrator resumes the current route unless a named Human or Advisor gate is
+  actually present.
+
 ## Execution Policy (without a runtime state machine)
 
 The repository has no mandatory role execution state machine. Human, Advisor,
