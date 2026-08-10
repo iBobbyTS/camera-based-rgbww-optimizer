@@ -155,6 +155,23 @@ This project is used only for the Human-owned and Human-maintained local photogr
   If it is incomplete, report only the current progress and end that response; keep
   the Goal in its scheduling handoff state. If it is complete, change the Goal back
   to `active` and continue the next PLAN step.
+- For this handoff, `complete` means that the monitored process has terminated,
+  whether it succeeded, failed, timed out, or was interrupted. A failed terminal
+  state is not an incomplete long-running task. Delete the automation that no longer
+  has a live process to monitor and change the Goal to `active` before applying the
+  failure-triage rules above.
+- If the terminated task is an `ENGINEERING_OR_HARNESS_FAILURE` with an identified
+  cause and no Human or Advisor gate, continue in the same resumed turn: make the
+  smallest direct fix, add or update the meaningful behavior test, validate it,
+  create the focused Git commit, and start the justified fresh experiment attempt.
+  Do not stop after merely reporting the code error or ask the Human to reactivate
+  the Goal. When the fresh attempt becomes a self-completing task expected to exceed
+  10 minutes, perform the three liveness checks, create its replacement automation,
+  and only then return the Goal to `blocked` and end the response.
+- After a monitored failure, ending the resumed turn without continuing the route is
+  permitted only when exactly one unresolved `HUMAN_GATE_REQUIRED` or
+  `ADVISOR_GATE_REQUIRED` has been established, or after a newly started live task
+  has been handed off through the long-running procedure above.
 - When the user manually changes the Goal to `active`, first inspect completion. If
   incomplete, report progress, verify that the existing automation still covers the
   task (recreate it if necessary), and change the Goal back to `blocked` only after
