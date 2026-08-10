@@ -174,13 +174,15 @@ This project is used only for the Human-owned and Human-maintained local photogr
 - When the thread is woken by the automation, or when the user sends a
   task-related message, first inspect whether the long-running task has completed.
   If it is incomplete, report only the current progress and end that response; keep
-  the Goal in its scheduling handoff state. If it is complete, change the Goal back
-  to `active` and continue the next PLAN step.
+  the Goal in its scheduling handoff state. Do not infer or attempt an automatic
+  Goal status transition. In either case, continue according to the Goal's
+  `objective`: if the task is complete, proceed with the next PLAN step; if it is
+  incomplete, preserve the handoff and wait for the next wake-up.
 - For this handoff, `complete` means that the monitored process has terminated,
   whether it succeeded, failed, timed out, or was interrupted. A failed terminal
   state is not an incomplete long-running task. Delete the automation that no longer
-  has a live process to monitor and change the Goal to `active` before applying the
-  failure-triage rules above.
+  has a live process to monitor, then apply the failure-triage rules above without
+  inferring a Goal status transition.
 - If the terminated task is an `ENGINEERING_OR_HARNESS_FAILURE` with an identified
   cause and no Human or Advisor gate, continue in the same resumed turn: make the
   smallest direct fix, add or update the meaningful behavior test, validate it,
@@ -204,6 +206,28 @@ This project is used only for the Human-owned and Human-maintained local photogr
 - Cooling, zero-state restoration, scheduled waiting, and automation handoff are
   therefore temporary execution states; they are not unresolved scientific gates,
   but long-running work must use the handoff procedure above.
+
+### No active Goal and turn termination
+
+- If the current thread has no active Goal, the Orchestrator must not end the
+  conversation merely because there is no automatic next Goal turn. It must not
+  infer that the current task is complete from the absence of Goal state.
+- Before ending a response in this condition, exactly one of the following must
+  be established:
+  1. `HUMAN_GATE_REQUIRED`: a Human decision or high-risk authorization is
+     explicitly required;
+  2. `ADVISOR_GATE_REQUIRED`: an unresolved scientific decision explicitly
+     requires Advisor input;
+  3. a self-completing task is still running, its required liveness checks and
+     remaining-time estimate are recorded, and the thread automation was created
+     successfully;
+  4. the Goal objective is fully satisfied by current evidence and the completion
+     outcome is explicitly recorded.
+- If none of these conditions is true, continue working toward the current task
+  objective. Do not end the conversation solely because there is no active Goal,
+  no automatic continuation, or no new output at the current instant.
+- An unfinished self-completing task without a successfully configured automation
+  is not an acceptable end state; repair the wake-up path or continue safe work.
 
 ## Execution Policy (without a runtime state machine)
 
