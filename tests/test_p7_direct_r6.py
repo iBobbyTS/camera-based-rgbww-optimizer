@@ -293,6 +293,26 @@ class DirectR6Tests(unittest.TestCase):
         self.assertEqual(called["plan"]["session_index"], 2)
         self.assertEqual(called["plan"]["session_order"], ["C", "D", "B"])
 
+    def test_strip_history_cli_does_not_require_prior_analysis(self):
+        called = {}
+
+        def runner(plan, **_kwargs):
+            called["plan"] = plan
+            return Path("/fake/strip-session")
+
+        base = [
+            "--experiment-id", "p7_td_b_command_switch_history_v1",
+            "--source", "strip", "--variant", "history", "--phase", "formal",
+            "--run-name", "strip-session-1", "--execute", "--allow-device-control",
+            "--direct-strip-history-3x3", "--session-index", "1",
+            "--session-start-condition", thermal.RAY_HISTORY_SESSION_START_CONDITION,
+        ]
+        self.assertEqual(
+            measure.main(base, run_fn=runner, backend_factory=lambda: object()), 0,
+        )
+        self.assertEqual(called["plan"]["session_index"], 1)
+        self.assertEqual(called["plan"]["source"], "strip")
+
     def test_direct_main_uses_injected_runner(self):
         called = {}
         def runner(plan, **kwargs):

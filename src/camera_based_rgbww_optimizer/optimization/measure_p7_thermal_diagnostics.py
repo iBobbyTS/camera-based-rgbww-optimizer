@@ -1872,7 +1872,7 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
         plan = None
     if direct_kind == "ray-r6" and args.human_authorization != thermal.TD_B_R6_EXPERIMENT_ID:
         raise PermissionError("Ray R6 requires the exact Human experiment authorization token")
-    if direct_kind not in {"ray-r6", "ray-history-3x3"}:
+    if direct_kind not in {"ray-r6", "ray-history-3x3", "strip-history-3x3"}:
         if args.prerequisite_analysis is None:
             raise PermissionError(f"{direct_kind} requires a prior scientific analysis artifact")
         prerequisite = validate_scientific_prerequisite(args.prerequisite_analysis, kind=direct_kind)
