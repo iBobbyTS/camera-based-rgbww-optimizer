@@ -6,9 +6,9 @@
 
 **当前分支：** `codex/guide4-science-path-v3`
 
-**路线状态：** `OP120_COLD600_HUMAN_OVERRIDE_RESTART_READY`
+**路线状态：** `RAY_HISTORY_NONLINEAR_NONADDITIVE_CLASSIFIED_ADVISOR_REVIEW_REQUIRED`
 
-**唯一下一科学动作：** 执行一个新的、自包含的三 session / 21-frame cyclic order-balanced Ray-only history identification experiment（COLD600）
+**唯一下一科学动作：** Advisor 审阅 COLD600 21-frame 的 `nonlinear/non-additive` 分类并决定后续 GUIDE 路线
 
 **当前设备边界：** Human 已明确本地有界 Ray/相机采集不需要单独授权；固件刷写、远程部署等高危操作仍禁止
 
@@ -358,6 +358,34 @@ Analyzer 必须输出且只输出：
 
 ## 8. 完成与后续锁
 
+COLD600 V3 已完成三个 session、每 session `7/7`，合计 `21/21`。每个 session
+的 600-second cold proxy、120-second operational dwell、quality、physical ledger、
+Python/shell cleanup 与 wrapper clean exit 均通过。冻结 direct analyzer 只运行一次，
+未读取或池化旧 600 s、3600 s 或失败 OP120 root，输出：
+
+```text
+status = classified_waiting_advisor_review
+classification = nonlinear/non-additive
+period_detected = false
+C_carryover_detected = false
+other_state_effect_detected = false
+large_orthogonal_residual = true
+additive_model_rejected = false
+all_return_deltas_compatible_with_zero = false
+r6_frames_pooled = false
+```
+
+Analyzer artifact：
+
+```text
+/Volumes/4T/temp/rgbww-optimizer/guide4-ray-history-3x3-op120-cold600-v3-20260810-081551/analysis.json
+sha256 = 0628736473668cceee9657f3a6770663e53728a3bb4ce10a871770bbf6c9136b
+```
+
+这是一项有效科学分类，不重分类 R6，也不证明 C-specific carryover。由于分类需要
+Advisor 解释并选择后续路线，当前停止原因精确为 `ADVISOR_GATE_REQUIRED`，不是
+工程失败、Human gate 或重试预算停止。
+
 21-frame experiment 获得完整、有效五分支分类后：
 
 1. 停止设备推进；
@@ -383,7 +411,7 @@ then_wait_for_Advisor_review
 3. minimal direct 3×3 spec/acquisition/analyzer code    COMPLETE
 4. fake-backend behavior validation                     COMPLETE
 5. Human override: freeze 600 s cold-proxy condition   COMPLETE
-6. execute fresh 3 sessions / 21 captures (COLD600)     NEXT
-7. analyze to one of five branches                      LOCKED
-8. Advisor review                                       LOCKED
+6. execute fresh 3 sessions / 21 captures (COLD600)     COMPLETE (21/21)
+7. analyze to one of five branches                      COMPLETE (nonlinear/non-additive)
+8. Advisor review                                       NEXT — ADVISOR_GATE_REQUIRED
 ```
