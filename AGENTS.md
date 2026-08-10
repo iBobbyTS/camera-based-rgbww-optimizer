@@ -55,7 +55,47 @@ This project is used only for the Human-owned and Human-maintained local photogr
   engineering progress separately from `science_delta`; it does not dispatch routine
   work. Advisor input is requested only for unresolved scientific questions.
 
-### Retry policy and the only permitted unresolved stop gates
+### Failure triage, retry policy, and the only permitted unresolved stop gates
+
+- On any `error`, failed assertion, non-zero exit, timeout, interrupted run, or
+  incomplete artifact set, first stop advancing the affected attempt. If a device
+  may still be active, perform the bounded `all_off`/cleanup path and zero-state
+  readback before debugging, retrying, editing evidence, or starting another run.
+- Preserve the failed root, logs, command, exit status, cleanup evidence, Git
+  identity, and completed-capture count. Never overwrite a failed root or describe
+  captures that did not occur as scientific evidence.
+- Classify the failure before choosing the next action:
+  - `ENGINEERING_OR_HARNESS_FAILURE`: implementation exceptions, invalid selectors,
+    missing fields/files, wrapper or analyzer defects, malformed commands, and
+    contract mismatches that prevent the intended scientific protocol from running.
+    Record `science_delta=none`, diagnose the concrete cause, fix it in the current
+    worktree, add or update a meaningful behavior test, and use a fresh run root.
+  - `VALID_SCIENTIFIC_NEGATIVE`: the intended protocol actually ran and its frozen
+    quality, history, coverage, or analysis criterion failed with trustworthy
+    evidence. Preserve it as scientific progress. Do not weaken thresholds, alter
+    exposure/frame selection, relabel it as an engineering failure, or automatically
+    reacquire it. Follow the GUIDE's scientific branch; request Advisor input only
+    when interpretation or the next scientific branch is genuinely unresolved.
+  - `DEVICE_OR_SAFETY_FAILURE`: connection loss, unexpected device state, cleanup
+    failure, source-isolation violation, or an out-of-bounds command. Make the
+    equipment safe first, retain readback evidence, then diagnose. Use
+    `HUMAN_GATE_REQUIRED` only when physical intervention or authorization for a
+    high-risk operation is actually needed.
+  - `INDETERMINATE_FAILURE`: use this only after safe relevant diagnostics cannot
+    distinguish engineering, scientific, or physical causes. Route the unresolved
+    concrete question to Human or Advisor according to the gate definitions below.
+- A retry is never a blind rerun. Before retrying, state the diagnosed cause, the
+  substantive correction or discriminating change, the evidence expected to prove
+  it, and why the new attempt is safe. Run the smallest meaningful behavior check
+  first, then start a fresh attempt without pooling or silently replacing prior data.
+- Attempt counts apply to actual attempts at the same failure boundary, not to
+  read-only inspection, cleanup, or a test that never entered the intended body.
+  A changed stack trace alone is not scientific progress, but a demonstrated cause,
+  corrected behavior, or newly discriminating evidence is a substantive change.
+- Every failure report must state: classification, exact primary cause or unresolved
+  question, captures completed/expected, `science_delta`, cleanup and zero-state
+  result, Git/worktree state, whether a fresh retry is justified, and the next action
+  or the single applicable unresolved gate.
 
 - An implementation, validation, device, capture, or experiment attempt that fails
   is not by itself a terminal condition. Preserve the failed attempt and cleanup
