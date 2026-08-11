@@ -139,7 +139,7 @@ fast-history model；`additive_period_or_carryover_effect`、
 `.agent-work/ADVISOR_HANDOFF-20260810-GUIDE5-STRIP-HISTORY.md`。在 Advisor
 分类前，不执行 paired Ray bridge、combined TD-B、TD-C、sentinel 或 later stage。
 
-## 5. C — paired fast-vs-long Ray bridge（已解锁）
+## 5. C — paired fast-vs-long Ray bridge（等待 Advisor 分类）
 
 与 B 使用独立 root，不并行；不训练 fast target，不改变 covariance。该实验是有界
 Ray/相机采集，不属于 AGENTS.md 定义的高危操作。
@@ -180,8 +180,9 @@ exposure/frame selection、把 R6 PC1 transfer failure写成 nonlinear interacti
 - 每个实验使用独立外置 root；raw CR3/图像/measurement 不入 Git，manifest、hash、
   quality、analysis、cleanup 和报告可追踪。
 - 设备任务超过 10 分钟使用 visible Terminal、三次 liveness 检查与 automation。
-- 只有明确的 `HUMAN_GATE_REQUIRED` 或 `ADVISOR_GATE_REQUIRED` 才停止路线；当前
-  没有任一 gate。高危操作授权缺失时才进入 `HUMAN_GATE_REQUIRED`。
+- 当前存在明确的 `ADVISOR_GATE_REQUIRED`：strip history analyzer 的结果尚未
+  映射到 GUIDE5 分支。paired bridge、combined TD-B、TD-C、sentinel 和 later
+  stages 在 Advisor 分类前保持锁定。
 
 ## 8. 交付要求
 
