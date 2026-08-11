@@ -546,6 +546,7 @@ def _validate_commands_and_gates(
     direct_continuous_source = plan.get("execution_authorization", {}).get("schema") in {
         "direct_ray_r6_authority_v1", "direct_ray_history_session_v1",
         "direct_strip_history_session_v1",
+        "direct_ray_fast_long_bridge_session_v1",
     }
     expected_gates: list[tuple[str, str]] = [("run_start", "both_off")]
     for group in groups:
@@ -2027,6 +2028,445 @@ def analyze_ray_history_experiment_v2(
     }
 
 
+def analyze_strip_history_experiment_v3(
+    experiment_root: str | Path,
+    *,
+    feature_ids: Sequence[str],
+    legacy_analysis_artifact: str | Path,
+) -> dict[str, Any]:
+    """Correct the GUIDE5 common estimand while preserving the v2 artifact."""
+    root = Path(experiment_root).resolve()
+    ids = tuple(feature_ids)
+    legacy = analyze_ray_history_experiment_v2(
+        root,
+        feature_ids=ids,
+        r6_vector_artifact=None,
+        source="strip",
+    )
+    legacy_path = Path(legacy_analysis_artifact).resolve()
+    legacy_artifact = _load_json(legacy_path)
+    if (
+        legacy_artifact.get("schema") != "guide4_ray_history_order_balanced_analysis_v2"
+        or legacy_artifact.get("experiment_id") != legacy["experiment_id"]
+        or legacy_artifact.get("classification") != legacy["classification"]
+    ):
+        raise ValueError("GUIDE5 v3 requires the exact matching immutable v2 artifact")
+
+    observations: list[dict[str, Any]] = []
+    baseline_centers: list[np.ndarray] = []
+    for session_index in (1, 2, 3):
+        session_root = root / f"session-{session_index}"
+        plan = _load_json(session_root / "experiment-spec.json")
+        captures = _load_jsonl(session_root / "captures.jsonl")
+        by_role = {
+            str(row["plan_step"]["anchor_label"]): row["capture"]["feature_values"]
+            for row in captures
+            if row["plan_step"]["role"] in {"initial_anchor", "return_anchor"}
+        }
+        baseline = _unit(by_role["A0"], ids)
+        baseline_centers.append(baseline)
+        for position, predecessor in enumerate(plan["session_order"], start=1):
+            observations.append({
+                "session": session_index,
+                "position": position,
+                "predecessor": predecessor,
+                "delta": _unit(by_role[f"A_after_{predecessor}"], ids) - baseline,
+            })
+
+    design = np.asarray([
+        [
+            1.0,
+            float(row["session"] == 2), float(row["session"] == 3),
+            float(row["position"] == 2), float(row["position"] == 3),
+            float(row["predecessor"] == "B"), float(row["predecessor"] == "C"),
+        ]
+        for row in observations
+    ])
+    response = np.vstack([row["delta"] for row in observations])
+    response_covariance = np.eye(9)
+    for left in range(9):
+        for right in range(9):
+            if left != right and observations[left]["session"] == observations[right]["session"]:
+                response_covariance[left, right] = 0.5
+    covariance_inverse = np.linalg.inv(response_covariance)
+    information = design.T @ covariance_inverse @ design
+    coefficient_covariance = np.linalg.inv(information)
+    coefficients = coefficient_covariance @ design.T @ covariance_inverse @ response
+    pair_variance = _same_state_pair_variance(source="strip", state="A")
+    calibration_center = np.mean(np.vstack(baseline_centers), axis=0)
+
+    def corrected_contrast(name: str, vector: Sequence[float]) -> dict[str, Any]:
+        row = np.asarray(vector, dtype=float)
+        variance_scalar = float(row @ coefficient_covariance @ row)
+        return {
+            "name": name,
+            "coefficient_vector": [float(value) for value in row],
+            "variance_scalar_relative_to_one_delta": variance_scalar,
+            **_guarded_zero_diagnostic(
+                row @ coefficients,
+                variance_scalar * pair_variance,
+                center=calibration_center,
+            ),
+        }
+
+    balanced = corrected_contrast(
+        "balanced_common_warm_reentry_effect",
+        (1.0, 1 / 3, 1 / 3, 1 / 3, 1 / 3, 1 / 3, 1 / 3),
+    )
+    session_contrasts = {
+        "session2_minus_session1": corrected_contrast(
+            "session2_minus_session1", (0, 1, 0, 0, 0, 0, 0),
+        ),
+        "session3_minus_session1": corrected_contrast(
+            "session3_minus_session1", (0, 0, 1, 0, 0, 0, 0),
+        ),
+        "session3_minus_session2": corrected_contrast(
+            "session3_minus_session2", (0, -1, 1, 0, 0, 0, 0),
+        ),
+    }
+    raw_return_deltas = [
+        {
+            "session": int(row["session"]),
+            "position": int(row["position"]),
+            "predecessor": str(row["predecessor"]),
+            "variance_scalar_relative_to_one_delta": 1.0,
+            **_guarded_zero_diagnostic(
+                row["delta"], pair_variance, center=calibration_center,
+            ),
+        }
+        for row in observations
+    ]
+
+    diagnostics = legacy["diagnostics"]
+    common_detected = balanced["decision"] == "detected"
+    session_heterogeneity = any(
+        item["decision"] == "detected" for item in session_contrasts.values()
+    )
+    if (
+        common_detected
+        and not diagnostics["period_main_effect_detected"]
+        and not diagnostics["predecessor_main_effect_detected"]
+        and not diagnostics["additive_model_rejected"]
+    ):
+        classification = (
+            "common_warm_reentry_shift_with_session_block_heterogeneity"
+            if session_heterogeneity
+            else "common_warm_reentry_shift"
+        )
+        guide5_parent_branch = "S-A"
+    else:
+        classification = legacy["classification"]
+        guide5_parent_branch = None
+
+    return {
+        "schema": "guide5_strip_history_order_balanced_analysis_v3",
+        "status": "accepted_advisor_corrected_classification",
+        "experiment_id": legacy["experiment_id"],
+        "advisor_decision": "OPTION_3_CORRECT_THE_COMMON_CONTRAST",
+        "analyzer_source": {
+            "path": str(Path(__file__).resolve()),
+            "sha256": _sha256(Path(__file__).resolve()),
+        },
+        "legacy_analysis_artifact": {
+            "path": str(legacy_path),
+            "sha256": _sha256(legacy_path),
+            "classification": legacy["classification"],
+            "immutable": True,
+        },
+        "legacy_classification": legacy["classification"],
+        "corrected_classification": classification,
+        "classification": classification,
+        "guide5_parent_branch": guide5_parent_branch,
+        "incorrect_legacy_common_estimand": "treatment_coded_baseline_cell_intercept",
+        "correct_balanced_common_contrast": (
+            "beta0 + (session2 + session3 + position2 + position3 "
+            "+ predecessorB + predecessorC) / 3"
+        ),
+        "balanced_common_variance_scalar_relative_to_one_delta": (
+            balanced["variance_scalar_relative_to_one_delta"]
+        ),
+        "balanced_common_score": balanced["score"],
+        "balanced_common_guarded_limit": balanced["guarded_limit"],
+        "balanced_common_decision": balanced["decision"],
+        "balanced_common_contrast": balanced,
+        "session_contrasts": session_contrasts,
+        "session3_minus_session2_score": session_contrasts[
+            "session3_minus_session2"
+        ]["score"],
+        "session_contrast_guarded_limit": session_contrasts[
+            "session3_minus_session2"
+        ]["guarded_limit"],
+        "raw_return_deltas": raw_return_deltas,
+        "model": legacy["model"],
+        "legacy_diagnostics": diagnostics,
+        "diagnostics": {
+            "balanced_common_warm_reentry_detected": common_detected,
+            "period_main_effect_detected": diagnostics["period_main_effect_detected"],
+            "predecessor_main_effect_detected": (
+                diagnostics["predecessor_main_effect_detected"]
+            ),
+            "additive_model_rejected": diagnostics["additive_model_rejected"],
+            "nonlinear_interaction_demonstrated": diagnostics[
+                "nonlinear_interaction_demonstrated"
+            ],
+            "raw_return_deltas_compatible_with_zero": diagnostics[
+                "raw_return_deltas_compatible_with_zero"
+            ],
+            "session_block_heterogeneity_detected": session_heterogeneity,
+            "cross_session_warm_center_frozen": not session_heterogeneity,
+        },
+        "scientific_interpretation": {
+            "strip_fast_history_structure": "conditionally_accepted",
+            "initial_vs_warm_split": "demonstrated" if common_detected else "not_detected",
+            "predecessor_specific_split": "not_demonstrated",
+            "position_specific_split": "not_demonstrated",
+            "nonadditive_interaction": "not_demonstrated",
+            "session_block_cause": "unknown",
+            "new_strip_acquisition_required_now": False,
+        },
+        "locks": {
+            "ray_fast_long_bridge": classification != (
+                "common_warm_reentry_shift_with_session_block_heterogeneity"
+            ),
+            "combined_td_b": True,
+            "td_c": True,
+            "strip_solver": True,
+            "sentinel_and_later": True,
+        },
+    }
+
+
+def analyze_ray_fast_long_bridge(
+    experiment_root: str | Path,
+    *,
+    feature_ids: Sequence[str],
+) -> dict[str, Any]:
+    """Classify the four required GUIDE5 Ray fast/long holdout mini-sessions."""
+    root = Path(experiment_root).resolve()
+    ids = tuple(feature_ids)
+    if ids != tuple(_feature_ids_from_artifact(thermal.POLICY_PATH)):
+        raise ValueError("Ray fast/long bridge requires the frozen 58-feature identity")
+
+    sessions: dict[tuple[str, str], dict[str, Any]] = {}
+    session_artifacts = []
+    prerequisite_sha256: str | None = None
+    for mini_session_index in range(1, 5):
+        session_root = root / f"mini-session-{mini_session_index}"
+        plan = _load_json(session_root / "experiment-spec.json")
+        prerequisite = plan.get("scientific_prerequisite")
+        expected = thermal.build_ray_fast_long_bridge_session_spec(
+            mini_session_index,
+            device_control_enabled=True,
+            session_start_condition=plan.get("session_start_condition"),
+            scientific_prerequisite=(
+                prerequisite if isinstance(prerequisite, Mapping) else None
+            ),
+        )
+        if plan != expected:
+            raise ValueError("Ray fast/long bridge mini-session differs from exact design")
+        if not isinstance(prerequisite, Mapping):
+            raise ValueError("Ray fast/long bridge lacks strip analyzer-v3 prerequisite")
+        if prerequisite_sha256 is None:
+            prerequisite_sha256 = str(prerequisite.get("sha256"))
+        elif prerequisite.get("sha256") != prerequisite_sha256:
+            raise ValueError("Ray fast/long bridge crossed strip analyzer-v3 identities")
+        run = _load_json(session_root / "run.json")
+        _validate_required_execution_artifacts(session_root)
+        _validate_reproducibility_checkpoint(session_root, plan, run)
+        captures = _load_jsonl(session_root / "captures.jsonl")
+        physical = _load_jsonl(session_root / "physical-returns.jsonl")
+        _validate_run_counts(run, plan, captures, physical)
+        _validate_physical_rows(session_root, captures, physical)
+        _validate_commands_and_gates(plan, session_root)
+        _validate_cleanup_and_wrapper(session_root)
+        quality = _load_json(session_root / "quality.json")
+        if (
+            quality.get("schema") != "guide5_ray_fast_long_bridge_session_quality_v1"
+            or quality.get("status") != "pass"
+            or quality.get("capture_count") != 3
+            or quality.get("mini_session_index") != mini_session_index
+            or quality.get("bridge_state") != plan["bridge_state"]
+            or quality.get("bridge_protocol") != plan["bridge_protocol"]
+        ):
+            raise ValueError("Ray fast/long bridge mini-session quality did not pass")
+        by_role = {}
+        for row, expected_step in zip(captures, expected["captures"], strict=True):
+            capture = row.get("capture")
+            step = row.get("plan_step")
+            if (
+                not isinstance(capture, Mapping)
+                or not isinstance(step, Mapping)
+                or dict(step) != dict(expected_step)
+            ):
+                raise ValueError("Ray fast/long bridge capture differs from its spec")
+            values = capture.get("feature_values")
+            if (
+                not isinstance(values, Mapping)
+                or tuple(values) != ids
+                or any(
+                    isinstance(value, bool)
+                    or not isinstance(value, (int, float))
+                    or not math.isfinite(float(value))
+                    for value in values.values()
+                )
+            ):
+                raise ValueError("Ray fast/long bridge capture lacks frozen features")
+            _validate_recorded_exposure(capture, str(expected_step["nominal_shutter"]))
+            by_role[str(expected_step["role"])] = _unit(values, ids)
+        sessions[(str(plan["bridge_state"]), str(plan["bridge_protocol"]))] = {
+            "A0": by_role["initial_anchor"],
+            "Q": by_role["bridge_state"],
+            "A_return": by_role["return_anchor"],
+        }
+        session_artifacts.append({
+            "mini_session_index": mini_session_index,
+            "state": plan["bridge_state"],
+            "protocol": plan["bridge_protocol"],
+            "reset_s": plan["reset_s"],
+            "operational_dwell_s": plan["operational_dwell_s"],
+            "root": str(session_root),
+            "quality_sha256": _sha256(session_root / "quality.json"),
+        })
+
+    state_results = {}
+    protocol_vectors: dict[str, dict[str, np.ndarray]] = {
+        "Q_center": {}, "A_return": {}, "return_delta": {},
+    }
+    any_protocol_bias = False
+    for state in ("C", "B"):
+        fast = sessions[(state, "FAST")]
+        long = sessions[(state, "LONG")]
+        a_variance = _same_state_variance(source="ray", state="A")
+        q_variance = _same_state_variance(source="ray", state=state)
+
+        def diagnostic(
+            value: np.ndarray, variance: np.ndarray, center: np.ndarray,
+        ) -> dict[str, Any]:
+            return _guarded_zero_diagnostic(value, variance, center=center)
+
+        fast_return_delta = fast["A_return"] - fast["A0"]
+        long_return_delta = long["A_return"] - long["A0"]
+        q_difference = long["Q"] - fast["Q"]
+        a_return_difference = long["A_return"] - fast["A_return"]
+        protocol_difference = long_return_delta - fast_return_delta
+        diagnostics = {
+            "fast_A_return_minus_A0": diagnostic(
+                fast_return_delta, 2.0 * a_variance,
+                (fast["A_return"] + fast["A0"]) / 2.0,
+            ),
+            "long_A_return_minus_A0": diagnostic(
+                long_return_delta, 2.0 * a_variance,
+                (long["A_return"] + long["A0"]) / 2.0,
+            ),
+            "long_minus_fast_Q_center": diagnostic(
+                q_difference, 2.0 * q_variance,
+                (long["Q"] + fast["Q"]) / 2.0,
+            ),
+            "long_minus_fast_A_return": diagnostic(
+                a_return_difference, 2.0 * a_variance,
+                (long["A_return"] + fast["A_return"]) / 2.0,
+            ),
+            "matched_pair_protocol_difference": diagnostic(
+                protocol_difference, 4.0 * a_variance,
+                np.mean(np.vstack((fast["A0"], fast["A_return"], long["A0"], long["A_return"])), axis=0),
+            ),
+        }
+        protocol_vectors["Q_center"][state] = q_difference
+        protocol_vectors["A_return"][state] = a_return_difference
+        protocol_vectors["return_delta"][state] = protocol_difference
+        any_protocol_bias |= any(
+            item["decision"] == "detected"
+            for name, item in diagnostics.items()
+            if name.startswith("long_minus_fast") or name == "matched_pair_protocol_difference"
+        )
+        state_results[state] = diagnostics
+
+    a_variance = _same_state_variance(source="ray", state="A")
+    b_variance = _same_state_variance(source="ray", state="B")
+    c_variance = _same_state_variance(source="ray", state="C")
+    centers = {
+        "Q_center": np.mean(
+            np.vstack([row["Q"] for row in sessions.values()]), axis=0,
+        ),
+        "A_return": np.mean(
+            np.vstack([row["A_return"] for row in sessions.values()]), axis=0,
+        ),
+        "return_delta": np.mean(
+            np.vstack([
+                row["A0"] for row in sessions.values()
+            ] + [
+                row["A_return"] for row in sessions.values()
+            ]),
+            axis=0,
+        ),
+    }
+    common_variances = {
+        "Q_center": (b_variance + c_variance) / 2.0,
+        "A_return": a_variance,
+        "return_delta": 2.0 * a_variance,
+    }
+    state_variances = {
+        "Q_center": 2.0 * b_variance + 2.0 * c_variance,
+        "A_return": 4.0 * a_variance,
+        "return_delta": 8.0 * a_variance,
+    }
+    common_diagnostics = {}
+    state_dependent_diagnostics = {}
+    for name, vectors in protocol_vectors.items():
+        common_diagnostics[name] = _guarded_zero_diagnostic(
+            (vectors["B"] + vectors["C"]) / 2.0,
+            common_variances[name],
+            center=centers[name],
+        )
+        state_dependent_diagnostics[name] = _guarded_zero_diagnostic(
+            vectors["B"] - vectors["C"],
+            state_variances[name],
+            center=centers[name],
+        )
+    if any(
+        item["decision"] == "detected"
+        for item in state_dependent_diagnostics.values()
+    ):
+        classification = "state_dependent_protocol_bias_detected"
+    elif any(
+        item["decision"] == "detected" for item in common_diagnostics.values()
+    ) or any_protocol_bias:
+        classification = "common_protocol_bias_detected"
+    else:
+        classification = "thermal_bias_not_detected"
+    return {
+        "schema": "guide5_ray_fast_long_bridge_analysis_v1",
+        "status": "classified_waiting_advisor_review",
+        "experiment_id": thermal.RAY_FAST_LONG_BRIDGE_EXPERIMENT_ID,
+        "classification": classification,
+        "capture_count": 12,
+        "mini_session_count": 4,
+        "long_session_count": 2,
+        "strip_analyzer_v3_sha256": prerequisite_sha256,
+        "sessions": session_artifacts,
+        "states": state_results,
+        "common_bias_compatibility": common_diagnostics,
+        "state_dependent_bias_compatibility": state_dependent_diagnostics,
+        "measurement_contract": {
+            "observer": "frozen",
+            "feature_count": len(ids),
+            "covariance": "frozen_per_capture_diagonal",
+            "guarded_coverage": "frozen_direct_limits",
+            "long_data_role": "holdout_only",
+            "fast_target_training": False,
+            "covariance_change": False,
+            "steady_or_settled_claim": False,
+        },
+        "locks": {
+            "combined_td_b": True,
+            "td_c": True,
+            "strip_solver": True,
+            "sentinel_and_later": True,
+            "until": "advisor_review_complete",
+        },
+    }
+
+
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Analyze P7 thermal diagnostics or derive P7-R1 epoch-v2 evidence.")
     parser.add_argument("run_dir", type=Path)
@@ -2040,9 +2480,13 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--analyzer-commit")
     parser.add_argument("--ray-history-analysis", action="store_true")
     parser.add_argument("--ray-history-analysis-v2", action="store_true")
+    parser.add_argument("--ray-history-analysis-v3", action="store_true")
     parser.add_argument("--ray-history-analysis-output", type=Path)
     parser.add_argument("--history-source", choices=("ray", "strip"), default="ray")
     parser.add_argument("--r6-vector-artifact", type=Path)
+    parser.add_argument("--legacy-history-analysis-artifact", type=Path)
+    parser.add_argument("--ray-fast-long-bridge-analysis", action="store_true")
+    parser.add_argument("--ray-fast-long-bridge-analysis-output", type=Path)
     return parser.parse_args(argv)
 
 
@@ -2055,11 +2499,48 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.feature_ids is None:
         raise ValueError("--feature-ids is required for thermal run analysis")
     feature_ids = _feature_ids_from_artifact(args.feature_ids)
+    if args.ray_fast_long_bridge_analysis:
+        output = args.ray_fast_long_bridge_analysis_output
+        if output is None:
+            raise ValueError(
+                "Ray fast/long bridge analysis requires "
+                "--ray-fast-long-bridge-analysis-output"
+            )
+        report = analyze_ray_fast_long_bridge(
+            args.run_dir, feature_ids=feature_ids,
+        )
+        _write_text_atomic(
+            output.resolve(), json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n",
+        )
+        print(output.resolve())
+        return 0
+    if sum((
+        args.ray_history_analysis,
+        args.ray_history_analysis_v2,
+        args.ray_history_analysis_v3,
+    )) > 1:
+        raise ValueError("v1, v2 and v3 Ray history analysis are mutually exclusive")
+    if args.ray_history_analysis_v3:
+        if args.history_source != "strip":
+            raise ValueError("GUIDE5 v3 history correction is strip-only")
+        if args.legacy_history_analysis_artifact is None:
+            raise ValueError("v3 history analysis requires --legacy-history-analysis-artifact")
+        output = args.ray_history_analysis_output
+        if output is None:
+            raise ValueError("v3 history analysis requires --ray-history-analysis-output")
+        report = analyze_strip_history_experiment_v3(
+            args.run_dir,
+            feature_ids=feature_ids,
+            legacy_analysis_artifact=args.legacy_history_analysis_artifact,
+        )
+        _write_text_atomic(
+            output.resolve(), json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n",
+        )
+        print(output.resolve())
+        return 0
     if args.ray_history_analysis_v2:
         if args.history_source == "ray" and args.r6_vector_artifact is None:
             raise ValueError("Ray history analysis requires --r6-vector-artifact")
-        if args.ray_history_analysis:
-            raise ValueError("v1 and v2 Ray history analysis are mutually exclusive")
         output = args.ray_history_analysis_output
         if output is None:
             raise ValueError("v2 Ray history analysis requires --ray-history-analysis-output")

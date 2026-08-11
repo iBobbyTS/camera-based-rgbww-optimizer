@@ -76,7 +76,9 @@ class DirectR6Tests(unittest.TestCase):
         }))
         return feature_ids
 
-    def _execute_fake_protocol(self, plan, root, *, observed_elapsed_fn=None):
+    def _execute_fake_protocol(
+        self, plan, root, *, observed_elapsed_fn=None, feature_values_fn=None,
+    ):
         feature_ids = tuple(json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"])
         curve = json.loads(thermal.CURVE_PATH.read_text())
 
@@ -127,7 +129,11 @@ class DirectR6Tests(unittest.TestCase):
                 },
             }
             if step["formal_measurement"]:
-                output["feature_values"] = {feature_id: 1.0 for feature_id in feature_ids}
+                output["feature_values"] = (
+                    feature_values_fn(step)
+                    if feature_values_fn is not None
+                    else {feature_id: 1.0 for feature_id in feature_ids}
+                )
                 output["direct_quality"] = {
                     "status": "pass", "feature_count": len(feature_ids),
                 }
@@ -194,6 +200,7 @@ class DirectR6Tests(unittest.TestCase):
             "direct_ray_r6_authority_v1",
             "direct_ray_history_session_v1",
             "direct_strip_history_session_v1",
+            "direct_ray_fast_long_bridge_session_v1",
         }
 
         with patch.object(measure, "_validate_returned_sidecar", side_effect=fake_sidecar):
@@ -215,6 +222,9 @@ class DirectR6Tests(unittest.TestCase):
                     else measure.validate_direct_strip_history_session_post_capture
                     if plan["execution_authorization"]["schema"]
                     == "direct_strip_history_session_v1"
+                    else measure.validate_direct_ray_fast_long_bridge_session_post_capture
+                    if plan["execution_authorization"]["schema"]
+                    == "direct_ray_fast_long_bridge_session_v1"
                     else measure.validate_direct_protocol_post_capture
                 ),
                 sleep_fn=lambda _seconds: None,
@@ -312,6 +322,171 @@ class DirectR6Tests(unittest.TestCase):
         )
         self.assertEqual(called["plan"]["session_index"], 1)
         self.assertEqual(called["plan"]["source"], "strip")
+
+    def test_ray_fast_long_bridge_specs_keep_exact_pair_order_and_envelopes(self):
+        expected = (
+            ("C", "FAST", 600, 120),
+            ("C", "LONG", 1800, 600),
+            ("B", "LONG", 1800, 600),
+            ("B", "FAST", 600, 120),
+        )
+        prerequisite = {
+            "path": "/fake/analysis-v3.json",
+            "sha256": "a" * 64,
+            "kind": "ray-fast-long-bridge",
+            "status": "pass",
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            for mini_session_index, (state, protocol, reset_s, dwell_s) in enumerate(
+                expected, start=1,
+            ):
+                condition = thermal.ray_fast_long_bridge_start_condition(
+                    state=state, protocol=protocol, reset_s=reset_s,
+                )
+                plan = thermal.build_ray_fast_long_bridge_session_spec(
+                    mini_session_index,
+                    device_control_enabled=True,
+                    session_start_condition=condition,
+                    scientific_prerequisite=prerequisite,
+                )
+                self.assertEqual(
+                    (plan["bridge_state"], plan["bridge_protocol"], plan["reset_s"]),
+                    (state, protocol, reset_s),
+                )
+                self.assertEqual(
+                    [step["state_id"] for step in plan["captures"]], ["A", state, "A"],
+                )
+                self.assertEqual(
+                    {step["requested_elapsed_s"] for step in plan["captures"]}, {dwell_s},
+                )
+                self.assertEqual(plan["budgets"]["formal_cap"], 3)
+                self.assertFalse(
+                    plan["execution_authorization"]["human_authorization_required"],
+                )
+                run = self._execute_fake_protocol(
+                    plan, Path(tmp) / f"bridge-{mini_session_index}",
+                )
+                quality = json.loads((run / "quality.json").read_text())
+                self.assertEqual(
+                    quality["schema"], "guide5_ray_fast_long_bridge_session_quality_v1",
+                )
+                self.assertEqual(quality["capture_count"], 3)
+
+    def test_ray_fast_long_bridge_cli_requires_accepted_v3(self):
+        called = {}
+
+        def runner(plan, **_kwargs):
+            called["plan"] = plan
+            return Path("/fake/bridge")
+
+        with tempfile.TemporaryDirectory() as tmp:
+            prerequisite = Path(tmp) / "analysis-v3.json"
+            prerequisite.write_text(json.dumps({
+                "schema": "guide5_strip_history_order_balanced_analysis_v3",
+                "status": "accepted_advisor_corrected_classification",
+                "advisor_decision": "OPTION_3_CORRECT_THE_COMMON_CONTRAST",
+                "guide5_parent_branch": "S-A",
+                "classification": (
+                    "common_warm_reentry_shift_with_session_block_heterogeneity"
+                ),
+                "locks": {"ray_fast_long_bridge": False, "combined_td_b": True},
+            }))
+            condition = thermal.ray_fast_long_bridge_start_condition(
+                state="C", protocol="FAST", reset_s=600,
+            )
+            base = [
+                "--experiment-id", thermal.RAY_FAST_LONG_BRIDGE_EXPERIMENT_ID,
+                "--source", "ray", "--variant", "core", "--phase", "formal",
+                "--run-name", "bridge-m1", "--execute", "--allow-device-control",
+                "--direct-ray-fast-long-bridge", "--bridge-mini-session", "1",
+                "--session-start-condition", condition,
+                "--prerequisite-analysis", str(prerequisite),
+            ]
+            self.assertEqual(
+                measure.main(base, run_fn=runner, backend_factory=lambda: object()), 0,
+            )
+            self.assertEqual(called["plan"]["bridge_state"], "C")
+            self.assertEqual(called["plan"]["bridge_protocol"], "FAST")
+            self.assertEqual(
+                called["plan"]["scientific_prerequisite"]["status"], "pass",
+            )
+            invalid = json.loads(prerequisite.read_text())
+            invalid["classification"] = "underpowered_or_unclassified"
+            prerequisite.write_text(json.dumps(invalid))
+            with self.assertRaisesRegex(ValueError, "required scientific pass"):
+                measure.main(base, run_fn=runner, backend_factory=lambda: object())
+
+    def test_ray_fast_long_bridge_analyzer_uses_four_holdout_mini_sessions(self):
+        feature_ids = tuple(
+            json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"]
+        )
+        prerequisite = {
+            "path": "/fake/analysis-v3.json",
+            "sha256": "b" * 64,
+            "kind": "ray-fast-long-bridge",
+            "status": "pass",
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "bridge"
+            for mini_session_index, (state, protocol, reset_s, _dwell_s) in enumerate(
+                thermal.RAY_FAST_LONG_BRIDGE_MINI_SESSIONS, start=1,
+            ):
+                plan = thermal.build_ray_fast_long_bridge_session_spec(
+                    mini_session_index,
+                    device_control_enabled=True,
+                    session_start_condition=thermal.ray_fast_long_bridge_start_condition(
+                        state=state, protocol=protocol, reset_s=reset_s,
+                    ),
+                    scientific_prerequisite=prerequisite,
+                )
+
+                def feature_values(step, *, index=mini_session_index):
+                    values = {feature_id: 1.0 for feature_id in feature_ids}
+                    if index == 2 and step["role"] == "return_anchor":
+                        values[feature_ids[0]] = 3.0
+                    return values
+
+                run = self._execute_fake_protocol(
+                    plan,
+                    root / f"mini-session-{mini_session_index}",
+                    feature_values_fn=feature_values,
+                )
+                (run / "all-off-shell.json").write_text(json.dumps([{"ok": True}]))
+                (run / "all-off-shell.exit-status.txt").write_text("0\n")
+                (run / "wrapper-result.json").write_text(json.dumps({
+                    "status": "complete", "child_exit_code": 0,
+                    "shell_cleanup_exit_code": 0, "wrapper_exit_code": 0,
+                    "signal": None,
+                }))
+
+            report = analyze.analyze_ray_fast_long_bridge(
+                root, feature_ids=feature_ids,
+            )
+            self.assertEqual(
+                report["schema"], "guide5_ray_fast_long_bridge_analysis_v1",
+            )
+            self.assertEqual(report["capture_count"], 12)
+            self.assertEqual(report["long_session_count"], 2)
+            self.assertEqual(
+                report["classification"],
+                "state_dependent_protocol_bias_detected",
+            )
+            self.assertEqual(
+                report["state_dependent_bias_compatibility"]["return_delta"]["decision"],
+                "detected",
+            )
+            self.assertTrue(report["locks"]["combined_td_b"])
+            output = root / "bridge-analysis.json"
+            self.assertEqual(analyze.main([
+                str(root),
+                "--feature-ids", str(thermal.POLICY_PATH),
+                "--ray-fast-long-bridge-analysis",
+                "--ray-fast-long-bridge-analysis-output", str(output),
+            ]), 0)
+            self.assertEqual(
+                json.loads(output.read_text())["classification"],
+                "state_dependent_protocol_bias_detected",
+            )
 
     def test_direct_main_uses_injected_runner(self):
         called = {}
@@ -995,6 +1170,83 @@ class DirectR6Tests(unittest.TestCase):
             self.assertEqual(report["experiment_id"], thermal.STRIP_HISTORY_3X3_EXPERIMENT_ID)
             self.assertEqual(report["classification"], "no_history_effect_detected")
             self.assertEqual(report["r6_rank1_direction_transfer"], "not_applicable")
+
+    def test_strip_history_v3_uses_balanced_common_and_reports_session_contrasts(self):
+        feature_ids = tuple(
+            json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"]
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "strip-history"
+            for session_index in (1, 2, 3):
+                plan = thermal.build_strip_history_session_spec(
+                    session_index,
+                    device_control_enabled=True,
+                    session_start_condition=thermal.RAY_HISTORY_SESSION_START_CONDITION,
+                )
+
+                def feature_values(step, *, session=session_index):
+                    values = {feature_id: 1.0 for feature_id in feature_ids}
+                    if step["role"] == "return_anchor":
+                        values[feature_ids[0]] = 2.0 if session < 3 else 3.0
+                    return values
+
+                run = self._execute_fake_protocol(
+                    plan,
+                    root / f"session-{session_index}",
+                    feature_values_fn=feature_values,
+                )
+                (run / "all-off-shell.json").write_text(json.dumps([{"ok": True}]))
+                (run / "all-off-shell.exit-status.txt").write_text("0\n")
+                (run / "wrapper-result.json").write_text(json.dumps({
+                    "status": "complete", "child_exit_code": 0,
+                    "shell_cleanup_exit_code": 0, "wrapper_exit_code": 0,
+                    "signal": None,
+                }))
+
+            legacy = analyze.analyze_ray_history_experiment_v2(
+                root,
+                feature_ids=feature_ids,
+                r6_vector_artifact=None,
+                source="strip",
+            )
+            legacy_path = root / "analysis-v2.json"
+            legacy_path.write_text(json.dumps(legacy))
+            report = analyze.analyze_strip_history_experiment_v3(
+                root,
+                feature_ids=feature_ids,
+                legacy_analysis_artifact=legacy_path,
+            )
+
+            self.assertEqual(
+                report["schema"], "guide5_strip_history_order_balanced_analysis_v3",
+            )
+            self.assertEqual(
+                report["status"], "accepted_advisor_corrected_classification",
+            )
+            self.assertEqual(report["guide5_parent_branch"], "S-A")
+            self.assertEqual(
+                report["classification"],
+                "common_warm_reentry_shift_with_session_block_heterogeneity",
+            )
+            self.assertAlmostEqual(
+                report["balanced_common_variance_scalar_relative_to_one_delta"],
+                2 / 9,
+            )
+            self.assertEqual(
+                report["incorrect_legacy_common_estimand"],
+                "treatment_coded_baseline_cell_intercept",
+            )
+            self.assertEqual(len(report["raw_return_deltas"]), 9)
+            self.assertTrue(
+                report["diagnostics"]["balanced_common_warm_reentry_detected"],
+            )
+            self.assertNotIn("common_warm_reentry_detected", report["diagnostics"])
+            self.assertEqual(
+                report["session_contrasts"]["session3_minus_session2"]["decision"],
+                "detected",
+            )
+            self.assertFalse(report["locks"]["ray_fast_long_bridge"])
+            self.assertTrue(report["locks"]["combined_td_b"])
 
     def test_equal_dwell_repeated_state_visits_do_not_share_observed_chronology(self):
         plan = thermal.build_ray_history_session_spec(

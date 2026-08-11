@@ -10,15 +10,12 @@ production/test 输入、runtime 状态机、设备授权或 hidden gate。
 `nonlinear/non-additive` 已由 Advisor 明确拒绝为过强分类，原始
 `analysis.json` 保持不可变。
 
-**当前路线状态：** `READY_FOR_NEXT_SCIENTIFIC_ACTION`
+**当前路线状态：** `RAY_FAST_LONG_BRIDGE_UNLOCKED`
 
-**当前下一步：** 从以下两个已冻结的有界设备实验中选择一个执行；依据 AGENTS.md
-的 Human-authorization precedence，二者均不需要额外 Human authorization：
-
-1. `GUIDE5-STRIP-HISTORY-ORDER-BALANCED-3X3-OP120-RESET600-V1`
-2. `GUIDE5-RAY-FAST-LONG-BRIDGE-OP120-OP600-RESET600-RESET1800-V1`
-
-两者不得并行，必须使用独立 root；Orchestrator 可直接按当前 GUIDE/PLAN 的边界执行。
+**当前下一步：** 执行已冻结的
+`GUIDE5-RAY-FAST-LONG-BRIDGE-OP120-OP600-RESET600-RESET1800-V1`。strip-only
+3×3 已完成并由 Advisor 归入 S-A2；无需新的 strip acquisition。bridge 必须使用
+独立 root，依据 AGENTS.md 不需要额外 Human authorization。
 
 ## 1. 不可变科学合同
 
@@ -100,7 +97,7 @@ C / H300-S100  = 3 个 direct captures
 该 artifact 只支持四个直接状态，不外推完整 P6 manifold；继续使用冻结 covariance，
 不得从 3 或 9 个样本估计新 covariance。
 
-## 4. B — strip-only fast history（已解锁）
+## 4. B — strip-only fast history（已完成，S-A2）
 
 A1 canonical 输出为 `common_warm_reentry_shift` 且证据检查已通过，当前已解锁。
 GUIDE5 中额外的 Human authorization 要求与 AGENTS.md 的授权优先级冲突，按
@@ -132,14 +129,27 @@ fast-history model；`additive_period_or_carryover_effect`、
 ### B 结果（2026-08-10）
 
 三个 order-balanced session 已完成 `21/21`，quality、physical return、wrapper
-和 cleanup 全部通过。冻结 analyzer-v2 输出
-`underpowered_or_unclassified`：所有 additive contrast 均 compatible with zero，
-但 raw return deltas 不 compatible with zero；该分类不在 GUIDE5 S-A 至 S-E
-枚举中。当前为 `ADVISOR_GATE_REQUIRED`，精确证据与问题见
-`.agent-work/ADVISOR_HANDOFF-20260810-GUIDE5-STRIP-HISTORY.md`。在 Advisor
-分类前，不执行 paired Ray bridge、combined TD-B、TD-C、sentinel 或 later stage。
+和 cleanup 全部通过。冻结 analyzer-v2 输出 `underpowered_or_unclassified`，其
+SHA-256 保持
+`7f1325fed769cbfe03623e7a76ffc155ea46ed03c60c8db36dbef8c1c3aea9d6`。
+Advisor 确认 v2 错把 treatment-coded baseline-cell intercept 当作 balanced common
+effect。修正后的只读 analyzer-v3 输出：
 
-## 5. C — paired fast-vs-long Ray bridge（等待 Advisor 分类）
+```text
+artifact = /Volumes/4T/temp/rgbww-optimizer/guide5-strip-history-3x3-op120-reset600-20260810-2141/analysis-v3-strip-common-and-session-derived.json
+sha256 = 0e8ad4eabd5acbb8ef6a6cbcf7fa3fde2fee8d13ad6cdf3c58446325461ea58e
+guide5_parent_branch = S-A
+classification = common_warm_reentry_shift_with_session_block_heterogeneity
+balanced common score / guard = 13.5891110356185 / 9.561891733668457
+session3-session2 score / guard = 9.950862478050007 / 9.561711294035568
+```
+
+strip fast-history structure conditional accepted；不冻结 global cross-session warm center，
+不要求新的 strip acquisition。未来 combined comparison 使用 local warm anchors 并将
+session 作为 blocking factor。完整证据见
+`.agent-work/GUIDE5-STRIP-HISTORY-V3-RESULT.md`。
+
+## 5. C — paired fast-vs-long Ray bridge（已解锁，当前动作）
 
 与 B 使用独立 root，不并行；不训练 fast target，不改变 covariance。该实验是有界
 Ray/相机采集，不属于 AGENTS.md 定义的高危操作。
@@ -180,9 +190,9 @@ exposure/frame selection、把 R6 PC1 transfer failure写成 nonlinear interacti
 - 每个实验使用独立外置 root；raw CR3/图像/measurement 不入 Git，manifest、hash、
   quality、analysis、cleanup 和报告可追踪。
 - 设备任务超过 10 分钟使用 visible Terminal、三次 liveness 检查与 automation。
-- 当前存在明确的 `ADVISOR_GATE_REQUIRED`：strip history analyzer 的结果尚未
-  映射到 GUIDE5 分支。paired bridge、combined TD-B、TD-C、sentinel 和 later
-  stages 在 Advisor 分类前保持锁定。
+- strip history 的 Advisor gate 已由 `OPTION_3_CORRECT_THE_COMMON_CONTRAST`
+  解除；analyzer-v3 exact 数值已复核，paired Ray bridge 已解锁。
+- combined TD-B、TD-C、solver、sentinel 和 later stages 仍保持锁定。
 
 ## 8. 交付要求
 

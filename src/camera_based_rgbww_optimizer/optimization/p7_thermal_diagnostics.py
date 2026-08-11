@@ -84,6 +84,16 @@ TD_B_EXPOSURE_POLICY_V2_SCHEMA = "p7_ray_td_b_exposure_policy_v2"
 TD_B_R6_EXPERIMENT_ID = "P7-TD-B-RAY-OP600-EXPOSURE-GUARDED-FORMAL-R6"
 RAY_HISTORY_3X3_EXPERIMENT_ID = "GUIDE4-RAY-HISTORY-ORDER-BALANCED-3X3-OP120-COLD600-V3"
 STRIP_HISTORY_3X3_EXPERIMENT_ID = "GUIDE5-STRIP-HISTORY-ORDER-BALANCED-3X3-OP120-RESET600-V1"
+RAY_FAST_LONG_BRIDGE_EXPERIMENT_ID = (
+    "GUIDE5-RAY-FAST-LONG-BRIDGE-OP120-OP600-RESET600-RESET1800-V1"
+)
+RAY_FAST_TARGET_PATH = PROJECT_ROOT / "config/hsi/ray-fast-op120-targets-v1.json"
+RAY_FAST_LONG_BRIDGE_MINI_SESSIONS = (
+    ("C", "FAST", 600, 120),
+    ("C", "LONG", 1800, 600),
+    ("B", "LONG", 1800, 600),
+    ("B", "FAST", 600, 120),
+)
 RAY_HISTORY_3X3_SESSION_ORDERS = (("D", "B", "C"), ("C", "D", "B"), ("B", "C", "D"))
 RAY_HISTORY_OPERATIONAL_DWELL_S = 120
 RAY_HISTORY_SESSION_COLD_PROXY_S = 600
@@ -673,6 +683,166 @@ def build_strip_history_session_spec(
         "frozen_shutters_sha256": canonical_sha256(frozen),
     }
     return plan
+
+
+def ray_fast_long_bridge_start_condition(
+    *, state: str, protocol: str, reset_s: int,
+) -> str:
+    return (
+        f"Ray and strip continuously off for at least {reset_s} s before the "
+        f"GUIDE5 {state} {protocol} mini-session; both-source zero readback "
+        "passes at run start"
+    )
+
+
+def build_ray_fast_long_bridge_session_spec(
+    mini_session_index: int,
+    *,
+    device_control_enabled: bool = False,
+    session_start_condition: str | None = None,
+    scientific_prerequisite: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Build one direct A/Q/A mini-session for the GUIDE5 thermal bridge."""
+    if mini_session_index not in range(1, 5):
+        raise ValueError("Ray fast/long bridge mini-session index must be 1..4")
+    state, protocol, reset_s, dwell_s = RAY_FAST_LONG_BRIDGE_MINI_SESSIONS[
+        mini_session_index - 1
+    ]
+    required_start = ray_fast_long_bridge_start_condition(
+        state=state, protocol=protocol, reset_s=reset_s,
+    )
+    if device_control_enabled and session_start_condition != required_start:
+        raise ValueError("Ray fast/long bridge session start condition differs")
+    if device_control_enabled and (
+        not isinstance(scientific_prerequisite, Mapping)
+        or scientific_prerequisite.get("kind") != "ray-fast-long-bridge"
+        or scientific_prerequisite.get("status") != "pass"
+    ):
+        raise ValueError("Ray fast/long bridge requires accepted strip analyzer-v3")
+
+    exposure = load_td_b_exposure_policy_v2()
+    validate_td_b_exposure_policy_v2(exposure)
+    state_shutters = {
+        item: exposure["states"][item]["formal_shutter"]
+        for item in ("A", state)
+    }
+    sequence = (
+        ("A", "initial_anchor", "A0"),
+        (state, "bridge_state", state),
+        ("A", "return_anchor", f"A_after_{state}"),
+    )
+    captures = []
+    for sequence_index, (capture_state, role, anchor_label) in enumerate(sequence):
+        command = dict(RAY_STATES[capture_state])
+        captures.append({
+            "capture_id": (
+                f"{sequence_index:03d}-bridge-m{mini_session_index}-"
+                f"{state.lower()}-{protocol.lower()}-{anchor_label.lower()}-t{dwell_s}"
+            ),
+            "sequence_index": sequence_index,
+            "capture_role": "formal",
+            "formal_measurement": True,
+            "source_id": "ray",
+            "state_id": capture_state,
+            "role": role,
+            "anchor_label": anchor_label,
+            "bridge_state": state,
+            "bridge_protocol": protocol,
+            "mini_session_index": mini_session_index,
+            "command": command,
+            "exact_command_hash": canonical_sha256(command),
+            "nominal_shutter": state_shutters[capture_state],
+            "exposure_mode": "fixed",
+            "weak_reacquire": False,
+            "mid_run_shutter_change": False,
+            "requested_elapsed_s": dwell_s,
+            "timing_acceptance": "observed_elapsed_record_only",
+            "strip_zero_required": True,
+            "ambient_cap": 0,
+            "isolation_gate_after": (
+                f"bridge-m{mini_session_index}-{anchor_label}-strip-zero"
+            ),
+        })
+    frozen = {
+        shutter_cache_key_for_step(step): state_shutters[str(step["state_id"])]
+        for step in captures
+    }
+    frozen = {key: frozen[key] for key in sorted(frozen)}
+    return {
+        "schema": PLAN_SCHEMA_V2,
+        "status": "execute_authorized" if device_control_enabled else "device_locked",
+        "experiment_id": TD_B,
+        "guide_experiment_id": RAY_FAST_LONG_BRIDGE_EXPERIMENT_ID,
+        "stage": "TD-B",
+        "source": "ray",
+        "variant": "fast-long-thermal-bridge",
+        "phase": "formal",
+        "mini_session_index": mini_session_index,
+        "bridge_state": state,
+        "bridge_protocol": protocol,
+        "reset_s": reset_s,
+        "operational_dwell_s": dwell_s,
+        "session_start_condition": session_start_condition,
+        "scientific_prerequisite": (
+            None if scientific_prerequisite is None else dict(scientific_prerequisite)
+        ),
+        "inputs": {
+            "location": file_reference(LOCATION_PATH),
+            "policy": file_reference(POLICY_PATH),
+            "uncertainty": file_reference(UNCERTAINTY_PATH),
+            "manifold": file_reference(MANIFOLD_PATH),
+            "code_duty_curve": file_reference(CURVE_PATH),
+            "fast_targets": file_reference(RAY_FAST_TARGET_PATH),
+        },
+        "strip": "zero_throughout",
+        "ambient": 0,
+        "source_isolation_contract": (
+            "strip_zero_between_states_ray_continuous_until_final_cleanup"
+        ),
+        "continuous_ray_state_order": [step["state_id"] for step in captures],
+        "native_raw_ambient_policy": AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+        "timing_contract": timing_contract(2),
+        "captures": captures,
+        "capture_ids": [step["capture_id"] for step in captures],
+        "frozen_shutters": frozen,
+        "exposure_setup_required": [],
+        "shutter_ledger_provenance": {
+            "owner": "experiment_capture_steps",
+            "required_cache_keys": list(frozen),
+            "frozen_shutters_sha256": canonical_sha256(frozen),
+        },
+        "budgets": {
+            "formal_cap": 3, "ambient_cap": 0, "physical_cr3_cap": 3,
+            "setup_physical_cr3_cap": 0,
+        },
+        "camera": {
+            "backend": "remote", "v2_capture_timing_capability_available": True,
+            "v2_capture_capability": "remote_v2_capture_timing_v1",
+            "resolved_capture_settings": {
+                "owner": "remote_backend.resolve_capture_settings",
+                "iso": "100", "aperture": "f/4", "image_format": "RAW",
+            },
+        },
+        "execution_authorization": {
+            "schema": "direct_ray_fast_long_bridge_session_v1",
+            "bounded_device_scope": device_control_enabled,
+            "human_authorization_required": False,
+            "experiment_id": RAY_FAST_LONG_BRIDGE_EXPERIMENT_ID,
+            "remote_v2_capability": True,
+        },
+        "cleanup": {
+            "python_finally": "required",
+            "shell_trap": "EXIT_INT_TERM_HUP_required",
+        },
+        "analysis_contract": {
+            "response": "matched_fast_vs_long_Q_and_local_A_return",
+            "fast_envelope": "op120_reset600",
+            "long_envelope": "op600_reset1800_holdout",
+            "long_data_fit_input": False,
+            "covariance_change_allowed": False,
+            "steady_claim": False,
+        },
+    }
 
 
 def build_direct_plan(

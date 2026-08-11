@@ -213,7 +213,12 @@ def validate_authorized_execution_plan(
         isinstance(authorization, Mapping)
         and authorization.get("schema") == "direct_strip_history_session_v1"
     )
-    if direct_ray_history or direct_strip_history:
+    direct_ray_fast_long_bridge = (
+        isinstance(authorization, Mapping)
+        and authorization.get("schema")
+        == "direct_ray_fast_long_bridge_session_v1"
+    )
+    if direct_ray_history or direct_strip_history or direct_ray_fast_long_bridge:
         valid_execution_scope = (
             authorization.get("bounded_device_scope") is True
             and authorization.get("human_authorization_required") is False
@@ -355,6 +360,7 @@ def execute_plan(
         isinstance(plan.get("execution_authorization"), Mapping)
         and plan["execution_authorization"].get("schema") in {
             "direct_ray_r6_authority_v1", "direct_ray_history_session_v1",
+            "direct_ray_fast_long_bridge_session_v1",
         }
     )
     direct_strip_history = (
@@ -1002,6 +1008,56 @@ def validate_direct_strip_history_session_post_capture(
     return quality
 
 
+def validate_direct_ray_fast_long_bridge_session_post_capture(
+    run_root: str | Path,
+    plan: Mapping[str, Any],
+    runtime_evidence: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    """Validate one exact three-capture GUIDE5 fast/long bridge mini-session."""
+    root = Path(run_root).resolve()
+    mini_session_index = plan.get("mini_session_index")
+    if type(mini_session_index) is not int:
+        raise ValueError("Ray fast/long bridge lacks an integer mini-session index")
+    prerequisite = plan.get("scientific_prerequisite")
+    expected = thermal.build_ray_fast_long_bridge_session_spec(
+        mini_session_index,
+        device_control_enabled=True,
+        session_start_condition=plan.get("session_start_condition"),
+        scientific_prerequisite=(
+            prerequisite if isinstance(prerequisite, Mapping) else None
+        ),
+    )
+    immutable_fields = (
+        "guide_experiment_id", "bridge_state", "bridge_protocol", "reset_s",
+        "operational_dwell_s", "capture_ids", "frozen_shutters", "budgets",
+        "analysis_contract", "execution_authorization", "scientific_prerequisite",
+    )
+    if any(plan.get(key) != expected.get(key) for key in immutable_fields):
+        raise ValueError("direct Ray fast/long bridge specification drifted")
+    quality = validate_direct_protocol_post_capture(root, plan, runtime_evidence)
+    captures = [
+        json.loads(line)
+        for line in (root / "captures.jsonl").read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    if len(captures) != 3 or [
+        (row.get("plan_step") or {}).get("role") for row in captures
+    ] != ["initial_anchor", "bridge_state", "return_anchor"]:
+        raise ValueError("direct Ray fast/long bridge requires exact A/Q/A captures")
+    quality = {
+        **quality,
+        "schema": "guide5_ray_fast_long_bridge_session_quality_v1",
+        "guide_experiment_id": thermal.RAY_FAST_LONG_BRIDGE_EXPERIMENT_ID,
+        "mini_session_index": mini_session_index,
+        "bridge_state": expected["bridge_state"],
+        "bridge_protocol": expected["bridge_protocol"],
+        "reset_s": expected["reset_s"],
+        "operational_dwell_s": expected["operational_dwell_s"],
+    }
+    _write_json(root / "quality.json", quality)
+    return quality
+
+
 def validate_direct_protocol_post_capture(
     run_root: str | Path,
     plan: Mapping[str, Any],
@@ -1103,6 +1159,17 @@ def validate_scientific_prerequisite(path: str | Path, *, kind: str) -> dict[str
         valid = (
             str(value.get("status", "")).endswith("_pass")
             and value.get("experiment_id") in {thermal.TD_B, "combined_td_b"}
+        )
+    elif kind == "ray-fast-long-bridge":
+        valid = (
+            value.get("schema") == "guide5_strip_history_order_balanced_analysis_v3"
+            and value.get("status") == "accepted_advisor_corrected_classification"
+            and value.get("advisor_decision") == "OPTION_3_CORRECT_THE_COMMON_CONTRAST"
+            and value.get("guide5_parent_branch") == "S-A"
+            and value.get("classification")
+            == "common_warm_reentry_shift_with_session_block_heterogeneity"
+            and value.get("locks", {}).get("ray_fast_long_bridge") is False
+            and value.get("locks", {}).get("combined_td_b") is True
         )
     else:
         raise ValueError(f"unknown scientific prerequisite kind: {kind}")
@@ -1396,6 +1463,7 @@ def run_authorized_plan(
         isinstance(plan.get("execution_authorization"), Mapping)
         and plan["execution_authorization"].get("schema") in {
             "direct_ray_r6_authority_v1", "direct_ray_history_session_v1",
+            "direct_ray_fast_long_bridge_session_v1",
         }
     )
     direct_strip_history = (
@@ -1737,6 +1805,10 @@ def run_authorized_plan(
             return validate_direct_strip_history_session_post_capture(
                 run_root, frozen_plan, runtime_evidence,
             )
+        if schema == "direct_ray_fast_long_bridge_session_v1":
+            return validate_direct_ray_fast_long_bridge_session_post_capture(
+                run_root, frozen_plan, runtime_evidence,
+            )
         return validate_direct_protocol_post_capture(run_root, frozen_plan, runtime_evidence)
 
     return execute_plan(
@@ -1775,7 +1847,11 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Execute direct P7 thermal diagnostic protocols.")
     parser.add_argument(
         "--experiment-id",
-        choices=(*thermal.EXPERIMENT_IDS, thermal.RAY_HISTORY_3X3_EXPERIMENT_ID),
+        choices=(
+            *thermal.EXPERIMENT_IDS,
+            thermal.RAY_HISTORY_3X3_EXPERIMENT_ID,
+            thermal.RAY_FAST_LONG_BRIDGE_EXPERIMENT_ID,
+        ),
         required=True,
     )
     parser.add_argument("--source", choices=("ray", "strip"))
@@ -1796,11 +1872,16 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--direct-strip-history-3x3", action="store_true",
         help="prepare or execute one session of the GUIDE5 strip history experiment",
     )
+    direct.add_argument(
+        "--direct-ray-fast-long-bridge", action="store_true",
+        help="prepare or execute one GUIDE5 Ray fast/long bridge mini-session",
+    )
     direct.add_argument("--direct-strip-td-b", action="store_true", help="execute direct strip TD-B path")
     direct.add_argument("--direct-td-c-core", action="store_true", help="execute direct TD-C core path")
     parser.add_argument("--prerequisite-analysis", type=Path)
     parser.add_argument("--human-authorization")
     parser.add_argument("--session-index", type=int, choices=(1, 2, 3))
+    parser.add_argument("--bridge-mini-session", type=int, choices=(1, 2, 3, 4))
     parser.add_argument("--session-start-condition")
     parser.add_argument("--allow-device-control", action="store_true")
     camera_remote.add_camera_backend_arguments(parser, default="remote")
@@ -1814,6 +1895,7 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
         "ray-r6" if args.direct_r6 else
         "ray-history-3x3" if args.direct_ray_history_3x3 else
         "strip-history-3x3" if args.direct_strip_history_3x3 else
+        "ray-fast-long-bridge" if args.direct_ray_fast_long_bridge else
         "strip-td-b" if args.direct_strip_td_b else
         "td-c-core"
     )
@@ -1821,6 +1903,9 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
         "ray-r6": (thermal.TD_B, "ray", "core"),
         "ray-history-3x3": (thermal.RAY_HISTORY_3X3_EXPERIMENT_ID, "ray", "core"),
         "strip-history-3x3": (thermal.TD_B, "strip", "history"),
+        "ray-fast-long-bridge": (
+            thermal.RAY_FAST_LONG_BRIDGE_EXPERIMENT_ID, "ray", "core",
+        ),
         "strip-td-b": (thermal.TD_B, "strip", "core"),
         "td-c-core": (thermal.TD_C, None, "core"),
     }[direct_kind]
@@ -1845,6 +1930,20 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
             _write_json(output, thermal.build_strip_history_session_spec(1))
             print(output)
             return 0
+        if direct_kind == "ray-fast-long-bridge":
+            if args.bridge_mini_session is None:
+                raise PermissionError("bridge dry-run requires --bridge-mini-session")
+            root = (Path(args.output_dir) / args.run_name).resolve()
+            root.mkdir(parents=True, exist_ok=False)
+            output = root / "experiment-spec.json"
+            _write_json(
+                output,
+                thermal.build_ray_fast_long_bridge_session_spec(
+                    args.bridge_mini_session,
+                ),
+            )
+            print(output)
+            return 0
         output = write_dry_run(
             experiment_id=args.experiment_id, output_dir=args.output_dir,
             run_name=args.run_name, source=args.source, variant=args.variant,
@@ -1853,12 +1952,13 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
         return 0
     if not (args.execute and args.allow_device_control):
         raise PermissionError(f"{direct_kind} requires --execute and --allow-device-control")
+    prerequisite = None
+    plan = None
     if direct_kind in {"ray-history-3x3", "strip-history-3x3"}:
         if args.session_index is None:
             raise PermissionError("history execution requires one exact --session-index")
         if not isinstance(args.session_start_condition, str) or not args.session_start_condition.strip():
             raise PermissionError("Ray history execution requires the observed independent session start condition")
-        prerequisite = None
         builder = (
             thermal.build_ray_history_session_spec
             if direct_kind == "ray-history-3x3"
@@ -1868,11 +1968,28 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
             args.session_index, device_control_enabled=True,
             session_start_condition=args.session_start_condition,
         )
-    else:
-        plan = None
+    elif direct_kind == "ray-fast-long-bridge":
+        if args.bridge_mini_session is None:
+            raise PermissionError("bridge execution requires --bridge-mini-session")
+        if not isinstance(args.session_start_condition, str) or not args.session_start_condition.strip():
+            raise PermissionError("bridge execution requires its observed reset start condition")
+        if args.prerequisite_analysis is None:
+            raise PermissionError("bridge execution requires accepted strip analyzer-v3")
+        prerequisite = validate_scientific_prerequisite(
+            args.prerequisite_analysis, kind="ray-fast-long-bridge",
+        )
+        plan = thermal.build_ray_fast_long_bridge_session_spec(
+            args.bridge_mini_session,
+            device_control_enabled=True,
+            session_start_condition=args.session_start_condition,
+            scientific_prerequisite=prerequisite,
+        )
     if direct_kind == "ray-r6" and args.human_authorization != thermal.TD_B_R6_EXPERIMENT_ID:
         raise PermissionError("Ray R6 requires the exact Human experiment authorization token")
-    if direct_kind not in {"ray-r6", "ray-history-3x3", "strip-history-3x3"}:
+    if direct_kind not in {
+        "ray-r6", "ray-history-3x3", "strip-history-3x3",
+        "ray-fast-long-bridge",
+    }:
         if args.prerequisite_analysis is None:
             raise PermissionError(f"{direct_kind} requires a prior scientific analysis artifact")
         prerequisite = validate_scientific_prerequisite(args.prerequisite_analysis, kind=direct_kind)
