@@ -129,6 +129,16 @@ fast-history model；`additive_period_or_carryover_effect`、
 `interaction_or_nonadditive_unresolved` 或 measurement failure 均在 combined 之前
 回 Advisor。
 
+### B 结果（2026-08-10）
+
+三个 order-balanced session 已完成 `21/21`，quality、physical return、wrapper
+和 cleanup 全部通过。冻结 analyzer-v2 输出
+`underpowered_or_unclassified`：所有 additive contrast 均 compatible with zero，
+但 raw return deltas 不 compatible with zero；该分类不在 GUIDE5 S-A 至 S-E
+枚举中。当前为 `ADVISOR_GATE_REQUIRED`，精确证据与问题见
+`.agent-work/ADVISOR_HANDOFF-20260810-GUIDE5-STRIP-HISTORY.md`。在 Advisor
+分类前，不执行 paired Ray bridge、combined TD-B、TD-C、sentinel 或 later stage。
+
 ## 5. C — paired fast-vs-long Ray bridge（已解锁）
 
 与 B 使用独立 root，不并行；不训练 fast target，不改变 covariance。该实验是有界
