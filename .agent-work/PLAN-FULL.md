@@ -10,12 +10,10 @@ production/test 输入、runtime 状态机、设备授权或 hidden gate。
 `nonlinear/non-additive` 已由 Advisor 明确拒绝为过强分类，原始
 `analysis.json` 保持不可变。
 
-**当前路线状态：** `TD_C_CORE_CONDITIONALLY_UNLOCKED`
+**当前路线状态：** `TD_C_CORE_ACCEPTED_WAITING_ADVISOR`
 
-**当前下一步：** 执行 GUIDE5 TD-C core：四个 Ray/strip 顺序平衡 session，共 8
-张 warm-A capture。每张正式 capture 使用 `reset600 → D120 → A120 → capture`；
-TD-C expansion、solver sentinel 和 later stages 继续锁定。依据 AGENTS.md，开关灯与
-相机的本地有界实验不需要额外 Human authorization。
+**当前下一步：** 将已完成的 GUIDE5 TD-C core 结果交 Advisor 科学复核。TD-C
+expansion、solver sentinel 和 later stages 继续锁定，不执行任何新采集。
 
 ## 1. 不可变科学合同
 
@@ -198,7 +196,7 @@ classification = fast_local_anchor_coordinate_compatible_for_paired_source_compa
 
 state terms 被保留为之后 solver 处理的 strip-Ray mismatch，不在零点门禁中。
 
-## 7. E — TD-C core（当前动作）
+## 7. E — TD-C core（已完成，等待 Advisor）
 
 ```text
 sessions = 4
@@ -210,7 +208,26 @@ steady claim = false
 ```
 
 只检验 within-session strip-Ray difference 可重复性、source order effect 和 absolute
-warm-A cross-source anchor。TD-C core 完成后回 Advisor；不得进入 expansion 或 solver。
+warm-A cross-source anchor。结果：
+
+```text
+root = /Volumes/4T/temp/rgbww-optimizer/guide5-td-c-core-20260812-151638-noambient-fix
+accepted / physical = 8 / 8
+quality / wrapper / cleanup / final zero = pass / pass / pass / pass
+analysis = analysis.json
+analysis sha256 = a4f4303b391c6eca5bf4a59fd1e95bf1b505b28bad4eda1c081f5d54d98a6aa0
+status = td_c_core_pass_waiting_for_planner
+within_session_compatibility = pass
+balanced_order_effect = pass
+stable_center = pass
+warm_A_cross_source_anchor = pass
+td_c_expansion_locked = true
+```
+
+采集后 analyzer 暴露旧 aperture provenance equality gate，已作为普通 harness defect
+修复并由 24 个 direct-path tests 验证；保留的 8 帧未修改、未重采集。完整交接见
+`.agent-work/ADVISOR_HANDOFF-20260812-GUIDE5-TD-C-CORE.md`。现在回 Advisor；不得进入
+expansion 或 solver。
 
 ## 8. 后续锁与禁止事项
 

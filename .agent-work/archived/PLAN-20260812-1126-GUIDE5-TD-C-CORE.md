@@ -39,3 +39,21 @@ TD-C core session，建立 fast envelope 下的 absolute warm-A cross-source anc
   不池化，并在修复后使用 fresh root。
 - substantive correction：把 no-ambient RAW policy 精确扩展到 TD-B/TD-C P7 v2
   formal owners；其他 owner 仍 fail closed，并新增真实 behavior regression。
+
+## Attempt 2 — ACCEPTED_VALID_TD_C_CORE
+
+- root：`/Volumes/4T/temp/rgbww-optimizer/guide5-td-c-core-20260812-151638-noambient-fix`
+- acquisition checkpoint：`7ba81b3e55f06f7e4427442b65e63fd8ea66849b`
+- 结果：`8/8` accepted、`8/8` physical CR3、quality pass、wrapper exit `0`、
+  Python/shell cleanup pass、Ray/strip final zero pass。
+- direct analyzer 首次调用在科学计算前被旧 aperture provenance equality gate 拒绝；
+  classification=`ENGINEERING_OR_HARNESS_FAILURE`，`science_delta=none`。
+- correction：`3304da6439b4746757f324302040565ae25cd902` 允许 analyzer 对账计划
+  `f/4` 与远程 backend 逐帧统一的 `implicit auto` 报告；ISO、RAW、逐帧一致性、
+  physical/quality/cleanup 门禁不变。direct-path tests `24/24` pass。
+- retained 8 captures 未修改、未重采集；恢复后的 analyzer 成功生成 `analysis.json`：
+  SHA-256 `a4f4303b391c6eca5bf4a59fd1e95bf1b505b28bad4eda1c081f5d54d98a6aa0`。
+- scientific result：`td_c_core_pass_waiting_for_planner`；within-session compatibility、
+  order effect、stable center、warm-A cross-source anchor 全部 pass。
+- `science_delta=accepted_valid_td_c_core`；TD-C expansion、solver、sentinel 与 later
+  stages 仍锁定，下一步为 `ADVISOR_GATE_REQUIRED` 科学复核。
