@@ -66,11 +66,6 @@ def analyze_thermal_run(
         or run.get("experiment_id") != plan.get("experiment_id")
         or (run.get("status") != "complete" and revalidation is None)
         or run.get("cleanup") != "pass"
-        or (
-            revalidation is None
-            and run.get("capture_settings_provenance")
-            != plan.get("camera", {}).get("resolved_capture_settings")
-        )
     ):
         raise ValueError("thermal analyzer requires a completed exact experiment")
     if plan.get("execution_authorization", {}).get("schema") == "direct_ray_r6_authority_v1":
@@ -222,6 +217,12 @@ def analyze_thermal_run(
         _validate_reproducibility_checkpoint(root, plan, run)
         captures = _load_jsonl(root / "captures.jsonl")
         physical = _load_jsonl(root / "physical-returns.jsonl")
+        capture_settings = _validate_capture_settings_provenance(
+            plan,
+            run,
+            captures,
+            allow_implicit_aperture_reconciliation=True,
+        )
         expected_ids = [str(step["capture_id"]) for step in expected["captures"]]
         if [str(row.get("capture_id")) for row in captures] != expected_ids:
             raise ValueError("direct capture order differs from its spec")
@@ -320,6 +321,7 @@ def analyze_thermal_run(
             "experiment_id": plan["experiment_id"],
             "capture_count": len(formal_rows),
             "direct_artifact_validation": "pass",
+            "capture_settings_reconciliation": capture_settings,
             **result,
         }
     raise ValueError("thermal analyzer supports direct protocol runs only")

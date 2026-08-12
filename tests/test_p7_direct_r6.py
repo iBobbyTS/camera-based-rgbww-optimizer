@@ -1448,6 +1448,23 @@ class DirectR6Tests(unittest.TestCase):
                     "status": "complete", "child_exit_code": 0,
                     "shell_cleanup_exit_code": 0, "wrapper_exit_code": 0, "signal": None,
                 }))
+                if name == "td-c":
+                    run_payload = json.loads((run / "run.json").read_text())
+                    run_payload["capture_settings_provenance"]["aperture"] = "implicit auto"
+                    (run / "run.json").write_text(json.dumps(run_payload))
+                    capture_rows = [
+                        json.loads(line)
+                        for line in (run / "captures.jsonl").read_text().splitlines()
+                    ]
+                    for row in capture_rows:
+                        row["capture"]["capture"] = {
+                            "iso": "100",
+                            "aperture": "implicit auto",
+                            "image_format": "RAW",
+                        }
+                    (run / "captures.jsonl").write_text(
+                        "".join(json.dumps(row) + "\n" for row in capture_rows)
+                    )
                 report = analyze.analyze_thermal_run(
                     run,
                     feature_ids=tuple(json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"]),
@@ -1455,6 +1472,10 @@ class DirectR6Tests(unittest.TestCase):
                 )
                 self.assertEqual(report["direct_artifact_validation"], "pass")
                 if name == "td-c":
+                    self.assertEqual(
+                        report["capture_settings_reconciliation"]["status"],
+                        "accepted_uniform_implicit_aperture",
+                    )
                     commands = [
                         json.loads(line)
                         for line in (run / "commands.jsonl").read_text().splitlines()
