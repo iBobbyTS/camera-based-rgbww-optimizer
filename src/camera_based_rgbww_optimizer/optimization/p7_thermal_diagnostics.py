@@ -151,7 +151,7 @@ def expected_native_raw_ambient_policy(
     phase: str = "formal",
 ) -> str:
     if (
-        experiment_id == TD_B
+        experiment_id in {TD_B, TD_C}
         and plan_schema == PLAN_SCHEMA_V2
         and phase == "formal"
     ):

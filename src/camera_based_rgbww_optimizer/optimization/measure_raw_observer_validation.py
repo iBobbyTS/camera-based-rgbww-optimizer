@@ -57,6 +57,15 @@ TD_B_FORMAL_AMBIENT_POLICY_OWNER = {
     "phase": "formal",
     "plan_schema": "p7_thermal_diagnostic_plan_v2",
 }
+TD_C_FORMAL_AMBIENT_POLICY_OWNER = {
+    "experiment_id": "p7_td_c_balanced_source_comparison_v1",
+    "phase": "formal",
+    "plan_schema": "p7_thermal_diagnostic_plan_v2",
+}
+UNSUBTRACTED_FORMAL_AMBIENT_POLICY_OWNERS = (
+    TD_B_FORMAL_AMBIENT_POLICY_OWNER,
+    TD_C_FORMAL_AMBIENT_POLICY_OWNER,
+)
 
 
 def validate_native_raw_ambient_policy(
@@ -69,9 +78,9 @@ def validate_native_raw_ambient_policy(
         raise ValueError(f"unknown native RAW ambient policy: {ambient_policy}")
     if ambient_policy == AMBIENT_POLICY_REQUIRE_PRECEDING:
         return ambient_policy
-    if dict(policy_owner or {}) != TD_B_FORMAL_AMBIENT_POLICY_OWNER:
+    if dict(policy_owner or {}) not in UNSUBTRACTED_FORMAL_AMBIENT_POLICY_OWNERS:
         raise PermissionError(
-            "unsubtracted_no_ambient is restricted to the exact TD-B v2 formal owner"
+            "unsubtracted_no_ambient is restricted to an exact P7 v2 formal owner"
         )
     return ambient_policy
 

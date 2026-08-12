@@ -1595,21 +1595,26 @@ def run_authorized_plan(
         )
 
     ambient_policy_owner = (
-        dict(raw_validation.TD_B_FORMAL_AMBIENT_POLICY_OWNER)
+        {
+            "experiment_id": str(plan["experiment_id"]),
+            "phase": "formal",
+            "plan_schema": str(plan["schema"]),
+        }
         if plan["native_raw_ambient_policy"]
         == raw_validation.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT
         else None
     )
-    exact_td_b_formal_owner = (
+    exact_p7_formal_owner = (
         plan["schema"] == thermal.PLAN_SCHEMA_V2
-        and plan["experiment_id"] == thermal.TD_B
+        and plan["experiment_id"] in {thermal.TD_B, thermal.TD_C}
         and plan["native_raw_ambient_policy"]
         == raw_validation.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT
-        and ambient_policy_owner == raw_validation.TD_B_FORMAL_AMBIENT_POLICY_OWNER
+        and ambient_policy_owner
+        in raw_validation.UNSUBTRACTED_FORMAL_AMBIENT_POLICY_OWNERS
     )
     feature_statistic = (
         TD_B_FORMAL_FEATURE_STATISTIC
-        if exact_td_b_formal_owner
+        if exact_p7_formal_owner
         else DEFAULT_STATISTIC
     )
 

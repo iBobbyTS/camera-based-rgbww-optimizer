@@ -23,3 +23,19 @@ TD-C core session，建立 fast envelope 下的 absolute warm-A cross-source anc
    AGENTS.md 分类修复。
 5. 长任务完成三次 liveness 后设置 automation。
 6. 8/8 完成后运行一次 direct analyzer；不执行 expansion 或 solver。
+
+## Attempt 1 — ENGINEERING_OR_HARNESS_FAILURE
+
+- root：`/Volumes/4T/temp/rgbww-optimizer/guide5-td-c-core-20260812-055130`
+- checkpoint：`541c323b0d4e0ef4dd35859c5bea83ae09b90539`
+- 结果：`0/8` accepted；`1/8` physical CR3 returned；quality 未生成。
+- primary cause：TD-C 新计划声明 0 ambient，但 `expected_native_raw_ambient_policy()`
+  仍只为 TD-B formal 返回 `unsubtracted_no_ambient`，导致共享 RAW owner 在首张
+  CR3 返回后以 `non-ambient capture requires the preceding ambient capture` 拒绝。
+- cleanup：Python pass、shell pass、final zero pass。
+- science_delta：none；该 CR3 未进入 feature/capture ledger，不作为科学证据。
+- recovery：原始 CR3、sidecar、physical ledger 保留，但 accepted feature artifact未生成；
+  在失败 root 中补写半条 observation 会使证据所有权含糊，因此不恢复该 capture，
+  不池化，并在修复后使用 fresh root。
+- substantive correction：把 no-ambient RAW policy 精确扩展到 TD-B/TD-C P7 v2
+  formal owners；其他 owner 仍 fail closed，并新增真实 behavior regression。

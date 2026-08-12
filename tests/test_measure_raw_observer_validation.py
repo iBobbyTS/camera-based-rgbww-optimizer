@@ -779,7 +779,7 @@ Focal Length: 50mm
         )
         self.assertNotIn("do-not-record-this-token", json.dumps(provenance, sort_keys=True))
 
-    def test_native_raw_no_ambient_policy_is_restricted_to_exact_td_b_formal_owner(self):
+    def test_native_raw_no_ambient_policy_is_restricted_to_exact_p7_formal_owners(self):
         F0A_TEMP_ROOT.mkdir(parents=True, exist_ok=True)
         with tempfile.TemporaryDirectory(dir=F0A_TEMP_ROOT) as tempdir:
             root = Path(tempdir)
@@ -884,7 +884,7 @@ Focal Length: 50mm
 
             for owner in (None, {"experiment_id": "other"}):
                 with self.subTest(owner=owner), self.assertRaisesRegex(
-                    PermissionError, "exact TD-B v2 formal"
+                    PermissionError, "exact P7 v2 formal"
                 ):
                     measure_raw_observer_validation.build_native_raw_capture_step_fn(
                         camera_dir=root / "invalid-camera",
@@ -898,6 +898,36 @@ Focal Length: 50mm
                         ),
                         ambient_policy_owner=owner,
                     )
+            td_c_adapter = measure_raw_observer_validation.build_native_raw_capture_step_fn(
+                camera_dir=root / "td-c-camera",
+                measurements_dir=root / "td-c-measurements",
+                scratch_dir=root / "td-c-scratch",
+                location_config_path=root / "locations.json",
+                observer_config_path=root / "observer.json",
+                capture_fn=capture,
+                raw_analyze_fn=analyze,
+                raw_report_writer=write_report,
+                recorded_exposure_fn=exposure,
+                frozen_shutter_by_cache={"ray-h120-s100": "1/5000"},
+                ambient_policy=(
+                    measure_raw_observer_validation
+                    .AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT
+                ),
+                ambient_policy_owner=(
+                    measure_raw_observer_validation
+                    .TD_C_FORMAL_AMBIENT_POLICY_OWNER
+                ),
+                physical_return_observer=lambda _returned, _step, _count: {
+                    "physical_index": 1
+                },
+            )
+            td_c_result = td_c_adapter({**step, "capture_id": "td-c-formal"})
+            td_c_report = json.loads(
+                Path(td_c_result["patch_statistics"]).read_text(encoding="utf-8")
+            )
+            self.assertFalse(
+                td_c_report["analysis_context"]["ambient_subtraction_applied"]
+            )
             with self.assertRaisesRegex(ValueError, "forbids ambient"):
                 adapter({
                     **step,

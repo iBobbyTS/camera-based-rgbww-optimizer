@@ -1121,6 +1121,10 @@ class DirectR6Tests(unittest.TestCase):
         self.assertEqual(td_c["execution_authorization"]["schema"], "direct_td_c_core_authority_v1")
         self.assertEqual(strip["timing_resolution"], "direct_operational_600")
         self.assertEqual(td_c["timing_resolution"], "guide5_reset600_D120_A120")
+        self.assertEqual(
+            td_c["native_raw_ambient_policy"],
+            "unsubtracted_no_ambient",
+        )
         self.assertEqual(td_c["budgets"], {
             "formal_cap": 8, "ambient_cap": 0, "physical_cr3_cap": 8,
         })
