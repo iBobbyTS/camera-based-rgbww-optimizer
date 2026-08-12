@@ -127,6 +127,25 @@ This project is used only for the Human-owned and Human-maintained local photogr
     protocol, measurement-science, or scientific branch decision is required. Three
     materially unchanged attempts whose blocker is scientific, or an indeterminate
     scientific cause, are classified here.
+- Before ending at `ADVISOR_GATE_REQUIRED`, create a self-contained Advisor handoff
+  Markdown file and a ZIP archive beside it. The archive must contain the relevant
+  derived/calculated experiment data, small evidence artifacts, exact source and test
+  files needed to understand the implementation, applicable GUIDE/RESEARCH/PLAN or
+  other decision documents, and a manifest with source paths, byte counts, and
+  SHA-256 values. Include analysis, feature/statistical outputs, experiment specs,
+  run/quality/command/cleanup/wrapper summaries, and relevant logs when they bear on
+  the scientific question.
+- An Advisor handoff ZIP must not contain raw or bulk experimental payloads such as
+  CR3/RAW/DNG, NPY/NPZ, TIFF/JPEG/PNG derivatives, decoded camera arrays, firmware,
+  build output, caches, credentials, or another generated archive. Reference excluded
+  payloads by retained absolute path, byte count, and SHA-256 when identity is needed.
+  Do not omit derived numerical data merely because it came from an experiment.
+- Validate the Advisor ZIP with an archive integrity check, record its SHA-256, and
+  keep the detailed handoff Markdown next to it. The final response must explain the
+  concrete scientific problem or ambiguity, summarize the evidence and current
+  conclusion, state why safe repository-local work cannot answer it, ask the exact
+  question the Advisor must answer, and provide the handoff Markdown/ZIP paths plus
+  the ZIP hash. Merely reporting `ADVISOR_GATE_REQUIRED` is insufficient.
 - Every unresolved stop must name exactly one of those gates, state the concrete
   question or action needed to clear it, and explain why continued safe work cannot
   answer it. Planner review, Supervisor review, architecture-boundary language,
