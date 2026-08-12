@@ -118,7 +118,7 @@ This project is used only for the Human-owned and Human-maintained local photogr
   attempts and why they were materially unchanged or why the cause is indeterminate.
 - An unfinished GUIDE route may stop only at one of two explicit unresolved gates:
   - `HUMAN_GATE_REQUIRED`: Human authorization for a high-risk operation,
-    physical intervention, or an explicit goal/policy choice that cannot be
+    physical intervention, or an explicit Human-owned policy choice that cannot be
     resolved from the active GUIDE/PLAN is required. A GUIDE-only request for
     extra approval of bounded light/camera work is not this gate. Three materially
     unchanged non-scientific attempts or an indeterminate non-scientific cause
@@ -134,11 +134,10 @@ This project is used only for the Human-owned and Human-maintained local photogr
   not additional stop gates.
 - A `HUMAN_GATE_REQUIRED` or `ADVISOR_GATE_REQUIRED` stop depends on an external
   decision and must not configure an automation merely to poll or self-wake for that
-  decision. Record the exact unresolved question, mark the Goal `blocked`, and wait
-  for the Human or Advisor response. The incoming response, not an automation, is
-  what resumes the route.
+  decision. Record the exact unresolved question and wait for the Human or Advisor
+  response. The incoming response, not an automation, is what resumes the route.
 
-### Long-running Goal handoff
+### Long-running task handoff
 
 - This section applies only to work that is expected to complete by itself, such as
   experiment execution, cooling, scheduled waiting, or long computation. It does
@@ -146,74 +145,51 @@ This project is used only for the Human-owned and Human-maintained local photogr
 - Any such self-completing task expected to take more than 10 minutes must run in a
   visible Terminal (for device or other long-running external work) or its
   equivalent persistent process.
-  Liveness is counted across Goal turns, not by polling repeatedly in one turn.
-  In each of the three Goal turns, wait 60 seconds before performing exactly one
-  independent liveness check. If the process is alive and the task is incomplete,
-  report that single result and end the turn; the next Goal continuation waits 60
-  seconds and performs the next liveness check. Three
-  consecutive Goal turns that each confirm the same process is alive are the
-  project's three liveness observations and simultaneously satisfy the system's
-  three-consecutive-turn blocked evidence. Do not perform an additional audit
-  after those three checks. After the third check, estimate the remaining
-  completion time, configure a thread automation that can wake this thread, and
-  mark the Goal `blocked` immediately after the automation is created successfully.
-  A live process is not a reason to keep the Goal `active` or to poll again in the
-  same turn.
-- If the current thread has no Goal, there are no Goal turns or Goal state to use
-  for the cross-turn handoff above. In that case, perform all three independent
-  liveness checks in the current turn, with 60 seconds between consecutive checks.
+  Perform three independent liveness checks in the current turn, with 60 seconds
+  between consecutive checks. Do not end the response after only the first or
+  second successful check.
   After the third successful check, estimate the remaining completion time and
-  configure the thread automation. Do not create a Goal merely to represent the
-  wait, and do not claim to have set a nonexistent Goal to `blocked`; end the turn
+  configure a thread automation that can wake this thread. End the response only
   after the automation has been created successfully.
-- This `blocked` state is a temporary scheduling handoff, not a scientific or
+- This automation handoff is a temporary scheduling state, not a scientific or
   authorization stop. It does not replace `HUMAN_GATE_REQUIRED` or
   `ADVISOR_GATE_REQUIRED`, and it must not be used merely to hide an unresolved
-  implementation failure. If the product Goal API imposes an additional system
-  condition before changing a Goal to `blocked`, follow that system condition.
+  implementation failure.
 - When the thread is woken by the automation, or when the user sends a
   task-related message, first inspect whether the long-running task has completed.
-  If it is incomplete, report only the current progress and end that response; keep
-  the Goal in its scheduling handoff state. Do not infer or attempt an automatic
-  Goal status transition. In either case, continue according to the Goal's
-  `objective`: if the task is complete, proceed with the next PLAN step; if it is
-  incomplete, preserve the handoff and wait for the next wake-up.
+  If it is incomplete, report only the current progress, verify that the automation
+  still covers the task, and end that response. If it is complete, proceed with the
+  next PLAN step according to the current task objective.
 - For this handoff, `complete` means that the monitored process has terminated,
   whether it succeeded, failed, timed out, or was interrupted. A failed terminal
   state is not an incomplete long-running task. Delete the automation that no longer
-  has a live process to monitor, then apply the failure-triage rules above without
-  inferring a Goal status transition.
+  has a live process to monitor, then apply the failure-triage rules above.
 - If the terminated task is an `ENGINEERING_OR_HARNESS_FAILURE` with an identified
   cause and no Human or Advisor gate, continue in the same resumed turn: make the
   smallest direct fix, add or update the meaningful behavior test, validate it,
   create the focused Git commit, and resume the recoverable experiment attempt (or
   start a fresh one only when the prior result cannot be safely recovered).
-  Do not stop after merely reporting the code error or ask the Human to reactivate
-  the Goal. When the resumed or fresh attempt becomes a self-completing task expected
-  to exceed 10 minutes, perform the three liveness checks, create its replacement
-  automation, and only then return the Goal to `blocked` and end the response.
+  Do not stop after merely reporting the code error. When the resumed or fresh
+  attempt becomes a self-completing task expected to exceed 10 minutes, perform the
+  three liveness checks, create its replacement automation, and only then end the
+  response.
 - After a monitored failure, ending the resumed turn without continuing the route is
   permitted only when exactly one unresolved `HUMAN_GATE_REQUIRED` or
   `ADVISOR_GATE_REQUIRED` has been established, or after a newly started live task
   has been handed off through the long-running procedure above.
-- When the user manually changes the Goal to `active`, first inspect completion. If
-  incomplete, report progress, verify that the existing automation still covers the
-  task (recreate it if necessary), and change the Goal back to `blocked` only after
-  the self-wakeup path is confirmed. If complete, keep it `active` and continue the
-  subsequent PLAN step.
 - If a user message is unrelated to the active task, answer that message directly
   without inspecting or changing the task state.
 - Cooling, zero-state restoration, scheduled waiting, and automation handoff are
   therefore temporary execution states; they are not unresolved scientific gates,
   but long-running work must use the handoff procedure above.
 
-### No active Goal and turn termination
+### Turn termination
 
-- If the current thread has no active Goal, the Orchestrator must not end the
-  conversation merely because there is no automatic next Goal turn. It must not
-  infer that the current task is complete from the absence of Goal state.
-- Before ending a response in this condition, exactly one of the following must
-  be established:
+- The Orchestrator must not end the conversation merely because there is no automatic
+  continuation. It must not infer that the current task is complete from the absence
+  of new output at the current instant.
+- Before ending a response while the current task remains unfinished, explicitly
+  confirm that the response ends in exactly one of these states:
   1. `HUMAN_GATE_REQUIRED`: a Human decision or high-risk authorization is
      explicitly required;
   2. `ADVISOR_GATE_REQUIRED`: an unresolved scientific decision explicitly
@@ -221,11 +197,11 @@ This project is used only for the Human-owned and Human-maintained local photogr
   3. a self-completing task is still running, its required liveness checks and
      remaining-time estimate are recorded, and the thread automation was created
      successfully;
-  4. the Goal objective is fully satisfied by current evidence and the completion
-     outcome is explicitly recorded.
+- If the current task objective is fully satisfied by current evidence, record the
+  completion outcome explicitly before ending the response.
 - If none of these conditions is true, continue working toward the current task
-  objective. Do not end the conversation solely because there is no active Goal,
-  no automatic continuation, or no new output at the current instant.
+  objective. Do not end the conversation solely because there is no automatic
+  continuation or no new output at the current instant.
 - An unfinished self-completing task without a successfully configured automation
   is not an acceptable end state; repair the wake-up path or continue safe work.
 
