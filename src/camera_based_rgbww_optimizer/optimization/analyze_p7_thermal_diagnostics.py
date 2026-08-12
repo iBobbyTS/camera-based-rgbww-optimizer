@@ -527,9 +527,28 @@ def _validate_commands_and_gates(
     groups = _execution_groups(str(plan["experiment_id"]), plan["captures"])
     command_steps = [group[0] for group in groups if group[0]["capture_role"] != "ambient"]
     commands = _load_jsonl(root / "commands.jsonl")
-    if len(commands) != len(command_steps):
+    td_c_warm = plan.get("execution_authorization", {}).get("schema") == "direct_td_c_core_authority_v1"
+    expected_command_count = len(command_steps) * (2 if td_c_warm else 1)
+    if len(commands) != expected_command_count:
         raise ValueError("direct command ledger count differs from protocol transitions")
-    for row, step in zip(commands, command_steps, strict=True):
+    if td_c_warm:
+        command_pairs = [commands[index:index + 2] for index in range(0, len(commands), 2)]
+        for pair, step in zip(command_pairs, command_steps, strict=True):
+            precondition = step.get("warm_precondition")
+            if (
+                not isinstance(precondition, Mapping)
+                or pair[0].get("event") != "warm_precondition_command_readback_verified"
+                or pair[0].get("source_id") != step.get("source_id")
+                or pair[0].get("state_id") != "D"
+                or pair[0].get("exact_command_hash") != precondition.get("exact_command_hash")
+                or pair[0].get("dwell_s") != 120
+                or pair[0].get("capture") is not False
+            ):
+                raise ValueError("TD-C warm precondition command ledger differs from D120")
+        capture_commands = [pair[1] for pair in command_pairs]
+    else:
+        capture_commands = commands
+    for row, step in zip(capture_commands, command_steps, strict=True):
         if (
             row.get("event") != "command_readback_verified"
             or row.get("source_id") != step.get("source_id")
@@ -554,6 +573,8 @@ def _validate_commands_and_gates(
         if first["capture_role"] == "ambient":
             expected_gates.append((str(first["isolation_gate_before"]), "both_off"))
         else:
+            if td_c_warm:
+                expected_gates.append((str(first["isolation_gate_before"]), "both_off"))
             gate_after = group[-1].get("isolation_gate_after")
             if gate_after:
                 expected_gates.append((
@@ -1375,7 +1396,8 @@ def analyze_td_c(
         order_vectors[str(sources["order"])].append(difference)
     compatibility_pass = all(thermal._all_pairs(values, compatibility) for values in difference_vectors.values())
     stable_center_pass = all(
-        thermal._all_pairs(ray_centers[state], compatibility) and thermal._all_pairs(strip_centers[state], compatibility)
+        thermal._all_pairs(ray_centers[state], compatibility)
+        and thermal._all_pairs(strip_centers[state], compatibility)
         for state in difference_vectors
     )
     ray_first = order_vectors.get("ray_first", [])
@@ -1383,14 +1405,13 @@ def analyze_td_c(
     order_pass = bool(ray_first and strip_first) and compatibility(
         np.mean(np.vstack(ray_first), axis=0), np.mean(np.vstack(strip_first), axis=0),
     )
-    p6 = dict(p6_compare_fn(captures)) if p6_compare_fn is not None else {"status": "not_evaluated"}
-    ambient = analyze_ambient_trend(ambients)
+    p6 = {"status": "locked_not_part_of_guide5_td_c_core"}
+    ambient = {"status": "not_required", "capture_count": len(ambients)}
     gates = {
         "compatibility": "pass" if compatibility_pass else "fail",
         "order_effect": "pass" if order_pass else "fail",
         "stable_center": "pass" if stable_center_pass else "fail",
-        "p6_interpretability": "pass" if p6.get("status") == "pass" else "fail",
-        "ambient_trend": ambient["status"],
+        "warm_A_cross_source_anchor": "pass" if stable_center_pass else "fail",
     }
     failures = [name for name, decision in gates.items() if decision != "pass"]
     return {
@@ -1402,6 +1423,8 @@ def analyze_td_c(
         "current_stable_center_vs_p6": p6,
         "ambient_trend": ambient,
         "comparison_design": "order_balanced_paired_comparison_not_classic_abba",
+        "warm_precondition": "reset600_then_D120_then_A120",
+        "td_c_expansion_locked": True,
     }
 
 
@@ -2467,6 +2490,320 @@ def analyze_ray_fast_long_bridge(
     }
 
 
+def _bridge_session_vectors(
+    experiment_root: str | Path, feature_ids: Sequence[str],
+) -> dict[tuple[str, str], dict[str, np.ndarray]]:
+    root = Path(experiment_root).resolve()
+    ids = tuple(feature_ids)
+    sessions: dict[tuple[str, str], dict[str, np.ndarray]] = {}
+    for mini_session_index in range(1, 5):
+        session_root = root / f"mini-session-{mini_session_index}"
+        plan = _load_json(session_root / "experiment-spec.json")
+        rows = _load_jsonl(session_root / "captures.jsonl")
+        by_role = {
+            str(row["plan_step"]["role"]): _unit(
+                row["capture"]["feature_values"], ids,
+            )
+            for row in rows
+        }
+        sessions[(str(plan["bridge_state"]), str(plan["bridge_protocol"]))] = {
+            "A0": by_role["initial_anchor"],
+            "Q": by_role["bridge_state"],
+            "A_return": by_role["return_anchor"],
+        }
+    return sessions
+
+
+def analyze_ray_fast_long_bridge_v2(
+    experiment_root: str | Path,
+    *,
+    feature_ids: Sequence[str],
+    legacy_analysis_artifact: str | Path,
+) -> dict[str, Any]:
+    """Apply the Advisor-approved local-anchor Q contrast to immutable bridge data."""
+    root = Path(experiment_root).resolve()
+    ids = tuple(feature_ids)
+    canonical_v1 = analyze_ray_fast_long_bridge(root, feature_ids=ids)
+    legacy_path = Path(legacy_analysis_artifact).resolve()
+    legacy = _load_json(legacy_path)
+    if (
+        legacy.get("schema") != "guide5_ray_fast_long_bridge_analysis_v1"
+        or legacy.get("classification") != canonical_v1["classification"]
+        or legacy.get("capture_count") != 12
+    ):
+        raise ValueError("bridge v2 requires the matching immutable v1 artifact")
+    sessions = _bridge_session_vectors(root, ids)
+    local_differences: dict[str, np.ndarray] = {}
+    a0_differences: dict[str, np.ndarray] = {}
+    state_results: dict[str, Any] = {}
+    for state in ("B", "C"):
+        fast = sessions[(state, "FAST")]
+        long = sessions[(state, "LONG")]
+        local_fast = fast["Q"] - (fast["A0"] + fast["A_return"]) / 2.0
+        local_long = long["Q"] - (long["A0"] + long["A_return"]) / 2.0
+        local_difference = local_long - local_fast
+        a0_difference = long["A0"] - fast["A0"]
+        local_differences[state] = local_difference
+        a0_differences[state] = a0_difference
+        a_variance = _same_state_variance(source="ray", state="A")
+        q_variance = _same_state_variance(source="ray", state=state)
+        state_results[state] = {
+            "A0_protocol_difference": _guarded_zero_diagnostic(
+                a0_difference,
+                2.0 * a_variance,
+                center=(long["A0"] + fast["A0"]) / 2.0,
+            ),
+            "Q_local_anchor_protocol_difference": _guarded_zero_diagnostic(
+                local_difference,
+                2.0 * q_variance + a_variance,
+                center=np.mean(np.vstack(tuple(fast.values()) + tuple(long.values())), axis=0),
+            ),
+            "A_reentry_displacement_protocol_difference": canonical_v1[
+                "states"
+            ][state]["matched_pair_protocol_difference"],
+        }
+    state_contrast = _guarded_zero_diagnostic(
+        local_differences["B"] - local_differences["C"],
+        2.0 * _same_state_variance(source="ray", state="B")
+        + 2.0 * _same_state_variance(source="ray", state="C")
+        + 2.0 * _same_state_variance(source="ray", state="A"),
+        center=np.mean(np.vstack(list(local_differences.values())), axis=0),
+    )
+    expected = (
+        state_results["B"]["Q_local_anchor_protocol_difference"]["decision"]
+        == "compatible_with_zero"
+        and state_results["C"]["Q_local_anchor_protocol_difference"]["decision"]
+        == "detected"
+        and state_contrast["decision"] == "detected"
+    )
+    return {
+        "schema": "guide5_ray_fast_long_bridge_analysis_v2",
+        "status": "accepted_advisor_refined_holdout" if expected else "advisor_recheck_required",
+        "experiment_id": thermal.RAY_FAST_LONG_BRIDGE_EXPERIMENT_ID,
+        "parent_class": "state_dependent_protocol_bias_detected",
+        "classification": (
+            "state_dependent_Q_center_protocol_bias_detected_on_B_C_holdout"
+            if expected else "local_anchor_detection_pattern_mismatch"
+        ),
+        "legacy_analysis_artifact": {
+            "path": str(legacy_path), "sha256": _sha256(legacy_path),
+            "immutable": True,
+        },
+        "capture_count": 12,
+        "states": state_results,
+        "state_contrast_of_Q_local_anchor_protocol_difference": state_contrast,
+        "measurement_contract": {
+            **canonical_v1["measurement_contract"],
+            "fast_long_pooling": False,
+            "common_fast_to_long_transfer": False,
+            "extrapolation_beyond_B_C": False,
+        },
+        "locks": {
+            "combined_td_b_offline": not expected,
+            "td_c": True,
+            "strip_solver": True,
+            "sentinel_and_later": True,
+        },
+    }
+
+
+def _history_local_coordinates(
+    experiment_root: str | Path, *, source: str, feature_ids: Sequence[str],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    root = Path(experiment_root).resolve()
+    ids = tuple(feature_ids)
+    builder = (
+        thermal.build_ray_history_session_spec
+        if source == "ray" else thermal.build_strip_history_session_spec
+    )
+    observations: list[dict[str, Any]] = []
+    evidence: list[dict[str, Any]] = []
+    for session_index in (1, 2, 3):
+        session_root = root / f"session-{session_index}"
+        plan = _load_json(session_root / "experiment-spec.json")
+        expected = builder(
+            session_index, device_control_enabled=True,
+            session_start_condition=plan.get("session_start_condition"),
+        )
+        if plan != expected:
+            raise ValueError(f"combined TD-B {source} session differs from exact FAST design")
+        quality = _load_json(session_root / "quality.json")
+        if quality.get("status") != "pass" or quality.get("capture_count") != 7:
+            raise ValueError(f"combined TD-B {source} session quality did not pass")
+        rows = _load_jsonl(session_root / "captures.jsonl")
+        by_label = {
+            str(row["plan_step"]["anchor_label"]): _unit(
+                row["capture"]["feature_values"], ids,
+            )
+            for row in rows
+        }
+        for position, state in enumerate(expected["session_order"], start=1):
+            observations.append({
+                "session": session_index,
+                "position": position,
+                "state": state,
+                "coordinate": by_label[state] - by_label[f"A_after_{state}"],
+            })
+        evidence.append({
+            "session": session_index,
+            "root": str(session_root),
+            "order": expected["session_order"],
+            "quality_sha256": _sha256(session_root / "quality.json"),
+            "captures_sha256": _sha256(session_root / "captures.jsonl"),
+        })
+    return observations, evidence
+
+
+def analyze_combined_fast_history_coordinate(
+    ray_root: str | Path,
+    strip_root: str | Path,
+    *,
+    feature_ids: Sequence[str],
+    ray_history_analysis_artifact: str | Path,
+    ray_analysis_artifact: str | Path,
+    strip_analysis_artifact: str | Path,
+) -> dict[str, Any]:
+    """Compare matched FAST Ray/strip local coordinates without pooling centers."""
+    ids = tuple(feature_ids)
+    if ids != tuple(_feature_ids_from_artifact(thermal.POLICY_PATH)):
+        raise ValueError("combined TD-B requires the frozen 58-feature identity")
+    ray_history_analysis_path = Path(ray_history_analysis_artifact).resolve()
+    ray_analysis_path = Path(ray_analysis_artifact).resolve()
+    strip_analysis_path = Path(strip_analysis_artifact).resolve()
+    ray_history_analysis = _load_json(ray_history_analysis_path)
+    ray_analysis = _load_json(ray_analysis_path)
+    strip_analysis = _load_json(strip_analysis_path)
+    if (
+        ray_history_analysis.get("schema")
+        != "guide4_ray_history_order_balanced_analysis_v2"
+        or ray_history_analysis.get("classification") != "common_warm_reentry_shift"
+        or ray_analysis.get("schema") != "guide5_ray_fast_long_bridge_analysis_v2"
+        or ray_analysis.get("status") != "accepted_advisor_refined_holdout"
+        or strip_analysis.get("schema") != "guide5_strip_history_order_balanced_analysis_v3"
+        or strip_analysis.get("classification")
+        != "common_warm_reentry_shift_with_session_block_heterogeneity"
+    ):
+        raise ValueError("combined TD-B requires accepted bridge-v2 and strip-v3 evidence")
+    ray, ray_evidence = _history_local_coordinates(
+        ray_root, source="ray", feature_ids=ids,
+    )
+    strip, strip_evidence = _history_local_coordinates(
+        strip_root, source="strip", feature_ids=ids,
+    )
+    identities = [(row["session"], row["position"], row["state"]) for row in ray]
+    if identities != [(row["session"], row["position"], row["state"]) for row in strip]:
+        raise ValueError("combined TD-B Ray/strip Latin-square cell identities differ")
+    response = np.vstack([
+        strip_row["coordinate"] - ray_row["coordinate"]
+        for ray_row, strip_row in zip(ray, strip, strict=True)
+    ])
+    design = np.asarray([
+        [
+            1.0, float(row["session"] == 2), float(row["session"] == 3),
+            float(row["position"] == 2), float(row["position"] == 3),
+            float(row["state"] == "B"), float(row["state"] == "C"),
+        ]
+        for row in ray
+    ])
+    variances = np.vstack([
+        _same_state_variance(source="strip", state=row["state"])
+        + _same_state_variance(source="strip", state="A")
+        + _same_state_variance(source="ray", state=row["state"])
+        + _same_state_variance(source="ray", state="A")
+        for row in ray
+    ])
+    coefficients = np.empty((7, len(ids)))
+    coefficient_variances = np.empty((7, 7, len(ids)))
+    fitted = np.empty_like(response)
+    for feature_index in range(len(ids)):
+        weights = np.diag(1.0 / variances[:, feature_index])
+        covariance = np.linalg.inv(design.T @ weights @ design)
+        beta = covariance @ design.T @ weights @ response[:, feature_index]
+        coefficients[:, feature_index] = beta
+        coefficient_variances[:, :, feature_index] = covariance
+        fitted[:, feature_index] = design @ beta
+    center = np.mean(np.vstack([
+        row["coordinate"] for row in ray + strip
+    ]), axis=0)
+
+    def model_contrast(name: str, vector: Sequence[float]) -> dict[str, Any]:
+        contrast_row = np.asarray(vector, dtype=float)
+        effect = contrast_row @ coefficients
+        variance = np.asarray([
+            contrast_row @ coefficient_variances[:, :, index] @ contrast_row
+            for index in range(len(ids))
+        ])
+        return {"name": name, **_guarded_zero_diagnostic(effect, variance, center=center)}
+
+    session = {
+        "session2_minus_session1": model_contrast("session2_minus_session1", (0, 1, 0, 0, 0, 0, 0)),
+        "session3_minus_session1": model_contrast("session3_minus_session1", (0, 0, 1, 0, 0, 0, 0)),
+        "session3_minus_session2": model_contrast("session3_minus_session2", (0, -1, 1, 0, 0, 0, 0)),
+    }
+    position = {
+        "position2_minus_position1": model_contrast("position2_minus_position1", (0, 0, 0, 1, 0, 0, 0)),
+        "position3_minus_position1": model_contrast("position3_minus_position1", (0, 0, 0, 0, 1, 0, 0)),
+        "position3_minus_position2": model_contrast("position3_minus_position2", (0, 0, 0, -1, 1, 0, 0)),
+    }
+    state = {
+        "B_minus_D": model_contrast("B_minus_D", (0, 0, 0, 0, 0, 1, 0)),
+        "C_minus_D": model_contrast("C_minus_D", (0, 0, 0, 0, 0, 0, 1)),
+        "C_minus_B": model_contrast("C_minus_B", (0, 0, 0, 0, 0, -1, 1)),
+    }
+    residuals = []
+    for row_index, row in enumerate(ray):
+        residuals.append({
+            "session": row["session"], "position": row["position"], "state": row["state"],
+            **_guarded_zero_diagnostic(
+                response[row_index] - fitted[row_index], variances[row_index], center=center,
+            ),
+        })
+    gate_pass = all(
+        item["decision"] == "compatible_with_zero"
+        for item in [*session.values(), *position.values(), *residuals]
+    )
+    return {
+        "schema": "p7_combined_fast_history_coordinate_v1",
+        "experiment_id": "combined_td_b",
+        "status": "canonical_pass" if gate_pass else "canonical_scientific_fail",
+        "classification": (
+            "fast_local_anchor_coordinate_compatible_for_paired_source_comparison"
+            if gate_pass else "fast_local_anchor_coordinate_block_or_residual_incompatible"
+        ),
+        "routine_envelope": "fast_op120_reset600_v1",
+        "observation_count": 9,
+        "source_capture_count": 42,
+        "long_input_count": 0,
+        "coordinate": "d=(Q_strip-A_after_Q_strip)-(Q_ray-A_after_Q_ray)",
+        "absolute_cross_source_A_anchor": "not_yet_established",
+        "evidence": {
+            "ray_sessions": ray_evidence, "strip_sessions": strip_evidence,
+            "ray_history_analysis": {"path": str(ray_history_analysis_path), "sha256": _sha256(ray_history_analysis_path)},
+            "ray_analysis": {"path": str(ray_analysis_path), "sha256": _sha256(ray_analysis_path)},
+            "strip_analysis": {"path": str(strip_analysis_path), "sha256": _sha256(strip_analysis_path)},
+        },
+        "model": {
+            "formula": "d=session_block+position_block+state+residual",
+            "session_contrasts": session,
+            "position_contrasts": position,
+            "state_terms_not_gated_at_zero": state,
+            "additive_residuals": residuals,
+        },
+        "gate": {
+            "evidence_identity": "pass", "no_pooling": "pass",
+            "session": "pass" if all(v["decision"] == "compatible_with_zero" for v in session.values()) else "fail",
+            "position": "pass" if all(v["decision"] == "compatible_with_zero" for v in position.values()) else "fail",
+            "additive_residual": "pass" if all(v["decision"] == "compatible_with_zero" for v in residuals) else "fail",
+        },
+        "locks": {
+            "td_c_core": not gate_pass,
+            "td_c_expansion": True,
+            "strip_solver": True,
+            "sentinel_and_later": True,
+        },
+    }
+
+
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Analyze P7 thermal diagnostics or derive P7-R1 epoch-v2 evidence.")
     parser.add_argument("run_dir", type=Path)
@@ -2487,6 +2824,15 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--legacy-history-analysis-artifact", type=Path)
     parser.add_argument("--ray-fast-long-bridge-analysis", action="store_true")
     parser.add_argument("--ray-fast-long-bridge-analysis-output", type=Path)
+    parser.add_argument("--ray-fast-long-bridge-analysis-v2", action="store_true")
+    parser.add_argument("--legacy-bridge-analysis-artifact", type=Path)
+    parser.add_argument("--combined-fast-history-analysis", action="store_true")
+    parser.add_argument("--ray-history-root", type=Path)
+    parser.add_argument("--strip-history-root", type=Path)
+    parser.add_argument("--ray-history-analysis-artifact", type=Path)
+    parser.add_argument("--bridge-v2-analysis-artifact", type=Path)
+    parser.add_argument("--strip-v3-analysis-artifact", type=Path)
+    parser.add_argument("--combined-fast-history-analysis-output", type=Path)
     return parser.parse_args(argv)
 
 
@@ -2499,6 +2845,41 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.feature_ids is None:
         raise ValueError("--feature-ids is required for thermal run analysis")
     feature_ids = _feature_ids_from_artifact(args.feature_ids)
+    if args.combined_fast_history_analysis:
+        required = (
+            args.ray_history_root, args.strip_history_root,
+            args.ray_history_analysis_artifact,
+            args.bridge_v2_analysis_artifact, args.strip_v3_analysis_artifact,
+            args.combined_fast_history_analysis_output,
+        )
+        if any(value is None for value in required):
+            raise ValueError("combined FAST history analysis requires both roots, both analyses, and output")
+        report = analyze_combined_fast_history_coordinate(
+            args.ray_history_root, args.strip_history_root,
+            feature_ids=feature_ids,
+            ray_history_analysis_artifact=args.ray_history_analysis_artifact,
+            ray_analysis_artifact=args.bridge_v2_analysis_artifact,
+            strip_analysis_artifact=args.strip_v3_analysis_artifact,
+        )
+        _write_text_atomic(
+            args.combined_fast_history_analysis_output.resolve(),
+            json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n",
+        )
+        print(args.combined_fast_history_analysis_output.resolve())
+        return 0
+    if args.ray_fast_long_bridge_analysis_v2:
+        if args.legacy_bridge_analysis_artifact is None or args.ray_fast_long_bridge_analysis_output is None:
+            raise ValueError("bridge v2 requires immutable v1 artifact and output")
+        report = analyze_ray_fast_long_bridge_v2(
+            args.run_dir, feature_ids=feature_ids,
+            legacy_analysis_artifact=args.legacy_bridge_analysis_artifact,
+        )
+        _write_text_atomic(
+            args.ray_fast_long_bridge_analysis_output.resolve(),
+            json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n",
+        )
+        print(args.ray_fast_long_bridge_analysis_output.resolve())
+        return 0
     if args.ray_fast_long_bridge_analysis:
         output = args.ray_fast_long_bridge_analysis_output
         if output is None:

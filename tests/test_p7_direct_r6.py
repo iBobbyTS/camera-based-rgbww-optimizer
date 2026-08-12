@@ -487,6 +487,92 @@ class DirectR6Tests(unittest.TestCase):
                 json.loads(output.read_text())["classification"],
                 "state_dependent_protocol_bias_detected",
             )
+            output.write_text(json.dumps(report))
+            refined = analyze.analyze_ray_fast_long_bridge_v2(
+                root,
+                feature_ids=feature_ids,
+                legacy_analysis_artifact=output,
+            )
+            self.assertEqual(
+                refined["schema"], "guide5_ray_fast_long_bridge_analysis_v2",
+            )
+            self.assertIn(
+                "Q_local_anchor_protocol_difference", refined["states"]["C"],
+            )
+            self.assertIn(
+                "A_reentry_displacement_protocol_difference",
+                refined["states"]["B"],
+            )
+            self.assertFalse(refined["measurement_contract"]["fast_long_pooling"])
+
+    def test_combined_fast_history_uses_local_returns_and_does_not_gate_state_terms(self):
+        feature_ids = tuple(
+            json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"]
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            ray_root = root / "ray-history"
+            strip_root = root / "strip-history"
+            for source, history_root, builder in (
+                ("ray", ray_root, thermal.build_ray_history_session_spec),
+                ("strip", strip_root, thermal.build_strip_history_session_spec),
+            ):
+                for session_index in (1, 2, 3):
+                    plan = builder(
+                        session_index,
+                        device_control_enabled=True,
+                        session_start_condition=thermal.RAY_HISTORY_SESSION_START_CONDITION,
+                    )
+
+                    def feature_values(step, *, source_name=source):
+                        values = {feature_id: 1.0 for feature_id in feature_ids}
+                        if step["role"] not in {"initial_anchor", "return_anchor"}:
+                            values[feature_ids[0]] = 2.0 if source_name == "ray" else 3.0
+                        return values
+
+                    run = self._execute_fake_protocol(
+                        plan, history_root / f"session-{session_index}",
+                        feature_values_fn=feature_values,
+                    )
+                    (run / "all-off-shell.json").write_text(json.dumps([{"ok": True}]))
+                    (run / "all-off-shell.exit-status.txt").write_text("0\n")
+                    (run / "wrapper-result.json").write_text(json.dumps({
+                        "status": "complete", "child_exit_code": 0,
+                        "shell_cleanup_exit_code": 0, "wrapper_exit_code": 0,
+                        "signal": None,
+                    }))
+            bridge_v2 = root / "bridge-v2.json"
+            bridge_v2.write_text(json.dumps({
+                "schema": "guide5_ray_fast_long_bridge_analysis_v2",
+                "status": "accepted_advisor_refined_holdout",
+            }))
+            strip_v3 = root / "strip-v3.json"
+            strip_v3.write_text(json.dumps({
+                "schema": "guide5_strip_history_order_balanced_analysis_v3",
+                "classification": "common_warm_reentry_shift_with_session_block_heterogeneity",
+            }))
+            ray_history_analysis = root / "ray-history-v2.json"
+            ray_history_analysis.write_text(json.dumps({
+                "schema": "guide4_ray_history_order_balanced_analysis_v2",
+                "classification": "common_warm_reentry_shift",
+            }))
+            combined = analyze.analyze_combined_fast_history_coordinate(
+                ray_root, strip_root,
+                feature_ids=feature_ids,
+                ray_history_analysis_artifact=ray_history_analysis,
+                ray_analysis_artifact=bridge_v2,
+                strip_analysis_artifact=strip_v3,
+            )
+            self.assertEqual(combined["status"], "canonical_pass")
+            self.assertEqual(combined["experiment_id"], "combined_td_b")
+            self.assertEqual(combined["source_capture_count"], 42)
+            self.assertEqual(combined["long_input_count"], 0)
+            self.assertEqual(combined["gate"]["session"], "pass")
+            self.assertEqual(
+                set(combined["model"]["state_terms_not_gated_at_zero"]),
+                {"B_minus_D", "C_minus_D", "C_minus_B"},
+            )
+            self.assertFalse(combined["locks"]["td_c_core"])
 
     def test_direct_main_uses_injected_runner(self):
         called = {}
@@ -1034,7 +1120,21 @@ class DirectR6Tests(unittest.TestCase):
         self.assertEqual(strip["execution_authorization"]["schema"], "direct_strip_td_b_authority_v1")
         self.assertEqual(td_c["execution_authorization"]["schema"], "direct_td_c_core_authority_v1")
         self.assertEqual(strip["timing_resolution"], "direct_operational_600")
-        self.assertEqual(td_c["timing_resolution"], "direct_operational_600")
+        self.assertEqual(td_c["timing_resolution"], "guide5_reset600_D120_A120")
+        self.assertEqual(td_c["budgets"], {
+            "formal_cap": 8, "ambient_cap": 0, "physical_cr3_cap": 8,
+        })
+        self.assertEqual(td_c["session_orders"], [
+            ["ray", "strip"], ["strip", "ray"],
+            ["ray", "strip"], ["strip", "ray"],
+        ])
+        self.assertTrue(all(
+            step["warm_precondition"]["state_id"] == "D"
+            and step["warm_precondition"]["reset_s"] == 600
+            and step["warm_precondition"]["dwell_s"] == 120
+            and step["requested_elapsed_s"] == 120
+            for step in td_c["captures"]
+        ))
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             invalid = root / "ray-analysis.json"
@@ -1050,6 +1150,26 @@ class DirectR6Tests(unittest.TestCase):
             evidence = measure.validate_scientific_prerequisite(valid, kind="strip-td-b")
             self.assertEqual(evidence["status"], "pass")
             self.assertEqual(len(evidence["sha256"]), 64)
+            combined = root / "combined.json"
+            combined.write_text(json.dumps({
+                "schema": "p7_combined_fast_history_coordinate_v1",
+                "status": "canonical_pass",
+                "classification": "fast_local_anchor_coordinate_compatible_for_paired_source_comparison",
+                "experiment_id": "combined_td_b",
+                "long_input_count": 0,
+                "gate": {
+                    "evidence_identity": "pass", "no_pooling": "pass",
+                    "session": "pass", "position": "pass",
+                    "additive_residual": "pass",
+                },
+                "locks": {"td_c_core": False, "td_c_expansion": True},
+            }))
+            self.assertEqual(
+                measure.validate_scientific_prerequisite(
+                    combined, kind="td-c-core",
+                )["status"],
+                "pass",
+            )
 
     def test_ray_history_sessions_use_real_scheduler_and_classify_no_reproduction(self):
         feature_ids = tuple(
@@ -1330,6 +1450,17 @@ class DirectR6Tests(unittest.TestCase):
                     compatibility_fn=lambda _left, _right: True,
                 )
                 self.assertEqual(report["direct_artifact_validation"], "pass")
+                if name == "td-c":
+                    commands = [
+                        json.loads(line)
+                        for line in (run / "commands.jsonl").read_text().splitlines()
+                    ]
+                    self.assertEqual(
+                        len([row for row in commands if row["event"] == "warm_precondition_command_readback_verified"]),
+                        8,
+                    )
+                    self.assertEqual(report["warm_precondition"], "reset600_then_D120_then_A120")
+                    self.assertTrue(report["td_c_expansion_locked"])
 
 
 if __name__ == "__main__":

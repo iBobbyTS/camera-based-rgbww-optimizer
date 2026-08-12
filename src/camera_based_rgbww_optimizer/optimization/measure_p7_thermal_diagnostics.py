@@ -740,6 +740,30 @@ def execute_plan(
             first = item[0]
             if plan["stage"] == "TD-A":
                 sleep_fn(float(plan["cold_proxy_wait_s"]))
+            warm_precondition = first.get("warm_precondition")
+            if isinstance(warm_precondition, Mapping):
+                record_gate(str(first["isolation_gate_before"]))
+                sleep_fn(float(warm_precondition["reset_s"]))
+                precondition_step = {
+                    **dict(first),
+                    "capture_id": f"precondition-{first['capture_id']}",
+                    "state_id": str(warm_precondition["state_id"]),
+                    "command": dict(warm_precondition["command"]),
+                    "exact_command_hash": str(warm_precondition["exact_command_hash"]),
+                }
+                precondition_applied = dict(apply_command_fn(precondition_step))
+                precondition_readback = dict(readback_fn(precondition_step))
+                _append_jsonl(root / "commands.jsonl", {
+                    "at": _utc_now(), "event": "warm_precondition_command_readback_verified",
+                    "source_id": precondition_step["source_id"],
+                    "state_id": precondition_step["state_id"],
+                    "exact_command_hash": precondition_step["exact_command_hash"],
+                    "dwell_s": warm_precondition["dwell_s"],
+                    "capture": False,
+                    "applied": precondition_applied,
+                    "readback": precondition_readback,
+                })
+                sleep_fn(float(warm_precondition["dwell_s"]))
             applied = dict(apply_command_fn(first))
             readback = dict(readback_fn(first))
             _append_jsonl(root / "commands.jsonl", {
@@ -1157,8 +1181,19 @@ def validate_scientific_prerequisite(path: str | Path, *, kind: str) -> dict[str
         )
     elif kind == "td-c-core":
         valid = (
-            str(value.get("status", "")).endswith("_pass")
-            and value.get("experiment_id") in {thermal.TD_B, "combined_td_b"}
+            value.get("schema") == "p7_combined_fast_history_coordinate_v1"
+            and value.get("status") == "canonical_pass"
+            and value.get("classification")
+            == "fast_local_anchor_coordinate_compatible_for_paired_source_comparison"
+            and value.get("experiment_id") == "combined_td_b"
+            and value.get("long_input_count") == 0
+            and value.get("gate") == {
+                "evidence_identity": "pass", "no_pooling": "pass",
+                "session": "pass", "position": "pass",
+                "additive_residual": "pass",
+            }
+            and value.get("locks", {}).get("td_c_core") is False
+            and value.get("locks", {}).get("td_c_expansion") is True
         )
     elif kind == "ray-fast-long-bridge":
         valid = (

@@ -10,12 +10,12 @@ production/test 输入、runtime 状态机、设备授权或 hidden gate。
 `nonlinear/non-additive` 已由 Advisor 明确拒绝为过强分类，原始
 `analysis.json` 保持不可变。
 
-**当前路线状态：** `RAY_FAST_LONG_BRIDGE_UNLOCKED`
+**当前路线状态：** `TD_C_CORE_CONDITIONALLY_UNLOCKED`
 
-**当前下一步：** 执行已冻结的
-`GUIDE5-RAY-FAST-LONG-BRIDGE-OP120-OP600-RESET600-RESET1800-V1`。strip-only
-3×3 已完成并由 Advisor 归入 S-A2；无需新的 strip acquisition。bridge 必须使用
-独立 root，依据 AGENTS.md 不需要额外 Human authorization。
+**当前下一步：** 执行 GUIDE5 TD-C core：四个 Ray/strip 顺序平衡 session，共 8
+张 warm-A capture。每张正式 capture 使用 `reset600 → D120 → A120 → capture`；
+TD-C expansion、solver sentinel 和 later stages 继续锁定。依据 AGENTS.md，开关灯与
+相机的本地有界实验不需要额外 Human authorization。
 
 ## 1. 不可变科学合同
 
@@ -149,7 +149,7 @@ strip fast-history structure conditional accepted；不冻结 global cross-sessi
 session 作为 blocking factor。完整证据见
 `.agent-work/GUIDE5-STRIP-HISTORY-V3-RESULT.md`。
 
-## 5. C — paired fast-vs-long Ray bridge（已解锁，当前动作）
+## 5. C — paired fast-vs-long Ray bridge（已完成并接受）
 
 与 B 使用独立 root，不并行；不训练 fast target，不改变 covariance。该实验是有界
 Ray/相机采集，不属于 AGENTS.md 定义的高危操作。
@@ -169,13 +169,55 @@ long 数据保持 holdout。结果分为 `thermal_bias_not_detected`、
 `common_protocol_bias_detected`、`state_dependent_protocol_bias_detected` 或
 `validation_inconclusive`。前三类不自动否定 fast envelope，最后一类保持 combined 锁定。
 
-## 6. 后续锁与禁止事项
-
-在 B、C 均完成并向 Advisor 回报前继续锁定：
+Advisor 接受 12/12 acquisition 为 valid holdout。原 v1 保持不可变，新增只读 v2：
 
 ```text
-combined TD-B
-TD-C
+artifact = /Volumes/4T/temp/rgbww-optimizer/guide5-ray-fast-long-bridge-20260810-194802/analysis-v2-fast-long-local-anchor-derived.json
+sha256 = 08f7eaf6f94914e675d56353a9ad8b240215fcda92b3cbfe54ab122564b83511
+classification = state_dependent_Q_center_protocol_bias_detected_on_B_C_holdout
+B local-anchor = compatible
+C local-anchor = detected
+B-vs-C local-anchor = detected
+FAST/LONG pooling = prohibited
+common transfer / covariance inflation / extrapolation beyond B/C = prohibited
+```
+
+## 6. D — combined TD-B FAST local-coordinate（已完成，canonical pass）
+
+```text
+artifact = /Volumes/4T/temp/rgbww-optimizer/guide5-ray-fast-long-bridge-20260810-194802/p7-combined-fast-history-coordinate-v1.json
+sha256 = adc3b59a0bbc1334ca7eb0f89e11a6850dd06b61bafafeccaef9e53791d1537a
+coordinate = (Q_strip-A_after_Q_strip)-(Q_ray-A_after_Q_ray)
+cells = 9 matched FAST cells
+source captures = 42
+LONG inputs = 0
+session / position / additive residual = pass
+evidence identity / no pooling = pass
+classification = fast_local_anchor_coordinate_compatible_for_paired_source_comparison
+```
+
+state terms 被保留为之后 solver 处理的 strip-Ray mismatch，不在零点门禁中。
+
+## 7. E — TD-C core（当前动作）
+
+```text
+sessions = 4
+orders = Ray→strip / strip→Ray / Ray→strip / strip→Ray
+per source warm precondition = both-off reset600 → same-source D120 → same-source A120
+formal capture = A_warm_after_D only
+total captures = 8
+steady claim = false
+```
+
+只检验 within-session strip-Ray difference 可重复性、source order effect 和 absolute
+warm-A cross-source anchor。TD-C core 完成后回 Advisor；不得进入 expansion 或 solver。
+
+## 8. 后续锁与禁止事项
+
+TD-C core 执行期间继续锁定：
+
+```text
+TD-C expansion
 solver sentinel / remaining 9 / boundary / holdout / Gate-6 / P8
 default/runtime LUT install
 ```
@@ -184,7 +226,7 @@ default/runtime LUT install
 fast/long 数据、平均 A0 与 warm returns、改变 observer/features/covariance/guard/
 exposure/frame selection、把 R6 PC1 transfer failure写成 nonlinear interaction。
 
-## 7. 执行与停止条件
+## 9. 执行与停止条件
 
 - 普通代码/测试问题在当前 worktree 直接修复，不创建新的架构层或治理门槛。
 - 每个实验使用独立外置 root；raw CR3/图像/measurement 不入 Git，manifest、hash、
@@ -192,10 +234,11 @@ exposure/frame selection、把 R6 PC1 transfer failure写成 nonlinear interacti
 - 设备任务超过 10 分钟使用 visible Terminal、三次 liveness 检查与 automation。
 - strip history 的 Advisor gate 已由 `OPTION_3_CORRECT_THE_COMMON_CONTRAST`
   解除；analyzer-v3 exact 数值已复核，paired Ray bridge 已解锁。
-- combined TD-B、TD-C、solver、sentinel 和 later stages 仍保持锁定。
+- combined TD-B 已 canonical pass；TD-C core 已条件解锁；TD-C expansion、solver、
+  sentinel 和 later stages仍保持锁定。
 
-## 8. 交付要求
+## 10. 交付要求
 
-完成 B/C 后向 Advisor 提交：v2 分类、fast target 路径/hash、strip 分类、bridge
-分类、所有 root/quality/cleanup/hash，以及 combined/TD-C/later locks。Advisor 决定
-后续 combined comparison 的 exact warm-precondition protocol。
+完成 TD-C core 后向 Advisor 提交：bridge-v2 分类、combined canonical artifact、
+四 session 的 8/8 capture/quality/cleanup/hash、within-session/order/warm-anchor 结果，
+以及 expansion/solver/later locks。

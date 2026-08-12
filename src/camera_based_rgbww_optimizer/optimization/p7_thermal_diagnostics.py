@@ -871,7 +871,10 @@ def build_direct_plan(
             step["requested_elapsed_s"] = 600
             step["timing_status"] = "resolved"
             step["timing_acceptance"] = "observed_elapsed_record_only"
-    plan["timing_resolution"] = "direct_operational_600"
+    plan["timing_resolution"] = (
+        "guide5_reset600_D120_A120"
+        if experiment_id == TD_C else "direct_operational_600"
+    )
     plan.update({
         "status": "execute_authorized",
         "phase": "formal",
@@ -1157,7 +1160,7 @@ def _td_c_plan(variant: str, commands: Mapping[str, Mapping[str, int]], envelope
     if variant == "core":
         states = ("A",)
         orders = (("ray", "strip"), ("strip", "ray"), ("ray", "strip"), ("strip", "ray"))
-        physical = 16
+        physical = 8
     else:
         states = ("B", "C")
         orders = (("ray", "strip"), ("strip", "ray"))
@@ -1167,29 +1170,51 @@ def _td_c_plan(variant: str, commands: Mapping[str, Mapping[str, int]], envelope
     steps = []
     for state in states:
         for session_index, order in enumerate(orders, start=1):
-            steps.append(_ambient_step(
-                len(steps), position=f"session_{session_index}_{state}_start",
-                state_group=state, session_index=session_index,
-                isolation_gate_before=f"session_{session_index}_{state}_start_ambient",
-            ))
             for source_order, source in enumerate(order, start=1):
                 steps.append(_step(
-                    source, state, elapsed, len(steps), commands,
+                    source, state, 120 if variant == "core" else elapsed, len(steps), commands,
                     session_index=session_index, source_order=source_order,
-                    timing_status=("deferred_until_td_b" if elapsed is None else "resolved"),
+                    timing_status=(
+                        "resolved_guide5_warm_anchor"
+                        if variant == "core"
+                        else ("deferred_until_td_b" if elapsed is None else "resolved")
+                    ),
+                    warm_precondition=(
+                        {
+                            "reset_s": 600,
+                            "state_id": "D",
+                            "command": _command(source, "D", commands),
+                            "exact_command_hash": canonical_sha256(_command(source, "D", commands)),
+                            "dwell_s": 120,
+                            "capture": False,
+                            "steady_claim": False,
+                        }
+                        if variant == "core" else None
+                    ),
+                    isolation_gate_before=f"session_{session_index}_{source}_reset600",
                     isolation_gate_after=f"session_{session_index}_{state}_after_{source}",
                 ))
-            steps.append(_ambient_step(
-                len(steps), position=f"session_{session_index}_{state}_end",
-                state_group=state, session_index=session_index,
-                isolation_gate_before=f"session_{session_index}_{state}_end_ambient",
-            ))
     return {
         "stage": "TD-C", "comparison_design": "order_balanced_paired_comparison_not_classic_abba",
-        "cold_proxy_wait_s": 1800,
+        "cold_proxy_wait_s": 600 if variant == "core" else 1800,
         "session_orders": [list(order) for order in orders], "captures": steps,
-        "budgets": {"formal_cap": 8, "ambient_cap": 8, "physical_cr3_cap": physical},
-        "timing_resolution": "deferred_until_td_b" if elapsed is None else "resolved",
+        "budgets": {
+            "formal_cap": 8, "ambient_cap": 0 if variant == "core" else 4,
+            "physical_cr3_cap": physical,
+        },
+        "timing_resolution": (
+            "guide5_reset600_D120_A120"
+            if variant == "core" else ("deferred_until_td_b" if elapsed is None else "resolved")
+        ),
+        "analysis_contract": {
+            "warm_anchor": "reset600_then_D120_then_A120",
+            "formal_capture_count": 8,
+            "within_session_strip_ray_difference": True,
+            "source_order_effect": True,
+            "absolute_warm_A_cross_source_anchor": True,
+            "steady_claim": False,
+            "td_c_expansion": "locked",
+        } if variant == "core" else {},
         "execute_lock": "td_b_pass_required" if variant == "core" else "td_c_core_planner_acceptance_required",
     }
 
