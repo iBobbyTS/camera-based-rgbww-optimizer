@@ -5,6 +5,21 @@
 请复核已完成的 TD-C core 科学结果，并决定下一科学分支。当前明确保持
 TD-C expansion、solver、sentinel 和 later stages 锁定；本交接不请求新采集授权。
 
+完整审阅包：
+
+```text
+zip = .agent-work/ADVISOR_HANDOFF-20260812-GUIDE5-TD-C-CORE.zip
+zip byte count = 148008
+zip sha256 = d57062aeb2ba2819f97f4752d6357d8a4f155a8d6489b368ed67f6f060d25baa
+archive integrity = pass
+files = 32
+raw/bulk payloads included = 0
+```
+
+ZIP 包含派生/计算数据、完整小型运行 ledger、quality/cleanup/wrapper、相关实现与
+测试、GUIDE/RESEARCH/PLAN 文档及 manifest。8 个 CR3 和其他 raw/bulk payload 未复制；
+`EXCLUDED-PAYLOADS.sha256` 记录其原始路径、大小和 SHA-256。
+
 ## Acquisition identity
 
 ```text
