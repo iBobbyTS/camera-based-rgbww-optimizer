@@ -1,86 +1,110 @@
-# Advisor Handoff — GUIDE5 TD-C FAST B/C Endpoint Holdout
+# ADVISOR_GATE_REQUIRED — GUIDE5 TD-C FAST endpoint decomposition
 
-## Gate
+## 1. Required Advisor decision
 
-`ADVISOR_GATE_REQUIRED`
+Please review the immutable offline decomposition and answer exactly:
 
-本轮采集协议完整执行并安全结束，但 endpoint 的科学 synthesis agreement
-未通过。需要 Advisor 判断这是否是 GUIDE5 预期的 state-dependent endpoint
-偏差，还是说明 core A absolute offset 与 combined local-state coordinate
-不能预测新的 B/C endpoint。
+1. Does the decomposition support the proposed `GUIDE5_TD_C_FAST_ANCHOR_DIRECTION_B_V1`
+   experiment, or should the route remain locked?
+2. How should the B/C residual decomposition be interpreted scientifically? In
+   particular, does it justify testing an anchor-direction substitution for B?
+3. Are the stated shared-observation covariance terms and the residual-minus-anchor
+   contrasts sufficient, or is a different pre-registered contrast required?
 
-## Run identity
+This is an `ADVISOR_GATE_REQUIRED`, not a Human authorization gate. No device
+acquisition is authorized by this handoff. C validation, solver sentinel and all
+later stages remain locked.
 
-- Root: `/Volumes/4T/temp/rgbww-optimizer/guide5-td-c-fast-endpoint-holdout-20260813-073328`
+## 2. Why repository-local work cannot decide this
+
+The requested calculations are complete and deterministic, but their scientific
+meaning and the choice of the next branch are not code questions. The current
+data reject only the absolute composition
+
+`core A_after_D absolute offset + post-state local coordinate (Q-A_after_Q)`
+
+for predicting a new D→A→Q endpoint. They do not demonstrate a B/C state-specific
+bias because the B-minus-C residual contrast had not previously been tested and B
+fails more strongly than C. Advisor must decide whether the new decomposition
+warrants the bounded B-only anchor-direction experiment.
+
+## 3. Accepted endpoint evidence
+
+- Endpoint root: `/Volumes/4T/temp/rgbww-optimizer/guide5-td-c-fast-endpoint-holdout-20260813-073328`
 - Protocol: `GUIDE5_TD_C_FAST_ENDPOINT_HOLDOUT_B_C_V1`
-- Git branch: `codex/guide4-science-path-v3`
-- Acquisition implementation commit before run: `6119917`
-- Formal / physical / ambient: `8 / 8 / 0`
-- Retry: `0`
-- Wrapper exit: `0`
-- Child exit: `0`
-- Python cleanup: pass
-- Shell cleanup: exit `0`
-- `science_delta`: valid new 8-observation endpoint holdout; synthesis disagreement observed
+- Acquisition: 8 formal / 8 physical / 0 ambient / retry 0
+- Wrapper and child exit: 0
+- Python and shell cleanup: pass / 0
+- Ray strip-zero and strip Ray-intensity-zero: all eight pass
+- Paired offsets: B pass, score `7.4311219131`, guard `9.5196397714`; C pass,
+  score `4.7820236614`, guard `9.5294838618`
+- Original endpoint synthesis: B fail, score `20.5356966388`, guard `9.5289317274`;
+  C fail, score `12.2078852606`, guard `9.5300736632`
 
-## Frozen protocol actually executed
+The eight observations remain valid scientific evidence. They are not discarded
+or reclassified as an engineering failure.
 
-Sessions were exactly:
+## 4. Offline decomposition requested by Advisor and completed
 
-1. B: Ray → strip
-2. C: strip → Ray
-3. B: strip → Ray
-4. C: Ray → strip
+Derived artifact:
 
-Each source used `reset600 → D120 → A120 → Q120 → capture Q`, with no ambient
-capture. Frozen shutters were Ray B `1/8000`, Ray C `1/2500`, strip B `1/500`,
-strip C `1/125`. Legacy 1800-second TD-C expansion, solver, sentinel and later
-stages were not run.
+`/Volumes/4T/temp/rgbww-optimizer/guide5-td-c-fast-endpoint-holdout-20260813-073328/analysis-v2-residual-decomposition-derived-v2.json`
 
-## Validation and safety evidence
+SHA-256:
+`570ef2631fae91035fb4a7d60c0b57494e349ab9252ba0f7df74750f87a9a52f`
 
-- `quality.json`: pass, eight pass rows.
-- `wrapper-state.json`: finished, child/wrapper exit `0`, shell cleanup `0`.
-- `run.json`: complete, `completed_formal=8`, `accepted_formal_count=8`.
-- Eight capture rows and eight physical-return rows exist.
-- Ray rows contain verified five-channel strip-zero snapshots.
-- Strip rows contain verified Ray CCT readback with intensity `0`.
-- No raw CR3, camera arrays, firmware or build output is included in the Advisor ZIP.
+It contains full 58-feature vectors and whitened scores for:
 
-## Corrected analysis result
+- `synthesis_residual_B` and `synthesis_residual_C`
+- `B_minus_C_synthesis_residual`
+- `A_after_B_minus_A_after_D`
+- `A_after_C_minus_A_after_D`
+- `residual_minus_anchor_substitution_B`
+- `residual_minus_anchor_substitution_C`
+- endpoint mean vectors for B and C
 
-Artifact: `analysis.json`
+Summary scores:
 
-| State | Paired-offset score | Guard | Repeatability | Synthesis score | Guard | Synthesis |
-|---|---:|---:|---|---:|---:|---|
-| B | 7.4311219131 | 9.5196397714 | pass | 20.5356966388 | 9.5289317274 | fail |
-| C | 4.7820236614 | 9.5294838618 | pass | 12.2078852606 | 9.5300736632 | fail |
+| Contrast | Score |
+|---|---:|
+| synthesis residual B | 20.5356966388 |
+| synthesis residual C | 12.2078852606 |
+| B-minus-C synthesis residual | 18.3538445579 |
+| A-after-B minus A-after-D | recorded in artifact |
+| A-after-C minus A-after-D | recorded in artifact |
+| residual-minus-anchor B | 15.8858229361 |
+| residual-minus-anchor C | 12.5016914509 |
 
-The synthesis residual covariance is the sum of:
+The artifact records that endpoint data were not used to refit the core or
+combined parent analyses. Shared core-A terms are retained in the B-minus-C
+covariance rather than treated as independent.
 
-`new endpoint mean + core A absolute mean + combined local-state mean`.
+## 5. Conditionally permitted, non-executable next plan
 
-The balanced Latin-square GLS state estimand is equivalent to the mean of the
-three state cells for this accepted design. The analyzer records this identity,
-keeps the pre-solver strip-Ray offset out of the zero gate, and uses frozen
-source-specific covariance and source-level unit-observation Monte Carlo.
+`GUIDE5_TD_C_FAST_ANCHOR_DIRECTION_B_V1`
 
-## Scientific question for Advisor
+- Session 1: B Ray→strip
+- Session 2: B strip→Ray
+- Each source: `reset600 → D120 → A_pre120 → B120 → A_post120`
+- 12 formal / 12 physical / 0 ambient / retry 0
+- Gates: A_pre paired consistency, B paired consistency, A_post paired
+  consistency, A_post-minus-A_pre anchor direction, independent transfer of the
+  pre-registered D→A→B pre-anchor local coordinate
+- C validation, solver sentinel, and all later stages remain locked
 
-Please decide:
+The plan is recorded as `offline_conditionally_permitted` and
+`formal_capture_eligible=false`; it has not been started.
 
-1. Should the result be classified as a valid scientific endpoint mismatch for
-   B and C, while retaining the fast protocol and leaving solver/later stages
-   locked?
-2. Does the B/C synthesis failure indicate a state-specific mismatch that can be
-   handled by the next GUIDE5 branch, or does it invalidate the proposed
-   core-A-plus-local-coordinate synthesis model?
-3. Is another bounded characterization experiment required, and if so what
-   exact contrast/protocol should be used? No new acquisition is authorized by
-   this handoff itself.
+## 6. Included files and excluded payloads
 
-## Included evidence
+The adjacent ZIP contains only derived/calculated data, small execution
+evidence, exact source/test files, PLAN/PLAN-FULL context, this handoff and a
+manifest. It excludes CR3/RAW/DNG/NPY/NPZ/TIFF/JPEG/PNG, decoded camera arrays,
+firmware, builds, caches, credentials and generated archives.
 
-This handoff is accompanied by a ZIP containing only derived/small evidence,
-source/test files, plans, GUIDE/RESEARCH context, logs and hashes. Raw capture
-payloads are excluded and remain at the retained run root above.
+Excluded raw root retained for audit:
+
+`/Volumes/4T/temp/rgbww-optimizer/guide5-td-c-fast-endpoint-holdout-20260813-073328/camera`
+
+The exclusion is intentional; the run identity is preserved by the included
+derived artifacts, hashes and small ledgers.
