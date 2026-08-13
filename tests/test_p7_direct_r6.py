@@ -1675,6 +1675,24 @@ class DirectR6Tests(unittest.TestCase):
         self.assertEqual([step["state_id"] for step in plan["captures"]], ["A", "B", "A", "A", "B", "A", "A", "B", "A", "A", "B", "A"])
         self.assertTrue(plan["hard_locks"]["C_validation"])
 
+    def test_td_c_endpoint_exact_context_v3_excludes_r6_and_serializes_mc_terms(self):
+        root = Path("/Volumes/4T/temp/rgbww-optimizer/guide5-td-c-fast-endpoint-holdout-20260813-073328")
+        artifact = root / "analysis-v3-exact-context-anchor-decomposition-v1.json"
+        if not artifact.is_file():
+            self.skipTest("retained v3 decomposition is unavailable")
+        report = json.loads(artifact.read_text())
+        self.assertEqual(report["schema"], "guide5_td_c_fast_endpoint_exact_context_decomposition_v3")
+        self.assertEqual(report["r6_input_count"], 0)
+        self.assertEqual(report["status"], "offline_derived_no_parent_refit")
+        self.assertIn("B_exact_pre_synthesis_residual", report["contrasts"])
+        self.assertIn("B_exact_post_synthesis_residual", report["contrasts"])
+        self.assertIn("B_anchor_direction", report["contrasts"])
+        self.assertIn("B_minus_C_synthesis_residual", report["contrasts"])
+        self.assertLess(report["identity_error"], 0.01)
+        for contrast in report["contrasts"].values():
+            self.assertFalse(contrast["monte_carlo"]["difference_center_used"])
+            self.assertTrue(contrast["primitive_terms"])
+
 
 if __name__ == "__main__":
     unittest.main()

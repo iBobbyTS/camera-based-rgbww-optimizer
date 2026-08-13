@@ -61,6 +61,7 @@ TD_C_CORE_EXPECTED_SCORES = {
 TD_C_CORE_EXPECTED_SCORE_ABS_TOLERANCE = 5e-10
 TD_C_ENDPOINT_SCHEMA = "guide5_td_c_fast_endpoint_holdout_analysis_v1"
 TD_C_ENDPOINT_DECOMPOSITION_SCHEMA = "guide5_td_c_fast_endpoint_residual_decomposition_v1"
+TD_C_ENDPOINT_DECOMPOSITION_V3_SCHEMA = "guide5_td_c_fast_endpoint_exact_context_decomposition_v3"
 TD_C_ENDPOINT_ROOT = Path(
     "/Volumes/4T/temp/rgbww-optimizer/guide5-td-c-fast-endpoint-holdout-20260813-073328"
 )
@@ -1810,6 +1811,180 @@ def analyze_td_c_fast_endpoint_decomposition(
     }
 
 
+def analyze_td_c_fast_endpoint_exact_context_v3(
+    endpoint_root: str | Path, *, feature_ids: Sequence[str],
+    endpoint_analysis_artifact: str | Path, core_contrast_artifact: str | Path,
+    combined_artifact: str | Path,
+) -> dict[str, Any]:
+    """Use only FAST cross-source primitive observations for the Advisor v3 gate.
+
+    In particular, this deliberately has no R6 input.  Coefficients are aggregated
+    by immutable observation identity before Monte Carlo so shared observations
+    cancel algebraically instead of being counted as independent noise.
+    """
+    ids = tuple(feature_ids)
+    endpoint_path = Path(endpoint_root).resolve()
+    endpoint_report = _load_json(Path(endpoint_analysis_artifact).resolve())
+    core_report = _load_json(Path(core_contrast_artifact).resolve())
+    combined_report = _load_json(Path(combined_artifact).resolve())
+    if endpoint_report.get("schema") != TD_C_ENDPOINT_SCHEMA or endpoint_report.get("capture_count") != 8:
+        raise ValueError("v3 requires the accepted eight-observation endpoint artifact")
+    if core_report.get("status") != "canonical_pass" or combined_report.get("status") != "canonical_pass":
+        raise ValueError("v3 requires accepted immutable parent analyses")
+
+    def rows(path: Path) -> list[dict[str, Any]]:
+        return _load_jsonl(path / "captures.jsonl")
+
+    endpoint_rows = rows(endpoint_path)
+    endpoint: dict[int, dict[str, np.ndarray]] = defaultdict(dict)
+    endpoint_keys: dict[tuple[int, str], str] = {}
+    for i, row in enumerate(endpoint_rows):
+        step = row["plan_step"]
+        session, source = int(step["session_index"]), str(step["source_id"])
+        endpoint[session][source] = _unit(row["capture"]["feature_values"], ids)
+        endpoint_keys[(session, source)] = f"endpoint:{i}"
+
+    # Resolve and identity-check the two FAST history source roots.
+    histories: dict[str, list[dict[str, Any]]] = {}
+    for source, entries_key in (("ray", "ray_sessions"), ("strip", "strip_sessions")):
+        entries = combined_report.get("evidence", {}).get(entries_key)
+        if not isinstance(entries, list) or len(entries) != 3:
+            raise ValueError("v3 requires three immutable FAST history sessions per source")
+        checked = []
+        for entry in entries:
+            root = Path(str(entry["root"])).resolve()
+            if entry.get("captures_sha256") != _sha256(root / "captures.jsonl"):
+                raise ValueError("FAST history captures identity differs from combined evidence")
+            checked.append({"root": root, "rows": rows(root)})
+        histories[source] = checked
+
+    # Capture values and stable keys for exact D->A->B cells (sessions 1 and 2).
+    history: dict[tuple[str, int, str], tuple[np.ndarray, str]] = {}
+    for source, sessions in histories.items():
+        for session_index, item in enumerate(sessions, 1):
+            for i, row in enumerate(item["rows"]):
+                step = row["plan_step"]
+                label = str(step.get("anchor_label"))
+                if label in {"B", "C", "A_after_D", "A_after_B", "A_after_C", "A0"}:
+                    history[(source, session_index, label)] = (
+                        _unit(row["capture"]["feature_values"], ids),
+                        f"history:{source}:{session_index}:{i}",
+                    )
+
+    core_path = Path(core_report["legacy_analysis"]["path"]).resolve()
+    core_rows = rows(core_path.parent)
+    core: dict[str, list[tuple[np.ndarray, str]]] = defaultdict(list)
+    for i, row in enumerate(core_rows):
+        source = str(row["plan_step"]["source_id"])
+        core[source].append((_unit(row["capture"]["feature_values"], ids), f"core:{source}:{i}"))
+    if not core["ray"] or len(core["ray"]) != len(core["strip"]):
+        raise ValueError("v3 requires the immutable balanced TD-C core observations")
+
+    variances = {("ray", s): _same_state_variance(source="ray", state=s) for s in ("A", "B", "C")}
+    variances.update({("strip", s): _same_state_variance(source="strip", state=s) for s in ("A", "B", "C")})
+
+    def contrast(terms: dict[str, tuple[np.ndarray, np.ndarray, float]]) -> tuple[np.ndarray, dict[str, Any]]:
+        vector = np.zeros(len(ids), dtype=float)
+        mc_terms: list[tuple[np.ndarray, np.ndarray, float]] = []
+        serialized = []
+        for key, (value, variance, coefficient) in sorted(terms.items()):
+            vector += coefficient * value
+            mc_terms.append((value, variance, coefficient))
+            serialized.append({"observation": key, "coefficient": coefficient})
+        return vector, {"terms": serialized, "_terms_raw": mc_terms, "monte_carlo": _source_level_contrast_limit(mc_terms)}
+
+    def add(terms: dict[str, tuple[np.ndarray, np.ndarray, float]], key: str, value: np.ndarray,
+            variance: np.ndarray, coefficient: float) -> None:
+        if key in terms:
+            old_value, old_variance, old_coefficient = terms[key]
+            if not np.array_equal(old_value, value) or not np.array_equal(old_variance, variance):
+                raise ValueError("observation identity maps to inconsistent source data")
+            terms[key] = (old_value, old_variance, old_coefficient + coefficient)
+        else:
+            terms[key] = (value, variance, coefficient)
+
+    def endpoint_terms(state: str) -> dict[str, tuple[np.ndarray, np.ndarray, float]]:
+        terms: dict[str, tuple[np.ndarray, np.ndarray, float]] = {}
+        endpoint_sessions = (1, 3) if state == "B" else (2, 4)
+        for session in endpoint_sessions:
+            for source, sign in (("strip", 0.5), ("ray", -0.5)):
+                add(terms, endpoint_keys[(session, source)], endpoint[session][source], variances[(source, state)], sign)
+        return terms
+
+    def core_a_terms(terms: dict[str, tuple[np.ndarray, np.ndarray, float]], coefficient: float) -> None:
+        n = len(core["ray"])
+        for source, sign in (("strip", -coefficient / n), ("ray", coefficient / n)):
+            for value, key in core[source]:
+                add(terms, key, value, variances[(source, "A")], sign)
+
+    def local_terms(terms: dict[str, tuple[np.ndarray, np.ndarray, float]], state: str, coefficient: float, anchor: str) -> None:
+        # local = mean[(strip_state-ray_state) - (strip_anchor-ray_anchor)] over exact D->A->B cells.
+        for session in (1, 2):
+            for source, sign in (("strip", 1.0), ("ray", -1.0)):
+                for label, local_sign in ((state, 1.0), (anchor, -1.0)):
+                    value, key = history[(source, session, label)]
+                    add(terms, key, value, variances[(source, state if label == state else "A")], coefficient * sign * local_sign / 2.0)
+
+    def make_synthesis(state: str, anchor: str) -> tuple[np.ndarray, dict[str, Any]]:
+        terms = endpoint_terms(state)
+        core_a_terms(terms, 1.0)
+        local_terms(terms, state, 1.0, anchor)
+        # residual = endpoint - (core A + local), so negate the latter terms.
+        for key, (value, variance, coefficient) in list(terms.items()):
+            if key.startswith("endpoint:"):
+                continue
+            terms[key] = (value, variance, -coefficient)
+        return contrast(terms)
+
+    pre_terms = make_synthesis("B", "A_after_D")
+    post_terms = make_synthesis("B", "A_after_B")
+    # Anchor direction h = local_pre - local_post; B observations cancel exactly.
+    h_terms: dict[str, tuple[np.ndarray, np.ndarray, float]] = {}
+    local_terms(h_terms, "B", 1.0, "A_after_D")
+    local_terms(h_terms, "B", -1.0, "A_after_B")
+    h_vec, h_meta = contrast(h_terms)
+
+    # Build the B-minus-C post-synthesis residual from the same primitive sources.
+    b_post_terms = {
+        item["observation"]: raw
+        for item, raw in zip(post_terms[1]["terms"], post_terms[1]["_terms_raw"], strict=True)
+    }
+    c_terms = endpoint_terms("C")
+    core_a_terms(c_terms, 1.0)
+    local_terms(c_terms, "C", 1.0, "A_after_C")
+    for key, (value, variance, coefficient) in list(c_terms.items()):
+        if not key.startswith("endpoint:"):
+            c_terms[key] = (value, variance, -coefficient)
+    # e_B - e_C: merge B residual and negative C residual.
+    bc_terms = dict(b_post_terms)
+    for key, (value, variance, coefficient) in c_terms.items():
+        add(bc_terms, key, value, variance, -coefficient)
+    bc_vec, bc_meta = contrast(bc_terms)
+
+    def report(vector: np.ndarray, meta: dict[str, Any], *, zero_gate: bool = True) -> dict[str, Any]:
+        score_terms = meta.pop("_terms_raw")
+        score = direct_whitened_norm(vector, sum((coefficient ** 2) * var for _, var, coefficient in score_terms))
+        return {"score": score, "guarded_limit": meta["monte_carlo"]["guarded_limit"], "decision": "pass" if score <= meta["monte_carlo"]["guarded_limit"] else "fail", "hard_gate": zero_gate, "primitive_terms": meta["terms"], "monte_carlo": meta["monte_carlo"]}
+
+    pre_vec, pre_meta = pre_terms
+    post_vec, post_meta = post_terms
+    identity = pre_vec - post_vec - h_vec
+    return {
+        "schema": TD_C_ENDPOINT_DECOMPOSITION_V3_SCHEMA,
+        "status": "offline_derived_no_parent_refit",
+        "classification": "partially_valid_not_gate_complete",
+        "scientific_scope": "FAST_cross_source_exact_D_A_B_context_only",
+        "r6_input_count": 0,
+        "vectors": {"B_exact_pre_synthesis_residual": {f: float(v) for f, v in zip(ids, pre_vec)}, "B_exact_post_synthesis_residual": {f: float(v) for f, v in zip(ids, post_vec)}, "B_anchor_direction": {f: float(v) for f, v in zip(ids, h_vec)}, "B_minus_C_synthesis_residual": {f: float(v) for f, v in zip(ids, bc_vec)}},
+        "contrasts": {"B_exact_pre_synthesis_residual": report(pre_vec, pre_meta), "B_exact_post_synthesis_residual": report(post_vec, post_meta), "B_anchor_direction": report(h_vec, h_meta), "B_minus_C_synthesis_residual": report(bc_vec, bc_meta)},
+        "identity_error": float(direct_whitened_norm(identity, np.ones(len(ids)))),
+        "identity_error_vector": {f: float(v) for f, v in zip(ids, identity)},
+        "identity": "e_post - e_pre - h_B = 0 by primitive coefficient cancellation",
+        "evidence": {"endpoint_analysis": {"path": str(Path(endpoint_analysis_artifact).resolve()), "sha256": _sha256(Path(endpoint_analysis_artifact).resolve())}, "core_analysis": {"path": str(Path(core_contrast_artifact).resolve()), "sha256": _sha256(Path(core_contrast_artifact).resolve())}, "combined_analysis": {"path": str(Path(combined_artifact).resolve()), "sha256": _sha256(Path(combined_artifact).resolve())}},
+        "locks": {"B_device_acquisition": True, "C_validation": True, "solver_sentinel_and_later": True},
+    }
+
+
 def _td_c_contrast_diagnostic(
     value: np.ndarray,
     variance: np.ndarray,
@@ -3459,6 +3634,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--legacy-td-c-core-analysis-artifact", type=Path)
     parser.add_argument("--td-c-core-contrasts-output", type=Path)
     parser.add_argument("--td-c-endpoint-decomposition", action="store_true")
+    parser.add_argument("--td-c-endpoint-exact-context-v3", action="store_true")
     parser.add_argument("--td-c-endpoint-decomposition-output", type=Path)
     parser.add_argument("--td-c-endpoint-analysis-artifact", type=Path)
     parser.add_argument("--td-c-core-contrasts-artifact", type=Path)
@@ -3476,6 +3652,28 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.feature_ids is None:
         raise ValueError("--feature-ids is required for thermal run analysis")
     feature_ids = _feature_ids_from_artifact(args.feature_ids)
+    if args.td_c_endpoint_exact_context_v3:
+        required = (
+            args.td_c_endpoint_analysis_artifact,
+            args.td_c_core_contrasts_artifact,
+            args.td_c_combined_artifact,
+            args.td_c_endpoint_decomposition_output,
+        )
+        if any(value is None for value in required):
+            raise ValueError("TD-C exact-context v3 requires endpoint, core, combined and output paths")
+        output = args.td_c_endpoint_decomposition_output.resolve()
+        if output.exists():
+            raise FileExistsError("TD-C exact-context v3 output is immutable and already exists")
+        report = analyze_td_c_fast_endpoint_exact_context_v3(
+            args.run_dir,
+            feature_ids=feature_ids,
+            endpoint_analysis_artifact=args.td_c_endpoint_analysis_artifact,
+            core_contrast_artifact=args.td_c_core_contrasts_artifact,
+            combined_artifact=args.td_c_combined_artifact,
+        )
+        _write_text_atomic(output, json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n")
+        print(output)
+        return 0
     if args.td_c_endpoint_decomposition:
         required = (
             args.td_c_endpoint_analysis_artifact,

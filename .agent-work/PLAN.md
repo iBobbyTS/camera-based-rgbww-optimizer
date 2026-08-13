@@ -1,6 +1,31 @@
-# PLAN — GUIDE5 TD-C corrected contrasts and FAST B/C endpoint holdout
+# PLAN — GUIDE5 TD-C exact-context decomposition v3 (offline)
 
-## 目标
+## 当前目标
+
+按 Advisor 最新决定，只完成离线 v3 分解；不得启动任何设备采集。
+
+- endpoint、TD-C core、Ray/strip FAST history 是唯一允许输入；R6 输入数必须为 0。
+- 旧 v2 residual-minus-anchor 结果不再用于科学门禁。
+- 从 primitive source observations 生成 exact D→A→B cross-source pre/post 对比，
+  序列化 observation coefficients、shared-observation cancellation、source-level
+  Monte Carlo guard 与 identity error。
+- v3 未通过结构和证据检查前，`GUIDE5_TD_C_FAST_ANCHOR_DIRECTION_B_V1` 保持锁定。
+
+当前离线 artifact：
+
+```text
+/Volumes/4T/temp/rgbww-optimizer/guide5-td-c-fast-endpoint-holdout-20260813-073328/analysis-v3-exact-context-anchor-decomposition-v1.json
+schema = guide5_td_c_fast_endpoint_exact_context_decomposition_v3
+classification = partially_valid_not_gate_complete
+r6_input_count = 0
+```
+
+v3 本轮结果显示 B pre/post synthesis residual 与 B-minus-C residual 均为
+`fail`，B anchor-direction contrast 为 `pass`；这只是当前冻结数据上的离线
+分解结果，不等于 B physical endpoint bias，也不解锁实拍。`identity_error` 仅作
+代数一致性诊断，不替代 Advisor 的科学解释。
+
+## 历史路线目标
 
 1. 保持 TD-C core 原 `analysis.json` 不变，生成 source-specific covariance 的
    `analysis-v2.1-td-c-core-contrasts-derived.json`。
