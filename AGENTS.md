@@ -181,9 +181,11 @@ This project is used only for the Human-owned and Human-maintained local photogr
   task-related message, first inspect whether the long-running task has completed.
   If it is incomplete, report only the current progress, verify that the automation
   still covers the task, recompute the remaining duration from the observed progress,
-  and update the existing automation's wake-up time/prompt to cover that estimate
-  (preserve the same automation; do not create duplicates). Only then end that
-  response. If it is complete, the inspection is
+  and update the existing automation's wake-up time/prompt to cover that estimate.
+  Choose a reasonable wake-up interval from the estimate: avoid frequent polling
+  when many minutes remain, but leave enough margin to inspect shortly after the
+  expected completion. Preserve the same automation and do not create duplicates.
+  Only then end that response. If it is complete, the inspection is
   only a handoff point: delete the obsolete automation and continue the current
   GUIDE/PLAN route in the same turn. Never end merely because the monitored process
   terminated.
