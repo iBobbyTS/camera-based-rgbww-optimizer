@@ -172,6 +172,8 @@ def expected_native_raw_ambient_policy(
         and phase == "formal"
     ):
         return AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT
+    if experiment_id == TD_C and plan_schema == PLAN_SCHEMA_V2 and phase == "formal":
+        return AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT
     return AMBIENT_POLICY_REQUIRE_PRECEDING
 
 def file_reference(path: str | Path) -> dict[str, str]:
@@ -1104,6 +1106,7 @@ def _build_td_c_fast_anchor_direction_b_plan() -> dict[str, Any]:
                    "v2_capture_capability": "remote_v2_capture_timing_v1",
                    "resolved_capture_settings": {"owner": "remote_backend.resolve_capture_settings", "iso": "100", "aperture": "f/4", "image_format": "RAW"}},
         "timing_contract": timing_contract(2), "cold_proxy": 600, "cold_proxy_wait_s": 600,
+        "native_raw_ambient_policy": AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
         "session_orders": [list(order) for order in sessions], "session_states": list(states),
         "captures": captures, "capture_ids": [step["capture_id"] for step in captures],
         "frozen_shutters": {key: value for key, value in shutters.items()},
@@ -1169,6 +1172,7 @@ def _build_guide6_direct_target_local_h120_s100_plan() -> dict[str, Any]:
         "capture_ids": [row["capture_id"] for row in captures],
         "session_orders": [["ray", "strip", "ray"]],
         "timing_contract": timing_contract(2), "cold_proxy": 600, "cold_proxy_wait_s": 600,
+        "native_raw_ambient_policy": AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
         "budgets": {"formal_cap": 9, "physical_cr3_cap": 9, "ambient_cap": 0, "retry": 0},
         "formal_capture_eligible": True,
         "execution_authorization": {
