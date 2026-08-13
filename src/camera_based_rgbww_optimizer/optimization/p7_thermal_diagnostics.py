@@ -1134,12 +1134,12 @@ def _build_guide6_direct_target_local_h120_s100_plan() -> dict[str, Any]:
     block; no cross-experiment absolute synthesis is part of this plan.
     """
     commands = load_r1_commands()
-    # Use the shorter retained strip exposure for this saturated target block.
-    # The prior 1/160 and 1/320 attempts both clipped required observer planes;
-    # 1/400 is an existing bounded strip shutter candidate in the retained R1
-    # exposure policy and is the next substantive S-MEASUREMENT diagnosis.
+    # Use the next shorter bounded strip exposure for this saturated target
+    # block. The prior 1/160, 1/320 and 1/400 attempts progressively reduced
+    # clipping; 1/500 is the next camera-supported diagnosis without changing
+    # the frozen observer or quality gates.
     shutters = {
-        "ray": "1/5000", "strip": "1/400",
+        "ray": "1/5000", "strip": "1/500",
     }
     captures = []
     def add(source: str, state: str, role: str, index: int, session: int = 1) -> None:
