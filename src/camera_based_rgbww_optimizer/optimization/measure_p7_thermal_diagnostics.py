@@ -224,7 +224,7 @@ def validate_authorized_execution_plan(
     )
     direct_guide6_target_local = (
         isinstance(authorization, Mapping)
-        and authorization.get("schema") == "guide6_direct_target_local_h120_s100_v1"
+        and authorization.get("schema") == "direct_guide6_target_local_h120_s100_v1"
     )
     if (
         direct_ray_history or direct_strip_history
@@ -387,7 +387,7 @@ def execute_plan(
     direct_guide6_target_local = (
         isinstance(plan.get("execution_authorization"), Mapping)
         and plan["execution_authorization"].get("schema")
-        == "guide6_direct_target_local_h120_s100_v1"
+        == "direct_guide6_target_local_h120_s100_v1"
     )
     if direct_ray_continuous and source_isolation_check_fn is None:
         raise PermissionError("direct continuous-Ray execution requires a strip-only isolation check")

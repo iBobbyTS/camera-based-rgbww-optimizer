@@ -918,7 +918,7 @@ def build_direct_plan(
             "schema": (
                 "direct_td_c_fast_endpoint_holdout_v1"
                 if variant == TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT
-                else "guide6_direct_target_local_h120_s100_v1"
+                else "direct_guide6_target_local_h120_s100_v1"
                 if variant == GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT
                 else "direct_td_c_fast_anchor_direction_b_v1"
                 if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT
@@ -1176,7 +1176,7 @@ def _build_guide6_direct_target_local_h120_s100_plan() -> dict[str, Any]:
         "budgets": {"formal_cap": 9, "physical_cr3_cap": 9, "ambient_cap": 0, "retry": 0},
         "formal_capture_eligible": True,
         "execution_authorization": {
-            "schema": "guide6_direct_target_local_h120_s100_v1",
+            "schema": "direct_guide6_target_local_h120_s100_v1",
             "human_authorization_required": False,
             "human_authorization_verified": True,
             "human_authorization_experiment_id": GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_EXPERIMENT_ID,
