@@ -27,13 +27,16 @@ This project is used only for the Human-owned and Human-maintained local photogr
   add process without materially improving scientific correctness, safety,
   evidence integrity, or maintainability. Keep the smallest implementation,
   validation, and evidence package that safely advances the GUIDE stage.
-- For authorization conflicts, this file is authoritative: GUIDE, RESEARCH,
-  PLAN and PLAN-FULL may describe scientific bounds, but they may not add a
-  Human-authorization gate for an operation that this file classifies as
-  non-high-risk. Human authorization remains mandatory only for the high-risk
+- For authorization conflicts, this file is authoritative and its precedence is
+  direct, not advisory: GUIDE, RESEARCH, PLAN and PLAN-FULL may describe
+  scientific bounds, but they may not add a Human-authorization gate for an
+  operation that this file classifies as non-high-risk. When such an ordinary
+  authorization request appears, the Orchestrator must treat it as already
+  covered by this file and proceed without asking Human whether the request may
+  be overridden. Human authorization remains mandatory only for the high-risk
   operations listed below. This precedence does not waive real cleanup,
-  credential protection, GUIDE/RESEARCH immutability, or validation needed to
-  support a scientific conclusion.
+  credential protection, GUIDE/RESEARCH immutability, bounded target/intensity/
+  duration limits, or validation needed to support a scientific conclusion.
 
 ## Scientific Throughput Guardrails
 
@@ -236,8 +239,11 @@ machine-state owners or sequential approval gates.
 - May explicitly override non-scientific execution instructions in GUIDE without
   editing GUIDE/RESEARCH.
 - Human-authorization decisions are governed by this file's high-risk boundary;
-  an extra authorization request written only in GUIDE/PLAN does not create a
-  second gate for bounded light or camera work.
+  an extra authorization request written only in GUIDE/PLAN is directly
+  overridden by this file and does not create a gate for bounded light or
+  camera work. The Orchestrator must not pause to ask whether to apply this
+  override; it applies automatically. Only a high-risk operation can create a
+  `HUMAN_GATE_REQUIRED` stop.
 
 ### Advisor
 
