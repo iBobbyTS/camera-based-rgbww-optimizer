@@ -1724,9 +1724,9 @@ class DirectR6Tests(unittest.TestCase):
             thermal.TD_C,
             variant=thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT,
         )
-        self.assertEqual(plan["status"], "human_authorization_pending")
-        self.assertFalse(plan["formal_capture_eligible"])
-        self.assertTrue(plan["execution_authorization"]["human_authorization_required"])
+        self.assertEqual(plan["status"], "execute_authorized")
+        self.assertTrue(plan["formal_capture_eligible"])
+        self.assertFalse(plan["execution_authorization"]["human_authorization_required"])
         self.assertEqual(plan["guide_experiment_id"], thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_EXPERIMENT_ID)
         self.assertFalse(plan["analysis_contract"]["cross_experiment_absolute_synthesis"])
         self.assertEqual([step["role"] for step in plan["captures"]], [

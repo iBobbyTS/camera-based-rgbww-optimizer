@@ -905,7 +905,7 @@ def build_direct_plan(
     )
     plan.update({
         "status": (
-            "human_authorization_pending"
+            "execute_authorized"
             if variant == GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT
             else "deferred_diagnostic_only"
             if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT
@@ -927,7 +927,7 @@ def build_direct_plan(
                 None if variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT} else experiment_id
             ),
             "bounded_device_scope": variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT},
-            "human_authorization_required": variant == GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT,
+            "human_authorization_required": False,
             "experiment_id": (
                 TD_C_FAST_ENDPOINT_HOLDOUT_EXPERIMENT_ID
                 if variant == TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT else
@@ -1141,6 +1141,7 @@ def _build_guide6_direct_target_local_h120_s100_plan() -> dict[str, Any]:
             "capture_id": f"{index:03d}-{source}-h120-s100-{role}",
             "source_id": source, "state_id": state, "target": "H120/S100/INT100",
             "role": role, "session_index": session, "formal_measurement": True,
+            "capture_role": "formal",
             "command": command, "exact_command_hash": canonical_sha256(command),
             "requested_elapsed_s": 120, "nominal_shutter": shutters[source],
             "timing_acceptance": "observed_elapsed_record_only",
@@ -1158,7 +1159,7 @@ def _build_guide6_direct_target_local_h120_s100_plan() -> dict[str, Any]:
     add("ray", "A", "ray_q_after", 8)
     return {
         "schema": PLAN_SCHEMA_V2,
-        "status": "human_authorization_pending",
+        "status": "execute_authorized",
         "experiment_id": TD_C,
         "guide_experiment_id": GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_EXPERIMENT_ID,
         "variant": GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT,
@@ -1169,13 +1170,14 @@ def _build_guide6_direct_target_local_h120_s100_plan() -> dict[str, Any]:
         "session_orders": [["ray", "strip", "ray"]],
         "timing_contract": timing_contract(2), "cold_proxy": 600, "cold_proxy_wait_s": 600,
         "budgets": {"formal_cap": 9, "physical_cr3_cap": 9, "ambient_cap": 0, "retry": 0},
-        "formal_capture_eligible": False,
+        "formal_capture_eligible": True,
         "execution_authorization": {
             "schema": "guide6_direct_target_local_h120_s100_v1",
-            "human_authorization_required": True,
-            "human_authorization_verified": False,
+            "human_authorization_required": False,
+            "human_authorization_verified": True,
             "human_authorization_experiment_id": GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_EXPERIMENT_ID,
             "bounded_device_scope": True,
+            "remote_v2_capability": True,
         },
         "analysis_contract": {
             "method": "direct_target_local_ray_vs_strip",

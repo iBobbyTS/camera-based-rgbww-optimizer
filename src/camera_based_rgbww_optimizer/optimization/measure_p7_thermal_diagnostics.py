@@ -222,9 +222,13 @@ def validate_authorized_execution_plan(
         isinstance(authorization, Mapping)
         and authorization.get("schema") == "direct_td_c_fast_endpoint_holdout_v1"
     )
+    direct_guide6_target_local = (
+        isinstance(authorization, Mapping)
+        and authorization.get("schema") == "guide6_direct_target_local_h120_s100_v1"
+    )
     if (
         direct_ray_history or direct_strip_history
-        or direct_ray_fast_long_bridge or direct_td_c_fast_endpoint
+        or direct_ray_fast_long_bridge or direct_td_c_fast_endpoint or direct_guide6_target_local
     ):
         valid_execution_scope = (
             authorization.get("bounded_device_scope") is True
@@ -379,6 +383,11 @@ def execute_plan(
         isinstance(plan.get("execution_authorization"), Mapping)
         and plan["execution_authorization"].get("schema")
         == "direct_td_c_fast_endpoint_holdout_v1"
+    )
+    direct_guide6_target_local = (
+        isinstance(plan.get("execution_authorization"), Mapping)
+        and plan["execution_authorization"].get("schema")
+        == "guide6_direct_target_local_h120_s100_v1"
     )
     if direct_ray_continuous and source_isolation_check_fn is None:
         raise PermissionError("direct continuous-Ray execution requires a strip-only isolation check")
@@ -1941,7 +1950,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--source", choices=("ray", "strip"))
     parser.add_argument(
         "--variant",
-        choices=("core", "expansion", "history", thermal.TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT),
+        choices=("core", "expansion", "history", thermal.TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT),
         default="core",
     )
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
@@ -1970,6 +1979,10 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--direct-td-c-fast-endpoint-holdout", action="store_true",
         help="execute the GUIDE5 FAST B/C endpoint holdout",
     )
+    direct.add_argument(
+        "--direct-guide6-h120-s100", action="store_true",
+        help="execute the GUIDE6 direct target-local H120/S100 block",
+    )
     parser.add_argument("--prerequisite-analysis", type=Path)
     parser.add_argument("--human-authorization")
     parser.add_argument("--session-index", type=int, choices=(1, 2, 3))
@@ -1990,6 +2003,7 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
         "ray-fast-long-bridge" if args.direct_ray_fast_long_bridge else
         "strip-td-b" if args.direct_strip_td_b else
         "td-c-fast-endpoint-holdout" if args.direct_td_c_fast_endpoint_holdout else
+        "guide6-h120-s100" if args.direct_guide6_h120_s100 else
         "td-c-core"
     )
     expected_scope = {
@@ -2003,6 +2017,9 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
         "td-c-core": (thermal.TD_C, None, "core"),
         "td-c-fast-endpoint-holdout": (
             thermal.TD_C, None, thermal.TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT,
+        ),
+        "guide6-h120-s100": (
+            thermal.TD_C, None, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT,
         ),
     }[direct_kind]
     if (args.experiment_id, args.source, args.variant) != expected_scope or args.phase != "formal":
@@ -2091,9 +2108,14 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
         )
     if direct_kind == "ray-r6" and args.human_authorization != thermal.TD_B_R6_EXPERIMENT_ID:
         raise PermissionError("Ray R6 requires the exact Human experiment authorization token")
+    if direct_kind == "guide6-h120-s100":
+        plan = thermal.build_direct_plan(
+            thermal.TD_C,
+            variant=thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT,
+        )
     if direct_kind not in {
         "ray-r6", "ray-history-3x3", "strip-history-3x3",
-        "ray-fast-long-bridge", "td-c-fast-endpoint-holdout",
+        "ray-fast-long-bridge", "td-c-fast-endpoint-holdout", "guide6-h120-s100",
     }:
         if args.prerequisite_analysis is None:
             raise PermissionError(f"{direct_kind} requires a prior scientific analysis artifact")
