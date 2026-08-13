@@ -1160,6 +1160,12 @@ def _build_guide6_direct_target_local_h120_s100_plan() -> dict[str, Any]:
     add("ray", "D", "ray_postcondition", 6)
     add("ray", "A", "ray_postcondition", 7)
     add("ray", "A", "ray_q_after", 8)
+    frozen = {
+        "ray-h120-s50": shutters["ray"],
+        "ray-h120-s100": shutters["ray"],
+        "strip-h120-s50-fullscale": shutters["strip"],
+        "strip-h120-s100-fullscale": shutters["strip"],
+    }
     return {
         "schema": PLAN_SCHEMA_V2,
         "status": "execute_authorized",
@@ -1174,6 +1180,13 @@ def _build_guide6_direct_target_local_h120_s100_plan() -> dict[str, Any]:
         "timing_contract": timing_contract(2), "cold_proxy": 600, "cold_proxy_wait_s": 600,
         "native_raw_ambient_policy": AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
         "budgets": {"formal_cap": 9, "physical_cr3_cap": 9, "ambient_cap": 0, "retry": 0},
+        "frozen_shutters": frozen,
+        "exposure_setup_required": [],
+        "shutter_ledger_provenance": {
+            "owner": "experiment_capture_steps",
+            "required_cache_keys": list(sorted(frozen)),
+            "frozen_shutters_sha256": canonical_sha256(frozen),
+        },
         "formal_capture_eligible": True,
         "execution_authorization": {
             "schema": "direct_guide6_target_local_h120_s100_v1",
