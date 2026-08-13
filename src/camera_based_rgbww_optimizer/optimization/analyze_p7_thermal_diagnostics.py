@@ -60,6 +60,13 @@ TD_C_CORE_EXPECTED_SCORES = {
 }
 TD_C_CORE_EXPECTED_SCORE_ABS_TOLERANCE = 5e-10
 TD_C_ENDPOINT_SCHEMA = "guide5_td_c_fast_endpoint_holdout_analysis_v1"
+TD_C_ENDPOINT_DECOMPOSITION_SCHEMA = "guide5_td_c_fast_endpoint_residual_decomposition_v1"
+TD_C_ENDPOINT_ROOT = Path(
+    "/Volumes/4T/temp/rgbww-optimizer/guide5-td-c-fast-endpoint-holdout-20260813-073328"
+)
+TD_C_R6_ROOT = Path(
+    "/Volumes/4T/temp/rgbww-optimizer/guide4-ray-r6-20260808-20260808-153400-post-fix-valid/ray-r6"
+)
 
 
 def analyze_thermal_run(
@@ -1689,6 +1696,117 @@ def analyze_td_c_fast_endpoint_holdout(
                      "combined": {"path": str(combined_path), "sha256": _sha256(combined_path)}},
         "locks": {"legacy_td_c_expansion": True, "solver_sentinel_and_later": True},
         "advisor_review_required": True,
+    }
+
+
+def analyze_td_c_fast_endpoint_decomposition(
+    endpoint_root: str | Path, *, feature_ids: Sequence[str],
+    endpoint_analysis_artifact: str | Path, core_contrast_artifact: str | Path,
+    combined_artifact: str | Path, r6_root: str | Path,
+) -> dict[str, Any]:
+    """Decompose endpoint synthesis residuals without refitting any parent artifact."""
+
+    ids = tuple(feature_ids)
+    endpoint_path = Path(endpoint_root).resolve()
+    endpoint_report = _load_json(Path(endpoint_analysis_artifact).resolve())
+    core_report = _load_json(Path(core_contrast_artifact).resolve())
+    combined_report = _load_json(Path(combined_artifact).resolve())
+    if endpoint_report.get("schema") != TD_C_ENDPOINT_SCHEMA or endpoint_report.get("capture_count") != 8:
+        raise ValueError("endpoint decomposition requires the accepted eight-observation endpoint artifact")
+    if core_report.get("status") != "canonical_pass" or combined_report.get("status") != "canonical_pass":
+        raise ValueError("endpoint decomposition requires accepted immutable parent analyses")
+
+    rows = _load_jsonl(endpoint_path / "captures.jsonl")
+    endpoint_sessions: dict[int, dict[str, Any]] = defaultdict(dict)
+    for row in rows:
+        step = row["plan_step"]
+        endpoint_sessions[int(step["session_index"])][str(step["source_id"])] = _unit(
+            row["capture"]["feature_values"], ids,
+        )
+        endpoint_sessions[int(step["session_index"])]["state"] = str(step["state_id"])
+
+    core_path = Path(core_report["legacy_analysis"]["path"]).resolve()
+    core_rows = _load_jsonl(core_path.parent / "captures.jsonl")
+    core_ray = [_unit(r["capture"]["feature_values"], ids) for r in core_rows if r["plan_step"]["source_id"] == "ray"]
+    core_strip = [_unit(r["capture"]["feature_values"], ids) for r in core_rows if r["plan_step"]["source_id"] == "strip"]
+    core_mean = np.mean(np.vstack(core_strip), axis=0) - np.mean(np.vstack(core_ray), axis=0)
+    ray_history = combined_report["evidence"]["ray_sessions"]
+    strip_history = combined_report["evidence"]["strip_sessions"]
+    ray_root = Path(ray_history[0]["root"]).parent
+    strip_root = Path(strip_history[0]["root"]).parent
+    local_means: dict[str, np.ndarray] = {}
+    for state in ("B", "C"):
+        ray_pairs = _endpoint_history_source_pairs(ray_root, source="ray", state=state, feature_ids=ids, evidence=ray_history)
+        strip_pairs = _endpoint_history_source_pairs(strip_root, source="strip", state=state, feature_ids=ids, evidence=strip_history)
+        local_means[state] = np.mean(np.vstack([
+            (strip_q - strip_a) - (ray_q - ray_a)
+            for (ray_q, ray_a), (strip_q, strip_a) in zip(ray_pairs, strip_pairs, strict=True)
+        ]), axis=0)
+
+    vectors: dict[str, np.ndarray] = {}
+    variances: dict[str, np.ndarray] = {}
+    for state, indices in (("B", (1, 3)), ("C", (2, 4))):
+        endpoint_mean = np.mean(np.vstack([
+            endpoint_sessions[index]["strip"] - endpoint_sessions[index]["ray"]
+            for index in indices
+        ]), axis=0)
+        vectors[f"endpoint_mean_{state}"] = endpoint_mean
+        vectors[f"synthesis_residual_{state}"] = endpoint_mean - core_mean - local_means[state]
+        variances[f"endpoint_mean_{state}"] = (
+            _same_state_variance(source="strip", state=state)
+            + _same_state_variance(source="ray", state=state)
+        ) / 2.0
+        variances[f"synthesis_residual_{state}"] = variances[f"endpoint_mean_{state}"] + (
+            _same_state_variance(source="strip", state="A")
+            + _same_state_variance(source="ray", state="A")
+        ) / 4.0 + (
+            _same_state_variance(source="strip", state=state)
+            + _same_state_variance(source="strip", state="A")
+            + _same_state_variance(source="ray", state=state)
+            + _same_state_variance(source="ray", state="A")
+        ) / 3.0
+
+    r6_rows = _load_jsonl(Path(r6_root).resolve() / "captures.jsonl")
+    anchors = {
+        str(r["plan_step"].get("role")): _unit(r["capture"]["feature_values"], ids)
+        for r in r6_rows if r["plan_step"].get("role") in {"return_after_D", "return_after_B", "return_after_C"}
+    }
+    anchor_vectors = {
+        "A_after_B_minus_A_after_D": anchors["return_after_B"] - anchors["return_after_D"],
+        "A_after_C_minus_A_after_D": anchors["return_after_C"] - anchors["return_after_D"],
+    }
+    anchor_variance = 2.0 * _same_state_variance(source="ray", state="A")
+    vectors.update(anchor_vectors)
+    variances["A_after_B_minus_A_after_D"] = anchor_variance
+    variances["A_after_C_minus_A_after_D"] = anchor_variance
+    for name, state in (("B", "B"), ("C", "C")):
+        vectors[f"residual_minus_anchor_substitution_{name}"] = vectors[f"synthesis_residual_{name}"] - anchor_vectors[
+            f"A_after_{name}_minus_A_after_D"
+        ]
+        variances[f"residual_minus_anchor_substitution_{name}"] = variances[f"synthesis_residual_{name}"] + anchor_variance
+    vectors["B_minus_C_synthesis_residual"] = vectors["synthesis_residual_B"] - vectors["synthesis_residual_C"]
+    variances["B_minus_C_synthesis_residual"] = (
+        variances["synthesis_residual_B"] + variances["synthesis_residual_C"]
+        - 2.0 * ((_same_state_variance(source="strip", state="A") + _same_state_variance(source="ray", state="A")) / 4.0)
+    )
+    return {
+        "schema": TD_C_ENDPOINT_DECOMPOSITION_SCHEMA,
+        "status": "offline_derived_no_parent_refit",
+        "classification": "absolute_composition_rejected_endpoint_observations_retained",
+        "vectors": {name: {feature: float(value[i]) for i, feature in enumerate(ids)} for name, value in vectors.items()},
+        "scores": {name: direct_whitened_norm(value, variances[name]) for name, value in vectors.items()},
+        "covariance": {
+            "shared_observation_terms": "core_A_shared_between_B_and_C_is_cancelled_in_B_minus_C",
+            "synthesis_residual": "endpoint_mean + core_A_absolute_mean + combined_local_state_mean",
+            "refit_endpoint_data": False,
+        },
+        "evidence": {
+            "endpoint": {"path": str(endpoint_path), "sha256": _sha256(Path(endpoint_analysis_artifact).resolve())},
+            "core": {"path": str(core_path), "sha256": _sha256(Path(core_contrast_artifact).resolve())},
+            "combined": {"path": str(Path(combined_artifact).resolve()), "sha256": _sha256(Path(combined_artifact).resolve())},
+            "r6_root": str(Path(r6_root).resolve()),
+        },
+        "locks": {"new_B_anchor_direction": False, "C_validation": True, "solver_sentinel_and_later": True},
     }
 
 
@@ -3340,6 +3458,12 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--td-c-core-contrasts-v2-1", action="store_true")
     parser.add_argument("--legacy-td-c-core-analysis-artifact", type=Path)
     parser.add_argument("--td-c-core-contrasts-output", type=Path)
+    parser.add_argument("--td-c-endpoint-decomposition", action="store_true")
+    parser.add_argument("--td-c-endpoint-decomposition-output", type=Path)
+    parser.add_argument("--td-c-endpoint-analysis-artifact", type=Path)
+    parser.add_argument("--td-c-core-contrasts-artifact", type=Path)
+    parser.add_argument("--td-c-combined-artifact", type=Path)
+    parser.add_argument("--td-c-r6-root", type=Path)
     return parser.parse_args(argv)
 
 
@@ -3352,6 +3476,30 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.feature_ids is None:
         raise ValueError("--feature-ids is required for thermal run analysis")
     feature_ids = _feature_ids_from_artifact(args.feature_ids)
+    if args.td_c_endpoint_decomposition:
+        required = (
+            args.td_c_endpoint_analysis_artifact,
+            args.td_c_core_contrasts_artifact,
+            args.td_c_combined_artifact,
+            args.td_c_r6_root,
+            args.td_c_endpoint_decomposition_output,
+        )
+        if any(value is None for value in required):
+            raise ValueError("TD-C endpoint decomposition requires endpoint, core, combined, R6 and output paths")
+        output = args.td_c_endpoint_decomposition_output.resolve()
+        if output.exists():
+            raise FileExistsError("TD-C endpoint decomposition output is immutable and already exists")
+        report = analyze_td_c_fast_endpoint_decomposition(
+            args.run_dir,
+            feature_ids=feature_ids,
+            endpoint_analysis_artifact=args.td_c_endpoint_analysis_artifact,
+            core_contrast_artifact=args.td_c_core_contrasts_artifact,
+            combined_artifact=args.td_c_combined_artifact,
+            r6_root=args.td_c_r6_root,
+        )
+        _write_text_atomic(output, json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n")
+        print(output)
+        return 0
     if args.td_c_core_contrasts_v2_1:
         if (
             args.legacy_td_c_core_analysis_artifact is None

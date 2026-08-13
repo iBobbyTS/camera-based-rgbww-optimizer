@@ -1647,6 +1647,34 @@ class DirectR6Tests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "Ray-zero"):
                 measure.validate_direct_protocol_post_capture(run, plan, None)
 
+    def test_td_c_endpoint_decomposition_is_immutable_and_keeps_locks(self):
+        root = Path("/Volumes/4T/temp/rgbww-optimizer/guide5-td-c-fast-endpoint-holdout-20260813-073328")
+        artifact = root / "analysis-v2-residual-decomposition-derived-v2.json"
+        if not artifact.is_file():
+            self.skipTest("retained endpoint decomposition is unavailable")
+        report = json.loads(artifact.read_text())
+        self.assertEqual(report["schema"], "guide5_td_c_fast_endpoint_residual_decomposition_v1")
+        self.assertEqual(report["status"], "offline_derived_no_parent_refit")
+        self.assertEqual(report["classification"], "absolute_composition_rejected_endpoint_observations_retained")
+        self.assertIn("B_minus_C_synthesis_residual", report["scores"])
+        self.assertIn("A_after_B_minus_A_after_D", report["vectors"])
+        self.assertIn("A_after_C_minus_A_after_D", report["vectors"])
+        self.assertFalse(report["covariance"]["refit_endpoint_data"])
+        self.assertTrue(report["locks"]["C_validation"])
+        self.assertTrue(report["locks"]["solver_sentinel_and_later"])
+
+    def test_td_c_fast_anchor_direction_b_is_plan_only_and_exact_12_capture(self):
+        plan = thermal.build_direct_plan(
+            thermal.TD_C, variant=thermal.TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT,
+        )
+        self.assertEqual(plan["status"], "offline_conditionally_permitted")
+        self.assertFalse(plan["formal_capture_eligible"])
+        self.assertEqual(plan["guide_experiment_id"], thermal.TD_C_FAST_ANCHOR_DIRECTION_B_EXPERIMENT_ID)
+        self.assertEqual(plan["budgets"]["formal_cap"], 12)
+        self.assertEqual(plan["session_orders"], [["ray", "strip"], ["strip", "ray"]])
+        self.assertEqual([step["state_id"] for step in plan["captures"]], ["A", "B", "A", "A", "B", "A", "A", "B", "A", "A", "B", "A"])
+        self.assertTrue(plan["hard_locks"]["C_validation"])
+
 
 if __name__ == "__main__":
     unittest.main()
