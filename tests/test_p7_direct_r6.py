@@ -1728,6 +1728,8 @@ class DirectR6Tests(unittest.TestCase):
         self.assertTrue(plan["formal_capture_eligible"])
         self.assertFalse(plan["execution_authorization"]["human_authorization_required"])
         self.assertEqual(plan["guide_experiment_id"], thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_EXPERIMENT_ID)
+        self.assertEqual(plan["frozen_shutters"]["strip-h120-s100-fullscale"], "1/320")
+        self.assertNotEqual(plan["frozen_shutters"]["strip-h120-s100-fullscale"], "1/160")
         self.assertFalse(plan["analysis_contract"]["cross_experiment_absolute_synthesis"])
         self.assertEqual([step["role"] for step in plan["captures"]], [
             "ray_precondition", "ray_precondition", "ray_q_before",

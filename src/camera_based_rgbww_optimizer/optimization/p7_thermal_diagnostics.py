@@ -1134,8 +1134,11 @@ def _build_guide6_direct_target_local_h120_s100_plan() -> dict[str, Any]:
     block; no cross-experiment absolute synthesis is part of this plan.
     """
     commands = load_r1_commands()
+    # Reuse the already qualified H120/S100 strip exposure from the retained
+    # state-specific shutter cache.  1/160 was an unqualified guess and caused
+    # clipping before the first strip target observation could be accepted.
     shutters = {
-        "ray": "1/5000", "strip": "1/160",
+        "ray": "1/5000", "strip": "1/320",
     }
     captures = []
     def add(source: str, state: str, role: str, index: int, session: int = 1) -> None:
