@@ -180,8 +180,10 @@ This project is used only for the Human-owned and Human-maintained local photogr
 - When the thread is woken by the automation, or when the user sends a
   task-related message, first inspect whether the long-running task has completed.
   If it is incomplete, report only the current progress, verify that the automation
-  still covers the task, and end that response. If it is complete, proceed with the
-  next PLAN step according to the current task objective.
+  still covers the task, and end that response. If it is complete, the inspection is
+  only a handoff point: delete the obsolete automation and continue the current
+  GUIDE/PLAN route in the same turn. Never end merely because the monitored process
+  terminated.
 - For this handoff, `complete` means that the monitored process has terminated,
   whether it succeeded, failed, timed out, or was interrupted. A failed terminal
   state is not an incomplete long-running task. Delete the automation that no longer
@@ -195,6 +197,16 @@ This project is used only for the Human-owned and Human-maintained local photogr
   attempt becomes a self-completing task expected to exceed 10 minutes, perform the
   three liveness checks, create its replacement automation, and only then end the
   response.
+- The same-turn continuation rule applies to every terminal result, not only
+  engineering failures: after a successful acquisition, run the prescribed frozen
+  analyzer and follow its GUIDE branch; after a valid scientific negative, preserve
+  the evidence and follow the next scientific branch; after an ordinary device or
+  data failure, make the safe cleanup/diagnosis and continue with the permitted
+  corrected or recoverable attempt. A heartbeat/status response must not be treated
+  as a final handoff. The only valid reasons to stop instead of continuing are one
+  explicit `HUMAN_GATE_REQUIRED` or `ADVISOR_GATE_REQUIRED`, or a newly started
+  self-completing task that has completed its required liveness checks and has a
+  replacement automation configured successfully.
 - After a monitored failure, ending the resumed turn without continuing the route is
   permitted only when exactly one unresolved `HUMAN_GATE_REQUIRED` or
   `ADVISOR_GATE_REQUIRED` has been established, or after a newly started live task
