@@ -564,24 +564,34 @@ def _validate_commands_and_gates(
     command_steps = [group[0] for group in groups if group[0]["capture_role"] != "ambient"]
     commands = _load_jsonl(root / "commands.jsonl")
     td_c_warm = plan.get("execution_authorization", {}).get("schema") == "direct_td_c_core_authority_v1"
-    expected_command_count = len(command_steps) * (2 if td_c_warm else 1)
+    endpoint_warm = plan.get("execution_authorization", {}).get("schema") == "direct_td_c_fast_endpoint_holdout_v1"
+    expected_command_count = len(command_steps) * (3 if endpoint_warm else 2 if td_c_warm else 1)
     if len(commands) != expected_command_count:
         raise ValueError("direct command ledger count differs from protocol transitions")
-    if td_c_warm:
-        command_pairs = [commands[index:index + 2] for index in range(0, len(commands), 2)]
+    if td_c_warm or endpoint_warm:
+        command_width = 3 if endpoint_warm else 2
+        command_pairs = [commands[index:index + command_width] for index in range(0, len(commands), command_width)]
         for pair, step in zip(command_pairs, command_steps, strict=True):
-            precondition = step.get("warm_precondition")
+            preconditions = (
+                step.get("warm_precondition_sequence")
+                if endpoint_warm else [step.get("warm_precondition")]
+            )
             if (
-                not isinstance(precondition, Mapping)
-                or pair[0].get("event") != "warm_precondition_command_readback_verified"
-                or pair[0].get("source_id") != step.get("source_id")
-                or pair[0].get("state_id") != "D"
-                or pair[0].get("exact_command_hash") != precondition.get("exact_command_hash")
-                or pair[0].get("dwell_s") != 120
-                or pair[0].get("capture") is not False
+                not isinstance(preconditions, list)
+                or len(preconditions) != command_width - 1
+                or any(
+                    not isinstance(precondition, Mapping)
+                    or pair[index].get("event") != "warm_precondition_command_readback_verified"
+                    or pair[index].get("source_id") != step.get("source_id")
+                    or pair[index].get("state_id") != precondition.get("state_id")
+                    or pair[index].get("exact_command_hash") != precondition.get("exact_command_hash")
+                    or pair[index].get("dwell_s") != 120
+                    or pair[index].get("capture") is not False
+                    for index, precondition in enumerate(preconditions)
+                )
             ):
-                raise ValueError("TD-C warm precondition command ledger differs from D120")
-        capture_commands = [pair[1] for pair in command_pairs]
+                raise ValueError("TD-C warm precondition command ledger differs from protocol")
+        capture_commands = [pair[-1] for pair in command_pairs]
     else:
         capture_commands = commands
     for row, step in zip(capture_commands, command_steps, strict=True):
@@ -609,7 +619,7 @@ def _validate_commands_and_gates(
         if first["capture_role"] == "ambient":
             expected_gates.append((str(first["isolation_gate_before"]), "both_off"))
         else:
-            if td_c_warm:
+            if td_c_warm or endpoint_warm:
                 expected_gates.append((str(first["isolation_gate_before"]), "both_off"))
             gate_after = group[-1].get("isolation_gate_after")
             if gate_after:
