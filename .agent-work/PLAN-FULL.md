@@ -10,10 +10,71 @@ production/test 输入、runtime 状态机、设备授权或 hidden gate。
 `nonlinear/non-additive` 已由 Advisor 明确拒绝为过强分类，原始
 `analysis.json` 保持不可变。
 
-**当前路线状态：** `TD_C_CORE_ACCEPTED_WAITING_ADVISOR`
+**当前路线状态：** `TD_C_CORE_CORRECTED_REANALYSIS_THEN_FAST_B_C_HOLDOUT`
 
-**当前下一步：** 将已完成的 GUIDE5 TD-C core 结果交 Advisor 科学复核。TD-C
-expansion、solver sentinel 和 later stages 继续锁定，不执行任何新采集。
+**当前下一步：** 保持已完成的 TD-C core acquisition 与旧 `analysis.json` 不变，
+生成 corrected derived analysis；若精确通过，只执行新的 FAST B/C endpoint holdout。
+legacy expansion、solver sentinel 和 later stages 继续锁定。
+
+<!-- FEATURE-CONTEXT:GUIDE5-TD-C-FAST-ENDPOINT-HOLDOUT -->
+## GUIDE5-TD-C-FAST-ENDPOINT-HOLDOUT — Advisor 纠偏与最小后续动作
+
+**Advisor 决定：** 接受 TD-C core 8 帧；旧 `analysis.json` 保持不可变但其 estimand
+语义不得沿用。先生成 source-specific contrast covariance 的 derived artifact；通过后
+只解锁 `GUIDE5_TD_C_FAST_ENDPOINT_HOLDOUT_B_C_V1`。
+
+| 要求 | 验收证据 |
+| --- | --- |
+| Ray/strip/paired/order 使用各自 contrast covariance | derived artifact 与精确 score regression |
+| difference limit 从 source-level unit observation Monte Carlo 生成 | 实现测试拒绝 difference-center helper 路径 |
+| A offset 非零不是 pre-solver failure | refined classification + diagnostic-only zero result |
+| B/C 四 session、8/8、0 ambient、FAST reset600/op120 | canonical spec 与 fake-backend scheduler test |
+| holdout 只检验 repeatability 与 independent synthesis agreement | endpoint analyzer behavior tests |
+| legacy expansion、solver、sentinel/later 禁止 | spec/CLI rejection tests；PLAN locks |
+
+最小端到端结果：不可变 core-v2.1 精确通过后，执行一次新的 8-frame B/C endpoint
+holdout，分析后回 Advisor，不自动进入 solver。
+
+允许结构变化：只扩展现有 `p7_thermal_diagnostics.py` protocol builder、现有
+measurement CLI/runner、现有 analyzer 与对应 `test_p7_direct_r6.py` 行为测试；不得
+新增 runtime/framework/owner。
+
+<!-- SECTION:S01 -->
+### S01 — TD-C core source-specific derived contrasts
+
+- 权威：本轮 Advisor exact decision。
+- 依赖：已接受的 8-frame core root 和不可变 `analysis.json`。
+- 允许编辑：`analyze_p7_thermal_diagnostics.py`、`test_p7_direct_r6.py`。
+- 排除：采集、原 artifact 修改、variance/feature/coverage 改动、solver。
+- covariance：Ray pair=`2ΣR`；strip pair=`2ΣS_A`；paired offset pair=
+  `2(ΣR+ΣS_A)`；order mean contrast=`ΣR+ΣS_A`；absolute mean offset=
+  `(ΣR+ΣS_A)/4`。所有 limit 必须从 source-level unit observations 做 Monte Carlo，
+  不得以 difference vector 作为 unit center。
+- 验收：四个 max score 分别复现 `4.7728227800 / 5.3379311421 /
+  5.7765306838 / 3.2538875744` 且 pass；absolute score 非零且仅 diagnostic；derived
+  artifact 写入独立路径。
+- review：一次有材料价值的 bounded review（统计 estimand/covariance 语义）。
+
+<!-- SECTION:S02 -->
+### S02 — FAST B/C endpoint holdout
+
+- 权威：本轮 Advisor exact decision；仅在 S01 通过后执行。
+- 依赖：core-v2.1、combined FAST coordinate canonical artifact。
+- 允许编辑：`p7_thermal_diagnostics.py`、`measure_p7_thermal_diagnostics.py`、
+  `analyze_p7_thermal_diagnostics.py`、`test_p7_direct_r6.py` 与一个现有风格 wrapper。
+- 排除：legacy 1800/t_formal expansion、ambient、solver/probe/command adjustment、
+  sentinel/later stages。
+- 验收：四 session 精确为 B Ray→strip、C strip→Ray、B strip→Ray、C Ray→strip；
+  每 source `reset600→D120→A120→Q120→capture`；8/8/0；analyzer gate 为 B/C
+  paired-offset consistency + independent synthesis agreement，不 gate zero offset；
+  `retry=0` 禁止同一 run 内隐藏重采。
+- synthesis：`d_new_q - (mean_d_A_core + mean_local_q_combined)`；formal residual
+  covariance 必须等于新两-session endpoint mean、core 四-session A mean、combined
+  local-coordinate state mean三项独立 covariance之和；新 endpoint 不得回填或重拟合
+  core/combined artifact。
+- review：一次有材料价值的 bounded review（设备顺序与测量科学 gate）。
+
+计划复核状态：`APPROVED_AFTER_BOUNDED_CORRECTION`。
 
 ## 1. 不可变科学合同
 

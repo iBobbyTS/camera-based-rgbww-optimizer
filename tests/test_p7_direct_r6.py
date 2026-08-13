@@ -1487,6 +1487,92 @@ class DirectR6Tests(unittest.TestCase):
                     self.assertEqual(report["warm_precondition"], "reset600_then_D120_then_A120")
                     self.assertTrue(report["td_c_expansion_locked"])
 
+    def test_td_c_core_corrected_contrasts_match_advisor_estimands(self):
+        root = Path(
+            "/Volumes/4T/temp/rgbww-optimizer/"
+            "guide5-td-c-core-20260812-151638-noambient-fix"
+        )
+        if not root.is_dir():
+            self.skipTest("retained accepted TD-C core root is unavailable")
+        feature_ids = tuple(
+            json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"]
+        )
+        legacy_bytes = (root / "analysis.json").read_bytes()
+        with patch.object(
+            analyze,
+            "calibrate_direct_limits",
+            side_effect=AssertionError("difference-center helper must not be used"),
+        ):
+            report = analyze.analyze_td_c_core_contrasts_v2_1(
+                root,
+                feature_ids=feature_ids,
+                legacy_analysis_artifact=root / "analysis.json",
+            )
+        self.assertEqual((root / "analysis.json").read_bytes(), legacy_bytes)
+        self.assertEqual(report["status"], "canonical_pass")
+        self.assertEqual(
+            report["refined_status"],
+            "stable_order_invariant_nonzero_warm_A_cross_source_offset_established",
+        )
+        self.assertAlmostEqual(
+            report["ray_center_pairwise"]["maximum_score"], 4.7728227800, places=9,
+        )
+        self.assertAlmostEqual(
+            report["strip_center_pairwise"]["maximum_score"], 5.3379311421, places=9,
+        )
+        self.assertAlmostEqual(
+            report["paired_offset_pairwise"]["maximum_score"], 5.7765306838, places=9,
+        )
+        self.assertAlmostEqual(
+            report["source_order_contrast"]["score"], 3.2538875744, places=9,
+        )
+        self.assertEqual(report["source_order_contrast"]["decision"], "pass")
+        self.assertEqual(
+            report["absolute_offset"]["zero_compatibility"],
+            "fail_expected_pre_solver",
+        )
+        self.assertFalse(report["absolute_offset"]["hard_gate"])
+        self.assertFalse(report["absolute_offset"]["warm_A_cross_source_match"])
+        self.assertTrue(report["measurement_contract"]["source_level_monte_carlo"])
+        self.assertFalse(
+            report["measurement_contract"]["difference_vector_used_as_unit_center"],
+        )
+        self.assertFalse(report["locks"]["fast_B_C_endpoint_holdout"])
+        self.assertTrue(report["locks"]["legacy_td_c_expansion"])
+        self.assertTrue(report["locks"]["solver_sentinel_and_later"])
+        self.assertLess(report["absolute_offset"]["guarded_limit"], 20.0)
+
+    def test_td_c_core_corrected_cli_writes_once_without_mutating_legacy(self):
+        source = Path(
+            "/Volumes/4T/temp/rgbww-optimizer/"
+            "guide5-td-c-core-20260812-151638-noambient-fix"
+        )
+        if not source.is_dir():
+            self.skipTest("retained accepted TD-C core root is unavailable")
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "td-c-core"
+            root.mkdir()
+            for name in ("analysis.json", "captures.jsonl"):
+                (root / name).write_bytes((source / name).read_bytes())
+            legacy_bytes = (root / "analysis.json").read_bytes()
+            output = root / "analysis-v2.1-td-c-core-contrasts-derived.json"
+            argv = [
+                str(root),
+                "--feature-ids", str(thermal.POLICY_PATH),
+                "--td-c-core-contrasts-v2-1",
+                "--legacy-td-c-core-analysis-artifact", str(root / "analysis.json"),
+                "--td-c-core-contrasts-output", str(output),
+            ]
+            self.assertEqual(analyze.main(argv), 0)
+            self.assertTrue(output.is_file())
+            self.assertEqual(json.loads(output.read_text())["status"], "canonical_pass")
+            self.assertEqual((root / "analysis.json").read_bytes(), legacy_bytes)
+            derived_bytes = output.read_bytes()
+            with self.assertRaisesRegex(FileExistsError, "immutable"):
+                analyze.main(argv)
+            self.assertEqual(output.read_bytes(), derived_bytes)
+            self.assertEqual((root / "analysis.json").read_bytes(), legacy_bytes)
+
 
 if __name__ == "__main__":
     unittest.main()

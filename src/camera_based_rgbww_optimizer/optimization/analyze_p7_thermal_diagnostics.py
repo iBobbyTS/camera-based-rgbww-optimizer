@@ -18,6 +18,7 @@ from camera_based_rgbww_optimizer.measurement.hsi_policy_v2 import (
 )
 from camera_based_rgbww_optimizer.measurement.hsi_uncertainty import (
     DEFAULT_P6_RUN,
+    QUANTILE_METHOD,
     load_ray_repeat_groups,
 )
 from camera_based_rgbww_optimizer.measurement.recorded_exposure import (
@@ -45,6 +46,19 @@ POST_FIX_ORIGINAL_FILES = (
     "failure.json", "wrapper-result.json", "all-off-python.json",
     "all-off-shell.json", "all-off-shell.exit-status.txt",
 )
+TD_C_CORE_CONTRAST_SCHEMA = "guide5_td_c_core_contrasts_v2_1"
+TD_C_CORE_CONTRAST_CLASSIFICATION = (
+    "stable_order_invariant_nonzero_warm_A_cross_source_offset_established"
+)
+TD_C_CORE_CONTRAST_MC_SEED = 27072026
+TD_C_CORE_CONTRAST_MC_SAMPLES = 20000
+TD_C_CORE_EXPECTED_SCORES = {
+    "ray_pair_maximum": 4.7728227800,
+    "strip_pair_maximum": 5.3379311421,
+    "paired_offset_pair_maximum": 5.7765306838,
+    "source_order": 3.2538875744,
+}
+TD_C_CORE_EXPECTED_SCORE_ABS_TOLERANCE = 5e-10
 
 
 def analyze_thermal_run(
@@ -1427,6 +1441,292 @@ def analyze_td_c(
         "comparison_design": "order_balanced_paired_comparison_not_classic_abba",
         "warm_precondition": "reset600_then_D120_then_A120",
         "td_c_expansion_locked": True,
+    }
+
+
+def _source_level_contrast_limit(
+    terms: Sequence[tuple[np.ndarray, np.ndarray, float]],
+    *, seed: int = TD_C_CORE_CONTRAST_MC_SEED,
+    samples: int = TD_C_CORE_CONTRAST_MC_SAMPLES,
+) -> dict[str, Any]:
+    """Calibrate a contrast from noisy source observations, never a difference center."""
+
+    if samples < 1000 or not terms:
+        raise ValueError("TD-C contrast Monte Carlo requires terms and at least 1000 samples")
+    feature_count = len(terms[0][0])
+    covariance = np.zeros(feature_count, dtype=float)
+    contrast = np.zeros((samples, feature_count), dtype=float)
+    rng = np.random.default_rng(seed)
+    for center, variance, coefficient in terms:
+        center_values = np.asarray(center, dtype=float)
+        variance_values = np.asarray(variance, dtype=float)
+        if (
+            center_values.shape != (feature_count,)
+            or variance_values.shape != (feature_count,)
+            or np.any(~np.isfinite(center_values))
+            or np.any(~np.isfinite(variance_values))
+            or np.any(variance_values <= 0.0)
+        ):
+            raise ValueError("TD-C source observation differs from the feature contract")
+        noisy = center_values + rng.normal(
+            0.0, np.sqrt(variance_values), size=(samples, feature_count),
+        )
+        norms = np.linalg.norm(noisy, axis=1)
+        if np.any(~np.isfinite(norms)) or np.any(norms <= 0.0):
+            raise ValueError("TD-C source-level Monte Carlo produced invalid unit observations")
+        contrast += float(coefficient) * (noisy / norms[:, None])
+        covariance += float(coefficient) ** 2 * variance_values
+    scores = np.sqrt(np.sum(contrast * contrast / covariance, axis=1))
+    limit = float(np.quantile(scores, 0.9973, method=QUANTILE_METHOD))
+    return {
+        "statistic": "source_level_unit_observation_contrast_whitened_norm",
+        "seed": seed,
+        "sample_count": samples,
+        "quantile": 0.9973,
+        "guarded_limit": limit,
+        "unguarded_limit": limit,
+        "empirical_coverage": float(np.mean(scores <= limit)),
+        "difference_center_used": False,
+    }
+
+
+def _td_c_contrast_diagnostic(
+    value: np.ndarray,
+    variance: np.ndarray,
+    *,
+    terms: Sequence[tuple[np.ndarray, np.ndarray, float]],
+    zero_is_gate: bool = True,
+) -> dict[str, Any]:
+    limits = _source_level_contrast_limit(terms)
+    score = direct_whitened_norm(value, variance)
+    compatible = score <= float(limits["guarded_limit"])
+    return {
+        "score": score,
+        "guarded_limit": float(limits["guarded_limit"]),
+        "decision": "pass" if compatible else "fail",
+        "zero_compatibility": "compatible" if compatible else "fail_expected_pre_solver",
+        "hard_gate": zero_is_gate,
+        "monte_carlo": limits,
+    }
+
+
+def analyze_td_c_core_contrasts_v2_1(
+    experiment_root: str | Path,
+    *,
+    feature_ids: Sequence[str],
+    legacy_analysis_artifact: str | Path,
+) -> dict[str, Any]:
+    """Correct TD-C core estimands without modifying the accepted legacy artifact."""
+
+    root = Path(experiment_root).resolve()
+    ids = tuple(feature_ids)
+    if ids != tuple(_feature_ids_from_artifact(thermal.POLICY_PATH)):
+        raise ValueError("TD-C corrected analysis requires the frozen 58-feature identity")
+    legacy_path = Path(legacy_analysis_artifact).resolve()
+    if legacy_path != root / "analysis.json":
+        raise ValueError("TD-C corrected analysis requires the root legacy analysis")
+    legacy = _load_json(legacy_path)
+    if (
+        _sha256(legacy_path)
+        != "a4f4303b391c6eca5bf4a59fd1e95bf1b505b28bad4eda1c081f5d54d98a6aa0"
+        or legacy.get("status") != "td_c_core_pass_waiting_for_planner"
+        or legacy.get("capture_count") != 8
+    ):
+        raise ValueError("TD-C corrected analysis requires the accepted immutable legacy artifact")
+    rows = _load_jsonl(root / "captures.jsonl")
+    sessions: dict[int, dict[str, Any]] = defaultdict(dict)
+    for row in rows:
+        step = row.get("plan_step")
+        if not isinstance(step, Mapping) or step.get("state_id") != "A":
+            raise ValueError("TD-C corrected analysis requires the accepted A core captures")
+        session_index = int(step["session_index"])
+        source = str(step["source_id"])
+        sessions[session_index][source] = _unit(
+            _features(row, ids), ids,
+        )
+        if int(step["source_order"]) == 1:
+            sessions[session_index]["order"] = f"{source}_first"
+    if tuple(sorted(sessions)) != (1, 2, 3, 4) or any(
+        set(session) != {"ray", "strip", "order"} for session in sessions.values()
+    ):
+        raise ValueError("TD-C corrected analysis requires four exact paired sessions")
+
+    ray_variance = _same_state_variance(source="ray", state="A")
+    strip_variance = _same_state_variance(source="strip", state="A")
+    ray = [sessions[index]["ray"] for index in sorted(sessions)]
+    strip = [sessions[index]["strip"] for index in sorted(sessions)]
+    offsets = [strip[index] - ray[index] for index in range(4)]
+    ray_null_center = np.mean(np.vstack(ray), axis=0)
+    strip_null_center = np.mean(np.vstack(strip), axis=0)
+    cross_source_zero_null_center = np.mean(
+        np.vstack([ray_null_center, strip_null_center]), axis=0,
+    )
+
+    def pairwise(
+        values: Sequence[np.ndarray],
+        *,
+        terms_for_pair: Callable[[int, int], Sequence[tuple[np.ndarray, np.ndarray, float]]],
+        covariance: np.ndarray,
+    ) -> list[dict[str, Any]]:
+        output = []
+        for left in range(4):
+            for right in range(left + 1, 4):
+                output.append({
+                    "left_session": left + 1,
+                    "right_session": right + 1,
+                    **_td_c_contrast_diagnostic(
+                        values[right] - values[left], covariance,
+                        terms=terms_for_pair(left, right),
+                    ),
+                })
+        return output
+
+    ray_pairs = pairwise(
+        ray,
+        covariance=2.0 * ray_variance,
+        terms_for_pair=lambda left, right: (
+            (ray_null_center, ray_variance, 1.0),
+            (ray_null_center, ray_variance, -1.0),
+        ),
+    )
+    strip_pairs = pairwise(
+        strip,
+        covariance=2.0 * strip_variance,
+        terms_for_pair=lambda left, right: (
+            (strip_null_center, strip_variance, 1.0),
+            (strip_null_center, strip_variance, -1.0),
+        ),
+    )
+    offset_pairs = pairwise(
+        offsets,
+        covariance=2.0 * (ray_variance + strip_variance),
+        terms_for_pair=lambda left, right: (
+            (strip_null_center, strip_variance, 1.0),
+            (ray_null_center, ray_variance, -1.0),
+            (strip_null_center, strip_variance, -1.0),
+            (ray_null_center, ray_variance, 1.0),
+        ),
+    )
+    ray_first_indices = [
+        index for index in range(4)
+        if sessions[index + 1]["order"] == "ray_first"
+    ]
+    strip_first_indices = [
+        index for index in range(4)
+        if sessions[index + 1]["order"] == "strip_first"
+    ]
+    if len(ray_first_indices) != 2 or len(strip_first_indices) != 2:
+        raise ValueError("TD-C corrected analysis requires two sessions per source order")
+    order_value = np.mean(np.vstack([offsets[i] for i in strip_first_indices]), axis=0) - np.mean(
+        np.vstack([offsets[i] for i in ray_first_indices]), axis=0,
+    )
+    order_terms = [
+        (strip_null_center, strip_variance, coefficient)
+        for indices, coefficient in ((strip_first_indices, 0.5), (ray_first_indices, -0.5))
+        for index in indices
+    ] + [
+        (ray_null_center, ray_variance, -coefficient)
+        for indices, coefficient in ((strip_first_indices, 0.5), (ray_first_indices, -0.5))
+        for index in indices
+    ]
+    order = _td_c_contrast_diagnostic(
+        order_value, ray_variance + strip_variance, terms=order_terms,
+    )
+    mean_offset = np.mean(np.vstack(offsets), axis=0)
+    absolute_terms = [
+        term
+        for index in range(4)
+        for term in (
+            (cross_source_zero_null_center, strip_variance, 0.25),
+            (cross_source_zero_null_center, ray_variance, -0.25),
+        )
+    ]
+    absolute = _td_c_contrast_diagnostic(
+        mean_offset, (ray_variance + strip_variance) / 4.0,
+        terms=absolute_terms, zero_is_gate=False,
+    )
+    observed_scores = {
+        "ray_pair_maximum": max(row["score"] for row in ray_pairs),
+        "strip_pair_maximum": max(row["score"] for row in strip_pairs),
+        "paired_offset_pair_maximum": max(row["score"] for row in offset_pairs),
+        "source_order": float(order["score"]),
+    }
+    expected_scores_match = all(
+        math.isclose(
+            observed_scores[name], expected,
+            rel_tol=0.0, abs_tol=TD_C_CORE_EXPECTED_SCORE_ABS_TOLERANCE,
+        )
+        for name, expected in TD_C_CORE_EXPECTED_SCORES.items()
+    )
+    passes = (
+        all(
+            row["decision"] == "pass"
+            for row in (*ray_pairs, *strip_pairs, *offset_pairs)
+        )
+        and order["decision"] == "pass"
+        and absolute["decision"] == "fail"
+        and expected_scores_match
+    )
+    return {
+        "schema": TD_C_CORE_CONTRAST_SCHEMA,
+        "status": "canonical_pass" if passes else "advisor_recheck_required",
+        "legacy_status": str(legacy["status"]),
+        "refined_status": (
+            TD_C_CORE_CONTRAST_CLASSIFICATION
+            if passes else "td_c_core_corrected_estimand_pattern_mismatch"
+        ),
+        "legacy_analysis": {
+            "path": str(legacy_path), "sha256": _sha256(legacy_path), "immutable": True,
+        },
+        "capture_count": 8,
+        "ray_center_pairwise": {
+            "covariance": "2*Sigma_R", "rows": ray_pairs,
+            "maximum_score": observed_scores["ray_pair_maximum"],
+        },
+        "strip_center_pairwise": {
+            "covariance": "2*Sigma_S_A", "rows": strip_pairs,
+            "maximum_score": observed_scores["strip_pair_maximum"],
+        },
+        "paired_offset_pairwise": {
+            "definition": "d_i=strip_i-ray_i",
+            "covariance": "2*(Sigma_R+Sigma_S_A)", "rows": offset_pairs,
+            "maximum_score": observed_scores["paired_offset_pair_maximum"],
+        },
+        "source_order_contrast": {
+            "definition": "mean(strip_first_d)-mean(ray_first_d)",
+            "covariance": "Sigma_R+Sigma_S_A", **order,
+        },
+        "absolute_offset": {
+            "definition": "mean(strip_i-ray_i)",
+            "covariance": "(Sigma_R+Sigma_S_A)/4",
+            "mean_d_by_feature": {
+                feature_id: float(mean_offset[index])
+                for index, feature_id in enumerate(ids)
+            },
+            **absolute,
+            "warm_A_cross_source_offset_estimable": True,
+            "warm_A_cross_source_offset_repeatable": all(
+                row["decision"] == "pass" for row in offset_pairs
+            ),
+            "warm_A_cross_source_match": False,
+        },
+        "measurement_contract": {
+            "observer": "frozen", "feature_count": len(ids),
+            "coverage": 0.9973, "source_level_monte_carlo": True,
+            "difference_vector_used_as_unit_center": False,
+            "steady_claim": False, "P6_comparison": "locked",
+        },
+        "advisor_expected_score_regression": {
+            "expected": TD_C_CORE_EXPECTED_SCORES,
+            "observed": observed_scores,
+            "absolute_tolerance": TD_C_CORE_EXPECTED_SCORE_ABS_TOLERANCE,
+            "status": "pass" if expected_scores_match else "fail",
+        },
+        "locks": {
+            "fast_B_C_endpoint_holdout": not passes,
+            "legacy_td_c_expansion": True,
+            "solver_sentinel_and_later": True,
+        },
     }
 
 
@@ -2835,6 +3135,9 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--bridge-v2-analysis-artifact", type=Path)
     parser.add_argument("--strip-v3-analysis-artifact", type=Path)
     parser.add_argument("--combined-fast-history-analysis-output", type=Path)
+    parser.add_argument("--td-c-core-contrasts-v2-1", action="store_true")
+    parser.add_argument("--legacy-td-c-core-analysis-artifact", type=Path)
+    parser.add_argument("--td-c-core-contrasts-output", type=Path)
     return parser.parse_args(argv)
 
 
@@ -2847,6 +3150,25 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.feature_ids is None:
         raise ValueError("--feature-ids is required for thermal run analysis")
     feature_ids = _feature_ids_from_artifact(args.feature_ids)
+    if args.td_c_core_contrasts_v2_1:
+        if (
+            args.legacy_td_c_core_analysis_artifact is None
+            or args.td_c_core_contrasts_output is None
+        ):
+            raise ValueError("TD-C core contrasts v2.1 requires legacy analysis and output")
+        output = args.td_c_core_contrasts_output.resolve()
+        if output.exists():
+            raise FileExistsError("TD-C core contrasts output is immutable and already exists")
+        report = analyze_td_c_core_contrasts_v2_1(
+            args.run_dir,
+            feature_ids=feature_ids,
+            legacy_analysis_artifact=args.legacy_td_c_core_analysis_artifact,
+        )
+        _write_text_atomic(
+            output, json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n",
+        )
+        print(output)
+        return 0
     if args.combined_fast_history_analysis:
         required = (
             args.ray_history_root, args.strip_history_root,
