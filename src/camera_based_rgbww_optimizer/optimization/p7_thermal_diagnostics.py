@@ -1173,6 +1173,12 @@ def _build_guide6_direct_target_local_h120_s100_plan() -> dict[str, Any]:
         "guide_experiment_id": GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_EXPERIMENT_ID,
         "variant": GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT,
         "stage": "GUIDE6-HSI-INT100-S1", "phase": "formal", "source": "target_local_pair",
+        "inputs": {
+            "location": file_reference(LOCATION_PATH),
+            "code_duty_curve": file_reference(CURVE_PATH),
+            "policy": file_reference(POLICY_PATH),
+            "uncertainty": file_reference(UNCERTAINTY_PATH),
+        },
         "target": {"hue": 120, "sat": 100, "intensity": 100, "label": "H120/S100"},
         "captures": captures,
         "capture_ids": [row["capture_id"] for row in captures],
