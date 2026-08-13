@@ -1,66 +1,86 @@
-# PLAN — GUIDE5 TD-C exact-context decomposition v3 (offline)
+# PLAN — GUIDE6 direct target-local HSI INT100
 
-## 当前目标
+## 当前状态
 
-按 Advisor 最新决定，只完成离线 v3 分解；不得启动任何设备采集。
-
-- endpoint、TD-C core、Ray/strip FAST history 是唯一允许输入；R6 输入数必须为 0。
-- 旧 v2 residual-minus-anchor 结果不再用于科学门禁。
-- 从 primitive source observations 生成 exact D→A→B cross-source pre/post 对比，
-  序列化 observation coefficients、shared-observation cancellation、source-level
-  Monte Carlo guard 与 identity error。
-- v3 未通过结构和证据检查前，`GUIDE5_TD_C_FAST_ANCHOR_DIRECTION_B_V1` 保持锁定。
-
-当前离线 artifact：
+`v4-corrected/analysis-v4-exact-context-sign-corrected-derived.json` 已按 GUIDE6 生成；旧 v3
+保留为 immutable historical evidence。v4 的 scientific classification 为：
 
 ```text
-/Volumes/4T/temp/rgbww-optimizer/guide5-td-c-fast-endpoint-holdout-20260813-073328/analysis-v3-exact-context-anchor-decomposition-v1.json
-schema = guide5_td_c_fast_endpoint_exact_context_decomposition_v3
-classification = partially_valid_not_gate_complete
-r6_input_count = 0
+B_local_coordinate_transfer_unresolved_with_anchor_direction_compatible
 ```
 
-v3 本轮结果显示 B pre/post synthesis residual 与 B-minus-C residual 均为
-`fail`，B anchor-direction contrast 为 `pass`；这只是当前冻结数据上的离线
-分解结果，不等于 B physical endpoint bias，也不解锁实拍。`identity_error` 仅作
-代数一致性诊断，不替代 Advisor 的科学解释。
+v4 结果不再作为新的 Advisor gate：
 
-## 历史路线目标
+- B exact pre residual：`24.341350574998774`，fail；
+- B exact post residual：`24.37011085295253`，fail；
+- B anchor direction：`2.8927944104915984`，pass/compatible；
+- B-minus-C residual：`21.57223112462142`，fail；
+- `max_abs(post - pre - h_B) <= 1e-12`，`L2 <= 1e-12`。
 
-1. 保持 TD-C core 原 `analysis.json` 不变，生成 source-specific covariance 的
-   `analysis-v2.1-td-c-core-contrasts-derived.json`。
-2. 只有 derived artifact 精确复现 Advisor 指定的四类 pass 和预期非零 A offset 后，
-   才建立并执行 `GUIDE5_TD_C_FAST_ENDPOINT_HOLDOUT_B_C_V1`。
-3. endpoint holdout 完成后回 Advisor；solver、sentinel 和 later stages全程锁定。
+canonical v4 artifact SHA-256：
+`81d967834e51a8481bacb6bbb36ff9e8685b7f86a3383f3a8c4bd0bb547d5b40`
 
-## 离线纠偏
+## 已关闭的路线
 
-- Ray pair covariance：`2*Sigma_R`。
-- strip A pair covariance：`2*Sigma_S_A`。
-- paired offset pair covariance：`2*(Sigma_R+Sigma_S_A)`。
-- 两种 order 各 2 session 的 mean contrast covariance：`Sigma_R+Sigma_S_A`。
-- absolute A offset covariance：`(Sigma_R+Sigma_S_A)/4`，zero compatibility 仅诊断。
-- limit 由 source-level unit observation Monte Carlo 生成；禁止把 difference vector
-  传给 unit-observation helper。
-- 原 observer、58 features、variance、coverage、frame 和 exposure 不变。
+- 跨 experiment 的 `core A absolute offset + local coordinate` synthesis：永久禁止；
+- `GUIDE5_TD_C_FAST_ANCHOR_DIRECTION_B_V1`：`deferred_diagnostic_only`，不进入
+  active device path；
+- B pre/post 两个 variant：`deferred_diagnostic_only`；
+- C anchor decomposition、solver sentinel、P8 和后续阶段：保持锁定，直到本路线
+  的预定义分支解锁。
 
-## Endpoint holdout
+## 唯一 active next action：H120/S100 direct target-local block
 
-```text
-sessions = B Ray→strip / C strip→Ray / B strip→Ray / C Ray→strip
-per source = reset600 → D120 → A120 → Q120 → capture Q → off
-formal / physical / ambient = 8 / 8 / 0
-retry = 0
-steady claim = false
-```
+实验 ID：`GUIDE6-DIRECT-TARGET-LOCAL-H120-S100-V1`
 
-Gate 仅为 state-specific paired-offset repeatability，以及新 B/C absolute offset 对
-`core_A_absolute_offset + combined_local_state_coordinate` 的独立 holdout agreement。
-pre-solver strip-Ray offset 不与零做 pass/fail gate。
+计划 builder：`build_direct_plan(p7_td_c_balanced_source_comparison_v1,
+variant="guide6-direct-target-local-h120-s100")`
 
-## 停止边界
+当前状态：`human_authorization_pending`，`formal_capture_eligible=false`。
+本文件只整理 Human 授权请求，不代表已授权或已启动。
 
-- corrected core 若不能复现 Advisor 指定结构：`ADVISOR_GATE_REQUIRED`。
-- endpoint acquisition 或 analysis 完成：打包 derived 数据、代码与文档，
-  `ADVISOR_GATE_REQUIRED`。
-- 不运行 legacy 1800 s / t_formal expansion，不运行 solver/sentinel/later stages。
+目标块：`H120/S100/INT100`，FAST envelope，reset/off proxy `600 s`，每个 command
+或 precondition dwell `120 s`，不声称 steady/settled，ambient `0`。
+
+流程：
+
+1. Ray verified zero；Ray reset 600 s；`D(H120/S50) 120 s → A(H120/S100) 120 s
+   → Q(H120/S100) 120 s → capture Ray Q_before → Ray off`；
+2. Strip verified Ray zero；strip reset 600 s 一次；`D 120 s → A 120 s → candidate
+   Q 120 s → capture strip candidate`；
+3. strip all zero；Ray reset 600 s；重复 `D → A → Q`，capture Ray Q_after；
+4. cleanup、source isolation、Ray before/after compatibility 和 strip base drift
+   evidence 必须完整。
+
+本 block 的比较只使用同一 target block 的 direct Ray target 与 strip candidate：
+`e_q(u)=f_strip,q(u)-f_Ray,q`。禁止读取任何其他 experiment 的 absolute synthesis
+结果来替代 Ray target。
+
+Human 需要明确授权的范围仅为：启动该 bounded H120/S100 direct target-local
+block，包含 Ray/strip light control、camera capture、600 s reset proxy、120 s
+dwell 和正常/异常 cleanup；不包含固件刷写、远程部署、solver sentinel 或后续阶段。
+
+## 预定义后续分支
+
+- S-PASS：H120/S100 与 H120/S50 measurement valid；H0/S0、H300/S100 按 GUIDE6
+  预定义规则完成；Ray brackets、drift、cleanup 均通过后，自动进入 13-node INT100；
+- S-SOLVER-RETRY：核心点 measurement-valid 但 solver fail；一次 offline review，
+  一次同合同新 root repeat；再次失败才是 `ADVISOR_GATE_REQUIRED`；
+- S-MEASUREMENT：冻结 observer envelope 内无合法曝光；一次 bounded exposure
+  diagnosis，仍无合法曝光则 `ADVISOR_GATE_REQUIRED`；
+- S-REFERENCE：Ray before/after bracket failure；允许一次新 root repeat，第二次
+  failure 为 `ADVISOR_GATE_REQUIRED`；
+- 普通实现错误直接在当前 worktree 修复并恢复可复现结果，不构成停止门。
+
+## 禁止事项
+
+不得改 observer、58 features、CFA、exposure envelope、covariance、coverage、
+threshold、P6 topology、SAT0/HSI-RGB semantics 或 Human reset/dwell ceilings；不得
+把 solver failure、measurement failure 或 `unconfirmed` 宣称为物理 gamut；不得
+进入 P8、final LUT install 或 runtime installation。
+
+## 证据与复现
+
+源实现、测试、v4 artifact、v3 artifact、parent evidence 和 GUIDE6 均保持 Git/外置
+盘原路径可追溯。raw CR3/RAW/DNG、图像、decoded arrays、build/firmware/cache 不进
+Git；只保留小型 manifest、hash、quality、analysis、cleanup 和报告。

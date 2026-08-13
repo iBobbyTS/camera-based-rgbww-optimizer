@@ -62,6 +62,7 @@ TD_C_CORE_EXPECTED_SCORE_ABS_TOLERANCE = 5e-10
 TD_C_ENDPOINT_SCHEMA = "guide5_td_c_fast_endpoint_holdout_analysis_v1"
 TD_C_ENDPOINT_DECOMPOSITION_SCHEMA = "guide5_td_c_fast_endpoint_residual_decomposition_v1"
 TD_C_ENDPOINT_DECOMPOSITION_V3_SCHEMA = "guide5_td_c_fast_endpoint_exact_context_decomposition_v3"
+TD_C_ENDPOINT_DECOMPOSITION_V4_SCHEMA = "guide5_td_c_fast_endpoint_exact_context_decomposition_v4"
 TD_C_ENDPOINT_ROOT = Path(
     "/Volumes/4T/temp/rgbww-optimizer/guide5-td-c-fast-endpoint-holdout-20260813-073328"
 )
@@ -1816,6 +1817,35 @@ def analyze_td_c_fast_endpoint_exact_context_v3(
     endpoint_analysis_artifact: str | Path, core_contrast_artifact: str | Path,
     combined_artifact: str | Path,
 ) -> dict[str, Any]:
+    return _analyze_td_c_fast_endpoint_exact_context(
+        endpoint_root, feature_ids=feature_ids,
+        endpoint_analysis_artifact=endpoint_analysis_artifact,
+        core_contrast_artifact=core_contrast_artifact,
+        combined_artifact=combined_artifact,
+        sign_corrected=False,
+    )
+
+
+def analyze_td_c_fast_endpoint_exact_context_v4(
+    endpoint_root: str | Path, *, feature_ids: Sequence[str],
+    endpoint_analysis_artifact: str | Path, core_contrast_artifact: str | Path,
+    combined_artifact: str | Path,
+) -> dict[str, Any]:
+    """Create the immutable GUIDE6 sign-corrected exact-context artifact."""
+    return _analyze_td_c_fast_endpoint_exact_context(
+        endpoint_root, feature_ids=feature_ids,
+        endpoint_analysis_artifact=endpoint_analysis_artifact,
+        core_contrast_artifact=core_contrast_artifact,
+        combined_artifact=combined_artifact,
+        sign_corrected=True,
+    )
+
+
+def _analyze_td_c_fast_endpoint_exact_context(
+    endpoint_root: str | Path, *, feature_ids: Sequence[str],
+    endpoint_analysis_artifact: str | Path, core_contrast_artifact: str | Path,
+    combined_artifact: str | Path, sign_corrected: bool,
+) -> dict[str, Any]:
     """Use only FAST cross-source primitive observations for the Advisor v3 gate.
 
     In particular, this deliberately has no R6 input.  Coefficients are aggregated
@@ -1929,12 +1959,28 @@ def analyze_td_c_fast_endpoint_exact_context_v3(
         terms = endpoint_terms(state)
         core_a_terms(terms, 1.0)
         local_terms(terms, state, 1.0, anchor)
-        # residual = endpoint - (core A + local), so negate the latter terms.
+        # v3 negated core twice.  v4 keeps core strip=-1/n and Ray=+1/n,
+        # and negates only the local-coordinate primitive terms.
         for key, (value, variance, coefficient) in list(terms.items()):
             if key.startswith("endpoint:"):
                 continue
+            if sign_corrected and key.startswith("core:"):
+                continue
             terms[key] = (value, variance, -coefficient)
-        return contrast(terms)
+        result = contrast(terms)
+        if sign_corrected:
+            # GUIDE6 freezes the finite-sample guard from v3.  Independent,
+            # centered primitive noise is sign invariant, so retain v3's draw
+            # orientation while serializing the corrected scientific coefficients.
+            guard_terms = [
+                (value, variance, -coefficient if key.startswith("core:") else coefficient)
+                for key, (value, variance, coefficient) in sorted(terms.items())
+            ]
+            result[1]["monte_carlo"] = _source_level_contrast_limit(guard_terms)
+            result[1]["monte_carlo"]["sign_equivalent_draw_orientation"] = (
+                "v3_frozen_guard_core_sign_orientation"
+            )
+        return result
 
     pre_terms = make_synthesis("B", "A_after_D")
     post_terms = make_synthesis("B", "A_after_B")
@@ -1953,13 +1999,20 @@ def analyze_td_c_fast_endpoint_exact_context_v3(
     core_a_terms(c_terms, 1.0)
     local_terms(c_terms, "C", 1.0, "A_after_C")
     for key, (value, variance, coefficient) in list(c_terms.items()):
-        if not key.startswith("endpoint:"):
+        if not key.startswith("endpoint:") and not (sign_corrected and key.startswith("core:")):
             c_terms[key] = (value, variance, -coefficient)
     # e_B - e_C: merge B residual and negative C residual.
     bc_terms = dict(b_post_terms)
     for key, (value, variance, coefficient) in c_terms.items():
         add(bc_terms, key, value, variance, -coefficient)
     bc_vec, bc_meta = contrast(bc_terms)
+    if sign_corrected:
+        guard_terms = [
+            (value, variance, -coefficient if key.startswith("core:") else coefficient)
+            for key, (value, variance, coefficient) in sorted(bc_terms.items())
+        ]
+        bc_meta["monte_carlo"] = _source_level_contrast_limit(guard_terms)
+        bc_meta["monte_carlo"]["sign_equivalent_draw_orientation"] = "v3_frozen_guard_core_sign_orientation"
 
     def report(vector: np.ndarray, meta: dict[str, Any], *, zero_gate: bool = True) -> dict[str, Any]:
         score_terms = meta.pop("_terms_raw")
@@ -1968,20 +2021,53 @@ def analyze_td_c_fast_endpoint_exact_context_v3(
 
     pre_vec, pre_meta = pre_terms
     post_vec, post_meta = post_terms
-    identity = pre_vec - post_vec - h_vec
+    identity = (post_vec - pre_vec - h_vec) if sign_corrected else (pre_vec - post_vec - h_vec)
+    identity_max_abs = float(np.max(np.abs(identity)))
+    identity_l2 = float(np.linalg.norm(identity))
+    coefficient_identity: dict[str, float] = defaultdict(float)
+    if sign_corrected:
+        for item in post_meta["terms"]:
+            coefficient_identity[item["observation"]] += float(item["coefficient"])
+        for item in pre_meta["terms"]:
+            coefficient_identity[item["observation"]] -= float(item["coefficient"])
+        for item in h_meta["terms"]:
+            coefficient_identity[item["observation"]] -= float(item["coefficient"])
+        coefficient_identity = {
+            key: value for key, value in coefficient_identity.items() if value != 0.0
+        }
+        if coefficient_identity or identity_max_abs > 1e-12 or identity_l2 > 1e-12:
+            raise ValueError("v4 exact algebra identity failed")
     return {
-        "schema": TD_C_ENDPOINT_DECOMPOSITION_V3_SCHEMA,
+        "schema": (
+            TD_C_ENDPOINT_DECOMPOSITION_V4_SCHEMA
+            if sign_corrected else TD_C_ENDPOINT_DECOMPOSITION_V3_SCHEMA
+        ),
         "status": "offline_derived_no_parent_refit",
-        "classification": "partially_valid_not_gate_complete",
+        "classification": (
+            "B_local_coordinate_transfer_unresolved_with_anchor_direction_compatible"
+            if sign_corrected else "partially_valid_not_gate_complete"
+        ),
+        "absolute_synthesis_status": "rejected" if sign_corrected else "under_review",
+        "anchor_direction_status": "not_detected" if sign_corrected else "under_review",
+        "B_C_relative_transfer_status": "failed_not_physical_cause" if sign_corrected else "under_review",
         "scientific_scope": "FAST_cross_source_exact_D_A_B_context_only",
         "r6_input_count": 0,
         "vectors": {"B_exact_pre_synthesis_residual": {f: float(v) for f, v in zip(ids, pre_vec)}, "B_exact_post_synthesis_residual": {f: float(v) for f, v in zip(ids, post_vec)}, "B_anchor_direction": {f: float(v) for f, v in zip(ids, h_vec)}, "B_minus_C_synthesis_residual": {f: float(v) for f, v in zip(ids, bc_vec)}},
         "contrasts": {"B_exact_pre_synthesis_residual": report(pre_vec, pre_meta), "B_exact_post_synthesis_residual": report(post_vec, post_meta), "B_anchor_direction": report(h_vec, h_meta), "B_minus_C_synthesis_residual": report(bc_vec, bc_meta)},
-        "identity_error": float(direct_whitened_norm(identity, np.ones(len(ids)))),
+        "identity_error": identity_l2,
+        "identity_max_abs": identity_max_abs,
+        "identity_l2": identity_l2,
+        "coefficient_identity_nonzero_terms": coefficient_identity if sign_corrected else None,
         "identity_error_vector": {f: float(v) for f, v in zip(ids, identity)},
         "identity": "e_post - e_pre - h_B = 0 by primitive coefficient cancellation",
         "evidence": {"endpoint_analysis": {"path": str(Path(endpoint_analysis_artifact).resolve()), "sha256": _sha256(Path(endpoint_analysis_artifact).resolve())}, "core_analysis": {"path": str(Path(core_contrast_artifact).resolve()), "sha256": _sha256(Path(core_contrast_artifact).resolve())}, "combined_analysis": {"path": str(Path(combined_artifact).resolve()), "sha256": _sha256(Path(combined_artifact).resolve())}},
-        "locks": {"B_device_acquisition": True, "C_validation": True, "solver_sentinel_and_later": True},
+        "locks": {
+            "B_prepost_experiments": "deferred_diagnostic_only" if sign_corrected else True,
+            "C_validation": True,
+            "cross_experiment_absolute_synthesis": True,
+            "direct_target_local_sentinel": False if sign_corrected else True,
+            "solver_sentinel_and_later": not sign_corrected,
+        },
     }
 
 
@@ -3635,6 +3721,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--td-c-core-contrasts-output", type=Path)
     parser.add_argument("--td-c-endpoint-decomposition", action="store_true")
     parser.add_argument("--td-c-endpoint-exact-context-v3", action="store_true")
+    parser.add_argument("--td-c-endpoint-exact-context-v4", action="store_true")
     parser.add_argument("--td-c-endpoint-decomposition-output", type=Path)
     parser.add_argument("--td-c-endpoint-analysis-artifact", type=Path)
     parser.add_argument("--td-c-core-contrasts-artifact", type=Path)
@@ -3652,6 +3739,28 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.feature_ids is None:
         raise ValueError("--feature-ids is required for thermal run analysis")
     feature_ids = _feature_ids_from_artifact(args.feature_ids)
+    if args.td_c_endpoint_exact_context_v4:
+        required = (
+            args.td_c_endpoint_analysis_artifact,
+            args.td_c_core_contrasts_artifact,
+            args.td_c_combined_artifact,
+            args.td_c_endpoint_decomposition_output,
+        )
+        if any(value is None for value in required):
+            raise ValueError("TD-C exact-context v4 requires endpoint, core, combined and output paths")
+        output = args.td_c_endpoint_decomposition_output.resolve()
+        if output.exists():
+            raise FileExistsError("TD-C exact-context v4 output is immutable and already exists")
+        report = analyze_td_c_fast_endpoint_exact_context_v4(
+            args.run_dir,
+            feature_ids=feature_ids,
+            endpoint_analysis_artifact=args.td_c_endpoint_analysis_artifact,
+            core_contrast_artifact=args.td_c_core_contrasts_artifact,
+            combined_artifact=args.td_c_combined_artifact,
+        )
+        _write_text_atomic(output, json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n")
+        print(output)
+        return 0
     if args.td_c_endpoint_exact_context_v3:
         required = (
             args.td_c_endpoint_analysis_artifact,

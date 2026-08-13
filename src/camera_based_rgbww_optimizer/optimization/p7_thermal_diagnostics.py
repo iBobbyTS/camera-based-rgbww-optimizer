@@ -29,6 +29,8 @@ TD_C_FAST_ENDPOINT_HOLDOUT_EXPERIMENT_ID = (
 TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT = "fast-endpoint-holdout-b-c"
 TD_C_FAST_ANCHOR_DIRECTION_B_EXPERIMENT_ID = "GUIDE5_TD_C_FAST_ANCHOR_DIRECTION_B_V1"
 TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT = "fast-anchor-direction-b"
+GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_EXPERIMENT_ID = "GUIDE6-DIRECT-TARGET-LOCAL-H120-S100-V1"
+GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT = "guide6-direct-target-local-h120-s100"
 EXPERIMENT_IDS = (TD_A, TD_B, TD_C)
 TIMED_POINTS = (60, 120, 300, 600)
 SELECTABLE_SETTLE_POINTS = (60, 120, 300)
@@ -883,6 +885,8 @@ def build_direct_plan(
         plan = _build_td_c_fast_endpoint_holdout_plan()
     elif experiment_id == TD_C and variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT:
         plan = _build_td_c_fast_anchor_direction_b_plan()
+    elif experiment_id == TD_C and variant == GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT:
+        plan = _build_guide6_direct_target_local_h120_s100_plan()
     else:
         if experiment_id == TD_C and variant != "core":
             raise ValueError("TD-C direct execution supports core or frozen GUIDE5 variants")
@@ -901,7 +905,9 @@ def build_direct_plan(
     )
     plan.update({
         "status": (
-            "offline_conditionally_permitted"
+            "human_authorization_pending"
+            if variant == GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT
+            else "deferred_diagnostic_only"
             if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT
             else "execute_authorized"
         ),
@@ -910,19 +916,23 @@ def build_direct_plan(
             "schema": (
                 "direct_td_c_fast_endpoint_holdout_v1"
                 if variant == TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT
+                else "guide6_direct_target_local_h120_s100_v1"
+                if variant == GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT
                 else "direct_td_c_fast_anchor_direction_b_v1"
                 if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT
                 else f"direct_{'strip_td_b' if experiment_id == TD_B else 'td_c_core'}_authority_v1"
             ),
-            "human_authorization_verified": variant not in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT},
+            "human_authorization_verified": variant not in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT},
             "human_authorization_experiment_id": (
-                None if variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT} else experiment_id
+                None if variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT} else experiment_id
             ),
-            "bounded_device_scope": variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT},
-            "human_authorization_required": False,
+            "bounded_device_scope": variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT},
+            "human_authorization_required": variant == GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT,
             "experiment_id": (
                 TD_C_FAST_ENDPOINT_HOLDOUT_EXPERIMENT_ID
                 if variant == TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT else
+                GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_EXPERIMENT_ID
+                if variant == GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT else
                 TD_C_FAST_ANCHOR_DIRECTION_B_EXPERIMENT_ID
                 if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT else experiment_id
             ),
@@ -1083,7 +1093,7 @@ def _build_td_c_fast_anchor_direction_b_plan() -> dict[str, Any]:
                 )
                 captures.append(step)
     return {
-        "schema": PLAN_SCHEMA_V2, "status": "execute_authorized",
+        "schema": PLAN_SCHEMA_V2, "status": "deferred_diagnostic_only",
         "experiment_id": TD_C, "guide_experiment_id": TD_C_FAST_ANCHOR_DIRECTION_B_EXPERIMENT_ID,
         "variant": TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, "source": None,
         "stage": "TD-C", "phase": "formal", "created_at": datetime.now(timezone.utc).isoformat(),
@@ -1103,11 +1113,78 @@ def _build_td_c_fast_anchor_direction_b_plan() -> dict[str, Any]:
         "source_isolation_contract": "both_off_reset_before_each_source_observation",
         "budgets": {"formal_cap": 12, "ambient_cap": 0, "physical_cr3_cap": 12, "setup_physical_cr3_cap": 0, "retry": 0},
         "cleanup": {"python_finally": "required", "shell_trap": "EXIT_INT_TERM_HUP_required"},
-        "analysis_contract": {"a_pre_paired_consistency": True, "b_paired_consistency": True,
+        "analysis_contract": {"route_role": "deferred_diagnostic_only",
+                               "absolute_synthesis_input_allowed": False,
+                               "a_pre_paired_consistency": True, "b_paired_consistency": True,
                                "a_post_paired_consistency": True, "a_post_minus_a_pre_direction": True,
                                "independent_pre_anchor_transfer": True, "zero_offset_gate": False},
         "hard_locks": {"C_validation": True, "solver_sentinel": True, "later_stages": True},
         "formal_capture_eligible": False,
+    }
+
+
+def _build_guide6_direct_target_local_h120_s100_plan() -> dict[str, Any]:
+    """Plan-only first direct target-local H120/S100 block.
+
+    The block is intentionally not formal-eligible until Human authorizes it.
+    Ray before/after brackets and the strip candidate share the same target
+    block; no cross-experiment absolute synthesis is part of this plan.
+    """
+    commands = load_r1_commands()
+    shutters = {
+        "ray": "1/5000", "strip": "1/160",
+    }
+    captures = []
+    def add(source: str, state: str, role: str, index: int, session: int = 1) -> None:
+        command = _command(source, state, commands)
+        captures.append({
+            "capture_id": f"{index:03d}-{source}-h120-s100-{role}",
+            "source_id": source, "state_id": state, "target": "H120/S100/INT100",
+            "role": role, "session_index": session, "formal_measurement": True,
+            "command": command, "exact_command_hash": canonical_sha256(command),
+            "requested_elapsed_s": 120, "nominal_shutter": shutters[source],
+            "timing_acceptance": "observed_elapsed_record_only",
+            "strip_zero_required": source == "ray", "ray_zero_required": source == "strip",
+            "steady_claim": False,
+        })
+    add("ray", "D", "ray_precondition", 0)
+    add("ray", "A", "ray_precondition", 1)
+    add("ray", "A", "ray_q_before", 2)
+    add("strip", "D", "strip_precondition", 3)
+    add("strip", "A", "strip_precondition", 4)
+    add("strip", "A", "strip_candidate", 5)
+    add("ray", "D", "ray_postcondition", 6)
+    add("ray", "A", "ray_postcondition", 7)
+    add("ray", "A", "ray_q_after", 8)
+    return {
+        "schema": PLAN_SCHEMA_V2,
+        "status": "human_authorization_pending",
+        "experiment_id": TD_C,
+        "guide_experiment_id": GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_EXPERIMENT_ID,
+        "variant": GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT,
+        "stage": "GUIDE6-HSI-INT100-S1", "phase": "formal", "source": "target_local_pair",
+        "target": {"hue": 120, "sat": 100, "intensity": 100, "label": "H120/S100"},
+        "captures": captures,
+        "capture_ids": [row["capture_id"] for row in captures],
+        "session_orders": [["ray", "strip", "ray"]],
+        "timing_contract": timing_contract(2), "cold_proxy": 600, "cold_proxy_wait_s": 600,
+        "budgets": {"formal_cap": 9, "physical_cr3_cap": 9, "ambient_cap": 0, "retry": 0},
+        "formal_capture_eligible": False,
+        "execution_authorization": {
+            "schema": "guide6_direct_target_local_h120_s100_v1",
+            "human_authorization_required": True,
+            "human_authorization_verified": False,
+            "human_authorization_experiment_id": GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_EXPERIMENT_ID,
+            "bounded_device_scope": True,
+        },
+        "analysis_contract": {
+            "method": "direct_target_local_ray_vs_strip",
+            "cross_experiment_absolute_synthesis": False,
+            "ray_before_after_bracket": True,
+            "strip_base_drift_control": True,
+            "steady_claim": False,
+        },
+        "hard_locks": {"legacy_absolute_synthesis": True, "B_prepost": "deferred_diagnostic_only", "solver_sentinel": True, "P8": True},
     }
 
 def load_r1_commands(run_dir: str | Path = R1_RUN) -> dict[str, dict[str, int]]:

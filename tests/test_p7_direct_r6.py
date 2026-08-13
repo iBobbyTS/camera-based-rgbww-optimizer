@@ -1667,7 +1667,7 @@ class DirectR6Tests(unittest.TestCase):
         plan = thermal.build_direct_plan(
             thermal.TD_C, variant=thermal.TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT,
         )
-        self.assertEqual(plan["status"], "offline_conditionally_permitted")
+        self.assertEqual(plan["status"], "deferred_diagnostic_only")
         self.assertFalse(plan["formal_capture_eligible"])
         self.assertEqual(plan["guide_experiment_id"], thermal.TD_C_FAST_ANCHOR_DIRECTION_B_EXPERIMENT_ID)
         self.assertEqual(plan["budgets"]["formal_cap"], 12)
@@ -1692,6 +1692,48 @@ class DirectR6Tests(unittest.TestCase):
         for contrast in report["contrasts"].values():
             self.assertFalse(contrast["monte_carlo"]["difference_center_used"])
             self.assertTrue(contrast["primitive_terms"])
+
+    def test_td_c_endpoint_exact_context_v4_has_sign_corrected_scores_and_exact_identity(self):
+        root = Path("/Volumes/4T/temp/rgbww-optimizer/guide5-td-c-fast-endpoint-holdout-20260813-073328")
+        artifact = root / "v4-corrected/analysis-v4-exact-context-sign-corrected-derived.json"
+        if not artifact.is_file():
+            self.skipTest("retained v4 decomposition is unavailable")
+        report = json.loads(artifact.read_text())
+        self.assertEqual(report["schema"], "guide5_td_c_fast_endpoint_exact_context_decomposition_v4")
+        self.assertEqual(
+            report["classification"],
+            "B_local_coordinate_transfer_unresolved_with_anchor_direction_compatible",
+        )
+        self.assertLessEqual(report["identity_max_abs"], 1e-12)
+        self.assertLessEqual(report["identity_l2"], 1e-12)
+        self.assertEqual(report["coefficient_identity_nonzero_terms"], {})
+        expected = {
+            "B_exact_pre_synthesis_residual": (24.341350574998774, "fail"),
+            "B_exact_post_synthesis_residual": (24.37011085295253, "fail"),
+            "B_anchor_direction": (2.8927944104915984, "pass"),
+            "B_minus_C_synthesis_residual": (21.57223112462142, "fail"),
+        }
+        for name, (score, decision) in expected.items():
+            self.assertAlmostEqual(report["contrasts"][name]["score"], score, delta=1e-9)
+            self.assertEqual(report["contrasts"][name]["decision"], decision)
+        self.assertEqual(report["locks"]["B_prepost_experiments"], "deferred_diagnostic_only")
+        self.assertFalse(report["locks"]["direct_target_local_sentinel"])
+
+    def test_guide6_h120_s100_target_local_plan_is_human_pending_and_no_synthesis(self):
+        plan = thermal.build_direct_plan(
+            thermal.TD_C,
+            variant=thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT,
+        )
+        self.assertEqual(plan["status"], "human_authorization_pending")
+        self.assertFalse(plan["formal_capture_eligible"])
+        self.assertTrue(plan["execution_authorization"]["human_authorization_required"])
+        self.assertEqual(plan["guide_experiment_id"], thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_EXPERIMENT_ID)
+        self.assertFalse(plan["analysis_contract"]["cross_experiment_absolute_synthesis"])
+        self.assertEqual([step["role"] for step in plan["captures"]], [
+            "ray_precondition", "ray_precondition", "ray_q_before",
+            "strip_precondition", "strip_precondition", "strip_candidate",
+            "ray_postcondition", "ray_postcondition", "ray_q_after",
+        ])
 
 
 if __name__ == "__main__":
