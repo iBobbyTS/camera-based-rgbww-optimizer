@@ -218,7 +218,14 @@ def validate_authorized_execution_plan(
         and authorization.get("schema")
         == "direct_ray_fast_long_bridge_session_v1"
     )
-    if direct_ray_history or direct_strip_history or direct_ray_fast_long_bridge:
+    direct_td_c_fast_endpoint = (
+        isinstance(authorization, Mapping)
+        and authorization.get("schema") == "direct_td_c_fast_endpoint_holdout_v1"
+    )
+    if (
+        direct_ray_history or direct_strip_history
+        or direct_ray_fast_long_bridge or direct_td_c_fast_endpoint
+    ):
         valid_execution_scope = (
             authorization.get("bounded_device_scope") is True
             and authorization.get("human_authorization_required") is False
@@ -367,6 +374,11 @@ def execute_plan(
         isinstance(plan.get("execution_authorization"), Mapping)
         and plan["execution_authorization"].get("schema")
         == "direct_strip_history_session_v1"
+    )
+    direct_td_c_fast_endpoint = (
+        isinstance(plan.get("execution_authorization"), Mapping)
+        and plan["execution_authorization"].get("schema")
+        == "direct_td_c_fast_endpoint_holdout_v1"
     )
     if direct_ray_continuous and source_isolation_check_fn is None:
         raise PermissionError("direct continuous-Ray execution requires a strip-only isolation check")
@@ -741,29 +753,41 @@ def execute_plan(
             if plan["stage"] == "TD-A":
                 sleep_fn(float(plan["cold_proxy_wait_s"]))
             warm_precondition = first.get("warm_precondition")
+            warm_precondition_sequence = first.get("warm_precondition_sequence")
             if isinstance(warm_precondition, Mapping):
+                preconditions = [warm_precondition]
+            elif isinstance(warm_precondition_sequence, list) and warm_precondition_sequence:
+                preconditions = warm_precondition_sequence
+            else:
+                preconditions = []
+            if preconditions:
                 record_gate(str(first["isolation_gate_before"]))
-                sleep_fn(float(warm_precondition["reset_s"]))
-                precondition_step = {
-                    **dict(first),
-                    "capture_id": f"precondition-{first['capture_id']}",
-                    "state_id": str(warm_precondition["state_id"]),
-                    "command": dict(warm_precondition["command"]),
-                    "exact_command_hash": str(warm_precondition["exact_command_hash"]),
-                }
-                precondition_applied = dict(apply_command_fn(precondition_step))
-                precondition_readback = dict(readback_fn(precondition_step))
-                _append_jsonl(root / "commands.jsonl", {
-                    "at": _utc_now(), "event": "warm_precondition_command_readback_verified",
-                    "source_id": precondition_step["source_id"],
-                    "state_id": precondition_step["state_id"],
-                    "exact_command_hash": precondition_step["exact_command_hash"],
-                    "dwell_s": warm_precondition["dwell_s"],
-                    "capture": False,
-                    "applied": precondition_applied,
-                    "readback": precondition_readback,
-                })
-                sleep_fn(float(warm_precondition["dwell_s"]))
+                sleep_fn(float(plan["cold_proxy_wait_s"]))
+                for precondition_index, precondition in enumerate(preconditions, start=1):
+                    precondition_step = {
+                        **dict(first),
+                        "capture_id": (
+                            f"precondition-{precondition_index}-{first['capture_id']}"
+                        ),
+                        "state_id": str(precondition["state_id"]),
+                        "command": dict(precondition["command"]),
+                        "exact_command_hash": str(precondition["exact_command_hash"]),
+                    }
+                    precondition_applied = dict(apply_command_fn(precondition_step))
+                    precondition_readback = dict(readback_fn(precondition_step))
+                    _append_jsonl(root / "commands.jsonl", {
+                        "at": _utc_now(),
+                        "event": "warm_precondition_command_readback_verified",
+                        "precondition_index": precondition_index,
+                        "source_id": precondition_step["source_id"],
+                        "state_id": precondition_step["state_id"],
+                        "exact_command_hash": precondition_step["exact_command_hash"],
+                        "dwell_s": precondition["dwell_s"],
+                        "capture": False,
+                        "applied": precondition_applied,
+                        "readback": precondition_readback,
+                    })
+                    sleep_fn(float(precondition["dwell_s"]))
             applied = dict(apply_command_fn(first))
             readback = dict(readback_fn(first))
             _append_jsonl(root / "commands.jsonl", {
@@ -1144,11 +1168,16 @@ def validate_direct_protocol_post_capture(
                 raise ValueError("direct Ray capture lacks verified strip-zero evidence")
         elif (
             (plan.get("execution_authorization") or {}).get("schema")
-            == "direct_strip_history_session_v1"
+            in {"direct_strip_history_session_v1", "direct_td_c_fast_endpoint_holdout_v1"}
         ):
             ray_zero = capture.get("ray_zero_before_capture")
-            if not isinstance(ray_zero, Mapping):
-                raise ValueError("direct strip history capture lacks Ray-zero evidence")
+            ray_data = (
+                ray_zero.get("data")
+                or ((ray_zero.get("response") or {}).get("data"))
+                if isinstance(ray_zero, Mapping) else None
+            )
+            if not isinstance(ray_data, Mapping) or int(ray_data.get("intensity", -1)) != 0:
+                raise ValueError("direct strip capture lacks Ray-zero evidence")
         physical_row = physical_by_id.get(str(row["capture_id"]))
         if physical_row is None or int(physical_row.get("cr3_byte_count", 0)) <= 0:
             raise ValueError("direct protocol physical CR3 artifact is missing")
@@ -1194,6 +1223,16 @@ def validate_scientific_prerequisite(path: str | Path, *, kind: str) -> dict[str
             }
             and value.get("locks", {}).get("td_c_core") is False
             and value.get("locks", {}).get("td_c_expansion") is True
+        )
+    elif kind == "td-c-fast-endpoint-holdout":
+        valid = (
+            value.get("schema") == "guide5_td_c_core_contrasts_v2_1"
+            and value.get("status") == "canonical_pass"
+            and value.get("refined_status")
+            == "stable_order_invariant_nonzero_warm_A_cross_source_offset_established"
+            and value.get("locks", {}).get("fast_B_C_endpoint_holdout") is False
+            and value.get("locks", {}).get("legacy_td_c_expansion") is True
+            and value.get("locks", {}).get("solver_sentinel_and_later") is True
         )
     elif kind == "ray-fast-long-bridge":
         valid = (
@@ -1506,6 +1545,11 @@ def run_authorized_plan(
         and plan["execution_authorization"].get("schema")
         == "direct_strip_history_session_v1"
     )
+    direct_td_c_fast_endpoint = (
+        isinstance(plan.get("execution_authorization"), Mapping)
+        and plan["execution_authorization"].get("schema")
+        == "direct_td_c_fast_endpoint_holdout_v1"
+    )
     direct_protocol = (
         isinstance(plan.get("execution_authorization"), Mapping)
         and str(plan["execution_authorization"].get("schema", "")).startswith("direct_")
@@ -1654,7 +1698,7 @@ def run_authorized_plan(
             strip_zero_evidence = esphome.verified_light(
                 0, 0, 0, 0, 0, curve_path=thermal.CURVE_PATH,
             )
-        elif direct_strip_history:
+        elif direct_strip_history or direct_td_c_fast_endpoint:
             ray_zero_evidence = ray120c.set_cct(5600, intensity=0, gm=100)
             ray_readback = ray120c.get_cct()
             intensity = (
@@ -1663,7 +1707,7 @@ def run_authorized_plan(
                 or {}
             ).get("intensity")
             if int(intensity) != 0:
-                raise RuntimeError("strip history capture lacks Ray-zero readback")
+                raise RuntimeError("strip capture lacks Ray-zero readback")
         if source == "ambient":
             cache_key = None
         elif source == "ray":
@@ -1895,7 +1939,11 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         required=True,
     )
     parser.add_argument("--source", choices=("ray", "strip"))
-    parser.add_argument("--variant", choices=("core", "expansion", "history"), default="core")
+    parser.add_argument(
+        "--variant",
+        choices=("core", "expansion", "history", thermal.TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT),
+        default="core",
+    )
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--run-name", required=True)
     parser.add_argument("--phase", choices=("formal",), default="formal")
@@ -1918,6 +1966,10 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     )
     direct.add_argument("--direct-strip-td-b", action="store_true", help="execute direct strip TD-B path")
     direct.add_argument("--direct-td-c-core", action="store_true", help="execute direct TD-C core path")
+    direct.add_argument(
+        "--direct-td-c-fast-endpoint-holdout", action="store_true",
+        help="execute the GUIDE5 FAST B/C endpoint holdout",
+    )
     parser.add_argument("--prerequisite-analysis", type=Path)
     parser.add_argument("--human-authorization")
     parser.add_argument("--session-index", type=int, choices=(1, 2, 3))
@@ -1937,6 +1989,7 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
         "strip-history-3x3" if args.direct_strip_history_3x3 else
         "ray-fast-long-bridge" if args.direct_ray_fast_long_bridge else
         "strip-td-b" if args.direct_strip_td_b else
+        "td-c-fast-endpoint-holdout" if args.direct_td_c_fast_endpoint_holdout else
         "td-c-core"
     )
     expected_scope = {
@@ -1948,6 +2001,9 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
         ),
         "strip-td-b": (thermal.TD_B, "strip", "core"),
         "td-c-core": (thermal.TD_C, None, "core"),
+        "td-c-fast-endpoint-holdout": (
+            thermal.TD_C, None, thermal.TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT,
+        ),
     }[direct_kind]
     if (args.experiment_id, args.source, args.variant) != expected_scope or args.phase != "formal":
         raise PermissionError(f"{direct_kind} arguments do not match its direct protocol scope")
@@ -2024,11 +2080,20 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
             session_start_condition=args.session_start_condition,
             scientific_prerequisite=prerequisite,
         )
+    elif direct_kind == "td-c-fast-endpoint-holdout":
+        if args.prerequisite_analysis is None:
+            raise PermissionError("FAST endpoint holdout requires corrected TD-C core analysis")
+        prerequisite = validate_scientific_prerequisite(
+            args.prerequisite_analysis, kind="td-c-fast-endpoint-holdout",
+        )
+        plan = thermal.build_direct_plan(
+            thermal.TD_C, variant=thermal.TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT,
+        )
     if direct_kind == "ray-r6" and args.human_authorization != thermal.TD_B_R6_EXPERIMENT_ID:
         raise PermissionError("Ray R6 requires the exact Human experiment authorization token")
     if direct_kind not in {
         "ray-r6", "ray-history-3x3", "strip-history-3x3",
-        "ray-fast-long-bridge",
+        "ray-fast-long-bridge", "td-c-fast-endpoint-holdout",
     }:
         if args.prerequisite_analysis is None:
             raise PermissionError(f"{direct_kind} requires a prior scientific analysis artifact")

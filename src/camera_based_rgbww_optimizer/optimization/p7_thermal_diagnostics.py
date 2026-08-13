@@ -23,6 +23,10 @@ from camera_based_rgbww_optimizer.paths import PROJECT_ROOT
 TD_A = "p7_td_a_cold_settling_v1"
 TD_B = "p7_td_b_command_switch_history_v1"
 TD_C = "p7_td_c_balanced_source_comparison_v1"
+TD_C_FAST_ENDPOINT_HOLDOUT_EXPERIMENT_ID = (
+    "GUIDE5_TD_C_FAST_ENDPOINT_HOLDOUT_B_C_V1"
+)
+TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT = "fast-endpoint-holdout-b-c"
 EXPERIMENT_IDS = (TD_A, TD_B, TD_C)
 TIMED_POINTS = (60, 120, 300, 600)
 SELECTABLE_SETTLE_POINTS = (60, 120, 300)
@@ -88,6 +92,14 @@ RAY_FAST_LONG_BRIDGE_EXPERIMENT_ID = (
     "GUIDE5-RAY-FAST-LONG-BRIDGE-OP120-OP600-RESET600-RESET1800-V1"
 )
 RAY_FAST_TARGET_PATH = PROJECT_ROOT / "config/hsi/ray-fast-op120-targets-v1.json"
+TD_C_CORE_CONTRAST_ARTIFACT = Path(
+    "/Volumes/4T/temp/rgbww-optimizer/guide5-td-c-core-20260812-151638-noambient-fix/"
+    "analysis-v2.1-td-c-core-contrasts-derived.json"
+)
+COMBINED_FAST_HISTORY_ARTIFACT = Path(
+    "/Volumes/4T/temp/rgbww-optimizer/guide5-ray-fast-long-bridge-20260810-194802/"
+    "p7-combined-fast-history-coordinate-v1.json"
+)
 RAY_FAST_LONG_BRIDGE_MINI_SESSIONS = (
     ("C", "FAST", 600, 120),
     ("C", "LONG", 1800, 600),
@@ -863,25 +875,45 @@ def build_direct_plan(
         raise ValueError("direct execution supports Ray/strip TD-B and TD-C core")
     if experiment_id == TD_B and source != "strip":
         raise ValueError("strip TD-B direct execution requires source=strip")
-    if experiment_id == TD_C and (source is not None or variant != "core"):
-        raise ValueError("TD-C direct execution is the core paired protocol")
-    plan = build_diagnostic_plan(experiment_id, source=source, variant=variant)
+    if experiment_id == TD_C and source is not None:
+        raise ValueError("TD-C direct execution owns both sources")
+    if experiment_id == TD_C and variant == TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT:
+        plan = _build_td_c_fast_endpoint_holdout_plan()
+    else:
+        if experiment_id == TD_C and variant != "core":
+            raise ValueError("TD-C direct execution supports core or FAST B/C holdout")
+        plan = build_diagnostic_plan(experiment_id, source=source, variant=variant)
     for step in plan["captures"]:
         if step.get("formal_measurement") and step.get("requested_elapsed_s") is None:
             step["requested_elapsed_s"] = 600
             step["timing_status"] = "resolved"
             step["timing_acceptance"] = "observed_elapsed_record_only"
     plan["timing_resolution"] = (
-        "guide5_reset600_D120_A120"
-        if experiment_id == TD_C else "direct_operational_600"
+        "guide5_reset600_D120_A120_Q120"
+        if variant == TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT
+        else "guide5_reset600_D120_A120"
+        if experiment_id == TD_C
+        else "direct_operational_600"
     )
     plan.update({
         "status": "execute_authorized",
         "phase": "formal",
         "execution_authorization": {
-            "schema": f"direct_{'strip_td_b' if experiment_id == TD_B else 'td_c_core'}_authority_v1",
-            "human_authorization_verified": True,
-            "human_authorization_experiment_id": experiment_id,
+            "schema": (
+                "direct_td_c_fast_endpoint_holdout_v1"
+                if variant == TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT
+                else f"direct_{'strip_td_b' if experiment_id == TD_B else 'td_c_core'}_authority_v1"
+            ),
+            "human_authorization_verified": variant != TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT,
+            "human_authorization_experiment_id": (
+                None if variant == TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT else experiment_id
+            ),
+            "bounded_device_scope": variant == TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT,
+            "human_authorization_required": False,
+            "experiment_id": (
+                TD_C_FAST_ENDPOINT_HOLDOUT_EXPERIMENT_ID
+                if variant == TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT else experiment_id
+            ),
             "remote_v2_capability": True,
         },
         "camera": {
@@ -895,6 +927,117 @@ def build_direct_plan(
         },
     })
     return plan
+
+
+def _build_td_c_fast_endpoint_holdout_plan() -> dict[str, Any]:
+    commands = load_r1_commands()
+    shutters = load_r1_shutters()
+    sessions = (
+        ("B", ("ray", "strip")),
+        ("C", ("strip", "ray")),
+        ("B", ("strip", "ray")),
+        ("C", ("ray", "strip")),
+    )
+    captures = []
+    for session_index, (state, order) in enumerate(sessions, start=1):
+        for source_order, source in enumerate(order, start=1):
+            precondition = []
+            for precondition_state in ("D", "A"):
+                command = _command(source, precondition_state, commands)
+                precondition.append({
+                    "state_id": precondition_state,
+                    "command": command,
+                    "exact_command_hash": canonical_sha256(command),
+                    "dwell_s": 120,
+                    "capture": False,
+                })
+            step = _step(
+                source, state, 120, len(captures), commands,
+                session_index=session_index,
+                source_order=source_order,
+                session_state=state,
+                endpoint_role="direct_absolute_endpoint_holdout",
+                warm_precondition_sequence=precondition,
+                isolation_gate_before=f"session_{session_index}_{source}_reset600",
+                isolation_gate_after=f"session_{session_index}_{state}_after_{source}",
+            )
+            captures.append(step)
+    required = required_shutter_cache_keys(captures)
+    endpoint_shutters = {
+        "ray-h0-s0": "1/8000",
+        "ray-h300-s100": "1/2500",
+        "strip-h0-s0-fullscale": "1/500",
+        "strip-h300-s100-fullscale": "1/125",
+    }
+    frozen = {key: endpoint_shutters.get(key) for key in required}
+    inputs = {
+        "location": file_reference(LOCATION_PATH),
+        "policy": file_reference(POLICY_PATH),
+        "uncertainty": file_reference(UNCERTAINTY_PATH),
+        "manifold": file_reference(MANIFOLD_PATH),
+        "code_duty_curve": file_reference(CURVE_PATH),
+        "fast_targets": file_reference(RAY_FAST_TARGET_PATH),
+        "td_c_core_contrasts": file_reference(TD_C_CORE_CONTRAST_ARTIFACT),
+        "combined_fast_history": file_reference(COMBINED_FAST_HISTORY_ARTIFACT),
+    }
+    return {
+        "schema": PLAN_SCHEMA_V2,
+        "status": "execute_authorized",
+        "experiment_id": TD_C,
+        "guide_experiment_id": TD_C_FAST_ENDPOINT_HOLDOUT_EXPERIMENT_ID,
+        "variant": TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT,
+        "source": None,
+        "stage": "TD-C",
+        "phase": "formal",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "inputs": inputs,
+        "camera": {
+            "backend": "remote",
+            "v2_capture_timing_capability_available": True,
+            "v2_capture_capability": "remote_v2_capture_timing_v1",
+            "resolved_capture_settings": {
+                "owner": "remote_backend.resolve_capture_settings",
+                "iso": "100", "aperture": "f/4", "image_format": "RAW",
+            },
+        },
+        "timing_contract": timing_contract(2),
+        "cold_proxy": 600,
+        "cold_proxy_wait_s": 600,
+        "session_orders": [list(order) for _state, order in sessions],
+        "session_states": [state for state, _order in sessions],
+        "captures": captures,
+        "capture_ids": [step["capture_id"] for step in captures],
+        "frozen_shutters": frozen,
+        "exposure_setup_required": [key for key, value in frozen.items() if value is None],
+        "shutter_ledger_provenance": {
+            "owner": "experiment_capture_steps",
+            "required_cache_keys": list(required),
+            "frozen_shutters_sha256": canonical_sha256(frozen),
+        },
+        "native_raw_ambient_policy": AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+        "source_isolation_contract": "both_off_reset_before_each_source_observation",
+        "budgets": {
+            "formal_cap": 8, "ambient_cap": 0, "physical_cr3_cap": 8,
+            "setup_physical_cr3_cap": 0, "retry": 0,
+        },
+        "cleanup": {
+            "python_finally": "required", "shell_trap": "EXIT_INT_TERM_HUP_required",
+        },
+        "analysis_contract": {
+            "paired_offset_repeatability_by_state": ["B", "C"],
+            "independent_synthesis_holdout": True,
+            "zero_offset_gate": False,
+            "steady_claim": False,
+            "new_endpoint_refit_allowed": False,
+        },
+        "hard_locks": {
+            "legacy_td_c_expansion": True,
+            "solver_sentinel": True,
+            "remaining_9": True, "boundary": True, "holdout": True,
+            "Gate_6": True, "P8": True,
+        },
+        "formal_capture_eligible": True,
+    }
 
 def load_r1_commands(run_dir: str | Path = R1_RUN) -> dict[str, dict[str, int]]:
     plan = json.loads((Path(run_dir) / "plan.json").read_text(encoding="utf-8"))

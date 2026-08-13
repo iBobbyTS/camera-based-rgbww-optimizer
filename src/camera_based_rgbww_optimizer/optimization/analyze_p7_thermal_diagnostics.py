@@ -59,6 +59,7 @@ TD_C_CORE_EXPECTED_SCORES = {
     "source_order": 3.2538875744,
 }
 TD_C_CORE_EXPECTED_SCORE_ABS_TOLERANCE = 5e-10
+TD_C_ENDPOINT_SCHEMA = "guide5_td_c_fast_endpoint_holdout_analysis_v1"
 
 
 def analyze_thermal_run(
@@ -298,6 +299,18 @@ def analyze_thermal_run(
                     or any(int(observed.get(key, -1)) != 0 for key in esphome.PAYLOAD_CHANNELS)
                 ):
                     raise ValueError("direct Ray capture lacks verified strip-zero evidence")
+            elif (
+                plan.get("execution_authorization", {}).get("schema")
+                == "direct_td_c_fast_endpoint_holdout_v1"
+            ):
+                ray_zero = capture.get("ray_zero_before_capture")
+                ray_data = (
+                    ray_zero.get("data")
+                    or ((ray_zero.get("response") or {}).get("data"))
+                    if isinstance(ray_zero, Mapping) else None
+                )
+                if not isinstance(ray_data, Mapping) or int(ray_data.get("intensity", -1)) != 0:
+                    raise ValueError("direct strip endpoint capture lacks Ray-zero evidence")
             if capture_id not in physical_by_id:
                 raise ValueError("direct capture lacks physical return")
         quality = _load_json(root / "quality.json")
@@ -322,7 +335,14 @@ def analyze_thermal_run(
             enriched["engineering_quality_status"] = "pass"
             enriched["run_root"] = str(root)
             formal_rows.append(enriched)
-        if plan.get("experiment_id") == thermal.TD_B:
+        if plan.get("variant") == thermal.TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT:
+            result = analyze_td_c_fast_endpoint_holdout(
+                root,
+                feature_ids=feature_ids,
+                core_contrast_artifact=plan["inputs"]["td_c_core_contrasts"]["path"],
+                combined_artifact=plan["inputs"]["combined_fast_history"]["path"],
+            )
+        elif plan.get("experiment_id") == thermal.TD_B:
             result = analyze_td_b(formal_rows, feature_ids=feature_ids)
         else:
             result = analyze_td_c(
@@ -1456,6 +1476,7 @@ def _source_level_contrast_limit(
     feature_count = len(terms[0][0])
     covariance = np.zeros(feature_count, dtype=float)
     contrast = np.zeros((samples, feature_count), dtype=float)
+    nominal = np.zeros(feature_count, dtype=float)
     rng = np.random.default_rng(seed)
     for center, variance, coefficient in terms:
         center_values = np.asarray(center, dtype=float)
@@ -1475,7 +1496,12 @@ def _source_level_contrast_limit(
         if np.any(~np.isfinite(norms)) or np.any(norms <= 0.0):
             raise ValueError("TD-C source-level Monte Carlo produced invalid unit observations")
         contrast += float(coefficient) * (noisy / norms[:, None])
+        center_norm = float(np.linalg.norm(center_values))
+        if center_norm <= 0.0:
+            raise ValueError("TD-C source-level Monte Carlo requires nonzero centers")
+        nominal += float(coefficient) * center_values / center_norm
         covariance += float(coefficient) ** 2 * variance_values
+    contrast -= nominal
     scores = np.sqrt(np.sum(contrast * contrast / covariance, axis=1))
     limit = float(np.quantile(scores, 0.9973, method=QUANTILE_METHOD))
     return {
@@ -1487,6 +1513,172 @@ def _source_level_contrast_limit(
         "unguarded_limit": limit,
         "empirical_coverage": float(np.mean(scores <= limit)),
         "difference_center_used": False,
+    }
+
+
+def _endpoint_history_source_pairs(
+    root: Path, *, source: str, state: str, feature_ids: Sequence[str],
+    evidence: Sequence[Mapping[str, Any]],
+) -> list[tuple[np.ndarray, np.ndarray]]:
+    builder = thermal.build_ray_history_session_spec if source == "ray" else thermal.build_strip_history_session_spec
+    output: list[tuple[np.ndarray, np.ndarray]] = []
+    for session_index in (1, 2, 3):
+        session_root = root / f"session-{session_index}"
+        identity = next(
+            (row for row in evidence if int(row.get("session", 0)) == session_index),
+            None,
+        )
+        if (
+            not isinstance(identity, Mapping)
+            or Path(str(identity.get("root"))).resolve() != session_root
+            or identity.get("captures_sha256") != _sha256(session_root / "captures.jsonl")
+            or identity.get("quality_sha256") != _sha256(session_root / "quality.json")
+        ):
+            raise ValueError("endpoint synthesis history bytes differ from canonical combined evidence")
+        plan = _load_json(session_root / "experiment-spec.json")
+        expected = builder(
+            session_index, device_control_enabled=True,
+            session_start_condition=plan.get("session_start_condition"),
+        )
+        if plan != expected:
+            raise ValueError("endpoint synthesis history input differs from FAST protocol")
+        rows = _load_jsonl(session_root / "captures.jsonl")
+        values = {
+            str(row["plan_step"]["anchor_label"]): _unit(
+                row["capture"]["feature_values"], feature_ids,
+            )
+            for row in rows
+        }
+        output.append((values[state], values[f"A_after_{state}"]))
+    return output
+
+
+def analyze_td_c_fast_endpoint_holdout(
+    experiment_root: str | Path, *, feature_ids: Sequence[str],
+    core_contrast_artifact: str | Path, combined_artifact: str | Path,
+) -> dict[str, Any]:
+    """Gate the new B/C endpoint only on repeatability and independent synthesis."""
+
+    root = Path(experiment_root).resolve()
+    ids = tuple(feature_ids)
+    if ids != tuple(_feature_ids_from_artifact(thermal.POLICY_PATH)):
+        raise ValueError("TD-C endpoint requires the frozen 58-feature identity")
+    core_path = Path(core_contrast_artifact).resolve()
+    combined_path = Path(combined_artifact).resolve()
+    core = _load_json(core_path)
+    combined = _load_json(combined_path)
+    if (
+        core.get("schema") != TD_C_CORE_CONTRAST_SCHEMA
+        or core.get("status") != "canonical_pass"
+        or combined.get("schema") != "p7_combined_fast_history_coordinate_v1"
+        or combined.get("status") != "canonical_pass"
+    ):
+        raise ValueError("TD-C endpoint requires accepted core and combined evidence")
+    rows = _load_jsonl(root / "captures.jsonl")
+    sessions: dict[int, dict[str, Any]] = defaultdict(dict)
+    for row in rows:
+        step = row["plan_step"]
+        sessions[int(step["session_index"])][str(step["source_id"])] = _unit(
+            row["capture"]["feature_values"], ids,
+        )
+        sessions[int(step["session_index"])]["state"] = str(step["state_id"])
+    expected = {1: ("B", {"ray", "strip", "state"}), 2: ("C", {"ray", "strip", "state"}),
+                3: ("B", {"ray", "strip", "state"}), 4: ("C", {"ray", "strip", "state"})}
+    if any(index not in sessions or sessions[index].get("state") != state or set(sessions[index]) != keys
+           for index, (state, keys) in expected.items()):
+        raise ValueError("TD-C endpoint lacks four exact B/C paired sessions")
+
+    legacy_core = _load_json(core_path)["legacy_analysis"]["path"]
+    core_captures_path = Path(legacy_core).parent / "captures.jsonl"
+    if _sha256(core_captures_path) != "9354c116fdd37a2613b9d5adf597a30946688b84d4accd15e5c12d562f26651d":
+        raise ValueError("TD-C core captures differ from accepted immutable identity")
+    core_rows = _load_jsonl(core_captures_path)
+    core_centers = {source: [
+        _unit(row["capture"]["feature_values"], ids) for row in core_rows
+        if row["plan_step"]["source_id"] == source
+    ] for source in ("ray", "strip")}
+    ray_root = Path(combined["evidence"]["ray_sessions"][0]["root"]).parent
+    strip_root = Path(combined["evidence"]["strip_sessions"][0]["root"]).parent
+    state_reports: dict[str, Any] = {}
+    for state, indices in (("B", (1, 3)), ("C", (2, 4))):
+        ray_var = _same_state_variance(source="ray", state=state)
+        strip_var = _same_state_variance(source="strip", state=state)
+        ray_a_var = _same_state_variance(source="ray", state="A")
+        strip_a_var = _same_state_variance(source="strip", state="A")
+        endpoint_offsets = [sessions[index]["strip"] - sessions[index]["ray"] for index in indices]
+        endpoint_mean = np.mean(np.vstack(endpoint_offsets), axis=0)
+        repeat_terms = (
+            (sessions[indices[1]]["strip"], strip_var, 1.0),
+            (sessions[indices[1]]["ray"], ray_var, -1.0),
+            (sessions[indices[0]]["strip"], strip_var, -1.0),
+            (sessions[indices[0]]["ray"], ray_var, 1.0),
+        )
+        repeatability = _td_c_contrast_diagnostic(
+            endpoint_offsets[1] - endpoint_offsets[0],
+            2.0 * (strip_var + ray_var), terms=repeat_terms,
+        )
+        ray_pairs = _endpoint_history_source_pairs(
+            ray_root, source="ray", state=state, feature_ids=ids,
+            evidence=combined["evidence"]["ray_sessions"],
+        )
+        strip_pairs = _endpoint_history_source_pairs(
+            strip_root, source="strip", state=state, feature_ids=ids,
+            evidence=combined["evidence"]["strip_sessions"],
+        )
+        combined_values = [
+            (strip_q - strip_a) - (ray_q - ray_a)
+            for (ray_q, ray_a), (strip_q, strip_a) in zip(ray_pairs, strip_pairs, strict=True)
+        ]
+        combined_mean = np.mean(np.vstack(combined_values), axis=0)
+        core_mean = np.mean(np.vstack(core_centers["strip"]), axis=0) - np.mean(
+            np.vstack(core_centers["ray"]), axis=0,
+        )
+        synthesis = core_mean + combined_mean
+        residual = endpoint_mean - synthesis
+        endpoint_variance = (strip_var + ray_var) / 2.0
+        core_variance = (strip_a_var + ray_a_var) / 4.0
+        combined_variance = (strip_var + strip_a_var + ray_var + ray_a_var) / 3.0
+        residual_terms: list[tuple[np.ndarray, np.ndarray, float]] = []
+        for index in indices:
+            residual_terms.extend(((sessions[index]["strip"], strip_var, 0.5), (sessions[index]["ray"], ray_var, -0.5)))
+        for value in core_centers["strip"]:
+            residual_terms.append((value, strip_a_var, -0.25))
+        for value in core_centers["ray"]:
+            residual_terms.append((value, ray_a_var, 0.25))
+        for (ray_q, ray_a), (strip_q, strip_a) in zip(ray_pairs, strip_pairs, strict=True):
+            residual_terms.extend(((strip_q, strip_var, -1/3), (strip_a, strip_a_var, 1/3),
+                                   (ray_q, ray_var, 1/3), (ray_a, ray_a_var, -1/3)))
+        agreement = _td_c_contrast_diagnostic(
+            residual, endpoint_variance + core_variance + combined_variance,
+            terms=residual_terms,
+        )
+        state_reports[state] = {
+            "paired_offset_repeatability": repeatability,
+            "independent_synthesis_agreement": agreement,
+            "residual_covariance": (
+                "new_endpoint_mean+(core_A_absolute_mean)+(combined_local_state_mean)"
+            ),
+            "pre_solver_offset_zero_gated": False,
+            "combined_estimand_equivalence": (
+                "balanced_Latin_square_GLS_state_mean_equals_mean_of_three_state_cells"
+            ),
+        }
+    passed = all(
+        report[key]["decision"] == "pass"
+        for report in state_reports.values()
+        for key in ("paired_offset_repeatability", "independent_synthesis_agreement")
+    )
+    return {
+        "schema": TD_C_ENDPOINT_SCHEMA,
+        "status": "canonical_pass" if passed else "canonical_scientific_fail",
+        "classification": "fast_B_C_endpoint_holdout_pass" if passed else "fast_B_C_endpoint_holdout_failed",
+        "capture_count": 8,
+        "states": state_reports,
+        "evidence": {"core": {"path": str(core_path), "sha256": _sha256(core_path),
+                              "captures_sha256": _sha256(core_captures_path)},
+                     "combined": {"path": str(combined_path), "sha256": _sha256(combined_path)}},
+        "locks": {"legacy_td_c_expansion": True, "solver_sentinel_and_later": True},
+        "advisor_review_required": True,
     }
 
 

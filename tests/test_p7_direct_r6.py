@@ -153,7 +153,10 @@ class DirectR6Tests(unittest.TestCase):
                         "warm_white": 0, "cold_white": 0,
                     },
                 }
-            elif plan["execution_authorization"]["schema"] == "direct_strip_history_session_v1":
+            elif plan["execution_authorization"]["schema"] in {
+                "direct_strip_history_session_v1",
+                "direct_td_c_fast_endpoint_holdout_v1",
+            }:
                 output["ray_zero_before_capture"] = {
                     "response": {"data": {"intensity": 0}},
                 }
@@ -1572,6 +1575,77 @@ class DirectR6Tests(unittest.TestCase):
                 analyze.main(argv)
             self.assertEqual(output.read_bytes(), derived_bytes)
             self.assertEqual((root / "analysis.json").read_bytes(), legacy_bytes)
+
+    def test_td_c_fast_endpoint_plan_runs_exact_b_c_direct_protocol(self):
+        plan = thermal.build_direct_plan(
+            thermal.TD_C, variant=thermal.TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT,
+        )
+        self.assertEqual(
+            plan["guide_experiment_id"],
+            thermal.TD_C_FAST_ENDPOINT_HOLDOUT_EXPERIMENT_ID,
+        )
+        self.assertEqual(plan["budgets"], {
+            "formal_cap": 8, "ambient_cap": 0, "physical_cr3_cap": 8,
+            "setup_physical_cr3_cap": 0, "retry": 0,
+        })
+        self.assertEqual(plan["session_states"], ["B", "C", "B", "C"])
+        self.assertEqual(plan["session_orders"], [
+            ["ray", "strip"], ["strip", "ray"],
+            ["strip", "ray"], ["ray", "strip"],
+        ])
+        self.assertEqual(plan["frozen_shutters"], {
+            "ray-h0-s0": "1/8000", "ray-h300-s100": "1/2500",
+            "strip-h0-s0-fullscale": "1/500",
+            "strip-h300-s100-fullscale": "1/125",
+        })
+        self.assertTrue(all(
+            [row["state_id"] for row in step["warm_precondition_sequence"]]
+            == ["D", "A"]
+            and all(row["dwell_s"] == 120 for row in step["warm_precondition_sequence"])
+            and step["requested_elapsed_s"] == 120
+            for step in plan["captures"]
+        ))
+        with tempfile.TemporaryDirectory() as tmp:
+            run = self._execute_fake_protocol(plan, Path(tmp) / "endpoint")
+            rows = [json.loads(line) for line in (run / "captures.jsonl").read_text().splitlines()]
+            self.assertEqual(len(rows), 8)
+            self.assertTrue(all(
+                isinstance(row["capture"].get("strip_zero_before_capture"), dict)
+                if row["source_id"] == "ray"
+                else isinstance(row["capture"].get("ray_zero_before_capture"), dict)
+                for row in rows
+            ))
+            commands = [json.loads(line) for line in (run / "commands.jsonl").read_text().splitlines()]
+            self.assertEqual(
+                len([row for row in commands if row["event"] == "warm_precondition_command_readback_verified"]),
+                16,
+            )
+            report = analyze.analyze_td_c_fast_endpoint_holdout(
+                run,
+                feature_ids=tuple(json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"]),
+                core_contrast_artifact=thermal.TD_C_CORE_CONTRAST_ARTIFACT,
+                combined_artifact=thermal.COMBINED_FAST_HISTORY_ARTIFACT,
+            )
+            self.assertEqual(report["capture_count"], 8)
+            self.assertEqual(set(report["states"]), {"B", "C"})
+            for state in report["states"].values():
+                self.assertEqual(
+                    state["independent_synthesis_agreement"]["hard_gate"], True,
+                )
+                self.assertEqual(
+                    state["residual_covariance"],
+                    "new_endpoint_mean+(core_A_absolute_mean)+(combined_local_state_mean)",
+                )
+                self.assertFalse(state["pre_solver_offset_zero_gated"])
+            self.assertTrue(report["locks"]["legacy_td_c_expansion"])
+            self.assertTrue(report["locks"]["solver_sentinel_and_later"])
+            captures_path = run / "captures.jsonl"
+            rows[-1]["capture"]["ray_zero_before_capture"] = {
+                "response": {"data": {"intensity": 1}},
+            }
+            captures_path.write_text("".join(json.dumps(row) + "\n" for row in rows))
+            with self.assertRaisesRegex(ValueError, "Ray-zero"):
+                measure.validate_direct_protocol_post_capture(run, plan, None)
 
 
 if __name__ == "__main__":
