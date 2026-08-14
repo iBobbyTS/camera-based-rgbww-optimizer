@@ -1737,6 +1737,25 @@ class DirectR6Tests(unittest.TestCase):
             "ray_postcondition", "ray_postcondition", "ray_q_after",
         ])
 
+    def test_guide6_target_local_analyzer_uses_ray_bracket_and_local_contrast(self):
+        feature_ids = tuple(json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"])
+        vector = {feature_id: 1.0 for feature_id in feature_ids}
+        strip_vector = dict(vector)
+        strip_vector[feature_ids[0]] += 1e-6
+        captures = [
+            {"plan_step": {"role": "ray_q_before"}, "feature_values": dict(vector)},
+            {"plan_step": {"role": "ray_q_after"}, "feature_values": dict(vector)},
+            {"plan_step": {"role": "strip_candidate"}, "feature_values": strip_vector},
+        ]
+        report = analyze.analyze_td_c_direct_target_local(
+            captures, feature_ids=feature_ids,
+        )
+        self.assertEqual(report["guide6_branch"], "S-PASS")
+        self.assertTrue(report["measurement_valid"])
+        self.assertTrue(report["faithful"])
+        self.assertFalse(report["cross_experiment_absolute_synthesis"])
+        self.assertFalse(report["steady_claim"])
+
 
 if __name__ == "__main__":
     unittest.main()

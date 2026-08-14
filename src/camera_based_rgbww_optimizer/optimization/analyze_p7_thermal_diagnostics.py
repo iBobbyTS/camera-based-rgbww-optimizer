@@ -209,30 +209,36 @@ def analyze_thermal_run(
     if post_fix_revalidation:
         raise ValueError("post-fix revalidation only supports direct Ray R6")
     if str(plan.get("execution_authorization", {}).get("schema", "")).startswith("direct_"):
+        direct_schema = str(plan.get("execution_authorization", {}).get("schema", ""))
+        guide6_direct = direct_schema == "direct_guide6_target_local_h120_s100_v1"
         prerequisite = plan.get("scientific_prerequisite")
         if (
+            not guide6_direct
+            and (
             not isinstance(prerequisite, Mapping)
             or not isinstance(prerequisite.get("path"), str)
             or not isinstance(prerequisite.get("sha256"), str)
+            )
         ):
             raise ValueError("direct downstream run lacks its scientific prerequisite")
-        prerequisite_path = Path(prerequisite["path"]).resolve()
-        if (
-            prerequisite_path.is_symlink()
-            or not prerequisite_path.is_file()
-            or hashlib.sha256(prerequisite_path.read_bytes()).hexdigest()
-            != prerequisite["sha256"]
-        ):
-            raise ValueError("direct downstream prerequisite content hash drifted")
-        prerequisite_value = _load_json(prerequisite_path)
-        if plan.get("experiment_id") == thermal.TD_C:
-            if not str(prerequisite_value.get("status", "")).endswith("_pass"):
-                raise ValueError("TD-C direct run lacks a passing combined analysis")
-        elif prerequisite_value.get("formal_pass") is not True:
-            raise ValueError("strip TD-B direct run lacks a passing Ray analysis")
+        if not guide6_direct:
+            prerequisite_path = Path(prerequisite["path"]).resolve()
+            if (
+                prerequisite_path.is_symlink()
+                or not prerequisite_path.is_file()
+                or hashlib.sha256(prerequisite_path.read_bytes()).hexdigest()
+                != prerequisite["sha256"]
+            ):
+                raise ValueError("direct downstream prerequisite content hash drifted")
+            prerequisite_value = _load_json(prerequisite_path)
+            if plan.get("experiment_id") == thermal.TD_C:
+                if not str(prerequisite_value.get("status", "")).endswith("_pass"):
+                    raise ValueError("TD-C direct run lacks a passing combined analysis")
+            elif prerequisite_value.get("formal_pass") is not True:
+                raise ValueError("strip TD-B direct run lacks a passing Ray analysis")
         expected = thermal.build_direct_plan(
             str(plan["experiment_id"]),
-            source=plan.get("source"),
+            source=None if guide6_direct else plan.get("source"),
             variant=str(plan.get("variant", "core")),
         )
         if _stable_spec(plan) != _stable_spec(expected):
@@ -344,7 +350,9 @@ def analyze_thermal_run(
             enriched["engineering_quality_status"] = "pass"
             enriched["run_root"] = str(root)
             formal_rows.append(enriched)
-        if plan.get("variant") == thermal.TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT:
+        if guide6_direct:
+            result = analyze_td_c_direct_target_local(formal_rows, feature_ids=feature_ids)
+        elif plan.get("variant") == thermal.TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT:
             result = analyze_td_c_fast_endpoint_holdout(
                 root,
                 feature_ids=feature_ids,
@@ -1480,6 +1488,67 @@ def analyze_td_c(
         "comparison_design": "order_balanced_paired_comparison_not_classic_abba",
         "warm_precondition": "reset600_then_D120_then_A120",
         "td_c_expansion_locked": True,
+    }
+
+
+def analyze_td_c_direct_target_local(
+    captures: Sequence[Mapping[str, Any]], *, feature_ids: Sequence[str],
+) -> dict[str, Any]:
+    """Analyze one GUIDE6 target block without a cross-experiment prerequisite."""
+    by_role = {
+        str(row["plan_step"]["role"]): row
+        for row in captures
+        if isinstance(row.get("plan_step"), Mapping)
+    }
+    required = {
+        "ray_q_before", "ray_q_after", "strip_candidate",
+    }
+    if not required.issubset(by_role):
+        raise ValueError("GUIDE6 target-local analysis lacks required target observations")
+    ray_before = _unit(_features(by_role["ray_q_before"], feature_ids), feature_ids)
+    ray_after = _unit(_features(by_role["ray_q_after"], feature_ids), feature_ids)
+    strip_candidate = _unit(_features(by_role["strip_candidate"], feature_ids), feature_ids)
+    ray_bracket = frozen_same_state_compatibility_diagnostic(
+        ray_before, ray_after, source="ray", state="A", feature_ids=feature_ids,
+    )
+    ray_target = (ray_before + ray_after) / 2.0
+    contrast_variance = (
+        _same_state_variance(source="strip", state="A")
+        + _same_state_variance(source="ray", state="A") / 2.0
+    )
+    contrast_limits = calibrate_direct_limits(
+        strip_candidate - ray_target, contrast_variance, samples=1000,
+    )
+    contrast_score = direct_whitened_norm(
+        strip_candidate - ray_target, contrast_variance,
+    )
+    contrast_pass = contrast_score <= float(contrast_limits["guarded_limit"])
+    if ray_bracket["decision"] != "pass":
+        branch = "S-REFERENCE"
+        status = "guide6_s_reference_repeat_required"
+    elif not contrast_pass:
+        branch = "S-SOLVER-RETRY"
+        status = "guide6_s_solver_retry_required"
+    else:
+        branch = "S-PASS"
+        status = "guide6_s1_pass"
+    return {
+        "status": status,
+        "guide6_branch": branch,
+        "measurement_valid": True,
+        "faithful": bool(contrast_pass),
+        "method": "direct_target_local_ray_vs_strip_same_block",
+        "cross_experiment_absolute_synthesis": False,
+        "ray_before_after_bracket": ray_bracket,
+        "target_local_contrast": {
+            "statistic": str(contrast_limits["statistic"]),
+            "score": float(contrast_score),
+            "guarded_limit": float(contrast_limits["guarded_limit"]),
+            "decision": "pass" if contrast_pass else "fail",
+            "variance": "strip_A_per_capture + ray_A_per_capture / 2",
+        },
+        "steady_claim": False,
+        "locked_later_stages": ["B_prepost", "cross_experiment_absolute_synthesis", "solver_sentinel", "P8"],
     }
 
 
