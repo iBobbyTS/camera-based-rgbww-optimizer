@@ -1135,11 +1135,11 @@ def _build_guide6_direct_target_local_h120_s100_plan() -> dict[str, Any]:
     """
     commands = load_r1_commands()
     # Use the next shorter bounded strip exposure for this saturated target
-    # block. The prior attempts progressively reduced clipping; 1/1250 is the
+    # block. The prior attempts progressively reduced clipping; 1/1600 is the
     # next camera-supported diagnosis without changing the frozen observer or
     # quality gates.
     shutters = {
-        "ray": "1/5000", "strip": "1/1250",
+        "ray": "1/5000", "strip": "1/1600",
     }
     captures = []
     def add(source: str, state: str, role: str, index: int, session: int = 1) -> None:
