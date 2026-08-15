@@ -1,39 +1,27 @@
-# PLAN — GUIDE7 H120/S100 actual F1 local controllability
+# PLAN — HUMAN_GATE_REQUIRED: establish strip emission/path before F1 retry
 
-## Accepted prerequisite
+## Retained attempt
 
-- GUIDE8 root:
-  `/Volumes/4T/temp/rgbww-optimizer/guide8-ray-emission-exposure-20260815/20260815-163556-diagnostic`
-- Acquisition: complete, 4/16 diagnostic captures, formal 0, cleanup pass.
-- Frozen analyzer branch: `E-C / historical_shutter_requalified`.
-- Selected Ray shutter: `1/5000`; adjacent guard: `1/4000`.
-- Derived analysis SHA-256:
-  `4cf9aefed30acd141a8a08a2ee507aa26c9c7a9333253dd7b8d372bfd2278295`.
-- Versioned policy:
-  `config/hsi/ray-h120-s100-exposure-policy-v2.json`.
+- Root:
+  `/Volumes/4T/temp/rgbww-optimizer/guide7-h120-s100-f1-20260815/20260815-171419-ec-historical-shutter`
+- Git checkpoint: `19c766770b5685655b971c9ea3fb52e50c99373b`.
+- Result: wrapper child exit 1; Python and shell cleanup pass; Ray/strip zero
+  reconfirmed; worktree clean.
+- Completed: 1/16 accepted formal observations and 2 physical returns.
+- Ray `Q_before` at requalified `1/5000` passed 58/58.
+- The first strip base at `1/1600` returned a valid CR3/sidecar but rejected 19/58
+  required features; no probe, Jacobian, solver candidate or confirmation ran.
 
-## Immediate scientific action
+## Gate
 
-Execute one fresh
-`GUIDE6-DIRECT-TARGET-LOCAL-H120-S100-V1` root through the existing direct
-measurement owner. This is the GUIDE7 actual F1 local-controllability block
-unlocked by GUIDE8 E-C; no new implementation section or authorization gate is
-required.
+`HUMAN_GATE_REQUIRED`: controller command/readback showed the expected physical
+payload (`cold_white=481`, `green=4095`, other channels zero), but the camera
+response was about an order of magnitude below two previously accepted roots using
+the same nominal shutter and exact command. Repository-local evidence cannot prove
+whether the strip actually emitted normally or whether its power/optical path was
+interrupted.
 
-Frozen bounds:
-
-- Ray `Q_before` and `Q_after`: fixed `1/5000`, reset600/D120/A120/Q120.
-- Strip measurements: fixed `1/1600`, one reset600, then D120/A120/tested120.
-- Exact base command and four G-active probes remain those frozen in the direct
-  plan; at most four solver candidates, one rebase, and three confirmations.
-- Ray cap 2, strip cap 14, total/formal cap 16, ambient 0, in-run retry 0.
-- Frozen observer, ordered 58 features, quality, covariance, guarded coverage,
-  box constraints, 768 maximum step and backtrack remain unchanged.
-- Preserve source isolation and final all-off/zero evidence.
-
-## Branch continuation
-
-Run the frozen GUIDE6 analyzer once and follow only LC-A/B/C/D/E and the GUIDE7
-predefined continuation. Do not enter the 13-node grid, per-Hue boundary,
-Gate-6, P8 or LUT installation before the four-point direct sentinel is
-scientifically completed.
+Human must inspect the local strip power/emission and chart illumination path and
+confirm that the fixture is visibly illuminating the chart normally. Keep both
+sources off while inspecting. After confirmation, perform a fresh F1 attempt; do
+not pool or overwrite this failed root.
