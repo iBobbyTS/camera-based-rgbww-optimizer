@@ -79,6 +79,7 @@ class DirectR6Tests(unittest.TestCase):
 
     def _execute_fake_protocol(
         self, plan, root, *, observed_elapsed_fn=None, feature_values_fn=None,
+        applied_steps=None, diagnostic_status_fn=None,
     ):
         feature_ids = tuple(json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"])
         curve = json.loads(thermal.CURVE_PATH.read_text())
@@ -129,14 +130,18 @@ class DirectR6Tests(unittest.TestCase):
                     ),
                 },
             }
-            if step["formal_measurement"]:
+            if step["formal_measurement"] or plan["execution_authorization"]["schema"] == "direct_guide8_ray_emission_exposure_v1":
                 output["feature_values"] = (
                     feature_values_fn(step)
                     if feature_values_fn is not None
                     else {feature_id: 1.0 for feature_id in feature_ids}
                 )
                 output["direct_quality"] = {
-                    "status": "pass", "feature_count": len(feature_ids),
+                    "status": (
+                        diagnostic_status_fn(step)
+                        if diagnostic_status_fn is not None else "pass"
+                    ),
+                    "feature_count": len(feature_ids),
                 }
             else:
                 output["ambient_diagnostic"] = {
@@ -207,12 +212,15 @@ class DirectR6Tests(unittest.TestCase):
             "direct_strip_history_session_v1",
             "direct_ray_fast_long_bridge_session_v1",
             "direct_guide6_target_local_h120_s100_v1",
+            "direct_guide8_ray_emission_exposure_v1",
         }
 
         with patch.object(measure, "_validate_returned_sidecar", side_effect=fake_sidecar):
             return measure.execute_plan(
                 plan, run_dir=root,
-                apply_command_fn=lambda step: {"status": "pass"},
+                apply_command_fn=lambda step: (
+                    applied_steps.append(dict(step)) if applied_steps is not None else None
+                ) or {"status": "pass"},
                 readback_fn=lambda step: {"status": "pass"},
                 capture_fn=capture, both_off_gate_fn=gate,
                 source_isolation_check_fn=(
@@ -232,6 +240,9 @@ class DirectR6Tests(unittest.TestCase):
                     if plan["execution_authorization"]["schema"]
                     == "direct_ray_fast_long_bridge_session_v1"
                     else measure.validate_direct_protocol_post_capture
+                    if plan["execution_authorization"]["schema"]
+                    != "direct_guide8_ray_emission_exposure_v1"
+                    else measure.validate_direct_guide8_post_capture
                 ),
                 sleep_fn=lambda _seconds: None,
             )
@@ -1173,6 +1184,50 @@ class DirectR6Tests(unittest.TestCase):
         self.assertEqual(result, Path("/fake/guide6"))
         self.assertIsNotNone(routed["source_isolation_check_fn"])
 
+    def test_run_authorized_plan_guide8_uses_checkpointed_location(self):
+        spec = thermal.build_direct_plan(
+            thermal.TD_C, variant=thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT,
+        )
+        captured_builder_kwargs = {}
+
+        class FakeBackend:
+            backend_name = "remote"
+            v2_capture_capability = measure.REMOTE_V2_CAPABILITY
+
+            def connect(self):
+                return object()
+
+            def resolve_capture_settings(self, **_kwargs):
+                return SimpleNamespace(iso="100", aperture="f/4", image_format="RAW")
+
+            def capture_with_timing(self, **_kwargs):
+                raise AssertionError("routing test must not capture")
+
+        def fake_builder(**kwargs):
+            captured_builder_kwargs.update(kwargs)
+            return lambda _step: None
+
+        with (
+            patch.object(measure, "execute_plan", return_value=Path("/fake/guide8")),
+            patch.object(
+                measure.raw_validation, "build_native_raw_capture_step_fn",
+                side_effect=fake_builder,
+            ),
+        ):
+            result = measure.run_authorized_plan(
+                spec, output_dir=Path("/fake"), run_name="guide8",
+                camera_backend=FakeBackend(),
+            )
+
+        self.assertEqual(result, Path("/fake/guide8"))
+        self.assertEqual(
+            captured_builder_kwargs["location_config_path"],
+            Path("/fake/guide8/inputs/location.json"),
+        )
+        self.assertNotEqual(
+            captured_builder_kwargs["location_config_path"], thermal.LOCATION_PATH,
+        )
+
     def test_downstream_direct_specs_use_scientific_prerequisites(self):
         strip = thermal.build_direct_plan(thermal.TD_B, source="strip")
         td_c = thermal.build_direct_plan(thermal.TD_C)
@@ -2087,6 +2142,237 @@ class DirectR6Tests(unittest.TestCase):
             self.assertEqual(output.read_bytes(), output_before)
             self.assertEqual((roots[0] / "analysis.json").read_bytes(), legacy_before[0])
             self.assertEqual((roots[1] / "analysis.json").read_bytes(), legacy_before[1])
+
+    def _run_fake_guide8(self, ladder_statuses, *, evaluator=True):
+        spec = thermal.build_direct_plan(
+            thermal.TD_C, variant=thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT,
+        )
+        feature_ids = tuple(json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"])
+        measured = []
+        cleanup = []
+
+        def capture(step):
+            measured.append(step)
+            phase = step["diagnostic_phase"]
+            status = (
+                "pass" if phase == "control" else
+                "near_noise_only" if phase == "dark" else
+                ladder_statuses.get(step["nominal_shutter"], "near_noise_only")
+            )
+            return {
+                "direct_quality": {"status": status, "feature_count": 58},
+                "feature_values": {feature_id: 1.0 for feature_id in feature_ids},
+                "recorded_exposure": {"seconds": float(parse_nominal_exposure(step["nominal_shutter"]))},
+            }
+        result = measure.run_guide8_emission_exposure_protocol(
+            spec, measure_fn=capture, feature_ids=feature_ids,
+            pair_evaluator_fn=lambda _fast, _slow: {"status": "pass" if evaluator else "fail"},
+            cleanup_fn=lambda: cleanup.append(True) or {"status": "pass"},
+        )
+        return result, measured, cleanup
+
+    def test_guide8_spec_freezes_control_dark_ladder_and_caps(self):
+        spec = thermal.build_direct_plan(
+            thermal.TD_C, variant=thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT,
+        )
+        self.assertEqual(spec["guide_experiment_id"], thermal.GUIDE8_RAY_EMISSION_EXPOSURE_EXPERIMENT_ID)
+        self.assertEqual(spec["budgets"]["formal_cap"], 0)
+        self.assertEqual(spec["budgets"]["physical_cr3_cap"], 16)
+        self.assertEqual(spec["captures"][0]["nominal_shutter"], "1/2500")
+        self.assertEqual(spec["captures"][1]["nominal_shutter"], "1/250")
+        self.assertEqual(tuple(step["nominal_shutter"] for step in spec["captures"][2:]), thermal.GUIDE8_RAY_EMISSION_EXPOSURE_LADDER)
+        self.assertEqual([item["dwell_s"] for item in spec["captures"][0]["warm_precondition_sequence"]], [120, 120])
+        self.assertEqual([item["state_id"] for item in spec["captures"][2]["warm_precondition_sequence"]], ["D", "A", "Q"])
+        self.assertTrue(all(not step["warm_precondition_sequence"] for step in spec["captures"][3:]))
+
+    def test_guide8_control_and_dark_stop_before_ladder_and_cleanup(self):
+        spec = thermal.build_direct_plan(thermal.TD_C, variant=thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT)
+        feature_ids = tuple(json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"])
+        for failed_phase, expected_branch, expected_count in (("control", "E-A", 1), ("dark", "E-B", 2)):
+            seen = []
+            def capture(step, failed_phase=failed_phase):
+                seen.append(step)
+                status = "clipping" if step["diagnostic_phase"] == failed_phase else ("near_noise_only" if step["diagnostic_phase"] == "dark" else "pass")
+                return {"direct_quality": {"status": status, "feature_count": 58},
+                        "feature_values": {feature_id: 1.0 for feature_id in feature_ids},
+                        "recorded_exposure": {"seconds": float(parse_nominal_exposure(step["nominal_shutter"]))}}
+            cleaned = []
+            result = measure.run_guide8_emission_exposure_protocol(
+                spec, measure_fn=capture, feature_ids=feature_ids,
+                pair_evaluator_fn=lambda *_: True,
+                cleanup_fn=lambda: cleaned.append(True) or {"status": "pass"},
+            )
+            self.assertEqual(result["branch"], expected_branch)
+            self.assertEqual(len(seen), expected_count)
+            self.assertEqual(cleaned, [True])
+
+    def test_guide8_near_noise_continues_and_valid_pair_stops_early(self):
+        result, measured, cleanup = self._run_fake_guide8({
+            "1/5000": "near_noise_only", "1/4000": "pass", "1/3200": "pass",
+        })
+        self.assertEqual(result["branch"], "E-D")
+        self.assertEqual(result["selected_nominal_shutter"], "1/4000")
+        self.assertEqual(result["guard_nominal_shutter"], "1/3200")
+        self.assertEqual(len(measured), 5)
+        self.assertEqual(cleanup, [True])
+
+    def test_guide8_ratio_above_1_25_cannot_form_pair(self):
+        evaluated = []
+        spec = thermal.build_direct_plan(thermal.TD_C, variant=thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT)
+        feature_ids = tuple(json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"])
+        valid = {"1/3200", "1/2500", "1/2000"}
+        def capture(step):
+            status = "pass" if step["diagnostic_phase"] == "control" or step["nominal_shutter"] in valid else "near_noise_only"
+            return {"direct_quality": {"status": status, "feature_count": 58}, "feature_values": {feature_id: 1.0 for feature_id in feature_ids}, "recorded_exposure": {"seconds": float(parse_nominal_exposure(step["nominal_shutter"]))}}
+        result = measure.run_guide8_emission_exposure_protocol(
+            spec, measure_fn=capture, feature_ids=feature_ids,
+            pair_evaluator_fn=lambda a, b: evaluated.append((a, b)) or {"status": "pass"},
+        )
+        self.assertEqual(result["selected_nominal_shutter"], "1/2500")
+        self.assertEqual(len(evaluated), 1)
+
+    def test_guide8_clipping_nonfinite_and_shape_failure_stop(self):
+        result, measured, _ = self._run_fake_guide8({"1/5000": "near_noise_only", "1/4000": "clipping"})
+        self.assertEqual(result["branch"], "E-E")
+        self.assertEqual(len(measured), 4)
+        for status in ("clipping", "nonfinite"):
+            cleaned = []
+            spec = thermal.build_direct_plan(thermal.TD_C, variant=thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT)
+            feature_ids = tuple(json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"])
+            def capture(step, status=status):
+                if step["diagnostic_phase"] == "control":
+                    current = "pass"
+                elif step["diagnostic_phase"] == "dark":
+                    current = "near_noise_only"
+                else:
+                    current = status
+                return {
+                    "direct_quality": {"status": current, "feature_count": 58},
+                    "feature_values": {feature_id: 1.0 for feature_id in feature_ids},
+                    "recorded_exposure": {"seconds": float(parse_nominal_exposure(step["nominal_shutter"]))},
+                }
+            with self.assertRaisesRegex(RuntimeError, "non-scientific quality/evidence failure"):
+                measure.run_guide8_emission_exposure_protocol(
+                    spec, measure_fn=capture, feature_ids=feature_ids,
+                    pair_evaluator_fn=lambda *_: True,
+                    cleanup_fn=lambda: cleaned.append(True) or {"status": "pass"},
+                )
+            self.assertEqual(cleaned, [True])
+        result, measured, _ = self._run_fake_guide8({"1/5000": "pass", "1/4000": "pass"}, evaluator=False)
+        self.assertEqual(result["branch"], "E-G")
+        self.assertEqual(len(measured), 4)
+
+    def test_guide8_near_noise_to_cap_is_e_f(self):
+        result, measured, cleanup = self._run_fake_guide8({})
+        self.assertEqual(result["branch"], "E-F")
+        self.assertEqual(len(measured), 16)
+        self.assertEqual(cleanup, [True])
+
+    def test_guide8_execute_plan_keeps_q_on_until_final_cleanup(self):
+        plan = thermal.build_direct_plan(
+            thermal.TD_C, variant=thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT,
+        )
+        applied = []
+        with tempfile.TemporaryDirectory() as temporary, patch.object(
+            analyze, "evaluate_guide8_pair_captures", return_value={"status": "pass"},
+        ):
+            root = Path(temporary) / "guide8"
+            self._execute_fake_protocol(
+                plan, root, applied_steps=applied,
+                diagnostic_status_fn=lambda step: (
+                    "near_noise_only" if step["diagnostic_phase"] == "dark" else "pass"
+                ),
+            )
+            run = json.loads((root / "run.json").read_text())
+            evidence = json.loads((root / "guide8-emission-exposure.json").read_text())
+        self.assertEqual(run["cleanup"], "pass")
+        self.assertEqual(evidence["branch"], "E-C")
+        q_index = next(index for index, step in enumerate(applied) if step["state_id"] == "Q")
+        self.assertTrue(all(float(step["command"]["intensity_percent"]) > 0 for step in applied[q_index:]))
+        self.assertEqual([step["state_id"] for step in applied[:3]], ["D", "A", "C"])
+        self.assertEqual([step["state_id"] for step in applied[3:6]], ["D", "A", "Q"])
+
+    def test_guide8_execute_plan_validates_one_frame_e_a_prefix(self):
+        plan = thermal.build_direct_plan(
+            thermal.TD_C, variant=thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT,
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "guide8-e-a"
+            self._execute_fake_protocol(
+                plan, root,
+                diagnostic_status_fn=lambda step: "clipping" if step["diagnostic_phase"] == "control" else "near_noise_only",
+            )
+            evidence = json.loads((root / "guide8-emission-exposure.json").read_text())
+            quality = json.loads((root / "quality.json").read_text())
+        self.assertEqual(evidence["branch"], "E-A")
+        self.assertEqual(evidence["physical_capture_count"], 1)
+        self.assertEqual(quality["capture_count"], 1)
+
+    def test_guide8_policy_is_hashed_and_overwrite_fails_closed(self):
+        report = {
+            "schema": analyze.GUIDE8_ANALYSIS_SCHEMA, "branch": "E-D",
+            "selected_nominal_shutter": "1/4000", "guard_nominal_shutter": "1/3200",
+            "selected_recorded_exposure_seconds": 1 / 4000,
+            "guard_recorded_exposure_seconds": 1 / 3200,
+            "observer_hash": "a" * 64, "feature_hash": "b" * 64,
+            "quality_policy_hash": "c" * 64, "invariance_evaluator_hash": "d" * 64,
+            "accepted_boundary_artifact_hash": "e" * 64,
+            "repeatability_evidence_hash": "f" * 64,
+            "derived_from_root": "/fake/guide8", "historical_1over5000_pooling": False,
+            "pooling_semantics": "old_and_new_target_centers_must_not_be_pooled",
+        }
+        with tempfile.TemporaryDirectory() as temporary, patch.object(
+            analyze, "analyze_guide8_emission_exposure", return_value=report,
+        ):
+            root = Path(temporary)
+            analysis_path = root / "analysis-derived.json"
+            policy_path = root / "policy-v2.json"
+            written_analysis, written_policy = analyze.write_guide8_analysis_and_policy(
+                root, analysis_output=analysis_path, policy_output=policy_path,
+            )
+            policy = json.loads(policy_path.read_text())
+            self.assertEqual(written_analysis, analysis_path.resolve())
+            self.assertEqual(written_policy, policy_path.resolve())
+            self.assertEqual(policy["derived_analysis_sha256"], hashlib.sha256(analysis_path.read_bytes()).hexdigest())
+            self.assertEqual(policy["repeatability_evidence_hash"], "f" * 64)
+            before = (analysis_path.read_bytes(), policy_path.read_bytes())
+            with self.assertRaises(FileExistsError):
+                analyze.write_guide8_analysis_and_policy(
+                    root, analysis_output=analysis_path, policy_output=policy_path,
+                )
+            self.assertEqual((analysis_path.read_bytes(), policy_path.read_bytes()), before)
+
+    def test_guide8_repeatability_identity_matches_accepted_boundary(self):
+        reports = analyze._guide8_repeatability_reports()
+        boundary = json.loads(thermal.GUIDE8_P1_ACCEPTED_BOUNDARY_ARTIFACT.read_text())
+        from camera_based_rgbww_optimizer.measurement import raw_response_candidate
+        self.assertEqual(
+            raw_response_candidate._reports_sha256(reports),
+            boundary["repeatability_input_sha256"],
+        )
+
+    def test_guide8_pair_evaluator_uses_exact_58_features_and_identity_model(self):
+        from camera_based_rgbww_optimizer.optimization import analyze_raw_observer_validation
+        reports = analyze_raw_observer_validation.load_validation_reports(
+            thermal.GUIDE8_P1_REPEATABILITY_RUN
+        )
+        pair = {}
+        for report in reports:
+            context = report.get("analysis_context", {})
+            if (
+                context.get("source") == "ray"
+                and context.get("purpose") == "linearity_bracket"
+                and context.get("exposure_factor") in {1.0, 1.5}
+            ):
+                pair.setdefault(context["exposure_factor"], report)
+        result = analyze.evaluate_guide8_pair_captures(
+            {"patch_statistics_report": pair[1.0]},
+            {"patch_statistics_report": pair[1.5]},
+        )
+        sigma = result["evaluation"]["summary"]["shape_residual_repeatability_sigma_non_reference"]
+        self.assertEqual(result["identity_response"], {"a": 0.0, "b": 0.0})
+        self.assertEqual(sigma["count"], 58)
+        self.assertLessEqual(sigma["max"], 3.0)
 
 
 if __name__ == "__main__":

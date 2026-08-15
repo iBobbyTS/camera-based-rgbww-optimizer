@@ -235,9 +235,14 @@ def validate_authorized_execution_plan(
         isinstance(authorization, Mapping)
         and authorization.get("schema") == "direct_guide6_target_local_h120_s100_v1"
     )
+    direct_guide8_emission_exposure = (
+        isinstance(authorization, Mapping)
+        and authorization.get("schema") == "direct_guide8_ray_emission_exposure_v1"
+    )
     if (
         direct_ray_history or direct_strip_history
-        or direct_ray_fast_long_bridge or direct_td_c_fast_endpoint or direct_guide6_target_local
+        or direct_ray_fast_long_bridge or direct_td_c_fast_endpoint
+        or direct_guide6_target_local or direct_guide8_emission_exposure
     ):
         valid_execution_scope = (
             authorization.get("bounded_device_scope") is True
@@ -660,6 +665,148 @@ def run_guide6_local_controllability_protocol(
                 raise RuntimeError("GUIDE6 protocol cleanup did not pass")
 
 
+def _guide8_quality_class(capture: Mapping[str, Any], *, feature_count: int) -> str:
+    quality = capture.get("direct_quality")
+    if not isinstance(quality, Mapping):
+        return "evidence_failure"
+    status = str(quality.get("status", ""))
+    failures = quality.get("failures", ())
+    failure_set = {str(item) for item in failures} if isinstance(failures, Sequence) and not isinstance(failures, (str, bytes)) else set()
+    if status == "pass":
+        values = capture.get("feature_values")
+        recorded = capture.get("recorded_exposure")
+        if (
+            quality.get("feature_count") != feature_count
+            or not isinstance(values, Mapping)
+            or len(values) != feature_count
+            or any(not isinstance(value, (int, float)) or not math.isfinite(float(value)) for value in values.values())
+            or not isinstance(recorded, Mapping)
+        ):
+            return "evidence_failure"
+        return "pass"
+    if status == "near_noise_only" or failure_set == {"near_noise"}:
+        return "near_noise_only"
+    if status in {"clipping", "nonfinite", "unexpected_bright", "shape_failure"}:
+        return status
+    if "clipping" in failure_set:
+        return "clipping"
+    if "nonfinite" in failure_set:
+        return "nonfinite"
+    return "unexpected_quality_failure"
+
+
+def _nominal_exposure_ratio(faster: str, slower: str) -> float:
+    from camera_based_rgbww_optimizer.measurement.recorded_exposure import parse_nominal_exposure
+
+    fast_s = float(parse_nominal_exposure(faster))
+    slow_s = float(parse_nominal_exposure(slower))
+    if fast_s <= 0 or slow_s <= 0 or slow_s < fast_s:
+        raise ValueError("GUIDE8 shutter ladder is not ordered fast-to-slow")
+    return slow_s / fast_s
+
+
+def run_guide8_emission_exposure_protocol(
+    plan: Mapping[str, Any], *,
+    measure_fn: Callable[[Mapping[str, Any]], Mapping[str, Any]],
+    feature_ids: Sequence[str],
+    pair_evaluator_fn: Callable[[Mapping[str, Any], Mapping[str, Any]], Mapping[str, Any] | bool],
+    cleanup_fn: Callable[[], Mapping[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """Run GUIDE8 early-stop semantics over the exact predeclared diagnostic steps."""
+    if (
+        plan.get("guide_experiment_id") != thermal.GUIDE8_RAY_EMISSION_EXPOSURE_EXPERIMENT_ID
+        or (plan.get("execution_authorization") or {}).get("schema")
+        != "direct_guide8_ray_emission_exposure_v1"
+    ):
+        raise ValueError("GUIDE8 emission/exposure protocol requires its exact direct spec")
+    if len(feature_ids) != 58:
+        raise ValueError("GUIDE8 requires the frozen 58-feature observer")
+    steps = list(plan.get("captures", ()))
+    if len(steps) != 16 or [str(step.get("nominal_shutter")) for step in steps[2:]] != list(thermal.GUIDE8_RAY_EMISSION_EXPOSURE_LADDER):
+        raise ValueError("GUIDE8 capture ladder differs from the frozen 16-frame cap")
+    measured: list[dict[str, Any]] = []
+    result: dict[str, Any] | None = None
+    failure: BaseException | None = None
+    try:
+        control = dict(measure_fn(steps[0]))
+        measured.append({"step": dict(steps[0]), "capture": control})
+        if _guide8_quality_class(control, feature_count=58) != "pass":
+            result = {"branch": "E-A", "classification": "Ray_or_optical_path_unverified"}
+        else:
+            dark = dict(measure_fn(steps[1]))
+            measured.append({"step": dict(steps[1]), "capture": dark})
+            dark_class = _guide8_quality_class(dark, feature_count=58)
+            if dark_class == "pass" or dark_class in {"clipping", "unexpected_bright"}:
+                result = {"branch": "E-B", "classification": "environment_or_optical_leak_unresolved"}
+            elif dark_class not in {"near_noise_only"}:
+                result = {"branch": "E-B", "classification": "environment_or_optical_leak_unresolved"}
+        previous_valid: tuple[Mapping[str, Any], Mapping[str, Any]] | None = None
+        saw_near_noise = False
+        if result is None:
+            for step in steps[2:]:
+                capture = dict(measure_fn(step))
+                measured.append({"step": dict(step), "capture": capture})
+                quality_class = _guide8_quality_class(capture, feature_count=58)
+                if quality_class == "near_noise_only":
+                    saw_near_noise = True
+                    previous_valid = None
+                    continue
+                if quality_class != "pass":
+                    if quality_class == "clipping" and saw_near_noise:
+                        result = {
+                            "branch": "E-E",
+                            "classification": "no_single_exposure_window_under_frozen_observer",
+                            "stop_reason": quality_class,
+                        }
+                        break
+                    raise RuntimeError(
+                        "GUIDE8 ladder stopped on non-scientific quality/evidence failure: "
+                        f"{quality_class}"
+                    )
+                if previous_valid is not None:
+                    previous_step, previous_capture = previous_valid
+                    ratio = _nominal_exposure_ratio(
+                        str(previous_step["nominal_shutter"]), str(step["nominal_shutter"]),
+                    )
+                    if ratio <= float(plan["analysis_contract"]["maximum_exposure_ratio"]):
+                        evaluation_value = pair_evaluator_fn(previous_capture, capture)
+                        evaluation = (
+                            {"status": "pass" if evaluation_value else "fail"}
+                            if isinstance(evaluation_value, bool) else dict(evaluation_value)
+                        )
+                        shape_pass = evaluation.get("status") == "pass" or evaluation.get("pass") is True
+                        if not shape_pass:
+                            result = {"branch": "E-G", "classification": "exposure_response_not_invariant_for_current_state", "pair_evaluation": evaluation}
+                            break
+                        selected = str(previous_step["nominal_shutter"])
+                        result = {
+                            "branch": "E-C" if selected == "1/5000" else "E-D",
+                            "classification": "historical_shutter_requalified" if selected == "1/5000" else "state_specific_exposure_window_shift",
+                            "selected_nominal_shutter": selected,
+                            "guard_nominal_shutter": str(step["nominal_shutter"]),
+                            "nominal_exposure_ratio": ratio,
+                            "pair_evaluation": evaluation,
+                        }
+                        break
+                previous_valid = (step, capture)
+            if result is None:
+                result = {"branch": "E-F", "classification": "H120_S100_reference_emission_not_established"}
+        return {
+            "schema": "guide8_ray_emission_exposure_evidence_v1",
+            **result, "measured": measured, "physical_capture_count": len(measured),
+            "formal_capture_count": 0,
+        }
+    except BaseException as exc:
+        failure = exc
+        raise
+    finally:
+        if cleanup_fn is not None:
+            cleanup = dict(cleanup_fn())
+            cleanup_pass = cleanup.get("status") in {"pass", "complete", "all_off"} or cleanup.get("ok") is True
+            if not cleanup_pass and failure is None:
+                raise RuntimeError("GUIDE8 protocol cleanup did not pass")
+
+
 def _write_reproducibility_checkpoint(
     root: Path, plan: Mapping[str, Any], git_provenance: Mapping[str, Any],
 ) -> dict[str, Any]:
@@ -749,7 +896,12 @@ def execute_plan(
         and plan["execution_authorization"].get("schema")
         == "direct_guide6_target_local_h120_s100_v1"
     )
-    if (direct_ray_continuous or direct_guide6_target_local) and source_isolation_check_fn is None:
+    direct_guide8_emission_exposure = (
+        isinstance(plan.get("execution_authorization"), Mapping)
+        and plan["execution_authorization"].get("schema")
+        == "direct_guide8_ray_emission_exposure_v1"
+    )
+    if (direct_ray_continuous or direct_guide6_target_local or direct_guide8_emission_exposure) and source_isolation_check_fn is None:
         raise PermissionError("direct adaptive execution requires its source-isolation check")
     git_provenance = copy.deepcopy(
         runtime_git_provenance if runtime_git_provenance is not None else _runtime_git_provenance()
@@ -788,6 +940,7 @@ def execute_plan(
         "status": "running", "started_at": _utc_now(), "completed_formal": 0,
         "ambient_capture_count": 0,
         "accepted_formal_count": 0, "accepted_ambient_count": 0,
+        "diagnostic_capture_count": 0, "accepted_diagnostic_count": 0,
         "physical_returned_cr3_count": 0,
         "setup_physical_cr3_count": int(plan.get("setup_physical_cr3_count", 0)),
         "physical_cr3_count": int(plan.get("setup_physical_cr3_count", 0)), "cleanup": "pending",
@@ -1095,15 +1248,76 @@ def execute_plan(
         if step["formal_measurement"]:
             run["completed_formal"] += 1
             run["accepted_formal_count"] += 1
-        else:
+        elif step["capture_role"] == "ambient":
             run["ambient_capture_count"] += 1
             run["accepted_ambient_count"] += 1
+        else:
+            run["diagnostic_capture_count"] += 1
+            run["accepted_diagnostic_count"] += 1
         rejected_capture = None
         _write_json(root / "run.json", run)
 
     try:
         record_gate("run_start")
-        if direct_guide6_target_local:
+        if direct_guide8_emission_exposure:
+            feature_ids = tuple(
+                json.loads(thermal.POLICY_PATH.read_text(encoding="utf-8"))["feature_set"]["ids"]
+            )
+            chronology_index = 0
+            guide8_started = {"control": False, "dark": False, "ladder": False}
+
+            def guide8_apply_and_wait(step: Mapping[str, Any], *, dwell_s: float) -> None:
+                applied = dict(apply_command_fn(step))
+                readback = dict(readback_fn(step))
+                _append_jsonl(root / "commands.jsonl", {
+                    "at": _utc_now(), "event": "guide8_command_readback_verified",
+                    "source_id": step["source_id"], "state_id": step["state_id"],
+                    "exact_command_hash": step["exact_command_hash"],
+                    "dwell_s": dwell_s, "applied": applied, "readback": readback,
+                })
+                if dwell_s:
+                    sleep_fn(dwell_s)
+
+            def guide8_measure(step: Mapping[str, Any]) -> Mapping[str, Any]:
+                nonlocal chronology_index, previous_state, previous_dwell
+                phase = str(step["diagnostic_phase"])
+                if phase == "control" and not guide8_started["control"]:
+                    record_gate("guide8-control-reset600")
+                    sleep_fn(600.0)
+                    for index, precondition in enumerate(step["warm_precondition_sequence"], 1):
+                        guide8_apply_and_wait({**dict(step), "capture_id": f"guide8-control-pre-{index}", **dict(precondition)}, dwell_s=float(precondition["dwell_s"]))
+                    guide8_apply_and_wait(step, dwell_s=120.0)
+                    guide8_started["control"] = True
+                elif phase == "dark" and not guide8_started["dark"]:
+                    record_gate("guide8-dark-reset600")
+                    sleep_fn(600.0)
+                    guide8_started["dark"] = True
+                elif phase == "ladder" and not guide8_started["ladder"]:
+                    for index, precondition in enumerate(step["warm_precondition_sequence"], 1):
+                        guide8_apply_and_wait({**dict(step), "capture_id": f"guide8-ladder-pre-{index}", **dict(precondition)}, dwell_s=float(precondition["dwell_s"]))
+                    guide8_started["ladder"] = True
+                owner_start = monotonic_fn()
+                if set_capture_context_fn is not None:
+                    set_capture_context_fn(owner_start)
+                ensure_physical_capacity()
+                captured = dict(capture_fn(step))
+                retain_capture(step, captured, owner_start=owner_start, chronology_group_index=chronology_index)
+                chronology_index += 1
+                previous_state = str(step["state_id"])
+                previous_dwell = monotonic_fn() - owner_start
+                return captured
+
+            from camera_based_rgbww_optimizer.optimization import analyze_p7_thermal_diagnostics as guide8_analyze
+            protocol_evidence = run_guide8_emission_exposure_protocol(
+                plan, measure_fn=guide8_measure, feature_ids=feature_ids,
+                pair_evaluator_fn=guide8_analyze.evaluate_guide8_pair_captures,
+            )
+            _write_json(root / "guide8-emission-exposure.json", protocol_evidence)
+            runtime_plan = copy.deepcopy(dict(plan))
+            runtime_plan["captures"] = [dict(item["step"]) for item in protocol_evidence["measured"]]
+            runtime_plan["capture_ids"] = [str(step["capture_id"]) for step in runtime_plan["captures"]]
+            _write_json(root / "adaptive-execution-plan.json", runtime_plan)
+        elif direct_guide6_target_local:
             feature_ids = tuple(
                 json.loads(thermal.POLICY_PATH.read_text(encoding="utf-8"))
                 ["feature_set"]["ids"]
@@ -1187,7 +1401,7 @@ def execute_plan(
             _write_json(root / "adaptive-execution-plan.json", runtime_plan)
         else:
             runtime_plan = plan
-        for chronology_group_index, item in ([] if direct_guide6_target_local else enumerate(
+        for chronology_group_index, item in ([] if (direct_guide6_target_local or direct_guide8_emission_exposure) else enumerate(
             _ledger_groups(str(plan["experiment_id"]), plan["captures"])
         )):
             if len(item) == 1 and item[0]["capture_role"] == "ambient":
@@ -1276,9 +1490,12 @@ def execute_plan(
             raise RuntimeError("thermal diagnostic formal count differs from frozen cap")
         if run["ambient_capture_count"] != int(plan["budgets"]["ambient_cap"]):
             raise RuntimeError("thermal diagnostic ambient count differs from frozen cap")
+        if run["diagnostic_capture_count"] > int(plan["budgets"].get("diagnostic_cap", 0)):
+            raise RuntimeError("thermal diagnostic count exceeds frozen cap")
         if (
             run["accepted_formal_count"] != run["completed_formal"]
             or run["accepted_ambient_count"] != run["ambient_capture_count"]
+            or run["accepted_diagnostic_count"] != run["diagnostic_capture_count"]
         ):
             raise RuntimeError("thermal diagnostic accepted measurement ledger drifted")
         if direct_execution:
@@ -1412,6 +1629,64 @@ def validate_direct_ray_r6_post_capture(
     else:
         _write_json(quality_path, quality)
     return quality
+
+
+def validate_direct_guide8_post_capture(
+    run_root: str | Path,
+    plan: Mapping[str, Any],
+    runtime_evidence: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    root = Path(run_root).resolve()
+    canonical = thermal.build_direct_plan(
+        thermal.TD_C, variant=thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT,
+    )
+    captures = _load_jsonl_file(root / "captures.jsonl")
+    physical = _load_jsonl_file(root / "physical-returns.jsonl")
+    expected_prefix = canonical["capture_ids"][:len(captures)]
+    capture_ids = [str(row.get("capture_id")) for row in captures]
+    if capture_ids != expected_prefix or [str(row.get("capture_id")) for row in physical] != expected_prefix:
+        raise ValueError("GUIDE8 early-stop capture/physical ledger is not a canonical prefix")
+    if not 1 <= len(captures) <= 16 or len(physical) != len(captures):
+        raise ValueError("GUIDE8 physical evidence violates its 1..16 bounded prefix")
+    for row, expected_step in zip(captures, canonical["captures"]):
+        if row.get("plan_step") != expected_step:
+            raise ValueError("GUIDE8 retained plan step differs from its canonical owner")
+        capture = row.get("capture")
+        if not isinstance(capture, Mapping):
+            raise ValueError("GUIDE8 capture evidence is missing")
+        strip_zero = capture.get("strip_zero_before_capture")
+        requested = strip_zero.get("requested_payload") if isinstance(strip_zero, Mapping) else None
+        observed = strip_zero.get("device_snapshot") if isinstance(strip_zero, Mapping) else None
+        if (
+            not isinstance(requested, Mapping)
+            or any(int(value) != 0 for value in requested.values())
+            or not isinstance(observed, Mapping)
+            or any(int(observed.get(key, -1)) != 0 for key in esphome.PAYLOAD_CHANNELS)
+        ):
+            raise ValueError("GUIDE8 capture lacks verified strip-zero evidence")
+    evidence = _load_json_file(root / "guide8-emission-exposure.json")
+    if int(evidence.get("physical_capture_count", -1)) != len(captures):
+        raise ValueError("GUIDE8 adaptive evidence count differs from physical ledger")
+    if len(captures) == 1 and evidence.get("branch") != "E-A":
+        raise ValueError("GUIDE8 one-frame prefix is valid only for E-A control failure")
+    quality = {
+        "schema": "guide8_ray_emission_exposure_quality_v1",
+        "status": "pass", "capture_count": len(captures),
+        "branch": evidence.get("branch"), "formal_capture_count": 0,
+    }
+    _write_json(root / "quality.json", quality)
+    return quality
+
+
+def _load_jsonl_file(path: Path) -> list[dict[str, Any]]:
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+
+
+def _load_json_file(path: Path) -> dict[str, Any]:
+    value = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(value, dict):
+        raise ValueError(f"expected JSON object: {path}")
+    return value
 
 
 def validate_direct_ray_history_session_post_capture(
@@ -1974,6 +2249,7 @@ def run_authorized_plan(
     from camera_based_rgbww_optimizer.optimization import measure_raw_observer_validation as raw_validation
     from camera_based_rgbww_optimizer.measurement.raw_observer_analysis import DEFAULT_STATISTIC
     from camera_based_rgbww_optimizer.optimization.hsi_objective import (
+        HsiRejectedFeaturesError,
         TD_B_FORMAL_FEATURE_STATISTIC,
         required_hsi_features_from_report,
     )
@@ -2012,6 +2288,11 @@ def run_authorized_plan(
         isinstance(plan.get("execution_authorization"), Mapping)
         and plan["execution_authorization"].get("schema")
         == "direct_guide6_target_local_h120_s100_v1"
+    )
+    direct_guide8_emission_exposure = (
+        isinstance(plan.get("execution_authorization"), Mapping)
+        and plan["execution_authorization"].get("schema")
+        == "direct_guide8_ray_emission_exposure_v1"
     )
     direct_protocol = (
         isinstance(plan.get("execution_authorization"), Mapping)
@@ -2141,7 +2422,9 @@ def run_authorized_plan(
     raw_capture = raw_validation.build_native_raw_capture_step_fn(
         camera_dir=root / "camera", measurements_dir=root / "measurements", scratch_dir=root / "scratch",
         location_config_path=(
-            root / "inputs/location.json" if direct_ray_continuous else thermal.LOCATION_PATH
+            root / "inputs/location.json"
+            if (direct_ray_continuous or direct_guide8_emission_exposure)
+            else thermal.LOCATION_PATH
         ), observer_config_path=thermal.OBSERVER_PATH,
         iso=str(resolved_settings.iso), aperture=str(resolved_settings.aperture),
         image_format=str(resolved_settings.image_format), camera_backend=camera_backend,
@@ -2174,6 +2457,8 @@ def run_authorized_plan(
                 raise RuntimeError("strip capture lacks Ray-zero readback")
         if source == "ambient":
             cache_key = None
+        elif isinstance(step.get("exposure_cache_key"), str):
+            cache_key = str(step["exposure_cache_key"])
         elif source == "ray":
             command = step["command"]
             cache_key = f"ray-h{int(command['hue'])}-s{int(command['sat'])}"
@@ -2196,6 +2481,11 @@ def run_authorized_plan(
             raise RuntimeError("timed RAW capture adapter returned malformed result")
         report = json.loads(Path(captured_result["patch_statistics"]).read_text(encoding="utf-8"))
         exposure = report["exposure_metadata"]
+        if direct_guide8_emission_exposure:
+            from camera_based_rgbww_optimizer.measurement.recorded_exposure import (
+                validate_recorded_exposure_setting,
+            )
+            validate_recorded_exposure_setting(exposure, str(step["nominal_shutter"]))
         raw_metadata = report["raw_metadata"]
         timing = captured_result.get("timing_evidence")
         if not isinstance(timing, Mapping):
@@ -2271,16 +2561,33 @@ def run_authorized_plan(
             output["ambient_policy_owner"] = (
                 None if ambient_policy_owner is None else dict(ambient_policy_owner)
             )
-            output["feature_values"] = required_hsi_features_from_report(
-                report,
-                feature_ids,
-                statistic=feature_statistic,
-            )
-            output["direct_quality"] = {
-                "status": "pass",
-                "feature_count": len(feature_ids),
-                "recorded_exposure_owner": "Canon:ExposureTime",
-            }
+            try:
+                output["feature_values"] = required_hsi_features_from_report(
+                    report, feature_ids, statistic=feature_statistic,
+                )
+            except HsiRejectedFeaturesError as exc:
+                if not direct_guide8_emission_exposure:
+                    raise
+                failure_names = set()
+                for item in exc.rejected:
+                    metrics = item.get("metrics") or {}
+                    if float(metrics.get("nonfinite_fraction", 0.0)) > 0:
+                        failure_names.add("nonfinite")
+                    if float(metrics.get("clipped_fraction", 0.0)) > 0:
+                        failure_names.add("clipping")
+                    if float(metrics.get("near_noise_floor_fraction", 0.0)) > 0:
+                        failure_names.add("near_noise")
+                output["direct_quality"] = {
+                    "status": "near_noise_only" if exc.weak_signal_only else "rejected",
+                    "feature_count": 0, "required_feature_count": len(feature_ids),
+                    "failures": sorted(failure_names),
+                    "recorded_exposure_owner": "Canon:ExposureTime",
+                }
+            else:
+                output["direct_quality"] = {
+                    "status": "pass", "feature_count": len(feature_ids),
+                    "recorded_exposure_owner": "Canon:ExposureTime",
+                }
         return output
 
     def both_off_gate(gate_id: str) -> Mapping[str, Any]:
@@ -2343,6 +2650,8 @@ def run_authorized_plan(
         runtime_evidence: Mapping[str, Any] | None,
     ) -> Any:
         schema = (frozen_plan.get("execution_authorization") or {}).get("schema")
+        if schema == "direct_guide8_ray_emission_exposure_v1":
+            return validate_direct_guide8_post_capture(run_root, frozen_plan, runtime_evidence)
         if schema == "direct_ray_r6_authority_v1":
             return validate_direct_ray_r6_post_capture(run_root, frozen_plan, runtime_evidence)
         if schema == "direct_ray_history_session_v1":
@@ -2364,7 +2673,7 @@ def run_authorized_plan(
         capture_fn=capture, both_off_gate_fn=both_off_gate,
         source_isolation_check_fn=(
             source_isolation_check
-            if (direct_ray_continuous or direct_strip_history or direct_guide6_target_local)
+            if (direct_ray_continuous or direct_strip_history or direct_guide6_target_local or direct_guide8_emission_exposure)
             else None
         ),
         cleanup_fn=cleanup,
@@ -2403,18 +2712,19 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
             *thermal.EXPERIMENT_IDS,
             thermal.RAY_HISTORY_3X3_EXPERIMENT_ID,
             thermal.RAY_FAST_LONG_BRIDGE_EXPERIMENT_ID,
+            thermal.GUIDE8_RAY_EMISSION_EXPOSURE_EXPERIMENT_ID,
         ),
         required=True,
     )
     parser.add_argument("--source", choices=("ray", "strip"))
     parser.add_argument(
         "--variant",
-        choices=("core", "expansion", "history", thermal.TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT),
+        choices=("core", "expansion", "history", thermal.TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT),
         default="core",
     )
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--run-name", required=True)
-    parser.add_argument("--phase", choices=("formal",), default="formal")
+    parser.add_argument("--phase", choices=("formal", "diagnostic"), default="formal")
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--dry-run", action="store_true")
     mode.add_argument("--execute", action="store_true")
@@ -2442,6 +2752,10 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--direct-guide6-h120-s100", action="store_true",
         help="execute the GUIDE6 direct target-local H120/S100 block",
     )
+    direct.add_argument(
+        "--direct-guide8-emission-exposure", action="store_true",
+        help="execute the GUIDE8 Ray H120/S100 emission/exposure diagnostic",
+    )
     parser.add_argument("--prerequisite-analysis", type=Path)
     parser.add_argument("--human-authorization")
     parser.add_argument("--session-index", type=int, choices=(1, 2, 3))
@@ -2463,6 +2777,7 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
         "strip-td-b" if args.direct_strip_td_b else
         "td-c-fast-endpoint-holdout" if args.direct_td_c_fast_endpoint_holdout else
         "guide6-h120-s100" if args.direct_guide6_h120_s100 else
+        "guide8-emission-exposure" if args.direct_guide8_emission_exposure else
         "td-c-core"
     )
     expected_scope = {
@@ -2480,8 +2795,13 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
         "guide6-h120-s100": (
             thermal.TD_C, None, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT,
         ),
+        "guide8-emission-exposure": (
+            thermal.GUIDE8_RAY_EMISSION_EXPOSURE_EXPERIMENT_ID,
+            "ray", thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT,
+        ),
     }[direct_kind]
-    if (args.experiment_id, args.source, args.variant) != expected_scope or args.phase != "formal":
+    expected_phase = "diagnostic" if direct_kind == "guide8-emission-exposure" else "formal"
+    if (args.experiment_id, args.source, args.variant) != expected_scope or args.phase != expected_phase:
         raise PermissionError(f"{direct_kind} arguments do not match its direct protocol scope")
     if args.dry_run:
         if direct_kind == "ray-history-3x3":
@@ -2514,6 +2834,15 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
                     args.bridge_mini_session,
                 ),
             )
+            print(output)
+            return 0
+        if direct_kind == "guide8-emission-exposure":
+            root = (Path(args.output_dir) / args.run_name).resolve()
+            root.mkdir(parents=True, exist_ok=False)
+            output = root / "experiment-spec.json"
+            _write_json(output, thermal.build_direct_plan(
+                thermal.TD_C, variant=thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT,
+            ))
             print(output)
             return 0
         output = write_dry_run(
@@ -2572,9 +2901,14 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
             thermal.TD_C,
             variant=thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT,
         )
+    if direct_kind == "guide8-emission-exposure":
+        plan = thermal.build_direct_plan(
+            thermal.TD_C, variant=thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT,
+        )
     if direct_kind not in {
         "ray-r6", "ray-history-3x3", "strip-history-3x3",
         "ray-fast-long-bridge", "td-c-fast-endpoint-holdout", "guide6-h120-s100",
+        "guide8-emission-exposure",
     }:
         if args.prerequisite_analysis is None:
             raise PermissionError(f"{direct_kind} requires a prior scientific analysis artifact")

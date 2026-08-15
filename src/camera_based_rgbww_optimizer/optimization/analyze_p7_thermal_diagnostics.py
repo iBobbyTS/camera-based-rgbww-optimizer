@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import json
 import math
@@ -25,6 +26,8 @@ from camera_based_rgbww_optimizer.measurement.recorded_exposure import (
     parse_nominal_exposure,
     validate_recorded_exposure_setting,
 )
+from camera_based_rgbww_optimizer.measurement import raw_response_candidate
+from camera_based_rgbww_optimizer.optimization import analyze_raw_observer_validation
 from camera_based_rgbww_optimizer.control import camera_remote_v2
 from camera_based_rgbww_optimizer.control import esphome
 from camera_based_rgbww_optimizer.measurement.ray_hsi_manifold import RayHsiManifold
@@ -60,6 +63,7 @@ GUIDE6_SEED_LEGACY_ANALYSIS_SHA256 = (
     "9651f2f3d706d2dd7b950737a58b93d71a947a841b1da44cda1b3b94261a0f87",
 )
 GUIDE6_SEED_TARGET_SCORES = (80.28514565625028, 80.8620601083101)
+GUIDE8_ANALYSIS_SCHEMA = "guide8_ray_h120_s100_emission_exposure_analysis_v1"
 TD_C_CORE_EXPECTED_SCORES = {
     "ray_pair_maximum": 4.7728227800,
     "strip_pair_maximum": 5.3379311421,
@@ -77,6 +81,229 @@ TD_C_ENDPOINT_ROOT = Path(
 TD_C_R6_ROOT = Path(
     "/Volumes/4T/temp/rgbww-optimizer/guide4-ray-r6-20260808-20260808-153400-post-fix-valid/ray-r6"
 )
+
+
+def _sha256_path(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _guide8_zero_ambient_report(
+    report: Mapping[str, Any], *, factor: float,
+) -> dict[str, Any]:
+    derived = copy.deepcopy(dict(report))
+    required = set(
+        json.loads(thermal.POLICY_PATH.read_text(encoding="utf-8"))["feature_set"]["ids"]
+    )
+    filtered_patches = []
+    for patch in derived.get("patches", []):
+        planes = {
+            plane_name: plane for plane_name, plane in (patch.get("planes") or {}).items()
+            if f"{patch.get('name')}::{plane_name}" in required
+        }
+        if planes:
+            filtered = copy.deepcopy(dict(patch))
+            filtered["planes"] = planes
+            filtered_patches.append(filtered)
+    derived["patches"] = filtered_patches
+    context = dict(derived.get("analysis_context") or {})
+    context.update({
+        "source": "ray", "purpose": "linearity_bracket",
+        "exposure_factor": float(factor), "exposure_status": "recorded",
+        "exposure_seconds": float((derived.get("exposure_metadata") or {}).get("seconds", context.get("exposure_seconds"))),
+    })
+    derived["analysis_context"] = context
+    ambient_patches = []
+    for patch in derived.get("patches", []):
+        ambient = {"name": patch.get("name"), "optimization_eligible": patch.get("optimization_eligible"), "planes": {}}
+        for plane_name, plane in (patch.get("planes") or {}).items():
+            zero_plane = copy.deepcopy(dict(plane))
+            zero_plane.setdefault("metrics", {})["clipped_fraction"] = 0.0
+            zero_plane.setdefault("statistics", {}).setdefault("black_corrected_normalized", {})["trimmed_mean"] = 0.0
+            ambient["planes"][plane_name] = zero_plane
+        ambient_patches.append(ambient)
+    derived["ambient_reference"] = {"exposure_seconds": 1.0, "patches": ambient_patches}
+    derived["ambient_exposure_metadata"] = {"seconds": 1.0}
+    return derived
+
+
+def _guide8_capture_report(capture: Mapping[str, Any]) -> dict[str, Any]:
+    embedded = capture.get("patch_statistics_report")
+    if isinstance(embedded, Mapping):
+        return copy.deepcopy(dict(embedded))
+    path = capture.get("patch_statistics")
+    if not isinstance(path, str):
+        raise ValueError("GUIDE8 capture lacks its retained patch-statistics report")
+    value = _load_json(Path(path))
+    if not isinstance(value, Mapping):
+        raise ValueError("GUIDE8 patch-statistics report is not an object")
+    return dict(value)
+
+
+def _guide8_repeatability_reports() -> list[dict[str, Any]]:
+    boundary = thermal.GUIDE8_P1_ACCEPTED_BOUNDARY_ARTIFACT
+    accepted = _load_json(boundary)
+    if (
+        accepted.get("status") != "holdout_ready_for_manual_branch_review"
+        or Path(str(accepted.get("repeatability_run"))).resolve()
+        != thermal.GUIDE8_P1_REPEATABILITY_RUN.resolve()
+    ):
+        raise ValueError("GUIDE8 accepted P1 boundary artifact changed repeatability identity")
+    reports = analyze_raw_observer_validation.load_validation_reports(
+        thermal.GUIDE8_P1_REPEATABILITY_RUN
+    )
+    retained = [dict(report) for report in reports]
+    actual_hash = raw_response_candidate._reports_sha256(retained)
+    if actual_hash != accepted.get("repeatability_input_sha256"):
+        raise ValueError("GUIDE8 P1 repeatability reports differ from accepted boundary evidence")
+    return retained
+
+
+def evaluate_guide8_pair_captures(
+    faster_capture: Mapping[str, Any], slower_capture: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Apply the frozen identity P1 evaluator; no new norm or covariance is introduced."""
+    faster = _guide8_capture_report(faster_capture)
+    slower = _guide8_capture_report(slower_capture)
+    fast_seconds = float((faster.get("exposure_metadata") or faster.get("analysis_context") or {})["seconds"] if "seconds" in (faster.get("exposure_metadata") or {}) else faster["analysis_context"]["exposure_seconds"])
+    slow_seconds = float((slower.get("exposure_metadata") or slower.get("analysis_context") or {})["seconds"] if "seconds" in (slower.get("exposure_metadata") or {}) else slower["analysis_context"]["exposure_seconds"])
+    if not math.isfinite(fast_seconds) or not math.isfinite(slow_seconds) or fast_seconds <= 0 or slow_seconds <= fast_seconds:
+        raise ValueError("GUIDE8 pair has invalid recorded MakerNote exposure ordering")
+    repeatability = _guide8_repeatability_reports()
+    reports = [
+        _guide8_zero_ambient_report(faster, factor=1.0),
+        _guide8_zero_ambient_report(slower, factor=slow_seconds / fast_seconds),
+    ]
+    evaluation = raw_response_candidate.evaluate_response_model(
+        reports, a=0.0, b=0.0, repeatability_reports=repeatability,
+    )
+    sigma = evaluation["summary"]["shape_residual_repeatability_sigma_non_reference"]
+    passed = sigma["count"] == 58 and sigma["max"] is not None and float(sigma["max"]) <= 3.0
+    return {
+        "status": "pass" if passed else "fail", "pass": passed,
+        "required_feature_count": 58, "maximum_repeatability_sigma": 3.0,
+        "identity_response": {"a": 0.0, "b": 0.0},
+        "recorded_exposure_ratio": slow_seconds / fast_seconds,
+        "evaluation": evaluation,
+        "evaluator_source_sha256": _sha256_path(Path(raw_response_candidate.__file__)),
+        "accepted_boundary_artifact_sha256": _sha256_path(thermal.GUIDE8_P1_ACCEPTED_BOUNDARY_ARTIFACT),
+        "repeatability_input_sha256": raw_response_candidate._reports_sha256(repeatability),
+    }
+
+
+def analyze_guide8_emission_exposure(run_dir: str | Path) -> dict[str, Any]:
+    root = Path(run_dir).resolve()
+    spec = _load_json(root / "experiment-spec.json")
+    canonical = thermal.build_direct_plan(
+        thermal.TD_C, variant=thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT,
+    )
+    stable_fields = (
+        "guide_experiment_id", "variant", "captures", "capture_ids", "frozen_shutters",
+        "budgets", "execution_authorization", "analysis_contract",
+    )
+    if any(spec.get(key) != canonical.get(key) for key in stable_fields):
+        raise ValueError("GUIDE8 diagnostic spec differs from its canonical contract")
+    run = _load_json(root / "run.json")
+    if run.get("status") != "complete" or run.get("cleanup") != "pass":
+        raise ValueError("GUIDE8 analysis requires complete acquisition and passing cleanup")
+    evidence = _load_json(root / "guide8-emission-exposure.json")
+    if evidence.get("schema") != "guide8_ray_emission_exposure_evidence_v1":
+        raise ValueError("GUIDE8 execution evidence schema differs")
+    branch = str(evidence.get("branch"))
+    report: dict[str, Any] = {
+        "schema": GUIDE8_ANALYSIS_SCHEMA,
+        "status": "classified", "branch": branch,
+        "classification": evidence.get("classification"),
+        "derived_from_root": str(root),
+        "experiment_spec_sha256": _sha256_path(root / "experiment-spec.json"),
+        "execution_evidence_sha256": _sha256_path(root / "guide8-emission-exposure.json"),
+        "observer_hash": _sha256_path(thermal.OBSERVER_PATH),
+        "feature_hash": thermal.canonical_sha256(
+            json.loads(thermal.POLICY_PATH.read_text(encoding="utf-8"))["feature_set"]["ids"]
+        ),
+        "quality_policy_hash": _sha256_path(thermal.POLICY_PATH),
+        "invariance_evaluator_hash": _sha256_path(Path(raw_response_candidate.__file__)),
+        "accepted_boundary_artifact_hash": _sha256_path(thermal.GUIDE8_P1_ACCEPTED_BOUNDARY_ARTIFACT),
+        "formal_capture_count": 0,
+        "physical_capture_count": int(evidence.get("physical_capture_count", -1)),
+        "historical_1over5000_pooling": False,
+    }
+    if branch in {"E-C", "E-D"}:
+        pair = evidence.get("pair_evaluation")
+        if not isinstance(pair, Mapping) or pair.get("status") != "pass":
+            raise ValueError("GUIDE8 qualifying branch lacks passing frozen evaluator evidence")
+        measured = list(evidence.get("measured", ()))
+        by_shutter = {
+            str((item.get("step") or {}).get("nominal_shutter")): item.get("capture")
+            for item in measured if isinstance(item, Mapping)
+        }
+        selected = str(evidence["selected_nominal_shutter"])
+        guard = str(evidence["guard_nominal_shutter"])
+        def recorded_seconds(shutter: str) -> float:
+            capture = by_shutter.get(shutter)
+            recorded = capture.get("recorded_exposure") if isinstance(capture, Mapping) else None
+            if not isinstance(recorded, Mapping) or not isinstance(recorded.get("seconds"), (int, float)):
+                raise ValueError("GUIDE8 selected pair lacks recorded MakerNote seconds")
+            value = float(recorded["seconds"])
+            if not math.isfinite(value) or value <= 0:
+                raise ValueError("GUIDE8 selected pair has invalid recorded MakerNote seconds")
+            return value
+        report.update({
+            "selected_nominal_shutter": selected,
+            "guard_nominal_shutter": guard,
+            "selected_recorded_exposure_seconds": recorded_seconds(selected),
+            "guard_recorded_exposure_seconds": recorded_seconds(guard),
+            "maximum_exposure_ratio": 1.25,
+            "repeatability_evidence_hash": pair.get("repeatability_input_sha256"),
+            "historical_1over5000_pooling": selected == "1/5000",
+            "pooling_semantics": (
+                "historical_1over5000_measurement_procedure_requalified"
+                if selected == "1/5000" else
+                "old_and_new_target_centers_must_not_be_pooled"
+            ),
+        })
+    return report
+
+
+def write_guide8_analysis_and_policy(
+    run_dir: str | Path, *, analysis_output: str | Path,
+    policy_output: str | Path = thermal.GUIDE8_EXPOSURE_POLICY_V2_PATH,
+) -> tuple[Path, Path | None]:
+    report = analyze_guide8_emission_exposure(run_dir)
+    analysis_path = Path(analysis_output).resolve()
+    if analysis_path.exists():
+        raise FileExistsError("GUIDE8 derived analysis is immutable and already exists")
+    policy_path: Path | None = None
+    if report["branch"] in {"E-C", "E-D"}:
+        policy_path = Path(policy_output).resolve()
+        if policy_path.exists():
+            raise FileExistsError("GUIDE8 exposure policy v2 is immutable and already exists")
+    _write_text_atomic(
+        analysis_path, json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n",
+    )
+    if policy_path is not None:
+        policy = {
+            "schema": "ray_h120_s100_exposure_policy_v2",
+            "state": "H120/S100/INT100",
+            "operating_envelope": "fast_op120_reset600_v1",
+            "selected_nominal_shutter": report["selected_nominal_shutter"],
+            "guard_nominal_shutter": report["guard_nominal_shutter"],
+            "selected_recorded_exposure_seconds": report["selected_recorded_exposure_seconds"],
+            "guard_recorded_exposure_seconds": report["guard_recorded_exposure_seconds"],
+            "maximum_exposure_ratio": 1.25,
+            "observer_hash": report["observer_hash"], "feature_hash": report["feature_hash"],
+            "quality_policy_hash": report["quality_policy_hash"],
+            "invariance_evaluator_hash": report["invariance_evaluator_hash"],
+            "accepted_boundary_artifact_hash": report["accepted_boundary_artifact_hash"],
+            "repeatability_evidence_hash": report["repeatability_evidence_hash"],
+            "derived_from_root": report["derived_from_root"],
+            "derived_analysis_sha256": _sha256_path(analysis_path),
+            "historical_1over5000_pooling": report["historical_1over5000_pooling"],
+            "pooling_semantics": report["pooling_semantics"],
+        }
+        _write_text_atomic(
+            policy_path, json.dumps(policy, indent=2, sort_keys=True, allow_nan=False) + "\n",
+        )
+    return analysis_path, policy_path
 
 
 def analyze_thermal_run(
@@ -4061,11 +4288,27 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--td-c-r6-root", type=Path)
     parser.add_argument("--guide6-seed-negative-root2", type=Path)
     parser.add_argument("--guide6-seed-negative-output", type=Path)
+    parser.add_argument("--guide8-emission-exposure-output", type=Path)
+    parser.add_argument("--guide8-exposure-policy-output", type=Path)
     return parser.parse_args(argv)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(argv)
+    if args.guide8_emission_exposure_output is not None:
+        analysis, policy = write_guide8_analysis_and_policy(
+            args.run_dir,
+            analysis_output=args.guide8_emission_exposure_output,
+            policy_output=(
+                thermal.GUIDE8_EXPOSURE_POLICY_V2_PATH
+                if args.guide8_exposure_policy_output is None
+                else args.guide8_exposure_policy_output
+            ),
+        )
+        print(analysis)
+        if policy is not None:
+            print(policy)
+        return 0
     if args.guide6_seed_negative_output is not None:
         if args.guide6_seed_negative_root2 is None:
             raise ValueError("GUIDE6 seed-negative derivation requires root2")

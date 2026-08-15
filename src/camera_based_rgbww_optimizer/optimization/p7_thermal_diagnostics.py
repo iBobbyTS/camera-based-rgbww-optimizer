@@ -31,6 +31,26 @@ TD_C_FAST_ANCHOR_DIRECTION_B_EXPERIMENT_ID = "GUIDE5_TD_C_FAST_ANCHOR_DIRECTION_
 TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT = "fast-anchor-direction-b"
 GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_EXPERIMENT_ID = "GUIDE6-DIRECT-TARGET-LOCAL-H120-S100-V1"
 GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT = "guide6-direct-target-local-h120-s100"
+GUIDE8_RAY_EMISSION_EXPOSURE_EXPERIMENT_ID = (
+    "GUIDE8_RAY_H120_S100_EMISSION_EXPOSURE_DIAG_V1"
+)
+GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT = "guide8-ray-emission-exposure"
+GUIDE8_RAY_EMISSION_EXPOSURE_LADDER = (
+    "1/5000", "1/4000", "1/3200", "1/2500", "1/2000", "1/1600",
+    "1/1250", "1/1000", "1/800", "1/640", "1/500", "1/400",
+    "1/320", "1/250",
+)
+GUIDE8_EXPOSURE_POLICY_V2_PATH = (
+    PROJECT_ROOT / "config/hsi/ray-h120-s100-exposure-policy-v2.json"
+)
+GUIDE8_P1_REPEATABILITY_RUN = Path(
+    "/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/"
+    "p1-d2-cross-day-holdout-20260715-2300-retry2"
+)
+GUIDE8_P1_ACCEPTED_BOUNDARY_ARTIFACT = Path(
+    "/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/"
+    "p1-d2-boundary-1x-1.25x-20260716-000647/raw-response-holdout.json"
+)
 EXPERIMENT_IDS = (TD_A, TD_B, TD_C)
 TIMED_POINTS = (60, 120, 300, 600)
 SELECTABLE_SETTLE_POINTS = (60, 120, 300)
@@ -883,6 +903,8 @@ def build_direct_plan(
         raise ValueError("strip TD-B direct execution requires source=strip")
     if experiment_id == TD_C and source is not None:
         raise ValueError("TD-C direct execution owns both sources")
+    if experiment_id == TD_C and variant == GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT:
+        return _build_guide8_ray_emission_exposure_plan()
     if experiment_id == TD_C and variant == TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT:
         plan = _build_td_c_fast_endpoint_holdout_plan()
     elif experiment_id == TD_C and variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT:
@@ -951,6 +973,97 @@ def build_direct_plan(
         },
     })
     return plan
+
+
+def _build_guide8_ray_emission_exposure_plan() -> dict[str, Any]:
+    """Build the exact zero-formal GUIDE8 Ray emission/exposure diagnostic."""
+    commands = load_r1_commands()
+    control = {"hue": 300, "sat": 100, "intensity_percent": 100.0}
+    q = {"hue": 120, "sat": 100, "intensity_percent": 100.0}
+    off = {"hue": 120, "sat": 100, "intensity_percent": 0.0}
+    captures: list[dict[str, Any]] = []
+
+    def add(
+        capture_id: str, *, phase: str, state: str, command: Mapping[str, Any],
+        shutter: str, role: str, preconditions: Sequence[Mapping[str, Any]] = (),
+    ) -> None:
+        captures.append({
+            "capture_id": capture_id,
+            "source_id": "ray", "state_id": state, "diagnostic_phase": phase,
+            "role": role, "capture_role": "diagnostic",
+            "formal_measurement": False,
+            "command": dict(command), "exact_command_hash": canonical_sha256(command),
+            "requested_elapsed_s": 0,
+            "nominal_shutter": shutter,
+            "exposure_cache_key": f"guide8-{capture_id}",
+            "timing_acceptance": "diagnostic_not_formal",
+            "strip_zero_required": True, "steady_claim": False,
+            "warm_precondition_sequence": [dict(item) for item in preconditions],
+        })
+
+    ray_d = _command("ray", "D", commands)
+    ray_a = _command("ray", "A", commands)
+    control_preconditions = (
+        {"state_id": "D", "command": ray_d, "exact_command_hash": canonical_sha256(ray_d), "dwell_s": 120, "capture": False},
+        {"state_id": "A", "command": ray_a, "exact_command_hash": canonical_sha256(ray_a), "dwell_s": 120, "capture": False},
+    )
+    add("000-control-h300-s100", phase="control", state="C", command=control,
+        shutter="1/2500", role="control", preconditions=control_preconditions)
+    add("001-dark-all-off", phase="dark", state="OFF", command=off,
+        shutter="1/250", role="dark")
+    ladder_preconditions = (
+        {"state_id": "D", "command": ray_d, "exact_command_hash": canonical_sha256(ray_d), "dwell_s": 120, "capture": False},
+        {"state_id": "A", "command": ray_a, "exact_command_hash": canonical_sha256(ray_a), "dwell_s": 120, "capture": False},
+        {"state_id": "Q", "command": q, "exact_command_hash": canonical_sha256(q), "dwell_s": 120, "capture": False},
+    )
+    for index, shutter in enumerate(GUIDE8_RAY_EMISSION_EXPOSURE_LADDER, start=2):
+        add(
+            f"{index:03d}-ladder-{shutter.replace('/', 'over')}",
+            phase="ladder", state="Q", command=q, shutter=shutter,
+            role="ladder", preconditions=ladder_preconditions if index == 2 else (),
+        )
+    frozen = {str(step["exposure_cache_key"]): str(step["nominal_shutter"]) for step in captures}
+    return {
+        "schema": PLAN_SCHEMA_V2, "status": "execute_authorized",
+        "experiment_id": TD_C,
+        "guide_experiment_id": GUIDE8_RAY_EMISSION_EXPOSURE_EXPERIMENT_ID,
+        "variant": GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT,
+        "stage": "GUIDE8-EMISSION-EXPOSURE-DIAGNOSTIC", "phase": "diagnostic",
+        "source": "ray", "created_at": datetime.now(timezone.utc).isoformat(),
+        "inputs": {
+            "location": file_reference(LOCATION_PATH),
+            "policy": file_reference(POLICY_PATH),
+            "observer": file_reference(OBSERVER_PATH),
+            "code_duty_curve": file_reference(CURVE_PATH),
+        },
+        "camera": {"backend": "remote", "v2_capture_timing_capability_available": True,
+                   "v2_capture_capability": "remote_v2_capture_timing_v1",
+                   "resolved_capture_settings": {"owner": "remote_backend.resolve_capture_settings", "iso": "100", "aperture": "f/4", "image_format": "RAW"}},
+        "timing_contract": timing_contract(2), "cold_proxy": 600, "cold_proxy_wait_s": 600,
+        "captures": captures, "capture_ids": [str(step["capture_id"]) for step in captures],
+        "frozen_shutters": frozen, "exposure_setup_required": [],
+        "shutter_ledger_provenance": {"owner": "experiment_capture_steps", "required_cache_keys": sorted(frozen), "frozen_shutters_sha256": canonical_sha256(frozen)},
+        "native_raw_ambient_policy": AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+        "budgets": {"formal_cap": 0, "ambient_cap": 0, "diagnostic_cap": 16,
+                    "diagnostic_dark_cap": 1, "physical_cr3_cap": 16,
+                    "setup_physical_cr3_cap": 0, "retry": 0},
+        "execution_authorization": {"schema": "direct_guide8_ray_emission_exposure_v1",
+                                    "human_authorization_required": False,
+                                    "human_authorization_verified": True,
+                                    "human_authorization_experiment_id": GUIDE8_RAY_EMISSION_EXPOSURE_EXPERIMENT_ID,
+                                    "experiment_id": GUIDE8_RAY_EMISSION_EXPOSURE_EXPERIMENT_ID,
+                                    "bounded_device_scope": True, "remote_v2_capability": True},
+        "analysis_contract": {"formal_capture_count": 0, "dark_capture_count": 1,
+                              "maximum_exposure_ratio": 1.25,
+                              "shape_evaluator": "raw_response_candidate.evaluate_response_model",
+                              "response_model": {"a": 0.0, "b": 0.0},
+                              "maximum_shape_sigma": 3.0,
+                              "selected_member": "faster", "diagnostic_slowest": "1/250",
+                              "formal_slowest": "1/320", "historical_pooling_only_at_1over5000": True,
+                              "near_noise_only_continues": True, "steady_claim": False},
+        "cleanup": {"python_finally": "required", "shell_trap": "EXIT_INT_TERM_HUP_required"},
+        "formal_capture_eligible": False,
+    }
 
 
 def _build_td_c_fast_endpoint_holdout_plan() -> dict[str, Any]:
@@ -1292,6 +1405,11 @@ def _command(source: str, state: str, commands: Mapping[str, Mapping[str, int]])
     return {channel: int(commands[STRIP_COMMAND_KEYS[state]][channel]) for channel in CHANNELS}
 
 def shutter_cache_key_for_step(step: Mapping[str, Any]) -> str | None:
+    explicit = step.get("exposure_cache_key")
+    if explicit is not None:
+        if not isinstance(explicit, str) or not explicit.strip():
+            raise ValueError("thermal capture has an invalid explicit shutter owner")
+        return explicit
     source = str(step.get("source_id"))
     if source == "ambient":
         return None
