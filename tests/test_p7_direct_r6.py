@@ -1,5 +1,6 @@
 import hashlib
 import json
+import shutil
 import tempfile
 import unittest
 from types import SimpleNamespace
@@ -1755,6 +1756,52 @@ class DirectR6Tests(unittest.TestCase):
         self.assertTrue(report["faithful"])
         self.assertFalse(report["cross_experiment_absolute_synthesis"])
         self.assertFalse(report["steady_claim"])
+
+    def test_guide6_seed_negative_derivation_is_exact_and_immutable(self):
+        retained = Path(
+            "/Volumes/4T/temp/rgbww-optimizer/guide6-direct-target-local-h120-s100-20260813"
+        )
+        source_roots = (
+            retained / "20260814-075000-qualified-strip-1over1600-reference-repeat",
+            retained / "20260814-080000-qualified-strip-1over1600-solver-repeat",
+        )
+        if not all((root / "analysis.json").is_file() for root in source_roots):
+            self.skipTest("retained GUIDE6 seed roots are unavailable")
+        legacy_before = tuple((root / "analysis.json").read_bytes() for root in source_roots)
+        with tempfile.TemporaryDirectory() as temporary:
+            temporary_path = Path(temporary)
+            roots = (temporary_path / "root1", temporary_path / "root2")
+            for source, root in zip(source_roots, roots):
+                root.mkdir()
+                shutil.copy2(source / "analysis.json", root / "analysis.json")
+                shutil.copy2(source / "captures.jsonl", root / "captures.jsonl")
+            output = temporary_path / "analysis-v2-guide6-seed-negative-derived.json"
+            self.assertEqual(analyze.main([
+                str(roots[0]),
+                "--guide6-seed-negative-root2", str(roots[1]),
+                "--guide6-seed-negative-output", str(output),
+            ]), 0)
+            report = json.loads(output.read_text())
+            self.assertEqual(report["classification"], "repeatable_target_local_seed_mismatch")
+            self.assertEqual(report["solver_attempt_count"], 0)
+            self.assertEqual(report["distinct_strip_candidate_count"], 1)
+            self.assertEqual(report["probe_count"], 0)
+            self.assertEqual(report["solver_generated_candidate_count"], 0)
+            self.assertEqual(report["exact_command_hash"], analyze.GUIDE6_SEED_COMMAND_HASH)
+            self.assertEqual(
+                [item["target_score"] for item in report["roots"]],
+                list(analyze.GUIDE6_SEED_TARGET_SCORES),
+            )
+            output_before = output.read_bytes()
+            with self.assertRaises(FileExistsError):
+                analyze.main([
+                    str(roots[0]),
+                    "--guide6-seed-negative-root2", str(roots[1]),
+                    "--guide6-seed-negative-output", str(output),
+                ])
+            self.assertEqual(output.read_bytes(), output_before)
+            self.assertEqual((roots[0] / "analysis.json").read_bytes(), legacy_before[0])
+            self.assertEqual((roots[1] / "analysis.json").read_bytes(), legacy_before[1])
 
 
 if __name__ == "__main__":

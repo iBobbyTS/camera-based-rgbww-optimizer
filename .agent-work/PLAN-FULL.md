@@ -1,322 +1,310 @@
-# PLAN-FULL — GUIDE 5 science-first route
+# PLAN-FULL — GUIDE6 H120/S100 direct local controllability
 
-**性质：** Git 可追踪的科学路线记录；仅供 Human、Advisor 与 agent 阅读，不是
-production/test 输入、runtime 状态机、设备授权或 hidden gate。
+<!-- FEATURE-CONTEXT:START -->
+## Feature Context
 
-**科学权威：** `advisor/5/5.GUIDE.md` 与 `advisor/5/5.RESEARCH.md`（本轮 Advisor
-文件 SHA-256 已由提交记录验证）。
+### Feature identity
 
-**上游完成状态：** GUIDE 4 Ray COLD600 V3 已被接受为有效科学证据；原报告中的
-`nonlinear/non-additive` 已由 Advisor 明确拒绝为过强分类，原始
-`analysis.json` 保持不可变。
+- Feature ID / slug: `guide6-h120-s100-local-controllability-v1`
+- Feature base: `3e81a3202b091c19c7109638ca9087a9fb60f1a3`
+- Active artifacts belong only to this feature: `yes`
 
-**当前路线状态：** `TD_C_CORE_CORRECTED_REANALYSIS_THEN_FAST_B_C_HOLDOUT`
+### Original user request
 
-**当前下一步：** 保持已完成的 TD-C core acquisition 与旧 `analysis.json` 不变，
-生成 corrected derived analysis；若精确通过，只执行新的 FAST B/C endpoint holdout。
-legacy expansion、solver sentinel 和 later stages 继续锁定。
+Advisor/Human decision: accept both retained roots as valid exact-command negatives,
+reclassify them as `repeatable_target_local_seed_mismatch`, retain the frozen direct
+58-feature estimand, and create `GUIDE6_H120_S100_DIRECT_LOCAL_CONTROLLABILITY_V1`
+with four G-active probes, bounded feedback candidates, confirmations, cleanup and
+the stated result branches.
 
-<!-- FEATURE-CONTEXT:GUIDE5-TD-C-FAST-ENDPOINT-HOLDOUT -->
-## GUIDE5-TD-C-FAST-ENDPOINT-HOLDOUT — Advisor 纠偏与最小后续动作
+Later correction superseding prior guidance: the two roots are not two solver
+failures because both measured only `CW=518, WW=0, R=0, G=4095, B=0`; solver attempt
+count is zero. The prior analyzer `S-SOLVER-RETRY` label is historical-only.
 
-**Advisor 决定：** 接受 TD-C core 8 帧；旧 `analysis.json` 保持不可变但其 estimand
-语义不得沿用。先生成 source-specific contrast covariance 的 derived artifact；通过后
-只解锁 `GUIDE5_TD_C_FAST_ENDPOINT_HOLDOUT_B_C_V1`。
+### Requirement, example, and correction traceability
 
-| 要求 | 验收证据 |
-| --- | --- |
-| Ray/strip/paired/order 使用各自 contrast covariance | derived artifact 与精确 score regression |
-| difference limit 从 source-level unit observation Monte Carlo 生成 | 实现测试拒绝 difference-center helper 路径 |
-| A offset 非零不是 pre-solver failure | refined classification + diagnostic-only zero result |
-| B/C 四 session、8/8、0 ambient、FAST reset600/op120 | canonical spec 与 fake-backend scheduler test |
-| holdout 只检验 repeatability 与 independent synthesis agreement | endpoint analyzer behavior tests |
-| legacy expansion、solver、sentinel/later 禁止 | spec/CLI rejection tests；PLAN locks |
+| ID | Current instruction/example/correction | Supersedes | Acceptance criterion | Test or probe |
+|---|---|---|---|---|
+| REQ-001 | Preserve both legacy analyses and create immutable seed-negative derived evidence | legacy solver-failure interpretation | AC-F-001 | exact two-root derived-artifact regression |
+| REQ-002 | Final gate remains same-block ordered 58-feature strip-minus-Ray with frozen covariance/0.9973 guard | none | AC-F-002 | analyzer score/guard regression |
+| REQ-003 | Four probes are CW/WW/R/B +256 around exact G-active base; repeat base after probe 2/4 | static single-candidate block | AC-F-003 | fake-backend exact command/order test |
+| REQ-004 | Build whitened direct-feature Jacobian; <=4 solver candidates; box, max step 768, 1/.5/.25 backtrack, one rebase/Broyden | no actual solver | AC-F-004 | deterministic synthetic controllability test |
+| REQ-005 | Candidate pass requires 3 D/A/Q confirmations | none | AC-F-005 | pass and failed-confirmation behavior tests |
+| REQ-006 | Ray=2, strip<=14, total<=16, ambient=0, in-root retry=0; cleanup/source isolation always | none | AC-F-006 | fake-backend budget/abort/cleanup tests |
+| REQ-007 | Valid improvement permits one centered continuation; no G-active improvement permits one P2 active-set screen; no gamut claim | premature terminal solver/gamut inference | AC-F-007 | analyzer branch regressions |
+| REQ-008 | 13-node grid, B pre/post, cross-experiment synthesis, boundary, Gate-6 and P8 remain locked | none | AC-F-008 | plan/analyzer lock assertions |
 
-最小端到端结果：不可变 core-v2.1 精确通过后，执行一次新的 8-frame B/C endpoint
-holdout，分析后回 Advisor，不自动进入 solver。
+### Minimum sufficient end-to-end outcome
 
-允许结构变化：只扩展现有 `p7_thermal_diagnostics.py` protocol builder、现有
-measurement CLI/runner、现有 analyzer 与对应 `test_p7_direct_r6.py` 行为测试；不得
-新增 runtime/framework/owner。
+One direct H120/S100 target block actually perturbs four command degrees of freedom,
+constructs a local model in the frozen direct residual coordinate, measures bounded
+solver candidates, and produces one truthful LC-A/B/C/D/E classification with complete
+small evidence and cleanup. No new runtime/framework owner is introduced.
 
-<!-- SECTION:S01 -->
-### S01 — TD-C core source-specific derived contrasts
+### Scope authority map
 
-- 权威：本轮 Advisor exact decision。
-- 依赖：已接受的 8-frame core root 和不可变 `analysis.json`。
-- 允许编辑：`analyze_p7_thermal_diagnostics.py`、`test_p7_direct_r6.py`。
-- 排除：采集、原 artifact 修改、variance/feature/coverage 改动、solver。
-- covariance：Ray pair=`2ΣR`；strip pair=`2ΣS_A`；paired offset pair=
-  `2(ΣR+ΣS_A)`；order mean contrast=`ΣR+ΣS_A`；absolute mean offset=
-  `(ΣR+ΣS_A)/4`。所有 limit 必须从 source-level unit observations 做 Monte Carlo，
-  不得以 difference vector 作为 unit center。
-- 验收：四个 max score 分别复现 `4.7728227800 / 5.3379311421 /
-  5.7765306838 / 3.2538875744` 且 pass；absolute score 非零且仅 diagnostic；derived
-  artifact 写入独立路径。
-- review：一次有材料价值的 bounded review（统计 estimand/covariance 语义）。
+- Immutable seed correction: explicit Advisor decision REQ-001.
+- Protocol builder, adaptive measurement and derived analyzer: explicit Advisor
+  controllability experiment REQ-002..REQ-007 and existing three owners.
+- Fake-backend behavior tests: repository safety rule and unavoidable proof that the
+  actual device owner enforces commands, caps, isolation and cleanup.
+- No generalized runtime, release, lineage, stage-gate, readiness or solver framework.
 
-<!-- SECTION:S02 -->
-### S02 — FAST B/C endpoint holdout
+### Goal
 
-- 权威：本轮 Advisor exact decision；仅在 S01 通过后执行。
-- 依赖：core-v2.1、combined FAST coordinate canonical artifact。
-- 允许编辑：`p7_thermal_diagnostics.py`、`measure_p7_thermal_diagnostics.py`、
-  `analyze_p7_thermal_diagnostics.py`、`test_p7_direct_r6.py` 与一个现有风格 wrapper。
-- 排除：legacy 1800/t_formal expansion、ambient、solver/probe/command adjustment、
-  sentinel/later stages。
-- 验收：四 session 精确为 B Ray→strip、C strip→Ray、B strip→Ray、C Ray→strip；
-  每 source `reset600→D120→A120→Q120→capture`；8/8/0；analyzer gate 为 B/C
-  paired-offset consistency + independent synthesis agreement，不 gate zero offset；
-  `retry=0` 禁止同一 run 内隐藏重采。
-- synthesis：`d_new_q - (mean_d_A_core + mean_local_q_combined)`；formal residual
-  covariance 必须等于新两-session endpoint mean、core 四-session A mean、combined
-  local-coordinate state mean三项独立 covariance之和；新 endpoint 不得回填或重拟合
-  core/combined artifact。
-- review：一次有材料价值的 bounded review（设备顺序与测量科学 gate）。
+Replace seed-only qualification with the first real bounded direct local-controllability
+experiment while preserving the frozen scientific estimand and safety bounds.
 
-计划复核状态：`APPROVED_AFTER_BOUNDED_CORRECTION`。
+### Observable behavior
 
-## 1. 不可变科学合同
+- The old two roots receive a new immutable derived `repeatable_target_local_seed_mismatch` artifact.
+- The direct CLI can execute the exact Ray/base/probe/anchor/candidate/confirmation protocol.
+- The run records command hashes, Jacobian diagnostics, predicted/measured residuals,
+  reduction, trust ratio, bounds, backtrack and model version.
+- The analyzer emits only LC-A/B/C/D/E or the explicitly permitted continuation/screen branches.
 
-```text
-observer = Canon native-Bayer identity RAW
-features = frozen ordered 58 features (R/G1/G2/B)
-quality / clipping / near-noise / finite / coverage = frozen
-covariance / pair variance / guarded limits = frozen
-exposure and frame selection = frozen
-source isolation = frozen
-P6 topology = full_periodic_2d_HB
-SAT0 Hue = undefined
-R6 = valid scientific negative; no reclassification; no pooling
-steady / settled / cold-equilibrium claim = prohibited
-```
+### Constraints and invariants
 
-两个正式包络：
+- Canon native Bayer, ordered 58 features, identity response, frozen source covariance,
+  coverage `0.9973`, guard, exposure map, reset600 and D/A/Q 120 s remain unchanged.
+- Linearized command order is CW/WW/R/G/B; G remains 4095 in the first active set.
+- D/A are command/readback/timing preconditions, not extra formal captures.
+- All source transitions retain isolation, finally cleanup and zero readback.
+- `retry=0` means no hidden reacquisition in one root; a later permitted root is separate.
 
-```text
-fast_op120_reset600_v1
-  reset_class = human_bounded_reset_600
-  reset/off proxy <= 600 s
-  initial precondition <= 120 s
-  state-to-capture dwell <= 120 s
+### Non-goals and unsupported environments
 
-long_op600_reset1800_v1
-  reset/off proxy = 1800 s
-  state-to-capture dwell = 600 s
-  holdout only; not fit/covariance/threshold input
-  required long sessions = 2; maximum = 3
-```
+- No physical/gamut-unreachable conclusion.
+- No 13-node grid, B pre/post, cross-experiment absolute synthesis, boundary, Gate-6,
+  P8, LUT installation, firmware or remote deployment.
+- No generic adaptive runtime, orchestration machine, release package or new solver service.
 
-两种包络的中心和误差不得合并；不得把热偏移扩入随机 covariance。
+### Ownership and state boundaries
 
-## 2. A1 — analyzer-v2（已完成）
+- `p7_thermal_diagnostics.py`: static scientific contract and plan builder.
+- `measure_p7_thermal_diagnostics.py`: sole device execution/adaptive command owner.
+- `analyze_p7_thermal_diagnostics.py`: immutable derived classifications and final analysis.
+- Existing bounded least-squares/multipatch solver functions may be reused; no new owner.
 
-已在现有 COLD600 V3 root 上离线运行一次派生 analyzer，未重采集，未修改原
-`analysis.json`：
+### Allowed structural changes
 
-```text
-derived = /Volumes/4T/temp/rgbww-optimizer/guide4-ray-history-3x3-op120-cold600-v3-20260810-081551/analysis-v2-common-reentry-derived.json
-sha256 = 3f23ed6c949217c104121b43e20300e21b0a70a60349f80ffeb95844797d9986
-classification = common_warm_reentry_shift
-legacy_classification = nonlinear/non-additive
-common_warm_reentry_score = 14.846865020488382
-common_warm_reentry_guarded_limit = 9.543878618146513
-additive_model_rejected = false
-period_main_effect_detected = false
-predecessor_main_effect_detected = false
-nonlinear_interaction_demonstrated = false
-orthogonal_to_frozen_r6_direction_detected = true
-r6_rank1_direction_transfer = rejected
-r6_frames_pooled = false
-```
+- Add one protocol-specific plan variant and one protocol-specific adaptive execution path
+  inside the three existing owners.
+- Add local helpers for whitened residual/Jacobian/candidate selection and existing-style
+  JSON/JSONL evidence; no shared framework or public configuration surface.
 
-`orthogonal_to_frozen_r6_direction_detected` 仅表示旧 R6 PC1 无法迁移到当前 fast
-协议，不再触发非加性分类。原始 COLD600 `analysis.json` SHA-256：
-`0628736473668cceee9657f3a6770663e53728a3bb4ce10a871770bbf6c9136b`。
+### Audit-remediation scope, if applicable
 
-## 3. A2 — fast Ray target artifact（已完成）
+- Accepted audit finding IDs: `none`
+- Unrelated discoveries go to: separate audit backlog
 
-已从 21 条 retained COLD600 capture ledger 离线派生：
+### Feature acceptance criteria
 
-```text
-config/hsi/ray-fast-op120-targets-v1.json
-sha256 = d1c4bcfb4fd268daa711dc11bd2d2119b9e07ce6d238df1d90702ccc996f8b40
-```
+- AC-F-001..008 all have deterministic behavior evidence.
+- One clean checkpoint executes the bounded experiment only after S01/S02 acceptance.
+- The device run never exceeds Ray=2, strip=14, total=16 and always finishes zero/off.
 
-精确成员：
+### Validation tiers
 
-```text
-A / H120-S100 = 9 个 A_after_D/B/C warm-return captures
-A0             = 3 个 initial captures，明确排除
-D / H120-S50  = 3 个 direct captures
-B / H0-S0      = 3 个 direct captures
-C / H300-S100  = 3 个 direct captures
-```
+- Targeted: seed reclassification, exact plan, solver math and fake-backend protocol tests.
+- Section/package: relevant `tests.test_p7_direct_r6` selectors plus compileall.
+- Final integration/repository: one focused direct-path suite, wrapper syntax, CodeGraph sync,
+  and `git diff --check`; no repeated full-suite campaign.
 
-该 artifact 只支持四个直接状态，不外推完整 P6 manifold；继续使用冻结 covariance，
-不得从 3 或 9 个样本估计新 covariance。
+### Compatibility, migration, rollout, rollback, and cleanup
 
-## 4. B — strip-only fast history（已完成，S-A2）
+- Legacy analysis files remain byte-identical; new derived artifact is additive.
+- Existing direct variants remain supported unchanged.
+- A failed live root is preserved; cleanup and zero readback precede diagnosis.
+<!-- FEATURE-CONTEXT:END -->
 
-A1 canonical 输出为 `common_warm_reentry_shift` 且证据检查已通过，当前已解锁。
-GUIDE5 中额外的 Human authorization 要求与 AGENTS.md 的授权优先级冲突，按
-AGENTS.md 不构成停止门；高危操作仍按高风险授权条款执行。
+## Plan Review Gate
 
-```text
-experiment_id = GUIDE5-STRIP-HISTORY-ORDER-BALANCED-3X3-OP120-RESET600-V1
-source = strip only
-Ray = zero throughout
-orders = DBC / CDB / BCD
-sessions = 3
-captures per session = 7
-total = 21
-reset proxy = 600 s
-dwell = 120 s
-solver = prohibited
-retry = 0
-```
+- Status: `APPROVED_AFTER_BOUNDED_CORRECTION`
+- Reviewed PLAN-FULL SHA-256: initial `ccdc2e45801b8d303b21caa9148323b59e584ac66ef243a96f03fb0296dabc24`; corrected `b908e8b58e5e0260119a22f3f4279c30c41ed1b72da184c73e284754b267d570`
+- Reviewer/profile/session: fresh `guide6_plan_review`
+- Admitted IDs: `PR-001`, `PR-002`, `PR-003`
+- Corrections applied: exact retained-root/SHA/oracle identity; frozen branch predicates; confirmation-reserved budget and no-extra-probe rebase semantics.
+- `PLAN_DELTA` recheck: `not-required`
 
-每 session：`A0@120 → Q1@120 → A_after_Q1@120 → Q2@120 → A_after_Q2@120 → Q3@120 → A_after_Q3@120`。
-使用冻结 retained A/D/B/C strip commands and hashes；all-off/zero cleanup 必须在
-正常、异常和 signal 路径执行。
+<!-- SECTION:S01:START -->
+## S01 — Seed-negative immutable reclassification
 
-分支：`common_warm_reentry_shift` 或 `no_history_effect_detected` 可接受 strip
-fast-history model；`additive_period_or_carryover_effect`、
-`interaction_or_nonadditive_unresolved` 或 measurement failure 均在 combined 之前
-回 Advisor。
+### Goal
 
-### B 结果（2026-08-10）
+Create a new derived artifact that truthfully records two exact-command negatives and
+zero solver attempts without modifying either legacy analysis.
 
-三个 order-balanced session 已完成 `21/21`，quality、physical return、wrapper
-和 cleanup 全部通过。冻结 analyzer-v2 输出 `underpowered_or_unclassified`，其
-SHA-256 保持
-`7f1325fed769cbfe03623e7a76ffc155ea46ed03c60c8db36dbef8c1c3aea9d6`。
-Advisor 确认 v2 错把 treatment-coded baseline-cell intercept 当作 balanced common
-effect。修正后的只读 analyzer-v3 输出：
+### Authority and necessity
 
-```text
-artifact = /Volumes/4T/temp/rgbww-optimizer/guide5-strip-history-3x3-op120-reset600-20260810-2141/analysis-v3-strip-common-and-session-derived.json
-sha256 = 0e8ad4eabd5acbb8ef6a6cbcf7fa3fde2fee8d13ad6cdf3c58446325461ea58e
-guide5_parent_branch = S-A
-classification = common_warm_reentry_shift_with_session_block_heterogeneity
-balanced common score / guard = 13.5891110356185 / 9.561891733668457
-session3-session2 score / guard = 9.950862478050007 / 9.561711294035568
-```
+- Authority anchor: Advisor decision REQ-001.
+- Required because the current artifact labels a seed-only failure as solver retry.
+- The existing immutable legacy artifact cannot be edited; one additive derived analysis is the smallest correction.
 
-strip fast-history structure conditional accepted；不冻结 global cross-session warm center，
-不要求新的 strip acquisition。未来 combined comparison 使用 local warm anchors 并将
-session 作为 blocking factor。完整证据见
-`.agent-work/GUIDE5-STRIP-HISTORY-V3-RESULT.md`。
+### Dependencies
 
-## 5. C — paired fast-vs-long Ray bridge（已完成并接受）
+- Requires: `none`
+- Base: `3e81a3202b091c19c7109638ca9087a9fb60f1a3`.
 
-与 B 使用独立 root，不并行；不训练 fast target，不改变 covariance。该实验是有界
-Ray/相机采集，不属于 AGENTS.md 定义的高危操作。
+### Expected scope and direct impact cone
 
-```text
-states = C (H300/S100) and B (H0/S0)
-C pair = FAST then LONG
-B pair = LONG then FAST
-FAST = reset600, A/Q/A dwell120
-LONG = reset1800, A/Q/A dwell600
-required = 4 mini-sessions / 12 captures / 2 long sessions
-maximum = 6 mini-sessions / 18 captures / 3 long sessions
-```
+- Primary owner: `analyze_p7_thermal_diagnostics.py`.
+- Allowed-to-edit: analyzer seed-reclassification helper/CLI path; `tests/test_p7_direct_r6.py`; current plan/state/review artifacts.
+- Inspect-only exact fixtures:
+  - root 1: `/Volumes/4T/temp/rgbww-optimizer/guide6-direct-target-local-h120-s100-20260813/20260814-075000-qualified-strip-1over1600-reference-repeat`
+  - root 1 legacy analysis SHA-256: `c32dc70b5639ff0342dbef0c8dc2151d1bb1469fa717b3b17f9e032d57b5dd1b`
+  - root 2: `/Volumes/4T/temp/rgbww-optimizer/guide6-direct-target-local-h120-s100-20260813/20260814-080000-qualified-strip-1over1600-solver-repeat`
+  - root 2 legacy analysis SHA-256: `9651f2f3d706d2dd7b950737a58b93d71a947a841b1da44cda1b3b94261a0f87`
+  - frozen policy and each root's capture/command evidence.
+- Explicitly excluded: device execution, thresholds/covariance/features, old artifact mutation, solver implementation.
 
-只报告 fast-vs-long 的 Q center、A-return、common-bias 与 state-dependent-bias；
-long 数据保持 holdout。结果分为 `thermal_bias_not_detected`、
-`common_protocol_bias_detected`、`state_dependent_protocol_bias_detected` 或
-`validation_inconclusive`。前三类不自动否定 fast envelope，最后一类保持 combined 锁定。
+### Non-goals and deferred owner
 
-Advisor 接受 12/12 acquisition 为 valid holdout。原 v1 保持不可变，新增只读 v2：
+- No live acquisition or solver inference; S02 owns actual controllability.
 
-```text
-artifact = /Volumes/4T/temp/rgbww-optimizer/guide5-ray-fast-long-bridge-20260810-194802/analysis-v2-fast-long-local-anchor-derived.json
-sha256 = 08f7eaf6f94914e675d56353a9ad8b240215fcda92b3cbfe54ab122564b83511
-classification = state_dependent_Q_center_protocol_bias_detected_on_B_C_holdout
-B local-anchor = compatible
-C local-anchor = detected
-B-vs-C local-anchor = detected
-FAST/LONG pooling = prohibited
-common transfer / covariance inflation / extrapolation beyond B/C = prohibited
-```
+### Invariants
 
-## 6. D — combined TD-B FAST local-coordinate（已完成，canonical pass）
+- Legacy bytes unchanged; exact command hash and score values are verified from retained evidence.
 
-```text
-artifact = /Volumes/4T/temp/rgbww-optimizer/guide5-ray-fast-long-bridge-20260810-194802/p7-combined-fast-history-coordinate-v1.json
-sha256 = adc3b59a0bbc1334ca7eb0f89e11a6850dd06b61bafafeccaef9e53791d1537a
-coordinate = (Q_strip-A_after_Q_strip)-(Q_ray-A_after_Q_ray)
-cells = 9 matched FAST cells
-source captures = 42
-LONG inputs = 0
-session / position / additive residual = pass
-evidence identity / no pooling = pass
-classification = fast_local_anchor_coordinate_compatible_for_paired_source_comparison
-```
+### Allowed structural changes
 
-state terms 被保留为之后 solver 处理的 strip-Ray mismatch，不在零点门禁中。
+- One local derived-artifact function and explicit output path; no new analyzer framework.
 
-## 7. E — TD-C core（已完成，等待 Advisor）
+### Review intensity
 
-```text
-sessions = 4
-orders = Ray→strip / strip→Ray / Ray→strip / strip→Ray
-per source warm precondition = both-off reset600 → same-source D120 → same-source A120
-formal capture = A_warm_after_D only
-total captures = 8
-steady claim = false
-```
+- `BOUNDED`
 
-只检验 within-session strip-Ray difference 可重复性、source order effect 和 absolute
-warm-A cross-source anchor。结果：
+### Review assurance
 
-```text
-root = /Volumes/4T/temp/rgbww-optimizer/guide5-td-c-core-20260812-151638-noambient-fix
-accepted / physical = 8 / 8
-quality / wrapper / cleanup / final zero = pass / pass / pass / pass
-analysis = analysis.json
-analysis sha256 = a4f4303b391c6eca5bf4a59fd1e95bf1b505b28bad4eda1c081f5d54d98a6aa0
-status = td_c_core_pass_waiting_for_planner
-within_session_compatibility = pass
-balanced_order_effect = pass
-stable_center = pass
-warm_A_cross_source_anchor = pass
-td_c_expansion_locked = true
-```
+- Requested: `AUTO`
+- Resolved: `ONE`
+- Reasons: offline additive artifact, exact regression values, no device behavior.
 
-采集后 analyzer 暴露旧 aperture provenance equality gate，已作为普通 harness defect
-修复并由 24 个 direct-path tests 验证；保留的 8 帧未修改、未重采集。完整交接见
-`.agent-work/ADVISOR_HANDOFF-20260812-GUIDE5-TD-C-CORE.md`。现在回 Advisor；不得进入
-expansion 或 solver。
+### Acceptance criteria
 
-## 8. 后续锁与禁止事项
+- Emits `repeatable_target_local_seed_mismatch`, solver count 0, distinct candidate count 1,
+  probe/candidate count 0, exact hash, both scores/brackets, and prohibits gamut inference.
+- Exact command/hash is `CW=518, WW=0, R=0, G=4095, B=0` /
+  `f70a07889065ad105bf25a9fda103ec2a708ef056f4ae17b0279ef3886b5cfde`;
+  exact scores are `80.2851456563` and `80.8620601083`; both Ray brackets are `pass`.
+- Refuses overwrite and proves both legacy analyses byte-identical.
 
-TD-C core 执行期间继续锁定：
+### Validation tiers
 
-```text
-TD-C expansion
-solver sentinel / remaining 9 / boundary / holdout / Gate-6 / P8
-default/runtime LUT install
-```
+- Targeted: derived artifact exact regression and immutable overwrite test.
+- Section/package: related direct analyzer tests.
+- Integration checkpoint: S02 consumes only the corrected status, not historical solver failure.
 
-禁止：重复 Ray 3×3 fast acquisition、复杂 thermal/state-space correction、合并
-fast/long 数据、平均 A0 与 warm returns、改变 observer/features/covariance/guard/
-exposure/frame selection、把 R6 PC1 transfer failure写成 nonlinear interaction。
+### Reset triggers
 
-## 9. 执行与停止条件
+- Any change to final estimand, source covariance, feature set or legacy artifact semantics.
+<!-- SECTION:S01:END -->
 
-- 普通代码/测试问题在当前 worktree 直接修复，不创建新的架构层或治理门槛。
-- 每个实验使用独立外置 root；raw CR3/图像/measurement 不入 Git，manifest、hash、
-  quality、analysis、cleanup 和报告可追踪。
-- 设备任务超过 10 分钟使用 visible Terminal、三次 liveness 检查与 automation。
-- strip history 的 Advisor gate 已由 `OPTION_3_CORRECT_THE_COMMON_CONTRAST`
-  解除；analyzer-v3 exact 数值已复核，paired Ray bridge 已解锁。
-- combined TD-B 已 canonical pass；TD-C core 已条件解锁；TD-C expansion、solver、
-  sentinel 和 later stages仍保持锁定。
+<!-- SECTION:S02:START -->
+## S02 — Direct local-controllability protocol and adaptive solver
 
-## 10. 交付要求
+### Goal
 
-完成 TD-C core 后向 Advisor 提交：bridge-v2 分类、combined canonical artifact、
-四 session 的 8/8 capture/quality/cleanup/hash、within-session/order/warm-anchor 结果，
-以及 expansion/solver/later locks。
+Execute the exact bounded Ray/probe/feedback/confirmation target block through the
+existing measurement CLI and classify it without claiming gamut reachability.
+
+### Authority and necessity
+
+- Authority anchor: Advisor decision REQ-002..REQ-008.
+- Required because no retained root contains a probe, Jacobian or solver-generated command.
+- Static `execute_plan` cannot choose later commands from current-root observations;
+  a protocol-specific adaptive path inside the existing measurement owner is necessary.
+
+### Dependencies
+
+- Requires: `S01`
+- Base: exact accepted S01 head.
+
+### Expected scope and direct impact cone
+
+- Primary owner: `measure_p7_thermal_diagnostics.py`.
+- Allowed-to-edit: `p7_thermal_diagnostics.py`, `measure_p7_thermal_diagnostics.py`,
+  `analyze_p7_thermal_diagnostics.py`, existing bounded solver modules only if reuse needs
+  a local generic parameter, `tests/test_p7_direct_r6.py`, wrapper only if an argument is needed,
+  current plan/state/review artifacts.
+- Inspect-only: HSI policy/covariance helpers, duty curve, camera backend, all-off owner,
+  current direct variants and solver tests.
+- Explicitly excluded: generalized runtime/coordinator, new persistence, release/lineage/stage-gate,
+  B pre/post, cross-experiment synthesis, 13-node/boundary/Gate-6/P8.
+
+### Non-goals and deferred owner
+
+- Active-set screen and centered continuation are emitted as bounded next branches; they are
+  executed only if the first block reaches LC-B/LC-C.
+- H120/S50 and later sentinel points require LC-A and remain later GUIDE work.
+
+### Invariants
+
+- Exact base/probes, max step 768, backtracks 1/.5/.25, one rebase, <=4 feedback,
+  3 confirmations only after candidate gate, Ray=2, strip<=14, total<=16, ambient=0.
+- Every strip capture uses D120/A120/tested-command120; one strip reset600 per block.
+- Cleanup/zero/source isolation and clean Git checkpoint remain mandatory.
+- Budget scheduling is deterministic: initial base + 4 probes + 2 drift anchors use 7
+  strip captures; 3 confirmation slots are reserved before any feedback candidate;
+  therefore at most 4 feedback candidates may be launched. Before each candidate,
+  `used_strip + 1 candidate + 3 reserved confirmations <= 14` must hold.
+- The one permitted in-root rebase uses the measured candidate and one Broyden/model
+  rebase without new probe captures. A full four-probe rebase is not allowed inside
+  this root and may occur only in the explicitly permitted new-root continuation.
+
+### Allowed structural changes
+
+- One protocol-specific adaptive executor plus local solver/evidence helpers in existing owners.
+- One new plan schema/variant and one derived analysis schema.
+
+### Review intensity
+
+- `HIGH_RISK`
+
+### Review assurance
+
+- Requested: `AUTO`
+- Resolved: `TWO`
+- Reasons: adaptive commands drive physical light output and later decisions depend on captured feedback.
+
+### Acceptance criteria
+
+- Exact order and commands, drift anchors, budgets and no hidden retry are enforced.
+- Jacobian uses whitened direct residual; diagnostics include singular values/rank/condition.
+- Every feedback row records command/hash, predicted/measured residual/score, reductions,
+  trust ratio, active bounds, fraction and model version.
+- Candidate pass triggers exactly three confirmations; any invalid confirmation cannot yield LC-A.
+- LC-B/C/D/E and continuation/screen locks match Advisor decision; no gamut claim.
+- All abort paths invoke cleanup and produce zero evidence.
+
+### Frozen classification table
+
+| Branch | Required observations/predicate | Output / next lock |
+|---|---|---|
+| LC-A | Ray bracket pass; 4 valid probes; Jacobian built; base anchors pass; a distinct solver-generated candidate passes; exactly 3/3 confirmations pass | `H120_S100_direct_local_solver_pass`; unlock only H120/S50 |
+| LC-B | valid probes/Jacobian and at least one distinct solver candidate has positive measured reduction, but no confirmed pass within budget | `H120_S100_local_controllable_but_not_yet_faithful`; permit one new-root continuation centered on best command |
+| LC-C | 4 valid probes/Jacobian/base anchors, actual bounded candidates/backtrack/one Broyden rebase executed, but no candidate improves base | `G_active_neighborhood_inadequate`; permit one P2-seeded active-set screen; gamut inference prohibited |
+| LC-D | insufficient valid independent probes or frozen exposure cannot observe a required probe | `local_controllability_not_observable_under_frozen_exposure`; follow S-MEASUREMENT |
+| LC-E | Ray before/after bracket fails | `target_block_reference_invalid`; permit one new-root repeat, second failure Advisor gate |
+
+The first G-active block may output only LC-A, LC-B continuation-required, LC-C
+active-set-screen-required, LC-D, or LC-E. It may not output
+`multi_start_solver_unresolved`. `S-SOLVER-RETRY` requires valid probes, a built
+Jacobian and at least one distinct measured solver-generated candidate;
+`S-SOLVER-UNRESOLVED`/`multi_start_solver_unresolved` requires exhaustion of the
+bounded G-active path plus the permitted continuation/alternate-active-set path.
+The derived S01 artifact is orchestration/scientific disposition only: production,
+runner and tests must not consume `.agent-work` or historical analysis as runtime
+authorization.
+
+### Validation tiers
+
+- Targeted: synthetic solver math and exact fake-backend command sequence/branch tests.
+- Section/package: direct runner/analyzer tests, compileall and wrapper syntax.
+- Integration checkpoint: one clean fake-backend end-to-end run under physical caps.
+
+### Reset triggers
+
+- Changing device-control owner, final estimand/covariance, public CLI compatibility,
+  cleanup semantics, or adding a generalized adaptive runtime.
+<!-- SECTION:S02:END -->

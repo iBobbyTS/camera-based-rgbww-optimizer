@@ -52,6 +52,14 @@ TD_C_CORE_CONTRAST_CLASSIFICATION = (
 )
 TD_C_CORE_CONTRAST_MC_SEED = 27072026
 TD_C_CORE_CONTRAST_MC_SAMPLES = 20000
+GUIDE6_SEED_NEGATIVE_SCHEMA = "guide6_h120_s100_seed_negative_derived_v2"
+GUIDE6_SEED_COMMAND_HASH = "f70a07889065ad105bf25a9fda103ec2a708ef056f4ae17b0279ef3886b5cfde"
+GUIDE6_SEED_COMMAND = {"cw": 518, "ww": 0, "r": 0, "g": 4095, "b": 0}
+GUIDE6_SEED_LEGACY_ANALYSIS_SHA256 = (
+    "c32dc70b5639ff0342dbef0c8dc2151d1bb1469fa717b3b17f9e032d57b5dd1b",
+    "9651f2f3d706d2dd7b950737a58b93d71a947a841b1da44cda1b3b94261a0f87",
+)
+GUIDE6_SEED_TARGET_SCORES = (80.28514565625028, 80.8620601083101)
 TD_C_CORE_EXPECTED_SCORES = {
     "ray_pair_maximum": 4.7728227800,
     "strip_pair_maximum": 5.3379311421,
@@ -1549,6 +1557,86 @@ def analyze_td_c_direct_target_local(
         },
         "steady_claim": False,
         "locked_later_stages": ["B_prepost", "cross_experiment_absolute_synthesis", "solver_sentinel", "P8"],
+    }
+
+
+def analyze_guide6_seed_negative(
+    root_1: str | Path, root_2: str | Path,
+) -> dict[str, Any]:
+    """Correct two immutable seed-only GUIDE6 analyses without refitting them."""
+    roots = (Path(root_1).resolve(), Path(root_2).resolve())
+    evidence: list[dict[str, Any]] = []
+    candidate_hashes: set[str] = set()
+    probe_count = 0
+    solver_candidate_count = 0
+    confirmation_count = 0
+    for index, (root, expected_sha, expected_score) in enumerate(zip(
+        roots, GUIDE6_SEED_LEGACY_ANALYSIS_SHA256, GUIDE6_SEED_TARGET_SCORES,
+    ), start=1):
+        legacy_path = root / "analysis.json"
+        if legacy_path.is_symlink() or not legacy_path.is_file():
+            raise ValueError(f"GUIDE6 seed root {index} lacks immutable legacy analysis")
+        legacy_sha = _sha256(legacy_path)
+        if legacy_sha != expected_sha:
+            raise ValueError(f"GUIDE6 seed root {index} legacy analysis identity drifted")
+        legacy = _load_json(legacy_path)
+        score = float(legacy.get("target_local_contrast", {}).get("score", math.nan))
+        if (
+            legacy.get("ray_before_after_bracket", {}).get("decision") != "pass"
+            or not math.isclose(score, expected_score, rel_tol=0.0, abs_tol=1e-12)
+        ):
+            raise ValueError(f"GUIDE6 seed root {index} differs from accepted scientific result")
+        rows = _load_jsonl(root / "captures.jsonl")
+        candidate_rows = [
+            row for row in rows
+            if row.get("plan_step", {}).get("role") == "strip_candidate"
+        ]
+        if len(candidate_rows) != 1:
+            raise ValueError(f"GUIDE6 seed root {index} lacks exactly one strip seed candidate")
+        step = candidate_rows[0]["plan_step"]
+        command = step.get("command")
+        command_hash = str(step.get("exact_command_hash", ""))
+        if command != GUIDE6_SEED_COMMAND or command_hash != GUIDE6_SEED_COMMAND_HASH:
+            raise ValueError(f"GUIDE6 seed root {index} command differs from accepted seed")
+        candidate_hashes.add(command_hash)
+        roles = [str(row.get("plan_step", {}).get("role", "")) for row in rows]
+        probe_count += sum("probe" in role for role in roles)
+        solver_candidate_count += sum("solver_candidate" in role for role in roles)
+        confirmation_count += sum("confirmation" in role for role in roles)
+        evidence.append({
+            "root_index": index,
+            "root": str(root),
+            "legacy_analysis": {"path": str(legacy_path), "sha256": legacy_sha},
+            "legacy_status": legacy.get("status"),
+            "target_score": score,
+            "ray_bracket": "pass",
+            "exact_command_hash": command_hash,
+        })
+    if probe_count or solver_candidate_count or confirmation_count or len(candidate_hashes) != 1:
+        raise ValueError("accepted GUIDE6 seed roots contain unexpected solver activity")
+    return {
+        "schema": GUIDE6_SEED_NEGATIVE_SCHEMA,
+        "status": "guide6_seed_mismatch_reproduced",
+        "classification": "repeatable_target_local_seed_mismatch",
+        "legacy_status": "guide6_s_solver_retry_required",
+        "solver_attempt_count": 0,
+        "distinct_strip_candidate_count": 1,
+        "probe_count": 0,
+        "solver_generated_candidate_count": 0,
+        "confirmation_count": 0,
+        "exact_command": dict(GUIDE6_SEED_COMMAND),
+        "exact_command_hash": GUIDE6_SEED_COMMAND_HASH,
+        "final_acceptance_estimand": "frozen_direct_58_feature_target_local_contrast",
+        "solver_navigation_coordinate": "direct_whitened_58_feature_residual",
+        "gamut_inference": "prohibited",
+        "legacy_artifacts_modified": False,
+        "roots": evidence,
+        "locks": {
+            "thirteen_node_grid": True,
+            "B_prepost": True,
+            "cross_experiment_absolute_synthesis": True,
+            "boundary_gate6_p8": True,
+        },
     }
 
 
@@ -3796,11 +3884,25 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--td-c-core-contrasts-artifact", type=Path)
     parser.add_argument("--td-c-combined-artifact", type=Path)
     parser.add_argument("--td-c-r6-root", type=Path)
+    parser.add_argument("--guide6-seed-negative-root2", type=Path)
+    parser.add_argument("--guide6-seed-negative-output", type=Path)
     return parser.parse_args(argv)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(argv)
+    if args.guide6_seed_negative_output is not None:
+        if args.guide6_seed_negative_root2 is None:
+            raise ValueError("GUIDE6 seed-negative derivation requires root2")
+        output = args.guide6_seed_negative_output.resolve()
+        if output.exists():
+            raise FileExistsError("GUIDE6 seed-negative output is immutable and already exists")
+        report = analyze_guide6_seed_negative(args.run_dir, args.guide6_seed_negative_root2)
+        _write_text_atomic(
+            output, json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n",
+        )
+        print(output)
+        return 0
     if args.derive_r1_output is not None:
         paths = write_reference_epoch_v2_derived(args.run_dir, args.derive_r1_output)
         print("\n".join(str(path) for path in paths))
