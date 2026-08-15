@@ -1127,47 +1127,43 @@ def _build_td_c_fast_anchor_direction_b_plan() -> dict[str, Any]:
 
 
 def _build_guide6_direct_target_local_h120_s100_plan() -> dict[str, Any]:
-    """Plan-only first direct target-local H120/S100 block.
-
-    The block is intentionally not formal-eligible until Human authorizes it.
-    Ray before/after brackets and the strip candidate share the same target
-    block; no cross-experiment absolute synthesis is part of this plan.
-    """
+    """Build the frozen first GUIDE6 direct local-controllability block."""
     commands = load_r1_commands()
-    # Use the next shorter bounded strip exposure for this saturated target
-    # block. The prior attempts progressively reduced clipping; 1/1600 is the
-    # next camera-supported diagnosis without changing the frozen observer or
-    # quality gates.
-    shutters = {
-        "ray": "1/5000", "strip": "1/1600",
+    shutters = {"ray": "1/5000", "strip": "1/1600"}
+    base = {"cw": 518, "ww": 0, "r": 0, "g": 4095, "b": 0}
+    probes = {
+        "cw": {**base, "cw": 774},
+        "ww": {**base, "ww": 256},
+        "r": {**base, "r": 256},
+        "b": {**base, "b": 256},
     }
-    captures = []
-    def add(source: str, state: str, role: str, index: int, session: int = 1) -> None:
-        command = _command(source, state, commands)
+    captures: list[dict[str, Any]] = []
+
+    def add(source: str, state: str, role: str, index: int,
+            command: Mapping[str, Any]) -> None:
         captures.append({
             "capture_id": f"{index:03d}-{source}-h120-s100-{role}",
             "source_id": source, "state_id": state, "target": "H120/S100/INT100",
-            "role": role, "session_index": session, "formal_measurement": True,
+            "role": role, "session_index": 1, "formal_measurement": True,
             "capture_role": "formal",
-            "command": command, "exact_command_hash": canonical_sha256(command),
+            "command": dict(command), "exact_command_hash": canonical_sha256(command),
             "requested_elapsed_s": 120, "nominal_shutter": shutters[source],
             "timing_acceptance": "observed_elapsed_record_only",
             "strip_zero_required": source == "ray", "ray_zero_required": source == "strip",
             "steady_claim": False,
         })
-    add("ray", "D", "ray_precondition", 0)
-    add("ray", "A", "ray_precondition", 1)
-    add("ray", "A", "ray_q_before", 2)
-    add("strip", "D", "strip_precondition", 3)
-    add("strip", "A", "strip_precondition", 4)
-    add("strip", "A", "strip_candidate", 5)
-    add("ray", "D", "ray_postcondition", 6)
-    add("ray", "A", "ray_postcondition", 7)
-    add("ray", "A", "ray_q_after", 8)
+    ray_a = _command("ray", "A", commands)
+    add("ray", "A", "ray_q_before", 0, ray_a)
+    add("strip", "A", "strip_base", 1, base)
+    add("strip", "A", "strip_probe_cw", 2, probes["cw"])
+    add("strip", "A", "strip_probe_ww", 3, probes["ww"])
+    add("strip", "A", "strip_base_anchor_after_probe_2", 4, base)
+    add("strip", "A", "strip_probe_r", 5, probes["r"])
+    add("strip", "A", "strip_probe_b", 6, probes["b"])
+    add("strip", "A", "strip_base_anchor_after_probe_4", 7, base)
+    add("ray", "A", "ray_q_after", 8, ray_a)
     frozen = {
-        "ray-h120-s50": shutters["ray"],
         "ray-h120-s100": shutters["ray"],
-        "strip-h120-s50-fullscale": shutters["strip"],
         "strip-h120-s100-fullscale": shutters["strip"],
     }
     return {
@@ -1189,7 +1185,11 @@ def _build_guide6_direct_target_local_h120_s100_plan() -> dict[str, Any]:
         "session_orders": [["ray", "strip", "ray"]],
         "timing_contract": timing_contract(2), "cold_proxy": 600, "cold_proxy_wait_s": 600,
         "native_raw_ambient_policy": AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
-        "budgets": {"formal_cap": 9, "physical_cr3_cap": 9, "ambient_cap": 0, "retry": 0},
+        "budgets": {
+            "ray_cap": 2, "strip_cap": 14, "formal_cap": 16,
+            "physical_cr3_cap": 16, "ambient_cap": 0, "retry": 0,
+            "confirmation_reserved": 3,
+        },
         "frozen_shutters": frozen,
         "exposure_setup_required": [],
         "shutter_ledger_provenance": {
@@ -1212,6 +1212,31 @@ def _build_guide6_direct_target_local_h120_s100_plan() -> dict[str, Any]:
             "ray_before_after_bracket": True,
             "strip_base_drift_control": True,
             "steady_claim": False,
+        },
+        "local_controllability_contract": {
+            "schema": "guide6_h120_s100_direct_local_controllability_v1",
+            "command_order": list(CHANNELS),
+            "base_command": base,
+            "active_channel": "g", "active_value": 4095,
+            "free_channels": ["cw", "ww", "r", "b"],
+            "probe_step_linearized_code": 256,
+            "probes": probes,
+            "base_anchor_after_probe_numbers": [2, 4],
+            "navigation_coordinate": "direct_whitened_58_feature_residual",
+            "maximum_feedback_candidates": 4,
+            "maximum_absolute_step": 768,
+            "backtrack_factors": [1.0, 0.5, 0.25],
+            "maximum_model_rebases": 1,
+            "rebase_extra_probes": 0,
+            "confirmation_count": 3,
+            "strip_reset_s": 600,
+            "per_measurement_precondition": [
+                {"state_id": "D", "dwell_s": 120},
+                {"state_id": "A", "dwell_s": 120},
+            ],
+            "tested_command_dwell_s": 120,
+            "first_block_terminal_multi_start_unresolved_allowed": False,
+            "gamut_inference": "prohibited",
         },
         "hard_locks": {"legacy_absolute_synthesis": True, "B_prepost": "deferred_diagnostic_only", "solver_sentinel": True, "P8": True},
     }

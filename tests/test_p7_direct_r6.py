@@ -157,6 +157,7 @@ class DirectR6Tests(unittest.TestCase):
             elif plan["execution_authorization"]["schema"] in {
                 "direct_strip_history_session_v1",
                 "direct_td_c_fast_endpoint_holdout_v1",
+                "direct_guide6_target_local_h120_s100_v1",
             }:
                 output["ray_zero_before_capture"] = {
                     "response": {"data": {"intensity": 0}},
@@ -205,6 +206,7 @@ class DirectR6Tests(unittest.TestCase):
             "direct_ray_history_session_v1",
             "direct_strip_history_session_v1",
             "direct_ray_fast_long_bridge_session_v1",
+            "direct_guide6_target_local_h120_s100_v1",
         }
 
         with patch.object(measure, "_validate_returned_sidecar", side_effect=fake_sidecar):
@@ -1118,6 +1120,59 @@ class DirectR6Tests(unittest.TestCase):
         self.assertEqual(len([event for event in events if event[0] == "strip"]), 1 + 7)
         self.assertTrue(all(len(event[1]) == 5 for event in events if event[0] == "strip"))
 
+    def test_run_authorized_plan_routes_guide6_source_isolation_and_cleanup(self):
+        spec = thermal.build_direct_plan(
+            thermal.TD_C,
+            variant=thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT,
+        )
+        routed = {}
+
+        class FakeBackend:
+            backend_name = "remote"
+            v2_capture_capability = measure.REMOTE_V2_CAPABILITY
+
+            def connect(self):
+                return object()
+
+            def resolve_capture_settings(self, **_kwargs):
+                return SimpleNamespace(iso="100", aperture="f/4", image_format="RAW")
+
+            def capture_with_timing(self, **_kwargs):
+                raise AssertionError("routing test must not capture")
+
+        def fake_execute(_plan, **kwargs):
+            routed.update(kwargs)
+            isolation = kwargs["source_isolation_check_fn"]("guide6-strip")
+            self.assertTrue(isolation["source_verified_zero"])
+            self.assertEqual(isolation["source_verified"], "ray")
+            self.assertEqual(kwargs["cleanup_fn"]()["status"], "pass")
+            return Path("/fake/guide6")
+
+        zero = {
+            "requested_payload": {
+                "red": 0, "green": 0, "blue": 0,
+                "warm_white": 0, "cold_white": 0,
+            },
+            "device_snapshot": {
+                "red": 0, "green": 0, "blue": 0,
+                "warm_white": 0, "cold_white": 0,
+            },
+        }
+        with (
+            patch.object(measure, "execute_plan", side_effect=fake_execute),
+            patch("camera_based_rgbww_optimizer.optimization.measure_raw_observer_validation.build_native_raw_capture_step_fn", return_value=lambda _step: None),
+            patch("camera_based_rgbww_optimizer.control.esphome.verified_light", return_value=zero),
+            patch("camera_based_rgbww_optimizer.control.ray120c.set_cct", return_value={"status": "pass"}),
+            patch("camera_based_rgbww_optimizer.control.ray120c.get_cct", return_value={"data": {"cct": 5600, "gm": 100, "intensity": 0}}),
+            patch("camera_based_rgbww_optimizer.control.all_off.turn_everything_off", return_value=[{"name": "all_off", "ok": True}]),
+        ):
+            result = measure.run_authorized_plan(
+                spec, output_dir=Path("/fake"), run_name="guide6",
+                camera_backend=FakeBackend(),
+            )
+        self.assertEqual(result, Path("/fake/guide6"))
+        self.assertIsNotNone(routed["source_isolation_check_fn"])
+
     def test_downstream_direct_specs_use_scientific_prerequisites(self):
         strip = thermal.build_direct_plan(thermal.TD_B, source="strip")
         td_c = thermal.build_direct_plan(thermal.TD_C)
@@ -1720,7 +1775,7 @@ class DirectR6Tests(unittest.TestCase):
         self.assertEqual(report["locks"]["B_prepost_experiments"], "deferred_diagnostic_only")
         self.assertFalse(report["locks"]["direct_target_local_sentinel"])
 
-    def test_guide6_h120_s100_target_local_plan_is_human_pending_and_no_synthesis(self):
+    def test_guide6_h120_s100_target_local_plan_is_exact_and_no_synthesis(self):
         plan = thermal.build_direct_plan(
             thermal.TD_C,
             variant=thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT,
@@ -1733,10 +1788,240 @@ class DirectR6Tests(unittest.TestCase):
         self.assertNotEqual(plan["frozen_shutters"]["strip-h120-s100-fullscale"], "1/160")
         self.assertFalse(plan["analysis_contract"]["cross_experiment_absolute_synthesis"])
         self.assertEqual([step["role"] for step in plan["captures"]], [
-            "ray_precondition", "ray_precondition", "ray_q_before",
-            "strip_precondition", "strip_precondition", "strip_candidate",
-            "ray_postcondition", "ray_postcondition", "ray_q_after",
+            "ray_q_before", "strip_base", "strip_probe_cw", "strip_probe_ww",
+            "strip_base_anchor_after_probe_2", "strip_probe_r", "strip_probe_b",
+            "strip_base_anchor_after_probe_4", "ray_q_after",
         ])
+        contract = plan["local_controllability_contract"]
+        self.assertEqual(contract["base_command"], {"cw": 518, "ww": 0, "r": 0, "g": 4095, "b": 0})
+        self.assertEqual(contract["probes"], {
+            "cw": {"cw": 774, "ww": 0, "r": 0, "g": 4095, "b": 0},
+            "ww": {"cw": 518, "ww": 256, "r": 0, "g": 4095, "b": 0},
+            "r": {"cw": 518, "ww": 0, "r": 256, "g": 4095, "b": 0},
+            "b": {"cw": 518, "ww": 0, "r": 0, "g": 4095, "b": 256},
+        })
+        self.assertEqual(plan["budgets"], {
+            "ray_cap": 2, "strip_cap": 14, "formal_cap": 16,
+            "physical_cr3_cap": 16, "ambient_cap": 0, "retry": 0,
+            "confirmation_reserved": 3,
+        })
+        self.assertEqual(contract["backtrack_factors"], [1.0, 0.5, 0.25])
+        self.assertEqual(contract["maximum_absolute_step"], 768)
+        self.assertEqual(contract["maximum_model_rebases"], 1)
+        self.assertEqual(contract["rebase_extra_probes"], 0)
+
+    def _run_fake_guide6_protocol(
+        self, residual_scale=1.0, *, irreducible=0.0, abort_role=None,
+        cleanup_sink=None,
+    ):
+        import numpy as np
+
+        plan = thermal.build_direct_plan(
+            thermal.TD_C,
+            variant=thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT,
+        )
+        feature_ids = tuple(f"f{index}" for index in range(58))
+        roles = []
+        isolation = []
+        cleanup = [] if cleanup_sink is None else cleanup_sink
+
+        def fake_vector(capture, _feature_ids):
+            return np.asarray(capture["_vector"], dtype=float)
+
+        def fake_measure(step):
+            roles.append(step["role"])
+            if step["role"] == abort_role:
+                raise RuntimeError("synthetic abort")
+            vector = np.zeros(58)
+            if step["source_id"] == "strip":
+                command = step["command"]
+                vector[:4] = residual_scale * np.asarray([
+                    1.0 + (command["cw"] - 518) / 256.0,
+                    1.0 - command["ww"] / 256.0,
+                    1.0 - command["r"] / 256.0,
+                    1.0 - command["b"] / 256.0,
+                ])
+                vector[4] = irreducible
+            return {
+                "_vector": vector,
+                "direct_quality": {"status": "pass", "feature_count": 58},
+                "feature_values": {name: 1.0 for name in feature_ids},
+            }
+
+        with (
+            patch.object(measure, "_guide6_feature_vector", side_effect=fake_vector),
+            patch.object(measure, "_guide6_variances", return_value=(np.ones(58), np.ones(58))),
+            patch.object(measure, "calibrate_direct_limits", return_value={
+                "guarded_limit": 0.05, "statistic": "synthetic",
+            }),
+        ):
+            result = measure.run_guide6_local_controllability_protocol(
+                plan,
+                measure_fn=fake_measure,
+                feature_ids=feature_ids,
+                source_isolation_fn=lambda source: (
+                    isolation.append(source)
+                    or {"status": "pass", "source_verified_zero": True}
+                ),
+                cleanup_fn=lambda: cleanup.append("off") or {"status": "pass"},
+            )
+        return result, roles, isolation, cleanup
+
+    def test_guide6_fake_backend_exact_sequence_reserves_confirmations_and_passes(self):
+        result, roles, isolation, cleanup = self._run_fake_guide6_protocol()
+        self.assertEqual(roles[:8], [
+            "ray_q_before", "strip_base", "strip_probe_cw", "strip_probe_ww",
+            "strip_base_anchor_after_probe_2", "strip_probe_r", "strip_probe_b",
+            "strip_base_anchor_after_probe_4",
+        ])
+        self.assertEqual(roles[-4:], [
+            "strip_confirmation_1", "strip_confirmation_2", "strip_confirmation_3",
+            "ray_q_after",
+        ])
+        self.assertEqual(result["lc_branch"], "LC-A")
+        self.assertGreaterEqual(len(result["candidates"]), 1)
+        self.assertLessEqual(len(result["candidates"]), 4)
+        self.assertEqual(len(result["confirmations"]), 3)
+        self.assertEqual(result["counts"]["ray"], 2)
+        self.assertLessEqual(result["counts"]["strip"], 14)
+        self.assertLessEqual(result["counts"]["total"], 16)
+        self.assertEqual(result["counts"]["ambient"], 0)
+        self.assertEqual(result["counts"]["in_root_retry"], 0)
+        self.assertEqual(result["model_rebase_extra_probe_count"], 0)
+        self.assertFalse(result["terminal_multi_start_solver_unresolved"])
+        self.assertEqual(result["gamut_inference"], "prohibited")
+        self.assertEqual(len(isolation), result["counts"]["total"])
+        self.assertEqual(cleanup, ["off"])
+
+    def test_guide6_fake_backend_improvement_stays_within_candidate_budget(self):
+        result, roles, _isolation, cleanup = self._run_fake_guide6_protocol(
+            4.0, irreducible=0.5,
+        )
+        self.assertEqual(result["lc_branch"], "LC-B")
+        self.assertGreaterEqual(len(result["candidates"]), 1)
+        self.assertLessEqual(len(result["candidates"]), 4)
+        self.assertEqual(result["confirmations"], [])
+        self.assertLessEqual(result["counts"]["strip"], 11)
+        self.assertFalse(result["terminal_multi_start_solver_unresolved"])
+        self.assertEqual(roles[-1], "ray_q_after")
+        self.assertEqual(cleanup, ["off"])
+
+    def test_guide6_fake_backend_abort_always_cleans_up(self):
+        cleanup = []
+        with self.assertRaisesRegex(RuntimeError, "synthetic abort"):
+            self._run_fake_guide6_protocol(
+                abort_role="strip_probe_ww", cleanup_sink=cleanup,
+            )
+        self.assertEqual(cleanup, ["off"])
+
+    def test_guide6_execute_plan_routes_live_scheduler_to_adaptive_owner_and_cleanup(self):
+        plan = thermal.build_direct_plan(
+            thermal.TD_C,
+            variant=thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT,
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "guide6"
+            path = self._execute_fake_protocol(plan, root)
+            self.assertEqual(path, root)
+            evidence = json.loads((root / "local-controllability.json").read_text())
+            self.assertEqual(evidence["counts"], {
+                "ray": 2, "strip": 7, "total": 9,
+                "ambient": 0, "in_root_retry": 0,
+            })
+            self.assertEqual(
+                [step["role"] for step in evidence["measured_steps"]],
+                [
+                    "ray_q_before", "strip_base", "strip_probe_cw", "strip_probe_ww",
+                    "strip_base_anchor_after_probe_2", "strip_probe_r", "strip_probe_b",
+                    "strip_base_anchor_after_probe_4", "ray_q_after",
+                ],
+            )
+            runtime_plan = json.loads((root / "adaptive-execution-plan.json").read_text())
+            self.assertEqual(runtime_plan["budgets"]["formal_cap"], 9)
+            self.assertEqual(len((root / "captures.jsonl").read_text().splitlines()), 9)
+            self.assertEqual(len((root / "physical-returns.jsonl").read_text().splitlines()), 9)
+            self.assertEqual(json.loads((root / "all-off-python.json").read_text())["status"], "pass")
+            self.assertEqual(json.loads((root / "run.json").read_text())["cleanup"], "pass")
+            (root / "all-off-shell.json").write_text(json.dumps([{"ok": True}]))
+            (root / "all-off-shell.exit-status.txt").write_text("0\n")
+            (root / "wrapper-result.json").write_text(json.dumps({
+                "status": "complete", "child_exit_code": 0,
+                "shell_cleanup_exit_code": 0, "wrapper_exit_code": 0,
+                "signal": None,
+            }))
+            feature_ids = tuple(json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"])
+            report = analyze.analyze_thermal_run(root, feature_ids=feature_ids)
+            self.assertEqual(report["guide6_branch"], "LC-D")
+            self.assertFalse(report["terminal_multi_start_solver_unresolved"])
+
+    def test_guide6_analyzer_frozen_lc_table_never_claims_gamut_or_terminal(self):
+        import numpy as np
+
+        fixed = [
+            "ray_q_before", "strip_base", "strip_probe_cw", "strip_probe_ww",
+            "strip_base_anchor_after_probe_2", "strip_probe_r", "strip_probe_b",
+            "strip_base_anchor_after_probe_4", "ray_q_after",
+        ]
+
+        def rows(*, candidate=None, confirmations=False):
+            values = {role: [0.0, 0.0] for role in fixed}
+            values["strip_base"] = [1.0, 0.0]
+            output = [
+                {"plan_step": {"role": role}, "feature_values": {
+                    "f0": vector[0], "f1": vector[1],
+                }}
+                for role, vector in values.items()
+            ]
+            if candidate is not None:
+                output.append({
+                    "plan_step": {"role": "strip_solver_candidate_1"},
+                    "feature_values": {"f0": candidate[0], "f1": candidate[1]},
+                })
+            if confirmations:
+                output.extend({
+                    "plan_step": {"role": f"strip_confirmation_{index}"},
+                    "feature_values": {"f0": 0.0, "f1": 0.0},
+                } for index in range(1, 4))
+            return output
+
+        evidence = {
+            "schema": "guide6_h120_s100_direct_local_controllability_evidence_v1",
+            "gamut_inference": "prohibited",
+            "terminal_multi_start_solver_unresolved": False,
+            "jacobian": {"effective_rank": 4},
+            "measured_steps": [{}] * 9,
+        }
+
+        def compatibility(_left, _right, *, source, **_kwargs):
+            return {"decision": "pass", "source": source}
+
+        with (
+            patch.object(analyze, "_unit", side_effect=lambda value, ids: np.asarray([
+                value[ids[0]], value[ids[1]],
+            ])),
+            patch.object(analyze, "_same_state_variance", return_value=np.ones(2)),
+            patch.object(analyze, "calibrate_direct_limits", return_value={
+                "guarded_limit": 0.1, "statistic": "synthetic",
+            }),
+            patch.object(analyze, "direct_whitened_norm", side_effect=lambda value, variance: float(np.linalg.norm(value))),
+            patch.object(analyze, "frozen_same_state_compatibility_diagnostic", side_effect=compatibility),
+        ):
+            cases = (
+                ("LC-A", rows(candidate=[0.0, 0.0], confirmations=True), evidence),
+                ("LC-B", rows(candidate=[0.5, 0.0]), evidence),
+                ("LC-C", rows(), evidence),
+                ("LC-D", rows(), {**evidence, "jacobian": {"effective_rank": 0}}),
+            )
+            for expected, captures, artifact in cases:
+                with self.subTest(expected=expected):
+                    report = analyze.analyze_guide6_local_controllability(
+                        captures, feature_ids=("f0", "f1"),
+                        protocol_evidence=artifact,
+                    )
+                    self.assertEqual(report["guide6_branch"], expected)
+                    self.assertEqual(report["gamut_inference"], "prohibited")
+                    self.assertFalse(report["terminal_multi_start_solver_unresolved"])
+                    self.assertNotEqual(report["classification"], "multi_start_solver_unresolved")
 
     def test_guide6_target_local_analyzer_uses_ray_bracket_and_local_contrast(self):
         feature_ids = tuple(json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"])

@@ -251,6 +251,14 @@ def analyze_thermal_run(
         )
         if _stable_spec(plan) != _stable_spec(expected):
             raise ValueError("direct run spec differs from the canonical protocol")
+        validation_plan = plan
+        local_protocol_evidence = None
+        if guide6_direct:
+            runtime_plan_path = root / "adaptive-execution-plan.json"
+            evidence_path = root / "local-controllability.json"
+            if runtime_plan_path.is_file() and evidence_path.is_file():
+                validation_plan = _load_json(runtime_plan_path)
+                local_protocol_evidence = _load_json(evidence_path)
         _validate_required_execution_artifacts(root)
         _validate_reproducibility_checkpoint(root, plan, run)
         captures = _load_jsonl(root / "captures.jsonl")
@@ -261,16 +269,18 @@ def analyze_thermal_run(
             captures,
             allow_implicit_aperture_reconciliation=True,
         )
-        expected_ids = [str(step["capture_id"]) for step in expected["captures"]]
+        expected_ids = [str(step["capture_id"]) for step in validation_plan["captures"]]
         if [str(row.get("capture_id")) for row in captures] != expected_ids:
             raise ValueError("direct capture order differs from its spec")
         if [str(row.get("capture_id")) for row in physical] != expected_ids:
             raise ValueError("direct physical order differs from its spec")
         formal = [row for row in captures if row.get("formal_measurement")]
         ambients = [row for row in captures if not row.get("formal_measurement")]
-        _validate_run_counts(run, plan, captures, physical)
+        _validate_run_counts(run, validation_plan, captures, physical)
         physical_by_id = _validate_physical_rows(root, captures, physical)
-        expected_steps = {str(step["capture_id"]): step for step in expected["captures"]}
+        expected_steps = {
+            str(step["capture_id"]): step for step in validation_plan["captures"]
+        }
         for row in captures:
             capture = row.get("capture")
             step = row.get("plan_step")
@@ -324,7 +334,10 @@ def analyze_thermal_run(
                     raise ValueError("direct Ray capture lacks verified strip-zero evidence")
             elif (
                 plan.get("execution_authorization", {}).get("schema")
-                == "direct_td_c_fast_endpoint_holdout_v1"
+                in {
+                    "direct_td_c_fast_endpoint_holdout_v1",
+                    "direct_guide6_target_local_h120_s100_v1",
+                }
             ):
                 ray_zero = capture.get("ray_zero_before_capture")
                 ray_data = (
@@ -339,7 +352,7 @@ def analyze_thermal_run(
         quality = _load_json(root / "quality.json")
         expected_quality_rows = [
             {"capture_id": str(row["capture_id"]), "status": "pass"}
-            for row in expected["captures"] if row.get("formal_measurement")
+            for row in validation_plan["captures"] if row.get("formal_measurement")
         ]
         if (
             quality.get("schema") != "p7_direct_protocol_quality_v1"
@@ -349,7 +362,19 @@ def analyze_thermal_run(
             or quality.get("rows") != expected_quality_rows
         ):
             raise ValueError("direct quality artifact did not pass")
-        _validate_commands_and_gates(plan, root)
+        if guide6_direct and local_protocol_evidence is not None:
+            if local_protocol_evidence.get("counts", {}).get("total") != len(formal):
+                raise ValueError("GUIDE6 adaptive evidence count differs from captures")
+            local_commands = _load_jsonl(root / "commands.jsonl")
+            if len(local_commands) != len(formal) * 3:
+                raise ValueError("GUIDE6 command ledger lacks D/A/tested transitions")
+            local_gates = _load_jsonl(root / "isolation-gates.jsonl")
+            if len(local_gates) != len(formal) + 1:
+                raise ValueError("GUIDE6 isolation ledger lacks per-measurement gates")
+            if any(row.get("evidence", {}).get("status") != "pass" for row in local_gates):
+                raise ValueError("GUIDE6 isolation ledger contains a failed gate")
+        else:
+            _validate_commands_and_gates(plan, root)
         _validate_cleanup_and_wrapper(root)
         formal_rows = []
         for row in formal:
@@ -359,7 +384,11 @@ def analyze_thermal_run(
             enriched["run_root"] = str(root)
             formal_rows.append(enriched)
         if guide6_direct:
-            result = analyze_td_c_direct_target_local(formal_rows, feature_ids=feature_ids)
+            result = analyze_td_c_direct_target_local(
+                formal_rows,
+                feature_ids=feature_ids,
+                protocol_evidence=local_protocol_evidence,
+            )
         elif plan.get("variant") == thermal.TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT:
             result = analyze_td_c_fast_endpoint_holdout(
                 root,
@@ -1501,16 +1530,21 @@ def analyze_td_c(
 
 def analyze_td_c_direct_target_local(
     captures: Sequence[Mapping[str, Any]], *, feature_ids: Sequence[str],
+    protocol_evidence: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Analyze one GUIDE6 target block without a cross-experiment prerequisite."""
+    if protocol_evidence is not None:
+        return analyze_guide6_local_controllability(
+            captures,
+            feature_ids=feature_ids,
+            protocol_evidence=protocol_evidence,
+        )
     by_role = {
         str(row["plan_step"]["role"]): row
         for row in captures
         if isinstance(row.get("plan_step"), Mapping)
     }
-    required = {
-        "ray_q_before", "ray_q_after", "strip_candidate",
-    }
+    required = {"ray_q_before", "ray_q_after", "strip_candidate"}
     if not required.issubset(by_role):
         raise ValueError("GUIDE6 target-local analysis lacks required target observations")
     ray_before = _unit(_features(by_role["ray_q_before"], feature_ids), feature_ids)
@@ -1556,10 +1590,151 @@ def analyze_td_c_direct_target_local(
             "variance": "strip_A_per_capture + ray_A_per_capture / 2",
         },
         "steady_claim": False,
-        "locked_later_stages": ["B_prepost", "cross_experiment_absolute_synthesis", "solver_sentinel", "P8"],
+        "locked_later_stages": [
+            "B_prepost", "cross_experiment_absolute_synthesis", "solver_sentinel", "P8",
+        ],
     }
 
 
+def analyze_guide6_local_controllability(
+    captures: Sequence[Mapping[str, Any]], *, feature_ids: Sequence[str],
+    protocol_evidence: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Apply only the frozen LC-A/B/C/D/E table to the first G-active block."""
+    if (
+        protocol_evidence.get("schema")
+        != "guide6_h120_s100_direct_local_controllability_evidence_v1"
+        or protocol_evidence.get("gamut_inference") != "prohibited"
+        or protocol_evidence.get("terminal_multi_start_solver_unresolved") is not False
+    ):
+        raise ValueError("GUIDE6 local-controllability evidence contract differs")
+    by_role = {
+        str(row["plan_step"]["role"]): row
+        for row in captures
+        if isinstance(row.get("plan_step"), Mapping)
+    }
+    required = {
+        "ray_q_before", "ray_q_after", "strip_base",
+        "strip_probe_cw", "strip_probe_ww", "strip_probe_r", "strip_probe_b",
+        "strip_base_anchor_after_probe_2", "strip_base_anchor_after_probe_4",
+    }
+    if not required.issubset(by_role):
+        raise ValueError("GUIDE6 local-controllability analysis lacks fixed observations")
+    ray_before = _unit(_features(by_role["ray_q_before"], feature_ids), feature_ids)
+    ray_after = _unit(_features(by_role["ray_q_after"], feature_ids), feature_ids)
+    ray_bracket = frozen_same_state_compatibility_diagnostic(
+        ray_before, ray_after, source="ray", state="A", feature_ids=feature_ids,
+    )
+    base = _unit(_features(by_role["strip_base"], feature_ids), feature_ids)
+    anchor_diagnostics = []
+    for role in (
+        "strip_base_anchor_after_probe_2", "strip_base_anchor_after_probe_4",
+    ):
+        anchor = _unit(_features(by_role[role], feature_ids), feature_ids)
+        anchor_diagnostics.append(frozen_same_state_compatibility_diagnostic(
+            base, anchor, source="strip", state="A", feature_ids=feature_ids,
+        ))
+    ray_target = (ray_before + ray_after) / 2.0
+    variance = (
+        _same_state_variance(source="strip", state="A")
+        + _same_state_variance(source="ray", state="A") / 2.0
+    )
+    def direct_limits(center: np.ndarray) -> Mapping[str, Any]:
+        calibration_center = center
+        if float(np.linalg.norm(calibration_center)) <= 1e-15:
+            calibration_center = np.ones_like(calibration_center)
+        return calibrate_direct_limits(calibration_center, variance, samples=1000)
+
+    def score(row: Mapping[str, Any]) -> dict[str, Any]:
+        vector = _unit(_features(row, feature_ids), feature_ids)
+        residual = vector - ray_target
+        limits = direct_limits(residual)
+        value = direct_whitened_norm(residual, variance)
+        return {
+            "score": float(value),
+            "guarded_limit": float(limits["guarded_limit"]),
+            "decision": "pass" if value <= float(limits["guarded_limit"]) else "fail",
+        }
+
+    base_score = score(by_role["strip_base"])
+    candidate_roles = sorted(
+        role for role in by_role if role.startswith("strip_solver_candidate_")
+    )
+    confirmation_roles = sorted(
+        role for role in by_role if role.startswith("strip_confirmation_")
+    )
+    if len(candidate_roles) > 4 or len(confirmation_roles) not in {0, 3}:
+        raise ValueError("GUIDE6 candidate/confirmation count exceeds the frozen contract")
+    candidates = [{"role": role, **score(by_role[role])} for role in candidate_roles]
+    confirmations = [{"role": role, **score(by_role[role])} for role in confirmation_roles]
+    confirmation_compatibility = []
+    for left, right in zip(confirmation_roles, confirmation_roles[1:]):
+        confirmation_compatibility.append(frozen_same_state_compatibility_diagnostic(
+            _unit(_features(by_role[left], feature_ids), feature_ids),
+            _unit(_features(by_role[right], feature_ids), feature_ids),
+            source="strip", state="A", feature_ids=feature_ids,
+        ))
+    drift_pass = all(item["decision"] == "pass" for item in anchor_diagnostics)
+    confirmations_pass = (
+        len(confirmations) == 3
+        and all(item["decision"] == "pass" for item in confirmations)
+        and all(item["decision"] == "pass" for item in confirmation_compatibility)
+    )
+    candidate_pass = any(item["decision"] == "pass" for item in candidates)
+    improved = any(item["score"] < base_score["score"] for item in candidates)
+    jacobian = protocol_evidence.get("jacobian")
+    probes_observable = (
+        isinstance(jacobian, Mapping)
+        and jacobian.get("effective_rank", 0) >= 1
+        and len(protocol_evidence.get("measured_steps", ())) >= 9
+    )
+    if ray_bracket["decision"] != "pass" or not drift_pass:
+        branch = "LC-E"
+        classification = "target_block_reference_invalid"
+    elif not probes_observable:
+        branch = "LC-D"
+        classification = "local_controllability_not_observable_under_frozen_exposure"
+    elif candidate_pass and confirmations_pass:
+        branch = "LC-A"
+        classification = "H120_S100_direct_local_solver_pass"
+    elif improved:
+        branch = "LC-B"
+        classification = "H120_S100_local_controllable_but_not_yet_faithful"
+    else:
+        branch = "LC-C"
+        classification = "G_active_neighborhood_inadequate"
+    return {
+        "status": "guide6_local_controllability_classified",
+        "guide6_branch": branch,
+        "classification": classification,
+        "measurement_valid": branch not in {"LC-D", "LC-E"},
+        "faithful": branch == "LC-A",
+        "method": "direct_target_local_ray_vs_strip_same_block",
+        "cross_experiment_absolute_synthesis": False,
+        "ray_before_after_bracket": ray_bracket,
+        "strip_base_drift": {
+            "decision": "pass" if drift_pass else "fail",
+            "anchors": anchor_diagnostics,
+        },
+        "base_direct_contrast": base_score,
+        "candidate_direct_contrasts": candidates,
+        "confirmation_direct_contrasts": confirmations,
+        "confirmation_same_state_compatibility": confirmation_compatibility,
+        "gamut_inference": "prohibited",
+        "terminal_multi_start_solver_unresolved": False,
+        "next": {
+            "LC-A": "continue_H120_S50_same_solver_contract",
+            "LC-B": "one_centered_new_root_continuation_permitted",
+            "LC-C": "one_P2_seeded_active_set_screen_permitted",
+            "LC-D": "S-MEASUREMENT",
+            "LC-E": "one_new_root_reference_repeat_permitted",
+        }[branch],
+        "steady_claim": False,
+        "locked_later_stages": [
+            "13_node_grid", "B_prepost", "cross_experiment_absolute_synthesis",
+            "boundary", "Gate-6", "P8",
+        ],
+    }
 def analyze_guide6_seed_negative(
     root_1: str | Path, root_2: str | Path,
 ) -> dict[str, Any]:

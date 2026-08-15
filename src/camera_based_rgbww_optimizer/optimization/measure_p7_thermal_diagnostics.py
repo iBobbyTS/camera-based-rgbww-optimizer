@@ -12,8 +12,17 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
+import numpy as np
+
+from camera_based_rgbww_optimizer.measurement.hsi_policy_v2 import (
+    calibrate_direct_limits,
+    ordered_unit_shape,
+)
 from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
 from camera_based_rgbww_optimizer.optimization import measure_raw_observer_validation as raw_validation
+from camera_based_rgbww_optimizer.optimization.bounded_least_squares import (
+    solve_box_constrained_least_squares,
+)
 from camera_based_rgbww_optimizer.control import camera_remote_v2, esphome
 from camera_based_rgbww_optimizer.paths import PROJECT_ROOT, PROJECT_TMP_DIR
 
@@ -300,6 +309,357 @@ def _runtime_git_provenance() -> dict[str, Any]:
     }
 
 
+def _guide6_feature_vector(
+    capture: Mapping[str, Any], feature_ids: Sequence[str],
+) -> np.ndarray:
+    quality = capture.get("direct_quality")
+    values = capture.get("feature_values")
+    if (
+        not isinstance(quality, Mapping)
+        or quality.get("status") != "pass"
+        or not isinstance(values, Mapping)
+        or set(values) != set(feature_ids)
+    ):
+        raise ValueError("GUIDE6 measurement lacks an accepted frozen feature vector")
+    numeric = {name: float(values[name]) for name in feature_ids}
+    if any(not math.isfinite(value) for value in numeric.values()):
+        raise ValueError("GUIDE6 measurement contains a non-finite feature value")
+    return ordered_unit_shape(numeric, feature_ids)
+
+
+def _guide6_variances(feature_count: int) -> tuple[np.ndarray, np.ndarray]:
+    policy = json.loads(thermal.POLICY_PATH.read_text(encoding="utf-8"))
+    ray = np.asarray(
+        policy["reference_policy"]["ray_within_state_diagonal_variance"],
+        dtype=float,
+    )
+    strip = np.asarray(
+        policy["repeatability_policy"]["classes"]["sat100_fullscale"]
+        ["p1_floor_diagonal_variance"],
+        dtype=float,
+    )
+    if ray.shape != (feature_count,) or strip.shape != (feature_count,):
+        raise ValueError("GUIDE6 frozen covariance differs from the feature identity")
+    if np.any(~np.isfinite(ray)) or np.any(~np.isfinite(strip)) or np.any(ray <= 0) or np.any(strip <= 0):
+        raise ValueError("GUIDE6 frozen covariance is not positive and finite")
+    return ray, strip
+
+
+def _guide6_protocol_step(
+    plan: Mapping[str, Any], *, capture_id: str, source: str, role: str,
+    command: Mapping[str, Any],
+) -> dict[str, Any]:
+    shutter = "ray-h120-s100" if source == "ray" else "strip-h120-s100-fullscale"
+    return {
+        "capture_id": capture_id,
+        "source_id": source,
+        "state_id": "A",
+        "target": "H120/S100/INT100",
+        "role": role,
+        "session_index": 1,
+        "formal_measurement": True,
+        "capture_role": "formal",
+        "command": {key: value for key, value in command.items()},
+        "exact_command_hash": thermal.canonical_sha256(command),
+        "requested_elapsed_s": 120,
+        "nominal_shutter": plan["frozen_shutters"][shutter],
+        "timing_acceptance": "observed_elapsed_record_only",
+        "strip_zero_required": source == "ray",
+        "ray_zero_required": source == "strip",
+        "steady_claim": False,
+    }
+
+
+def _run_guide6_local_controllability_protocol_core(
+    plan: Mapping[str, Any], *,
+    measure_fn: Callable[[Mapping[str, Any]], Mapping[str, Any]],
+    feature_ids: Sequence[str],
+    source_isolation_fn: Callable[[str], Mapping[str, Any]] | None,
+) -> dict[str, Any]:
+    """Run the protocol-specific adaptive command owner against one measurement seam.
+
+    The caller owns D/A/tested-command dwell, source isolation, physical-return
+    accounting and finally cleanup. This function owns only the frozen measurement
+    sequence and the command adaptation derived from accepted current-root features.
+    """
+    contract = plan.get("local_controllability_contract")
+    if (
+        not isinstance(contract, Mapping)
+        or contract.get("schema")
+        != "guide6_h120_s100_direct_local_controllability_v1"
+    ):
+        raise ValueError("GUIDE6 local-controllability contract is missing")
+    free = tuple(str(value) for value in contract["free_channels"])
+    if free != ("cw", "ww", "r", "b"):
+        raise ValueError("GUIDE6 free-channel order differs from the frozen contract")
+    base_command = {key: int(value) for key, value in contract["base_command"].items()}
+    fixed_steps = {str(step["role"]): step for step in plan["captures"]}
+    measured: list[dict[str, Any]] = []
+
+    def measure(step: Mapping[str, Any]) -> tuple[dict[str, Any], np.ndarray]:
+        if source_isolation_fn is not None:
+            isolation = dict(source_isolation_fn(str(step["source_id"])))
+            if isolation.get("status") != "pass" or isolation.get("source_verified_zero") is not True:
+                raise RuntimeError("GUIDE6 source-isolation gate did not pass")
+        capture = dict(measure_fn(step))
+        vector = _guide6_feature_vector(capture, feature_ids)
+        measured.append({"step": dict(step), "capture": capture, "unit_shape": vector})
+        return capture, vector
+
+    _, ray_before = measure(fixed_steps["ray_q_before"])
+    _, base = measure(fixed_steps["strip_base"])
+    probes: list[np.ndarray] = []
+    anchor_vectors: list[np.ndarray] = []
+    for probe_number, channel in enumerate(free, start=1):
+        _, probe = measure(fixed_steps[f"strip_probe_{channel}"])
+        probes.append(probe)
+        if probe_number in (2, 4):
+            _, anchor = measure(
+                fixed_steps[f"strip_base_anchor_after_probe_{probe_number}"]
+            )
+            anchor_vectors.append(anchor)
+
+    ray_variance, strip_variance = _guide6_variances(len(feature_ids))
+    contrast_variance = strip_variance + ray_variance / 2.0
+    whitening = np.sqrt(contrast_variance)
+    def direct_limits(center: np.ndarray, variance: np.ndarray) -> Mapping[str, Any]:
+        calibration_center = center
+        if float(np.linalg.norm(calibration_center)) <= 1e-15:
+            calibration_center = np.ones_like(calibration_center)
+        return calibrate_direct_limits(
+            calibration_center, variance, samples=1000,
+        )
+    base_residual = (base - ray_before) / whitening
+    probe_matrix = np.column_stack([
+        ((probe - ray_before) / whitening - base_residual)
+        / float(contract["probe_step_linearized_code"])
+        for probe in probes
+    ])
+    singular_values = np.linalg.svd(probe_matrix, compute_uv=False)
+    effective_rank = int(np.linalg.matrix_rank(probe_matrix))
+    condition = (
+        None
+        if not len(singular_values) or singular_values[-1] <= 0
+        else float(singular_values[0] / singular_values[-1])
+    )
+    limits = direct_limits(base - ray_before, contrast_variance)
+    guarded_limit = float(limits["guarded_limit"])
+    base_score = float(np.linalg.norm(base_residual))
+    anchor_diagnostics = []
+    drift_pass = True
+    for index, anchor in enumerate(anchor_vectors, start=1):
+        anchor_score = float(np.linalg.norm((anchor - base) / np.sqrt(2.0 * strip_variance)))
+        anchor_limit = float(direct_limits(
+            anchor - base, 2.0 * strip_variance,
+        )["guarded_limit"])
+        passed = anchor_score <= anchor_limit
+        drift_pass = drift_pass and passed
+        anchor_diagnostics.append({
+            "anchor_number": index,
+            "score": anchor_score,
+            "guarded_limit": anchor_limit,
+            "decision": "pass" if passed else "fail",
+        })
+
+    candidates: list[dict[str, Any]] = []
+    confirmations: list[dict[str, Any]] = []
+    best_score = base_score
+    best_command = dict(base_command)
+    best_residual = base_residual.copy()
+    model_center = np.asarray([base_command[channel] for channel in free], dtype=float)
+    model_residual = base_residual.copy()
+    jacobian = probe_matrix.copy()
+    jacobian_version = 1
+    rebase_count = 0
+    passing_command: dict[str, int] | None = None
+    used_hashes = {thermal.canonical_sha256(base_command)}
+    backtracks = tuple(float(value) for value in contract["backtrack_factors"])
+    maximum_candidates = int(contract["maximum_feedback_candidates"])
+
+    while drift_pass and len(candidates) < maximum_candidates and passing_command is None:
+        lower = np.maximum(-float(contract["maximum_absolute_step"]), -model_center)
+        upper = np.minimum(
+            float(contract["maximum_absolute_step"]), 4095.0 - model_center,
+        )
+        regularization = 1e-6
+        matrix = np.vstack([jacobian, math.sqrt(regularization) * np.eye(len(free))])
+        target = np.concatenate([-model_residual, np.zeros(len(free))])
+        full_delta = solve_box_constrained_least_squares(matrix, target, lower, upper)
+        measured_this_model = False
+        for factor in backtracks:
+            if len(candidates) >= maximum_candidates:
+                break
+            candidate_values = np.rint(model_center + factor * full_delta).astype(int)
+            candidate_values = np.clip(candidate_values, 0, 4095)
+            command = dict(base_command)
+            for index, channel in enumerate(free):
+                command[channel] = int(candidate_values[index])
+            command["g"] = 4095
+            command_hash = thermal.canonical_sha256(command)
+            if command_hash in used_hashes:
+                continue
+            used_hashes.add(command_hash)
+            actual_delta = candidate_values.astype(float) - model_center
+            predicted_residual = model_residual + jacobian @ actual_delta
+            predicted_score = float(np.linalg.norm(predicted_residual))
+            step = _guide6_protocol_step(
+                plan,
+                capture_id=f"{100 + len(candidates):03d}-strip-h120-s100-solver-candidate",
+                source="strip",
+                role=f"strip_solver_candidate_{len(candidates) + 1}",
+                command=command,
+            )
+            _, candidate_vector = measure(step)
+            residual = (candidate_vector - ray_before) / whitening
+            score = float(np.linalg.norm(residual))
+            predicted_reduction = float(model_residual @ model_residual - predicted_residual @ predicted_residual)
+            actual_reduction = float(model_residual @ model_residual - residual @ residual)
+            trust_ratio = (
+                actual_reduction / predicted_reduction
+                if predicted_reduction > 0.0 else None
+            )
+            candidates.append({
+                "candidate_number": len(candidates) + 1,
+                "exact_command": command,
+                "exact_command_hash": command_hash,
+                "predicted_residual_vector": predicted_residual.tolist(),
+                "predicted_direct_score": predicted_score,
+                "measured_residual_vector": residual.tolist(),
+                "measured_direct_score": score,
+                "predicted_reduction": predicted_reduction,
+                "actual_reduction": actual_reduction,
+                "trust_ratio": trust_ratio,
+                "active_bounds": [
+                    channel for index, channel in enumerate(free)
+                    if candidate_values[index] in (0, 4095)
+                ] + ["g"],
+                "backtrack_factor": factor,
+                "jacobian_version": jacobian_version,
+            })
+            measured_this_model = True
+            if score < best_score:
+                best_score = score
+                best_command = command
+                best_residual = residual.copy()
+            if score <= guarded_limit:
+                passing_command = command
+                break
+            if rebase_count == 0 and float(actual_delta @ actual_delta) > 0.0:
+                correction = residual - model_residual - jacobian @ actual_delta
+                jacobian = jacobian + np.outer(correction, actual_delta) / float(actual_delta @ actual_delta)
+                model_center = candidate_values.astype(float)
+                model_residual = residual
+                jacobian_version += 1
+                rebase_count = 1
+                break
+        if not measured_this_model or rebase_count == 0:
+            break
+        if rebase_count == 1 and candidates[-1]["jacobian_version"] == jacobian_version:
+            break
+
+    if passing_command is not None:
+        for index in range(1, int(contract["confirmation_count"]) + 1):
+            step = _guide6_protocol_step(
+                plan,
+                capture_id=f"{200 + index:03d}-strip-h120-s100-confirmation",
+                source="strip",
+                role=f"strip_confirmation_{index}",
+                command=passing_command,
+            )
+            _, vector = measure(step)
+            residual = (vector - ray_before) / whitening
+            confirmations.append({
+                "confirmation_number": index,
+                "exact_command_hash": thermal.canonical_sha256(passing_command),
+                "measured_residual_vector": residual.tolist(),
+                "measured_direct_score": float(np.linalg.norm(residual)),
+            })
+
+    _, ray_after = measure(fixed_steps["ray_q_after"])
+    ray_bracket_score = float(np.linalg.norm((ray_after - ray_before) / np.sqrt(2.0 * ray_variance)))
+    ray_bracket_limit = float(direct_limits(
+        ray_after - ray_before, 2.0 * ray_variance,
+    )["guarded_limit"])
+    ray_bracket_pass = ray_bracket_score <= ray_bracket_limit
+    if not ray_bracket_pass or not drift_pass:
+        classification = "target_block_reference_invalid"
+        lc_branch = "LC-E"
+    elif passing_command is not None and len(confirmations) == 3:
+        classification = "H120_S100_direct_local_solver_pass"
+        lc_branch = "LC-A"
+    elif best_score < base_score:
+        classification = "H120_S100_local_controllable_but_not_yet_faithful"
+        lc_branch = "LC-B"
+    else:
+        classification = "G_active_neighborhood_inadequate"
+        lc_branch = "LC-C"
+    strip_count = sum(item["step"]["source_id"] == "strip" for item in measured)
+    ray_count = sum(item["step"]["source_id"] == "ray" for item in measured)
+    if strip_count > 14 or ray_count != 2 or len(measured) > 16:
+        raise RuntimeError("GUIDE6 adaptive protocol exceeded its frozen capture budget")
+    return {
+        "schema": "guide6_h120_s100_direct_local_controllability_evidence_v1",
+        "classification": classification,
+        "lc_branch": lc_branch,
+        "gamut_inference": "prohibited",
+        "terminal_multi_start_solver_unresolved": False,
+        "feature_count": len(feature_ids),
+        "navigation_coordinate": "direct_whitened_58_feature_residual",
+        "base": {"exact_command": base_command, "direct_score": base_score},
+        "jacobian": {
+            "matrix": probe_matrix.tolist(),
+            "singular_values": singular_values.tolist(),
+            "effective_rank": effective_rank,
+            "condition": condition,
+            "probe_step": int(contract["probe_step_linearized_code"]),
+        },
+        "base_anchors": anchor_diagnostics,
+        "ray_bracket": {
+            "score": ray_bracket_score, "guarded_limit": ray_bracket_limit,
+            "decision": "pass" if ray_bracket_pass else "fail",
+        },
+        "direct_guarded_limit": guarded_limit,
+        "candidates": candidates,
+        "best": {"exact_command": best_command, "direct_score": best_score,
+                 "residual_vector": best_residual.tolist()},
+        "model_rebase_count": rebase_count,
+        "model_rebase_extra_probe_count": 0,
+        "confirmations": confirmations,
+        "counts": {
+            "ray": ray_count, "strip": strip_count, "total": len(measured),
+            "ambient": 0, "in_root_retry": 0,
+        },
+        "measured_steps": [item["step"] for item in measured],
+    }
+
+
+def run_guide6_local_controllability_protocol(
+    plan: Mapping[str, Any], *,
+    measure_fn: Callable[[Mapping[str, Any]], Mapping[str, Any]],
+    feature_ids: Sequence[str],
+    source_isolation_fn: Callable[[str], Mapping[str, Any]] | None = None,
+    cleanup_fn: Callable[[], Mapping[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """Execute the bounded adaptive core and always perform its supplied cleanup."""
+    failure: BaseException | None = None
+    try:
+        return _run_guide6_local_controllability_protocol_core(
+            plan,
+            measure_fn=measure_fn,
+            feature_ids=feature_ids,
+            source_isolation_fn=source_isolation_fn,
+        )
+    except BaseException as exc:
+        failure = exc
+        raise
+    finally:
+        if cleanup_fn is not None:
+            cleanup = dict(cleanup_fn())
+            cleanup_pass = cleanup.get("status") in {"pass", "complete", "all_off"} or cleanup.get("ok") is True
+            if not cleanup_pass and failure is None:
+                raise RuntimeError("GUIDE6 protocol cleanup did not pass")
+
+
 def _write_reproducibility_checkpoint(
     root: Path, plan: Mapping[str, Any], git_provenance: Mapping[str, Any],
 ) -> dict[str, Any]:
@@ -389,8 +749,8 @@ def execute_plan(
         and plan["execution_authorization"].get("schema")
         == "direct_guide6_target_local_h120_s100_v1"
     )
-    if direct_ray_continuous and source_isolation_check_fn is None:
-        raise PermissionError("direct continuous-Ray execution requires a strip-only isolation check")
+    if (direct_ray_continuous or direct_guide6_target_local) and source_isolation_check_fn is None:
+        raise PermissionError("direct adaptive execution requires its source-isolation check")
     git_provenance = copy.deepcopy(
         runtime_git_provenance if runtime_git_provenance is not None else _runtime_git_provenance()
     )
@@ -446,6 +806,7 @@ def execute_plan(
     owned_cr3_paths: set[Path] = set()
     physical_returns_by_capture: dict[str, dict[str, Any]] = {}
     rejected_capture: dict[str, Any] | None = None
+    expected_formal_count = int(plan["budgets"]["formal_cap"])
 
     def record_gate(gate_id: str) -> None:
         evidence = dict(both_off_gate_fn(gate_id))
@@ -742,9 +1103,93 @@ def execute_plan(
 
     try:
         record_gate("run_start")
-        for chronology_group_index, item in enumerate(
+        if direct_guide6_target_local:
+            feature_ids = tuple(
+                json.loads(thermal.POLICY_PATH.read_text(encoding="utf-8"))
+                ["feature_set"]["ids"]
+            )
+            commands = thermal.load_r1_commands()
+            chronology_index = 0
+
+            def guide6_source_isolation(source: str) -> Mapping[str, Any]:
+                record_source_isolation_gate(
+                    f"guide6-before-{run['completed_formal']:02d}-{source}"
+                )
+                return {"status": "pass", "source_verified_zero": True}
+
+            def guide6_measure(step: Mapping[str, Any]) -> Mapping[str, Any]:
+                nonlocal chronology_index, previous_state, previous_dwell
+                role = str(step["role"])
+                if role in {
+                    "ray_q_before", "strip_base", "ray_q_after",
+                }:
+                    sleep_fn(float(plan["cold_proxy_wait_s"]))
+                source = str(step["source_id"])
+                for precondition_index, state in enumerate(("D", "A"), start=1):
+                    command = thermal._command(source, state, commands)
+                    precondition_step = {
+                        **dict(step),
+                        "capture_id": f"precondition-{precondition_index}-{step['capture_id']}",
+                        "state_id": state,
+                        "command": command,
+                        "exact_command_hash": thermal.canonical_sha256(command),
+                    }
+                    applied = dict(apply_command_fn(precondition_step))
+                    readback = dict(readback_fn(precondition_step))
+                    _append_jsonl(root / "commands.jsonl", {
+                        "at": _utc_now(),
+                        "event": "guide6_precondition_command_readback_verified",
+                        "source_id": source, "state_id": state,
+                        "capture": False, "dwell_s": 120,
+                        "exact_command_hash": precondition_step["exact_command_hash"],
+                        "applied": applied, "readback": readback,
+                    })
+                    sleep_fn(120.0)
+                applied = dict(apply_command_fn(step))
+                readback = dict(readback_fn(step))
+                _append_jsonl(root / "commands.jsonl", {
+                    "at": _utc_now(), "event": "guide6_tested_command_readback_verified",
+                    "source_id": source, "state_id": step["state_id"],
+                    "exact_command_hash": step["exact_command_hash"],
+                    "applied": applied, "readback": readback,
+                })
+                owner_start = monotonic_fn()
+                if set_capture_context_fn is not None:
+                    set_capture_context_fn(owner_start)
+                sleep_fn(float(step["requested_elapsed_s"]))
+                ensure_physical_capacity()
+                captured = dict(capture_fn(step))
+                retain_capture(
+                    step, captured, owner_start=owner_start,
+                    chronology_group_index=chronology_index,
+                )
+                chronology_index += 1
+                previous_state = str(step["state_id"])
+                previous_dwell = monotonic_fn() - owner_start
+                return captured
+
+            protocol_evidence = run_guide6_local_controllability_protocol(
+                plan,
+                measure_fn=guide6_measure,
+                feature_ids=feature_ids,
+                source_isolation_fn=guide6_source_isolation,
+            )
+            _write_json(root / "local-controllability.json", protocol_evidence)
+            expected_formal_count = int(protocol_evidence["counts"]["total"])
+            runtime_plan = copy.deepcopy(dict(plan))
+            runtime_plan["captures"] = protocol_evidence["measured_steps"]
+            runtime_plan["capture_ids"] = [
+                str(step["capture_id"]) for step in protocol_evidence["measured_steps"]
+            ]
+            runtime_plan["budgets"] = {
+                **dict(plan["budgets"]), "formal_cap": expected_formal_count,
+            }
+            _write_json(root / "adaptive-execution-plan.json", runtime_plan)
+        else:
+            runtime_plan = plan
+        for chronology_group_index, item in ([] if direct_guide6_target_local else enumerate(
             _ledger_groups(str(plan["experiment_id"]), plan["captures"])
-        ):
+        )):
             if len(item) == 1 and item[0]["capture_role"] == "ambient":
                 step = item[0]
                 record_gate(str(step["isolation_gate_before"]))
@@ -827,7 +1272,7 @@ def execute_plan(
                     record_source_isolation_gate(str(gate_after))
                 else:
                     record_gate(str(gate_after))
-        if run["completed_formal"] != int(plan["budgets"]["formal_cap"]):
+        if run["completed_formal"] != expected_formal_count:
             raise RuntimeError("thermal diagnostic formal count differs from frozen cap")
         if run["ambient_capture_count"] != int(plan["budgets"]["ambient_cap"]):
             raise RuntimeError("thermal diagnostic ambient count differs from frozen cap")
@@ -838,7 +1283,7 @@ def execute_plan(
             raise RuntimeError("thermal diagnostic accepted measurement ledger drifted")
         if direct_execution:
             assert post_capture_validator_fn is not None
-            post_capture_validator_fn(root, plan, capture_settings_provenance)
+            post_capture_validator_fn(root, runtime_plan, capture_settings_provenance)
         _write_json(root / "commands-audit.json", {
             "status": "pass", "formal_capture_count": run["completed_formal"],
             "ambient_capture_count": run["ambient_capture_count"],
@@ -1177,7 +1622,11 @@ def validate_direct_protocol_post_capture(
                 raise ValueError("direct Ray capture lacks verified strip-zero evidence")
         elif (
             (plan.get("execution_authorization") or {}).get("schema")
-            in {"direct_strip_history_session_v1", "direct_td_c_fast_endpoint_holdout_v1"}
+            in {
+                "direct_strip_history_session_v1",
+                "direct_td_c_fast_endpoint_holdout_v1",
+                "direct_guide6_target_local_h120_s100_v1",
+            }
         ):
             ray_zero = capture.get("ray_zero_before_capture")
             ray_data = (
@@ -1559,6 +2008,11 @@ def run_authorized_plan(
         and plan["execution_authorization"].get("schema")
         == "direct_td_c_fast_endpoint_holdout_v1"
     )
+    direct_guide6_target_local = (
+        isinstance(plan.get("execution_authorization"), Mapping)
+        and plan["execution_authorization"].get("schema")
+        == "direct_guide6_target_local_h120_s100_v1"
+    )
     direct_protocol = (
         isinstance(plan.get("execution_authorization"), Mapping)
         and str(plan["execution_authorization"].get("schema", "")).startswith("direct_")
@@ -1699,6 +2153,7 @@ def run_authorized_plan(
     )
 
     def capture(step: Mapping[str, Any]) -> Mapping[str, Any]:
+        plan_steps_by_id[str(step["capture_id"])] = step
         source = str(step["source_id"])
         state = str(step["state_id"])
         strip_zero_evidence = None
@@ -1707,7 +2162,7 @@ def run_authorized_plan(
             strip_zero_evidence = esphome.verified_light(
                 0, 0, 0, 0, 0, curve_path=thermal.CURVE_PATH,
             )
-        elif direct_strip_history or direct_td_c_fast_endpoint:
+        elif direct_strip_history or direct_td_c_fast_endpoint or direct_guide6_target_local:
             ray_zero_evidence = ray120c.set_cct(5600, intensity=0, gm=100)
             ray_readback = ray120c.get_cct()
             intensity = (
@@ -1847,7 +2302,7 @@ def run_authorized_plan(
         }
 
     def source_isolation_check(gate_id: str) -> Mapping[str, Any]:
-        if direct_strip_history:
+        if direct_strip_history or direct_guide6_target_local:
             ray_set = ray120c.set_cct(5600, intensity=0, gm=100)
             ray_readback = ray120c.get_cct()
             intensity = (
@@ -1907,7 +2362,11 @@ def run_authorized_plan(
     return execute_plan(
         plan, run_dir=root, apply_command_fn=apply, readback_fn=readback,
         capture_fn=capture, both_off_gate_fn=both_off_gate,
-        source_isolation_check_fn=(source_isolation_check if (direct_ray_continuous or direct_strip_history) else None),
+        source_isolation_check_fn=(
+            source_isolation_check
+            if (direct_ray_continuous or direct_strip_history or direct_guide6_target_local)
+            else None
+        ),
         cleanup_fn=cleanup,
         runtime_capture_settings_provenance=settings_provenance,
         post_capture_validator_fn=(validate_direct_post_capture if direct_protocol else None),
