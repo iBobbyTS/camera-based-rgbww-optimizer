@@ -1,0 +1,20 @@
+{
+  "accepted_boundary_artifact_hash": "2cd56c872bffdb53dcbc59b2296c43f1bf2bebe6c7663eb89d16c6f6ca0046c4",
+  "derived_analysis_sha256": "4cf9aefed30acd141a8a08a2ee507aa26c9c7a9333253dd7b8d372bfd2278295",
+  "derived_from_root": "/Volumes/4T/temp/rgbww-optimizer/guide8-ray-emission-exposure-20260815/20260815-163556-diagnostic",
+  "feature_hash": "4a37bf13a1dcfa6b652bd4ce6a7793aa8ac0344c293d1a7fc73ff7fad763ab86",
+  "guard_nominal_shutter": "1/4000",
+  "guard_recorded_exposure_seconds": 0.000244140625,
+  "historical_1over5000_pooling": true,
+  "invariance_evaluator_hash": "cf3149ee6ec1f1a2fa08cf4b5b6c1af09c7e468e2d9f3b13b90c8e403d676023",
+  "maximum_exposure_ratio": 1.25,
+  "observer_hash": "b81d563eba1910286d879e560538dd497385e422c1bab762008c2b28a26fc4d9",
+  "operating_envelope": "fast_op120_reset600_v1",
+  "pooling_semantics": "historical_1over5000_measurement_procedure_requalified",
+  "quality_policy_hash": "db9ebef1503c5e54c989649c719c4a5f75445bbd5487edb14c274e1b2894f3b4",
+  "repeatability_evidence_hash": "9425ca6bc5af6ffbd02e5786a31d087077d55cc24fa105a6f749b4f4398088fb",
+  "schema": "ray_h120_s100_exposure_policy_v2",
+  "selected_nominal_shutter": "1/5000",
+  "selected_recorded_exposure_seconds": 0.000193774542476587,
+  "state": "H120/S100/INT100"
+}

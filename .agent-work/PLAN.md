@@ -1,58 +1,39 @@
-# PLAN — GUIDE8 Ray H120/S100 emission/exposure diagnostic
+# PLAN — GUIDE7 H120/S100 actual F1 local controllability
 
-## Outcome
+## Accepted prerequisite
 
-Implement and execute the single Ray-only diagnostic
-`GUIDE8_RAY_H120_S100_EMISSION_EXPOSURE_DIAG_V1`, then follow only its frozen
-E-A..E-G branch. This is a diagnostic run with `formal=0`, not a solver or color
-observation.
+- GUIDE8 root:
+  `/Volumes/4T/temp/rgbww-optimizer/guide8-ray-emission-exposure-20260815/20260815-163556-diagnostic`
+- Acquisition: complete, 4/16 diagnostic captures, formal 0, cleanup pass.
+- Frozen analyzer branch: `E-C / historical_shutter_requalified`.
+- Selected Ray shutter: `1/5000`; adjacent guard: `1/4000`.
+- Derived analysis SHA-256:
+  `4cf9aefed30acd141a8a08a2ee507aa26c9c7a9333253dd7b8d372bfd2278295`.
+- Versioned policy:
+  `config/hsi/ray-h120-s100-exposure-policy-v2.json`.
 
-## Frozen scientific contract
+## Immediate scientific action
 
-- Preserve the failed GUIDE7 first-frame measurement root as
-  `reference_observation_missing_at_historical_shutter`; solver attempts remain 0.
-- Control: reset600, D=H120/S50 120 s, A=H120/S100 120 s,
-  C=H300/S100 120 s, capture C at `1/2500`; invalid control stops as E-A.
-- Dark: second reset600 while both sources remain off, capture one diagnostic dark
-  at `1/250`; a valid/bright observation stops as E-B.
-- H120 ladder: D120, A120, Q=H120/S100 120 s, keep Q continuously on, capture
-  `1/5000, 1/4000, 1/3200, 1/2500, 1/2000, 1/1600, 1/1250,
-  1/1000, 1/800, 1/640, 1/500, 1/400, 1/320, 1/250`.
-- Stop on the first adjacent quality-valid, MakerNote-valid pair whose nominal
-  exposure ratio is `<=1.25` and whose shape passes the existing P1 evaluator:
-  `raw_response_candidate.evaluate_response_model` over the two retained
-  patch-statistics reports with the frozen P1 repeatability reports, identity
-  response (`a=b=0`), and every required 58 feature at `<=3.0` repeatability sigma.
-  Ladder neighbors whose ratio is `>1.25` cannot form a legal pair. Do not add a
-  direct norm, new threshold or covariance. Select the faster shutter. Only
-  near-noise-only permits continuing to a slower shutter. Other
-  quality/evidence/isolation failures stop immediately.
-- Physical cap 16; formal 0; dark 1; ambient subtraction 0; retry 0; strip zero
-  throughout; final all-off/zero required.
-- No observer, feature, threshold, statistic, covariance, coverage or frame-selection
-  changes. No strip probe, Jacobian, solver, grid, boundary, Gate-6, P8 or LUT work.
+Execute one fresh
+`GUIDE6-DIRECT-TARGET-LOCAL-H120-S100-V1` root through the existing direct
+measurement owner. This is the GUIDE7 actual F1 local-controllability block
+unlocked by GUIDE8 E-C; no new implementation section or authorization gate is
+required.
 
-## Implementation boundary
+Frozen bounds:
 
-Reuse only the existing owners:
+- Ray `Q_before` and `Q_after`: fixed `1/5000`, reset600/D120/A120/Q120.
+- Strip measurements: fixed `1/1600`, one reset600, then D120/A120/tested120.
+- Exact base command and four G-active probes remain those frozen in the direct
+  plan; at most four solver candidates, one rebase, and three confirmations.
+- Ray cap 2, strip cap 14, total/formal cap 16, ambient 0, in-run retry 0.
+- Frozen observer, ordered 58 features, quality, covariance, guarded coverage,
+  box constraints, 768 maximum step and backtrack remain unchanged.
+- Preserve source isolation and final all-off/zero evidence.
 
-- `p7_thermal_diagnostics.py`: exact diagnostic spec and policy schema.
-- `measure_p7_thermal_diagnostics.py`: direct Ray diagnostic execution and early stop.
-- `analyze_p7_thermal_diagnostics.py`: immutable derived classification/policy output,
-  recording the P1 evaluator source hash and frozen repeatability evidence identity.
-- `tests/test_p7_direct_r6.py`: real behavior tests for control stop, dark stop,
-  near-noise continuation, valid-pair stop, non-near-noise stop, caps and cleanup.
+## Branch continuation
 
-No new service, runtime, registry, release, lineage, stage gate or readiness layer.
-
-## Validation and execution
-
-1. Run focused GUIDE8 behavior tests and the existing direct-path module suite once.
-2. Run compile/static text checks and one bounded code review.
-3. Commit a clean checkpoint including GUIDE8 docs and tracked plan/evidence.
-4. Execute the Ray-only diagnostic without another Human authorization request,
-   because root `AGENTS.md` directly covers bounded light/camera operations.
-5. For a >10 minute live run, perform three 60-second liveness checks, create one
-   appropriately timed automation, then end only after the automation exists.
-6. On completion, delete the automation, analyze exactly once and continue E-C/E-D
-   automatically; stop only at the explicit Human/Advisor gates defined by GUIDE8.
+Run the frozen GUIDE6 analyzer once and follow only LC-A/B/C/D/E and the GUIDE7
+predefined continuation. Do not enter the 13-node grid, per-Hue boundary,
+Gate-6, P8 or LUT installation before the four-point direct sentinel is
+scientifically completed.
