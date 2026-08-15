@@ -12,7 +12,7 @@
 - Audit activation source / explicit opt-out: `default-on skill policy`
 - Audit trace path: `.agent-work/audit/guide6-h120-s100-local-controllability-v1/TRACE.jsonl`
 - Feature base: `3e81a3202b091c19c7109638ca9087a9fb60f1a3`
-- Current feature head: `3e81a3202b091c19c7109638ca9087a9fb60f1a3`
+- Current feature head: `5d21f3a8822675ff26f51eb55fd3539442d7dfcc`
 - Active artifact isolation: `archived-before-base`
 - Workflow adoption note: `new`
 - Integration repair waves used: `0/5`
@@ -24,18 +24,18 @@
 
 ## Current section
 
-- ID/title: `S01 / Seed-negative immutable reclassification`
-- Review intensity: `BOUNDED`
-- Review assurance requested/resolved: `AUTO / ONE`
-- Assurance reasons/override: offline additive artifact with exact values; no device behavior.
-- Original section lineage: `S01`
-- Section base: `3e81a3202b091c19c7109638ca9087a9fb60f1a3`
-- Current head: `3e81a3202b091c19c7109638ca9087a9fb60f1a3`
-- Status: `IMPLEMENTING`
-- Allowed-to-edit owners/files/symbols/routes: analyzer reclassification helper, direct tests, current feature artifacts.
-- Inspect-only dependency paths/direct impact cone: retained roots, legacy analyses, frozen policy.
-- Explicitly excluded owners/mechanisms: device runner, solver, legacy mutation, generalized framework.
-- Allowed structural changes: one local derived-artifact function/output.
+- ID/title: `S02 / Direct local-controllability protocol and adaptive solver`
+- Review intensity: `HIGH_RISK`
+- Review assurance requested/resolved: `AUTO / TWO`
+- Assurance reasons/override: adaptive physical commands and scientific branch classification.
+- Original section lineage: `S02`
+- Section base: `5d21f3a8822675ff26f51eb55fd3539442d7dfcc`
+- Current head: `5d21f3a8822675ff26f51eb55fd3539442d7dfcc`
+- Status: `PLANNED`
+- Allowed-to-edit owners/files/symbols/routes: named plan builder, measurement executor, analyzer, bounded solver seams, direct tests and wrapper argument only if needed.
+- Inspect-only dependency paths/direct impact cone: HSI policy/covariance, duty curve, camera backend, all-off, existing variants.
+- Explicitly excluded owners/mechanisms: generalized runtime, release/lineage/stage-gate, later science stages.
+- Allowed structural changes: one protocol-specific adaptive executor and one derived analysis schema.
 
 ## Review state
 
@@ -54,7 +54,7 @@
 - Targeted checks: `pending`
 - Section/package checks: `pending`
 - Integration checks: `pending`
-- Evidence gaps/residual risk: S01 implementation and exact immutable behavior tests pending.
+- Evidence gaps/residual risk: S02 implementation and high-risk behavior evidence pending.
 
 ## Recovery
 
@@ -69,11 +69,11 @@
 
 - Owner decisions required: `none`
 - Rejected/non-blocking scope proposals: no generalized runtime, release, lineage, stage-gate or broad solver framework.
-- Next action: implement S01 immutable seed-negative correction.
+- Next action: freeze S02 contract and implement the smallest protocol-specific adaptive path.
 
 ## Section summary
 
 | Section | Original lineage | Base | Head | Status | Waves | Recovery used | Clean A | Clean B | Notes |
 |---|---|---|---|---|---:|---|---|---|---|
-| S01 | S01 | 3e81a32 | pending | PLAN_REVIEW | 0 | no | no | n/a | immutable correction |
+| S01 | S01 | 3e81a32 | 5d21f3a | ACCEPTED | 0 | no | yes | n/a | immutable correction |
 | S02 | S02 | S01 | pending | PLANNED | 0 | no | no | no | adaptive device protocol |

@@ -1,9 +1,24 @@
-# S01 review — TD-C core corrected contrasts
+# S01 Review — Seed-negative immutable reclassification
 
-- scope：source-specific covariance、source-level null Monte Carlo、immutable derived CLI。
-- initial：生产计算无数学 blocker；发现 CLI immutability 与 MC path 两项行为证据缺口。
-- repair：新增旧 helper fail-on-call 测试、合理 guard/absolute diagnostic 断言，以及
-  temp-copy CLI one-shot/legacy bytes/derived bytes immutability 测试。
-- checks：2 targeted tests pass；`tests.test_p7_direct_r6` 25 tests pass（repair 前，
-  repair 后 targeted覆盖新增路径）。
-- final：`CLEAN`；没有 S02、solver 或额外科学范围扩张。
+- Mode: `INITIAL_BOUNDED`
+- Range: `3e81a3202b091c19c7109638ca9087a9fb60f1a3..5d21f3a8822675ff26f51eb55fd3539442d7dfcc`
+- Intensity / assurance: `BOUNDED / ONE`
+- Verdict: `section-accepted`
+- Findings: none admitted; repair waves `0/5`.
+
+## Coverage
+
+- Exact root/SHA/command/hash/score/Ray-bracket validation.
+- Zero probe, solver-candidate and confirmation activity.
+- Atomic immutable output and refusal to overwrite.
+- Legacy `analysis.json` bytes unchanged.
+- Canonical derived artifact SHA-256 `5cb7e4a593c7c5e1694d44539610d9bec1b38ebfdda74986537738b50b809eae`.
+
+## Checks
+
+- Two targeted tests passed.
+- Scoped compileall passed.
+- No S02, device or solver path was reviewed or executed.
+
+`Clean A` satisfied at product/test head `5d21f3a8822675ff26f51eb55fd3539442d7dfcc`.
+This acceptance is provisional to S01 and does not establish whole-feature merge readiness.
