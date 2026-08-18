@@ -442,6 +442,34 @@ numbers `121.68..125.30`. All five channels have repeatable level-dependent
 shape, so Stage 2 selected B-B with piecewise-linear normalized columns at
 codes 1024/2048/4095.
 
+### 2026-08-17 device-emission recheck and contaminated GUIDE6 baseline
+
+The bounded full-scale recheck at
+`/Volumes/4T/temp/rgbww-optimizer/manual-five-channel-ray-comparison-20260817/current-vs-p2`
+used the same location hash as P2, the original per-channel shutters, ISO 100,
+and 60 seconds of isolated source-on time. Strong-feature response was
+`94.7%..96.1%` of the P2 median for all five strip channels; Ray
+5600K/GM100/100% was `98.7%` of the accepted P1 boundary reference. Shape
+cosines were at least `0.999979` for the strip and `0.999859` for Ray. This is
+the current device-health baseline: the camera/chart geometry, all five strip
+channels, and Ray white output were mutually consistent with their historical
+references after the power-cycle check.
+
+Do **not** use the `005-strip-h120-s100-strip_candidate` captures from either
+of these GUIDE6 roots as strip-only brightness or target-center evidence:
+
+- `20260814-075000-qualified-strip-1over1600-reference-repeat`
+- `20260814-080000-qualified-strip-1over1600-solver-repeat`
+
+Their command ledgers retain Ray H120/S100 at 100% through the subsequent strip
+commands, their strip capture rows have no Ray-zero/source-isolation evidence,
+and their feature vectors match a current isolated Ray H120/S100 capture rather
+than the isolated strip command. The apparent historical strip response near
+`183.8 /s` is therefore cross-source-contaminated evidence, not proof that the
+strip later became roughly twenty times dimmer. See
+[`docs/engineering/guide6-strip-ray-contamination-baseline.md`](engineering/guide6-strip-ray-contamination-baseline.md)
+for the immutable paths, hashes, comparisons, and reuse rules.
+
 Build the P3 held-out mixture plan without device access:
 
 ```bash
