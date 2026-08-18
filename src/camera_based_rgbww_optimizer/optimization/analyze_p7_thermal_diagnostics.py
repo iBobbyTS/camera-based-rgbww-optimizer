@@ -55,7 +55,7 @@ TD_C_CORE_CONTRAST_CLASSIFICATION = (
 )
 TD_C_CORE_CONTRAST_MC_SEED = 27072026
 TD_C_CORE_CONTRAST_MC_SAMPLES = 20000
-GUIDE6_SEED_NEGATIVE_SCHEMA = "guide6_h120_s100_seed_negative_derived_v2"
+GUIDE6_SEED_NEGATIVE_SCHEMA = "guide6_h120_s100_seed_evidence_disposition_v3"
 GUIDE6_SEED_COMMAND_HASH = "f70a07889065ad105bf25a9fda103ec2a708ef056f4ae17b0279ef3886b5cfde"
 GUIDE6_SEED_COMMAND = {"cw": 518, "ww": 0, "r": 0, "g": 4095, "b": 0}
 GUIDE6_SEED_LEGACY_ANALYSIS_SHA256 = (
@@ -1847,6 +1847,31 @@ def analyze_guide6_local_controllability(
     }
     if not required.issubset(by_role):
         raise ValueError("GUIDE6 local-controllability analysis lacks fixed observations")
+    for row in by_role.values():
+        source = str((row.get("plan_step") or {}).get("source_id", ""))
+        capture = row.get("capture")
+        if not isinstance(capture, Mapping):
+            capture = row
+        if source == "ray":
+            zero = capture.get("strip_zero_before_capture")
+            requested = zero.get("requested_payload") if isinstance(zero, Mapping) else None
+            observed = zero.get("device_snapshot") if isinstance(zero, Mapping) else None
+            if (
+                not isinstance(requested, Mapping)
+                or any(int(value) != 0 for value in requested.values())
+                or not isinstance(observed, Mapping)
+                or any(int(observed.get(key, -1)) != 0 for key in esphome.PAYLOAD_CHANNELS)
+            ):
+                raise ValueError("GUIDE6 Ray observation lacks verified strip-zero evidence")
+        elif source == "strip":
+            zero = capture.get("ray_zero_before_capture")
+            data = (
+                zero.get("data")
+                or ((zero.get("response") or {}).get("data"))
+                if isinstance(zero, Mapping) else None
+            )
+            if not isinstance(data, Mapping) or int(data.get("intensity", -1)) != 0:
+                raise ValueError("GUIDE6 strip observation lacks verified Ray-zero evidence")
     ray_before = _unit(_features(by_role["ray_q_before"], feature_ids), feature_ids)
     ray_after = _unit(_features(by_role["ray_q_after"], feature_ids), feature_ids)
     ray_bracket = frozen_same_state_compatibility_diagnostic(
@@ -1983,11 +2008,6 @@ def analyze_guide6_seed_negative(
             raise ValueError(f"GUIDE6 seed root {index} legacy analysis identity drifted")
         legacy = _load_json(legacy_path)
         score = float(legacy.get("target_local_contrast", {}).get("score", math.nan))
-        if (
-            legacy.get("ray_before_after_bracket", {}).get("decision") != "pass"
-            or not math.isclose(score, expected_score, rel_tol=0.0, abs_tol=1e-12)
-        ):
-            raise ValueError(f"GUIDE6 seed root {index} differs from accepted scientific result")
         rows = _load_jsonl(root / "captures.jsonl")
         candidate_rows = [
             row for row in rows
@@ -1999,7 +2019,18 @@ def analyze_guide6_seed_negative(
         command = step.get("command")
         command_hash = str(step.get("exact_command_hash", ""))
         if command != GUIDE6_SEED_COMMAND or command_hash != GUIDE6_SEED_COMMAND_HASH:
-            raise ValueError(f"GUIDE6 seed root {index} command differs from accepted seed")
+            raise ValueError(f"GUIDE6 seed root {index} command differs from retained evidence")
+        capture = candidate_rows[0].get("capture")
+        ray_zero = capture.get("ray_zero_before_capture") if isinstance(capture, Mapping) else None
+        ray_data = (
+            ray_zero.get("data")
+            or ((ray_zero.get("response") or {}).get("data"))
+            if isinstance(ray_zero, Mapping) else None
+        )
+        ray_zero_valid = (
+            isinstance(ray_data, Mapping)
+            and int(ray_data.get("intensity", -1)) == 0
+        )
         candidate_hashes.add(command_hash)
         roles = [str(row.get("plan_step", {}).get("role", "")) for row in rows]
         probe_count += sum("probe" in role for role in roles)
@@ -2010,16 +2041,18 @@ def analyze_guide6_seed_negative(
             "root": str(root),
             "legacy_analysis": {"path": str(legacy_path), "sha256": legacy_sha},
             "legacy_status": legacy.get("status"),
-            "target_score": score,
-            "ray_bracket": "pass",
+            "legacy_target_score": score,
+            "legacy_expected_score": expected_score,
+            "ray_zero_before_capture": "pass" if ray_zero_valid else "missing_or_nonzero",
             "exact_command_hash": command_hash,
         })
     if probe_count or solver_candidate_count or confirmation_count or len(candidate_hashes) != 1:
         raise ValueError("accepted GUIDE6 seed roots contain unexpected solver activity")
     return {
         "schema": GUIDE6_SEED_NEGATIVE_SCHEMA,
-        "status": "guide6_seed_mismatch_reproduced",
-        "classification": "repeatable_target_local_seed_mismatch",
+        "status": "historical_evidence_rejected",
+        "classification": "historical_cross_source_contaminated",
+        "scientific_input_allowed": False,
         "legacy_status": "guide6_s_solver_retry_required",
         "solver_attempt_count": 0,
         "distinct_strip_candidate_count": 1,
@@ -2028,8 +2061,8 @@ def analyze_guide6_seed_negative(
         "confirmation_count": 0,
         "exact_command": dict(GUIDE6_SEED_COMMAND),
         "exact_command_hash": GUIDE6_SEED_COMMAND_HASH,
-        "final_acceptance_estimand": "frozen_direct_58_feature_target_local_contrast",
-        "solver_navigation_coordinate": "direct_whitened_58_feature_residual",
+        "rejection_reason": "strip candidate lacks capture-level Ray-zero evidence",
+        "legacy_conclusion_allowed": False,
         "gamut_inference": "prohibited",
         "legacy_artifacts_modified": False,
         "roots": evidence,

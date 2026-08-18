@@ -1,27 +1,34 @@
-# PLAN — HUMAN_GATE_REQUIRED: establish strip emission/path before F1 retry
+# PLAN — GUIDE6 S-MEASUREMENT strip exposure qualification
 
-## Retained attempt
+## Current disposition
 
-- Root:
-  `/Volumes/4T/temp/rgbww-optimizer/guide7-h120-s100-f1-20260815/20260815-171419-ec-historical-shutter`
-- Git checkpoint: `19c766770b5685655b971c9ea3fb52e50c99373b`.
-- Result: wrapper child exit 1; Python and shell cleanup pass; Ray/strip zero
-  reconfirmed; worktree clean.
-- Completed: 1/16 accepted formal observations and 2 physical returns.
-- Ray `Q_before` at requalified `1/5000` passed 58/58.
-- The first strip base at `1/1600` returned a valid CR3/sidecar but rejected 19/58
-  required features; no probe, Jacobian, solver candidate or confirmation ran.
+- `device_health = normal`
+- `historical_183_8_strip_baseline = invalid_cross_source_contamination`
+- The two retained GUIDE6 roots are `historical_only_not_scientific_input`.
+- `current_F1 = strip_reference_unobservable_under_unqualified_historical_shutter`
+- `human_physical_gate = resolved`
+- `science_delta = none`
+- `next_branch = GUIDE6_S_MEASUREMENT_strip_exposure_qualification`
 
-## Gate
+## Next bounded experiment
 
-`HUMAN_GATE_REQUIRED`: controller command/readback showed the expected physical
-payload (`cold_white=481`, `green=4095`, other channels zero), but the camera
-response was about an order of magnitude below two previously accepted roots using
-the same nominal shutter and exact command. Repository-local evidence cannot prove
-whether the strip actually emitted normally or whether its power/optical path was
-interrupted.
+- Experiment ID: `GUIDE6_S_MEASUREMENT_STRIP_EXPOSURE_QUALIFICATION_V1`.
+- Source: strip only; verify Ray readback intensity `0` before every capture.
+- Exact tested command: `CW518 / WW0 / R0 / G4095 / B0`.
+- History: `reset600 -> D120 -> A120 -> tested120`; keep tested output on
+  through the shutter ladder.
+- Formal/ambient/solver/probe: `0 / 0 / prohibited / prohibited`.
+- Ladder: `1/1600, 1/1250, 1/1000, 1/800, 1/640, 1/500, 1/400,
+  1/320, 1/250`.
+- Continue only after `near_noise_only`. Stop on clipping, nonfinite,
+  source-isolation failure, or any other quality/evidence failure.
+- Qualify the first adjacent pair that is 58/58 valid, unclipped, and compatible
+  under the frozen exposure-normalized shape evaluator. Select the faster member;
+  the slower member is guard-only.
+- Do not subtract ambient or change observer, features, thresholds, covariance,
+  coverage, or frame selection.
+- If no legal pair exists through `1/250`, classify
+  `no_legal_strip_exposure_window` and enter `ADVISOR_GATE_REQUIRED`.
 
-Human must inspect the local strip power/emission and chart illumination path and
-confirm that the fixture is visibly illuminating the chart normally. Keep both
-sources off while inspecting. After confirmation, perform a fresh F1 attempt; do
-not pool or overwrite this failed root.
+This PLAN prepares the executable direct spec and tests only. Device work is not
+part of the current correction task.

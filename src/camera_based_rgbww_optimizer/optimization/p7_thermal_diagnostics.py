@@ -31,6 +31,14 @@ TD_C_FAST_ANCHOR_DIRECTION_B_EXPERIMENT_ID = "GUIDE5_TD_C_FAST_ANCHOR_DIRECTION_
 TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT = "fast-anchor-direction-b"
 GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_EXPERIMENT_ID = "GUIDE6-DIRECT-TARGET-LOCAL-H120-S100-V1"
 GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT = "guide6-direct-target-local-h120-s100"
+GUIDE6_STRIP_EXPOSURE_QUALIFICATION_EXPERIMENT_ID = (
+    "GUIDE6_S_MEASUREMENT_STRIP_EXPOSURE_QUALIFICATION_V1"
+)
+GUIDE6_STRIP_EXPOSURE_QUALIFICATION_VARIANT = "guide6-strip-exposure-qualification"
+GUIDE6_STRIP_EXPOSURE_QUALIFICATION_LADDER = (
+    "1/1600", "1/1250", "1/1000", "1/800", "1/640",
+    "1/500", "1/400", "1/320", "1/250",
+)
 GUIDE8_RAY_EMISSION_EXPOSURE_EXPERIMENT_ID = (
     "GUIDE8_RAY_H120_S100_EMISSION_EXPOSURE_DIAG_V1"
 )
@@ -905,6 +913,8 @@ def build_direct_plan(
         raise ValueError("TD-C direct execution owns both sources")
     if experiment_id == TD_C and variant == GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT:
         return _build_guide8_ray_emission_exposure_plan()
+    if experiment_id == TD_C and variant == GUIDE6_STRIP_EXPOSURE_QUALIFICATION_VARIANT:
+        return _build_guide6_strip_exposure_qualification_plan()
     if experiment_id == TD_C and variant == TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT:
         plan = _build_td_c_fast_endpoint_holdout_plan()
     elif experiment_id == TD_C and variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT:
@@ -1250,6 +1260,8 @@ def _build_guide6_direct_target_local_h120_s100_plan() -> dict[str, Any]:
         "r": {**base, "r": 256},
         "b": {**base, "b": 256},
     }
+
+
     captures: list[dict[str, Any]] = []
 
     def add(source: str, state: str, role: str, index: int,
@@ -1352,6 +1364,100 @@ def _build_guide6_direct_target_local_h120_s100_plan() -> dict[str, Any]:
             "gamut_inference": "prohibited",
         },
         "hard_locks": {"legacy_absolute_synthesis": True, "B_prepost": "deferred_diagnostic_only", "solver_sentinel": True, "P8": True},
+    }
+
+
+def _build_guide6_strip_exposure_qualification_plan() -> dict[str, Any]:
+    """Build the bounded strip-only S-MEASUREMENT exposure qualification."""
+    commands = load_r1_commands()
+    tested = {"cw": 518, "ww": 0, "r": 0, "g": 4095, "b": 0}
+    preconditions = []
+    for state in ("D", "A"):
+        command = _command("strip", state, commands)
+        preconditions.append({
+            "state_id": state, "command": command,
+            "exact_command_hash": canonical_sha256(command),
+            "dwell_s": 120, "capture": False,
+        })
+    preconditions.append({
+        "state_id": "tested", "command": tested,
+        "exact_command_hash": canonical_sha256(tested),
+        "dwell_s": 120, "capture": False,
+    })
+    captures = [{
+        "capture_id": f"{index:03d}-strip-exposure-{shutter.replace('/', 'over')}",
+        "source_id": "strip", "state_id": "tested",
+        "target": "H120/S100/INT100", "role": "strip_exposure_ladder",
+        "capture_role": "diagnostic", "formal_measurement": False,
+        "command": dict(tested), "exact_command_hash": canonical_sha256(tested),
+        "requested_elapsed_s": 0, "nominal_shutter": shutter,
+        "exposure_cache_key": f"guide6-strip-exposure-{shutter.replace('/', 'over')}",
+        "timing_acceptance": "diagnostic_not_formal",
+        "ray_zero_required": True, "steady_claim": False,
+        "warm_precondition_sequence": preconditions if index == 0 else [],
+    } for index, shutter in enumerate(GUIDE6_STRIP_EXPOSURE_QUALIFICATION_LADDER)]
+    frozen = {
+        str(step["exposure_cache_key"]): str(step["nominal_shutter"])
+        for step in captures
+    }
+    return {
+        "schema": PLAN_SCHEMA_V2, "status": "execute_authorized",
+        "experiment_id": TD_C,
+        "guide_experiment_id": GUIDE6_STRIP_EXPOSURE_QUALIFICATION_EXPERIMENT_ID,
+        "variant": GUIDE6_STRIP_EXPOSURE_QUALIFICATION_VARIANT,
+        "stage": "GUIDE6-S-MEASUREMENT-STRIP-EXPOSURE-QUALIFICATION",
+        "phase": "diagnostic", "source": "strip",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "inputs": {
+            "location": file_reference(LOCATION_PATH),
+            "policy": file_reference(POLICY_PATH),
+            "observer": file_reference(OBSERVER_PATH),
+            "code_duty_curve": file_reference(CURVE_PATH),
+        },
+        "camera": {
+            "backend": "remote", "v2_capture_timing_capability_available": True,
+            "v2_capture_capability": "remote_v2_capture_timing_v1",
+            "resolved_capture_settings": {
+                "owner": "remote_backend.resolve_capture_settings",
+                "iso": "100", "aperture": "f/4", "image_format": "RAW",
+            },
+        },
+        "timing_contract": timing_contract(2), "cold_proxy": 600,
+        "cold_proxy_wait_s": 600, "captures": captures,
+        "capture_ids": [str(step["capture_id"]) for step in captures],
+        "frozen_shutters": frozen, "exposure_setup_required": [],
+        "shutter_ledger_provenance": {
+            "owner": "experiment_capture_steps",
+            "required_cache_keys": sorted(frozen),
+            "frozen_shutters_sha256": canonical_sha256(frozen),
+        },
+        "native_raw_ambient_policy": AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+        "budgets": {
+            "formal_cap": 0, "ambient_cap": 0,
+            "diagnostic_cap": len(captures), "physical_cr3_cap": len(captures),
+            "setup_physical_cr3_cap": 0, "retry": 0,
+        },
+        "execution_authorization": {
+            "schema": "direct_guide6_strip_exposure_qualification_v1",
+            "human_authorization_required": False,
+            "human_authorization_verified": True,
+            "experiment_id": GUIDE6_STRIP_EXPOSURE_QUALIFICATION_EXPERIMENT_ID,
+            "bounded_device_scope": True, "remote_v2_capability": True,
+        },
+        "analysis_contract": {
+            "shape_evaluator": "raw_response_candidate.evaluate_response_model",
+            "response_model": {"a": 0.0, "b": 0.0},
+            "maximum_shape_sigma": 3.0, "selected_member": "faster",
+            "diagnostic_slowest": "1/250", "near_noise_only_continues": True,
+            "no_ambient_subtraction": True,
+            "observer_features_threshold_covariance_coverage_unchanged": True,
+            "steady_claim": False,
+        },
+        "cleanup": {
+            "python_finally": "required",
+            "shell_trap": "EXIT_INT_TERM_HUP_required",
+        },
+        "formal_capture_eligible": False, "solver_probe_allowed": False,
     }
 
 def load_r1_commands(run_dir: str | Path = R1_RUN) -> dict[str, dict[str, int]]:

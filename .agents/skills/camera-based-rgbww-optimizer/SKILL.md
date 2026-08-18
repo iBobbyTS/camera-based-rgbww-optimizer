@@ -37,7 +37,7 @@ adding root-level compatibility wrappers.
   Executer as optional cost roles: Planner can spend more reasoning on the
   smallest useful boundary, while Executer can perform deterministic edits and
   checks at lower cost. Neither role is a required approval stage.
-- Ordinary implementation or test problems are fixed in the current E1/E2
+- Ordinary implementation or test problems are fixed in the current
   worktree until meaningful behavior tests pass. Do not stop merely because a
   validation count, review count or correction budget would have been exhausted.
 - `.agent-work/PLAN.md`, `.agent-work/PLAN-FULL.md`, debug notes, reviews and

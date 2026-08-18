@@ -62,15 +62,14 @@ This project is used only for the Human-owned and Human-maintained local photogr
   a newly unlocked GUIDE experiment; code, tests, plans and commits are engineering
   evidence only.
 - Any engineering-only work must name the single concrete blocker it removes from
-  the next scientific action. E1 and E2 are the only pre-Ray engineering sections in
-  the current Human-approved route; after E2 the next action is the Ray R6 experiment.
-- Ordinary implementation and test problems stay in the current E1/E2 worktree and
+  the next scientific action selected by the active GUIDE/PLAN.
+- Ordinary implementation and test problems stay in the current worktree and
   are fixed there until meaningful behavior tests pass. No retry or validation budget
   turns an ordinary fix into a stop or a request for a new architecture boundary.
 - Do not insert optional refactors, generalized frameworks, repeated clean-room runs,
   or extra review campaigns between readiness and the scientific action. Run the
-  final validation once at the E2/science boundary, with extra checks only when a
-  concrete safety or scientific risk requires them.
+  final validation once at the engineering/science boundary, with extra checks only
+  when a concrete safety or scientific risk requires them.
 - The Supervisor is invoked only by a Human point-in-time request and reports
   engineering progress separately from `science_delta`; it does not dispatch routine
   work. Advisor input is requested only for unresolved scientific questions.
@@ -312,7 +311,7 @@ machine-state owners or sequential approval gates.
 - Executer may use a lower-cost profile for deterministic edits and checks already
   decided by the Orchestrator.
 - They are not required to create or validate orchestration artifacts and do not
-  form a separate approval loop. Ordinary issues are fixed in the current E1/E2
+  form a separate approval loop. Ordinary issues are fixed in the current
   worktree until the meaningful behavior tests pass.
 
 ### Versioned plans, evidence, and reproducibility

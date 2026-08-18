@@ -130,7 +130,10 @@ class DirectR6Tests(unittest.TestCase):
                     ),
                 },
             }
-            if step["formal_measurement"] or plan["execution_authorization"]["schema"] == "direct_guide8_ray_emission_exposure_v1":
+            if step["formal_measurement"] or plan["execution_authorization"]["schema"] in {
+                "direct_guide8_ray_emission_exposure_v1",
+                "direct_guide6_strip_exposure_qualification_v1",
+            }:
                 output["feature_values"] = (
                     feature_values_fn(step)
                     if feature_values_fn is not None
@@ -163,6 +166,7 @@ class DirectR6Tests(unittest.TestCase):
                 "direct_strip_history_session_v1",
                 "direct_td_c_fast_endpoint_holdout_v1",
                 "direct_guide6_target_local_h120_s100_v1",
+                "direct_guide6_strip_exposure_qualification_v1",
             }:
                 output["ray_zero_before_capture"] = {
                     "response": {"data": {"intensity": 0}},
@@ -195,7 +199,10 @@ class DirectR6Tests(unittest.TestCase):
             }
 
         def source_isolation(_gate_id):
-            if plan["execution_authorization"]["schema"] == "direct_strip_history_session_v1":
+            if plan["execution_authorization"]["schema"] in {
+                "direct_strip_history_session_v1",
+                "direct_guide6_strip_exposure_qualification_v1",
+            }:
                 return {
                     "status": "pass", "source_verified_zero": True,
                     "source_verified": "ray", "strip_verified_off": False,
@@ -213,6 +220,7 @@ class DirectR6Tests(unittest.TestCase):
             "direct_ray_fast_long_bridge_session_v1",
             "direct_guide6_target_local_h120_s100_v1",
             "direct_guide8_ray_emission_exposure_v1",
+            "direct_guide6_strip_exposure_qualification_v1",
         }
 
         with patch.object(measure, "_validate_returned_sidecar", side_effect=fake_sidecar):
@@ -240,9 +248,14 @@ class DirectR6Tests(unittest.TestCase):
                     if plan["execution_authorization"]["schema"]
                     == "direct_ray_fast_long_bridge_session_v1"
                     else measure.validate_direct_protocol_post_capture
-                    if plan["execution_authorization"]["schema"]
-                    != "direct_guide8_ray_emission_exposure_v1"
+                    if plan["execution_authorization"]["schema"] not in {
+                        "direct_guide8_ray_emission_exposure_v1",
+                        "direct_guide6_strip_exposure_qualification_v1",
+                    }
                     else measure.validate_direct_guide8_post_capture
+                    if plan["execution_authorization"]["schema"]
+                    == "direct_guide8_ray_emission_exposure_v1"
+                    else measure.validate_direct_guide6_strip_exposure_post_capture
                 ),
                 sleep_fn=lambda _seconds: None,
             )
@@ -2083,10 +2096,18 @@ class DirectR6Tests(unittest.TestCase):
         vector = {feature_id: 1.0 for feature_id in feature_ids}
         strip_vector = dict(vector)
         strip_vector[feature_ids[0]] += 1e-6
+        strip_zero = {
+            "requested_payload": {key: 0 for key in ("red", "green", "blue", "warm_white", "cold_white")},
+            "device_snapshot": {key: 0 for key in ("red", "green", "blue", "warm_white", "cold_white")},
+        }
         captures = [
-            {"plan_step": {"role": "ray_q_before"}, "feature_values": dict(vector)},
-            {"plan_step": {"role": "ray_q_after"}, "feature_values": dict(vector)},
-            {"plan_step": {"role": "strip_candidate"}, "feature_values": strip_vector},
+            {"plan_step": {"role": "ray_q_before", "source_id": "ray"},
+             "feature_values": dict(vector), "strip_zero_before_capture": strip_zero},
+            {"plan_step": {"role": "ray_q_after", "source_id": "ray"},
+             "feature_values": dict(vector), "strip_zero_before_capture": strip_zero},
+            {"plan_step": {"role": "strip_candidate", "source_id": "strip"},
+             "feature_values": strip_vector,
+             "ray_zero_before_capture": {"response": {"data": {"intensity": 0}}}},
         ]
         report = analyze.analyze_td_c_direct_target_local(
             captures, feature_ids=feature_ids,
@@ -2097,7 +2118,7 @@ class DirectR6Tests(unittest.TestCase):
         self.assertFalse(report["cross_experiment_absolute_synthesis"])
         self.assertFalse(report["steady_claim"])
 
-    def test_guide6_seed_negative_derivation_is_exact_and_immutable(self):
+    def test_guide6_seed_negative_rejects_missing_ray_zero_evidence(self):
         retained = Path(
             "/Volumes/4T/temp/rgbww-optimizer/guide6-direct-target-local-h120-s100-20260813"
         )
@@ -2122,15 +2143,17 @@ class DirectR6Tests(unittest.TestCase):
                 "--guide6-seed-negative-output", str(output),
             ]), 0)
             report = json.loads(output.read_text())
-            self.assertEqual(report["classification"], "repeatable_target_local_seed_mismatch")
+            self.assertEqual(report["classification"], "historical_cross_source_contaminated")
+            self.assertFalse(report["scientific_input_allowed"])
+            self.assertFalse(report["legacy_conclusion_allowed"])
             self.assertEqual(report["solver_attempt_count"], 0)
             self.assertEqual(report["distinct_strip_candidate_count"], 1)
             self.assertEqual(report["probe_count"], 0)
             self.assertEqual(report["solver_generated_candidate_count"], 0)
             self.assertEqual(report["exact_command_hash"], analyze.GUIDE6_SEED_COMMAND_HASH)
             self.assertEqual(
-                [item["target_score"] for item in report["roots"]],
-                list(analyze.GUIDE6_SEED_TARGET_SCORES),
+                [item["ray_zero_before_capture"] for item in report["roots"]],
+                ["missing_or_nonzero", "missing_or_nonzero"],
             )
             output_before = output.read_bytes()
             with self.assertRaises(FileExistsError):
@@ -2142,6 +2165,37 @@ class DirectR6Tests(unittest.TestCase):
             self.assertEqual(output.read_bytes(), output_before)
             self.assertEqual((roots[0] / "analysis.json").read_bytes(), legacy_before[0])
             self.assertEqual((roots[1] / "analysis.json").read_bytes(), legacy_before[1])
+
+    def test_guide6_local_analyzer_rejects_strip_without_ray_zero(self):
+        feature_ids = tuple(json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"])
+        vector = {feature_id: 1.0 for feature_id in feature_ids}
+        protocol = {
+            "schema": "guide6_h120_s100_direct_local_controllability_evidence_v1",
+            "gamut_inference": "prohibited",
+            "terminal_multi_start_solver_unresolved": False,
+            "jacobian": {"effective_rank": 1},
+            "measured_steps": [{}] * 9,
+        }
+        roles = (
+            "ray_q_before", "ray_q_after", "strip_base", "strip_probe_cw",
+            "strip_probe_ww", "strip_probe_r", "strip_probe_b",
+            "strip_base_anchor_after_probe_2", "strip_base_anchor_after_probe_4",
+        )
+        rows = []
+        for role in roles:
+            source = "ray" if role.startswith("ray_") else "strip"
+            capture = {
+                "feature_values": vector,
+                "strip_zero_before_capture": {
+                    "requested_payload": {key: 0 for key in ("red", "green", "blue", "warm_white", "cold_white")},
+                    "device_snapshot": {key: 0 for key in ("red", "green", "blue", "warm_white", "cold_white")},
+                },
+            } if source == "ray" else {"feature_values": vector}
+            rows.append({"plan_step": {"role": role, "source_id": source}, "capture": capture})
+        with self.assertRaisesRegex(ValueError, "lacks verified Ray-zero evidence"):
+            analyze.analyze_guide6_local_controllability(
+                rows, feature_ids=feature_ids, protocol_evidence=protocol,
+            )
 
     def _run_fake_guide8(self, ladder_statuses, *, evaluator=True):
         spec = thermal.build_direct_plan(
@@ -2267,6 +2321,88 @@ class DirectR6Tests(unittest.TestCase):
         self.assertEqual(result["branch"], "E-F")
         self.assertEqual(len(measured), 16)
         self.assertEqual(cleanup, [True])
+
+    def test_guide6_strip_exposure_plan_and_early_stop(self):
+        plan = thermal.build_direct_plan(
+            thermal.TD_C,
+            variant=thermal.GUIDE6_STRIP_EXPOSURE_QUALIFICATION_VARIANT,
+        )
+        self.assertEqual(
+            [step["nominal_shutter"] for step in plan["captures"]],
+            list(thermal.GUIDE6_STRIP_EXPOSURE_QUALIFICATION_LADDER),
+        )
+        self.assertEqual(plan["budgets"]["formal_cap"], 0)
+        self.assertEqual(plan["budgets"]["physical_cr3_cap"], 9)
+        self.assertFalse(plan["solver_probe_allowed"])
+        feature_ids = tuple(json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"])
+        seen = []
+        def capture(step):
+            seen.append(step["nominal_shutter"])
+            status = "pass" if step["nominal_shutter"] in {"1/1000", "1/800"} else "near_noise_only"
+            return {
+                "direct_quality": {"status": status, "feature_count": 58},
+                "feature_values": {feature_id: 1.0 for feature_id in feature_ids},
+                "recorded_exposure": {"seconds": float(parse_nominal_exposure(step["nominal_shutter"]))},
+                "ray_zero_before_capture": {"response": {"data": {"intensity": 0}}},
+            }
+        result = measure.run_guide6_strip_exposure_qualification_protocol(
+            plan, measure_fn=capture, feature_ids=feature_ids,
+            pair_evaluator_fn=lambda *_: {"status": "pass"},
+        )
+        self.assertEqual(result["classification"], "strip_exposure_window_qualified")
+        self.assertEqual(result["selected_nominal_shutter"], "1/1000")
+        self.assertEqual(result["guard_nominal_shutter"], "1/800")
+        self.assertEqual(seen, ["1/1600", "1/1250", "1/1000", "1/800"])
+
+    def test_guide6_strip_exposure_stops_on_non_near_noise_and_caps_to_advisor(self):
+        plan = thermal.build_direct_plan(
+            thermal.TD_C,
+            variant=thermal.GUIDE6_STRIP_EXPOSURE_QUALIFICATION_VARIANT,
+        )
+        feature_ids = tuple(json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"])
+        def capture_with(status):
+            return lambda step: {
+                "direct_quality": {"status": status, "feature_count": 0, "failures": [status]},
+                "recorded_exposure": {"seconds": float(parse_nominal_exposure(step["nominal_shutter"]))},
+                "ray_zero_before_capture": {"response": {"data": {"intensity": 0}}},
+            }
+        with self.assertRaisesRegex(RuntimeError, "quality/evidence failure"):
+            measure.run_guide6_strip_exposure_qualification_protocol(
+                plan, measure_fn=capture_with("clipping"), feature_ids=feature_ids,
+                pair_evaluator_fn=lambda *_: True,
+            )
+        result = measure.run_guide6_strip_exposure_qualification_protocol(
+            plan, measure_fn=capture_with("near_noise_only"), feature_ids=feature_ids,
+            pair_evaluator_fn=lambda *_: True,
+        )
+        self.assertEqual(result["classification"], "no_legal_strip_exposure_window")
+        self.assertEqual(result["next_gate"], "ADVISOR_GATE_REQUIRED")
+        self.assertEqual(result["physical_capture_count"], 9)
+
+    def test_guide6_strip_exposure_execute_plan_retains_ray_zero_and_validates(self):
+        plan = thermal.build_direct_plan(
+            thermal.TD_C,
+            variant=thermal.GUIDE6_STRIP_EXPOSURE_QUALIFICATION_VARIANT,
+        )
+        with tempfile.TemporaryDirectory() as temporary, patch.object(
+            analyze, "evaluate_guide8_pair_captures", return_value={"status": "pass"},
+        ):
+            root = Path(temporary) / "strip-exposure"
+            self._execute_fake_protocol(
+                plan, root,
+                diagnostic_status_fn=lambda step: (
+                    "pass" if step["nominal_shutter"] in {"1/1000", "1/800"}
+                    else "near_noise_only"
+                ),
+            )
+            rows = [json.loads(line) for line in (root / "captures.jsonl").read_text().splitlines()]
+            quality = json.loads((root / "quality.json").read_text())
+        self.assertEqual(len(rows), 4)
+        self.assertTrue(all(
+            row["capture"]["ray_zero_before_capture"]["response"]["data"]["intensity"] == 0
+            for row in rows
+        ))
+        self.assertEqual(quality["classification"], "strip_exposure_window_qualified")
 
     def test_guide8_execute_plan_keeps_q_on_until_final_cleanup(self):
         plan = thermal.build_direct_plan(

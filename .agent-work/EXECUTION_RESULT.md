@@ -1,43 +1,24 @@
-# GUIDE7 H120/S100 F1 — strip reference observation missing
+# GUIDE6 evidence correction — no device execution
 
-## Classification
+## Disposition
 
-- Failure class: `DEVICE_OR_SAFETY_FAILURE` pending physical confirmation.
-- Unresolved stop: `HUMAN_GATE_REQUIRED`.
-- `science_delta=none`: the intended local-controllability block did not reach
-  probes or solver observations.
-- Fresh retry: justified only after Human confirms normal physical strip emission
-  and an unobstructed chart illumination path.
+- `device_health = normal`
+- `historical_183_8_strip_baseline = invalid_cross_source_contamination`
+- `old_two_guide6_roots = historical_only_not_scientific_input`
+- `current_F1 = strip_reference_unobservable_under_unqualified_historical_shutter`
+- `human_physical_gate = resolved`
+- `science_delta = none`
+- `next_branch = GUIDE6_S_MEASUREMENT_strip_exposure_qualification`
 
-## Exact evidence
+The two retained roots and their original analysis artifacts were not modified or
+deleted. Their strip candidate capture lacks capture-level Ray-zero evidence and
+matches isolated Ray H120/S100, so the legacy
+`repeatable_target_local_seed_mismatch` conclusion is disabled.
 
-- Run status: failed; `completed_formal=1`, `physical_returned_cr3_count=2`,
-  `cleanup=pass`.
-- Accepted Ray `Q_before`: 58/58 features at nominal `1/5000`.
-- Rejected strip base: nominal `1/1600`, recorded exposure
-  `0.000615195825143981 s`, exact logical command
-  `CW=518, WW=0, R=0, G=4095, B=0`, hash
-  `f70a07889065ad105bf25a9fda103ec2a708ef056f4ae17b0279ef3886b5cfde`.
-- Verified physical readback after the code-duty curve:
-  `cold_white=481, green=4095, red=0, blue=0, warm_white=0`.
-- Current optimization-plane quality: 48 accepted, 44 rejected; 19/58 required
-  features missing. Normalized feature range approximately `0.815..83.97 /s`,
-  median `10.00 /s`.
-- Two accepted same-command roots had all 92 optimization planes accepted and
-  normalized ranges approximately `14.77..1190 /s`, median `183.7..183.9 /s`.
-- No strip probe, finite-difference Jacobian, solver-generated command, backtrack,
-  Broyden update or confirmation was executed.
+The current device-health evidence remains the isolated five-channel/Ray baseline
+documented at commit `99730c4`. It establishes same-source device health and
+cross-source color-shape context only; it does not assert absolute-brightness
+matching between Ray and strip.
 
-## Artifact identities
-
-- `run.json`: `f10f4a91947f6cdfea34b66fceff2814a7f551c9eb3b53c74a37b3edfd42bfa3`
-- `failure.json`: `fe58105341e8db8df527b5e9ada55e3cced50852aa071bdea9205429b445f8c9`
-- Current strip patch report:
-  `1c076db0340ffb9d9ba889b285a9f40143a84bc2df596967200cfc2668c181f5`
-- Accepted reference-repeat report:
-  `4291398ffef04b3118916bd8d9be210ba1a8f6aa25bbe7e579e1c79604e5da10`
-- Accepted solver-repeat report:
-  `cd4f2f13c17b12c8bd8a139f9bcc850fdc803f819f8778390164d093fcac1557`
-
-Raw CR3 payloads remain only under the retained experiment roots and are not
-tracked by Git.
+The next direct spec is prepared but no light, camera, solver, probe or device
+operation was started in this correction batch.

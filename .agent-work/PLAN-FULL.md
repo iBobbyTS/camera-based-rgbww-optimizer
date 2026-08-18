@@ -1,28 +1,17 @@
-# PLAN-FULL — GUIDE8 E-C accepted; resume GUIDE7 scientific route
+# PLAN-FULL — GUIDE6 direct target-local recovery roadmap
 
-## Current scientific state
+1. Reject the two Ray-contaminated GUIDE6 strip candidates as historical-only
+   evidence; never pool or import them into scientific analysis.
+2. Run `GUIDE6_S_MEASUREMENT_STRIP_EXPOSURE_QUALIFICATION_V1` with capture-level
+   Ray-zero evidence and the frozen observer/quality/shape contracts.
+3. On qualification pass, execute a completely fresh GUIDE6 direct target-local
+   F1 root using the selected strip shutter and guard evidence.
+4. Continue through the existing GUIDE6 predeclared scientific branch. Return to
+   Advisor only when the GUIDE itself reaches a genuinely unresolved scientific
+   decision.
 
-GUIDE8 established a valid Ray H120/S100 emission/exposure window at the
-historical policy: `1/5000` selected with `1/4000` as the adjacent guard. The
-classification is `historical_shutter_requalified`; the prior missing reference
-observation is retained as a transient emission/path anomaly, not a color or
-solver result.
+Persistent locks remain unchanged: no cross-experiment absolute synthesis,
+B pre/post, solver sentinel, 13-node grid, boundary, Gate-6, P8 or LUT install
+before their active GUIDE branch unlocks them.
 
-## Active route
-
-1. Execute a fresh H120/S100 actual F1 local-controllability block using the
-   existing direct measurement/analyzer owners and the accepted `1/5000` policy.
-2. Follow its frozen LC-A/B/C/D/E classification.
-3. If GUIDE7 permits continuation, proceed through its predefined alternate-face,
-   3072/2048 diagnostic, H120/S50, lower-SAT bracket and remaining sentinel
-   branches without adding an engineering stage.
-4. Return to Advisor only at a mandatory unresolved scientific gate.
-
-## Persistent locks
-
-Until the four-point direct sentinel is scientifically complete, keep the
-13-node INT100 grid, per-Hue gamut boundary, Gate-6, P8, runtime/default LUT
-installation, B pre/post route and cross-experiment absolute synthesis locked.
-
-PLAN-FULL is roadmap context only; `.agent-work/PLAN.md` names the immediate
-execution batch.
+PLAN-FULL is short roadmap context, not a section graph or runtime authority.
