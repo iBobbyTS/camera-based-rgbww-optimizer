@@ -1894,6 +1894,15 @@ class DirectR6Tests(unittest.TestCase):
         self.assertEqual(plan["guide_experiment_id"], (
             thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_EXPERIMENT_ID
         ))
+        self.assertEqual(
+            plan["execution_authorization"]["schema"],
+            "direct_guide6_target_local_h120_s100_v1",
+        )
+        self.assertTrue(plan["execution_authorization"]["bounded_device_scope"])
+        self.assertEqual(
+            plan["execution_authorization"]["experiment_id"],
+            thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_EXPERIMENT_ID,
+        )
         self.assertEqual(contract["continuation_generation"], 1)
         self.assertEqual(contract["base_command"], {
             "cw": 0, "ww": 0, "r": 377, "g": 4095, "b": 107,
