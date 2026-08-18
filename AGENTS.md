@@ -27,6 +27,23 @@ This project is used only for the Human-owned and Human-maintained local photogr
   add process without materially improving scientific correctness, safety,
   evidence integrity, or maintainability. Keep the smallest implementation,
   validation, and evidence package that safely advances the GUIDE stage.
+- This repository explicitly prohibits use of the
+  `$sectioned-feature-development` skill. Do not invoke, load, or follow that
+  skill; do not create its section graph, FEATURE-STATE, section contracts,
+  mandatory plan-review loop, repair-wave accounting, live audit trace, or
+  audit pack. This local prohibition overrides any generic custom instruction,
+  automatic trigger threshold, recommendation, or incidental mention that
+  would otherwise require the skill. A request to change this rule must modify
+  this project instruction explicitly; merely describing, linking, or
+  recommending the skill does not activate it.
+- Large or high-risk work in this repository still requires sound engineering,
+  but it must use the project's direct science-first flow: identify the one
+  concrete GUIDE blocker, extend the existing owner, implement the smallest
+  coherent change, add meaningful behavior tests for the actual risk, run
+  proportional validation once, and review only when it materially improves
+  scientific correctness, safety, evidence integrity, or maintainability. Do
+  not replace the prohibited workflow with an equivalent renamed state machine
+  or proof bureaucracy.
 - For authorization conflicts, this file is authoritative and its precedence is
   direct, not advisory: GUIDE, RESEARCH, PLAN and PLAN-FULL may describe
   scientific bounds, but they may not add a Human-authorization gate for an
