@@ -1883,6 +1883,30 @@ class DirectR6Tests(unittest.TestCase):
         self.assertEqual(contract["maximum_model_rebases"], 1)
         self.assertEqual(contract["rebase_extra_probes"], 0)
 
+    def test_guide6_lc_b_continuation_is_centered_and_single_generation(self):
+        plan = thermal.build_direct_plan(
+            thermal.TD_C,
+            variant=(
+                thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT
+            ),
+        )
+        contract = plan["local_controllability_contract"]
+        self.assertEqual(plan["guide_experiment_id"], (
+            thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_EXPERIMENT_ID
+        ))
+        self.assertEqual(contract["continuation_generation"], 1)
+        self.assertEqual(contract["base_command"], {
+            "cw": 0, "ww": 0, "r": 377, "g": 4095, "b": 107,
+        })
+        self.assertEqual(contract["probes"], {
+            "cw": {"cw": 256, "ww": 0, "r": 377, "g": 4095, "b": 107},
+            "ww": {"cw": 0, "ww": 256, "r": 377, "g": 4095, "b": 107},
+            "r": {"cw": 0, "ww": 0, "r": 633, "g": 4095, "b": 107},
+            "b": {"cw": 0, "ww": 0, "r": 377, "g": 4095, "b": 363},
+        })
+        self.assertIn("lc_b_continuation", plan["inputs"])
+        self.assertEqual(plan["frozen_shutters"]["strip-h120-s100-fullscale"], "1/400")
+
     def _run_fake_guide6_protocol(
         self, residual_scale=1.0, *, irreducible=0.0, abort_role=None,
         cleanup_sink=None,
@@ -2015,17 +2039,11 @@ class DirectR6Tests(unittest.TestCase):
             self.assertEqual(len((root / "physical-returns.jsonl").read_text().splitlines()), 9)
             self.assertEqual(json.loads((root / "all-off-python.json").read_text())["status"], "pass")
             self.assertEqual(json.loads((root / "run.json").read_text())["cleanup"], "pass")
-            (root / "all-off-shell.json").write_text(json.dumps([{"ok": True}]))
-            (root / "all-off-shell.exit-status.txt").write_text("0\n")
-            (root / "wrapper-result.json").write_text(json.dumps({
-                "status": "complete", "child_exit_code": 0,
-                "shell_cleanup_exit_code": 0, "wrapper_exit_code": 0,
-                "signal": None,
-            }))
             feature_ids = tuple(json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"])
             report = analyze.analyze_thermal_run(root, feature_ids=feature_ids)
             self.assertEqual(report["guide6_branch"], "LC-D")
             self.assertFalse(report["terminal_multi_start_solver_unresolved"])
+            self.assertFalse((root / "wrapper-result.json").exists())
 
     def test_guide6_analyzer_frozen_lc_table_never_claims_gamut_or_terminal(self):
         import numpy as np
@@ -2095,6 +2113,15 @@ class DirectR6Tests(unittest.TestCase):
                     self.assertEqual(report["gamut_inference"], "prohibited")
                     self.assertFalse(report["terminal_multi_start_solver_unresolved"])
                     self.assertNotEqual(report["classification"], "multi_start_solver_unresolved")
+            continuation = analyze.analyze_guide6_local_controllability(
+                rows(candidate=[0.5, 0.0]), feature_ids=("f0", "f1"),
+                protocol_evidence={**evidence, "continuation_generation": 1},
+            )
+            self.assertEqual(continuation["guide6_branch"], "LC-B")
+            self.assertEqual(
+                continuation["next"],
+                "ADVISOR_GATE_REQUIRED_after_centered_continuation",
+            )
 
     def test_guide6_target_local_analyzer_uses_ray_bracket_and_local_contrast(self):
         feature_ids = tuple(json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"])

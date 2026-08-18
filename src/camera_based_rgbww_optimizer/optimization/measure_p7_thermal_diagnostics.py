@@ -609,6 +609,7 @@ def _run_guide6_local_controllability_protocol_core(
         raise RuntimeError("GUIDE6 adaptive protocol exceeded its frozen capture budget")
     return {
         "schema": "guide6_h120_s100_direct_local_controllability_evidence_v1",
+        "continuation_generation": int(contract.get("continuation_generation", 0)),
         "classification": classification,
         "lc_branch": lc_branch,
         "gamut_inference": "prohibited",
@@ -2951,7 +2952,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--source", choices=("ray", "strip"))
     parser.add_argument(
         "--variant",
-        choices=("core", "expansion", "history", thermal.TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT, thermal.GUIDE6_STRIP_EXPOSURE_QUALIFICATION_VARIANT),
+        choices=("core", "expansion", "history", thermal.TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT, thermal.GUIDE6_STRIP_EXPOSURE_QUALIFICATION_VARIANT),
         default="core",
     )
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
@@ -3029,9 +3030,7 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
         "td-c-fast-endpoint-holdout": (
             thermal.TD_C, None, thermal.TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT,
         ),
-        "guide6-h120-s100": (
-            thermal.TD_C, None, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT,
-        ),
+        "guide6-h120-s100": (thermal.TD_C, None, args.variant),
         "guide8-emission-exposure": (
             thermal.GUIDE8_RAY_EMISSION_EXPOSURE_EXPERIMENT_ID,
             "ray", thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT,
@@ -3048,6 +3047,11 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
     )
     if (args.experiment_id, args.source, args.variant) != expected_scope or args.phase != expected_phase:
         raise PermissionError(f"{direct_kind} arguments do not match its direct protocol scope")
+    if direct_kind == "guide6-h120-s100" and args.variant not in {
+        thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT,
+        thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT,
+    }:
+        raise PermissionError("GUIDE6 target-local direct path requires a frozen variant")
     if args.dry_run:
         if direct_kind == "ray-history-3x3":
             if args.session_index is not None:
@@ -3147,7 +3151,7 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
     if direct_kind == "guide6-h120-s100":
         plan = thermal.build_direct_plan(
             thermal.TD_C,
-            variant=thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT,
+            variant=args.variant,
         )
     if direct_kind == "guide8-emission-exposure":
         plan = thermal.build_direct_plan(

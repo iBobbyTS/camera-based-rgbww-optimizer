@@ -486,7 +486,9 @@ def analyze_thermal_run(
             if runtime_plan_path.is_file() and evidence_path.is_file():
                 validation_plan = _load_json(runtime_plan_path)
                 local_protocol_evidence = _load_json(evidence_path)
-        _validate_required_execution_artifacts(root)
+        _validate_required_execution_artifacts(
+            root, allow_python_direct=guide6_direct,
+        )
         _validate_reproducibility_checkpoint(root, plan, run)
         captures = _load_jsonl(root / "captures.jsonl")
         physical = _load_jsonl(root / "physical-returns.jsonl")
@@ -602,7 +604,9 @@ def analyze_thermal_run(
                 raise ValueError("GUIDE6 isolation ledger contains a failed gate")
         else:
             _validate_commands_and_gates(plan, root)
-        _validate_cleanup_and_wrapper(root)
+        _validate_cleanup_and_wrapper(
+            root, allow_python_direct=guide6_direct,
+        )
         formal_rows = []
         for row in formal:
             enriched = dict(row)
@@ -649,14 +653,20 @@ def _stable_spec(value: Mapping[str, Any]) -> dict[str, Any]:
     return stable
 
 
-def _validate_required_execution_artifacts(root: Path) -> None:
-    required = (
+def _validate_required_execution_artifacts(
+    root: Path, *, allow_python_direct: bool = False,
+) -> None:
+    required = [
         "captures.jsonl", "physical-returns.jsonl", "quality.json",
         "commands.jsonl", "commands-audit.json", "isolation-gates.jsonl",
-        "all-off-python.json", "all-off-shell.json",
-        "all-off-shell.exit-status.txt", "wrapper-result.json",
+        "all-off-python.json",
         "input-checkpoint.json",
-    )
+    ]
+    if not allow_python_direct:
+        required.extend((
+            "all-off-shell.json", "all-off-shell.exit-status.txt",
+            "wrapper-result.json",
+        ))
     if any(
         not (root / name).is_file() or (root / name).is_symlink()
         for name in required
@@ -977,7 +987,32 @@ def _validate_cleanup(root: Path) -> None:
 
 def _validate_cleanup_and_wrapper(
     root: Path, *, post_fix_revalidation: bool = False,
+    allow_python_direct: bool = False,
 ) -> None:
+    wrapper_paths = (
+        root / "all-off-shell.json",
+        root / "all-off-shell.exit-status.txt",
+        root / "wrapper-result.json",
+    )
+    if allow_python_direct and not any(path.exists() for path in wrapper_paths):
+        python_cleanup = _load_json(root / "all-off-python.json")
+        run = _load_json(root / "run.json")
+        steps = python_cleanup.get("steps")
+        if (
+            python_cleanup.get("status") != "pass"
+            or not isinstance(steps, list)
+            or not steps
+            or not all(
+                isinstance(step, Mapping) and step.get("ok") is True
+                for step in steps
+            )
+            or run.get("status") != "complete"
+            or run.get("cleanup") != "pass"
+        ):
+            raise ValueError("direct Python execution did not prove clean completion")
+        return
+    if allow_python_direct and not all(path.is_file() for path in wrapper_paths):
+        raise ValueError("direct execution contains a partial wrapper artifact set")
     _validate_cleanup(root)
     wrapper = _load_json(root / "wrapper-result.json")
     if post_fix_revalidation:
@@ -1955,6 +1990,9 @@ def analyze_guide6_local_controllability(
     else:
         branch = "LC-C"
         classification = "G_active_neighborhood_inadequate"
+    continuation_generation = int(
+        protocol_evidence.get("continuation_generation", 0)
+    )
     return {
         "status": "guide6_local_controllability_classified",
         "guide6_branch": branch,
@@ -1976,11 +2014,16 @@ def analyze_guide6_local_controllability(
         "terminal_multi_start_solver_unresolved": False,
         "next": {
             "LC-A": "continue_H120_S50_same_solver_contract",
-            "LC-B": "one_centered_new_root_continuation_permitted",
+            "LC-B": (
+                "ADVISOR_GATE_REQUIRED_after_centered_continuation"
+                if continuation_generation >= 1
+                else "one_centered_new_root_continuation_permitted"
+            ),
             "LC-C": "one_P2_seeded_active_set_screen_permitted",
             "LC-D": "S-MEASUREMENT",
             "LC-E": "one_new_root_reference_repeat_permitted",
         }[branch],
+        "continuation_generation": continuation_generation,
         "steady_claim": False,
         "locked_later_stages": [
             "13_node_grid", "B_prepost", "cross_experiment_absolute_synthesis",

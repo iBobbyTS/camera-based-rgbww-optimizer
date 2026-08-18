@@ -31,6 +31,15 @@ TD_C_FAST_ANCHOR_DIRECTION_B_EXPERIMENT_ID = "GUIDE5_TD_C_FAST_ANCHOR_DIRECTION_
 TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT = "fast-anchor-direction-b"
 GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_EXPERIMENT_ID = "GUIDE6-DIRECT-TARGET-LOCAL-H120-S100-V1"
 GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT = "guide6-direct-target-local-h120-s100"
+GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT = (
+    "guide6-direct-target-local-h120-s100-continuation"
+)
+GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_EXPERIMENT_ID = (
+    "GUIDE6-DIRECT-TARGET-LOCAL-H120-S100-CONTINUATION-V1"
+)
+GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_PATH = (
+    PROJECT_ROOT / "config/hsi/guide6-h120-s100-lc-b-continuation-v1.json"
+)
 GUIDE6_STRIP_EXPOSURE_QUALIFICATION_EXPERIMENT_ID = (
     "GUIDE6_S_MEASUREMENT_STRIP_EXPOSURE_QUALIFICATION_V1"
 )
@@ -924,6 +933,37 @@ def build_direct_plan(
         plan = _build_td_c_fast_anchor_direction_b_plan()
     elif experiment_id == TD_C and variant == GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT:
         plan = _build_guide6_direct_target_local_h120_s100_plan()
+    elif (
+        experiment_id == TD_C
+        and variant == GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT
+    ):
+        continuation = json.loads(
+            GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_PATH.read_text(
+                encoding="utf-8"
+            )
+        )
+        source_analysis = Path(continuation["source_analysis"]["path"])
+        if (
+            continuation.get("schema")
+            != "guide6_h120_s100_lc_b_continuation_v1"
+            or continuation.get("status") != "authorized_once"
+            or continuation.get("generation") != 1
+            or not source_analysis.is_file()
+            or hashlib.sha256(source_analysis.read_bytes()).hexdigest()
+            != continuation["source_analysis"]["sha256"]
+        ):
+            raise ValueError("GUIDE6 LC-B continuation input differs from accepted F1")
+        plan = _build_guide6_direct_target_local_h120_s100_plan(
+            base_command=continuation["center_command"],
+            variant=GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT,
+            guide_experiment_id=(
+                GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_EXPERIMENT_ID
+            ),
+            continuation_generation=1,
+            continuation_input=file_reference(
+                GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_PATH
+            ),
+        )
     else:
         if experiment_id == TD_C and variant != "core":
             raise ValueError("TD-C direct execution supports core or frozen GUIDE5 variants")
@@ -1252,7 +1292,14 @@ def _build_td_c_fast_anchor_direction_b_plan() -> dict[str, Any]:
     }
 
 
-def _build_guide6_direct_target_local_h120_s100_plan() -> dict[str, Any]:
+def _build_guide6_direct_target_local_h120_s100_plan(
+    *,
+    base_command: Mapping[str, Any] | None = None,
+    variant: str = GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT,
+    guide_experiment_id: str = GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_EXPERIMENT_ID,
+    continuation_generation: int = 0,
+    continuation_input: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
     """Build the frozen first GUIDE6 direct local-controllability block."""
     commands = load_r1_commands()
     strip_exposure_policy = json.loads(
@@ -1272,12 +1319,20 @@ def _build_guide6_direct_target_local_h120_s100_plan() -> dict[str, Any]:
         "ray": "1/5000",
         "strip": str(strip_exposure_policy["selected_nominal_shutter"]),
     }
-    base = {"cw": 518, "ww": 0, "r": 0, "g": 4095, "b": 0}
+    base = {
+        key: int(value) for key, value in (
+            base_command
+            if base_command is not None
+            else {"cw": 518, "ww": 0, "r": 0, "g": 4095, "b": 0}
+        ).items()
+    }
+    if set(base) != set(CHANNELS) or base["g"] != 4095 or any(
+        value < 0 or value > 4095 for value in base.values()
+    ):
+        raise ValueError("GUIDE6 target-local base command is outside its active face")
     probes = {
-        "cw": {**base, "cw": 774},
-        "ww": {**base, "ww": 256},
-        "r": {**base, "r": 256},
-        "b": {**base, "b": 256},
+        channel: {**base, channel: min(4095, base[channel] + 256)}
+        for channel in ("cw", "ww", "r", "b")
     }
 
 
@@ -1314,8 +1369,8 @@ def _build_guide6_direct_target_local_h120_s100_plan() -> dict[str, Any]:
         "schema": PLAN_SCHEMA_V2,
         "status": "execute_authorized",
         "experiment_id": TD_C,
-        "guide_experiment_id": GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_EXPERIMENT_ID,
-        "variant": GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT,
+        "guide_experiment_id": guide_experiment_id,
+        "variant": variant,
         "stage": "GUIDE6-HSI-INT100-S1", "phase": "formal", "source": "target_local_pair",
         "inputs": {
             "location": file_reference(LOCATION_PATH),
@@ -1324,6 +1379,10 @@ def _build_guide6_direct_target_local_h120_s100_plan() -> dict[str, Any]:
             "uncertainty": file_reference(UNCERTAINTY_PATH),
             "strip_exposure_policy": file_reference(
                 GUIDE6_STRIP_EXPOSURE_POLICY_PATH
+            ),
+            **(
+                {"lc_b_continuation": dict(continuation_input)}
+                if continuation_input is not None else {}
             ),
         },
         "target": {"hue": 120, "sat": 100, "intensity": 100, "label": "H120/S100"},
@@ -1349,7 +1408,7 @@ def _build_guide6_direct_target_local_h120_s100_plan() -> dict[str, Any]:
             "schema": "direct_guide6_target_local_h120_s100_v1",
             "human_authorization_required": False,
             "human_authorization_verified": True,
-            "human_authorization_experiment_id": GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_EXPERIMENT_ID,
+            "human_authorization_experiment_id": guide_experiment_id,
             "bounded_device_scope": True,
             "remote_v2_capability": True,
         },
@@ -1367,6 +1426,7 @@ def _build_guide6_direct_target_local_h120_s100_plan() -> dict[str, Any]:
         },
         "local_controllability_contract": {
             "schema": "guide6_h120_s100_direct_local_controllability_v1",
+            "continuation_generation": continuation_generation,
             "command_order": list(CHANNELS),
             "base_command": base,
             "active_channel": "g", "active_value": 4095,

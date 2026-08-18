@@ -1,0 +1,23 @@
+{
+  "schema": "guide6_h120_s100_lc_b_continuation_v1",
+  "status": "authorized_once",
+  "generation": 1,
+  "source_root": "/Volumes/4T/temp/rgbww-optimizer/guide6-direct-target-local-f1-20260818/20260818-005758-strip-1over400-fresh",
+  "source_analysis": {
+    "path": "/Volumes/4T/temp/rgbww-optimizer/guide6-direct-target-local-f1-20260818/20260818-005758-strip-1over400-fresh/analysis.json",
+    "sha256": "1dd0a994749a41f2b649e64af5c75c46959f1e828599955dc1fc6ae81948e7b5"
+  },
+  "source_local_controllability_sha256": "aed6fb72dd56756f0ffdad4d9f4c327915d5993a88f006bdab3ade231c355e40",
+  "source_classification": "H120_S100_local_controllable_but_not_yet_faithful",
+  "source_branch": "LC-B",
+  "center_command": {
+    "cw": 0,
+    "ww": 0,
+    "r": 377,
+    "g": 4095,
+    "b": 107
+  },
+  "source_best_direct_score": 1473.379698396879,
+  "scientific_contract": "same_GUIDE6_direct_target_local_one_new_root_continuation",
+  "second_continuation_allowed": false
+}
