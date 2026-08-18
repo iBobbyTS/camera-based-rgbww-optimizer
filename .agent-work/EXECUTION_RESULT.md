@@ -1,28 +1,26 @@
-# GUIDE6 fresh F1 — valid LC-B result
+# GUIDE6 generation-1 LC-B continuation — valid scientific result
 
 - Root:
-  `/Volumes/4T/temp/rgbww-optimizer/guide6-direct-target-local-f1-20260818/20260818-005758-strip-1over400-fresh`
-- Captures: 13/13 accepted; Ray 2, strip 11; solver candidates 4;
-  confirmations 0.
-- All Ray captures used `1/5000`; all strip captures used fixed `1/400`.
-- Guard `1/320` was not consumed.
-- Classification: `H120_S100_local_controllable_but_not_yet_faithful` (`LC-B`).
+  `/Volumes/4T/temp/rgbww-optimizer/guide6-direct-target-local-lcb-continuation-20260818/20260818-030922-centered-r377-b107-auth-fixed`
+- Captures: 13/13 accepted; Ray 2, strip 11; candidates 4; confirmations 0.
+- Continuation generation: 1; center `CW0/WW0/R377/G4095/B107`.
+- All Ray captures: `1/5000`; all strip captures: fixed `1/400`.
+- Guard `1/320` and contaminated historical roots were not consumed.
+- Classification: `H120_S100_local_controllable_but_not_yet_faithful`
+  (`LC-B`).
 - Measurement valid: true; faithful: false; gamut inference: prohibited.
-- Ray bracket score/guard: `7.578398793600923 / 9.54298912856529`, pass.
-- Strip anchor scores: `4.801721464065255`, `5.015452126809423`, pass.
-- Base score: `1471.8684202769587`; best candidate score:
-  `1468.2674910054316`.
-- Best command: `CW0 / WW0 / R377 / G4095 / B107`.
+- Ray bracket score/guard: `4.463160213152241 / 9.54312709398941`, pass.
+- Strip anchor scores: `4.362800071159782`, `5.408211736783729`, pass.
+- Base score/guard: `1459.4726873465686 / 9.507745630047346`.
+- Best analyzer candidate: candidate 4, score/guard
+  `1457.9065349594123 / 9.506925685282807`.
+- Acquisition-side best command: `CW0/WW93/R346/G4095/B101`.
 - Analysis SHA-256:
-  `1dd0a994749a41f2b649e64af5c75c46959f1e828599955dc1fc6ae81948e7b5`.
-- Cleanup and independent final Ray/strip zero: pass; Git clean.
-- `science_delta`: local controllability produced a small repeatable direction of
-  improvement, but no candidate met the frozen direct guard.
+  `1c4746976c6e60dd10d25d99c71a195e4165b0db1503ab03b5bdac9be5304bad`.
+- Cleanup, independent final zero and Git cleanliness: pass.
+- Next: `ADVISOR_GATE_REQUIRED_after_centered_continuation`.
 
-The first analyzer invocation exposed a Python-direct/wrapper-artifact mismatch.
-No analysis was written. The analyzer was corrected to accept an all-Python direct
-run only when `run.status=complete`, `run.cleanup=pass`, and every Python cleanup
-step is `ok=true`; partial wrapper artifacts still fail closed. The focused behavior
-test passed and the same root was analyzed once successfully without reacquisition.
-
-Next: one centered generation-1 continuation under the same scientific contract.
+`science_delta`: a second isolated block confirms a small local direction of
+improvement, but the frozen direct acceptance distance remains orders of
+magnitude above its guard. This is not proof of gamut or physical
+unreachability.

@@ -6,9 +6,9 @@
    strip `1/400`, with `1/320` retained as guard-only evidence.
 3. Completed: fresh F1 produced valid `LC-B`; measurement was controllable but
    not faithful after four bounded candidates.
-4. Execute the single permitted generation-1 continuation centered on
-   `CW0/WW0/R377/G4095/B107`. A repeated LC-B returns to Advisor; no generation 2.
-5. Continue through the existing GUIDE6 predeclared scientific branch. Return to
+4. Completed: the single generation-1 continuation again produced valid LC-B.
+   No generation 2 is permitted; route is at Advisor gate.
+5. After Advisor decision, continue only through its exact scientific branch.
    Advisor only when the GUIDE itself reaches a genuinely unresolved scientific
    decision.
 
