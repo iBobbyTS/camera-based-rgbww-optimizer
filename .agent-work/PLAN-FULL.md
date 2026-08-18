@@ -2,10 +2,10 @@
 
 1. Reject the two Ray-contaminated GUIDE6 strip candidates as historical-only
    evidence; never pool or import them into scientific analysis.
-2. Run `GUIDE6_S_MEASUREMENT_STRIP_EXPOSURE_QUALIFICATION_V1` with capture-level
-   Ray-zero evidence and the frozen observer/quality/shape contracts.
-3. On qualification pass, execute a completely fresh GUIDE6 direct target-local
-   F1 root using the selected strip shutter and guard evidence.
+2. Completed: `GUIDE6_S_MEASUREMENT_STRIP_EXPOSURE_QUALIFICATION_V1` qualified
+   strip `1/400`, with `1/320` retained as guard-only evidence.
+3. Execute a completely fresh GUIDE6 direct target-local F1 root using fixed
+   strip `1/400`; never use the guard as fallback or reacquire.
 4. Continue through the existing GUIDE6 predeclared scientific branch. Return to
    Advisor only when the GUIDE itself reaches a genuinely unresolved scientific
    decision.

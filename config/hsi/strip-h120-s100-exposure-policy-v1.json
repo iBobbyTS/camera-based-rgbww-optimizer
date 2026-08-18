@@ -1,0 +1,37 @@
+{
+  "schema": "strip_h120_s100_exposure_policy_v1",
+  "status": "qualified",
+  "state": "H120/S100/INT100",
+  "operating_envelope": "fast_op120_reset600_v1",
+  "exact_command": {
+    "cw": 518,
+    "ww": 0,
+    "r": 0,
+    "g": 4095,
+    "b": 0
+  },
+  "exact_command_hash": "f70a07889065ad105bf25a9fda103ec2a708ef056f4ae17b0279ef3886b5cfde",
+  "selected_nominal_shutter": "1/400",
+  "guard_nominal_shutter": "1/320",
+  "selected_recorded_exposure_seconds": 0.00246078330057593,
+  "guard_recorded_exposure_seconds": 0.00310039267962539,
+  "selection_rule": "first_adjacent_58_of_58_valid_shape_compatible_pair_select_faster",
+  "guard_reacquire_allowed": false,
+  "ambient_subtraction": false,
+  "observer_features_threshold_covariance_coverage": "unchanged",
+  "source_isolation": "capture_level_ray_zero_required",
+  "derived_from_root": "/Volumes/4T/temp/rgbww-optimizer/guide6-strip-exposure-qualification-20260818/20260818-003422-s-measurement",
+  "evidence": {
+    "qualification_sha256": "13a289ad62e3b991166500ac354576efb8919866c64f97f5cb9199840e7abcce",
+    "quality_sha256": "05667759af50005ecc43ea4f91fde9acd4ea7a435ac897c600bf309a87b882f2",
+    "run_sha256": "790c05ab61abf63095405fa0338c9fff6557b3006ef1c87f776cea3fcd699220",
+    "captures_sha256": "4fd87f146a371445aed9badb2c5c18f07f688d29aa90c94defebbf885af1c8eb",
+    "selected_patch_statistics_sha256": "fb30d5ff2afa8cb5bc5cdcfa0e44cb2ebcd0bd6fb664de34eff2c86ab1655581",
+    "guard_patch_statistics_sha256": "9c843c8f17fbc191966d893092f450f6d842c5889681f72edfdb77a798441506"
+  },
+  "scientific_semantics": {
+    "same_source_device_health": "normal",
+    "cross_source_color_shape": "not_decided_by_exposure_qualification",
+    "absolute_brightness": "not_compared"
+  }
+}

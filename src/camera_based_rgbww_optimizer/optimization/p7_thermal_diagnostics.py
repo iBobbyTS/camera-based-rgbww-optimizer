@@ -39,6 +39,9 @@ GUIDE6_STRIP_EXPOSURE_QUALIFICATION_LADDER = (
     "1/1600", "1/1250", "1/1000", "1/800", "1/640",
     "1/500", "1/400", "1/320", "1/250",
 )
+GUIDE6_STRIP_EXPOSURE_POLICY_PATH = (
+    PROJECT_ROOT / "config/hsi/strip-h120-s100-exposure-policy-v1.json"
+)
 GUIDE8_RAY_EMISSION_EXPOSURE_EXPERIMENT_ID = (
     "GUIDE8_RAY_H120_S100_EMISSION_EXPOSURE_DIAG_V1"
 )
@@ -1252,7 +1255,23 @@ def _build_td_c_fast_anchor_direction_b_plan() -> dict[str, Any]:
 def _build_guide6_direct_target_local_h120_s100_plan() -> dict[str, Any]:
     """Build the frozen first GUIDE6 direct local-controllability block."""
     commands = load_r1_commands()
-    shutters = {"ray": "1/5000", "strip": "1/1600"}
+    strip_exposure_policy = json.loads(
+        GUIDE6_STRIP_EXPOSURE_POLICY_PATH.read_text(encoding="utf-8")
+    )
+    if (
+        strip_exposure_policy.get("schema")
+        != "strip_h120_s100_exposure_policy_v1"
+        or strip_exposure_policy.get("status") != "qualified"
+        or strip_exposure_policy.get("exact_command_hash")
+        != "f70a07889065ad105bf25a9fda103ec2a708ef056f4ae17b0279ef3886b5cfde"
+        or strip_exposure_policy.get("selected_nominal_shutter") != "1/400"
+        or strip_exposure_policy.get("guard_nominal_shutter") != "1/320"
+    ):
+        raise ValueError("GUIDE6 strip exposure policy differs from accepted qualification")
+    shutters = {
+        "ray": "1/5000",
+        "strip": str(strip_exposure_policy["selected_nominal_shutter"]),
+    }
     base = {"cw": 518, "ww": 0, "r": 0, "g": 4095, "b": 0}
     probes = {
         "cw": {**base, "cw": 774},
@@ -1303,6 +1322,9 @@ def _build_guide6_direct_target_local_h120_s100_plan() -> dict[str, Any]:
             "code_duty_curve": file_reference(CURVE_PATH),
             "policy": file_reference(POLICY_PATH),
             "uncertainty": file_reference(UNCERTAINTY_PATH),
+            "strip_exposure_policy": file_reference(
+                GUIDE6_STRIP_EXPOSURE_POLICY_PATH
+            ),
         },
         "target": {"hue": 120, "sat": 100, "intensity": 100, "label": "H120/S100"},
         "captures": captures,
@@ -1336,6 +1358,11 @@ def _build_guide6_direct_target_local_h120_s100_plan() -> dict[str, Any]:
             "cross_experiment_absolute_synthesis": False,
             "ray_before_after_bracket": True,
             "strip_base_drift_control": True,
+            "strip_selected_nominal_shutter": shutters["strip"],
+            "strip_guard_nominal_shutter": str(
+                strip_exposure_policy["guard_nominal_shutter"]
+            ),
+            "strip_guard_reacquire_allowed": False,
             "steady_claim": False,
         },
         "local_controllability_contract": {

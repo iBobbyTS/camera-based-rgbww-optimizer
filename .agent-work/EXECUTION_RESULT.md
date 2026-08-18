@@ -1,24 +1,19 @@
-# GUIDE6 evidence correction — no device execution
+# GUIDE6 strip exposure qualification — accepted
 
-## Disposition
+- Root:
+  `/Volumes/4T/temp/rgbww-optimizer/guide6-strip-exposure-qualification-20260818/20260818-003422-s-measurement`
+- Classification: `strip_exposure_window_qualified`.
+- Selected/guard: `1/400` / `1/320`.
+- Recorded exposures: `0.00246078330057593 s` / `0.00310039267962539 s`.
+- Captures: `8/8` physical diagnostic; formal `0`; solver/probe `0`.
+- Both selected frames: 58/58 valid, unclipped and exposure-normalized shape
+  compatible under the frozen evaluator.
+- Qualification evidence SHA-256:
+  `13a289ad62e3b991166500ac354576efb8919866c64f97f5cb9199840e7abcce`.
+- Cleanup and final Ray/strip zero: pass.
+- Git at acquisition: `fc9913ac4747ab16f6f8eec68b999dae3c08cfa0`, dirty=false.
+- `science_delta`: a legal strip H120/S100 exposure window is established.
+- Next branch: fresh `GUIDE6-DIRECT-TARGET-LOCAL-H120-S100-V1` F1.
 
-- `device_health = normal`
-- `historical_183_8_strip_baseline = invalid_cross_source_contamination`
-- `old_two_guide6_roots = historical_only_not_scientific_input`
-- `current_F1 = strip_reference_unobservable_under_unqualified_historical_shutter`
-- `human_physical_gate = resolved`
-- `science_delta = none`
-- `next_branch = GUIDE6_S_MEASUREMENT_strip_exposure_qualification`
-
-The two retained roots and their original analysis artifacts were not modified or
-deleted. Their strip candidate capture lacks capture-level Ray-zero evidence and
-matches isolated Ray H120/S100, so the legacy
-`repeatable_target_local_seed_mismatch` conclusion is disabled.
-
-The current device-health evidence remains the isolated five-channel/Ray baseline
-documented at commit `99730c4`. It establishes same-source device health and
-cross-source color-shape context only; it does not assert absolute-brightness
-matching between Ray and strip.
-
-The next direct spec is prepared but no light, camera, solver, probe or device
-operation was started in this correction batch.
+The two historical Ray-contaminated GUIDE6 roots remain historical-only and are
+not inputs to this result or the next F1.
