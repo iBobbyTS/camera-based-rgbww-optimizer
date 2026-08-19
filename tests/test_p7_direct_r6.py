@@ -1916,6 +1916,46 @@ class DirectR6Tests(unittest.TestCase):
         self.assertIn("lc_b_continuation", plan["inputs"])
         self.assertEqual(plan["frozen_shutters"]["strip-h120-s100-fullscale"], "1/400")
 
+    def test_guide7_f2_plan_and_nonfaithful_repeats_use_selected_cw_face(self):
+        import numpy as np
+        plan = thermal.build_direct_plan(thermal.TD_C, variant=thermal.GUIDE7_F2_VARIANT)
+        contract = plan["local_controllability_contract"]
+        self.assertEqual(plan["guide_experiment_id"], thermal.GUIDE7_F2_EXPERIMENT_ID)
+        self.assertEqual(contract["active_channel"], "cw")
+        self.assertEqual(contract["free_channels"], ["ww", "r", "g", "b"])
+        self.assertEqual(contract["base_command"], {
+            "cw": 4095, "ww": 0, "r": 0, "g": 3839, "b": 0,
+        })
+        self.assertEqual(contract["repeat_best_nonfaithful_count"], 3)
+        feature_ids = tuple(f"f{index}" for index in range(58))
+        base = contract["base_command"]
+        free = contract["free_channels"]
+        roles = []
+        def fake_measure(step):
+            roles.append(step["role"])
+            vector = np.zeros(58)
+            if step["source_id"] == "strip":
+                vector[0] = 100.0
+                for index, channel in enumerate(free, start=1):
+                    vector[index] = 1.0 - (int(step["command"][channel]) - base[channel]) / 256.0
+                self.assertEqual(step["command"]["cw"], 4095)
+            return {"_vector": vector, "direct_quality": {"status": "pass", "feature_count": 58}, "feature_values": {name: 1.0 for name in feature_ids}}
+        with (
+            patch.object(measure, "_guide6_feature_vector", side_effect=lambda c, _: np.asarray(c["_vector"])),
+            patch.object(measure, "_guide6_variances", return_value=(np.ones(58), np.ones(58))),
+            patch.object(measure, "calibrate_direct_limits", return_value={"guarded_limit": 0.05, "statistic": "synthetic"}),
+        ):
+            result = measure.run_guide6_local_controllability_protocol(
+                plan, measure_fn=fake_measure, feature_ids=feature_ids,
+                source_isolation_fn=lambda _source: {"status": "pass", "source_verified_zero": True},
+                cleanup_fn=lambda: {"status": "pass"},
+            )
+        self.assertEqual(result["lc_branch"], "LC-B")
+        self.assertEqual(roles[-4:], ["strip_repeat_1", "strip_repeat_2", "strip_repeat_3", "ray_q_after"])
+        self.assertLessEqual(result["counts"]["total"], 16)
+        self.assertTrue(result["guide7_f2"])
+        self.assertEqual(result["active_face"], "cw")
+
     def _run_fake_guide6_protocol(
         self, residual_scale=1.0, *, irreducible=0.0, abort_role=None,
         cleanup_sink=None,
@@ -2063,7 +2103,7 @@ class DirectR6Tests(unittest.TestCase):
             "strip_base_anchor_after_probe_4", "ray_q_after",
         ]
 
-        def rows(*, candidate=None, confirmations=False):
+        def rows(*, candidate=None, confirmations=False, repeats=False):
             values = {role: [0.0, 0.0] for role in fixed}
             values["strip_base"] = [1.0, 0.0]
             output = [
@@ -2081,6 +2121,11 @@ class DirectR6Tests(unittest.TestCase):
                 output.extend({
                     "plan_step": {"role": f"strip_confirmation_{index}"},
                     "feature_values": {"f0": 0.0, "f1": 0.0},
+                } for index in range(1, 4))
+            if repeats:
+                output.extend({
+                    "plan_step": {"role": f"strip_repeat_{index}"},
+                    "feature_values": {"f0": 0.5, "f1": 0.0},
                 } for index in range(1, 4))
             return output
 
@@ -2131,6 +2176,13 @@ class DirectR6Tests(unittest.TestCase):
                 continuation["next"],
                 "ADVISOR_GATE_REQUIRED_after_centered_continuation",
             )
+            f2 = analyze.analyze_guide6_local_controllability(
+                rows(candidate=[0.5, 0.0], repeats=True), feature_ids=("f0", "f1"),
+                protocol_evidence={**evidence, "guide7_f2": True, "active_face": "cw"},
+            )
+            self.assertEqual(f2["classification"], "H120_S100_stable_nonfaithful_after_two_fullscale_faces")
+            self.assertTrue(f2["best_nonfaithful_repeat_stable"])
+            self.assertEqual(f2["next"], "GUIDE7_H120_S100_MAX_CODE_3072_DIAGNOSTIC")
 
     def test_guide6_target_local_analyzer_uses_ray_bracket_and_local_contrast(self):
         feature_ids = tuple(json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"])

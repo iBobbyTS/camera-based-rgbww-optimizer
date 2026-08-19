@@ -1,0 +1,32 @@
+{
+  "schema": "guide7_h120_s100_f2_face_selection_v1",
+  "status": "offline_seed_only",
+  "p2_seed_only": true,
+  "scientific_acceptance_from_prediction": false,
+  "target": "H120/S100/INT100",
+  "source_analysis": {
+    "path": "/Volumes/4T/temp/rgbww-optimizer/guide6-direct-target-local-f1-20260818/20260818-005758-strip-1over400-fresh/analysis.json",
+    "sha256": "1dd0a994749a41f2b649e64af5c75c46959f1e828599955dc1fc6ae81948e7b5"
+  },
+  "p2_basis": {
+    "path": "/Volumes/4T/temp/rgbww-optimizer/chart-response-basis/p2-five-channel-basis-20260716-005935/basis-analysis.json",
+    "sha256": "5024dcf3c14146b5750db6de21040c7745c62b955a63f97c4b86128b83a1b6c1",
+    "feature_count_used": 58
+  },
+  "constraint": {
+    "active_faces": ["cw", "ww", "r", "b"],
+    "active_value": 4095,
+    "g_max": 3839,
+    "channel_bounds": [0, 4095]
+  },
+  "faces": {
+    "cw": {"active_channel": "cw", "command": {"cw": 4095, "ww": 0, "r": 0, "g": 3839, "b": 0}, "predicted_relative_rmse": 0.38926232068367184, "predicted_brightness_scale": 11.073879025242686},
+    "ww": {"active_channel": "ww", "command": {"cw": 0, "ww": 4095, "r": 0, "g": 3839, "b": 1664}, "predicted_relative_rmse": 0.700999613165193, "predicted_brightness_scale": 10.325052472645238},
+    "r": {"active_channel": "r", "command": {"cw": 0, "ww": 0, "r": 4095, "g": 3839, "b": 2944}, "predicted_relative_rmse": 0.9464259115162533, "predicted_brightness_scale": 12.872684192894695},
+    "b": {"active_channel": "b", "command": {"cw": 4095, "ww": 384, "r": 0, "g": 3839, "b": 4095}, "predicted_relative_rmse": 0.6820106212570433, "predicted_brightness_scale": 8.182064703334}
+  },
+  "selected_face": "cw",
+  "selected_seed": {"cw": 4095, "ww": 0, "r": 0, "g": 3839, "b": 0},
+  "selection_rule": "lowest_p2_predicted_relative_rmse_legal_non_g_face",
+  "scientific_note": "Prediction selects the seed only; real F2 capture and frozen direct analyzer determine acceptance."
+}

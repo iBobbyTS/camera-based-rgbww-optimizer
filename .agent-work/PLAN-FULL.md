@@ -7,8 +7,9 @@
 3. Completed: fresh F1 produced valid `LC-B`; measurement was controllable but
    not faithful after four bounded candidates.
 4. Completed: the single generation-1 continuation again produced valid LC-B.
-   No generation 2 is permitted; route is at Advisor gate.
-5. After Advisor decision, continue only through its exact scientific branch.
+   Advisor accepted both roots and closed the G-active full-scale face.
+5. Execute GUIDE7 F2 on the selected CW-active face. Stable nonfaithful proceeds
+   to the predefined 3072 diagnostic, then H120/S50 and optional H120/S25.
    Advisor only when the GUIDE itself reaches a genuinely unresolved scientific
    decision.
 

@@ -51,6 +51,11 @@ GUIDE6_STRIP_EXPOSURE_QUALIFICATION_LADDER = (
 GUIDE6_STRIP_EXPOSURE_POLICY_PATH = (
     PROJECT_ROOT / "config/hsi/strip-h120-s100-exposure-policy-v1.json"
 )
+GUIDE7_F2_FACE_SELECTION_PATH = (
+    PROJECT_ROOT / "config/hsi/guide7-h120-s100-f2-face-selection-v1.json"
+)
+GUIDE7_F2_EXPERIMENT_ID = "GUIDE7_H120_S100_F2_ALTERNATE_FACE_CONTROLLABILITY_V1"
+GUIDE7_F2_VARIANT = "guide7-h120-s100-f2-alternate-face"
 GUIDE8_RAY_EMISSION_EXPOSURE_EXPERIMENT_ID = (
     "GUIDE8_RAY_H120_S100_EMISSION_EXPOSURE_DIAG_V1"
 )
@@ -964,6 +969,8 @@ def build_direct_plan(
                 GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_PATH
             ),
         )
+    elif experiment_id == TD_C and variant == GUIDE7_F2_VARIANT:
+        plan = _build_guide7_f2_alternate_face_plan()
     else:
         if experiment_id == TD_C and variant != "core":
             raise ValueError("TD-C direct execution supports core or frozen GUIDE5 variants")
@@ -1001,15 +1008,17 @@ def build_direct_plan(
                     GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT,
                     GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT,
                 }
+                else "direct_guide7_f2_alternate_face_v1"
+                if variant == GUIDE7_F2_VARIANT
                 else "direct_td_c_fast_anchor_direction_b_v1"
                 if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT
                 else f"direct_{'strip_td_b' if experiment_id == TD_B else 'td_c_core'}_authority_v1"
             ),
-            "human_authorization_verified": variant not in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT},
+            "human_authorization_verified": variant not in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT},
             "human_authorization_experiment_id": (
-                None if variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT} else experiment_id
+                None if variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT} else experiment_id
             ),
-            "bounded_device_scope": variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT},
+            "bounded_device_scope": variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT},
             "human_authorization_required": False,
             "experiment_id": (
                 TD_C_FAST_ENDPOINT_HOLDOUT_EXPERIMENT_ID
@@ -1018,6 +1027,8 @@ def build_direct_plan(
                 if variant == GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT else
                 GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_EXPERIMENT_ID
                 if variant == GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT else
+                GUIDE7_F2_EXPERIMENT_ID
+                if variant == GUIDE7_F2_VARIANT else
                 TD_C_FAST_ANCHOR_DIRECTION_B_EXPERIMENT_ID
                 if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT else experiment_id
             ),
@@ -1459,6 +1470,81 @@ def _build_guide6_direct_target_local_h120_s100_plan(
             "gamut_inference": "prohibited",
         },
         "hard_locks": {"legacy_absolute_synthesis": True, "B_prepost": "deferred_diagnostic_only", "solver_sentinel": True, "P8": True},
+    }
+
+
+def _build_guide7_f2_alternate_face_plan() -> dict[str, Any]:
+    selection = json.loads(GUIDE7_F2_FACE_SELECTION_PATH.read_text(encoding="utf-8"))
+    source_analysis = Path(selection.get("source_analysis", {}).get("path", ""))
+    p2_basis = Path(selection.get("p2_basis", {}).get("path", ""))
+    faces = selection.get("faces")
+    if (
+        selection.get("schema") != "guide7_h120_s100_f2_face_selection_v1"
+        or selection.get("status") != "offline_seed_only"
+        or selection.get("selected_face") not in {"cw", "ww", "r", "b"}
+        or not selection.get("p2_seed_only")
+        or selection.get("scientific_acceptance_from_prediction")
+        or set(faces or {}) != {"cw", "ww", "r", "b"}
+        or not source_analysis.is_file()
+        or hashlib.sha256(source_analysis.read_bytes()).hexdigest()
+        != selection["source_analysis"]["sha256"]
+        or not p2_basis.is_file()
+        or hashlib.sha256(p2_basis.read_bytes()).hexdigest()
+        != selection["p2_basis"]["sha256"]
+    ):
+        raise ValueError("GUIDE7 F2 face selection is not an offline seed artifact")
+    selected = selection["faces"][selection["selected_face"]]
+    base = {str(k): int(v) for k, v in selected["command"].items()}
+    if (
+        base != selection.get("selected_seed")
+        or base[selection["selected_face"]] != 4095
+        or base["g"] > 3839
+        or selection["selected_face"] != min(
+            faces, key=lambda face: float(faces[face]["predicted_relative_rmse"])
+        )
+    ):
+        raise ValueError("GUIDE7 F2 selected seed violates its non-G ranking contract")
+    free = [channel for channel in CHANNELS if channel != selection["selected_face"]]
+    captures = []
+    def add(source: str, role: str, index: int, command: Mapping[str, Any], state: str = "A"):
+        captures.append({
+            "capture_id": f"{index:03d}-{source}-h120-s100-{role}",
+            "source_id": source, "state_id": state, "target": "H120/S100/INT100",
+            "role": role, "session_index": 1, "formal_measurement": True,
+            "capture_role": "formal", "command": dict(command),
+            "exact_command_hash": canonical_sha256(command), "requested_elapsed_s": 120,
+            "nominal_shutter": "1/5000" if source == "ray" else "1/400",
+            "timing_acceptance": "observed_elapsed_record_only",
+            "strip_zero_required": source == "ray", "ray_zero_required": source == "strip",
+            "steady_claim": False,
+        })
+    ray = _command("ray", "A", load_r1_commands())
+    add("ray", "ray_q_before", 0, ray)
+    add("strip", "strip_base", 1, base)
+    for i, channel in enumerate(free, 1):
+        probe = dict(base)
+        delta = 256 if base[channel] <= 3839 else -256
+        probe[channel] = max(0, min(4095, probe[channel] + delta))
+        add("strip", f"strip_probe_{channel}", len(captures), probe)
+        if i in (2, 4):
+            add("strip", f"strip_base_anchor_after_probe_{i}", len(captures), base)
+    add("ray", "ray_q_after", len(captures), ray)
+    return {
+        "schema": PLAN_SCHEMA_V2, "status": "execute_authorized", "experiment_id": TD_C,
+        "guide_experiment_id": GUIDE7_F2_EXPERIMENT_ID, "variant": GUIDE7_F2_VARIANT,
+        "stage": "GUIDE7-F2-ALTERNATE-FACE", "phase": "formal", "source": "target_local_pair",
+        "inputs": {"location": file_reference(LOCATION_PATH), "code_duty_curve": file_reference(CURVE_PATH), "policy": file_reference(POLICY_PATH), "uncertainty": file_reference(UNCERTAINTY_PATH), "face_selection": file_reference(GUIDE7_F2_FACE_SELECTION_PATH)},
+        "target": {"hue": 120, "sat": 100, "intensity": 100, "label": "H120/S100"},
+        "captures": captures, "capture_ids": [row["capture_id"] for row in captures],
+        "session_orders": [["ray", "strip", "ray"]], "timing_contract": timing_contract(2),
+        "cold_proxy": 600, "cold_proxy_wait_s": 600,
+        "native_raw_ambient_policy": AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+        "budgets": {"ray_cap": 2, "strip_cap": 14, "formal_cap": 16, "physical_cr3_cap": 16, "ambient_cap": 0, "retry": 0, "confirmation_reserved": 3},
+        "frozen_shutters": {"ray-h120-s100": "1/5000", "strip-h120-s100-fullscale": "1/400"},
+        "execution_authorization": {"schema": "direct_guide7_f2_alternate_face_v1", "human_authorization_required": False, "human_authorization_verified": True, "human_authorization_experiment_id": GUIDE7_F2_EXPERIMENT_ID, "bounded_device_scope": True, "experiment_id": GUIDE7_F2_EXPERIMENT_ID, "remote_v2_capability": True},
+        "analysis_contract": {"method": "direct_target_local_ray_vs_strip_same_block", "cross_experiment_absolute_synthesis": False, "active_face": selection["selected_face"], "active_channel": selection["selected_face"], "repeat_best_nonfaithful": 3, "continuation_generation": 0, "steady_claim": False},
+        "local_controllability_contract": {"schema": "guide6_h120_s100_direct_local_controllability_v1", "command_order": list(CHANNELS), "base_command": base, "active_channel": selection["selected_face"], "active_value": 4095, "free_channels": free, "probe_step_linearized_code": 256, "probes": {role: row["command"] for role, row in ((item["role"], item) for item in captures) if role.startswith("strip_probe_")}, "base_anchor_after_probe_numbers": [2, 4], "navigation_coordinate": "direct_whitened_58_feature_residual", "maximum_feedback_candidates": 4, "maximum_absolute_step": 768, "backtrack_factors": [1.0, 0.5, 0.25], "maximum_model_rebases": 1, "rebase_extra_probes": 0, "confirmation_count": 3, "repeat_best_nonfaithful_count": 3, "strip_reset_s": 600, "per_measurement_precondition": [{"state_id": "D", "dwell_s": 120}, {"state_id": "A", "dwell_s": 120}], "tested_command_dwell_s": 120, "first_block_terminal_multi_start_unresolved_allowed": False, "gamut_inference": "prohibited", "continuation_generation": 0},
+        "hard_locks": {"legacy_absolute_synthesis": True, "G_active_fullscale_face": True, "solver_sentinel": True, "P8": True},
     }
 
 

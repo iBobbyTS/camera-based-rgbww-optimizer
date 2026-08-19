@@ -445,7 +445,10 @@ def analyze_thermal_run(
         raise ValueError("post-fix revalidation only supports direct Ray R6")
     if str(plan.get("execution_authorization", {}).get("schema", "")).startswith("direct_"):
         direct_schema = str(plan.get("execution_authorization", {}).get("schema", ""))
-        guide6_direct = direct_schema == "direct_guide6_target_local_h120_s100_v1"
+        guide6_direct = direct_schema in {
+            "direct_guide6_target_local_h120_s100_v1",
+            "direct_guide7_f2_alternate_face_v1",
+        }
         prerequisite = plan.get("scientific_prerequisite")
         if (
             not guide6_direct
@@ -566,6 +569,7 @@ def analyze_thermal_run(
                 in {
                     "direct_td_c_fast_endpoint_holdout_v1",
                     "direct_guide6_target_local_h120_s100_v1",
+                    "direct_guide7_f2_alternate_face_v1",
                 }
             ):
                 ray_zero = capture.get("ray_zero_before_capture")
@@ -1948,7 +1952,8 @@ def analyze_guide6_local_controllability(
         role for role in by_role if role.startswith("strip_solver_candidate_")
     )
     confirmation_roles = sorted(
-        role for role in by_role if role.startswith("strip_confirmation_")
+        role for role in by_role
+        if role.startswith("strip_confirmation_") or role.startswith("strip_repeat_")
     )
     if len(candidate_roles) > 4 or len(confirmation_roles) not in {0, 3}:
         raise ValueError("GUIDE6 candidate/confirmation count exceeds the frozen contract")
@@ -1990,6 +1995,21 @@ def analyze_guide6_local_controllability(
     else:
         branch = "LC-C"
         classification = "G_active_neighborhood_inadequate"
+    guide7_f2 = protocol_evidence.get("guide7_f2") is True
+    repeat_roles = [role for role in confirmation_roles if role.startswith("strip_repeat_")]
+    repeat_stable = (
+        len(repeat_roles) == 3
+        and len(confirmation_compatibility) == 2
+        and all(item["decision"] == "pass" for item in confirmation_compatibility)
+    )
+    if guide7_f2 and branch in {"LC-B", "LC-C"}:
+        if not repeat_stable:
+            branch = "LC-E"
+            classification = "H120_S100_F2_best_command_not_repeatable"
+        elif branch == "LC-B":
+            classification = "H120_S100_stable_nonfaithful_after_two_fullscale_faces"
+        else:
+            classification = "H120_S100_two_fullscale_faces_locally_inadequate"
     continuation_generation = int(
         protocol_evidence.get("continuation_generation", 0)
     )
@@ -2012,7 +2032,10 @@ def analyze_guide6_local_controllability(
         "confirmation_same_state_compatibility": confirmation_compatibility,
         "gamut_inference": "prohibited",
         "terminal_multi_start_solver_unresolved": False,
-        "next": {
+        "next": (
+            "GUIDE7_H120_S100_MAX_CODE_3072_DIAGNOSTIC"
+            if guide7_f2 and branch in {"LC-B", "LC-C"}
+            else {
             "LC-A": "continue_H120_S50_same_solver_contract",
             "LC-B": (
                 "ADVISOR_GATE_REQUIRED_after_centered_continuation"
@@ -2022,7 +2045,11 @@ def analyze_guide6_local_controllability(
             "LC-C": "one_P2_seeded_active_set_screen_permitted",
             "LC-D": "S-MEASUREMENT",
             "LC-E": "one_new_root_reference_repeat_permitted",
-        }[branch],
+            }[branch]
+        ),
+        "guide7_f2": guide7_f2,
+        "active_face": protocol_evidence.get("active_face"),
+        "best_nonfaithful_repeat_stable": repeat_stable if guide7_f2 else None,
         "continuation_generation": continuation_generation,
         "steady_claim": False,
         "locked_later_stages": [

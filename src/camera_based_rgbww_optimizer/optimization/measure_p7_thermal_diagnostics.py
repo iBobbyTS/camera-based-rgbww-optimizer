@@ -235,6 +235,10 @@ def validate_authorized_execution_plan(
         isinstance(authorization, Mapping)
         and authorization.get("schema") == "direct_guide6_target_local_h120_s100_v1"
     )
+    direct_guide7_f2 = (
+        isinstance(authorization, Mapping)
+        and authorization.get("schema") == "direct_guide7_f2_alternate_face_v1"
+    )
     direct_guide8_emission_exposure = (
         isinstance(authorization, Mapping)
         and authorization.get("schema") == "direct_guide8_ray_emission_exposure_v1"
@@ -246,7 +250,7 @@ def validate_authorized_execution_plan(
     if (
         direct_ray_history or direct_strip_history
         or direct_ray_fast_long_bridge or direct_td_c_fast_endpoint
-        or direct_guide6_target_local or direct_guide8_emission_exposure
+        or direct_guide6_target_local or direct_guide7_f2 or direct_guide8_emission_exposure
         or direct_guide6_strip_exposure
     ):
         valid_execution_scope = (
@@ -400,8 +404,9 @@ def _run_guide6_local_controllability_protocol_core(
     ):
         raise ValueError("GUIDE6 local-controllability contract is missing")
     free = tuple(str(value) for value in contract["free_channels"])
-    if free != ("cw", "ww", "r", "b"):
-        raise ValueError("GUIDE6 free-channel order differs from the frozen contract")
+    active_channel = str(contract["active_channel"])
+    if active_channel not in thermal.CHANNELS or active_channel in free or len(free) != 4:
+        raise ValueError("direct local-controllability active/free channel contract is invalid")
     base_command = {key: int(value) for key, value in contract["base_command"].items()}
     fixed_steps = {str(step["role"]): step for step in plan["captures"]}
     measured: list[dict[str, Any]] = []
@@ -504,7 +509,7 @@ def _run_guide6_local_controllability_protocol_core(
             command = dict(base_command)
             for index, channel in enumerate(free):
                 command[channel] = int(candidate_values[index])
-            command["g"] = 4095
+            command[active_channel] = int(contract["active_value"])
             command_hash = thermal.canonical_sha256(command)
             if command_hash in used_hashes:
                 continue
@@ -542,7 +547,7 @@ def _run_guide6_local_controllability_protocol_core(
                 "active_bounds": [
                     channel for index, channel in enumerate(free)
                     if candidate_values[index] in (0, 4095)
-                ] + ["g"],
+                ] + [active_channel],
                 "backtrack_factor": factor,
                 "jacobian_version": jacobian_version,
             })
@@ -584,6 +589,24 @@ def _run_guide6_local_controllability_protocol_core(
                 "measured_residual_vector": residual.tolist(),
                 "measured_direct_score": float(np.linalg.norm(residual)),
             })
+    elif int(contract.get("repeat_best_nonfaithful_count", 0)):
+        if not candidates:
+            raise RuntimeError("F2 nonfaithful repeat requires a measured candidate")
+        for index in range(1, int(contract["repeat_best_nonfaithful_count"]) + 1):
+            step = _guide6_protocol_step(
+                plan,
+                capture_id=f"{300 + index:03d}-strip-h120-s100-best-repeat",
+                source="strip", role=f"strip_repeat_{index}", command=best_command,
+            )
+            _, vector = measure(step)
+            residual = (vector - ray_before) / whitening
+            confirmations.append({
+                "confirmation_number": index,
+                "role": f"strip_repeat_{index}",
+                "exact_command_hash": thermal.canonical_sha256(best_command),
+                "measured_residual_vector": residual.tolist(),
+                "measured_direct_score": float(np.linalg.norm(residual)),
+            })
 
     _, ray_after = measure(fixed_steps["ray_q_after"])
     ray_bracket_score = float(np.linalg.norm((ray_after - ray_before) / np.sqrt(2.0 * ray_variance)))
@@ -610,6 +633,8 @@ def _run_guide6_local_controllability_protocol_core(
     return {
         "schema": "guide6_h120_s100_direct_local_controllability_evidence_v1",
         "continuation_generation": int(contract.get("continuation_generation", 0)),
+        "guide7_f2": plan.get("variant") == thermal.GUIDE7_F2_VARIANT,
+        "active_face": str(contract["active_channel"]),
         "classification": classification,
         "lc_branch": lc_branch,
         "gamut_inference": "prohibited",
@@ -987,6 +1012,11 @@ def execute_plan(
         and plan["execution_authorization"].get("schema")
         == "direct_guide6_target_local_h120_s100_v1"
     )
+    direct_guide7_f2 = (
+        isinstance(plan.get("execution_authorization"), Mapping)
+        and plan["execution_authorization"].get("schema")
+        == "direct_guide7_f2_alternate_face_v1"
+    )
     direct_guide8_emission_exposure = (
         isinstance(plan.get("execution_authorization"), Mapping)
         and plan["execution_authorization"].get("schema")
@@ -998,7 +1028,7 @@ def execute_plan(
         == "direct_guide6_strip_exposure_qualification_v1"
     )
     if (
-        direct_ray_continuous or direct_guide6_target_local
+        direct_ray_continuous or direct_guide6_target_local or direct_guide7_f2
         or direct_guide8_emission_exposure or direct_guide6_strip_exposure
     ) and source_isolation_check_fn is None:
         raise PermissionError("direct adaptive execution requires its source-isolation check")
@@ -1476,7 +1506,7 @@ def execute_plan(
             runtime_plan["captures"] = [dict(item["step"]) for item in protocol_evidence["measured"]]
             runtime_plan["capture_ids"] = [str(step["capture_id"]) for step in runtime_plan["captures"]]
             _write_json(root / "adaptive-execution-plan.json", runtime_plan)
-        elif direct_guide6_target_local:
+        elif direct_guide6_target_local or direct_guide7_f2:
             feature_ids = tuple(
                 json.loads(thermal.POLICY_PATH.read_text(encoding="utf-8"))
                 ["feature_set"]["ids"]
@@ -1561,7 +1591,7 @@ def execute_plan(
         else:
             runtime_plan = plan
         for chronology_group_index, item in ([] if (
-            direct_guide6_target_local or direct_guide8_emission_exposure
+            direct_guide6_target_local or direct_guide7_f2 or direct_guide8_emission_exposure
             or direct_guide6_strip_exposure
         ) else enumerate(
             _ledger_groups(str(plan["experiment_id"]), plan["captures"])
@@ -2114,6 +2144,7 @@ def validate_direct_protocol_post_capture(
                 "direct_strip_history_session_v1",
                 "direct_td_c_fast_endpoint_holdout_v1",
                 "direct_guide6_target_local_h120_s100_v1",
+                "direct_guide7_f2_alternate_face_v1",
             }
         ):
             ray_zero = capture.get("ray_zero_before_capture")
@@ -2502,6 +2533,11 @@ def run_authorized_plan(
         and plan["execution_authorization"].get("schema")
         == "direct_guide6_target_local_h120_s100_v1"
     )
+    direct_guide7_f2 = (
+        isinstance(plan.get("execution_authorization"), Mapping)
+        and plan["execution_authorization"].get("schema")
+        == "direct_guide7_f2_alternate_face_v1"
+    )
     direct_guide8_emission_exposure = (
         isinstance(plan.get("execution_authorization"), Mapping)
         and plan["execution_authorization"].get("schema")
@@ -2668,7 +2704,7 @@ def run_authorized_plan(
             )
         elif (
             direct_strip_history or direct_td_c_fast_endpoint
-            or direct_guide6_target_local or direct_guide6_strip_exposure
+            or direct_guide6_target_local or direct_guide7_f2 or direct_guide6_strip_exposure
         ):
             ray_zero_evidence = ray120c.set_cct(5600, intensity=0, gm=100)
             ray_readback = ray120c.get_cct()
@@ -2833,7 +2869,7 @@ def run_authorized_plan(
         }
 
     def source_isolation_check(gate_id: str) -> Mapping[str, Any]:
-        if direct_strip_history or direct_guide6_target_local or direct_guide6_strip_exposure:
+        if direct_strip_history or direct_guide6_target_local or direct_guide7_f2 or direct_guide6_strip_exposure:
             ray_set = ray120c.set_cct(5600, intensity=0, gm=100)
             ray_readback = ray120c.get_cct()
             intensity = (
@@ -2903,7 +2939,7 @@ def run_authorized_plan(
             source_isolation_check
             if (
                 direct_ray_continuous or direct_strip_history
-                or direct_guide6_target_local or direct_guide8_emission_exposure
+                or direct_guide6_target_local or direct_guide7_f2 or direct_guide8_emission_exposure
                 or direct_guide6_strip_exposure
             )
             else None
@@ -2952,7 +2988,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--source", choices=("ray", "strip"))
     parser.add_argument(
         "--variant",
-        choices=("core", "expansion", "history", thermal.TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT, thermal.GUIDE6_STRIP_EXPOSURE_QUALIFICATION_VARIANT),
+        choices=("core", "expansion", "history", thermal.TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, thermal.GUIDE7_F2_VARIANT, thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT, thermal.GUIDE6_STRIP_EXPOSURE_QUALIFICATION_VARIANT),
         default="core",
     )
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
@@ -3050,6 +3086,7 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
     if direct_kind == "guide6-h120-s100" and args.variant not in {
         thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT,
         thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT,
+        thermal.GUIDE7_F2_VARIANT,
     }:
         raise PermissionError("GUIDE6 target-local direct path requires a frozen variant")
     if args.dry_run:
