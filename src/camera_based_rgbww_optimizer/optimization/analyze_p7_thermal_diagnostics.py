@@ -1879,10 +1879,20 @@ def analyze_guide6_local_controllability(
         for row in captures
         if isinstance(row.get("plan_step"), Mapping)
     }
+    measured_roles = {
+        str(step.get("role", ""))
+        for step in protocol_evidence.get("measured_steps", ())
+        if isinstance(step, Mapping)
+    }
+    probe_roles = {role for role in measured_roles if role.startswith("strip_probe_")}
+    if not probe_roles:
+        probe_roles = {role for role in by_role if role.startswith("strip_probe_")}
+    if len(probe_roles) != 4:
+        raise ValueError("direct local-controllability evidence lacks four probes")
     required = {
         "ray_q_before", "ray_q_after", "strip_base",
-        "strip_probe_cw", "strip_probe_ww", "strip_probe_r", "strip_probe_b",
         "strip_base_anchor_after_probe_2", "strip_base_anchor_after_probe_4",
+        *probe_roles,
     }
     if not required.issubset(by_role):
         raise ValueError("GUIDE6 local-controllability analysis lacks fixed observations")

@@ -1,11 +1,19 @@
-# GUIDE7 F2 preparation — ready for acquisition
+# GUIDE7 F2 — target block invalid from strip drift
 
-- Advisor accepted both LC-B roots and reclassified the G-active face as
-  `H120_S100_G_active_fullscale_face_stable_nonfaithful_locally_exhausted`.
-- The previous Advisor gate is resolved as existing GUIDE7 F2.
-- Offline P2 seed-only enumeration covered CW/WW/R/B with `G<=3839`.
-- Selected lowest predicted legal face: CW.
-- Selected seed: `CW4095/WW0/R0/G3839/B0`.
-- F2 direct plan dry-run passed with active CW and free WW/R/G/B.
-- The acquisition has not started in this evidence record.
-- Locks: 13-node grid, full boundary, Gate-6, P8 and LUT install remain closed.
+- Root:
+  `/Volumes/4T/temp/rgbww-optimizer/guide7-h120-s100-f2-alternate-face-20260819/20260819-225543-cw-active-base-repeat-fix`
+- Captures: 12/12 accepted; Ray 2, strip 10; candidates 0; base repeats 3.
+- CW-active seed and G probe executed exactly; all strip frames used `1/400`,
+  Ray frames used `1/5000`; guard and contaminated roots were not used.
+- Ray bracket passed.
+- Strip base drift failed on anchor 2; repeat stability also failed narrowly.
+- Classification: `target_block_reference_invalid` (`LC-E`, F2-E).
+- `measurement_valid=false`; `science_delta`: a valid negative on this block's
+  stability, not an H120/S100 color/gamut result.
+- Cleanup and independent final zero: pass; Git clean.
+- Next: one fresh F2 reference/block-drift repeat under the same contract.
+
+The first analyzer invocation did not write output because it assumed F1 probe
+roles. It was corrected to derive the exact four probe roles from the retained
+protocol evidence; focused tests passed and the root was analyzed once without
+reacquisition.

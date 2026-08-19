@@ -1,36 +1,28 @@
-# PLAN — GUIDE7 F2 alternate-face controllability
+# PLAN — one GUIDE7 F2 reference/block-drift repeat
 
-## Resolved scientific disposition
+## Retained F2 result
 
-- Both prior LC-B roots are accepted valid scientific evidence.
-- Current G-active route classification:
-  `H120_S100_G_active_fullscale_face_stable_nonfaithful_locally_exhausted`.
-- No further centered continuation is allowed.
-- Direct 58-feature estimand, covariance, 0.9973 coverage, observer, thresholds
-  and whitened navigation coordinate remain frozen.
-- Advisor gate is resolved; no new GUIDE is required.
+- Root:
+  `/Volumes/4T/temp/rgbww-optimizer/guide7-h120-s100-f2-alternate-face-20260819/20260819-225543-cw-active-base-repeat-fix`
+- Acquisition: 12/12 accepted; quality, source isolation, cleanup and final zero pass.
+- Ray bracket: pass (`3.6566 < 9.5432`).
+- First strip base anchor: pass (`5.3259 < 9.5614`).
+- Second strip base anchor: fail (`15.6161 > 9.5614`).
+- Base repeats are not stable under the frozen same-state guard.
+- Classification: `target_block_reference_invalid` / F2-E strip block drift.
+- No candidate, stable-nonfaithful, solver, scale or gamut conclusion is allowed.
 
-## Offline selection
+## Exact next action
 
-- Artifact: `config/hsi/guide7-h120-s100-f2-face-selection-v1.json`.
-- Ranked legal non-G faces by P2 seed-only predicted residual:
-  CW `0.3892623`, B `0.6820106`, WW `0.7009996`, R `0.9464259`.
-- Selected face: CW.
-- Selected seed: `CW4095/WW0/R0/G3839/B0`.
-- `P2_seed_only=true`; prediction is not scientific acceptance.
+- Run one fresh root with the unchanged
+  `GUIDE7_H120_S100_F2_ALTERNATE_FACE_CONTROLLABILITY_V1` contract.
+- Keep CW active, base `CW4095/WW0/R0/G3839/B0`, free WW/R/G/B, Ray `1/5000`,
+  strip `1/400`, two anchors and three best/base repeats when nonfaithful.
+- Do not pool or resume the invalid block.
+- This is the one permitted reference/block-drift repeat.
+- If the fresh block again fails Ray bracket or strip drift, enter
+  `ADVISOR_GATE_REQUIRED`; do not start a third F2 block.
+- If stable, follow F2-A/B/C/D automatically.
 
-## Exact experiment
-
-- ID: `GUIDE7_H120_S100_F2_ALTERNATE_FACE_CONTROLLABILITY_V1`.
-- New root; Ray `1/5000`, strip `1/400`; no guard fallback.
-- Ray before/after, strip reset600, D120/A120/tested120.
-- CW fixed at 4095; free channels WW/R/G/B; four one-sided 256 probes,
-  including G 3839→4095.
-- Two base anchors; at most four candidates; maximum absolute step 768;
-  backtracks 1.0/0.5/0.25; one Broyden rebase; no re-probe.
-- Faithful candidate: require 3 confirmations.
-- Nonfaithful result: require 3 repeats of best-valid exact command.
-- Cap: Ray 2, strip ≤14, total ≤16, ambient 0, retry 0.
-
-F2 stable nonfaithful proceeds automatically to the 3072 closed-loop diagnostic.
-Keep the 13-node grid, full boundary mapping, Gate-6, P8 and LUT installation locked.
+Keep 3072, 13-node grid, full boundary, Gate-6, P8 and LUT installation locked
+until a stable F2 classification exists.

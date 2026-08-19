@@ -8,8 +8,9 @@
    not faithful after four bounded candidates.
 4. Completed: the single generation-1 continuation again produced valid LC-B.
    Advisor accepted both roots and closed the G-active full-scale face.
-5. Execute GUIDE7 F2 on the selected CW-active face. Stable nonfaithful proceeds
-   to the predefined 3072 diagnostic, then H120/S50 and optional H120/S25.
+5. First GUIDE7 F2 block was reference-invalid from strip drift. Execute the one
+   permitted fresh F2 repeat. A second drift failure returns to Advisor; a stable
+   result follows F2-A/B/C/D and may proceed to 3072, H120/S50 and optional S25.
    Advisor only when the GUIDE itself reaches a genuinely unresolved scientific
    decision.
 

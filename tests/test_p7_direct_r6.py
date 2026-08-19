@@ -2209,7 +2209,17 @@ class DirectR6Tests(unittest.TestCase):
             )
             f2 = analyze.analyze_guide6_local_controllability(
                 rows(candidate=[0.5, 0.0], repeats=True), feature_ids=("f0", "f1"),
-                protocol_evidence={**evidence, "guide7_f2": True, "active_face": "cw"},
+                protocol_evidence={
+                    **evidence, "guide7_f2": True, "active_face": "cw",
+                    "measured_steps": [
+                        {"role": role} for role in (
+                            "ray_q_before", "strip_base", "strip_probe_cw",
+                            "strip_probe_ww", "strip_probe_r", "strip_probe_b",
+                            "strip_base_anchor_after_probe_2",
+                            "strip_base_anchor_after_probe_4", "ray_q_after",
+                        )
+                    ],
+                },
             )
             self.assertEqual(f2["classification"], "H120_S100_stable_nonfaithful_after_two_fullscale_faces")
             self.assertTrue(f2["best_nonfaithful_repeat_stable"])
