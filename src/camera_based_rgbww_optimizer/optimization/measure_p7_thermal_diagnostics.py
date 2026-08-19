@@ -590,8 +590,6 @@ def _run_guide6_local_controllability_protocol_core(
                 "measured_direct_score": float(np.linalg.norm(residual)),
             })
     elif int(contract.get("repeat_best_nonfaithful_count", 0)):
-        if not candidates:
-            raise RuntimeError("F2 nonfaithful repeat requires a measured candidate")
         for index in range(1, int(contract["repeat_best_nonfaithful_count"]) + 1):
             step = _guide6_protocol_step(
                 plan,

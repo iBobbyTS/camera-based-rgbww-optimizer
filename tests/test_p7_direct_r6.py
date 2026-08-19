@@ -1957,6 +1957,36 @@ class DirectR6Tests(unittest.TestCase):
         self.assertTrue(result["guide7_f2"])
         self.assertEqual(result["active_face"], "cw")
 
+    def test_guide7_f2_repeats_base_when_solver_has_no_unique_candidate(self):
+        import numpy as np
+        plan = thermal.build_direct_plan(thermal.TD_C, variant=thermal.GUIDE7_F2_VARIANT)
+        feature_ids = tuple(f"f{index}" for index in range(58))
+        roles = []
+        commands = []
+        def fake_measure(step):
+            roles.append(step["role"])
+            commands.append(dict(step["command"]))
+            vector = np.zeros(58)
+            if step["source_id"] == "strip":
+                vector[0] = 100.0
+            return {"_vector": vector, "direct_quality": {"status": "pass", "feature_count": 58}, "feature_values": {name: 1.0 for name in feature_ids}}
+        with (
+            patch.object(measure, "_guide6_feature_vector", side_effect=lambda c, _: np.asarray(c["_vector"])),
+            patch.object(measure, "_guide6_variances", return_value=(np.ones(58), np.ones(58))),
+            patch.object(measure, "calibrate_direct_limits", return_value={"guarded_limit": 0.05, "statistic": "synthetic"}),
+            patch.object(measure, "solve_box_constrained_least_squares", return_value=np.zeros(4)),
+        ):
+            result = measure.run_guide6_local_controllability_protocol(
+                plan, measure_fn=fake_measure, feature_ids=feature_ids,
+                source_isolation_fn=lambda _source: {"status": "pass", "source_verified_zero": True},
+                cleanup_fn=lambda: {"status": "pass"},
+            )
+        self.assertEqual(result["candidates"], [])
+        self.assertEqual(roles[-4:], ["strip_repeat_1", "strip_repeat_2", "strip_repeat_3", "ray_q_after"])
+        base = plan["local_controllability_contract"]["base_command"]
+        self.assertEqual(commands[-4:-1], [base, base, base])
+        self.assertEqual(result["lc_branch"], "LC-C")
+
     def _run_fake_guide6_protocol(
         self, residual_scale=1.0, *, irreducible=0.0, abort_role=None,
         cleanup_sink=None,
