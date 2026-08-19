@@ -239,6 +239,10 @@ def validate_authorized_execution_plan(
         isinstance(authorization, Mapping)
         and authorization.get("schema") == "direct_guide7_f2_alternate_face_v1"
     )
+    direct_f2_short = (
+        isinstance(authorization, Mapping)
+        and authorization.get("schema") == "direct_guide7_f2_short_endpoint_v1"
+    )
     direct_guide8_emission_exposure = (
         isinstance(authorization, Mapping)
         and authorization.get("schema") == "direct_guide8_ray_emission_exposure_v1"
@@ -250,7 +254,7 @@ def validate_authorized_execution_plan(
     if (
         direct_ray_history or direct_strip_history
         or direct_ray_fast_long_bridge or direct_td_c_fast_endpoint
-        or direct_guide6_target_local or direct_guide7_f2 or direct_guide8_emission_exposure
+        or direct_guide6_target_local or direct_guide7_f2 or direct_f2_short or direct_guide8_emission_exposure
         or direct_guide6_strip_exposure
     ):
         valid_execution_scope = (
