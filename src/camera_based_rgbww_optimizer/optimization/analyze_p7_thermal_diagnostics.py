@@ -449,6 +449,8 @@ def analyze_thermal_run(
             "direct_guide6_target_local_h120_s100_v1",
             "direct_guide7_f2_alternate_face_v1",
         }
+        short_endpoint = direct_schema == "direct_guide7_f2_short_endpoint_v1"
+        guide6_direct = guide6_direct or short_endpoint
         prerequisite = plan.get("scientific_prerequisite")
         if (
             not guide6_direct
@@ -595,7 +597,11 @@ def analyze_thermal_run(
             or quality.get("rows") != expected_quality_rows
         ):
             raise ValueError("direct quality artifact did not pass")
-        if guide6_direct and local_protocol_evidence is not None:
+        if short_endpoint:
+            result = analyze_guide7_f2_short_endpoint(
+                formal_rows, feature_ids=feature_ids,
+            )
+        elif guide6_direct and local_protocol_evidence is not None:
             if local_protocol_evidence.get("counts", {}).get("total") != len(formal):
                 raise ValueError("GUIDE6 adaptive evidence count differs from captures")
             local_commands = _load_jsonl(root / "commands.jsonl")
@@ -1860,6 +1866,41 @@ def analyze_td_c_direct_target_local(
             "B_prepost", "cross_experiment_absolute_synthesis", "solver_sentinel", "P8",
         ],
     }
+
+
+def analyze_guide7_f2_short_endpoint(
+    captures: Sequence[Mapping[str, Any]], *, feature_ids: Sequence[str],
+) -> dict[str, Any]:
+    by_role = {str(row["plan_step"]["role"]): row for row in captures}
+    required = {"ray_q_before", "ray_q_after", "base_1", "base_2", "candidate_1", "candidate_2", "candidate_3"}
+    if not required.issubset(by_role):
+        raise ValueError("F2 short endpoint lacks its seven exact observations")
+    ray_before = _unit(_features(by_role["ray_q_before"], feature_ids), feature_ids)
+    ray_after = _unit(_features(by_role["ray_q_after"], feature_ids), feature_ids)
+    ray_bracket = frozen_same_state_compatibility_diagnostic(ray_before, ray_after, source="ray", state="A", feature_ids=feature_ids)
+    strip_var = _same_state_variance(source="strip", state="A")
+    ray_var = _same_state_variance(source="ray", state="A")
+    target = (ray_before + ray_after) / 2.0
+    def score(role):
+        vec = _unit(_features(by_role[role], feature_ids), feature_ids)
+        variance = strip_var + ray_var / 2.0
+        limits = calibrate_direct_limits(vec - target, variance, samples=1000)
+        value = direct_whitened_norm(vec - target, variance)
+        return {"score": float(value), "guarded_limit": float(limits["guarded_limit"]), "decision": "pass" if value <= float(limits["guarded_limit"]) else "fail"}
+    bases = [score("base_1"), score("base_2")]
+    candidates = [score(role) for role in ("candidate_1", "candidate_2", "candidate_3")]
+    base_repeat = frozen_same_state_compatibility_diagnostic(_unit(_features(by_role["base_1"], feature_ids), feature_ids), _unit(_features(by_role["base_2"], feature_ids), feature_ids), source="strip", state="A", feature_ids=feature_ids)
+    candidate_repeat = all(item["decision"] == "pass" for item in candidates)
+    candidate_pass = all(item["decision"] == "pass" for item in candidates)
+    if ray_bracket["decision"] != "pass" or base_repeat["decision"] != "pass":
+        branch, classification = "S-E", "target_block_invalid"
+    elif not candidate_repeat:
+        branch, classification = "S-D", "H120_S100_CW_active_fullscale_fast_repeatability_unresolved"
+    elif candidate_pass:
+        branch, classification = "S-A", "H120_S100_CW_face_short_block_faithful"
+    else:
+        branch, classification = "S-B", "H120_S100_CW_face_stable_nonfaithful_under_short_fast_block"
+    return {"status": "guide7_f2_short_endpoint_classified", "branch": branch, "classification": classification, "measurement_valid": branch != "S-E", "faithful": branch == "S-A", "ray_bracket": ray_bracket, "base_direct_contrasts": bases, "candidate_direct_contrasts": candidates, "base_repeatability": base_repeat, "candidate_repeatability": candidate_repeat, "next": "H120/S50" if branch == "S-A" else "GUIDE7_H120_S100_MAX_CODE_3072_DIAGNOSTIC" if branch in {"S-B", "S-C", "S-D"} else "S-MEASUREMENT", "gamut_inference": "prohibited", "steady_claim": False}
 
 
 def analyze_guide6_local_controllability(

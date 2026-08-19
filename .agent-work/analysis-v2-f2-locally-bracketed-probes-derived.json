@@ -1,0 +1,142 @@
+{
+  "brackets": [
+    {
+      "bracket": "base-anchor1",
+      "channel": "ww",
+      "cross_root_compatible": true,
+      "cross_root_cosine": 0.9992153679704845,
+      "interpolation_coefficient": 0.5,
+      "primitive_observation_coefficients": [
+        -0.5,
+        1.0,
+        -0.5
+      ]
+    },
+    {
+      "bracket": "base-anchor1",
+      "channel": "r",
+      "cross_root_compatible": true,
+      "cross_root_cosine": 0.9981342861505573,
+      "interpolation_coefficient": 0.5,
+      "primitive_observation_coefficients": [
+        -0.5,
+        1.0,
+        -0.5
+      ]
+    },
+    {
+      "bracket": "anchor1-anchor2",
+      "channel": "g",
+      "cross_root_compatible": true,
+      "cross_root_cosine": 0.9999189456655977,
+      "interpolation_coefficient": 0.5,
+      "primitive_observation_coefficients": [
+        -0.5,
+        1.0,
+        -0.5
+      ]
+    },
+    {
+      "bracket": "anchor1-anchor2",
+      "channel": "b",
+      "cross_root_compatible": true,
+      "cross_root_cosine": 0.9997874329596748,
+      "interpolation_coefficient": 0.5,
+      "primitive_observation_coefficients": [
+        -0.5,
+        1.0,
+        -0.5
+      ]
+    }
+  ],
+  "jacobians": {
+    "cross_root_probe_agreement": [
+      {
+        "bracket": "base-anchor1",
+        "channel": "ww",
+        "cross_root_compatible": true,
+        "cross_root_cosine": 0.9992153679704845,
+        "interpolation_coefficient": 0.5,
+        "primitive_observation_coefficients": [
+          -0.5,
+          1.0,
+          -0.5
+        ]
+      },
+      {
+        "bracket": "base-anchor1",
+        "channel": "r",
+        "cross_root_compatible": true,
+        "cross_root_cosine": 0.9981342861505573,
+        "interpolation_coefficient": 0.5,
+        "primitive_observation_coefficients": [
+          -0.5,
+          1.0,
+          -0.5
+        ]
+      },
+      {
+        "bracket": "anchor1-anchor2",
+        "channel": "g",
+        "cross_root_compatible": true,
+        "cross_root_cosine": 0.9999189456655977,
+        "interpolation_coefficient": 0.5,
+        "primitive_observation_coefficients": [
+          -0.5,
+          1.0,
+          -0.5
+        ]
+      },
+      {
+        "bracket": "anchor1-anchor2",
+        "channel": "b",
+        "cross_root_compatible": true,
+        "cross_root_cosine": 0.9997874329596748,
+        "interpolation_coefficient": 0.5,
+        "primitive_observation_coefficients": [
+          -0.5,
+          1.0,
+          -0.5
+        ]
+      }
+    ],
+    "root_1": {
+      "condition": 53.9,
+      "rank": 4
+    },
+    "root_2": {
+      "condition": 47.1,
+      "rank": 4
+    }
+  },
+  "parent_artifacts_modified": false,
+  "primitive_observation_covariance": "frozen_source_level_strip_covariance_propagated_from_primitive_observations",
+  "roots": [
+    {
+      "analysis_sha256": "0998b27b7d6ba58bc008b1ce26fc81fd087c138ec15e9200e3aa379a8c428bcb",
+      "local_controllability_sha256": "898f216775e4fd93adcc6b2f8aa385b2d58a0cae22b1986ac55a7db893c3fb0e",
+      "path": "/Volumes/4T/temp/rgbww-optimizer/guide7-h120-s100-f2-alternate-face-20260819/20260819-225543-cw-active-base-repeat-fix"
+    },
+    {
+      "analysis_sha256": "121e909161c2d289f8cc0f385943cee8796b7e7f402b4c9711f1493abe71744b",
+      "local_controllability_sha256": "281513c07fb61b92045358b2864a3375771d8ca44445d7050c1349c8ca48c984",
+      "path": "/Volumes/4T/temp/rgbww-optimizer/guide7-h120-s100-f2-reference-repeat-20260819/20260819-004620-cw-active-reference-repeat"
+    }
+  ],
+  "schema": "guide7_h120_s100_f2_locally_bracketed_probes_derived_v1",
+  "scientific_acceptance_from_prediction": false,
+  "selected_candidate": {
+    "b": 0,
+    "cw": 4095,
+    "g": 4095,
+    "r": 0,
+    "ww": 0
+  },
+  "source_level_monte_carlo": {
+    "null_norm_p50": 9.28243461810294,
+    "null_norm_p9973": 11.809889068144036,
+    "samples": 20000,
+    "seed": 20260819
+  },
+  "status": "immutable_offline_preregistration"
+}

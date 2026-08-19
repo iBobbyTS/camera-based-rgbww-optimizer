@@ -8,10 +8,10 @@
    not faithful after four bounded candidates.
 4. Completed: the single generation-1 continuation again produced valid LC-B.
    Advisor accepted both roots and closed the G-active full-scale face.
-5. Completed: both full F2 blocks were reference-invalid from strip drift. The
-   permitted repeat is exhausted; route is at Advisor gate and 3072 remains locked.
-   Advisor only when the GUIDE itself reaches a genuinely unresolved scientific
-   decision.
+5. Advisor resolved the two F2 long-block failures as reproducible cumulative
+   history shift. Offline probe bracketing preregistered a single candidate.
+6. Execute the 7-capture short order-balanced CW endpoint. Faithful unlocks S50;
+   stable nonfaithful/locally inadequate/repeatability failure unlocks 3072.
 
 Persistent locks remain unchanged: no cross-experiment absolute synthesis,
 B pre/post, solver sentinel, 13-node grid, boundary, Gate-6, P8 or LUT install

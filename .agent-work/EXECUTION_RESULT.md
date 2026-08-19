@@ -1,19 +1,10 @@
-# GUIDE7 F2 repeat — repeated strip block drift
+# GUIDE7 F2 long-block history — short endpoint prepared
 
-- Repeat root:
-  `/Volumes/4T/temp/rgbww-optimizer/guide7-h120-s100-f2-reference-repeat-20260819/20260819-004620-cw-active-reference-repeat`
-- Captures: 12/12 accepted; Ray 2, strip 10; candidates 0; base repeats 3.
-- Exact CW face, G probe, shutters and source-isolation contract passed.
-- Ray bracket: `3.5065 / 9.5433`, pass.
-- Strip anchor 1: `2.2890 / 9.5614`, pass.
-- Strip anchor 2: `12.4327 / 9.5614`, fail.
-- Repeat1-vs-repeat2 stability: `14.7520 / 9.5614`, fail.
-- Classification: `target_block_reference_invalid` (`LC-E`, F2-E).
-- Measurement-valid color/solver conclusion: none.
-- Cleanup and independent final zero: pass; Git clean.
-- `science_delta`: repeatable evidence that the CW-active block is unstable under
-  the current fast F2 history/timing contract; not a gamut result.
-- Next: `ADVISOR_GATE_REQUIRED`; no third F2 block.
-
-The analyzer was run exactly once on this root. No threshold, feature, covariance,
-coverage, exposure or frame selection changed.
+- Offline locally-bracketed probe artifact created:
+  `.agent-work/analysis-v2-f2-locally-bracketed-probes-derived.json`
+- Artifact SHA-256: `f80da21db45a190b824fc2862da918eb04c4ef0cfea70e807486d11fa673e100`.
+- Both F2 roots remain immutable and were not pooled as endpoint evidence.
+- Frozen candidate: `CW4095/WW0/R0/G4095/B0`.
+- Short endpoint dry-run passed: exactly 7 captures, formal cap 7, ambient 0,
+  retry 0, no probes/solver.
+- Device acquisition for the short endpoint has not started in this record.

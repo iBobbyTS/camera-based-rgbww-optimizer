@@ -56,6 +56,8 @@ GUIDE7_F2_FACE_SELECTION_PATH = (
 )
 GUIDE7_F2_EXPERIMENT_ID = "GUIDE7_H120_S100_F2_ALTERNATE_FACE_CONTROLLABILITY_V1"
 GUIDE7_F2_VARIANT = "guide7-h120-s100-f2-alternate-face"
+GUIDE7_F2_SHORT_ENDPOINT_EXPERIMENT_ID = "GUIDE7_H120_S100_F2_CW_SHORT_ORDER_BALANCED_ENDPOINT_V1"
+GUIDE7_F2_SHORT_ENDPOINT_VARIANT = "guide7-f2-cw-short-order-balanced-endpoint"
 GUIDE8_RAY_EMISSION_EXPOSURE_EXPERIMENT_ID = (
     "GUIDE8_RAY_H120_S100_EMISSION_EXPOSURE_DIAG_V1"
 )
@@ -971,6 +973,8 @@ def build_direct_plan(
         )
     elif experiment_id == TD_C and variant == GUIDE7_F2_VARIANT:
         plan = _build_guide7_f2_alternate_face_plan()
+    elif experiment_id == TD_C and variant == GUIDE7_F2_SHORT_ENDPOINT_VARIANT:
+        plan = _build_guide7_f2_short_endpoint_plan()
     else:
         if experiment_id == TD_C and variant != "core":
             raise ValueError("TD-C direct execution supports core or frozen GUIDE5 variants")
@@ -1555,6 +1559,23 @@ def _build_guide7_f2_alternate_face_plan() -> dict[str, Any]:
         "local_controllability_contract": {"schema": "guide6_h120_s100_direct_local_controllability_v1", "command_order": list(CHANNELS), "base_command": base, "active_channel": selection["selected_face"], "active_value": 4095, "free_channels": free, "probe_step_linearized_code": 256, "probes": {role: row["command"] for role, row in ((item["role"], item) for item in captures) if role.startswith("strip_probe_")}, "base_anchor_after_probe_numbers": [2, 4], "navigation_coordinate": "direct_whitened_58_feature_residual", "maximum_feedback_candidates": 4, "maximum_absolute_step": 768, "backtrack_factors": [1.0, 0.5, 0.25], "maximum_model_rebases": 1, "rebase_extra_probes": 0, "confirmation_count": 3, "repeat_best_nonfaithful_count": 3, "strip_reset_s": 600, "per_measurement_precondition": [{"state_id": "D", "dwell_s": 120}, {"state_id": "A", "dwell_s": 120}], "tested_command_dwell_s": 120, "first_block_terminal_multi_start_unresolved_allowed": False, "gamut_inference": "prohibited", "continuation_generation": 0},
         "hard_locks": {"legacy_absolute_synthesis": True, "G_active_fullscale_face": True, "solver_sentinel": True, "P8": True},
     }
+
+
+def _build_guide7_f2_short_endpoint_plan() -> dict[str, Any]:
+    commands = load_r1_commands()
+    base = {"cw": 4095, "ww": 0, "r": 0, "g": 3839, "b": 0}
+    candidate = {**base, "g": 4095}
+    captures = []
+    def add(index, source, role, command):
+        captures.append({"capture_id": f"{index:03d}-{source}-f2-short-{role}", "source_id": source, "state_id": "A", "role": role, "capture_role": "formal", "formal_measurement": True, "command": dict(command), "exact_command_hash": canonical_sha256(command), "requested_elapsed_s": 120, "nominal_shutter": "1/5000" if source == "ray" else "1/400", "timing_acceptance": "observed_elapsed_record_only", "strip_zero_required": source == "ray", "ray_zero_required": source == "strip", "session_index": index, "steady_claim": False})
+    add(0, "ray", "ray_q_before", RAY_STATES["A"])
+    add(1, "strip", "base_1", base)
+    add(2, "strip", "candidate_1", candidate)
+    add(3, "strip", "candidate_2", candidate)
+    add(4, "strip", "base_2", base)
+    add(5, "strip", "candidate_3", candidate)
+    add(6, "ray", "ray_q_after", RAY_STATES["A"])
+    return {"schema": PLAN_SCHEMA_V2, "status": "execute_authorized", "experiment_id": TD_C, "guide_experiment_id": GUIDE7_F2_SHORT_ENDPOINT_EXPERIMENT_ID, "variant": GUIDE7_F2_SHORT_ENDPOINT_VARIANT, "stage": "GUIDE7-F2-SHORT-ENDPOINT", "phase": "formal", "source": "target_local_pair", "created_at": datetime.now(timezone.utc).isoformat(), "inputs": {"location": file_reference(LOCATION_PATH), "policy": file_reference(POLICY_PATH), "code_duty_curve": file_reference(CURVE_PATH)}, "target": {"hue": 120, "sat": 100, "intensity": 100}, "captures": captures, "capture_ids": [x["capture_id"] for x in captures], "timing_contract": timing_contract(2), "cold_proxy": 600, "cold_proxy_wait_s": 600, "native_raw_ambient_policy": AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT, "frozen_shutters": {"ray-h120-s100": "1/5000", "strip-h120-s100-fullscale": "1/400"}, "exposure_setup_required": [], "shutter_ledger_provenance": {"owner": "experiment_capture_steps", "required_cache_keys": ["ray-h120-s100", "strip-h120-s100-fullscale"], "frozen_shutters_sha256": canonical_sha256({"ray-h120-s100": "1/5000", "strip-h120-s100-fullscale": "1/400"})}, "budgets": {"formal_cap": 7, "physical_cr3_cap": 7, "ambient_cap": 0, "retry": 0}, "execution_authorization": {"schema": "direct_guide7_f2_short_endpoint_v1", "human_authorization_required": False, "human_authorization_verified": True, "human_authorization_experiment_id": GUIDE7_F2_SHORT_ENDPOINT_EXPERIMENT_ID, "bounded_device_scope": True, "experiment_id": GUIDE7_F2_SHORT_ENDPOINT_EXPERIMENT_ID, "remote_v2_capability": True}, "analysis_contract": {"base_command": base, "candidate_command": candidate, "order_balanced": True, "no_probes": True, "no_solver": True, "steady_claim": False}, "formal_capture_eligible": True}
 
 
 def _build_guide6_strip_exposure_qualification_plan() -> dict[str, Any]:

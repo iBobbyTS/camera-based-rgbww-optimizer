@@ -1015,6 +1015,11 @@ def execute_plan(
         and plan["execution_authorization"].get("schema")
         == "direct_guide7_f2_alternate_face_v1"
     )
+    direct_f2_short = (
+        isinstance(plan.get("execution_authorization"), Mapping)
+        and plan["execution_authorization"].get("schema")
+        == "direct_guide7_f2_short_endpoint_v1"
+    )
     direct_guide8_emission_exposure = (
         isinstance(plan.get("execution_authorization"), Mapping)
         and plan["execution_authorization"].get("schema")
@@ -1026,7 +1031,7 @@ def execute_plan(
         == "direct_guide6_strip_exposure_qualification_v1"
     )
     if (
-        direct_ray_continuous or direct_guide6_target_local or direct_guide7_f2
+        direct_ray_continuous or direct_guide6_target_local or direct_guide7_f2 or direct_f2_short
         or direct_guide8_emission_exposure or direct_guide6_strip_exposure
     ) and source_isolation_check_fn is None:
         raise PermissionError("direct adaptive execution requires its source-isolation check")
@@ -1504,6 +1509,21 @@ def execute_plan(
             runtime_plan["captures"] = [dict(item["step"]) for item in protocol_evidence["measured"]]
             runtime_plan["capture_ids"] = [str(step["capture_id"]) for step in runtime_plan["captures"]]
             _write_json(root / "adaptive-execution-plan.json", runtime_plan)
+        elif direct_f2_short:
+            feature_ids = tuple(json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"])
+            rows = []
+            commands = thermal.load_r1_commands()
+            for step in plan["captures"]:
+                source = str(step["source_id"])
+                if source == "ray" or step["role"] in {"base_1", "candidate_2", "candidate_3"}:
+                    sleep_fn(600.0)
+                for state, command in (("D", thermal._command(source, "D", commands)), ("A", thermal._command(source, "A", commands)), ("tested", step["command"])):
+                    pre = {**dict(step), "capture_id": f"pre-{state}-{step['capture_id']}", "state_id": state, "command": command, "exact_command_hash": thermal.canonical_sha256(command)}
+                    apply_command_fn(pre); readback_fn(pre); sleep_fn(120.0)
+                owner_start = monotonic_fn(); set_capture_context_fn(owner_start)
+                captured = dict(capture_fn(step)); retain_capture(step, captured, owner_start=owner_start, chronology_group_index=len(rows)); rows.append({"step": dict(step), "capture": captured})
+            _write_json(root / "short-endpoint-evidence.json", {"schema": "guide7_f2_short_endpoint_evidence_v1", "rows": rows, "capture_count": len(rows)})
+            runtime_plan = copy.deepcopy(dict(plan)); runtime_plan["captures"] = [x["step"] for x in rows]; _write_json(root / "adaptive-execution-plan.json", runtime_plan)
         elif direct_guide6_target_local or direct_guide7_f2:
             feature_ids = tuple(
                 json.loads(thermal.POLICY_PATH.read_text(encoding="utf-8"))
@@ -1589,7 +1609,7 @@ def execute_plan(
         else:
             runtime_plan = plan
         for chronology_group_index, item in ([] if (
-            direct_guide6_target_local or direct_guide7_f2 or direct_guide8_emission_exposure
+            direct_guide6_target_local or direct_guide7_f2 or direct_f2_short or direct_guide8_emission_exposure
             or direct_guide6_strip_exposure
         ) else enumerate(
             _ledger_groups(str(plan["experiment_id"]), plan["captures"])
@@ -2143,6 +2163,7 @@ def validate_direct_protocol_post_capture(
                 "direct_td_c_fast_endpoint_holdout_v1",
                 "direct_guide6_target_local_h120_s100_v1",
                 "direct_guide7_f2_alternate_face_v1",
+                "direct_guide7_f2_short_endpoint_v1",
             }
         ):
             ray_zero = capture.get("ray_zero_before_capture")
@@ -2536,6 +2557,11 @@ def run_authorized_plan(
         and plan["execution_authorization"].get("schema")
         == "direct_guide7_f2_alternate_face_v1"
     )
+    direct_f2_short = (
+        isinstance(plan.get("execution_authorization"), Mapping)
+        and plan["execution_authorization"].get("schema")
+        == "direct_guide7_f2_short_endpoint_v1"
+    )
     direct_guide8_emission_exposure = (
         isinstance(plan.get("execution_authorization"), Mapping)
         and plan["execution_authorization"].get("schema")
@@ -2676,7 +2702,7 @@ def run_authorized_plan(
         location_config_path=(
             root / "inputs/location.json"
             if (
-                direct_ray_continuous or direct_guide8_emission_exposure
+                direct_ray_continuous or direct_f2_short or direct_guide8_emission_exposure
                 or direct_guide6_strip_exposure
             )
             else thermal.LOCATION_PATH
@@ -2702,7 +2728,7 @@ def run_authorized_plan(
             )
         elif (
             direct_strip_history or direct_td_c_fast_endpoint
-            or direct_guide6_target_local or direct_guide7_f2 or direct_guide6_strip_exposure
+            or direct_guide6_target_local or direct_guide7_f2 or direct_f2_short or direct_guide6_strip_exposure
         ):
             ray_zero_evidence = ray120c.set_cct(5600, intensity=0, gm=100)
             ray_readback = ray120c.get_cct()
@@ -2739,7 +2765,7 @@ def run_authorized_plan(
             raise RuntimeError("timed RAW capture adapter returned malformed result")
         report = json.loads(Path(captured_result["patch_statistics"]).read_text(encoding="utf-8"))
         exposure = report["exposure_metadata"]
-        if direct_guide8_emission_exposure or direct_guide6_strip_exposure:
+        if direct_guide8_emission_exposure or direct_f2_short or direct_guide6_strip_exposure:
             from camera_based_rgbww_optimizer.measurement.recorded_exposure import (
                 validate_recorded_exposure_setting,
             )
@@ -2867,7 +2893,7 @@ def run_authorized_plan(
         }
 
     def source_isolation_check(gate_id: str) -> Mapping[str, Any]:
-        if direct_strip_history or direct_guide6_target_local or direct_guide7_f2 or direct_guide6_strip_exposure:
+        if direct_strip_history or direct_guide6_target_local or direct_guide7_f2 or direct_f2_short or direct_guide6_strip_exposure:
             ray_set = ray120c.set_cct(5600, intensity=0, gm=100)
             ray_readback = ray120c.get_cct()
             intensity = (
@@ -2937,7 +2963,7 @@ def run_authorized_plan(
             source_isolation_check
             if (
                 direct_ray_continuous or direct_strip_history
-                or direct_guide6_target_local or direct_guide7_f2 or direct_guide8_emission_exposure
+                or direct_guide6_target_local or direct_guide7_f2 or direct_f2_short or direct_guide8_emission_exposure
                 or direct_guide6_strip_exposure
             )
             else None
@@ -2986,7 +3012,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--source", choices=("ray", "strip"))
     parser.add_argument(
         "--variant",
-        choices=("core", "expansion", "history", thermal.TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, thermal.GUIDE7_F2_VARIANT, thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT, thermal.GUIDE6_STRIP_EXPOSURE_QUALIFICATION_VARIANT),
+        choices=("core", "expansion", "history", thermal.TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, thermal.GUIDE7_F2_VARIANT, thermal.GUIDE7_F2_SHORT_ENDPOINT_VARIANT, thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT, thermal.GUIDE6_STRIP_EXPOSURE_QUALIFICATION_VARIANT),
         default="core",
     )
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
@@ -3085,6 +3111,7 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
         thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT,
         thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT,
         thermal.GUIDE7_F2_VARIANT,
+        thermal.GUIDE7_F2_SHORT_ENDPOINT_VARIANT,
     }:
         raise PermissionError("GUIDE6 target-local direct path requires a frozen variant")
     if args.dry_run:
