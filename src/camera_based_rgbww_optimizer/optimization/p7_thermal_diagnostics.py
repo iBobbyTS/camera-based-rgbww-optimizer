@@ -992,11 +992,12 @@ def build_direct_plan(
         else "direct_operational_600"
     )
     plan.update({
-        "status": (
-            "execute_authorized"
+            "status": (
+                "execute_authorized"
             if variant in {
                 GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT,
                 GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT,
+                GUIDE7_F2_SHORT_ENDPOINT_VARIANT,
             }
             else "deferred_diagnostic_only"
             if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT
@@ -1014,15 +1015,17 @@ def build_direct_plan(
                 }
                 else "direct_guide7_f2_alternate_face_v1"
                 if variant == GUIDE7_F2_VARIANT
+                else "direct_guide7_f2_short_endpoint_v1"
+                if variant == GUIDE7_F2_SHORT_ENDPOINT_VARIANT
                 else "direct_td_c_fast_anchor_direction_b_v1"
                 if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT
                 else f"direct_{'strip_td_b' if experiment_id == TD_B else 'td_c_core'}_authority_v1"
             ),
-            "human_authorization_verified": variant not in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT},
+            "human_authorization_verified": variant not in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT},
             "human_authorization_experiment_id": (
-                None if variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT} else experiment_id
+                None if variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT} else experiment_id
             ),
-            "bounded_device_scope": variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT},
+            "bounded_device_scope": variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT},
             "human_authorization_required": False,
             "experiment_id": (
                 TD_C_FAST_ENDPOINT_HOLDOUT_EXPERIMENT_ID
@@ -1033,6 +1036,8 @@ def build_direct_plan(
                 if variant == GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT else
                 GUIDE7_F2_EXPERIMENT_ID
                 if variant == GUIDE7_F2_VARIANT else
+                GUIDE7_F2_SHORT_ENDPOINT_EXPERIMENT_ID
+                if variant == GUIDE7_F2_SHORT_ENDPOINT_VARIANT else
                 TD_C_FAST_ANCHOR_DIRECTION_B_EXPERIMENT_ID
                 if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT else experiment_id
             ),
