@@ -1927,6 +1927,7 @@ class DirectR6Tests(unittest.TestCase):
             "cw": 4095, "ww": 0, "r": 0, "g": 3839, "b": 0,
         })
         self.assertEqual(contract["repeat_best_nonfaithful_count"], 3)
+        measure._validate_execution_shutter_ledger(plan)
         feature_ids = tuple(f"f{index}" for index in range(58))
         base = contract["base_command"]
         free = contract["free_channels"]

@@ -1541,6 +1541,15 @@ def _build_guide7_f2_alternate_face_plan() -> dict[str, Any]:
         "native_raw_ambient_policy": AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
         "budgets": {"ray_cap": 2, "strip_cap": 14, "formal_cap": 16, "physical_cr3_cap": 16, "ambient_cap": 0, "retry": 0, "confirmation_reserved": 3},
         "frozen_shutters": {"ray-h120-s100": "1/5000", "strip-h120-s100-fullscale": "1/400"},
+        "exposure_setup_required": [],
+        "shutter_ledger_provenance": {
+            "owner": "experiment_capture_steps",
+            "required_cache_keys": ["ray-h120-s100", "strip-h120-s100-fullscale"],
+            "frozen_shutters_sha256": canonical_sha256({
+                "ray-h120-s100": "1/5000",
+                "strip-h120-s100-fullscale": "1/400",
+            }),
+        },
         "execution_authorization": {"schema": "direct_guide7_f2_alternate_face_v1", "human_authorization_required": False, "human_authorization_verified": True, "human_authorization_experiment_id": GUIDE7_F2_EXPERIMENT_ID, "bounded_device_scope": True, "experiment_id": GUIDE7_F2_EXPERIMENT_ID, "remote_v2_capability": True},
         "analysis_contract": {"method": "direct_target_local_ray_vs_strip_same_block", "cross_experiment_absolute_synthesis": False, "active_face": selection["selected_face"], "active_channel": selection["selected_face"], "repeat_best_nonfaithful": 3, "continuation_generation": 0, "steady_claim": False},
         "local_controllability_contract": {"schema": "guide6_h120_s100_direct_local_controllability_v1", "command_order": list(CHANNELS), "base_command": base, "active_channel": selection["selected_face"], "active_value": 4095, "free_channels": free, "probe_step_linearized_code": 256, "probes": {role: row["command"] for role, row in ((item["role"], item) for item in captures) if role.startswith("strip_probe_")}, "base_anchor_after_probe_numbers": [2, 4], "navigation_coordinate": "direct_whitened_58_feature_residual", "maximum_feedback_candidates": 4, "maximum_absolute_step": 768, "backtrack_factors": [1.0, 0.5, 0.25], "maximum_model_rebases": 1, "rebase_extra_probes": 0, "confirmation_count": 3, "repeat_best_nonfaithful_count": 3, "strip_reset_s": 600, "per_measurement_precondition": [{"state_id": "D", "dwell_s": 120}, {"state_id": "A", "dwell_s": 120}], "tested_command_dwell_s": 120, "first_block_terminal_multi_start_unresolved_allowed": False, "gamut_inference": "prohibited", "continuation_generation": 0},
