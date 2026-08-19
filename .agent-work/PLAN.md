@@ -20,5 +20,7 @@
 - Gate: Ray bracket, base pair, candidate 3-way repeatability, order-balanced
   candidate-minus-base effect, and direct target-local candidate result.
 
-Branches: faithful→H120/S50; stable nonfaithful/locally inadequate/repeatability
-failure→3072 diagnostic. Keep 13-node grid, boundary, Gate-6, P8 and LUT locked.
+Short result: Ray bracket passed, but base pair compatibility failed; classify
+`S-D / H120_S100_CW_active_fullscale_fast_repeatability_unresolved`.
+This unlocks the existing 3072 closed-loop diagnostic, without implying gamut or
+physical unreachability. Keep 13-node grid, boundary, Gate-6, P8 and LUT locked.

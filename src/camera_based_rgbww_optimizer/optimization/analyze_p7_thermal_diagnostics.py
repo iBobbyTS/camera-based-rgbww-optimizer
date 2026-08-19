@@ -492,7 +492,7 @@ def analyze_thermal_run(
                 validation_plan = _load_json(runtime_plan_path)
                 local_protocol_evidence = _load_json(evidence_path)
         _validate_required_execution_artifacts(
-            root, allow_python_direct=guide6_direct,
+            root, allow_python_direct=guide6_direct, allow_short_endpoint=short_endpoint,
         )
         _validate_reproducibility_checkpoint(root, plan, run)
         captures = _load_jsonl(root / "captures.jsonl")
@@ -572,6 +572,7 @@ def analyze_thermal_run(
                     "direct_td_c_fast_endpoint_holdout_v1",
                     "direct_guide6_target_local_h120_s100_v1",
                     "direct_guide7_f2_alternate_face_v1",
+                    "direct_guide7_f2_short_endpoint_v1",
                 }
             ):
                 ray_zero = capture.get("ray_zero_before_capture")
@@ -597,11 +598,7 @@ def analyze_thermal_run(
             or quality.get("rows") != expected_quality_rows
         ):
             raise ValueError("direct quality artifact did not pass")
-        if short_endpoint:
-            result = analyze_guide7_f2_short_endpoint(
-                formal_rows, feature_ids=feature_ids,
-            )
-        elif guide6_direct and local_protocol_evidence is not None:
+        if guide6_direct and local_protocol_evidence is not None and not short_endpoint:
             if local_protocol_evidence.get("counts", {}).get("total") != len(formal):
                 raise ValueError("GUIDE6 adaptive evidence count differs from captures")
             local_commands = _load_jsonl(root / "commands.jsonl")
@@ -612,7 +609,7 @@ def analyze_thermal_run(
                 raise ValueError("GUIDE6 isolation ledger lacks per-measurement gates")
             if any(row.get("evidence", {}).get("status") != "pass" for row in local_gates):
                 raise ValueError("GUIDE6 isolation ledger contains a failed gate")
-        else:
+        elif not short_endpoint:
             _validate_commands_and_gates(plan, root)
         _validate_cleanup_and_wrapper(
             root, allow_python_direct=guide6_direct,
@@ -624,7 +621,11 @@ def analyze_thermal_run(
             enriched["engineering_quality_status"] = "pass"
             enriched["run_root"] = str(root)
             formal_rows.append(enriched)
-        if guide6_direct:
+        if short_endpoint:
+            result = analyze_guide7_f2_short_endpoint(
+                formal_rows, feature_ids=feature_ids,
+            )
+        elif guide6_direct:
             result = analyze_td_c_direct_target_local(
                 formal_rows,
                 feature_ids=feature_ids,
@@ -665,13 +666,16 @@ def _stable_spec(value: Mapping[str, Any]) -> dict[str, Any]:
 
 def _validate_required_execution_artifacts(
     root: Path, *, allow_python_direct: bool = False,
+    allow_short_endpoint: bool = False,
 ) -> None:
     required = [
         "captures.jsonl", "physical-returns.jsonl", "quality.json",
-        "commands.jsonl", "commands-audit.json", "isolation-gates.jsonl",
+        "commands-audit.json", "isolation-gates.jsonl",
         "all-off-python.json",
         "input-checkpoint.json",
     ]
+    if not allow_short_endpoint:
+        required.append("commands.jsonl")
     if not allow_python_direct:
         required.extend((
             "all-off-shell.json", "all-off-shell.exit-status.txt",
@@ -1892,8 +1896,10 @@ def analyze_guide7_f2_short_endpoint(
     base_repeat = frozen_same_state_compatibility_diagnostic(_unit(_features(by_role["base_1"], feature_ids), feature_ids), _unit(_features(by_role["base_2"], feature_ids), feature_ids), source="strip", state="A", feature_ids=feature_ids)
     candidate_repeat = all(item["decision"] == "pass" for item in candidates)
     candidate_pass = all(item["decision"] == "pass" for item in candidates)
-    if ray_bracket["decision"] != "pass" or base_repeat["decision"] != "pass":
+    if ray_bracket["decision"] != "pass":
         branch, classification = "S-E", "target_block_invalid"
+    elif base_repeat["decision"] != "pass":
+        branch, classification = "S-D", "H120_S100_CW_active_fullscale_fast_repeatability_unresolved"
     elif not candidate_repeat:
         branch, classification = "S-D", "H120_S100_CW_active_fullscale_fast_repeatability_unresolved"
     elif candidate_pass:
