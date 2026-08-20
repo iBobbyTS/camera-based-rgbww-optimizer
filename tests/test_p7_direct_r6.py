@@ -166,6 +166,9 @@ class DirectR6Tests(unittest.TestCase):
                 "direct_strip_history_session_v1",
                 "direct_td_c_fast_endpoint_holdout_v1",
                 "direct_guide6_target_local_h120_s100_v1",
+                "direct_guide7_f2_alternate_face_v1",
+                "direct_guide7_f2_short_endpoint_v1",
+                "direct_guide7_f2_scale3072_stability_v1",
                 "direct_guide6_strip_exposure_qualification_v1",
             }:
                 output["ray_zero_before_capture"] = {
@@ -219,6 +222,9 @@ class DirectR6Tests(unittest.TestCase):
             "direct_strip_history_session_v1",
             "direct_ray_fast_long_bridge_session_v1",
             "direct_guide6_target_local_h120_s100_v1",
+            "direct_guide7_f2_alternate_face_v1",
+            "direct_guide7_f2_short_endpoint_v1",
+            "direct_guide7_f2_scale3072_stability_v1",
             "direct_guide8_ray_emission_exposure_v1",
             "direct_guide6_strip_exposure_qualification_v1",
         }
@@ -1986,6 +1992,61 @@ class DirectR6Tests(unittest.TestCase):
         base = plan["local_controllability_contract"]["base_command"]
         self.assertEqual(commands[-4:-1], [base, base, base])
         self.assertEqual(result["lc_branch"], "LC-C")
+
+    def test_guide7_scale3072_plan_is_stability_first_and_bounded(self):
+        plan = thermal.build_direct_plan(
+            thermal.TD_C,
+            variant=thermal.GUIDE7_F2_SCALE3072_STABILITY_VARIANT,
+        )
+        self.assertEqual(
+            plan["guide_experiment_id"],
+            thermal.GUIDE7_F2_SCALE3072_STABILITY_EXPERIMENT_ID,
+        )
+        self.assertEqual(plan["budgets"], {
+            "ray_cap": 2, "strip_cap": 3, "formal_cap": 5,
+            "physical_cr3_cap": 5, "ambient_cap": 0, "retry": 0,
+        })
+        self.assertEqual(
+            [step["role"] for step in plan["captures"]],
+            [
+                "ray_q_before", "scale3072_repeat_1", "scale3072_repeat_2",
+                "scale3072_repeat_3", "ray_q_after",
+            ],
+        )
+        strip = [step for step in plan["captures"] if step["source_id"] == "strip"]
+        self.assertTrue(all(step["command"] == {
+            "cw": 3072, "ww": 0, "r": 0, "g": 3072, "b": 0,
+        } for step in strip))
+        self.assertTrue(plan["hard_locks"]["probes_until_stability_pass"])
+        self.assertTrue(plan["hard_locks"]["solver_until_stability_pass"])
+        self.assertFalse(plan["analysis_contract"]["cross_experiment_absolute_synthesis"])
+        measure.validate_authorized_execution_plan(plan)
+
+    def test_guide7_scale3072_fake_vertical_slice_and_analyzer(self):
+        plan = thermal.build_direct_plan(
+            thermal.TD_C,
+            variant=thermal.GUIDE7_F2_SCALE3072_STABILITY_VARIANT,
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "scale3072"
+            self._execute_fake_protocol(plan, root)
+            self.assertEqual(
+                len((root / "captures.jsonl").read_text().splitlines()), 5,
+            )
+            evidence = json.loads(
+                (root / "scale3072-stability-evidence.json").read_text()
+            )
+            self.assertEqual(evidence["capture_count"], 5)
+            self.assertFalse((root / "local-controllability.json").exists())
+            feature_ids = tuple(
+                json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"]
+            )
+            report = analyze.analyze_thermal_run(root, feature_ids=feature_ids)
+            self.assertEqual(report["branch"], "R-FAITHFUL")
+            self.assertEqual(report["probes_executed"], 0)
+            self.assertEqual(report["solver_candidates_executed"], 0)
+            self.assertEqual(report["next"], "H120/S50")
+            self.assertEqual(report["gamut_inference"], "prohibited")
 
     def _run_fake_guide6_protocol(
         self, residual_scale=1.0, *, irreducible=0.0, abort_role=None,

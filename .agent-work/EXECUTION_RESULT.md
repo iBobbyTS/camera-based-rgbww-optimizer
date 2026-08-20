@@ -13,3 +13,7 @@
 - Classification: `S-D / H120_S100_CW_active_fullscale_fast_repeatability_unresolved`.
 - Existing 3072 closed-loop diagnostic is unlocked. This is not a gamut or
   physical-unreachability conclusion; later grid/boundary/Gate-6/P8/LUT remain locked.
+- The old P7 pilot formal-policy path was rejected as the wrong owner because its
+  v2 policy is intentionally waiting/non-executable.
+- A direct GUIDE7 scale-3072 stability-first variant now owns the next scientific
+  action: 5 captures, three reset-separated strip repeats, no probes or solver.

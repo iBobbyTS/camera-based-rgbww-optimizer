@@ -450,7 +450,10 @@ def analyze_thermal_run(
             "direct_guide7_f2_alternate_face_v1",
         }
         short_endpoint = direct_schema == "direct_guide7_f2_short_endpoint_v1"
-        guide6_direct = guide6_direct or short_endpoint
+        scale3072_stability = (
+            direct_schema == "direct_guide7_f2_scale3072_stability_v1"
+        )
+        guide6_direct = guide6_direct or short_endpoint or scale3072_stability
         prerequisite = plan.get("scientific_prerequisite")
         if (
             not guide6_direct
@@ -492,7 +495,8 @@ def analyze_thermal_run(
                 validation_plan = _load_json(runtime_plan_path)
                 local_protocol_evidence = _load_json(evidence_path)
         _validate_required_execution_artifacts(
-            root, allow_python_direct=guide6_direct, allow_short_endpoint=short_endpoint,
+            root, allow_python_direct=guide6_direct,
+            allow_short_endpoint=short_endpoint or scale3072_stability,
         )
         _validate_reproducibility_checkpoint(root, plan, run)
         captures = _load_jsonl(root / "captures.jsonl")
@@ -573,6 +577,7 @@ def analyze_thermal_run(
                     "direct_guide6_target_local_h120_s100_v1",
                     "direct_guide7_f2_alternate_face_v1",
                     "direct_guide7_f2_short_endpoint_v1",
+                    "direct_guide7_f2_scale3072_stability_v1",
                 }
             ):
                 ray_zero = capture.get("ray_zero_before_capture")
@@ -609,7 +614,7 @@ def analyze_thermal_run(
                 raise ValueError("GUIDE6 isolation ledger lacks per-measurement gates")
             if any(row.get("evidence", {}).get("status") != "pass" for row in local_gates):
                 raise ValueError("GUIDE6 isolation ledger contains a failed gate")
-        elif not short_endpoint:
+        elif not (short_endpoint or scale3072_stability):
             _validate_commands_and_gates(plan, root)
         _validate_cleanup_and_wrapper(
             root, allow_python_direct=guide6_direct,
@@ -621,7 +626,11 @@ def analyze_thermal_run(
             enriched["engineering_quality_status"] = "pass"
             enriched["run_root"] = str(root)
             formal_rows.append(enriched)
-        if short_endpoint:
+        if scale3072_stability:
+            result = analyze_guide7_f2_scale3072_stability(
+                formal_rows, feature_ids=feature_ids,
+            )
+        elif short_endpoint:
             result = analyze_guide7_f2_short_endpoint(
                 formal_rows, feature_ids=feature_ids,
             )
@@ -1907,6 +1916,86 @@ def analyze_guide7_f2_short_endpoint(
     else:
         branch, classification = "S-B", "H120_S100_CW_face_stable_nonfaithful_under_short_fast_block"
     return {"status": "guide7_f2_short_endpoint_classified", "branch": branch, "classification": classification, "measurement_valid": branch != "S-E", "faithful": branch == "S-A", "ray_bracket": ray_bracket, "base_direct_contrasts": bases, "candidate_direct_contrasts": candidates, "base_repeatability": base_repeat, "candidate_repeatability": candidate_repeat, "next": "H120/S50" if branch == "S-A" else "GUIDE7_H120_S100_MAX_CODE_3072_DIAGNOSTIC" if branch in {"S-B", "S-C", "S-D"} else "S-MEASUREMENT", "gamut_inference": "prohibited", "steady_claim": False}
+
+
+def analyze_guide7_f2_scale3072_stability(
+    captures: Sequence[Mapping[str, Any]], *, feature_ids: Sequence[str],
+) -> dict[str, Any]:
+    """Gate the 3072 route on reset-separated short-block repeatability first."""
+    by_role = {str(row["plan_step"]["role"]): row for row in captures}
+    repeat_roles = tuple(f"scale3072_repeat_{index}" for index in range(1, 4))
+    required = {"ray_q_before", "ray_q_after", *repeat_roles}
+    if set(by_role) != required:
+        raise ValueError("GUIDE7 scale3072 stability run lacks its five exact observations")
+    ray_before = _unit(_features(by_role["ray_q_before"], feature_ids), feature_ids)
+    ray_after = _unit(_features(by_role["ray_q_after"], feature_ids), feature_ids)
+    repeats = [
+        _unit(_features(by_role[role], feature_ids), feature_ids)
+        for role in repeat_roles
+    ]
+    ray_bracket = frozen_same_state_compatibility_diagnostic(
+        ray_before, ray_after, source="ray", state="A", feature_ids=feature_ids,
+    )
+    repeatability = []
+    for left_index in range(len(repeats)):
+        for right_index in range(left_index + 1, len(repeats)):
+            repeatability.append({
+                "left": repeat_roles[left_index], "right": repeat_roles[right_index],
+                **frozen_same_state_compatibility_diagnostic(
+                    repeats[left_index], repeats[right_index],
+                    source="strip", state="A", feature_ids=feature_ids,
+                ),
+            })
+    ray_target = (ray_before + ray_after) / 2.0
+    variance = (
+        _same_state_variance(source="strip", state="A")
+        + _same_state_variance(source="ray", state="A") / 2.0
+    )
+    direct = []
+    for role, vector in zip(repeat_roles, repeats, strict=True):
+        residual = vector - ray_target
+        calibration_center = (
+            residual if float(np.linalg.norm(residual)) > 1e-15
+            else np.ones_like(residual)
+        )
+        limits = calibrate_direct_limits(calibration_center, variance, samples=1000)
+        value = direct_whitened_norm(residual, variance)
+        direct.append({
+            "role": role, "score": float(value),
+            "guarded_limit": float(limits["guarded_limit"]),
+            "decision": "pass" if value <= float(limits["guarded_limit"]) else "fail",
+        })
+    stable = all(item["decision"] == "pass" for item in repeatability)
+    faithful = stable and all(item["decision"] == "pass" for item in direct)
+    if ray_bracket["decision"] != "pass":
+        branch = "R-REFERENCE"
+        classification = "scale3072_target_block_reference_invalid"
+        next_action = "S-MEASUREMENT"
+    elif not stable:
+        branch = "R-UNSTABLE"
+        classification = "scale3072_short_repeatability_unresolved"
+        next_action = "GUIDE7_H120_S100_MAX_CODE_2048_STABILITY_DIAGNOSTIC"
+    elif faithful:
+        branch = "R-FAITHFUL"
+        classification = "scale3072_stable_faithful_full_scale_operating_boundary"
+        next_action = "H120/S50"
+    else:
+        branch = "R-STABLE-NONFAITHFUL"
+        classification = "scale3072_stable_nonfaithful_closed_loop_required"
+        next_action = "GUIDE7_H120_S100_MAX_CODE_3072_CLOSED_LOOP"
+    return {
+        "status": "guide7_f2_scale3072_stability_classified",
+        "branch": branch, "classification": classification,
+        "measurement_valid": branch != "R-REFERENCE", "faithful": faithful,
+        "ray_bracket": ray_bracket,
+        "strip_repeatability": repeatability,
+        "direct_target_local_contrasts": direct,
+        "tested_command": {"cw": 3072, "ww": 0, "r": 0, "g": 3072, "b": 0},
+        "max_code": 3072, "stability_first": True,
+        "probes_executed": 0, "solver_candidates_executed": 0,
+        "next": next_action, "gamut_inference": "prohibited",
+        "steady_claim": False,
+    }
 
 
 def analyze_guide6_local_controllability(

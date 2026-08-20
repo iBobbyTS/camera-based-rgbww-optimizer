@@ -1,4 +1,4 @@
-# PLAN — GUIDE7 short order-balanced CW endpoint
+# PLAN — GUIDE7 3072 stability-first diagnostic
 
 ## Accepted offline correction
 
@@ -8,19 +8,25 @@
   `.agent-work/analysis-v2-f2-locally-bracketed-probes-derived.json`.
 - Both roots select candidate `CW4095/WW0/R0/G4095/B0`; no parent artifact was modified.
 
+## Accepted short endpoint result
+
+- `GUIDE7_H120_S100_F2_CW_SHORT_ORDER_BALANCED_ENDPOINT_V1` completed 7/7.
+- Ray bracket passed, but full-scale base repeatability failed.
+- Classification: `S-D / H120_S100_CW_active_fullscale_fast_repeatability_unresolved`.
+- This is not gamut or physical unreachability; it unlocks scale 3072 only.
+
 ## Exact next experiment
 
-- ID: `GUIDE7_H120_S100_F2_CW_SHORT_ORDER_BALANCED_ENDPOINT_V1`.
-- Base: `CW4095/WW0/R0/G3839/B0`.
-- Candidate: `CW4095/WW0/R0/G4095/B0`.
-- Ray Q_before/Q_after: reset600, D120/A120/Q120, Ray `1/5000`.
-- Strip sessions: reset-separated, base→candidate; candidate→base; candidate.
-- Strip `1/400`; Ray zero before every strip capture; strip zero before Ray captures.
-- 7 total captures, ambient 0, retry 0, no probes and no in-run solver.
-- Gate: Ray bracket, base pair, candidate 3-way repeatability, order-balanced
-  candidate-minus-base effect, and direct target-local candidate result.
+- ID: `GUIDE7_H120_S100_F2_CW_SCALE3072_STABILITY_V1`.
+- Ray Q_before/Q_after: reset600, D120/A120/Q120, shutter `1/5000`.
+- Strip command: `CW3072/WW0/R0/G3072/B0`, shutter `1/400`.
+- Three reset-separated strip observations, each `reset600 -> D120 -> A120 -> tested120`.
+- Budget: 2 Ray + 3 strip = 5 formal/physical, ambient 0, retry 0.
+- Source isolation and final cleanup/zero are mandatory.
+- Stability-first: no probe or solver candidate may run in this experiment.
+- If the three strip observations are compatible, classify direct faithfulness and
+  either proceed to H120/S50 or unlock the 3072 closed-loop block.
+- If unstable, follow the optional 2048 diagnostic branch; if Ray/quality/isolation
+  fails, follow the existing reference/measurement branch.
 
-Short result: Ray bracket passed, but base pair compatibility failed; classify
-`S-D / H120_S100_CW_active_fullscale_fast_repeatability_unresolved`.
-This unlocks the existing 3072 closed-loop diagnostic, without implying gamut or
-physical unreachability. Keep 13-node grid, boundary, Gate-6, P8 and LUT locked.
+Keep 13-node grid, boundary, Gate-6, P8 and LUT installation locked.

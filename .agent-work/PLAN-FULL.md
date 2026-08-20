@@ -10,8 +10,10 @@
    Advisor accepted both roots and closed the G-active full-scale face.
 5. Advisor resolved the two F2 long-block failures as reproducible cumulative
    history shift. Offline probe bracketing preregistered a single candidate.
-6. Execute the 7-capture short order-balanced CW endpoint. Faithful unlocks S50;
-   stable nonfaithful/locally inadequate/repeatability failure unlocks 3072.
+6. Completed: the 7-capture short endpoint returned S-D because full-scale base
+   repeatability failed while the Ray bracket passed.
+7. Execute the 5-capture scale-3072 stability-first diagnostic. Only a stable
+   3072 short block may unlock probes/candidates; faithful proceeds to H120/S50.
 
 Persistent locks remain unchanged: no cross-experiment absolute synthesis,
 B pre/post, solver sentinel, 13-node grid, boundary, Gate-6, P8 or LUT install

@@ -58,6 +58,10 @@ GUIDE7_F2_EXPERIMENT_ID = "GUIDE7_H120_S100_F2_ALTERNATE_FACE_CONTROLLABILITY_V1
 GUIDE7_F2_VARIANT = "guide7-h120-s100-f2-alternate-face"
 GUIDE7_F2_SHORT_ENDPOINT_EXPERIMENT_ID = "GUIDE7_H120_S100_F2_CW_SHORT_ORDER_BALANCED_ENDPOINT_V1"
 GUIDE7_F2_SHORT_ENDPOINT_VARIANT = "guide7-f2-cw-short-order-balanced-endpoint"
+GUIDE7_F2_SCALE3072_STABILITY_EXPERIMENT_ID = (
+    "GUIDE7_H120_S100_F2_CW_SCALE3072_STABILITY_V1"
+)
+GUIDE7_F2_SCALE3072_STABILITY_VARIANT = "guide7-f2-cw-scale3072-stability"
 GUIDE8_RAY_EMISSION_EXPOSURE_EXPERIMENT_ID = (
     "GUIDE8_RAY_H120_S100_EMISSION_EXPOSURE_DIAG_V1"
 )
@@ -975,6 +979,8 @@ def build_direct_plan(
         plan = _build_guide7_f2_alternate_face_plan()
     elif experiment_id == TD_C and variant == GUIDE7_F2_SHORT_ENDPOINT_VARIANT:
         plan = _build_guide7_f2_short_endpoint_plan()
+    elif experiment_id == TD_C and variant == GUIDE7_F2_SCALE3072_STABILITY_VARIANT:
+        plan = _build_guide7_f2_scale3072_stability_plan()
     else:
         if experiment_id == TD_C and variant != "core":
             raise ValueError("TD-C direct execution supports core or frozen GUIDE5 variants")
@@ -998,6 +1004,7 @@ def build_direct_plan(
                 GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT,
                 GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT,
                 GUIDE7_F2_SHORT_ENDPOINT_VARIANT,
+                GUIDE7_F2_SCALE3072_STABILITY_VARIANT,
             }
             else "deferred_diagnostic_only"
             if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT
@@ -1017,15 +1024,17 @@ def build_direct_plan(
                 if variant == GUIDE7_F2_VARIANT
                 else "direct_guide7_f2_short_endpoint_v1"
                 if variant == GUIDE7_F2_SHORT_ENDPOINT_VARIANT
+                else "direct_guide7_f2_scale3072_stability_v1"
+                if variant == GUIDE7_F2_SCALE3072_STABILITY_VARIANT
                 else "direct_td_c_fast_anchor_direction_b_v1"
                 if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT
                 else f"direct_{'strip_td_b' if experiment_id == TD_B else 'td_c_core'}_authority_v1"
             ),
-            "human_authorization_verified": variant not in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT},
+            "human_authorization_verified": variant not in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT, GUIDE7_F2_SCALE3072_STABILITY_VARIANT},
             "human_authorization_experiment_id": (
-                None if variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT} else experiment_id
+                None if variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT, GUIDE7_F2_SCALE3072_STABILITY_VARIANT} else experiment_id
             ),
-            "bounded_device_scope": variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT},
+            "bounded_device_scope": variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT, GUIDE7_F2_SCALE3072_STABILITY_VARIANT},
             "human_authorization_required": False,
             "experiment_id": (
                 TD_C_FAST_ENDPOINT_HOLDOUT_EXPERIMENT_ID
@@ -1038,6 +1047,8 @@ def build_direct_plan(
                 if variant == GUIDE7_F2_VARIANT else
                 GUIDE7_F2_SHORT_ENDPOINT_EXPERIMENT_ID
                 if variant == GUIDE7_F2_SHORT_ENDPOINT_VARIANT else
+                GUIDE7_F2_SCALE3072_STABILITY_EXPERIMENT_ID
+                if variant == GUIDE7_F2_SCALE3072_STABILITY_VARIANT else
                 TD_C_FAST_ANCHOR_DIRECTION_B_EXPERIMENT_ID
                 if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT else experiment_id
             ),
@@ -1581,6 +1592,93 @@ def _build_guide7_f2_short_endpoint_plan() -> dict[str, Any]:
     add(5, "strip", "candidate_3", candidate)
     add(6, "ray", "ray_q_after", RAY_STATES["A"])
     return {"schema": PLAN_SCHEMA_V2, "status": "execute_authorized", "experiment_id": TD_C, "guide_experiment_id": GUIDE7_F2_SHORT_ENDPOINT_EXPERIMENT_ID, "variant": GUIDE7_F2_SHORT_ENDPOINT_VARIANT, "stage": "GUIDE7-F2-SHORT-ENDPOINT", "phase": "formal", "source": "target_local_pair", "created_at": datetime.now(timezone.utc).isoformat(), "inputs": {"location": file_reference(LOCATION_PATH), "policy": file_reference(POLICY_PATH), "code_duty_curve": file_reference(CURVE_PATH)}, "target": {"hue": 120, "sat": 100, "intensity": 100}, "captures": captures, "capture_ids": [x["capture_id"] for x in captures], "timing_contract": timing_contract(2), "cold_proxy": 600, "cold_proxy_wait_s": 600, "native_raw_ambient_policy": AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT, "frozen_shutters": {"ray-h120-s100": "1/5000", "strip-h120-s100-fullscale": "1/400"}, "exposure_setup_required": [], "shutter_ledger_provenance": {"owner": "experiment_capture_steps", "required_cache_keys": ["ray-h120-s100", "strip-h120-s100-fullscale"], "frozen_shutters_sha256": canonical_sha256({"ray-h120-s100": "1/5000", "strip-h120-s100-fullscale": "1/400"})}, "budgets": {"formal_cap": 7, "physical_cr3_cap": 7, "ambient_cap": 0, "retry": 0}, "execution_authorization": {"schema": "direct_guide7_f2_short_endpoint_v1", "human_authorization_required": False, "human_authorization_verified": True, "human_authorization_experiment_id": GUIDE7_F2_SHORT_ENDPOINT_EXPERIMENT_ID, "bounded_device_scope": True, "experiment_id": GUIDE7_F2_SHORT_ENDPOINT_EXPERIMENT_ID, "remote_v2_capability": True}, "analysis_contract": {"base_command": base, "candidate_command": candidate, "order_balanced": True, "no_probes": True, "no_solver": True, "steady_claim": False}, "formal_capture_eligible": True}
+
+
+def _build_guide7_f2_scale3072_stability_plan() -> dict[str, Any]:
+    """Build the stability-first phase of the unlocked 3072 diagnostic."""
+    ray = _command("ray", "A", load_r1_commands())
+    command = {"cw": 3072, "ww": 0, "r": 0, "g": 3072, "b": 0}
+    captures: list[dict[str, Any]] = []
+
+    def add(index: int, source: str, role: str, tested: Mapping[str, Any]) -> None:
+        captures.append({
+            "capture_id": f"{index:03d}-{source}-f2-scale3072-{role}",
+            "source_id": source, "state_id": "A", "role": role,
+            "capture_role": "formal", "formal_measurement": True,
+            "command": dict(tested), "exact_command_hash": canonical_sha256(tested),
+            "requested_elapsed_s": 120,
+            "nominal_shutter": "1/5000" if source == "ray" else "1/400",
+            "exposure_cache_key": (
+                "ray-h120-s100" if source == "ray"
+                else "strip-h120-s100-scale3072"
+            ),
+            "timing_acceptance": "observed_elapsed_record_only",
+            "strip_zero_required": source == "ray",
+            "ray_zero_required": source == "strip",
+            "session_index": index, "steady_claim": False,
+        })
+
+    add(0, "ray", "ray_q_before", ray)
+    for index in range(1, 4):
+        add(index, "strip", f"scale3072_repeat_{index}", command)
+    add(4, "ray", "ray_q_after", ray)
+    frozen = {
+        "ray-h120-s100": "1/5000",
+        "strip-h120-s100-scale3072": "1/400",
+    }
+    return {
+        "schema": PLAN_SCHEMA_V2, "status": "execute_authorized",
+        "experiment_id": TD_C,
+        "guide_experiment_id": GUIDE7_F2_SCALE3072_STABILITY_EXPERIMENT_ID,
+        "variant": GUIDE7_F2_SCALE3072_STABILITY_VARIANT,
+        "stage": "GUIDE7-F2-SCALE3072-STABILITY-FIRST", "phase": "formal",
+        "source": "target_local_pair", "created_at": datetime.now(timezone.utc).isoformat(),
+        "inputs": {
+            "location": file_reference(LOCATION_PATH),
+            "policy": file_reference(POLICY_PATH),
+            "uncertainty": file_reference(UNCERTAINTY_PATH),
+            "code_duty_curve": file_reference(CURVE_PATH),
+        },
+        "target": {"hue": 120, "sat": 100, "intensity": 100},
+        "captures": captures, "capture_ids": [item["capture_id"] for item in captures],
+        "timing_contract": timing_contract(2), "cold_proxy": 600,
+        "cold_proxy_wait_s": 600,
+        "native_raw_ambient_policy": AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+        "frozen_shutters": frozen, "exposure_setup_required": [],
+        "shutter_ledger_provenance": {
+            "owner": "experiment_capture_steps",
+            "required_cache_keys": sorted(frozen),
+            "frozen_shutters_sha256": canonical_sha256(frozen),
+        },
+        "budgets": {
+            "ray_cap": 2, "strip_cap": 3, "formal_cap": 5,
+            "physical_cr3_cap": 5, "ambient_cap": 0, "retry": 0,
+        },
+        "execution_authorization": {
+            "schema": "direct_guide7_f2_scale3072_stability_v1",
+            "human_authorization_required": False,
+            "human_authorization_verified": True,
+            "human_authorization_experiment_id": GUIDE7_F2_SCALE3072_STABILITY_EXPERIMENT_ID,
+            "bounded_device_scope": True,
+            "experiment_id": GUIDE7_F2_SCALE3072_STABILITY_EXPERIMENT_ID,
+            "remote_v2_capability": True,
+        },
+        "analysis_contract": {
+            "method": "direct_target_local_scale3072_stability_first",
+            "tested_command": command, "max_code": 3072,
+            "repeat_count": 3, "reset_separated": True,
+            "probes_allowed_before_stability_pass": False,
+            "solver_candidates_allowed_before_stability_pass": False,
+            "cross_experiment_absolute_synthesis": False,
+            "gamut_inference": "prohibited", "steady_claim": False,
+        },
+        "formal_capture_eligible": True,
+        "hard_locks": {
+            "probes_until_stability_pass": True, "solver_until_stability_pass": True,
+            "13_node_grid": True, "boundary": True, "Gate-6": True,
+            "P8": True, "LUT_install": True,
+        },
+    }
 
 
 def _build_guide6_strip_exposure_qualification_plan() -> dict[str, Any]:
