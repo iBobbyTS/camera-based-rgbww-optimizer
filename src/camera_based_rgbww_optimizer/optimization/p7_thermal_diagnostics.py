@@ -62,6 +62,10 @@ GUIDE7_F2_SCALE3072_STABILITY_EXPERIMENT_ID = (
     "GUIDE7_H120_S100_F2_CW_SCALE3072_STABILITY_V1"
 )
 GUIDE7_F2_SCALE3072_STABILITY_VARIANT = "guide7-f2-cw-scale3072-stability"
+GUIDE7_F2_SCALE2048_STABILITY_EXPERIMENT_ID = (
+    "GUIDE7_H120_S100_F2_CW_SCALE2048_STABILITY_V1"
+)
+GUIDE7_F2_SCALE2048_STABILITY_VARIANT = "guide7-f2-cw-scale2048-stability"
 GUIDE8_RAY_EMISSION_EXPOSURE_EXPERIMENT_ID = (
     "GUIDE8_RAY_H120_S100_EMISSION_EXPOSURE_DIAG_V1"
 )
@@ -981,6 +985,8 @@ def build_direct_plan(
         plan = _build_guide7_f2_short_endpoint_plan()
     elif experiment_id == TD_C and variant == GUIDE7_F2_SCALE3072_STABILITY_VARIANT:
         plan = _build_guide7_f2_scale3072_stability_plan()
+    elif experiment_id == TD_C and variant == GUIDE7_F2_SCALE2048_STABILITY_VARIANT:
+        plan = _build_guide7_f2_scale2048_stability_plan()
     else:
         if experiment_id == TD_C and variant != "core":
             raise ValueError("TD-C direct execution supports core or frozen GUIDE5 variants")
@@ -1005,6 +1011,7 @@ def build_direct_plan(
                 GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT,
                 GUIDE7_F2_SHORT_ENDPOINT_VARIANT,
                 GUIDE7_F2_SCALE3072_STABILITY_VARIANT,
+                GUIDE7_F2_SCALE2048_STABILITY_VARIANT,
             }
             else "deferred_diagnostic_only"
             if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT
@@ -1026,15 +1033,17 @@ def build_direct_plan(
                 if variant == GUIDE7_F2_SHORT_ENDPOINT_VARIANT
                 else "direct_guide7_f2_scale3072_stability_v1"
                 if variant == GUIDE7_F2_SCALE3072_STABILITY_VARIANT
+                else "direct_guide7_f2_scale2048_stability_v1"
+                if variant == GUIDE7_F2_SCALE2048_STABILITY_VARIANT
                 else "direct_td_c_fast_anchor_direction_b_v1"
                 if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT
                 else f"direct_{'strip_td_b' if experiment_id == TD_B else 'td_c_core'}_authority_v1"
             ),
-            "human_authorization_verified": variant not in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT, GUIDE7_F2_SCALE3072_STABILITY_VARIANT},
+            "human_authorization_verified": variant not in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT, GUIDE7_F2_SCALE3072_STABILITY_VARIANT, GUIDE7_F2_SCALE2048_STABILITY_VARIANT},
             "human_authorization_experiment_id": (
-                None if variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT, GUIDE7_F2_SCALE3072_STABILITY_VARIANT} else experiment_id
+                None if variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT, GUIDE7_F2_SCALE3072_STABILITY_VARIANT, GUIDE7_F2_SCALE2048_STABILITY_VARIANT} else experiment_id
             ),
-            "bounded_device_scope": variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT, GUIDE7_F2_SCALE3072_STABILITY_VARIANT},
+            "bounded_device_scope": variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT, GUIDE7_F2_SCALE3072_STABILITY_VARIANT, GUIDE7_F2_SCALE2048_STABILITY_VARIANT},
             "human_authorization_required": False,
             "experiment_id": (
                 TD_C_FAST_ENDPOINT_HOLDOUT_EXPERIMENT_ID
@@ -1049,6 +1058,8 @@ def build_direct_plan(
                 if variant == GUIDE7_F2_SHORT_ENDPOINT_VARIANT else
                 GUIDE7_F2_SCALE3072_STABILITY_EXPERIMENT_ID
                 if variant == GUIDE7_F2_SCALE3072_STABILITY_VARIANT else
+                GUIDE7_F2_SCALE2048_STABILITY_EXPERIMENT_ID
+                if variant == GUIDE7_F2_SCALE2048_STABILITY_VARIANT else
                 TD_C_FAST_ANCHOR_DIRECTION_B_EXPERIMENT_ID
                 if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT else experiment_id
             ),
@@ -1596,13 +1607,34 @@ def _build_guide7_f2_short_endpoint_plan() -> dict[str, Any]:
 
 def _build_guide7_f2_scale3072_stability_plan() -> dict[str, Any]:
     """Build the stability-first phase of the unlocked 3072 diagnostic."""
+    return _build_guide7_f2_scale_stability_plan(
+        max_code=3072,
+        experiment_id=GUIDE7_F2_SCALE3072_STABILITY_EXPERIMENT_ID,
+        variant=GUIDE7_F2_SCALE3072_STABILITY_VARIANT,
+        authorization_schema="direct_guide7_f2_scale3072_stability_v1",
+    )
+
+
+def _build_guide7_f2_scale2048_stability_plan() -> dict[str, Any]:
+    """Build the optional 2048 diagnostic after an unresolved 3072 result."""
+    return _build_guide7_f2_scale_stability_plan(
+        max_code=2048,
+        experiment_id=GUIDE7_F2_SCALE2048_STABILITY_EXPERIMENT_ID,
+        variant=GUIDE7_F2_SCALE2048_STABILITY_VARIANT,
+        authorization_schema="direct_guide7_f2_scale2048_stability_v1",
+    )
+
+
+def _build_guide7_f2_scale_stability_plan(
+    *, max_code: int, experiment_id: str, variant: str, authorization_schema: str,
+) -> dict[str, Any]:
     ray = _command("ray", "A", load_r1_commands())
-    command = {"cw": 3072, "ww": 0, "r": 0, "g": 3072, "b": 0}
+    command = {"cw": max_code, "ww": 0, "r": 0, "g": max_code, "b": 0}
     captures: list[dict[str, Any]] = []
 
     def add(index: int, source: str, role: str, tested: Mapping[str, Any]) -> None:
         captures.append({
-            "capture_id": f"{index:03d}-{source}-f2-scale3072-{role}",
+            "capture_id": f"{index:03d}-{source}-f2-scale{max_code}-{role}",
             "source_id": source, "state_id": "A", "role": role,
             "capture_role": "formal", "formal_measurement": True,
             "command": dict(tested), "exact_command_hash": canonical_sha256(tested),
@@ -1610,7 +1642,7 @@ def _build_guide7_f2_scale3072_stability_plan() -> dict[str, Any]:
             "nominal_shutter": "1/5000" if source == "ray" else "1/400",
             "exposure_cache_key": (
                 "ray-h120-s100" if source == "ray"
-                else "strip-h120-s100-scale3072"
+                else f"strip-h120-s100-scale{max_code}"
             ),
             "timing_acceptance": "observed_elapsed_record_only",
             "strip_zero_required": source == "ray",
@@ -1620,18 +1652,17 @@ def _build_guide7_f2_scale3072_stability_plan() -> dict[str, Any]:
 
     add(0, "ray", "ray_q_before", ray)
     for index in range(1, 4):
-        add(index, "strip", f"scale3072_repeat_{index}", command)
+        add(index, "strip", f"scale{max_code}_repeat_{index}", command)
     add(4, "ray", "ray_q_after", ray)
     frozen = {
         "ray-h120-s100": "1/5000",
-        "strip-h120-s100-scale3072": "1/400",
+        f"strip-h120-s100-scale{max_code}": "1/400",
     }
     return {
         "schema": PLAN_SCHEMA_V2, "status": "execute_authorized",
         "experiment_id": TD_C,
-        "guide_experiment_id": GUIDE7_F2_SCALE3072_STABILITY_EXPERIMENT_ID,
-        "variant": GUIDE7_F2_SCALE3072_STABILITY_VARIANT,
-        "stage": "GUIDE7-F2-SCALE3072-STABILITY-FIRST", "phase": "formal",
+        "guide_experiment_id": experiment_id, "variant": variant,
+        "stage": f"GUIDE7-F2-SCALE{max_code}-STABILITY-FIRST", "phase": "formal",
         "source": "target_local_pair", "created_at": datetime.now(timezone.utc).isoformat(),
         "inputs": {
             "location": file_reference(LOCATION_PATH),
@@ -1655,17 +1686,17 @@ def _build_guide7_f2_scale3072_stability_plan() -> dict[str, Any]:
             "physical_cr3_cap": 5, "ambient_cap": 0, "retry": 0,
         },
         "execution_authorization": {
-            "schema": "direct_guide7_f2_scale3072_stability_v1",
+            "schema": authorization_schema,
             "human_authorization_required": False,
             "human_authorization_verified": True,
-            "human_authorization_experiment_id": GUIDE7_F2_SCALE3072_STABILITY_EXPERIMENT_ID,
+            "human_authorization_experiment_id": experiment_id,
             "bounded_device_scope": True,
-            "experiment_id": GUIDE7_F2_SCALE3072_STABILITY_EXPERIMENT_ID,
+            "experiment_id": experiment_id,
             "remote_v2_capability": True,
         },
         "analysis_contract": {
-            "method": "direct_target_local_scale3072_stability_first",
-            "tested_command": command, "max_code": 3072,
+            "method": f"direct_target_local_scale{max_code}_stability_first",
+            "tested_command": command, "max_code": max_code,
             "repeat_count": 3, "reset_separated": True,
             "probes_allowed_before_stability_pass": False,
             "solver_candidates_allowed_before_stability_pass": False,

@@ -169,6 +169,7 @@ class DirectR6Tests(unittest.TestCase):
                 "direct_guide7_f2_alternate_face_v1",
                 "direct_guide7_f2_short_endpoint_v1",
                 "direct_guide7_f2_scale3072_stability_v1",
+                "direct_guide7_f2_scale2048_stability_v1",
                 "direct_guide6_strip_exposure_qualification_v1",
             }:
                 output["ray_zero_before_capture"] = {
@@ -225,6 +226,7 @@ class DirectR6Tests(unittest.TestCase):
             "direct_guide7_f2_alternate_face_v1",
             "direct_guide7_f2_short_endpoint_v1",
             "direct_guide7_f2_scale3072_stability_v1",
+            "direct_guide7_f2_scale2048_stability_v1",
             "direct_guide8_ray_emission_exposure_v1",
             "direct_guide6_strip_exposure_qualification_v1",
         }
@@ -2047,6 +2049,21 @@ class DirectR6Tests(unittest.TestCase):
             self.assertEqual(report["solver_candidates_executed"], 0)
             self.assertEqual(report["next"], "H120/S50")
             self.assertEqual(report["gamut_inference"], "prohibited")
+
+    def test_guide7_scale2048_plan_remains_stability_first(self):
+        plan = thermal.build_direct_plan(
+            thermal.TD_C,
+            variant=thermal.GUIDE7_F2_SCALE2048_STABILITY_VARIANT,
+        )
+        self.assertEqual(plan["budgets"]["formal_cap"], 5)
+        self.assertEqual(plan["analysis_contract"]["max_code"], 2048)
+        self.assertTrue(all(
+            step["command"] == {"cw": 2048, "ww": 0, "r": 0, "g": 2048, "b": 0}
+            for step in plan["captures"] if step["source_id"] == "strip"
+        ))
+        self.assertTrue(plan["hard_locks"]["probes_until_stability_pass"])
+        self.assertTrue(plan["hard_locks"]["solver_until_stability_pass"])
+        measure.validate_authorized_execution_plan(plan)
 
     def _run_fake_guide6_protocol(
         self, residual_scale=1.0, *, irreducible=0.0, abort_role=None,

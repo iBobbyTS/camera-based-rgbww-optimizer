@@ -245,8 +245,10 @@ def validate_authorized_execution_plan(
     )
     direct_f2_scale3072 = (
         isinstance(authorization, Mapping)
-        and authorization.get("schema")
-        == "direct_guide7_f2_scale3072_stability_v1"
+        and authorization.get("schema") in {
+            "direct_guide7_f2_scale3072_stability_v1",
+            "direct_guide7_f2_scale2048_stability_v1",
+        }
     )
     direct_guide8_emission_exposure = (
         isinstance(authorization, Mapping)
@@ -1032,8 +1034,10 @@ def execute_plan(
     )
     direct_f2_scale3072 = (
         isinstance(plan.get("execution_authorization"), Mapping)
-        and plan["execution_authorization"].get("schema")
-        == "direct_guide7_f2_scale3072_stability_v1"
+        and plan["execution_authorization"].get("schema") in {
+            "direct_guide7_f2_scale3072_stability_v1",
+            "direct_guide7_f2_scale2048_stability_v1",
+        }
     )
     direct_guide8_emission_exposure = (
         isinstance(plan.get("execution_authorization"), Mapping)
@@ -1544,12 +1548,13 @@ def execute_plan(
                 if set_capture_context_fn is not None:
                     set_capture_context_fn(owner_start)
                 captured = dict(capture_fn(step)); retain_capture(step, captured, owner_start=owner_start, chronology_group_index=len(rows)); rows.append({"step": dict(step), "capture": captured})
+            max_code = int((plan.get("analysis_contract") or {}).get("max_code", 0))
             evidence_name = (
-                "scale3072-stability-evidence.json"
+                f"scale{max_code}-stability-evidence.json"
                 if direct_f2_scale3072 else "short-endpoint-evidence.json"
             )
             evidence_schema = (
-                "guide7_f2_scale3072_stability_evidence_v1"
+                f"guide7_f2_scale{max_code}_stability_evidence_v1"
                 if direct_f2_scale3072 else "guide7_f2_short_endpoint_evidence_v1"
             )
             _write_json(root / evidence_name, {
@@ -2598,8 +2603,10 @@ def run_authorized_plan(
     )
     direct_f2_scale3072 = (
         isinstance(plan.get("execution_authorization"), Mapping)
-        and plan["execution_authorization"].get("schema")
-        == "direct_guide7_f2_scale3072_stability_v1"
+        and plan["execution_authorization"].get("schema") in {
+            "direct_guide7_f2_scale3072_stability_v1",
+            "direct_guide7_f2_scale2048_stability_v1",
+        }
     )
     direct_guide8_emission_exposure = (
         isinstance(plan.get("execution_authorization"), Mapping)
@@ -3061,7 +3068,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--source", choices=("ray", "strip"))
     parser.add_argument(
         "--variant",
-        choices=("core", "expansion", "history", thermal.TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, thermal.GUIDE7_F2_VARIANT, thermal.GUIDE7_F2_SHORT_ENDPOINT_VARIANT, thermal.GUIDE7_F2_SCALE3072_STABILITY_VARIANT, thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT, thermal.GUIDE6_STRIP_EXPOSURE_QUALIFICATION_VARIANT),
+        choices=("core", "expansion", "history", thermal.TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, thermal.GUIDE7_F2_VARIANT, thermal.GUIDE7_F2_SHORT_ENDPOINT_VARIANT, thermal.GUIDE7_F2_SCALE3072_STABILITY_VARIANT, thermal.GUIDE7_F2_SCALE2048_STABILITY_VARIANT, thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT, thermal.GUIDE6_STRIP_EXPOSURE_QUALIFICATION_VARIANT),
         default="core",
     )
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
@@ -3162,6 +3169,7 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
         thermal.GUIDE7_F2_VARIANT,
         thermal.GUIDE7_F2_SHORT_ENDPOINT_VARIANT,
         thermal.GUIDE7_F2_SCALE3072_STABILITY_VARIANT,
+        thermal.GUIDE7_F2_SCALE2048_STABILITY_VARIANT,
     }:
         raise PermissionError("GUIDE6 target-local direct path requires a frozen variant")
     if args.dry_run:

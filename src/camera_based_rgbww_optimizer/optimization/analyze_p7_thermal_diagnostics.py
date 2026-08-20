@@ -451,7 +451,10 @@ def analyze_thermal_run(
         }
         short_endpoint = direct_schema == "direct_guide7_f2_short_endpoint_v1"
         scale3072_stability = (
-            direct_schema == "direct_guide7_f2_scale3072_stability_v1"
+            direct_schema in {
+                "direct_guide7_f2_scale3072_stability_v1",
+                "direct_guide7_f2_scale2048_stability_v1",
+            }
         )
         guide6_direct = guide6_direct or short_endpoint or scale3072_stability
         prerequisite = plan.get("scientific_prerequisite")
@@ -578,6 +581,7 @@ def analyze_thermal_run(
                     "direct_guide7_f2_alternate_face_v1",
                     "direct_guide7_f2_short_endpoint_v1",
                     "direct_guide7_f2_scale3072_stability_v1",
+                    "direct_guide7_f2_scale2048_stability_v1",
                 }
             ):
                 ray_zero = capture.get("ray_zero_before_capture")
@@ -629,6 +633,7 @@ def analyze_thermal_run(
         if scale3072_stability:
             result = analyze_guide7_f2_scale3072_stability(
                 formal_rows, feature_ids=feature_ids,
+                max_code=int(plan["analysis_contract"]["max_code"]),
             )
         elif short_endpoint:
             result = analyze_guide7_f2_short_endpoint(
@@ -1920,10 +1925,13 @@ def analyze_guide7_f2_short_endpoint(
 
 def analyze_guide7_f2_scale3072_stability(
     captures: Sequence[Mapping[str, Any]], *, feature_ids: Sequence[str],
+    max_code: int = 3072,
 ) -> dict[str, Any]:
-    """Gate the 3072 route on reset-separated short-block repeatability first."""
+    """Gate a scale-relaxed route on reset-separated repeatability first."""
     by_role = {str(row["plan_step"]["role"]): row for row in captures}
-    repeat_roles = tuple(f"scale3072_repeat_{index}" for index in range(1, 4))
+    if max_code not in {3072, 2048}:
+        raise ValueError("GUIDE7 scale stability analysis only supports 3072 or 2048")
+    repeat_roles = tuple(f"scale{max_code}_repeat_{index}" for index in range(1, 4))
     required = {"ray_q_before", "ray_q_after", *repeat_roles}
     if set(by_role) != required:
         raise ValueError("GUIDE7 scale3072 stability run lacks its five exact observations")
@@ -1969,20 +1977,26 @@ def analyze_guide7_f2_scale3072_stability(
     faithful = stable and all(item["decision"] == "pass" for item in direct)
     if ray_bracket["decision"] != "pass":
         branch = "R-REFERENCE"
-        classification = "scale3072_target_block_reference_invalid"
+        classification = f"scale{max_code}_target_block_reference_invalid"
         next_action = "S-MEASUREMENT"
     elif not stable:
         branch = "R-UNSTABLE"
-        classification = "scale3072_short_repeatability_unresolved"
-        next_action = "GUIDE7_H120_S100_MAX_CODE_2048_STABILITY_DIAGNOSTIC"
+        classification = f"scale{max_code}_short_repeatability_unresolved"
+        next_action = (
+            "GUIDE7_H120_S100_MAX_CODE_2048_STABILITY_DIAGNOSTIC"
+            if max_code == 3072 else "ADVISOR_GATE_REQUIRED"
+        )
     elif faithful:
         branch = "R-FAITHFUL"
-        classification = "scale3072_stable_faithful_full_scale_operating_boundary"
+        classification = f"scale{max_code}_stable_faithful_full_scale_operating_boundary"
         next_action = "H120/S50"
     else:
         branch = "R-STABLE-NONFAITHFUL"
-        classification = "scale3072_stable_nonfaithful_closed_loop_required"
-        next_action = "GUIDE7_H120_S100_MAX_CODE_3072_CLOSED_LOOP"
+        classification = f"scale{max_code}_stable_nonfaithful_closed_loop_required"
+        next_action = (
+            "GUIDE7_H120_S100_MAX_CODE_3072_CLOSED_LOOP"
+            if max_code == 3072 else "ADVISOR_GATE_REQUIRED"
+        )
     return {
         "status": "guide7_f2_scale3072_stability_classified",
         "branch": branch, "classification": classification,
@@ -1990,8 +2004,8 @@ def analyze_guide7_f2_scale3072_stability(
         "ray_bracket": ray_bracket,
         "strip_repeatability": repeatability,
         "direct_target_local_contrasts": direct,
-        "tested_command": {"cw": 3072, "ww": 0, "r": 0, "g": 3072, "b": 0},
-        "max_code": 3072, "stability_first": True,
+        "tested_command": {"cw": max_code, "ww": 0, "r": 0, "g": max_code, "b": 0},
+        "max_code": max_code, "stability_first": True,
         "probes_executed": 0, "solver_candidates_executed": 0,
         "next": next_action, "gamut_inference": "prohibited",
         "steady_claim": False,

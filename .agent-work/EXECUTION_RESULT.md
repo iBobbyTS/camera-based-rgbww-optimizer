@@ -17,3 +17,8 @@
   v2 policy is intentionally waiting/non-executable.
 - A direct GUIDE7 scale-3072 stability-first variant now owns the next scientific
   action: 5 captures, three reset-separated strip repeats, no probes or solver.
+- Scale 3072 completed 5/5 with quality, cleanup and Ray bracket pass. Strip
+  repeatability failed (`29.5633`, `25.9046` vs `9.5614`; later pair `4.7387`).
+- Classification: `R-UNSTABLE / scale3072_short_repeatability_unresolved`.
+- The optional scale-2048 stability-first diagnostic is next; no probe, solver,
+  grid, boundary, Gate-6, P8 or LUT action is unlocked.

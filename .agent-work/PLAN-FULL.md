@@ -12,8 +12,10 @@
    history shift. Offline probe bracketing preregistered a single candidate.
 6. Completed: the 7-capture short endpoint returned S-D because full-scale base
    repeatability failed while the Ray bracket passed.
-7. Execute the 5-capture scale-3072 stability-first diagnostic. Only a stable
-   3072 short block may unlock probes/candidates; faithful proceeds to H120/S50.
+7. Completed: scale-3072 stability-first returned `R-UNSTABLE` with Ray bracket
+   pass and one early strip observation separated from the later compatible pair.
+8. Execute the optional 5-capture scale-2048 stability-first diagnostic. Faithful
+   proceeds to H120/S50; unresolved/nonfaithful returns to Advisor.
 
 Persistent locks remain unchanged: no cross-experiment absolute synthesis,
 B pre/post, solver sentinel, 13-node grid, boundary, Gate-6, P8 or LUT install
