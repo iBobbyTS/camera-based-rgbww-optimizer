@@ -9,6 +9,16 @@
 - After one complete 10/10 acquisition, run the frozen GUIDE9 analyzer once and continue to H120/S50. No more H120/S100 face, scale, probe, solver, or centered continuation.
 - 13-node grid, boundary, Gate-6, P8 and LUT remain locked.
 
+## Accepted GUIDE9 H120/S100 result
+
+- Acquisition completed 10/10 with quality, source isolation and cleanup pass.
+- Ray bracket passed: `5.7825 < 9.5430`.
+- Scale 2048 FAST/LONG repeatability passed; scale 4095 FAST passed and LONG failed (`12.7135 > 9.5616`).
+- Classification: `H120_S100_operating_repeatability_unresolved_across_tested_scales`.
+- Scale×age interaction score: `11.1009`; physical/thermal causation is not claimed.
+- H120/S100 search is closed. Next action is `GUIDE9_H120_S50_FAST_DIRECT_BATCH1_V1`.
+- Batch 1 freezes four offline-diverse commands: P2 best CW face, high-white G face, RGB-dominant R face, and the S100 continuity command. Each receives an independent reset600 and dwell120; Ray brackets the batch.
+
 ## Historical GUIDE7 record
 
 ## Accepted offline correction
