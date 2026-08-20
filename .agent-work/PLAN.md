@@ -1,4 +1,15 @@
-# PLAN — GUIDE7 2048 stability-first diagnostic
+# PLAN — GUIDE9 H120/S100 scale × source-age discrimination
+
+## Active route
+
+- GUIDE9 supersedes GUIDE7 execution branches; earlier roots remain historical evidence only.
+- Execute `GUIDE9_H120_S100_SCALE_AGE_DISCRIMINATION_V1`: Ray before/after plus four independent strip cycles.
+- Cycle order is 4095, 2048, 2048, 4095; each cycle is a verified 600 s all-zero reset, 120 s capture, then continuous 600 s capture.
+- Shutters are Ray `1/5000` and strip `1/400`; no probes, solver, ambient, or FAST/LONG pooling.
+- After one complete 10/10 acquisition, run the frozen GUIDE9 analyzer once and continue to H120/S50. No more H120/S100 face, scale, probe, solver, or centered continuation.
+- 13-node grid, boundary, Gate-6, P8 and LUT remain locked.
+
+## Historical GUIDE7 record
 
 ## Accepted offline correction
 

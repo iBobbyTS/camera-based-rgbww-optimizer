@@ -1,4 +1,14 @@
-# PLAN-FULL — GUIDE6 direct target-local recovery roadmap
+# PLAN-FULL — GUIDE9 science-first route
+
+1. Execute the single `GUIDE9_H120_S100_SCALE_AGE_DISCRIMINATION_V1` block:
+   Ray before/after plus four independent strip cycles in order 4095, 2048,
+   2048, 4095, each with separate 120 s FAST and 600 s LONG observations.
+2. Analyze FAST/LONG separately with independent reset evidence and frozen
+   observer/covariance; report per-scale age shifts and scale interaction.
+3. Stop H120/S100 search after this block and continue H120/S50 under GUIDE9.
+4. Keep 13-node grid, boundary, Gate-6, P8 and LUT locked.
+
+## Historical GUIDE7 roadmap
 
 1. Reject the two Ray-contaminated GUIDE6 strip candidates as historical-only
    evidence; never pool or import them into scientific analysis.

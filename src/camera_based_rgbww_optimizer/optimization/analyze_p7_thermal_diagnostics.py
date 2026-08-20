@@ -75,6 +75,7 @@ TD_C_ENDPOINT_SCHEMA = "guide5_td_c_fast_endpoint_holdout_analysis_v1"
 TD_C_ENDPOINT_DECOMPOSITION_SCHEMA = "guide5_td_c_fast_endpoint_residual_decomposition_v1"
 TD_C_ENDPOINT_DECOMPOSITION_V3_SCHEMA = "guide5_td_c_fast_endpoint_exact_context_decomposition_v3"
 TD_C_ENDPOINT_DECOMPOSITION_V4_SCHEMA = "guide5_td_c_fast_endpoint_exact_context_decomposition_v4"
+GUIDE9_ANALYSIS_SCHEMA = "guide9_h120_s100_scale_age_analysis_v1"
 TD_C_ENDPOINT_ROOT = Path(
     "/Volumes/4T/temp/rgbww-optimizer/guide5-td-c-fast-endpoint-holdout-20260813-073328"
 )
@@ -456,7 +457,8 @@ def analyze_thermal_run(
                 "direct_guide7_f2_scale2048_stability_v1",
             }
         )
-        guide6_direct = guide6_direct or short_endpoint or scale3072_stability
+        guide9_scale_age = direct_schema == "direct_guide9_scale_age_discrimination_v1"
+        guide6_direct = guide6_direct or short_endpoint or scale3072_stability or guide9_scale_age
         prerequisite = plan.get("scientific_prerequisite")
         if (
             not guide6_direct
@@ -499,7 +501,7 @@ def analyze_thermal_run(
                 local_protocol_evidence = _load_json(evidence_path)
         _validate_required_execution_artifacts(
             root, allow_python_direct=guide6_direct,
-            allow_short_endpoint=short_endpoint or scale3072_stability,
+            allow_short_endpoint=short_endpoint or scale3072_stability or guide9_scale_age,
         )
         _validate_reproducibility_checkpoint(root, plan, run)
         captures = _load_jsonl(root / "captures.jsonl")
@@ -582,6 +584,7 @@ def analyze_thermal_run(
                     "direct_guide7_f2_short_endpoint_v1",
                     "direct_guide7_f2_scale3072_stability_v1",
                     "direct_guide7_f2_scale2048_stability_v1",
+                    "direct_guide9_scale_age_discrimination_v1",
                 }
             ):
                 ray_zero = capture.get("ray_zero_before_capture")
@@ -630,7 +633,9 @@ def analyze_thermal_run(
             enriched["engineering_quality_status"] = "pass"
             enriched["run_root"] = str(root)
             formal_rows.append(enriched)
-        if scale3072_stability:
+        if guide9_scale_age:
+            result = analyze_guide9_scale_age_discrimination(formal_rows, feature_ids=feature_ids)
+        elif scale3072_stability:
             result = analyze_guide7_f2_scale3072_stability(
                 formal_rows, feature_ids=feature_ids,
                 max_code=int(plan["analysis_contract"]["max_code"]),
@@ -2010,6 +2015,54 @@ def analyze_guide7_f2_scale3072_stability(
         "next": next_action, "gamut_inference": "prohibited",
         "steady_claim": False,
     }
+
+
+def analyze_guide9_scale_age_discrimination(
+    captures: Sequence[Mapping[str, Any]], *, feature_ids: Sequence[str],
+) -> dict[str, Any]:
+    """Compare independent FAST/LONG observations without pooling protocols."""
+    by_role = {str(row["plan_step"]["role"]): row for row in captures}
+    required = {"ray_q_before", "ray_q_after"}
+    for cycle, scale in enumerate((4095, 2048, 2048, 4095), start=1):
+        required.update({f"scale{scale}_cycle{cycle}_fast120", f"scale{scale}_cycle{cycle}_long600"})
+    if set(by_role) != required:
+        raise ValueError("GUIDE9 requires exactly two Ray and eight strip observations")
+    ray_before = _unit(_features(by_role["ray_q_before"], feature_ids), feature_ids)
+    ray_after = _unit(_features(by_role["ray_q_after"], feature_ids), feature_ids)
+    ray_bracket = frozen_same_state_compatibility_diagnostic(ray_before, ray_after, source="ray", state="A", feature_ids=feature_ids)
+    groups: dict[int, dict[str, np.ndarray]] = {}
+    for cycle, scale in enumerate((4095, 2048, 2048, 4095), start=1):
+        groups.setdefault(scale, {})[f"fast_{cycle}"] = _unit(_features(by_role[f"scale{scale}_cycle{cycle}_fast120"], feature_ids), feature_ids)
+        groups.setdefault(scale, {})[f"long_{cycle}"] = _unit(_features(by_role[f"scale{scale}_cycle{cycle}_long600"], feature_ids), feature_ids)
+    strip_var = _same_state_variance(source="strip", state="A")
+    repeatability: dict[str, Any] = {}
+    age_shifts: dict[str, Any] = {}
+    direct: dict[str, Any] = {}
+    for scale, values in groups.items():
+        fast = [values[key] for key in sorted(values) if key.startswith("fast_")]
+        long = [values[key] for key in sorted(values) if key.startswith("long_")]
+        def pairwise(items: list[np.ndarray]) -> list[dict[str, Any]]:
+            return [{"left": i, "right": j, **frozen_same_state_compatibility_diagnostic(items[i], items[j], source="strip", state="A", feature_ids=feature_ids)} for i in range(len(items)) for j in range(i + 1, len(items))]
+        repeatability[str(scale)] = {"fast120": pairwise(fast), "long600": pairwise(long)}
+        shift = [long[i] - fast[i] for i in range(len(fast))]
+        shift_mean = np.mean(np.stack(shift), axis=0)
+        shift_scores = [direct_whitened_norm(value - shift_mean, strip_var) for value in shift]
+        age_shifts[str(scale)] = {"vectors": [value.tolist() for value in shift], "mean": shift_mean.tolist(), "reproducibility_scores": [float(v) for v in shift_scores]}
+        target = (ray_before + ray_after) / 2.0
+        direct[str(scale)] = {}
+        for label, items in (("fast120", fast), ("long600", long)):
+            mean = np.mean(np.stack(items), axis=0)
+            residual = mean - target
+            direct[str(scale)][label] = {"score": float(direct_whitened_norm(residual, strip_var + _same_state_variance(source="ray", state="A") / 2.0)), "vector": mean.tolist()}
+    scale_interaction = float(direct_whitened_norm(np.asarray(age_shifts["4095"]["mean"]) - np.asarray(age_shifts["2048"]["mean"], dtype=float), strip_var))
+    all_repeatable = all(all(item["decision"] == "pass" for item in repeatability[str(scale)][kind]) for scale in ("4095", "2048") for kind in ("fast120", "long600"))
+    if ray_bracket["decision"] != "pass":
+        classification = "target_block_invalid"
+    elif not all_repeatable:
+        classification = "H120_S100_operating_repeatability_unresolved_across_tested_scales"
+    else:
+        classification = "H120_S100_scale_age_discrimination_complete"
+    return {"schema": GUIDE9_ANALYSIS_SCHEMA, "classification": classification, "measurement_valid": ray_bracket["decision"] == "pass", "ray_bracket": ray_bracket, "repeatability": repeatability, "age_shifts": age_shifts, "direct_target_local": direct, "scale_age_interaction_score": scale_interaction, "no_more_H120_S100_search": True, "gamut_inference": "prohibited", "steady_claim": False, "next": "H120/S50"}
 
 
 def analyze_guide6_local_controllability(

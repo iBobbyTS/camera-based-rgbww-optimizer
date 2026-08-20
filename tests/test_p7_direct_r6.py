@@ -2065,6 +2065,23 @@ class DirectR6Tests(unittest.TestCase):
         self.assertTrue(plan["hard_locks"]["solver_until_stability_pass"])
         measure.validate_authorized_execution_plan(plan)
 
+    def test_guide9_scale_age_plan_freezes_independent_cycles_without_pooling(self):
+        plan = thermal.build_direct_plan(
+            thermal.TD_C, variant=thermal.GUIDE9_H120_S100_SCALE_AGE_VARIANT,
+        )
+        self.assertEqual(plan["guide_experiment_id"], thermal.GUIDE9_H120_S100_SCALE_AGE_EXPERIMENT_ID)
+        self.assertEqual(plan["budgets"]["formal_cap"], 10)
+        self.assertEqual(plan["analysis_contract"]["cycle_order"], [4095, 2048, 2048, 4095])
+        self.assertTrue(plan["analysis_contract"]["no_pool_fast_long"])
+        self.assertEqual(
+            [step["role"] for step in plan["captures"]],
+            ["ray_q_before", "scale4095_cycle1_fast120", "scale4095_cycle1_long600",
+             "scale2048_cycle2_fast120", "scale2048_cycle2_long600",
+             "scale2048_cycle3_fast120", "scale2048_cycle3_long600",
+             "scale4095_cycle4_fast120", "scale4095_cycle4_long600", "ray_q_after"],
+        )
+        measure.validate_authorized_execution_plan(plan)
+
     def _run_fake_guide6_protocol(
         self, residual_scale=1.0, *, irreducible=0.0, abort_role=None,
         cleanup_sink=None,
