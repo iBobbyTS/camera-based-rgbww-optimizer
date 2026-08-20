@@ -133,6 +133,7 @@ class DirectR6Tests(unittest.TestCase):
             if step["formal_measurement"] or plan["execution_authorization"]["schema"] in {
                 "direct_guide8_ray_emission_exposure_v1",
                 "direct_guide6_strip_exposure_qualification_v1",
+                "direct_guide9_scale_age_discrimination_v1",
             }:
                 output["feature_values"] = (
                     feature_values_fn(step)
@@ -171,6 +172,7 @@ class DirectR6Tests(unittest.TestCase):
                 "direct_guide7_f2_scale3072_stability_v1",
                 "direct_guide7_f2_scale2048_stability_v1",
                 "direct_guide6_strip_exposure_qualification_v1",
+                "direct_guide9_scale_age_discrimination_v1",
             }:
                 output["ray_zero_before_capture"] = {
                     "response": {"data": {"intensity": 0}},
@@ -229,6 +231,7 @@ class DirectR6Tests(unittest.TestCase):
             "direct_guide7_f2_scale2048_stability_v1",
             "direct_guide8_ray_emission_exposure_v1",
             "direct_guide6_strip_exposure_qualification_v1",
+            "direct_guide9_scale_age_discrimination_v1",
         }
 
         with patch.object(measure, "_validate_returned_sidecar", side_effect=fake_sidecar):
@@ -2081,6 +2084,20 @@ class DirectR6Tests(unittest.TestCase):
              "scale4095_cycle4_fast120", "scale4095_cycle4_long600", "ray_q_after"],
         )
         measure.validate_authorized_execution_plan(plan)
+
+    def test_guide9_analyzer_does_not_use_legacy_td_c_grouping(self):
+        plan = thermal.build_direct_plan(
+            thermal.TD_C, variant=thermal.GUIDE9_H120_S100_SCALE_AGE_VARIANT,
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "guide9"
+            self._execute_fake_protocol(plan, root)
+            feature_ids = tuple(
+                json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"]
+            )
+            report = analyze.analyze_thermal_run(root, feature_ids=feature_ids)
+            self.assertEqual(report["schema"], analyze.GUIDE9_ANALYSIS_SCHEMA)
+            self.assertEqual(report["next"], "H120/S50")
 
     def _run_fake_guide6_protocol(
         self, residual_scale=1.0, *, irreducible=0.0, abort_role=None,
