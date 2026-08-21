@@ -642,7 +642,7 @@ def analyze_thermal_run(
             enriched["run_root"] = str(root)
             formal_rows.append(enriched)
         if guide9_best or guide9_s25_best:
-            result = analyze_guide9_h120_s50_best_repeat(formal_rows, feature_ids=feature_ids)
+            result = analyze_guide9_h120_s50_best_repeat(formal_rows, feature_ids=feature_ids, target_sat=25 if guide9_s25_best else 50)
         elif guide9_s50:
             result = analyze_guide9_h120_s50_batch1(formal_rows, feature_ids=feature_ids)
         elif guide9_s25:
@@ -2100,7 +2100,7 @@ def analyze_guide9_h120_s50_batch1(
 
 
 def analyze_guide9_h120_s50_best_repeat(
-    captures: Sequence[Mapping[str, Any]], *, feature_ids: Sequence[str],
+    captures: Sequence[Mapping[str, Any]], *, feature_ids: Sequence[str], target_sat: int = 50,
 ) -> dict[str, Any]:
     by_role = {str(row["plan_step"]["role"]): row for row in captures}
     required = {"ray_q_before", "ray_q_after", "best_repeat_2", "best_repeat_3"}
@@ -2112,7 +2112,15 @@ def analyze_guide9_h120_s50_best_repeat(
     variance = _same_state_variance(source="strip", state="A") + _same_state_variance(source="ray", state="D") / 2.0
     repeats = [_unit(_features(by_role[role], feature_ids), feature_ids) for role in ("best_repeat_2", "best_repeat_3")]
     repeat = frozen_same_state_compatibility_diagnostic(repeats[0], repeats[1], source="strip", state="D", feature_ids=feature_ids)
-    return {"schema": "guide9_h120_s50_best_repeat_analysis_v1", "classification": "H120_S50_best_command_repeat_classified", "measurement_valid": True, "ray_bracket": frozen_same_state_compatibility_diagnostic(ray_before, ray_after, source="ray", state="D", feature_ids=feature_ids), "best_command": dict(by_role["best_repeat_2"]["plan_step"]["command"]), "repeatability": repeat, "direct_scores": [float(direct_whitened_norm(value - target, variance)) for value in repeats], "next": "H120/S25" if repeat["decision"] == "pass" else "GUIDE9_H120_S50_BATCH2_OR_STOP", "gamut_inference": "prohibited", "steady_claim": False}
+    direct_scores = [float(direct_whitened_norm(value - target, variance)) for value in repeats]
+    faithful = repeat["decision"] == "pass" and all(score <= 9.5626 for score in direct_scores)
+    if target_sat == 25:
+        classification = "H120_S25_faithful" if faithful else "faithful_region_not_established" if repeat["decision"] == "pass" else "H120_operating_repeatability_limited_down_to_S25"
+        next_action = "H0/S0"
+    else:
+        classification = "H120_S50_faithful" if faithful else "H120_S50_stable_nonfaithful" if repeat["decision"] == "pass" else "H120_S50_operating_repeatability_unresolved"
+        next_action = "H120/S25"
+    return {"schema": f"guide9_h120_s{target_sat}_best_repeat_analysis_v1", "classification": classification, "measurement_valid": True, "faithful": faithful, "ray_bracket": frozen_same_state_compatibility_diagnostic(ray_before, ray_after, source="ray", state="D", feature_ids=feature_ids), "best_command": dict(by_role["best_repeat_2"]["plan_step"]["command"]), "repeatability": repeat, "direct_scores": direct_scores, "downward_search_stopped": target_sat == 25, "next": next_action, "gamut_inference": "prohibited", "steady_claim": False}
 
 
 def analyze_guide6_local_controllability(
