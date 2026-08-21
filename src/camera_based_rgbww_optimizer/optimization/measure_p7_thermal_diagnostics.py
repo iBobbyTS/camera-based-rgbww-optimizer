@@ -264,7 +264,7 @@ def validate_authorized_execution_plan(
     )
     direct_guide9_s25 = (
         isinstance(plan.get("execution_authorization"), Mapping)
-        and plan["execution_authorization"].get("schema") == "direct_guide9_h120_s25_batch1_v1"
+        and plan["execution_authorization"].get("schema") in {"direct_guide9_h120_s25_batch1_v1", "direct_guide9_h120_s25_best_repeat_v1"}
     )
     direct_guide9_best = (
         isinstance(plan.get("execution_authorization"), Mapping)
@@ -272,7 +272,7 @@ def validate_authorized_execution_plan(
     )
     direct_guide9_s25 = (
         isinstance(plan.get("execution_authorization"), Mapping)
-        and plan["execution_authorization"].get("schema") == "direct_guide9_h120_s25_batch1_v1"
+        and plan["execution_authorization"].get("schema") in {"direct_guide9_h120_s25_batch1_v1", "direct_guide9_h120_s25_best_repeat_v1"}
     )
     direct_guide9_s25 = (
         isinstance(plan.get("execution_authorization"), Mapping)
@@ -3189,13 +3189,14 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
             thermal.GUIDE9_H120_S50_BATCH1_EXPERIMENT_ID,
             thermal.GUIDE9_H120_S50_BEST_REPEAT_EXPERIMENT_ID,
             thermal.GUIDE9_H120_S25_BATCH1_EXPERIMENT_ID,
+            thermal.GUIDE9_H120_S25_BEST_REPEAT_EXPERIMENT_ID,
         ),
         required=True,
     )
     parser.add_argument("--source", choices=("ray", "strip"))
     parser.add_argument(
         "--variant",
-        choices=("core", "expansion", "history", thermal.TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, thermal.GUIDE7_F2_VARIANT, thermal.GUIDE7_F2_SHORT_ENDPOINT_VARIANT, thermal.GUIDE7_F2_SCALE3072_STABILITY_VARIANT, thermal.GUIDE7_F2_SCALE2048_STABILITY_VARIANT, thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT, thermal.GUIDE6_STRIP_EXPOSURE_QUALIFICATION_VARIANT, thermal.GUIDE9_H120_S100_SCALE_AGE_VARIANT, thermal.GUIDE9_H120_S50_BATCH1_VARIANT, thermal.GUIDE9_H120_S50_BEST_REPEAT_VARIANT, thermal.GUIDE9_H120_S25_BATCH1_VARIANT),
+        choices=("core", "expansion", "history", thermal.TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, thermal.GUIDE7_F2_VARIANT, thermal.GUIDE7_F2_SHORT_ENDPOINT_VARIANT, thermal.GUIDE7_F2_SCALE3072_STABILITY_VARIANT, thermal.GUIDE7_F2_SCALE2048_STABILITY_VARIANT, thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT, thermal.GUIDE6_STRIP_EXPOSURE_QUALIFICATION_VARIANT, thermal.GUIDE9_H120_S100_SCALE_AGE_VARIANT, thermal.GUIDE9_H120_S50_BATCH1_VARIANT, thermal.GUIDE9_H120_S50_BEST_REPEAT_VARIANT, thermal.GUIDE9_H120_S25_BATCH1_VARIANT, thermal.GUIDE9_H120_S25_BEST_REPEAT_VARIANT),
         default="core",
     )
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
@@ -3249,6 +3250,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="execute the GUIDE9 H120/S50 best-command repeat block",
     )
     direct.add_argument("--direct-guide9-h120-s25-batch1", action="store_true", help="execute GUIDE9 H120/S25 Batch 1")
+    direct.add_argument("--direct-guide9-h120-s25-best-repeat", action="store_true", help="execute GUIDE9 H120/S25 best repeat")
     parser.add_argument("--prerequisite-analysis", type=Path)
     parser.add_argument("--human-authorization")
     parser.add_argument("--session-index", type=int, choices=(1, 2, 3))
@@ -3276,6 +3278,7 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
         "guide9-h120-s50-batch1" if args.direct_guide9_h120_s50_batch1 else
         "guide9-h120-s50-best-repeat" if args.direct_guide9_h120_s50_best_repeat else
         "guide9-h120-s25-batch1" if args.direct_guide9_h120_s25_batch1 else
+        "guide9-h120-s25-best-repeat" if args.direct_guide9_h120_s25_best_repeat else
         "td-c-core"
     )
     expected_scope = {
@@ -3309,6 +3312,7 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
             thermal.TD_C, None, thermal.GUIDE9_H120_S50_BEST_REPEAT_VARIANT,
         ),
         "guide9-h120-s25-batch1": (thermal.TD_C, None, thermal.GUIDE9_H120_S25_BATCH1_VARIANT),
+        "guide9-h120-s25-best-repeat": (thermal.TD_C, None, thermal.GUIDE9_H120_S25_BEST_REPEAT_VARIANT),
     }[direct_kind]
     expected_phase = (
         "diagnostic"
@@ -3359,7 +3363,7 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
             )
             print(output)
             return 0
-        if direct_kind in {"guide8-emission-exposure", "guide6-strip-exposure-qualification", "guide9-scale-age", "guide9-h120-s50-batch1", "guide9-h120-s50-best-repeat", "guide9-h120-s25-batch1"}:
+        if direct_kind in {"guide8-emission-exposure", "guide6-strip-exposure-qualification", "guide9-scale-age", "guide9-h120-s50-batch1", "guide9-h120-s50-best-repeat", "guide9-h120-s25-batch1", "guide9-h120-s25-best-repeat"}:
             root = (Path(args.output_dir) / args.run_name).resolve()
             root.mkdir(parents=True, exist_ok=False)
             output = root / "experiment-spec.json"
@@ -3375,6 +3379,8 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
                 else thermal.GUIDE9_H120_S50_BEST_REPEAT_VARIANT
                 if direct_kind == "guide9-h120-s50-best-repeat"
                 else thermal.GUIDE9_H120_S25_BATCH1_VARIANT
+                if direct_kind == "guide9-h120-s25-batch1"
+                else thermal.GUIDE9_H120_S25_BEST_REPEAT_VARIANT
             )
             _write_json(output, thermal.build_direct_plan(thermal.TD_C, variant=variant))
             print(output)
@@ -3458,6 +3464,8 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
         )
     if direct_kind == "guide9-h120-s25-batch1":
         plan = thermal.build_direct_plan(thermal.TD_C, variant=thermal.GUIDE9_H120_S25_BATCH1_VARIANT)
+    if direct_kind == "guide9-h120-s25-best-repeat":
+        plan = thermal.build_direct_plan(thermal.TD_C, variant=thermal.GUIDE9_H120_S25_BEST_REPEAT_VARIANT)
     if direct_kind not in {
         "ray-r6", "ray-history-3x3", "strip-history-3x3",
         "ray-fast-long-bridge", "td-c-fast-endpoint-holdout", "guide6-h120-s100",
@@ -3467,6 +3475,7 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
         "guide9-h120-s50-batch1",
         "guide9-h120-s50-best-repeat",
         "guide9-h120-s25-batch1",
+        "guide9-h120-s25-best-repeat",
     }:
         if args.prerequisite_analysis is None:
             raise PermissionError(f"{direct_kind} requires a prior scientific analysis artifact")
