@@ -2898,7 +2898,7 @@ def run_authorized_plan(
         elif (
             direct_strip_history or direct_td_c_fast_endpoint
             or direct_guide6_target_local or direct_guide7_f2 or direct_f2_short
-            or direct_f2_scale3072 or direct_guide6_strip_exposure or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_best
+            or direct_f2_scale3072 or direct_guide6_strip_exposure or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_best or direct_guide9_s25
         ):
             ray_zero_evidence = ray120c.set_cct(5600, intensity=0, gm=100)
             ray_readback = ray120c.get_cct()
@@ -2938,7 +2938,7 @@ def run_authorized_plan(
         if (
             direct_guide8_emission_exposure or direct_f2_short
             or direct_f2_scale3072 or direct_guide6_strip_exposure
-            or direct_guide9_scale_age or direct_guide9_s50
+            or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_s25
         ):
             from camera_based_rgbww_optimizer.measurement.recorded_exposure import (
                 validate_recorded_exposure_setting,
@@ -3070,7 +3070,7 @@ def run_authorized_plan(
         if (
             direct_strip_history or direct_guide6_target_local or direct_guide7_f2
             or direct_f2_short or direct_f2_scale3072
-            or direct_guide6_strip_exposure or direct_guide9_scale_age or direct_guide9_s50
+            or direct_guide6_strip_exposure or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_s25
         ):
             ray_set = ray120c.set_cct(5600, intensity=0, gm=100)
             ray_readback = ray120c.get_cct()
