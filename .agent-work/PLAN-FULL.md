@@ -1,12 +1,13 @@
 # PLAN-FULL — GUIDE9 science-first route
 
-1. Execute the single `GUIDE9_H120_S100_SCALE_AGE_DISCRIMINATION_V1` block:
-   Ray before/after plus four independent strip cycles in order 4095, 2048,
-   2048, 4095, each with separate 120 s FAST and 600 s LONG observations.
-2. Analyze FAST/LONG separately with independent reset evidence and frozen
-   observer/covariance; report per-scale age shifts and scale interaction.
-3. Stop H120/S100 search after this block and continue H120/S50 under GUIDE9.
-4. Keep 13-node grid, boundary, Gate-6, P8 and LUT locked.
+1. Completed: H120/S100 search closed after scale-age classification; H120/S50
+   was stable nonfaithful; H120/S25 established no faithful lower endpoint.
+2. Completed: H0/S0 is `H0_S0_stable_nonfaithful` with valid Ray bracket and
+   compatible strip repeats.
+3. Execute H300/S100 FAST-DIRECT Batch 1, then follow GUIDE9's bounded
+   scale-relaxed/S50/S25 branch only if needed.
+4. Reassess the 13-node grid unlock only after H300 is classified. Boundary,
+   Gate-6, P8 and LUT remain locked.
 
 ## Historical GUIDE7 roadmap
 

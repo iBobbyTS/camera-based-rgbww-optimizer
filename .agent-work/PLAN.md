@@ -45,17 +45,17 @@
 - Classification: `R-UNSTABLE / scale3072_short_repeatability_unresolved`.
 - This is a valid scale-relaxed scientific negative, not gamut inference.
 
+## GUIDE9 H0/S0 accepted classification
+
+- Root: `/Volumes/4T/temp/rgbww-optimizer/guide9-h0-s0-best-repeat-20260821/20260821-031503-high-white`
+- Acquisition/quality/cleanup: 4/4 accepted, Ray bracket pass, strip repeatability pass, final zero and Git-clean checkpoint pass.
+- Classification: `H0_S0_stable_nonfaithful`; repeatability score `3.4473695284 < 9.5630091172`; direct scores `1569.2116457297` and `1567.5080471826`.
+- H0/S0 is scientifically classified. It is not a physical-gamut conclusion.
+
 ## Exact next experiment
 
-- ID: `GUIDE7_H120_S100_F2_CW_SCALE2048_STABILITY_V1`.
-- Ray Q_before/Q_after: reset600, D120/A120/Q120, shutter `1/5000`.
-- Strip command: `CW2048/WW0/R0/G2048/B0`, shutter `1/400`.
-- Three reset-separated strip observations, each `reset600 -> D120 -> A120 -> tested120`.
-- Budget: 2 Ray + 3 strip = 5 formal/physical, ambient 0, retry 0.
-- Source isolation and final cleanup/zero are mandatory.
-- Stability-first: no probe or solver candidate may run in this experiment.
-- If compatible and faithful, proceed to H120/S50.
-- A stable-nonfaithful or unstable 2048 outcome returns to Advisor because the
-  predefined 3072/2048 scale-relaxed discrimination is then exhausted.
+- Execute `GUIDE9_H300_S100_FAST_DIRECT_BATCH1_V1` under FAST-DIRECT with Ray `1/2500`, strip `1/125`, reset600/D120/A120/tested120, two Ray references and four offline-selected strip candidates.
+- Candidate 1 is the retained P2 H300/S100 command `CW406/WW0/R4095/G0/B1541`; the other three are bounded face-local discriminating commands.
+- Cap 6 formal/6 physical, ambient 0, retry 0. Keep 13-node grid, boundary, Gate-6, P8 and LUT locked.
 
 Keep 13-node grid, boundary, Gate-6, P8 and LUT installation locked.

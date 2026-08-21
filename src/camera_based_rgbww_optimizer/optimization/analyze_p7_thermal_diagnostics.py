@@ -464,7 +464,8 @@ def analyze_thermal_run(
         guide9_s25_best = direct_schema == "direct_guide9_h120_s25_best_repeat_v1"
         guide9_h0 = direct_schema == "direct_guide9_h0_s0_batch1_v1"
         guide9_h0_best = direct_schema == "direct_guide9_h0_s0_best_repeat_v1"
-        guide6_direct = guide6_direct or short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best or guide9_s25 or guide9_s25_best or guide9_h0 or guide9_h0_best
+        guide9_h300 = direct_schema == "direct_guide9_h300_s100_batch1_v1"
+        guide6_direct = guide6_direct or short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best or guide9_s25 or guide9_s25_best or guide9_h0 or guide9_h0_best or guide9_h300
         prerequisite = plan.get("scientific_prerequisite")
         if (
             not guide6_direct
@@ -597,6 +598,7 @@ def analyze_thermal_run(
                     "direct_guide9_h120_s25_best_repeat_v1",
                     "direct_guide9_h0_s0_batch1_v1",
                     "direct_guide9_h0_s0_best_repeat_v1",
+                    "direct_guide9_h300_s100_batch1_v1",
                 }
             ):
                 ray_zero = capture.get("ray_zero_before_capture")
@@ -633,7 +635,7 @@ def analyze_thermal_run(
                 raise ValueError("GUIDE6 isolation ledger lacks per-measurement gates")
             if any(row.get("evidence", {}).get("status") != "pass" for row in local_gates):
                 raise ValueError("GUIDE6 isolation ledger contains a failed gate")
-        elif not (short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best or guide9_s25 or guide9_s25_best or guide9_h0 or guide9_h0_best):
+        elif not (short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best or guide9_s25 or guide9_s25_best or guide9_h0 or guide9_h0_best or guide9_h300):
             _validate_commands_and_gates(plan, root)
         _validate_cleanup_and_wrapper(
             root, allow_python_direct=guide6_direct,
@@ -647,8 +649,8 @@ def analyze_thermal_run(
             formal_rows.append(enriched)
         if guide9_best or guide9_s25_best or guide9_h0_best:
             result = analyze_guide9_h120_s50_best_repeat(formal_rows, feature_ids=feature_ids, target_sat=0 if guide9_h0_best else 25 if guide9_s25_best else 50)
-        elif guide9_s50 or guide9_h0:
-            result = analyze_guide9_h120_s50_batch1(formal_rows, feature_ids=feature_ids)
+        elif guide9_s50 or guide9_h0 or plan.get("variant") == thermal.GUIDE9_H300_S100_BATCH1_VARIANT:
+            result = analyze_guide9_h120_s50_batch1(formal_rows, feature_ids=feature_ids, target_hue=300 if plan.get("variant") == thermal.GUIDE9_H300_S100_BATCH1_VARIANT else 120)
         elif guide9_s25:
             result = analyze_guide9_h120_s50_batch1(formal_rows, feature_ids=feature_ids)
         elif guide9_scale_age:
@@ -2084,7 +2086,7 @@ def analyze_guide9_scale_age_discrimination(
 
 
 def analyze_guide9_h120_s50_batch1(
-    captures: Sequence[Mapping[str, Any]], *, feature_ids: Sequence[str],
+    captures: Sequence[Mapping[str, Any]], *, feature_ids: Sequence[str], target_hue: int = 120,
 ) -> dict[str, Any]:
     by_role = {str(row["plan_step"]["role"]): row for row in captures}
     candidates = ("p2_best_cw", "high_white_g", "rgb_dominant_r", "continuity_s100")
@@ -2100,7 +2102,8 @@ def analyze_guide9_h120_s50_batch1(
         vector = _unit(_features(by_role[role], feature_ids), feature_ids)
         scores.append({"role": role, "command": dict(by_role[role]["plan_step"]["command"]), "score": float(direct_whitened_norm(vector - target, variance))})
     best = min(scores, key=lambda x: x["score"])
-    return {"schema": "guide9_h120_s50_batch1_analysis_v1", "classification": "H120_S50_batch1_candidate_selected", "measurement_valid": ray_bracket["decision"] == "pass", "ray_bracket": ray_bracket, "candidates": scores, "best": best, "next": "GUIDE9_H120_S50_BEST_REPEAT_V1", "best_total_repeats_required": 3, "gamut_inference": "prohibited", "steady_claim": False}
+    prefix = f"H{target_hue}_S100" if target_hue == 300 else "H120_S50"
+    return {"schema": f"guide9_h{target_hue}_s{100 if target_hue == 300 else 50}_batch1_analysis_v1", "classification": f"{prefix}_batch1_candidate_selected", "measurement_valid": ray_bracket["decision"] == "pass", "ray_bracket": ray_bracket, "candidates": scores, "best": best, "next": f"GUIDE9_H{target_hue}_S100_BEST_REPEAT_V1" if target_hue == 300 else "GUIDE9_H120_S50_BEST_REPEAT_V1", "best_total_repeats_required": 3, "gamut_inference": "prohibited", "steady_claim": False}
 
 
 def analyze_guide9_h120_s50_best_repeat(

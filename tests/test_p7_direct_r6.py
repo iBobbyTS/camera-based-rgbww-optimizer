@@ -2756,6 +2756,19 @@ class DirectR6Tests(unittest.TestCase):
         self.assertEqual(sigma["count"], 58)
         self.assertLessEqual(sigma["max"], 3.0)
 
+    def test_guide9_h300_s100_batch1_is_bounded_and_source_isolated(self):
+        plan = thermal.build_direct_plan(
+            thermal.TD_C, variant=thermal.GUIDE9_H300_S100_BATCH1_VARIANT,
+        )
+        self.assertEqual(plan["guide_experiment_id"], thermal.GUIDE9_H300_S100_BATCH1_EXPERIMENT_ID)
+        self.assertEqual(len(plan["captures"]), 6)
+        self.assertEqual(plan["budgets"]["physical_cr3_cap"], 6)
+        self.assertEqual(plan["target"], {"hue": 300, "sat": 100, "intensity": 100})
+        self.assertEqual(plan["frozen_shutters"], {"ray-h300-s100": "1/2500", "strip-h300-s100": "1/125"})
+        self.assertEqual(plan["captures"][1]["command"], {"cw": 406, "ww": 0, "r": 4095, "g": 0, "b": 1541})
+        self.assertTrue(all(step["strip_zero_required"] for step in plan["captures"] if step["source_id"] == "ray"))
+        self.assertTrue(all(step["ray_zero_required"] for step in plan["captures"] if step["source_id"] == "strip"))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -82,6 +82,8 @@ GUIDE9_H0_S0_BATCH1_EXPERIMENT_ID = "GUIDE9_H0_S0_FAST_DIRECT_BATCH1_V1"
 GUIDE9_H0_S0_BATCH1_VARIANT = "guide9-h0-s0-fast-direct-batch1"
 GUIDE9_H0_S0_BEST_REPEAT_EXPERIMENT_ID = "GUIDE9_H0_S0_BEST_REPEAT_V1"
 GUIDE9_H0_S0_BEST_REPEAT_VARIANT = "guide9-h0-s0-best-repeat"
+GUIDE9_H300_S100_BATCH1_EXPERIMENT_ID = "GUIDE9_H300_S100_FAST_DIRECT_BATCH1_V1"
+GUIDE9_H300_S100_BATCH1_VARIANT = "guide9-h300-s100-fast-direct-batch1"
 GUIDE8_RAY_EMISSION_EXPOSURE_EXPERIMENT_ID = (
     "GUIDE8_RAY_H120_S100_EMISSION_EXPOSURE_DIAG_V1"
 )
@@ -1017,6 +1019,8 @@ def build_direct_plan(
         plan = _build_guide9_h0_s0_batch1_plan()
     elif experiment_id == TD_C and variant == GUIDE9_H0_S0_BEST_REPEAT_VARIANT:
         plan = _build_guide9_h0_s0_best_repeat_plan()
+    elif experiment_id == TD_C and variant == GUIDE9_H300_S100_BATCH1_VARIANT:
+        plan = _build_guide9_h300_s100_batch1_plan()
     else:
         if experiment_id == TD_C and variant != "core":
             raise ValueError("TD-C direct execution supports core or frozen GUIDE5 variants")
@@ -1945,6 +1949,39 @@ def _build_guide9_h0_s0_best_repeat_plan() -> dict[str, Any]:
     plan["frozen_shutters"] = {"ray-h0-s0": "1/16000", "strip-h0-s0": "1/400"}
     plan["shutter_ledger_provenance"] = {"owner": "experiment_capture_steps", "required_cache_keys": sorted(plan["frozen_shutters"]), "frozen_shutters_sha256": canonical_sha256(plan["frozen_shutters"])}
     plan["analysis_contract"] = {**plan["analysis_contract"], "best_command": best, "target_hue": 0, "target_sat": 0, "prior_batch_capture_role": "high_white_ww"}
+    return plan
+
+
+def _build_guide9_h300_s100_batch1_plan() -> dict[str, Any]:
+    """Freeze the GUIDE9 H300/S100 sentinel candidate batch."""
+    plan = _build_guide9_h120_s50_batch1_plan()
+    plan["guide_experiment_id"] = GUIDE9_H300_S100_BATCH1_EXPERIMENT_ID
+    plan["variant"] = GUIDE9_H300_S100_BATCH1_VARIANT
+    plan["stage"] = "GUIDE9-H300-S100-FAST-DIRECT-BATCH1"
+    plan["target"] = {"hue": 300, "sat": 100, "intensity": 100}
+    candidates = [
+        {"cw": 406, "ww": 0, "r": 4095, "g": 0, "b": 1541},
+        {"cw": 0, "ww": 0, "r": 4095, "g": 0, "b": 1541},
+        {"cw": 918, "ww": 0, "r": 4095, "g": 0, "b": 1541},
+        {"cw": 406, "ww": 0, "r": 4095, "g": 0, "b": 2048},
+    ]
+    plan["execution_authorization"] = {**plan["execution_authorization"], "schema": "direct_guide9_h300_s100_batch1_v1", "experiment_id": GUIDE9_H300_S100_BATCH1_EXPERIMENT_ID, "human_authorization_experiment_id": None}
+    strip_index = 0
+    for step in plan["captures"]:
+        step["capture_id"] = step["capture_id"].replace("s50", "h300-s100")
+        if step["source_id"] == "ray":
+            step["command"] = {"hue": 300, "sat": 100, "intensity_percent": 100.0}
+            step["exposure_cache_key"] = "ray-h300-s100"
+            step["nominal_shutter"] = "1/2500"
+        else:
+            step["command"] = candidates[strip_index]; strip_index += 1
+            step["exposure_cache_key"] = "strip-h300-s100"
+            step["nominal_shutter"] = "1/125"
+        step["exact_command_hash"] = canonical_sha256(step["command"])
+    plan["capture_ids"] = [step["capture_id"] for step in plan["captures"]]
+    plan["frozen_shutters"] = {"ray-h300-s100": "1/2500", "strip-h300-s100": "1/125"}
+    plan["shutter_ledger_provenance"] = {"owner": "experiment_capture_steps", "required_cache_keys": sorted(plan["frozen_shutters"]), "frozen_shutters_sha256": canonical_sha256(plan["frozen_shutters"])}
+    plan["analysis_contract"] = {**plan["analysis_contract"], "target_hue": 300, "target_sat": 100, "candidate_labels": ["p2_selected", "rgb_face", "cw_plus", "blue_plus"], "p2_source_root": "/Volumes/4T/temp/rgbww-optimizer/strip-hsi-pilot/p7-sentinel-4-20260717-223108-retry2"}
     return plan
 
 
