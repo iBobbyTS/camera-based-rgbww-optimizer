@@ -262,9 +262,21 @@ def validate_authorized_execution_plan(
         isinstance(authorization, Mapping)
         and authorization.get("schema") == "direct_guide9_h120_s50_best_repeat_v1"
     )
+    direct_guide9_s25 = (
+        isinstance(plan.get("execution_authorization"), Mapping)
+        and plan["execution_authorization"].get("schema") == "direct_guide9_h120_s25_batch1_v1"
+    )
     direct_guide9_best = (
         isinstance(plan.get("execution_authorization"), Mapping)
         and plan["execution_authorization"].get("schema") == "direct_guide9_h120_s50_best_repeat_v1"
+    )
+    direct_guide9_s25 = (
+        isinstance(plan.get("execution_authorization"), Mapping)
+        and plan["execution_authorization"].get("schema") == "direct_guide9_h120_s25_batch1_v1"
+    )
+    direct_guide9_s25 = (
+        isinstance(plan.get("execution_authorization"), Mapping)
+        and plan["execution_authorization"].get("schema") == "direct_guide9_h120_s25_batch1_v1"
     )
     direct_guide8_emission_exposure = (
         isinstance(authorization, Mapping)
@@ -279,7 +291,7 @@ def validate_authorized_execution_plan(
         or direct_ray_fast_long_bridge or direct_td_c_fast_endpoint
         or direct_guide6_target_local or direct_guide7_f2 or direct_f2_short
         or direct_f2_scale3072 or direct_guide8_emission_exposure
-        or direct_guide6_strip_exposure or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_best
+        or direct_guide6_strip_exposure or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_best or direct_guide9_s25
     ):
         valid_execution_scope = (
             authorization.get("bounded_device_scope") is True
@@ -1068,6 +1080,10 @@ def execute_plan(
         isinstance(plan.get("execution_authorization"), Mapping)
         and plan["execution_authorization"].get("schema") == "direct_guide9_h120_s50_best_repeat_v1"
     )
+    direct_guide9_s25 = (
+        isinstance(plan.get("execution_authorization"), Mapping)
+        and plan["execution_authorization"].get("schema") == "direct_guide9_h120_s25_batch1_v1"
+    )
     direct_guide9_best = (
         isinstance(plan.get("execution_authorization"), Mapping)
         and plan["execution_authorization"].get("schema") == "direct_guide9_h120_s50_best_repeat_v1"
@@ -1098,7 +1114,7 @@ def execute_plan(
         direct_ray_continuous or direct_guide6_target_local or direct_guide7_f2
         or direct_f2_short or direct_f2_scale3072
         or direct_guide8_emission_exposure or direct_guide6_strip_exposure
-        or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_best
+        or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_best or direct_guide9_s25
     ) and source_isolation_check_fn is None:
         raise PermissionError("direct adaptive execution requires its source-isolation check")
     git_provenance = copy.deepcopy(
@@ -1575,7 +1591,7 @@ def execute_plan(
             runtime_plan["captures"] = [dict(item["step"]) for item in protocol_evidence["measured"]]
             runtime_plan["capture_ids"] = [str(step["capture_id"]) for step in runtime_plan["captures"]]
             _write_json(root / "adaptive-execution-plan.json", runtime_plan)
-        elif direct_guide9_s50 or direct_guide9_best:
+        elif direct_guide9_s25 or direct_guide9_s50 or direct_guide9_best:
             rows = []
             for step in plan["captures"]:
                 record_gate(f"guide9-s50-{step['role']}-reset600")
@@ -1739,7 +1755,7 @@ def execute_plan(
         for chronology_group_index, item in ([] if (
             direct_guide6_target_local or direct_guide7_f2 or direct_f2_short
             or direct_f2_scale3072 or direct_guide8_emission_exposure
-            or direct_guide6_strip_exposure or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_best
+            or direct_guide6_strip_exposure or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_best or direct_guide9_s25
         ) else enumerate(
             _ledger_groups(str(plan["experiment_id"]), plan["captures"])
         )):
@@ -2720,6 +2736,10 @@ def run_authorized_plan(
         isinstance(plan.get("execution_authorization"), Mapping)
         and plan["execution_authorization"].get("schema") == "direct_guide9_h120_s50_best_repeat_v1"
     )
+    direct_guide9_s25 = (
+        isinstance(plan.get("execution_authorization"), Mapping)
+        and plan["execution_authorization"].get("schema") == "direct_guide9_h120_s25_batch1_v1"
+    )
     direct_protocol = (
         isinstance(plan.get("execution_authorization"), Mapping)
         and str(plan["execution_authorization"].get("schema", "")).startswith("direct_")
@@ -2851,7 +2871,7 @@ def run_authorized_plan(
             root / "inputs/location.json"
             if (
                 direct_ray_continuous or direct_f2_short or direct_f2_scale3072
-                or direct_guide8_emission_exposure or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_best
+                or direct_guide8_emission_exposure or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_best or direct_guide9_s25
                 or direct_guide6_strip_exposure
             )
             else thermal.LOCATION_PATH
@@ -3122,7 +3142,7 @@ def run_authorized_plan(
             if (
                 direct_ray_continuous or direct_strip_history
                 or direct_guide6_target_local or direct_guide7_f2 or direct_f2_short
-            or direct_f2_scale3072 or direct_guide8_emission_exposure or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_best
+            or direct_f2_scale3072 or direct_guide8_emission_exposure or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_best or direct_guide9_s25
                 or direct_guide6_strip_exposure
             )
             else None
@@ -3168,13 +3188,14 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
             thermal.GUIDE9_H120_S100_SCALE_AGE_EXPERIMENT_ID,
             thermal.GUIDE9_H120_S50_BATCH1_EXPERIMENT_ID,
             thermal.GUIDE9_H120_S50_BEST_REPEAT_EXPERIMENT_ID,
+            thermal.GUIDE9_H120_S25_BATCH1_EXPERIMENT_ID,
         ),
         required=True,
     )
     parser.add_argument("--source", choices=("ray", "strip"))
     parser.add_argument(
         "--variant",
-        choices=("core", "expansion", "history", thermal.TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, thermal.GUIDE7_F2_VARIANT, thermal.GUIDE7_F2_SHORT_ENDPOINT_VARIANT, thermal.GUIDE7_F2_SCALE3072_STABILITY_VARIANT, thermal.GUIDE7_F2_SCALE2048_STABILITY_VARIANT, thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT, thermal.GUIDE6_STRIP_EXPOSURE_QUALIFICATION_VARIANT, thermal.GUIDE9_H120_S100_SCALE_AGE_VARIANT, thermal.GUIDE9_H120_S50_BATCH1_VARIANT, thermal.GUIDE9_H120_S50_BEST_REPEAT_VARIANT),
+        choices=("core", "expansion", "history", thermal.TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, thermal.GUIDE7_F2_VARIANT, thermal.GUIDE7_F2_SHORT_ENDPOINT_VARIANT, thermal.GUIDE7_F2_SCALE3072_STABILITY_VARIANT, thermal.GUIDE7_F2_SCALE2048_STABILITY_VARIANT, thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT, thermal.GUIDE6_STRIP_EXPOSURE_QUALIFICATION_VARIANT, thermal.GUIDE9_H120_S100_SCALE_AGE_VARIANT, thermal.GUIDE9_H120_S50_BATCH1_VARIANT, thermal.GUIDE9_H120_S50_BEST_REPEAT_VARIANT, thermal.GUIDE9_H120_S25_BATCH1_VARIANT),
         default="core",
     )
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
@@ -3227,6 +3248,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--direct-guide9-h120-s50-best-repeat", action="store_true",
         help="execute the GUIDE9 H120/S50 best-command repeat block",
     )
+    direct.add_argument("--direct-guide9-h120-s25-batch1", action="store_true", help="execute GUIDE9 H120/S25 Batch 1")
     parser.add_argument("--prerequisite-analysis", type=Path)
     parser.add_argument("--human-authorization")
     parser.add_argument("--session-index", type=int, choices=(1, 2, 3))
@@ -3253,6 +3275,7 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
         "guide9-scale-age" if args.direct_guide9_scale_age else
         "guide9-h120-s50-batch1" if args.direct_guide9_h120_s50_batch1 else
         "guide9-h120-s50-best-repeat" if args.direct_guide9_h120_s50_best_repeat else
+        "guide9-h120-s25-batch1" if args.direct_guide9_h120_s25_batch1 else
         "td-c-core"
     )
     expected_scope = {
@@ -3285,6 +3308,7 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
         "guide9-h120-s50-best-repeat": (
             thermal.TD_C, None, thermal.GUIDE9_H120_S50_BEST_REPEAT_VARIANT,
         ),
+        "guide9-h120-s25-batch1": (thermal.TD_C, None, thermal.GUIDE9_H120_S25_BATCH1_VARIANT),
     }[direct_kind]
     expected_phase = (
         "diagnostic"
@@ -3335,7 +3359,7 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
             )
             print(output)
             return 0
-        if direct_kind in {"guide8-emission-exposure", "guide6-strip-exposure-qualification", "guide9-scale-age", "guide9-h120-s50-batch1", "guide9-h120-s50-best-repeat"}:
+        if direct_kind in {"guide8-emission-exposure", "guide6-strip-exposure-qualification", "guide9-scale-age", "guide9-h120-s50-batch1", "guide9-h120-s50-best-repeat", "guide9-h120-s25-batch1"}:
             root = (Path(args.output_dir) / args.run_name).resolve()
             root.mkdir(parents=True, exist_ok=False)
             output = root / "experiment-spec.json"
@@ -3349,6 +3373,8 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
                 else thermal.GUIDE9_H120_S50_BATCH1_VARIANT
                 if direct_kind == "guide9-h120-s50-batch1"
                 else thermal.GUIDE9_H120_S50_BEST_REPEAT_VARIANT
+                if direct_kind == "guide9-h120-s50-best-repeat"
+                else thermal.GUIDE9_H120_S25_BATCH1_VARIANT
             )
             _write_json(output, thermal.build_direct_plan(thermal.TD_C, variant=variant))
             print(output)
@@ -3430,6 +3456,8 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
         plan = thermal.build_direct_plan(
             thermal.TD_C, variant=thermal.GUIDE9_H120_S50_BEST_REPEAT_VARIANT,
         )
+    if direct_kind == "guide9-h120-s25-batch1":
+        plan = thermal.build_direct_plan(thermal.TD_C, variant=thermal.GUIDE9_H120_S25_BATCH1_VARIANT)
     if direct_kind not in {
         "ray-r6", "ray-history-3x3", "strip-history-3x3",
         "ray-fast-long-bridge", "td-c-fast-endpoint-holdout", "guide6-h120-s100",
@@ -3438,6 +3466,7 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
         "guide9-scale-age",
         "guide9-h120-s50-batch1",
         "guide9-h120-s50-best-repeat",
+        "guide9-h120-s25-batch1",
     }:
         if args.prerequisite_analysis is None:
             raise PermissionError(f"{direct_kind} requires a prior scientific analysis artifact")

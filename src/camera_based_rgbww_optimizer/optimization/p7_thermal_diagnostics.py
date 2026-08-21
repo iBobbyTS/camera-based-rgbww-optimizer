@@ -74,6 +74,8 @@ GUIDE9_H120_S50_BATCH1_EXPERIMENT_ID = "GUIDE9_H120_S50_FAST_DIRECT_BATCH1_V1"
 GUIDE9_H120_S50_BATCH1_VARIANT = "guide9-h120-s50-fast-direct-batch1"
 GUIDE9_H120_S50_BEST_REPEAT_EXPERIMENT_ID = "GUIDE9_H120_S50_BEST_REPEAT_V1"
 GUIDE9_H120_S50_BEST_REPEAT_VARIANT = "guide9-h120-s50-best-repeat"
+GUIDE9_H120_S25_BATCH1_EXPERIMENT_ID = "GUIDE9_H120_S25_FAST_DIRECT_BATCH1_V1"
+GUIDE9_H120_S25_BATCH1_VARIANT = "guide9-h120-s25-fast-direct-batch1"
 GUIDE8_RAY_EMISSION_EXPOSURE_EXPERIMENT_ID = (
     "GUIDE8_RAY_H120_S100_EMISSION_EXPOSURE_DIAG_V1"
 )
@@ -1001,6 +1003,8 @@ def build_direct_plan(
         plan = _build_guide9_h120_s50_batch1_plan()
     elif experiment_id == TD_C and variant == GUIDE9_H120_S50_BEST_REPEAT_VARIANT:
         plan = _build_guide9_h120_s50_best_repeat_plan()
+    elif experiment_id == TD_C and variant == GUIDE9_H120_S25_BATCH1_VARIANT:
+        plan = _build_guide9_h120_s25_batch1_plan()
     else:
         if experiment_id == TD_C and variant != "core":
             raise ValueError("TD-C direct execution supports core or frozen GUIDE5 variants")
@@ -1029,6 +1033,7 @@ def build_direct_plan(
                 GUIDE9_H120_S100_SCALE_AGE_VARIANT,
                 GUIDE9_H120_S50_BATCH1_VARIANT,
                 GUIDE9_H120_S50_BEST_REPEAT_VARIANT,
+                GUIDE9_H120_S25_BATCH1_VARIANT,
             }
             else "deferred_diagnostic_only"
             if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT
@@ -1058,6 +1063,8 @@ def build_direct_plan(
                 if variant == GUIDE9_H120_S50_BATCH1_VARIANT
                 else "direct_guide9_h120_s50_best_repeat_v1"
                 if variant == GUIDE9_H120_S50_BEST_REPEAT_VARIANT
+                else "direct_guide9_h120_s25_batch1_v1"
+                if variant == GUIDE9_H120_S25_BATCH1_VARIANT
                 else "direct_td_c_fast_anchor_direction_b_v1"
                 if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT
                 else f"direct_{'strip_td_b' if experiment_id == TD_B else 'td_c_core'}_authority_v1"
@@ -1089,6 +1096,8 @@ def build_direct_plan(
                 if variant == GUIDE9_H120_S50_BATCH1_VARIANT else
                 GUIDE9_H120_S50_BEST_REPEAT_EXPERIMENT_ID
                 if variant == GUIDE9_H120_S50_BEST_REPEAT_VARIANT else
+                GUIDE9_H120_S25_BATCH1_EXPERIMENT_ID
+                if variant == GUIDE9_H120_S25_BATCH1_VARIANT else
                 TD_C_FAST_ANCHOR_DIRECTION_B_EXPERIMENT_ID
                 if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT else experiment_id
             ),
@@ -1819,6 +1828,23 @@ def _build_guide9_h120_s50_best_repeat_plan() -> dict[str, Any]:
     add(0, "ray", "ray_q_before", ray); add(1, "strip", "best_repeat_2", best); add(2, "strip", "best_repeat_3", best); add(3, "ray", "ray_q_after", ray)
     frozen = {"ray-h120-s50": "1/6400", "strip-h120-s50": "1/400"}
     return {"schema": PLAN_SCHEMA_V2, "status": "execute_authorized", "experiment_id": TD_C, "guide_experiment_id": GUIDE9_H120_S50_BEST_REPEAT_EXPERIMENT_ID, "variant": GUIDE9_H120_S50_BEST_REPEAT_VARIANT, "stage": "GUIDE9-H120-S50-FAST-DIRECT-BEST-REPEAT", "phase": "formal", "source": "target_local_best_repeat", "created_at": datetime.now(timezone.utc).isoformat(), "inputs": {"location": file_reference(LOCATION_PATH), "policy": file_reference(POLICY_PATH), "uncertainty": file_reference(UNCERTAINTY_PATH), "code_duty_curve": file_reference(CURVE_PATH)}, "target": {"hue": 120, "sat": 50, "intensity": 100}, "captures": captures, "capture_ids": [x["capture_id"] for x in captures], "timing_contract": timing_contract(2), "cold_proxy": 600, "cold_proxy_wait_s": 600, "native_raw_ambient_policy": AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT, "frozen_shutters": frozen, "exposure_setup_required": [], "shutter_ledger_provenance": {"owner": "experiment_capture_steps", "required_cache_keys": sorted(frozen), "frozen_shutters_sha256": canonical_sha256(frozen)}, "budgets": {"ray_cap": 2, "strip_cap": 2, "formal_cap": 4, "physical_cr3_cap": 4, "ambient_cap": 0, "retry": 0, "candidate_batches": 0, "unique_commands": 1}, "execution_authorization": {"schema": "direct_guide9_h120_s50_best_repeat_v1", "human_authorization_required": False, "human_authorization_verified": True, "human_authorization_experiment_id": GUIDE9_H120_S50_BEST_REPEAT_EXPERIMENT_ID, "bounded_device_scope": True, "experiment_id": GUIDE9_H120_S50_BEST_REPEAT_EXPERIMENT_ID, "remote_v2_capability": True}, "analysis_contract": {"method": "fast_direct_best_repeat", "best_command": best, "independent_reset_s": 600, "dwell_s": 120, "total_repeats": 3, "prior_batch_capture_role": "high_white_g", "gamut_inference": "prohibited", "steady_claim": False}}
+
+
+def _build_guide9_h120_s25_batch1_plan() -> dict[str, Any]:
+    plan = _build_guide9_h120_s50_batch1_plan()
+    plan["guide_experiment_id"] = GUIDE9_H120_S25_BATCH1_EXPERIMENT_ID
+    plan["variant"] = GUIDE9_H120_S25_BATCH1_VARIANT
+    plan["stage"] = "GUIDE9-H120-S25-FAST-DIRECT-BATCH1"
+    plan["target"] = {"hue": 120, "sat": 25, "intensity": 100}
+    plan["execution_authorization"] = {**plan["execution_authorization"], "schema": "direct_guide9_h120_s25_batch1_v1", "experiment_id": GUIDE9_H120_S25_BATCH1_EXPERIMENT_ID, "human_authorization_experiment_id": None}
+    for step in plan["captures"]:
+        if step["source_id"] == "ray":
+            step["command"] = {"hue": 120, "sat": 25, "intensity_percent": 100.0}
+            step["exact_command_hash"] = canonical_sha256(step["command"])
+        step["capture_id"] = step["capture_id"].replace("s50", "s25")
+    plan["capture_ids"] = [step["capture_id"] for step in plan["captures"]]
+    plan["analysis_contract"] = {**plan["analysis_contract"], "target_sat": 25}
+    return plan
 
 
 def _build_guide6_strip_exposure_qualification_plan() -> dict[str, Any]:
