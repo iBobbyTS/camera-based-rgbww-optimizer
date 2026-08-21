@@ -460,7 +460,8 @@ def analyze_thermal_run(
         guide9_scale_age = direct_schema == "direct_guide9_scale_age_discrimination_v1"
         guide9_s50 = direct_schema == "direct_guide9_h120_s50_batch1_v1"
         guide9_best = direct_schema == "direct_guide9_h120_s50_best_repeat_v1"
-        guide6_direct = guide6_direct or short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best
+        guide9_s25 = direct_schema == "direct_guide9_h120_s25_batch1_v1"
+        guide6_direct = guide6_direct or short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best or guide9_s25
         prerequisite = plan.get("scientific_prerequisite")
         if (
             not guide6_direct
@@ -503,7 +504,7 @@ def analyze_thermal_run(
                 local_protocol_evidence = _load_json(evidence_path)
         _validate_required_execution_artifacts(
             root, allow_python_direct=guide6_direct,
-            allow_short_endpoint=short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best,
+            allow_short_endpoint=short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best or guide9_s25,
         )
         _validate_reproducibility_checkpoint(root, plan, run)
         captures = _load_jsonl(root / "captures.jsonl")
@@ -589,6 +590,7 @@ def analyze_thermal_run(
                     "direct_guide9_scale_age_discrimination_v1",
                     "direct_guide9_h120_s50_batch1_v1",
                     "direct_guide9_h120_s50_best_repeat_v1",
+                    "direct_guide9_h120_s25_batch1_v1",
                 }
             ):
                 ray_zero = capture.get("ray_zero_before_capture")
@@ -625,7 +627,7 @@ def analyze_thermal_run(
                 raise ValueError("GUIDE6 isolation ledger lacks per-measurement gates")
             if any(row.get("evidence", {}).get("status") != "pass" for row in local_gates):
                 raise ValueError("GUIDE6 isolation ledger contains a failed gate")
-        elif not (short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best):
+        elif not (short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best or guide9_s25):
             _validate_commands_and_gates(plan, root)
         _validate_cleanup_and_wrapper(
             root, allow_python_direct=guide6_direct,
@@ -640,6 +642,8 @@ def analyze_thermal_run(
         if guide9_best:
             result = analyze_guide9_h120_s50_best_repeat(formal_rows, feature_ids=feature_ids)
         elif guide9_s50:
+            result = analyze_guide9_h120_s50_batch1(formal_rows, feature_ids=feature_ids)
+        elif guide9_s25:
             result = analyze_guide9_h120_s50_batch1(formal_rows, feature_ids=feature_ids)
         elif guide9_scale_age:
             result = analyze_guide9_scale_age_discrimination(formal_rows, feature_ids=feature_ids)
