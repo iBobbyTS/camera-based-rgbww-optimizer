@@ -78,6 +78,8 @@ GUIDE9_H120_S25_BATCH1_EXPERIMENT_ID = "GUIDE9_H120_S25_FAST_DIRECT_BATCH1_V1"
 GUIDE9_H120_S25_BATCH1_VARIANT = "guide9-h120-s25-fast-direct-batch1"
 GUIDE9_H120_S25_BEST_REPEAT_EXPERIMENT_ID = "GUIDE9_H120_S25_BEST_REPEAT_V1"
 GUIDE9_H120_S25_BEST_REPEAT_VARIANT = "guide9-h120-s25-best-repeat"
+GUIDE9_H0_S0_BATCH1_EXPERIMENT_ID = "GUIDE9_H0_S0_FAST_DIRECT_BATCH1_V1"
+GUIDE9_H0_S0_BATCH1_VARIANT = "guide9-h0-s0-fast-direct-batch1"
 GUIDE8_RAY_EMISSION_EXPOSURE_EXPERIMENT_ID = (
     "GUIDE8_RAY_H120_S100_EMISSION_EXPOSURE_DIAG_V1"
 )
@@ -1009,6 +1011,8 @@ def build_direct_plan(
         plan = _build_guide9_h120_s25_batch1_plan()
     elif experiment_id == TD_C and variant == GUIDE9_H120_S25_BEST_REPEAT_VARIANT:
         plan = _build_guide9_h120_s25_best_repeat_plan()
+    elif experiment_id == TD_C and variant == GUIDE9_H0_S0_BATCH1_VARIANT:
+        plan = _build_guide9_h0_s0_batch1_plan()
     else:
         if experiment_id == TD_C and variant != "core":
             raise ValueError("TD-C direct execution supports core or frozen GUIDE5 variants")
@@ -1039,6 +1043,7 @@ def build_direct_plan(
                 GUIDE9_H120_S50_BEST_REPEAT_VARIANT,
                 GUIDE9_H120_S25_BATCH1_VARIANT,
                 GUIDE9_H120_S25_BEST_REPEAT_VARIANT,
+                GUIDE9_H0_S0_BATCH1_VARIANT,
             }
             else "deferred_diagnostic_only"
             if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT
@@ -1072,15 +1077,17 @@ def build_direct_plan(
                 if variant == GUIDE9_H120_S25_BATCH1_VARIANT
                 else "direct_guide9_h120_s25_best_repeat_v1"
                 if variant == GUIDE9_H120_S25_BEST_REPEAT_VARIANT
+                else "direct_guide9_h0_s0_batch1_v1"
+                if variant == GUIDE9_H0_S0_BATCH1_VARIANT
                 else "direct_td_c_fast_anchor_direction_b_v1"
                 if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT
                 else f"direct_{'strip_td_b' if experiment_id == TD_B else 'td_c_core'}_authority_v1"
             ),
-            "human_authorization_verified": variant not in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT, GUIDE7_F2_SCALE3072_STABILITY_VARIANT, GUIDE7_F2_SCALE2048_STABILITY_VARIANT, GUIDE9_H120_S100_SCALE_AGE_VARIANT, GUIDE9_H120_S50_BATCH1_VARIANT, GUIDE9_H120_S50_BEST_REPEAT_VARIANT, GUIDE9_H120_S25_BATCH1_VARIANT, GUIDE9_H120_S25_BEST_REPEAT_VARIANT},
+            "human_authorization_verified": variant not in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT, GUIDE7_F2_SCALE3072_STABILITY_VARIANT, GUIDE7_F2_SCALE2048_STABILITY_VARIANT, GUIDE9_H120_S100_SCALE_AGE_VARIANT, GUIDE9_H120_S50_BATCH1_VARIANT, GUIDE9_H120_S50_BEST_REPEAT_VARIANT, GUIDE9_H120_S25_BATCH1_VARIANT, GUIDE9_H120_S25_BEST_REPEAT_VARIANT, GUIDE9_H0_S0_BATCH1_VARIANT},
             "human_authorization_experiment_id": (
-                None if variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT, GUIDE7_F2_SCALE3072_STABILITY_VARIANT, GUIDE7_F2_SCALE2048_STABILITY_VARIANT, GUIDE9_H120_S100_SCALE_AGE_VARIANT, GUIDE9_H120_S50_BATCH1_VARIANT, GUIDE9_H120_S50_BEST_REPEAT_VARIANT, GUIDE9_H120_S25_BATCH1_VARIANT, GUIDE9_H120_S25_BEST_REPEAT_VARIANT} else experiment_id
+                None if variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT, GUIDE7_F2_SCALE3072_STABILITY_VARIANT, GUIDE7_F2_SCALE2048_STABILITY_VARIANT, GUIDE9_H120_S100_SCALE_AGE_VARIANT, GUIDE9_H120_S50_BATCH1_VARIANT, GUIDE9_H120_S50_BEST_REPEAT_VARIANT, GUIDE9_H120_S25_BATCH1_VARIANT, GUIDE9_H120_S25_BEST_REPEAT_VARIANT, GUIDE9_H0_S0_BATCH1_VARIANT} else experiment_id
             ),
-            "bounded_device_scope": variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT, GUIDE7_F2_SCALE3072_STABILITY_VARIANT, GUIDE7_F2_SCALE2048_STABILITY_VARIANT, GUIDE9_H120_S100_SCALE_AGE_VARIANT, GUIDE9_H120_S50_BATCH1_VARIANT, GUIDE9_H120_S50_BEST_REPEAT_VARIANT, GUIDE9_H120_S25_BATCH1_VARIANT, GUIDE9_H120_S25_BEST_REPEAT_VARIANT},
+            "bounded_device_scope": variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT, GUIDE7_F2_SCALE3072_STABILITY_VARIANT, GUIDE7_F2_SCALE2048_STABILITY_VARIANT, GUIDE9_H120_S100_SCALE_AGE_VARIANT, GUIDE9_H120_S50_BATCH1_VARIANT, GUIDE9_H120_S50_BEST_REPEAT_VARIANT, GUIDE9_H120_S25_BATCH1_VARIANT, GUIDE9_H120_S25_BEST_REPEAT_VARIANT, GUIDE9_H0_S0_BATCH1_VARIANT},
             "human_authorization_required": False,
             "experiment_id": (
                 TD_C_FAST_ENDPOINT_HOLDOUT_EXPERIMENT_ID
@@ -1107,6 +1114,8 @@ def build_direct_plan(
                 if variant == GUIDE9_H120_S25_BATCH1_VARIANT else
                 GUIDE9_H120_S25_BEST_REPEAT_EXPERIMENT_ID
                 if variant == GUIDE9_H120_S25_BEST_REPEAT_VARIANT else
+                GUIDE9_H0_S0_BATCH1_EXPERIMENT_ID
+                if variant == GUIDE9_H0_S0_BATCH1_VARIANT else
                 TD_C_FAST_ANCHOR_DIRECTION_B_EXPERIMENT_ID
                 if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT else experiment_id
             ),
@@ -1873,6 +1882,36 @@ def _build_guide9_h120_s25_best_repeat_plan() -> dict[str, Any]:
         step["exact_command_hash"] = canonical_sha256(step["command"])
     plan["capture_ids"] = [step["capture_id"] for step in plan["captures"]]
     plan["analysis_contract"] = {**plan["analysis_contract"], "best_command": best, "target_sat": 25, "prior_batch_capture_role": "rgb_dominant_r"}
+    return plan
+
+
+def _build_guide9_h0_s0_batch1_plan() -> dict[str, Any]:
+    plan = _build_guide9_h120_s50_batch1_plan()
+    plan["guide_experiment_id"] = GUIDE9_H0_S0_BATCH1_EXPERIMENT_ID
+    plan["variant"] = GUIDE9_H0_S0_BATCH1_VARIANT
+    plan["stage"] = "GUIDE9-H0-S0-FAST-DIRECT-BATCH1"
+    plan["target"] = {"hue": 0, "sat": 0, "intensity": 100}
+    candidates = [
+        {"cw": 4095, "ww": 3647, "r": 0, "g": 1087, "b": 1535},
+        {"cw": 4095, "ww": 4095, "r": 0, "g": 1279, "b": 1663},
+        {"cw": 4095, "ww": 3711, "r": 4095, "g": 4095, "b": 3071},
+        {"cw": 4095, "ww": 4095, "r": 3199, "g": 4095, "b": 3007},
+    ]
+    plan["execution_authorization"] = {**plan["execution_authorization"], "schema": "direct_guide9_h0_s0_batch1_v1", "experiment_id": GUIDE9_H0_S0_BATCH1_EXPERIMENT_ID, "human_authorization_experiment_id": None}
+    strip_index = 0
+    for step in plan["captures"]:
+        step["capture_id"] = step["capture_id"].replace("s50", "h0-s0")
+        if step["source_id"] == "ray":
+            step["command"] = {"hue": 0, "sat": 0, "intensity_percent": 100.0}
+            step["exposure_cache_key"] = "ray-h0-s0"
+        else:
+            step["command"] = candidates[strip_index]; strip_index += 1
+            step["exposure_cache_key"] = "strip-h0-s0"
+        step["exact_command_hash"] = canonical_sha256(step["command"])
+    plan["capture_ids"] = [step["capture_id"] for step in plan["captures"]]
+    plan["frozen_shutters"] = {"ray-h0-s0": "1/16000", "strip-h0-s0": "1/400"}
+    plan["shutter_ledger_provenance"] = {"owner": "experiment_capture_steps", "required_cache_keys": sorted(plan["frozen_shutters"]), "frozen_shutters_sha256": canonical_sha256(plan["frozen_shutters"])}
+    plan["analysis_contract"] = {**plan["analysis_contract"], "target_hue": 0, "target_sat": 0, "candidate_labels": ["p2_best_cw", "high_white_ww", "rgb_r_face", "rgb_g_face"]}
     return plan
 
 
