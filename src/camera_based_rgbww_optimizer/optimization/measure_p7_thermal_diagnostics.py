@@ -1070,7 +1070,7 @@ def execute_plan(
     )
     direct_guide9_s25 = (
         isinstance(plan.get("execution_authorization"), Mapping)
-        and plan["execution_authorization"].get("schema") == "direct_guide9_h120_s25_batch1_v1"
+        and plan["execution_authorization"].get("schema") in {"direct_guide9_h120_s25_batch1_v1", "direct_guide9_h120_s25_best_repeat_v1"}
     )
     direct_guide9_best = (
         isinstance(plan.get("execution_authorization"), Mapping)
