@@ -459,7 +459,8 @@ def analyze_thermal_run(
         )
         guide9_scale_age = direct_schema == "direct_guide9_scale_age_discrimination_v1"
         guide9_s50 = direct_schema == "direct_guide9_h120_s50_batch1_v1"
-        guide6_direct = guide6_direct or short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50
+        guide9_best = direct_schema == "direct_guide9_h120_s50_best_repeat_v1"
+        guide6_direct = guide6_direct or short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best
         prerequisite = plan.get("scientific_prerequisite")
         if (
             not guide6_direct
@@ -502,7 +503,7 @@ def analyze_thermal_run(
                 local_protocol_evidence = _load_json(evidence_path)
         _validate_required_execution_artifacts(
             root, allow_python_direct=guide6_direct,
-            allow_short_endpoint=short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50,
+            allow_short_endpoint=short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best,
         )
         _validate_reproducibility_checkpoint(root, plan, run)
         captures = _load_jsonl(root / "captures.jsonl")
@@ -587,6 +588,7 @@ def analyze_thermal_run(
                     "direct_guide7_f2_scale2048_stability_v1",
                     "direct_guide9_scale_age_discrimination_v1",
                     "direct_guide9_h120_s50_batch1_v1",
+                    "direct_guide9_h120_s50_best_repeat_v1",
                 }
             ):
                 ray_zero = capture.get("ray_zero_before_capture")
@@ -623,7 +625,7 @@ def analyze_thermal_run(
                 raise ValueError("GUIDE6 isolation ledger lacks per-measurement gates")
             if any(row.get("evidence", {}).get("status") != "pass" for row in local_gates):
                 raise ValueError("GUIDE6 isolation ledger contains a failed gate")
-        elif not (short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50):
+        elif not (short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best):
             _validate_commands_and_gates(plan, root)
         _validate_cleanup_and_wrapper(
             root, allow_python_direct=guide6_direct,
@@ -635,7 +637,9 @@ def analyze_thermal_run(
             enriched["engineering_quality_status"] = "pass"
             enriched["run_root"] = str(root)
             formal_rows.append(enriched)
-        if guide9_s50:
+        if guide9_best:
+            result = analyze_guide9_h120_s50_best_repeat(formal_rows, feature_ids=feature_ids)
+        elif guide9_s50:
             result = analyze_guide9_h120_s50_batch1(formal_rows, feature_ids=feature_ids)
         elif guide9_scale_age:
             result = analyze_guide9_scale_age_discrimination(formal_rows, feature_ids=feature_ids)
@@ -2087,6 +2091,22 @@ def analyze_guide9_h120_s50_batch1(
         scores.append({"role": role, "command": dict(by_role[role]["plan_step"]["command"]), "score": float(direct_whitened_norm(vector - target, variance))})
     best = min(scores, key=lambda x: x["score"])
     return {"schema": "guide9_h120_s50_batch1_analysis_v1", "classification": "H120_S50_batch1_candidate_selected", "measurement_valid": ray_bracket["decision"] == "pass", "ray_bracket": ray_bracket, "candidates": scores, "best": best, "next": "GUIDE9_H120_S50_BEST_REPEAT_V1", "best_total_repeats_required": 3, "gamut_inference": "prohibited", "steady_claim": False}
+
+
+def analyze_guide9_h120_s50_best_repeat(
+    captures: Sequence[Mapping[str, Any]], *, feature_ids: Sequence[str],
+) -> dict[str, Any]:
+    by_role = {str(row["plan_step"]["role"]): row for row in captures}
+    required = {"ray_q_before", "ray_q_after", "best_repeat_2", "best_repeat_3"}
+    if set(by_role) != required:
+        raise ValueError("GUIDE9 best repeat lacks its four exact observations")
+    ray_before = _unit(_features(by_role["ray_q_before"], feature_ids), feature_ids)
+    ray_after = _unit(_features(by_role["ray_q_after"], feature_ids), feature_ids)
+    target = (ray_before + ray_after) / 2.0
+    variance = _same_state_variance(source="strip", state="A") + _same_state_variance(source="ray", state="D") / 2.0
+    repeats = [_unit(_features(by_role[role], feature_ids), feature_ids) for role in ("best_repeat_2", "best_repeat_3")]
+    repeat = frozen_same_state_compatibility_diagnostic(repeats[0], repeats[1], source="strip", state="D", feature_ids=feature_ids)
+    return {"schema": "guide9_h120_s50_best_repeat_analysis_v1", "classification": "H120_S50_best_command_repeat_classified", "measurement_valid": True, "ray_bracket": frozen_same_state_compatibility_diagnostic(ray_before, ray_after, source="ray", state="D", feature_ids=feature_ids), "best_command": dict(by_role["best_repeat_2"]["plan_step"]["command"]), "repeatability": repeat, "direct_scores": [float(direct_whitened_norm(value - target, variance)) for value in repeats], "next": "H120/S25" if repeat["decision"] == "pass" else "GUIDE9_H120_S50_BATCH2_OR_STOP", "gamut_inference": "prohibited", "steady_claim": False}
 
 
 def analyze_guide6_local_controllability(
