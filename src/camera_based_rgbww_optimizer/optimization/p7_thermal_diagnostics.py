@@ -1904,9 +1904,11 @@ def _build_guide9_h0_s0_batch1_plan() -> dict[str, Any]:
         if step["source_id"] == "ray":
             step["command"] = {"hue": 0, "sat": 0, "intensity_percent": 100.0}
             step["exposure_cache_key"] = "ray-h0-s0"
+            step["nominal_shutter"] = "1/16000"
         else:
             step["command"] = candidates[strip_index]; strip_index += 1
             step["exposure_cache_key"] = "strip-h0-s0"
+            step["nominal_shutter"] = "1/400"
         step["exact_command_hash"] = canonical_sha256(step["command"])
     plan["capture_ids"] = [step["capture_id"] for step in plan["captures"]]
     plan["frozen_shutters"] = {"ray-h0-s0": "1/16000", "strip-h0-s0": "1/400"}
