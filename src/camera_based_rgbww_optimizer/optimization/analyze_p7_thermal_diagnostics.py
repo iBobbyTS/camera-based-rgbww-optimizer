@@ -540,6 +540,7 @@ def analyze_thermal_run(
         guide9_h300_s50_best = direct_schema == "direct_guide9_h300_s50_best_repeat_v1"
         guide9_white12 = direct_schema in {
             "direct_guide9_white12_v1", "direct_guide9_white_local_jacobian_v1",
+            "direct_guide9_white_local_confirm2_v1",
         }
         guide6_direct = guide6_direct or short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best or guide9_s25 or guide9_s25_best or guide9_h0 or guide9_h0_best or guide9_h300 or guide9_h300_s50 or guide9_h300_s50_best or guide9_white12
         prerequisite = plan.get("scientific_prerequisite")

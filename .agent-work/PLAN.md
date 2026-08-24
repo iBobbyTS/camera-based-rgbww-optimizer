@@ -96,5 +96,10 @@
   preregistered local candidate per failed node from that node's own retained
   feedback trace plus its current paired CCT/mired/Duv residual. Reacquire only
   Ray+candidate pairs; no global model refit or default LUT mutation.
+- First local-Jacobian correction completed 10/10. `3200/GM100`, `5600/GM100`
+  and `20000/GM100` passed. `3200/GM200` and `20000/GM200` improved to strict
+  gate boundaries but remained just outside. Execute one second preregistered
+  paired step for those two nodes, then move all remaining failures to bounded
+  per-node probes.
 
 Keep 13-node grid, boundary, Gate-6, P8 and LUT installation locked.

@@ -116,3 +116,18 @@
 - The 58-feature multipatch scores are retained as diagnostics, not zero gates.
   Default LUT and global model remain unchanged. Next is failed-node local paired
   correction only; 70/70 remains locked.
+
+## White local-Jacobian candidate result
+
+- Root:
+  `/Volumes/4T/temp/rgbww-optimizer/guide9-white-local-jac-20260824/20260824-060631-model-ready5`.
+- Acquisition completed 10/10 with quality, cleanup, source isolation, final
+  zero and clean checkpoint `678561f`.
+- Passed: `3200/GM100`, `5600/GM100`, `20000/GM100`.
+- Remaining near-boundary failures:
+  `3200/GM200` (`0.7182 mired`, `0.0002546 Duv`; limits `0.5/0.00025`) and
+  `20000/GM200` (`155.67 K`, `-0.9527 mired`, `0.0002542 Duv`; limits
+  `67.63/0.5/0.00025`).
+- A second local-Jacobian step is preregistered for only these two nodes. This
+  is a substantive residual-driven correction, not a blind retry; global model
+  and default LUT remain unchanged.

@@ -3015,6 +3015,23 @@ class DirectR6Tests(unittest.TestCase):
         ))
         measure.validate_authorized_execution_plan(plan)
 
+    def test_guide9_white_local_confirm2_is_two_exact_pairs(self):
+        plan = thermal.build_direct_plan(
+            thermal.TD_C, variant=thermal.GUIDE9_WHITE_LOCAL_CONFIRM2_VARIANT,
+        )
+        self.assertEqual(plan["guide_experiment_id"], thermal.GUIDE9_WHITE_LOCAL_CONFIRM2_EXPERIMENT_ID)
+        self.assertEqual(plan["budgets"]["physical_cr3_cap"], 4)
+        self.assertEqual(
+            [(row["cct"], row["gm"], row["strip_command"])
+             for row in plan["analysis_contract"]["target_contracts"]],
+            [
+                (3200, 200, {"cw": 756, "ww": 440, "r": 4095, "g": 2431, "b": 32}),
+                (20000, 200, {"cw": 4095, "ww": 114, "r": 400, "g": 3792, "b": 3067}),
+            ],
+        )
+        self.assertEqual(len(plan["captures"]), 4)
+        measure.validate_authorized_execution_plan(plan)
+
     def test_guide9_h300_reference_diagnostic_is_order_balanced_and_bounded(self):
         plan = thermal.build_direct_plan(
             thermal.TD_C, variant=thermal.GUIDE9_H300_REFERENCE_DIAG_VARIANT,
