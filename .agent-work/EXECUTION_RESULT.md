@@ -13,5 +13,15 @@
   is written before feature extraction, including rejected captures.
 - Focused direct suite: 68 tests passed. Full discovery: 532 tests passed.
 - `git diff --check` and `codegraph sync`: passed.
-- Device work has not started at this checkpoint. Root 1 strip observations are
-  prohibited from pooling with this diagnostic or any fresh H300 batch.
+- Clean checkpoint: `9ad9be3`.
+- First device attempt root:
+  `/Volumes/4T/temp/rgbww-optimizer/guide9-ray-h300-reference-diagnostic-20260823/20260823-order-balanced-v1`.
+- Classification: `ENGINEERING_OR_HARNESS_FAILURE`; the camera bridge health
+  endpoint passed, but both the attempt and a bounded follow-up config check
+  returned HTTP 502 `camera_config_failed` before any light or capture action.
+- Captures: 0/4; `science_delta=none`; shell cleanup and independent Ray/strip
+  zero readback passed; Git remained clean at the checkpoint.
+- `HUMAN_GATE_REQUIRED`: physically wake/confirm the Canon camera and its USB
+  connection. After `/v1/config` succeeds, start a fresh diagnostic root.
+- Root 1 strip observations remain prohibited from pooling with this diagnostic
+  or any fresh H300 batch.
