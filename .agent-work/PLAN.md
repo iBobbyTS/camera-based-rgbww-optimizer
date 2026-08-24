@@ -90,5 +90,11 @@
   freezes 12 nodes from the retained 14x5 candidate, 24 Ray/strip captures,
   alternating within-node source order, per-capture reset600/dwell120, historical
   source-specific shutters, exact source isolation, and no global refit or LUT install.
+- White12 completed 24/24 with quality, cleanup, source isolation and final zero.
+  Only `5600K/GM200` passed; 11 nodes require direct paired local correction.
+  Preserve the immutable analysis, keep the 70/70 gate locked, and generate one
+  preregistered local candidate per failed node from that node's own retained
+  feedback trace plus its current paired CCT/mired/Duv residual. Reacquire only
+  Ray+candidate pairs; no global model refit or default LUT mutation.
 
 Keep 13-node grid, boundary, Gate-6, P8 and LUT installation locked.

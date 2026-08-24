@@ -102,3 +102,17 @@
   full 58-feature multipatch diagnostic. Failed nodes route only to local correction.
 - Focused behavior/runtime: 2/2 passed; dry-run and compileall passed; full suite:
   538/538 passed; `git diff --check` passed.
+
+## White12 acquisition and analysis
+
+- Root:
+  `/Volumes/4T/temp/rgbww-optimizer/guide9-white12-20260824/20260824-010145-representative12`.
+- Acquisition completed 24/24 with 24 physical returns, quality pass, cleanup,
+  final Ray/strip zero and clean checkpoint `8472ec6`.
+- Frozen analyzer result: `white_representative_nodes_require_local_correction`.
+  Passed nodes: `1/12`; only `5600K/GM200` passed all paired CCT/mired/Duv gates.
+- Eleven nodes failed at least one paired white-point gate. Largest deviation was
+  `20000K/GM0`: `+2119.83 K`, `-8.3432 mired`, `+0.001365 Duv`.
+- The 58-feature multipatch scores are retained as diagnostics, not zero gates.
+  Default LUT and global model remain unchanged. Next is failed-node local paired
+  correction only; 70/70 remains locked.
