@@ -10,7 +10,9 @@
    one fresh complete H300 Batch 1. If H300 alone fails or does not repeat,
    close S100 and continue at H300/S50. If either H0 control fails, stop HSI
    for a system-level physical inspection.
-5. Reassess the 13-node grid unlock only after H300 is classified. Boundary,
+5. Current result is R-C: H0 controls passed and H300/S100 was individually
+   valid but nonrepeatable. Execute the bounded H300/S50 candidate batch next.
+6. Reassess the 13-node grid unlock only after H300 is classified. Boundary,
    Gate-6, P8 and LUT remain locked.
 
 ## Historical GUIDE7 roadmap

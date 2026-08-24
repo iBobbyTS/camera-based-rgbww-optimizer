@@ -61,12 +61,16 @@
 - Persist set response, immediate readback, post-capture readback, exact command hash, intensity and strip-zero evidence before feature extraction, including rejected captures.
 - R-A permits one complete fresh H300 Batch 1. R-B/R-C close S100 and continue H300/S50. R-D stops HSI at a system-level Human physical gate.
 - Never pool the incomplete root's strip frames with new Ray frames. Keep 13-node grid, boundary, Gate-6, P8 and LUT locked.
-- Diagnostic completed 4/4 after the camera and runtime-wiring corrections.
-  Both H0 controls and both H300 observations retained complete Ray state
-  evidence but rejected all 92 optimization planes as near-noise.
-- Current branch: `R-D / system_level_Ray_camera_or_optical_path_unresolved`.
-  `HUMAN_GATE_REQUIRED`: inspect visible Ray emission, orientation/obstruction,
-  camera framing/chart position and the physical optical path. H300/S50 and all
-  later HSI work remain locked until the system-level path is restored.
+- The first completed 4/4 diagnostic occurred while the Ray was physically
+  unplugged. It is retained as historical invalid-condition evidence and is not
+  pooled or used for scientific classification.
+- After Human restored Ray power, a fresh 4/4 diagnostic completed with full
+  capture-bound state evidence, quality, cleanup and zero-state pass. Both H0
+  controls and both H300 observations were individually valid; H300 failed
+  repeatability at `20.6931 > 9.6326`.
+- Current branch: `R-C / H300_S100_reference_repeatability_unresolved`.
+  H300/S100 is closed. Execute `GUIDE9_H300_S50_FAST_DIRECT_BATCH1_V1` with
+  Ray `1/4000`, strip `1/400`, four frozen P2 active-face candidates, six total
+  captures, independent reset600/dwell120, no solver and no ambient.
 
 Keep 13-node grid, boundary, Gate-6, P8 and LUT installation locked.

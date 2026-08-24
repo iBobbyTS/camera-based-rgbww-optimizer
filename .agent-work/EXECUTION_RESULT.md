@@ -44,3 +44,19 @@
 - `HUMAN_GATE_REQUIRED`: inspect visible Ray emission for H0/S0 and H300/S100,
   Ray orientation/obstruction, camera framing/chart position and the physical
   camera/Ray optical path. H300/S50 and all later HSI work remain locked.
+
+## Powered diagnostic correction and current route
+
+- Human identified the concrete physical cause of the prior R-D result: the Ray
+  was unplugged while the desktop protocol still returned successful commands.
+  That root remains immutable but is not scientific input.
+- Fresh powered root:
+  `/Volumes/4T/temp/rgbww-optimizer/guide9-ray-h300-reference-diagnostic-20260823/20260823-powered-restored`.
+- Acquisition completed 4/4 diagnostic captures with four physical returns,
+  complete state evidence, cleanup pass, final zero and clean Git checkpoint.
+- Frozen analyzer result: `R-C / H300_S100_reference_repeatability_unresolved`.
+  Both H0 controls and both H300 captures were valid; the H300 pair score was
+  `20.6931277037` against guarded limit `9.6325691794`.
+- H300/S100 is closed. The next branch is the bounded
+  `GUIDE9_H300_S50_FAST_DIRECT_BATCH1_V1`; no old strip frames or unplugged-Ray
+  observations are pooled into it.

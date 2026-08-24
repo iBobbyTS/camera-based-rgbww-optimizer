@@ -2769,6 +2769,34 @@ class DirectR6Tests(unittest.TestCase):
         self.assertTrue(all(step["strip_zero_required"] for step in plan["captures"] if step["source_id"] == "ray"))
         self.assertTrue(all(step["ray_zero_required"] for step in plan["captures"] if step["source_id"] == "strip"))
 
+    def test_guide9_h300_s50_batch1_uses_frozen_p2_faces_and_source_isolation(self):
+        plan = thermal.build_direct_plan(
+            thermal.TD_C, variant=thermal.GUIDE9_H300_S50_BATCH1_VARIANT,
+        )
+        self.assertEqual(plan["guide_experiment_id"], thermal.GUIDE9_H300_S50_BATCH1_EXPERIMENT_ID)
+        self.assertEqual(plan["target"], {"hue": 300, "sat": 50, "intensity": 100})
+        self.assertEqual(plan["budgets"]["physical_cr3_cap"], 6)
+        self.assertEqual(
+            plan["frozen_shutters"],
+            {"ray-h300-s50": "1/4000", "strip-h300-s50": "1/400"},
+        )
+        self.assertEqual(
+            [step["role"] for step in plan["captures"][1:5]],
+            ["p2_best_ww", "p2_r_face", "p2_cw_face", "p2_b_face"],
+        )
+        self.assertEqual(
+            plan["captures"][1]["command"],
+            {"cw": 192, "ww": 4095, "r": 2495, "g": 0, "b": 2559},
+        )
+        self.assertTrue(all(
+            step["strip_zero_required"] for step in plan["captures"]
+            if step["source_id"] == "ray"
+        ))
+        self.assertTrue(all(
+            step["ray_zero_required"] for step in plan["captures"]
+            if step["source_id"] == "strip"
+        ))
+
     def test_guide9_h300_reference_diagnostic_is_order_balanced_and_bounded(self):
         plan = thermal.build_direct_plan(
             thermal.TD_C, variant=thermal.GUIDE9_H300_REFERENCE_DIAG_VARIANT,
