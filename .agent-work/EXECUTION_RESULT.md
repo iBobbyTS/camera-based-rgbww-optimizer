@@ -73,3 +73,19 @@
   `3.7789218701 < 9.5994019868`.
 - Selected exact command: `CW192/WW4095/R2495/G0/B2559`, direct score
   `1659.5267137795`. Two independent FAST repeats remain required.
+
+## H300/S50 best repeat and route disposition
+
+- Root:
+  `/Volumes/4T/temp/rgbww-optimizer/guide9-h300-s50-best-repeat-20260823/20260823-234058-p2-best-ww-wired`.
+- Acquisition completed 4/4 with quality, source isolation, cleanup, final zero
+  and clean checkpoint `0beb4da`.
+- Ray bracket passed: `2.1517060639 < 9.5994440853`.
+- Strip repeatability passed: `2.1463390317 < 9.6269509209`.
+- Direct scores were `1659.8555741638` and `1659.2476063447`.
+- Classification: `H300_S50_stable_nonfaithful`; `faithful=false` and no
+  physical-gamut inference is made. H300 route is complete.
+- The 13-node grid remains locked because GUIDE9 requires at least one faithful
+  chromatic Hue. The mandatory Advisor condition is not met because H120/S25
+  and H300/S50 are both measurement-valid and repeatable. The active route moves
+  to independent white FAST-DIRECT representative validation.

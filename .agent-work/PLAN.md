@@ -77,5 +77,14 @@
   `CW192/WW4095/R2495/G0/B2559` at `1659.5267`. Execute two independent FAST
   repeats of that exact command to classify stable faithful, stable nonfaithful,
   or operating-repeatability unresolved.
+- H300/S50 best-repeat completed 4/4. Ray bracket passed
+  (`2.1517 < 9.5994`) and strip repeatability passed
+  (`2.1463 < 9.6270`), while direct scores remained `1659.86/1659.25`.
+  Classification: `H300_S50_stable_nonfaithful`; H300 route complete.
+- Four-point sentinel is scientifically complete, but the 13-node grid remains
+  locked because no chromatic Hue has a faithful endpoint. This does not trigger
+  the GUIDE9 mandatory Advisor gate because H120/S25 and H300/S50 are both
+  measurable and repeatable. Continue with the independent GUIDE9 white route,
+  starting with the 12-point FAST-DIRECT representative validation.
 
 Keep 13-node grid, boundary, Gate-6, P8 and LUT installation locked.
