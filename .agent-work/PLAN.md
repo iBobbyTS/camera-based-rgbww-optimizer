@@ -61,9 +61,12 @@
 - Persist set response, immediate readback, post-capture readback, exact command hash, intensity and strip-zero evidence before feature extraction, including rejected captures.
 - R-A permits one complete fresh H300 Batch 1. R-B/R-C close S100 and continue H300/S50. R-D stops HSI at a system-level Human physical gate.
 - Never pool the incomplete root's strip frames with new Ray frames. Keep 13-node grid, boundary, Gate-6, P8 and LUT locked.
-- Current gate: `HUMAN_GATE_REQUIRED`. The first diagnostic attempt completed
-  0/4 because the healthy camera bridge returned `502 camera_config_failed`
-  while reading Canon configuration. Human must physically wake/confirm the
-  Canon and USB connection; then resume the same experiment in a fresh root.
+- Diagnostic completed 4/4 after the camera and runtime-wiring corrections.
+  Both H0 controls and both H300 observations retained complete Ray state
+  evidence but rejected all 92 optimization planes as near-noise.
+- Current branch: `R-D / system_level_Ray_camera_or_optical_path_unresolved`.
+  `HUMAN_GATE_REQUIRED`: inspect visible Ray emission, orientation/obstruction,
+  camera framing/chart position and the physical optical path. H300/S50 and all
+  later HSI work remain locked until the system-level path is restored.
 
 Keep 13-node grid, boundary, Gate-6, P8 and LUT installation locked.

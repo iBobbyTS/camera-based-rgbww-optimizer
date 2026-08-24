@@ -25,3 +25,22 @@
   connection. After `/v1/config` succeeds, start a fresh diagnostic root.
 - Root 1 strip observations remain prohibited from pooling with this diagnostic
   or any fresh H300 batch.
+
+## Completed diagnostic result
+
+- Successful root:
+  `/Volumes/4T/temp/rgbww-optimizer/guide9-ray-h300-reference-diagnostic-20260823/20260823-order-balanced-isolation-wired`.
+- Acquisition completed 4/4 physical, 0 formal; wrapper, Python cleanup, shell
+  cleanup, final Ray/strip zero and Git-clean checkpoint all passed.
+- All four capture-bound state records show the exact HSI command, immediate
+  readback and post-capture readback at intensity 1000, with strip five-channel
+  zero evidence. Recorded shutters were H0 `0.00006103515625 s` and H300
+  `0.000387549084953174 s`.
+- Both H0 controls and both H300 observations rejected all 92 optimization
+  planes as near-noise. Classification: `R-D /
+  system_level_Ray_camera_or_optical_path_unresolved`.
+- Immutable derived analysis:
+  `analysis-guide9-h300-reference-derived.json` in the successful root.
+- `HUMAN_GATE_REQUIRED`: inspect visible Ray emission for H0/S0 and H300/S100,
+  Ray orientation/obstruction, camera framing/chart position and the physical
+  camera/Ray optical path. H300/S50 and all later HSI work remain locked.
