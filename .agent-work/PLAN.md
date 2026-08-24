@@ -107,5 +107,10 @@
   run one bounded current-session local-probe block per node: one Ray reference,
   one base and four independent free-channel probes. Use the resulting local
   Jacobian only to preregister the next paired candidate.
+- Local-probe path is ready for `1800/GM0,100,200`, `3200/GM0`, `5600/GM0`
+  and `20000/GM0`: each node has one current Ray reference, one base and four
+  independent free-channel probes (`±256`), 36 captures total. Analysis only
+  preregisters one candidate per node; it does not capture candidates, refit the
+  global model or modify the default LUT.
 
 Keep 13-node grid, boundary, Gate-6, P8 and LUT installation locked.

@@ -3032,6 +3032,58 @@ class DirectR6Tests(unittest.TestCase):
         self.assertEqual(len(plan["captures"]), 4)
         measure.validate_authorized_execution_plan(plan)
 
+    def test_guide9_white_local_probes_are_six_bounded_blocks(self):
+        plan = thermal.build_direct_plan(
+            thermal.TD_C, variant=thermal.GUIDE9_WHITE_LOCAL_PROBES_VARIANT,
+        )
+        self.assertEqual(plan["guide_experiment_id"], thermal.GUIDE9_WHITE_LOCAL_PROBES_EXPERIMENT_ID)
+        self.assertEqual(plan["budgets"], {
+            "ray_cap": 6, "strip_cap": 30, "formal_cap": 36,
+            "physical_cr3_cap": 36, "ambient_cap": 0, "retry": 0,
+        })
+        self.assertEqual(len(plan["analysis_contract"]["target_contracts"]), 6)
+        self.assertEqual(len(plan["captures"]), 36)
+        for contract in plan["analysis_contract"]["target_contracts"]:
+            self.assertEqual(len(contract["probes"]), 4)
+            self.assertEqual(contract["base_command"][contract["active_channel"]], 4095)
+            self.assertEqual(
+                {probe["channel"] for probe in contract["probes"]},
+                set(thermal.CHANNELS) - {contract["active_channel"]},
+            )
+        measure.validate_authorized_execution_plan(plan)
+
+        rows = [{"plan_step": step} for step in plan["captures"]]
+        def observation(row):
+            step = row["plan_step"]
+            target = float(step["target_cct"])
+            role = str(step["role"])
+            if role == "ray_reference":
+                cct, duv = target, 0.0
+            elif role == "strip_base":
+                cct, duv = target - 20.0, 0.001
+            else:
+                index = sorted(
+                    role_name for role_name in {
+                        value["role"] for value in plan["captures"]
+                        if value["target_cct"] == step["target_cct"]
+                        and value["target_gm"] == step["target_gm"]
+                        and value["role"].startswith("strip_probe_")
+                    }
+                ).index(role)
+                cct, duv = target - 15.0 + index * 5.0, 0.0008 - index * 0.0002
+            return {
+                "white_patch_normalized_per_second": {"R": 1.0, "G1": 1.0, "G2": 1.0, "B": 1.0},
+                "neutral_log_chroma": {"log_R_over_G": 0.0, "log_B_over_G": 0.0, "G1_minus_G2_over_mean_G": 0.0},
+                "white_point": {"cct_K": cct, "duv": duv},
+            }
+        report = analyze.analyze_guide9_white_local_probes(
+            rows, target_contracts=plan["analysis_contract"]["target_contracts"],
+            observation_fn=observation,
+        )
+        self.assertEqual(report["status"], "candidates_preregistered")
+        self.assertEqual(report["node_count"], 6)
+        self.assertEqual(report["next"], "GUIDE9_WHITE12_LOCAL_PROBE_CANDIDATES")
+
     def test_guide9_h300_reference_diagnostic_is_order_balanced_and_bounded(self):
         plan = thermal.build_direct_plan(
             thermal.TD_C, variant=thermal.GUIDE9_H300_REFERENCE_DIAG_VARIANT,

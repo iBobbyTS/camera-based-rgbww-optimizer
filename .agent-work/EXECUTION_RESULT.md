@@ -144,3 +144,16 @@
 - Five nodes with retained historical Jacobians are now corrected. Six failed
   nodes without a retained Jacobian remain and require bounded local probes before
   any candidate may be proposed. Default LUT/global model remain unchanged.
+
+## White local-probe readiness
+
+- Implemented `GUIDE9_WHITE12_LOCAL_PROBES_V1` for the six failed nodes without
+  retained local Jacobians.
+- Each node freezes one current Ray reference, one original base and four
+  independent free-channel `±256` probes while retaining its original full-scale
+  active channel. Total budget: 36 formal/physical, ambient 0, retry 0.
+- The analyzer uses only current-root observations to estimate each 2x4 local
+  white-point Jacobian and preregister one candidate. Candidate capture, global
+  refit and default LUT mutation are prohibited in this root.
+- Focused behavior: 1/1 passed; direct module: 77/77 passed; dry-run, compileall
+  and `git diff --check` passed.

@@ -542,7 +542,8 @@ def analyze_thermal_run(
             "direct_guide9_white12_v1", "direct_guide9_white_local_jacobian_v1",
             "direct_guide9_white_local_confirm2_v1",
         }
-        guide6_direct = guide6_direct or short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best or guide9_s25 or guide9_s25_best or guide9_h0 or guide9_h0_best or guide9_h300 or guide9_h300_s50 or guide9_h300_s50_best or guide9_white12
+        guide9_white_probes = direct_schema == "direct_guide9_white_local_probes_v1"
+        guide6_direct = guide6_direct or short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best or guide9_s25 or guide9_s25_best or guide9_h0 or guide9_h0_best or guide9_h300 or guide9_h300_s50 or guide9_h300_s50_best or guide9_white12 or guide9_white_probes
         prerequisite = plan.get("scientific_prerequisite")
         if (
             not guide6_direct
@@ -585,7 +586,7 @@ def analyze_thermal_run(
                 local_protocol_evidence = _load_json(evidence_path)
         _validate_required_execution_artifacts(
             root, allow_python_direct=guide6_direct,
-            allow_short_endpoint=short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best or guide9_s25 or guide9_s25_best or guide9_h0 or guide9_h0_best or guide9_h300 or guide9_h300_s50 or guide9_h300_s50_best or guide9_white12,
+            allow_short_endpoint=short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best or guide9_s25 or guide9_s25_best or guide9_h0 or guide9_h0_best or guide9_h300 or guide9_h300_s50 or guide9_h300_s50_best or guide9_white12 or guide9_white_probes,
         )
         _validate_reproducibility_checkpoint(root, plan, run)
         captures = _load_jsonl(root / "captures.jsonl")
@@ -679,6 +680,7 @@ def analyze_thermal_run(
                     "direct_guide9_h300_s50_batch1_v1",
                     "direct_guide9_h300_s50_best_repeat_v1",
                     "direct_guide9_white12_v1",
+                    "direct_guide9_white_local_probes_v1",
                 }
             ):
                 ray_zero = capture.get("ray_zero_before_capture")
@@ -715,7 +717,7 @@ def analyze_thermal_run(
                 raise ValueError("GUIDE6 isolation ledger lacks per-measurement gates")
             if any(row.get("evidence", {}).get("status") != "pass" for row in local_gates):
                 raise ValueError("GUIDE6 isolation ledger contains a failed gate")
-        elif not (short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best or guide9_s25 or guide9_s25_best or guide9_h0 or guide9_h0_best or guide9_h300 or guide9_h300_s50 or guide9_h300_s50_best or guide9_white12):
+        elif not (short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best or guide9_s25 or guide9_s25_best or guide9_h0 or guide9_h0_best or guide9_h300 or guide9_h300_s50 or guide9_h300_s50_best or guide9_white12 or guide9_white_probes):
             _validate_commands_and_gates(plan, root)
         _validate_cleanup_and_wrapper(
             root, allow_python_direct=guide6_direct,
@@ -727,7 +729,11 @@ def analyze_thermal_run(
             enriched["engineering_quality_status"] = "pass"
             enriched["run_root"] = str(root)
             formal_rows.append(enriched)
-        if guide9_white12:
+        if guide9_white_probes:
+            result = analyze_guide9_white_local_probes(
+                formal_rows, target_contracts=plan["analysis_contract"]["target_contracts"],
+            )
+        elif guide9_white12:
             result = analyze_guide9_white12(
                 formal_rows, feature_ids=feature_ids,
                 target_contracts=plan["analysis_contract"]["target_contracts"],
@@ -2343,6 +2349,75 @@ def analyze_guide9_white12(
         "next": pass_next if not failed else failure_next,
         "global_model_refit": False, "default_lut_installation": False,
         "steady_claim": False,
+    }
+
+
+def analyze_guide9_white_local_probes(
+    captures: Sequence[Mapping[str, Any]], *,
+    target_contracts: Sequence[Mapping[str, Any]],
+    observation_fn: Callable[[Mapping[str, Any]], Mapping[str, Any]] = _guide9_white_observation,
+) -> dict[str, Any]:
+    from camera_based_rgbww_optimizer.optimization import white_lut_feedback
+
+    grouped: dict[tuple[int, int], dict[str, Mapping[str, Any]]] = defaultdict(dict)
+    for row in captures:
+        step = row["plan_step"]
+        grouped[(int(step["target_cct"]), int(step["target_gm"]))][str(step["role"])] = row
+    contracts = {(int(row["cct"]), int(row["gm"])): row for row in target_contracts}
+    if set(grouped) != set(contracts):
+        raise ValueError("GUIDE9 white local probes lack their exact target set")
+    nodes = []
+    for key in sorted(contracts):
+        contract = contracts[key]
+        roles = grouped[key]
+        probe_contracts = list(contract["probes"])
+        required = {"ray_reference", "strip_base", *(
+            f"strip_probe_{probe['channel']}" for probe in probe_contracts
+        )}
+        if set(roles) != required:
+            raise ValueError("GUIDE9 white local probe node lacks its exact six observations")
+        ray = dict(observation_fn(roles["ray_reference"]))
+        base = dict(observation_fn(roles["strip_base"]))
+        probe_samples = []
+        for probe in probe_contracts:
+            observation = dict(observation_fn(roles[f"strip_probe_{probe['channel']}"]))
+            probe_samples.append({
+                "probe_channel": str(probe["channel"]),
+                "probe_delta_code": int(probe["delta_code"]),
+                "white_point": observation["white_point"],
+            })
+        jacobian = white_lut_feedback.estimate_jacobian(
+            base["white_point"], probe_samples,
+            target_white_point=ray["white_point"],
+            active_channel=str(contract["active_channel"]),
+            cct_tolerance_K=float(contract["resolved_cct_tolerance_K"]),
+            duv_tolerance=float(contract["duv_tolerance"]),
+            max_code=4095,
+        )
+        candidate = white_lut_feedback.solve_damped_step(
+            contract["base_command"], base["white_point"], ray["white_point"], jacobian,
+            active_channel=str(contract["active_channel"]),
+            cct_tolerance_K=float(contract["resolved_cct_tolerance_K"]),
+            duv_tolerance=float(contract["duv_tolerance"]),
+            max_code=4095, max_step_code=int(contract["maximum_step_code"]),
+            damping=float(contract["damping"]), rgb_penalty=0.0,
+            channel_penalties=contract["channel_penalties"],
+        )
+        nodes.append({
+            "cct": key[0], "gm": key[1], "active_channel": contract["active_channel"],
+            "base_command": dict(contract["base_command"]),
+            "probe_commands": [dict(probe) for probe in probe_contracts],
+            "local_jacobian": np.asarray(jacobian).tolist(),
+            "candidate": candidate,
+            "ray_white_point": ray["white_point"],
+            "base_white_point": base["white_point"],
+        })
+    return {
+        "schema": "guide9_white12_local_probes_analysis_v1",
+        "status": "candidates_preregistered", "node_count": len(nodes),
+        "capture_count": len(captures), "nodes": nodes,
+        "next": "GUIDE9_WHITE12_LOCAL_PROBE_CANDIDATES",
+        "global_model_refit": False, "default_lut_installation": False,
     }
 
 
