@@ -72,5 +72,10 @@
   H300/S100 is closed. Execute `GUIDE9_H300_S50_FAST_DIRECT_BATCH1_V1` with
   Ray `1/4000`, strip `1/400`, four frozen P2 active-face candidates, six total
   captures, independent reset600/dwell120, no solver and no ambient.
+- H300/S50 Batch 1 completed 6/6 with quality, source isolation, cleanup and
+  Ray bracket pass (`3.7789 < 9.5994`). The lowest direct-score candidate is
+  `CW192/WW4095/R2495/G0/B2559` at `1659.5267`. Execute two independent FAST
+  repeats of that exact command to classify stable faithful, stable nonfaithful,
+  or operating-repeatability unresolved.
 
 Keep 13-node grid, boundary, Gate-6, P8 and LUT installation locked.

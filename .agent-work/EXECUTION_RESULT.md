@@ -60,3 +60,16 @@
 - H300/S100 is closed. The next branch is the bounded
   `GUIDE9_H300_S50_FAST_DIRECT_BATCH1_V1`; no old strip frames or unplugged-Ray
   observations are pooled into it.
+
+## H300/S50 Batch 1
+
+- Root:
+  `/Volumes/4T/temp/rgbww-optimizer/guide9-h300-s50-batch1-20260823/20260823-220027-fast-direct`.
+- Acquisition completed 6/6 with six physical returns, quality pass, cleanup,
+  final zero and clean checkpoint `4e25adc`.
+- Frozen shutters: Ray `1/4000`, strip `1/400`; no prior H300 strip frame or
+  unplugged-Ray diagnostic observation was pooled.
+- Analyzer result: `H300_S50_batch1_candidate_selected`; Ray bracket passed at
+  `3.7789218701 < 9.5994019868`.
+- Selected exact command: `CW192/WW4095/R2495/G0/B2559`, direct score
+  `1659.5267137795`. Two independent FAST repeats remain required.
