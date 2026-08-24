@@ -29,6 +29,12 @@ from camera_based_rgbww_optimizer.paths import PROJECT_ROOT, PROJECT_TMP_DIR
 
 DEFAULT_OUTPUT = PROJECT_TMP_DIR / "p7-thermal-diagnostics-offline"
 REMOTE_V2_CAPABILITY = "remote_v2_capture_timing_v1"
+GUIDE9_CANDIDATE_BATCH_SCHEMAS = {
+    "direct_guide9_h120_s50_batch1_v1",
+    "direct_guide9_h0_s0_batch1_v1",
+    "direct_guide9_h300_s100_batch1_v1",
+    "direct_guide9_h300_s50_batch1_v1",
+}
 class _SidecarAssociationError(RuntimeError):
     def __init__(self, message: str, *, evidence: Mapping[str, Any]):
         super().__init__(message)
@@ -256,7 +262,7 @@ def validate_authorized_execution_plan(
     )
     direct_guide9_s50 = (
         isinstance(authorization, Mapping)
-        and authorization.get("schema") in {"direct_guide9_h120_s50_batch1_v1", "direct_guide9_h0_s0_batch1_v1", "direct_guide9_h300_s100_batch1_v1"}
+        and authorization.get("schema") in GUIDE9_CANDIDATE_BATCH_SCHEMAS
     )
     direct_guide9_best = (
         isinstance(authorization, Mapping)
@@ -1125,7 +1131,7 @@ def execute_plan(
     )
     direct_guide9_s50 = (
         isinstance(plan.get("execution_authorization"), Mapping)
-        and plan["execution_authorization"].get("schema") in {"direct_guide9_h120_s50_batch1_v1", "direct_guide9_h0_s0_batch1_v1", "direct_guide9_h300_s100_batch1_v1"}
+        and plan["execution_authorization"].get("schema") in GUIDE9_CANDIDATE_BATCH_SCHEMAS
     )
     direct_guide9_best = (
         isinstance(plan.get("execution_authorization"), Mapping)
@@ -1145,7 +1151,7 @@ def execute_plan(
     )
     direct_guide9_s50 = (
         isinstance(plan.get("execution_authorization"), Mapping)
-        and plan["execution_authorization"].get("schema") in {"direct_guide9_h120_s50_batch1_v1", "direct_guide9_h0_s0_batch1_v1", "direct_guide9_h300_s100_batch1_v1"}
+        and plan["execution_authorization"].get("schema") in GUIDE9_CANDIDATE_BATCH_SCHEMAS
     )
     direct_guide9_best = (
         isinstance(plan.get("execution_authorization"), Mapping)
@@ -2890,7 +2896,7 @@ def run_authorized_plan(
     )
     direct_guide9_s50 = (
         isinstance(plan.get("execution_authorization"), Mapping)
-        and plan["execution_authorization"].get("schema") in {"direct_guide9_h120_s50_batch1_v1", "direct_guide9_h0_s0_batch1_v1", "direct_guide9_h300_s100_batch1_v1"}
+        and plan["execution_authorization"].get("schema") in GUIDE9_CANDIDATE_BATCH_SCHEMAS
     )
     direct_guide8_emission_exposure = (
         isinstance(plan.get("execution_authorization"), Mapping)

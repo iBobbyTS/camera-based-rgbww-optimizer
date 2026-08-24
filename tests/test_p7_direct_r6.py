@@ -2796,6 +2796,7 @@ class DirectR6Tests(unittest.TestCase):
             step["ray_zero_required"] for step in plan["captures"]
             if step["source_id"] == "strip"
         ))
+        measure.validate_authorized_execution_plan(plan)
 
     def test_guide9_h300_reference_diagnostic_is_order_balanced_and_bounded(self):
         plan = thermal.build_direct_plan(
