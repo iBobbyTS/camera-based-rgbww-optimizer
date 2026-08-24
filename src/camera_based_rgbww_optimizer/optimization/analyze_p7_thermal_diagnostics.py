@@ -537,7 +537,8 @@ def analyze_thermal_run(
         guide9_h0_best = direct_schema == "direct_guide9_h0_s0_best_repeat_v1"
         guide9_h300 = direct_schema == "direct_guide9_h300_s100_batch1_v1"
         guide9_h300_s50 = direct_schema == "direct_guide9_h300_s50_batch1_v1"
-        guide6_direct = guide6_direct or short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best or guide9_s25 or guide9_s25_best or guide9_h0 or guide9_h0_best or guide9_h300 or guide9_h300_s50
+        guide9_h300_s50_best = direct_schema == "direct_guide9_h300_s50_best_repeat_v1"
+        guide6_direct = guide6_direct or short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best or guide9_s25 or guide9_s25_best or guide9_h0 or guide9_h0_best or guide9_h300 or guide9_h300_s50 or guide9_h300_s50_best
         prerequisite = plan.get("scientific_prerequisite")
         if (
             not guide6_direct
@@ -580,7 +581,7 @@ def analyze_thermal_run(
                 local_protocol_evidence = _load_json(evidence_path)
         _validate_required_execution_artifacts(
             root, allow_python_direct=guide6_direct,
-            allow_short_endpoint=short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best or guide9_s25 or guide9_s25_best or guide9_h0 or guide9_h0_best or guide9_h300 or guide9_h300_s50,
+            allow_short_endpoint=short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best or guide9_s25 or guide9_s25_best or guide9_h0 or guide9_h0_best or guide9_h300 or guide9_h300_s50 or guide9_h300_s50_best,
         )
         _validate_reproducibility_checkpoint(root, plan, run)
         captures = _load_jsonl(root / "captures.jsonl")
@@ -672,6 +673,7 @@ def analyze_thermal_run(
                     "direct_guide9_h0_s0_best_repeat_v1",
                     "direct_guide9_h300_s100_batch1_v1",
                     "direct_guide9_h300_s50_batch1_v1",
+                    "direct_guide9_h300_s50_best_repeat_v1",
                 }
             ):
                 ray_zero = capture.get("ray_zero_before_capture")
@@ -708,7 +710,7 @@ def analyze_thermal_run(
                 raise ValueError("GUIDE6 isolation ledger lacks per-measurement gates")
             if any(row.get("evidence", {}).get("status") != "pass" for row in local_gates):
                 raise ValueError("GUIDE6 isolation ledger contains a failed gate")
-        elif not (short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best or guide9_s25 or guide9_s25_best or guide9_h0 or guide9_h0_best or guide9_h300 or guide9_h300_s50):
+        elif not (short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best or guide9_s25 or guide9_s25_best or guide9_h0 or guide9_h0_best or guide9_h300 or guide9_h300_s50 or guide9_h300_s50_best):
             _validate_commands_and_gates(plan, root)
         _validate_cleanup_and_wrapper(
             root, allow_python_direct=guide6_direct,
@@ -720,8 +722,13 @@ def analyze_thermal_run(
             enriched["engineering_quality_status"] = "pass"
             enriched["run_root"] = str(root)
             formal_rows.append(enriched)
-        if guide9_best or guide9_s25_best or guide9_h0_best:
-            result = analyze_guide9_h120_s50_best_repeat(formal_rows, feature_ids=feature_ids, target_sat=0 if guide9_h0_best else 25 if guide9_s25_best else 50)
+        if guide9_best or guide9_s25_best or guide9_h0_best or guide9_h300_s50_best:
+            result = analyze_guide9_h120_s50_best_repeat(
+                formal_rows,
+                feature_ids=feature_ids,
+                target_hue=300 if guide9_h300_s50_best else 120,
+                target_sat=0 if guide9_h0_best else 25 if guide9_s25_best else 50,
+            )
         elif guide9_s50 or guide9_h0 or guide9_h300 or guide9_h300_s50:
             result = analyze_guide9_h120_s50_batch1(
                 formal_rows,
@@ -2192,7 +2199,8 @@ def analyze_guide9_h120_s50_batch1(
 
 
 def analyze_guide9_h120_s50_best_repeat(
-    captures: Sequence[Mapping[str, Any]], *, feature_ids: Sequence[str], target_sat: int = 50,
+    captures: Sequence[Mapping[str, Any]], *, feature_ids: Sequence[str],
+    target_hue: int = 120, target_sat: int = 50,
 ) -> dict[str, Any]:
     by_role = {str(row["plan_step"]["role"]): row for row in captures}
     required = {"ray_q_before", "ray_q_after", "best_repeat_2", "best_repeat_3"}
@@ -2206,7 +2214,10 @@ def analyze_guide9_h120_s50_best_repeat(
     repeat = frozen_same_state_compatibility_diagnostic(repeats[0], repeats[1], source="strip", state="D", feature_ids=feature_ids)
     direct_scores = [float(direct_whitened_norm(value - target, variance)) for value in repeats]
     faithful = repeat["decision"] == "pass" and all(score <= 9.5626 for score in direct_scores)
-    if target_sat == 0:
+    if target_hue == 300:
+        classification = "H300_S50_faithful" if faithful else "H300_S50_stable_nonfaithful" if repeat["decision"] == "pass" else "H300_S50_operating_repeatability_unresolved"
+        next_action = "H300_ROUTE_COMPLETE"
+    elif target_sat == 0:
         classification = "H0_S0_faithful" if faithful else "H0_S0_stable_nonfaithful" if repeat["decision"] == "pass" else "H0_S0_operating_repeatability_unresolved"
         next_action = "H300/S100"
     elif target_sat == 25:
@@ -2215,7 +2226,7 @@ def analyze_guide9_h120_s50_best_repeat(
     else:
         classification = "H120_S50_faithful" if faithful else "H120_S50_stable_nonfaithful" if repeat["decision"] == "pass" else "H120_S50_operating_repeatability_unresolved"
         next_action = "H120/S25"
-    return {"schema": f"guide9_h120_s{target_sat}_best_repeat_analysis_v1", "classification": classification, "measurement_valid": True, "faithful": faithful, "ray_bracket": frozen_same_state_compatibility_diagnostic(ray_before, ray_after, source="ray", state="D", feature_ids=feature_ids), "best_command": dict(by_role["best_repeat_2"]["plan_step"]["command"]), "repeatability": repeat, "direct_scores": direct_scores, "downward_search_stopped": target_sat == 25, "next": next_action, "gamut_inference": "prohibited", "steady_claim": False}
+    return {"schema": f"guide9_h{target_hue}_s{target_sat}_best_repeat_analysis_v1", "classification": classification, "measurement_valid": True, "faithful": faithful, "ray_bracket": frozen_same_state_compatibility_diagnostic(ray_before, ray_after, source="ray", state="D", feature_ids=feature_ids), "best_command": dict(by_role["best_repeat_2"]["plan_step"]["command"]), "repeatability": repeat, "direct_scores": direct_scores, "downward_search_stopped": target_sat == 25, "next": next_action, "gamut_inference": "prohibited", "steady_claim": False}
 
 
 def analyze_guide6_local_controllability(

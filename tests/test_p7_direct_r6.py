@@ -165,6 +165,7 @@ class DirectR6Tests(unittest.TestCase):
                 }
             elif plan["execution_authorization"]["schema"] in (
                 measure.GUIDE9_CANDIDATE_BATCH_SCHEMAS
+                | measure.GUIDE9_BEST_REPEAT_SCHEMAS
             ) or plan["execution_authorization"]["schema"] in {
                 "direct_strip_history_session_v1",
                 "direct_td_c_fast_endpoint_holdout_v1",
@@ -209,6 +210,7 @@ class DirectR6Tests(unittest.TestCase):
         def source_isolation(_gate_id):
             if plan["execution_authorization"]["schema"] in (
                 measure.GUIDE9_CANDIDATE_BATCH_SCHEMAS
+                | measure.GUIDE9_BEST_REPEAT_SCHEMAS
             ) or plan["execution_authorization"]["schema"] in {
                 "direct_strip_history_session_v1",
                 "direct_guide6_strip_exposure_qualification_v1",
@@ -227,6 +229,7 @@ class DirectR6Tests(unittest.TestCase):
         direct_ray_continuous = (
             plan["execution_authorization"]["schema"]
             in measure.GUIDE9_CANDIDATE_BATCH_SCHEMAS
+            | measure.GUIDE9_BEST_REPEAT_SCHEMAS
         ) or plan["execution_authorization"]["schema"] in {
             "direct_ray_r6_authority_v1",
             "direct_ray_history_session_v1",
@@ -2815,6 +2818,33 @@ class DirectR6Tests(unittest.TestCase):
             self.assertEqual(report["schema"], "guide9_h300_s50_batch1_analysis_v1")
             self.assertEqual(report["classification"], "H300_S50_batch1_candidate_selected")
             self.assertEqual(report["next"], "GUIDE9_H300_S50_BEST_REPEAT_V1")
+
+    def test_guide9_h300_s50_best_repeat_is_bounded_and_analyzable(self):
+        plan = thermal.build_direct_plan(
+            thermal.TD_C, variant=thermal.GUIDE9_H300_S50_BEST_REPEAT_VARIANT,
+        )
+        self.assertEqual(plan["guide_experiment_id"], thermal.GUIDE9_H300_S50_BEST_REPEAT_EXPERIMENT_ID)
+        self.assertEqual(plan["target"], {"hue": 300, "sat": 50, "intensity": 100})
+        self.assertEqual(plan["budgets"]["physical_cr3_cap"], 4)
+        self.assertEqual(
+            plan["analysis_contract"]["best_command"],
+            {"cw": 192, "ww": 4095, "r": 2495, "g": 0, "b": 2559},
+        )
+        self.assertEqual(
+            plan["frozen_shutters"],
+            {"ray-h300-s50": "1/4000", "strip-h300-s50": "1/400"},
+        )
+        measure.validate_authorized_execution_plan(plan)
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "guide9-h300-s50-best"
+            self._execute_fake_protocol(plan, root)
+            feature_ids = tuple(
+                json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"]
+            )
+            report = analyze.analyze_thermal_run(root, feature_ids=feature_ids)
+            self.assertEqual(report["schema"], "guide9_h300_s50_best_repeat_analysis_v1")
+            self.assertEqual(report["classification"], "H300_S50_faithful")
+            self.assertEqual(report["next"], "H300_ROUTE_COMPLETE")
 
     def test_guide9_h300_reference_diagnostic_is_order_balanced_and_bounded(self):
         plan = thermal.build_direct_plan(
