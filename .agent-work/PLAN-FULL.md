@@ -4,9 +4,13 @@
    was stable nonfaithful; H120/S25 established no faithful lower endpoint.
 2. Completed: H0/S0 is `H0_S0_stable_nonfaithful` with valid Ray bracket and
    compatible strip repeats.
-3. Execute H300/S100 FAST-DIRECT Batch 1, then follow GUIDE9's bounded
-   scale-relaxed/S50/S25 branch only if needed.
-4. Reassess the 13-node grid unlock only after H300 is classified. Boundary,
+3. Diagnose the intermittent H300 reference/path dropout with the four-frame,
+   Ray-only `GUIDE9_RAY_H300_S100_REFERENCE_EMISSION_PATH_DIAG_V1`.
+4. If both H0 controls and both H300 observations pass and H300 repeats, run
+   one fresh complete H300 Batch 1. If H300 alone fails or does not repeat,
+   close S100 and continue at H300/S50. If either H0 control fails, stop HSI
+   for a system-level physical inspection.
+5. Reassess the 13-node grid unlock only after H300 is classified. Boundary,
    Gate-6, P8 and LUT remain locked.
 
 ## Historical GUIDE7 roadmap

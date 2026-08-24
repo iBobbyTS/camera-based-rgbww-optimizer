@@ -1,24 +1,17 @@
-# GUIDE7 F2 long-block history — short endpoint prepared
+# GUIDE9 H300 reference emission/path diagnostic readiness
 
-- Offline locally-bracketed probe artifact created:
-  `.agent-work/analysis-v2-f2-locally-bracketed-probes-derived.json`
-- Artifact SHA-256: `f80da21db45a190b824fc2862da918eb04c4ef0cfea70e807486d11fa673e100`.
-- Both F2 roots remain immutable and were not pooled as endpoint evidence.
-- Frozen candidate: `CW4095/WW0/R0/G4095/B0`.
-- Short endpoint dry-run passed: exactly 7 captures, formal cap 7, ambient 0,
-  retry 0, no probes/solver.
-- Short endpoint completed 7/7 with cleanup and zero-state pass.
-- Ray bracket passed (`3.5863 / 9.5432`), but base pair compatibility failed
-  (`11.8766 / 9.5614`); candidate repeats were not sufficiently repeatable.
-- Classification: `S-D / H120_S100_CW_active_fullscale_fast_repeatability_unresolved`.
-- Existing 3072 closed-loop diagnostic is unlocked. This is not a gamut or
-  physical-unreachability conclusion; later grid/boundary/Gate-6/P8/LUT remain locked.
-- The old P7 pilot formal-policy path was rejected as the wrong owner because its
-  v2 policy is intentionally waiting/non-executable.
-- A direct GUIDE7 scale-3072 stability-first variant now owns the next scientific
-  action: 5 captures, three reset-separated strip repeats, no probes or solver.
-- Scale 3072 completed 5/5 with quality, cleanup and Ray bracket pass. Strip
-  repeatability failed (`29.5633`, `25.9046` vs `9.5614`; later pair `4.7387`).
-- Classification: `R-UNSTABLE / scale3072_short_repeatability_unresolved`.
-- The optional scale-2048 stability-first diagnostic is next; no probe, solver,
-  grid, boundary, Gate-6, P8 or LUT action is unlocked.
+- Advisor correction accepted: prior evidence is one incomplete run after a valid
+  H300 Q-before plus one near-dark H300 observation without complete pre-capture
+  state establishment, not two established first-reference failures.
+- Current classification:
+  `intermittent_H300_reference_emission_or_optical_path_dropout_unresolved`.
+- Implemented `GUIDE9_RAY_H300_S100_REFERENCE_EMISSION_PATH_DIAG_V1` as a
+  Ray-only, 0-formal/4-physical, order-balanced H0/S0 and H300/S100 diagnostic.
+- Frozen shutters remain H0/S0 `1/16000` and H300/S100 `1/2500`; exposure,
+  observer, 58 features, thresholds, covariance and coverage are unchanged.
+- Capture-bound Ray set/immediate-readback/post-readback and strip-zero evidence
+  is written before feature extraction, including rejected captures.
+- Focused direct suite: 68 tests passed. Full discovery: 532 tests passed.
+- `git diff --check` and `codegraph sync`: passed.
+- Device work has not started at this checkpoint. Root 1 strip observations are
+  prohibited from pooling with this diagnostic or any fresh H300 batch.

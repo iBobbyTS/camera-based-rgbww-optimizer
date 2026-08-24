@@ -270,6 +270,11 @@ def validate_authorized_execution_plan(
         isinstance(authorization, Mapping)
         and authorization.get("schema") == "direct_guide8_ray_emission_exposure_v1"
     )
+    direct_guide9_h300_reference_diag = (
+        isinstance(authorization, Mapping)
+        and authorization.get("schema")
+        == "direct_guide9_h300_reference_emission_path_diag_v1"
+    )
     direct_guide6_strip_exposure = (
         isinstance(authorization, Mapping)
         and authorization.get("schema") == "direct_guide6_strip_exposure_qualification_v1"
@@ -279,6 +284,7 @@ def validate_authorized_execution_plan(
         or direct_ray_fast_long_bridge or direct_td_c_fast_endpoint
         or direct_guide6_target_local or direct_guide7_f2 or direct_f2_short
         or direct_f2_scale3072 or direct_guide8_emission_exposure
+        or direct_guide9_h300_reference_diag
         or direct_guide6_strip_exposure or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_best or direct_guide9_s25
     ):
         valid_execution_scope = (
@@ -864,6 +870,63 @@ def run_guide8_emission_exposure_protocol(
                 raise RuntimeError("GUIDE8 protocol cleanup did not pass")
 
 
+def run_guide9_h300_reference_diagnostic_protocol(
+    plan: Mapping[str, Any], *,
+    measure_fn: Callable[[Mapping[str, Any]], Mapping[str, Any]],
+    feature_ids: Sequence[str],
+    pair_evaluator_fn: Callable[[Mapping[str, Any], Mapping[str, Any]], Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Run and classify the four-frame order-balanced H300 reference diagnostic."""
+    if (
+        plan.get("guide_experiment_id") != thermal.GUIDE9_H300_REFERENCE_DIAG_EXPERIMENT_ID
+        or (plan.get("execution_authorization") or {}).get("schema")
+        != "direct_guide9_h300_reference_emission_path_diag_v1"
+        or len(feature_ids) != 58
+    ):
+        raise ValueError("GUIDE9 H300 reference diagnostic requires its exact direct spec")
+    steps = list(plan.get("captures", ()))
+    if [str(step.get("role")) for step in steps] != [
+        "control_1", "h300_1", "h300_2", "control_2",
+    ]:
+        raise ValueError("GUIDE9 H300 reference diagnostic order differs")
+    measured = [{"step": dict(step), "capture": dict(measure_fn(step))} for step in steps]
+    by_role = {str(item["step"]["role"]): item["capture"] for item in measured}
+    control_valid = [
+        _guide8_quality_class(by_role[role], feature_count=58) == "pass"
+        for role in ("control_1", "control_2")
+    ]
+    h300_valid = [
+        _guide8_quality_class(by_role[role], feature_count=58) == "pass"
+        for role in ("h300_1", "h300_2")
+    ]
+    pair = None
+    if not all(control_valid):
+        branch = "R-D"
+        classification = "system_level_Ray_camera_or_optical_path_unresolved"
+    elif not any(h300_valid):
+        branch = "R-B"
+        classification = "H300_S100_reference_emission_path_unresolved"
+    elif not all(h300_valid):
+        branch = "R-C"
+        classification = "H300_S100_reference_repeatability_unresolved"
+    else:
+        pair = dict(pair_evaluator_fn(by_role["h300_1"], by_role["h300_2"]))
+        if pair.get("status") == "pass" or pair.get("pass") is True:
+            branch = "R-A"
+            classification = "H300_reference_requalified_after_transient_dropout"
+        else:
+            branch = "R-C"
+            classification = "H300_S100_reference_repeatability_unresolved"
+    return {
+        "schema": "guide9_h300_reference_emission_path_diagnostic_evidence_v1",
+        "branch": branch, "classification": classification,
+        "measured": measured, "control_valid": control_valid,
+        "h300_valid": h300_valid, "h300_pair_evaluation": pair,
+        "physical_capture_count": 4, "formal_capture_count": 0,
+        "root1_strip_pooling": False,
+    }
+
+
 def run_guide6_strip_exposure_qualification_protocol(
     plan: Mapping[str, Any], *,
     measure_fn: Callable[[Mapping[str, Any]], Mapping[str, Any]],
@@ -1093,6 +1156,11 @@ def execute_plan(
         and plan["execution_authorization"].get("schema")
         == "direct_guide8_ray_emission_exposure_v1"
     )
+    direct_guide9_h300_reference_diag = (
+        isinstance(plan.get("execution_authorization"), Mapping)
+        and plan["execution_authorization"].get("schema")
+        == "direct_guide9_h300_reference_emission_path_diag_v1"
+    )
     direct_guide6_strip_exposure = (
         isinstance(plan.get("execution_authorization"), Mapping)
         and plan["execution_authorization"].get("schema")
@@ -1101,7 +1169,8 @@ def execute_plan(
     if (
         direct_ray_continuous or direct_guide6_target_local or direct_guide7_f2
         or direct_f2_short or direct_f2_scale3072
-        or direct_guide8_emission_exposure or direct_guide6_strip_exposure
+        or direct_guide8_emission_exposure or direct_guide9_h300_reference_diag
+        or direct_guide6_strip_exposure
         or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_best or direct_guide9_s25
     ) and source_isolation_check_fn is None:
         raise PermissionError("direct adaptive execution requires its source-isolation check")
@@ -1521,6 +1590,52 @@ def execute_plan(
             runtime_plan["captures"] = [dict(item["step"]) for item in protocol_evidence["measured"]]
             runtime_plan["capture_ids"] = [str(step["capture_id"]) for step in runtime_plan["captures"]]
             _write_json(root / "adaptive-execution-plan.json", runtime_plan)
+        elif direct_guide9_h300_reference_diag:
+            feature_ids = tuple(
+                json.loads(thermal.POLICY_PATH.read_text(encoding="utf-8"))["feature_set"]["ids"]
+            )
+            rows = []
+            active_session = None
+            for step in plan["captures"]:
+                session_index = int(step["session_index"])
+                if session_index != active_session:
+                    record_gate(f"guide9-h300-reference-session-{session_index}-off600")
+                    sleep_fn(float(plan["cold_proxy_wait_s"]))
+                    active_session = session_index
+                applied = dict(apply_command_fn(step))
+                readback = dict(readback_fn(step))
+                _append_jsonl(root / "commands.jsonl", {
+                    "at": _utc_now(), "event": "guide9_h300_reference_command_readback_verified",
+                    "capture_id": step["capture_id"], "session_index": session_index,
+                    "source_id": "ray", "state_id": step["state_id"],
+                    "exact_command_hash": step["exact_command_hash"],
+                    "dwell_s": float(plan["state_dwell_s"]),
+                    "applied": applied, "readback": readback,
+                })
+                sleep_fn(float(plan["state_dwell_s"]))
+                owner_start = monotonic_fn()
+                if set_capture_context_fn is not None:
+                    set_capture_context_fn(owner_start)
+                ensure_physical_capacity()
+                captured = dict(capture_fn(step))
+                retain_capture(
+                    step, captured, owner_start=owner_start,
+                    chronology_group_index=session_index - 1,
+                )
+                rows.append({"step": dict(step), "capture": captured})
+            from camera_based_rgbww_optimizer.optimization import analyze_p7_thermal_diagnostics as guide9_analyze
+            protocol_evidence = run_guide9_h300_reference_diagnostic_protocol(
+                plan,
+                measure_fn=lambda step: next(
+                    item["capture"] for item in rows
+                    if item["step"]["capture_id"] == step["capture_id"]
+                ),
+                feature_ids=feature_ids,
+                pair_evaluator_fn=guide9_analyze.evaluate_guide9_h300_reference_pair,
+            )
+            _write_json(root / "guide9-h300-reference-diagnostic.json", protocol_evidence)
+            runtime_plan = copy.deepcopy(dict(plan))
+            _write_json(root / "adaptive-execution-plan.json", runtime_plan)
         elif direct_guide8_emission_exposure:
             feature_ids = tuple(
                 json.loads(thermal.POLICY_PATH.read_text(encoding="utf-8"))["feature_set"]["ids"]
@@ -1743,6 +1858,7 @@ def execute_plan(
         for chronology_group_index, item in ([] if (
             direct_guide6_target_local or direct_guide7_f2 or direct_f2_short
             or direct_f2_scale3072 or direct_guide8_emission_exposure
+            or direct_guide9_h300_reference_diag
             or direct_guide6_strip_exposure or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_best or direct_guide9_s25
         ) else enumerate(
             _ledger_groups(str(plan["experiment_id"]), plan["captures"])
@@ -2016,6 +2132,72 @@ def validate_direct_guide8_post_capture(
         "schema": "guide8_ray_emission_exposure_quality_v1",
         "status": "pass", "capture_count": len(captures),
         "branch": evidence.get("branch"), "formal_capture_count": 0,
+    }
+    _write_json(root / "quality.json", quality)
+    return quality
+
+
+def validate_direct_guide9_h300_reference_post_capture(
+    run_root: str | Path,
+    plan: Mapping[str, Any],
+    runtime_evidence: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    """Validate the complete diagnostic plus pre-quality Ray state evidence."""
+    root = Path(run_root).resolve()
+    canonical = thermal.build_direct_plan(
+        thermal.TD_C, variant=thermal.GUIDE9_H300_REFERENCE_DIAG_VARIANT,
+    )
+    captures = _load_jsonl_file(root / "captures.jsonl")
+    physical = _load_jsonl_file(root / "physical-returns.jsonl")
+    state_rows = _load_jsonl_file(root / "ray-state-evidence.jsonl")
+    expected_ids = canonical["capture_ids"]
+    if (
+        [str(row.get("capture_id")) for row in captures] != expected_ids
+        or [str(row.get("capture_id")) for row in physical] != expected_ids
+        or [str(row.get("capture_id")) for row in state_rows] != expected_ids
+    ):
+        raise ValueError("GUIDE9 H300 reference diagnostic ledger order differs")
+    for row, state_row, expected_step in zip(captures, state_rows, canonical["captures"], strict=True):
+        capture = row.get("capture")
+        if row.get("plan_step") != expected_step or not isinstance(capture, Mapping):
+            raise ValueError("GUIDE9 H300 reference diagnostic capture differs")
+        retained = capture.get("ray_state_evidence")
+        if retained != state_row:
+            raise ValueError("GUIDE9 H300 reference state evidence is not capture-bound")
+        if (
+            state_row.get("exact_command_hash") != expected_step["exact_command_hash"]
+            or state_row.get("expected_command") != expected_step["command"]
+            or not isinstance(state_row.get("set_response"), Mapping)
+            or not isinstance(state_row.get("immediate_readback"), Mapping)
+            or not isinstance(state_row.get("post_capture_readback"), Mapping)
+        ):
+            raise ValueError("GUIDE9 H300 reference state establishment evidence is incomplete")
+        strip_zero = state_row.get("strip_zero_before_capture")
+        observed = strip_zero.get("device_snapshot") if isinstance(strip_zero, Mapping) else None
+        if not isinstance(observed, Mapping) or any(
+            int(observed.get(key, -1)) != 0 for key in esphome.PAYLOAD_CHANNELS
+        ):
+            raise ValueError("GUIDE9 H300 reference diagnostic lacks strip-zero evidence")
+        direct_quality = capture.get("direct_quality")
+        if not isinstance(direct_quality, Mapping) or direct_quality.get("status") not in {
+            "pass", "near_noise_only", "rejected",
+        }:
+            raise ValueError("GUIDE9 H300 reference diagnostic lacks bounded quality result")
+    evidence = _load_json_file(root / "guide9-h300-reference-diagnostic.json")
+    if (
+        evidence.get("schema")
+        != "guide9_h300_reference_emission_path_diagnostic_evidence_v1"
+        or evidence.get("physical_capture_count") != 4
+        or evidence.get("formal_capture_count") != 0
+        or evidence.get("branch") not in {"R-A", "R-B", "R-C", "R-D"}
+        or evidence.get("root1_strip_pooling") is not False
+    ):
+        raise ValueError("GUIDE9 H300 reference diagnostic classification is invalid")
+    quality = {
+        "schema": "guide9_h300_reference_emission_path_diagnostic_quality_v1",
+        "status": "pass", "capture_count": 4, "formal_capture_count": 0,
+        "branch": evidence["branch"], "classification": evidence["classification"],
+        "state_evidence_count": 4,
     }
     _write_json(root / "quality.json", quality)
     return quality
@@ -2715,6 +2897,11 @@ def run_authorized_plan(
         and plan["execution_authorization"].get("schema")
         == "direct_guide8_ray_emission_exposure_v1"
     )
+    direct_guide9_h300_reference_diag = (
+        isinstance(plan.get("execution_authorization"), Mapping)
+        and plan["execution_authorization"].get("schema")
+        == "direct_guide9_h300_reference_emission_path_diag_v1"
+    )
     direct_guide6_strip_exposure = (
         isinstance(plan.get("execution_authorization"), Mapping)
         and plan["execution_authorization"].get("schema")
@@ -2859,7 +3046,8 @@ def run_authorized_plan(
             root / "inputs/location.json"
             if (
                 direct_ray_continuous or direct_f2_short or direct_f2_scale3072
-                or direct_guide8_emission_exposure or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_best or direct_guide9_s25
+                or direct_guide8_emission_exposure or direct_guide9_h300_reference_diag
+                or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_best or direct_guide9_s25
                 or direct_guide6_strip_exposure
             )
             else thermal.LOCATION_PATH
@@ -2921,10 +3109,26 @@ def run_authorized_plan(
         captured_result = raw_capture(raw_step)
         if not isinstance(captured_result, Mapping):
             raise RuntimeError("timed RAW capture adapter returned malformed result")
+        ray_state_evidence = None
+        if direct_guide9_h300_reference_diag:
+            post_capture_readback = ray120c.get_hsi()
+            ray_state_evidence = {
+                "schema": "guide9_h300_reference_capture_state_v1",
+                "captured_at": _utc_now(), "capture_id": step["capture_id"],
+                "session_index": step["session_index"],
+                "exact_command_hash": step["exact_command_hash"],
+                "expected_command": dict(step["command"]),
+                "set_response": dict(applied[str(step["capture_id"])]),
+                "immediate_readback": dict(readbacks[f"{source}:{state}"]),
+                "post_capture_readback": dict(post_capture_readback),
+                "strip_zero_before_capture": strip_zero_evidence,
+            }
+            _append_jsonl(root / "ray-state-evidence.jsonl", ray_state_evidence)
         report = json.loads(Path(captured_result["patch_statistics"]).read_text(encoding="utf-8"))
         exposure = report["exposure_metadata"]
         if (
-            direct_guide8_emission_exposure or direct_f2_short
+            direct_guide8_emission_exposure or direct_guide9_h300_reference_diag
+            or direct_f2_short
             or direct_f2_scale3072 or direct_guide6_strip_exposure
             or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_s25
         ):
@@ -2976,6 +3180,7 @@ def run_authorized_plan(
             "thermal_covariates": covariate,
             "strip_zero_before_capture": strip_zero_evidence,
             "ray_zero_before_capture": ray_zero_evidence,
+            "ray_state_evidence": ray_state_evidence,
         }
         if source == "ambient":
             output["ambient_diagnostic"] = {
@@ -3012,7 +3217,11 @@ def run_authorized_plan(
                     report, feature_ids, statistic=feature_statistic,
                 )
             except HsiRejectedFeaturesError as exc:
-                if not (direct_guide8_emission_exposure or direct_guide6_strip_exposure):
+                if not (
+                    direct_guide8_emission_exposure
+                    or direct_guide9_h300_reference_diag
+                    or direct_guide6_strip_exposure
+                ):
                     raise
                 failure_names = set()
                 for item in exc.rejected:
@@ -3106,6 +3315,10 @@ def run_authorized_plan(
             )
         if schema == "direct_guide8_ray_emission_exposure_v1":
             return validate_direct_guide8_post_capture(run_root, frozen_plan, runtime_evidence)
+        if schema == "direct_guide9_h300_reference_emission_path_diag_v1":
+            return validate_direct_guide9_h300_reference_post_capture(
+                run_root, frozen_plan, runtime_evidence,
+            )
         if schema == "direct_ray_r6_authority_v1":
             return validate_direct_ray_r6_post_capture(run_root, frozen_plan, runtime_evidence)
         if schema == "direct_ray_history_session_v1":
@@ -3181,13 +3394,14 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
             thermal.GUIDE9_H0_S0_BATCH1_EXPERIMENT_ID,
             thermal.GUIDE9_H0_S0_BEST_REPEAT_EXPERIMENT_ID,
             thermal.GUIDE9_H300_S100_BATCH1_EXPERIMENT_ID,
+            thermal.GUIDE9_H300_REFERENCE_DIAG_EXPERIMENT_ID,
         ),
         required=True,
     )
     parser.add_argument("--source", choices=("ray", "strip"))
     parser.add_argument(
         "--variant",
-        choices=("core", "expansion", "history", thermal.TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, thermal.GUIDE7_F2_VARIANT, thermal.GUIDE7_F2_SHORT_ENDPOINT_VARIANT, thermal.GUIDE7_F2_SCALE3072_STABILITY_VARIANT, thermal.GUIDE7_F2_SCALE2048_STABILITY_VARIANT, thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT, thermal.GUIDE6_STRIP_EXPOSURE_QUALIFICATION_VARIANT, thermal.GUIDE9_H120_S100_SCALE_AGE_VARIANT, thermal.GUIDE9_H120_S50_BATCH1_VARIANT, thermal.GUIDE9_H120_S50_BEST_REPEAT_VARIANT, thermal.GUIDE9_H120_S25_BATCH1_VARIANT, thermal.GUIDE9_H120_S25_BEST_REPEAT_VARIANT, thermal.GUIDE9_H0_S0_BATCH1_VARIANT, thermal.GUIDE9_H0_S0_BEST_REPEAT_VARIANT, thermal.GUIDE9_H300_S100_BATCH1_VARIANT),
+        choices=("core", "expansion", "history", thermal.TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, thermal.GUIDE7_F2_VARIANT, thermal.GUIDE7_F2_SHORT_ENDPOINT_VARIANT, thermal.GUIDE7_F2_SCALE3072_STABILITY_VARIANT, thermal.GUIDE7_F2_SCALE2048_STABILITY_VARIANT, thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT, thermal.GUIDE9_H300_REFERENCE_DIAG_VARIANT, thermal.GUIDE6_STRIP_EXPOSURE_QUALIFICATION_VARIANT, thermal.GUIDE9_H120_S100_SCALE_AGE_VARIANT, thermal.GUIDE9_H120_S50_BATCH1_VARIANT, thermal.GUIDE9_H120_S50_BEST_REPEAT_VARIANT, thermal.GUIDE9_H120_S25_BATCH1_VARIANT, thermal.GUIDE9_H120_S25_BEST_REPEAT_VARIANT, thermal.GUIDE9_H0_S0_BATCH1_VARIANT, thermal.GUIDE9_H0_S0_BEST_REPEAT_VARIANT, thermal.GUIDE9_H300_S100_BATCH1_VARIANT),
         default="core",
     )
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
@@ -3245,6 +3459,10 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     direct.add_argument("--direct-guide9-h0-s0-batch1", action="store_true", help="execute GUIDE9 H0/S0 Batch 1")
     direct.add_argument("--direct-guide9-h0-s0-best-repeat", action="store_true", help="execute GUIDE9 H0/S0 best repeat")
     direct.add_argument("--direct-guide9-h300-s100-batch1", action="store_true", help="execute GUIDE9 H300/S100 Batch 1")
+    direct.add_argument(
+        "--direct-guide9-h300-reference-diagnostic", action="store_true",
+        help="execute the GUIDE9 Ray-only H300/H0 reference emission/path diagnostic",
+    )
     parser.add_argument("--prerequisite-analysis", type=Path)
     parser.add_argument("--human-authorization")
     parser.add_argument("--session-index", type=int, choices=(1, 2, 3))
@@ -3276,6 +3494,7 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
         "guide9-h0-s0-batch1" if args.direct_guide9_h0_s0_batch1 else
         "guide9-h0-s0-best-repeat" if args.direct_guide9_h0_s0_best_repeat else
         "guide9-h300-s100-batch1" if args.direct_guide9_h300_s100_batch1 else
+        "guide9-h300-reference-diagnostic" if args.direct_guide9_h300_reference_diagnostic else
         "td-c-core"
     )
     expected_scope = {
@@ -3313,10 +3532,17 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
         "guide9-h0-s0-batch1": (thermal.TD_C, None, thermal.GUIDE9_H0_S0_BATCH1_VARIANT),
         "guide9-h0-s0-best-repeat": (thermal.TD_C, None, thermal.GUIDE9_H0_S0_BEST_REPEAT_VARIANT),
         "guide9-h300-s100-batch1": (thermal.GUIDE9_H300_S100_BATCH1_EXPERIMENT_ID, None, thermal.GUIDE9_H300_S100_BATCH1_VARIANT),
+        "guide9-h300-reference-diagnostic": (
+            thermal.GUIDE9_H300_REFERENCE_DIAG_EXPERIMENT_ID,
+            "ray", thermal.GUIDE9_H300_REFERENCE_DIAG_VARIANT,
+        ),
     }[direct_kind]
     expected_phase = (
         "diagnostic"
-        if direct_kind in {"guide8-emission-exposure", "guide6-strip-exposure-qualification"}
+        if direct_kind in {
+            "guide8-emission-exposure", "guide9-h300-reference-diagnostic",
+            "guide6-strip-exposure-qualification",
+        }
         else "formal"
     )
     if (args.experiment_id, args.source, args.variant) != expected_scope or args.phase != expected_phase:
@@ -3363,13 +3589,15 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
             )
             print(output)
             return 0
-        if direct_kind in {"guide8-emission-exposure", "guide6-strip-exposure-qualification", "guide9-scale-age", "guide9-h120-s50-batch1", "guide9-h120-s50-best-repeat", "guide9-h120-s25-batch1", "guide9-h120-s25-best-repeat", "guide9-h0-s0-batch1", "guide9-h0-s0-best-repeat", "guide9-h300-s100-batch1"}:
+        if direct_kind in {"guide8-emission-exposure", "guide9-h300-reference-diagnostic", "guide6-strip-exposure-qualification", "guide9-scale-age", "guide9-h120-s50-batch1", "guide9-h120-s50-best-repeat", "guide9-h120-s25-batch1", "guide9-h120-s25-best-repeat", "guide9-h0-s0-batch1", "guide9-h0-s0-best-repeat", "guide9-h300-s100-batch1"}:
             root = (Path(args.output_dir) / args.run_name).resolve()
             root.mkdir(parents=True, exist_ok=False)
             output = root / "experiment-spec.json"
             variant = (
                 thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT
                 if direct_kind == "guide8-emission-exposure"
+                else thermal.GUIDE9_H300_REFERENCE_DIAG_VARIANT
+                if direct_kind == "guide9-h300-reference-diagnostic"
                 else thermal.GUIDE6_STRIP_EXPOSURE_QUALIFICATION_VARIANT
                 if direct_kind == "guide6-strip-exposure-qualification"
                 else thermal.GUIDE9_H120_S100_SCALE_AGE_VARIANT
@@ -3451,6 +3679,10 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
         plan = thermal.build_direct_plan(
             thermal.TD_C, variant=thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT,
         )
+    if direct_kind == "guide9-h300-reference-diagnostic":
+        plan = thermal.build_direct_plan(
+            thermal.TD_C, variant=thermal.GUIDE9_H300_REFERENCE_DIAG_VARIANT,
+        )
     if direct_kind == "guide6-strip-exposure-qualification":
         plan = thermal.build_direct_plan(
             thermal.TD_C,
@@ -3482,6 +3714,7 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
         "ray-r6", "ray-history-3x3", "strip-history-3x3",
         "ray-fast-long-bridge", "td-c-fast-endpoint-holdout", "guide6-h120-s100",
         "guide8-emission-exposure",
+        "guide9-h300-reference-diagnostic",
         "guide6-strip-exposure-qualification",
         "guide9-scale-age",
         "guide9-h120-s50-batch1",

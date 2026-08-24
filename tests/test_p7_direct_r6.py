@@ -2769,6 +2769,111 @@ class DirectR6Tests(unittest.TestCase):
         self.assertTrue(all(step["strip_zero_required"] for step in plan["captures"] if step["source_id"] == "ray"))
         self.assertTrue(all(step["ray_zero_required"] for step in plan["captures"] if step["source_id"] == "strip"))
 
+    def test_guide9_h300_reference_diagnostic_is_order_balanced_and_bounded(self):
+        plan = thermal.build_direct_plan(
+            thermal.TD_C, variant=thermal.GUIDE9_H300_REFERENCE_DIAG_VARIANT,
+        )
+        self.assertEqual(
+            plan["guide_experiment_id"], thermal.GUIDE9_H300_REFERENCE_DIAG_EXPERIMENT_ID,
+        )
+        self.assertEqual(
+            [step["role"] for step in plan["captures"]],
+            ["control_1", "h300_1", "h300_2", "control_2"],
+        )
+        self.assertEqual([step["session_index"] for step in plan["captures"]], [1, 1, 2, 2])
+        self.assertEqual(
+            [step["nominal_shutter"] for step in plan["captures"]],
+            ["1/16000", "1/2500", "1/2500", "1/16000"],
+        )
+        self.assertEqual(
+            plan["budgets"],
+            {"formal_cap": 0, "ambient_cap": 0, "diagnostic_cap": 4,
+             "diagnostic_dark_cap": 0, "physical_cr3_cap": 4,
+             "setup_physical_cr3_cap": 0, "retry": 0},
+        )
+        self.assertFalse(plan["analysis_contract"]["root1_strip_pooling"])
+
+    def test_guide9_h300_reference_diagnostic_classifies_all_branches(self):
+        plan = thermal.build_direct_plan(
+            thermal.TD_C, variant=thermal.GUIDE9_H300_REFERENCE_DIAG_VARIANT,
+        )
+        feature_ids = tuple(json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"])
+
+        def run(status_by_role, pair_pass=True):
+            def capture(step):
+                status = status_by_role.get(step["role"], "pass")
+                result = {
+                    "direct_quality": {"status": status, "feature_count": 58},
+                    "recorded_exposure": {
+                        "seconds": float(parse_nominal_exposure(step["nominal_shutter"]))
+                    },
+                }
+                if status == "pass":
+                    result["feature_values"] = {feature_id: 1.0 for feature_id in feature_ids}
+                return result
+            return measure.run_guide9_h300_reference_diagnostic_protocol(
+                plan, measure_fn=capture, feature_ids=feature_ids,
+                pair_evaluator_fn=lambda *_: {"status": "pass" if pair_pass else "fail"},
+            )
+
+        self.assertEqual(run({})["branch"], "R-A")
+        self.assertEqual(run({"h300_1": "near_noise_only", "h300_2": "near_noise_only"})["branch"], "R-B")
+        self.assertEqual(run({"h300_1": "near_noise_only"})["branch"], "R-C")
+        self.assertEqual(run({}, pair_pass=False)["branch"], "R-C")
+        self.assertEqual(run({"control_2": "near_noise_only"})["branch"], "R-D")
+
+    def test_guide9_h300_reference_validator_requires_capture_bound_state_evidence(self):
+        plan = thermal.build_direct_plan(
+            thermal.TD_C, variant=thermal.GUIDE9_H300_REFERENCE_DIAG_VARIANT,
+        )
+        zero = {
+            "requested_payload": {key: 0 for key in ("red", "green", "blue", "warm_white", "cold_white")},
+            "device_snapshot": {key: 0 for key in ("red", "green", "blue", "warm_white", "cold_white")},
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            captures = []
+            states = []
+            for step in plan["captures"]:
+                state = {
+                    "schema": "guide9_h300_reference_capture_state_v1",
+                    "captured_at": "2026-08-23T00:00:00+00:00",
+                    "capture_id": step["capture_id"], "session_index": step["session_index"],
+                    "exact_command_hash": step["exact_command_hash"],
+                    "expected_command": step["command"], "set_response": {"status": "pass"},
+                    "immediate_readback": {"data": {"intensity": 255}},
+                    "post_capture_readback": {"data": {"intensity": 255}},
+                    "strip_zero_before_capture": zero,
+                }
+                states.append(state)
+                captures.append({
+                    "capture_id": step["capture_id"], "plan_step": step,
+                    "capture": {"ray_state_evidence": state,
+                                "direct_quality": {"status": "near_noise_only"}},
+                })
+            (root / "captures.jsonl").write_text(
+                "".join(json.dumps(row) + "\n" for row in captures)
+            )
+            (root / "physical-returns.jsonl").write_text(
+                "".join(json.dumps({"capture_id": step["capture_id"]}) + "\n" for step in plan["captures"])
+            )
+            (root / "ray-state-evidence.jsonl").write_text(
+                "".join(json.dumps(row) + "\n" for row in states)
+            )
+            (root / "guide9-h300-reference-diagnostic.json").write_text(json.dumps({
+                "schema": "guide9_h300_reference_emission_path_diagnostic_evidence_v1",
+                "branch": "R-B", "classification": "H300_S100_reference_emission_path_unresolved",
+                "physical_capture_count": 4, "formal_capture_count": 0,
+                "root1_strip_pooling": False,
+            }))
+            quality = measure.validate_direct_guide9_h300_reference_post_capture(root, plan, None)
+            self.assertEqual(quality["state_evidence_count"], 4)
+            (root / "ray-state-evidence.jsonl").write_text(
+                "".join(json.dumps(row) + "\n" for row in states[:-1])
+            )
+            with self.assertRaisesRegex(ValueError, "ledger order differs"):
+                measure.validate_direct_guide9_h300_reference_post_capture(root, plan, None)
+
 
 if __name__ == "__main__":
     unittest.main()

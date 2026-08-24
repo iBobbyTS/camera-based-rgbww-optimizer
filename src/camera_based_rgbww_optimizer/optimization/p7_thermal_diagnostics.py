@@ -84,6 +84,10 @@ GUIDE9_H0_S0_BEST_REPEAT_EXPERIMENT_ID = "GUIDE9_H0_S0_BEST_REPEAT_V1"
 GUIDE9_H0_S0_BEST_REPEAT_VARIANT = "guide9-h0-s0-best-repeat"
 GUIDE9_H300_S100_BATCH1_EXPERIMENT_ID = "GUIDE9_H300_S100_FAST_DIRECT_BATCH1_V1"
 GUIDE9_H300_S100_BATCH1_VARIANT = "guide9-h300-s100-fast-direct-batch1"
+GUIDE9_H300_REFERENCE_DIAG_EXPERIMENT_ID = (
+    "GUIDE9_RAY_H300_S100_REFERENCE_EMISSION_PATH_DIAG_V1"
+)
+GUIDE9_H300_REFERENCE_DIAG_VARIANT = "guide9-ray-h300-s100-reference-emission-path-diag"
 GUIDE8_RAY_EMISSION_EXPOSURE_EXPERIMENT_ID = (
     "GUIDE8_RAY_H120_S100_EMISSION_EXPOSURE_DIAG_V1"
 )
@@ -958,6 +962,8 @@ def build_direct_plan(
         raise ValueError("TD-C direct execution owns both sources")
     if experiment_id == TD_C and variant == GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT:
         return _build_guide8_ray_emission_exposure_plan()
+    if experiment_id == TD_C and variant == GUIDE9_H300_REFERENCE_DIAG_VARIANT:
+        return _build_guide9_h300_reference_diagnostic_plan()
     if experiment_id == TD_C and variant == GUIDE6_STRIP_EXPOSURE_QUALIFICATION_VARIANT:
         return _build_guide6_strip_exposure_qualification_plan()
     if experiment_id == TD_C and variant == TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT:
@@ -1237,6 +1243,78 @@ def _build_guide8_ray_emission_exposure_plan() -> dict[str, Any]:
                               "selected_member": "faster", "diagnostic_slowest": "1/250",
                               "formal_slowest": "1/320", "historical_pooling_only_at_1over5000": True,
                               "near_noise_only_continues": True, "steady_claim": False},
+        "cleanup": {"python_finally": "required", "shell_trap": "EXIT_INT_TERM_HUP_required"},
+        "formal_capture_eligible": False,
+    }
+
+
+def _build_guide9_h300_reference_diagnostic_plan() -> dict[str, Any]:
+    """Build the Advisor-defined four-frame H300/H0 emission/path diagnostic."""
+    states = (
+        (1, "control_1", 0, 0, "1/16000"),
+        (1, "h300_1", 300, 100, "1/2500"),
+        (2, "h300_2", 300, 100, "1/2500"),
+        (2, "control_2", 0, 0, "1/16000"),
+    )
+    captures = []
+    for index, (session, role, hue, sat, shutter) in enumerate(states):
+        command = {"hue": hue, "sat": sat, "intensity_percent": 100.0}
+        captures.append({
+            "capture_id": f"{index:03d}-{role.replace('_', '-')}",
+            "source_id": "ray", "state_id": "H0_S0" if hue == 0 else "H300_S100",
+            "role": role, "capture_role": "diagnostic", "diagnostic_phase": "reference_path",
+            "session_index": session, "session_order": 1 if role in {"control_1", "h300_2"} else 2,
+            "formal_measurement": False, "command": command,
+            "exact_command_hash": canonical_sha256(command),
+            "requested_elapsed_s": 120, "nominal_shutter": shutter,
+            "exposure_cache_key": f"guide9-h300-reference-{role}",
+            "timing_acceptance": "diagnostic_not_formal",
+            "strip_zero_required": True, "steady_claim": False,
+        })
+    frozen = {
+        str(step["exposure_cache_key"]): str(step["nominal_shutter"])
+        for step in captures
+    }
+    return {
+        "schema": PLAN_SCHEMA_V2, "status": "execute_authorized",
+        "experiment_id": TD_C,
+        "guide_experiment_id": GUIDE9_H300_REFERENCE_DIAG_EXPERIMENT_ID,
+        "variant": GUIDE9_H300_REFERENCE_DIAG_VARIANT,
+        "stage": "GUIDE9-H300-REFERENCE-EMISSION-PATH-DIAGNOSTIC",
+        "phase": "diagnostic", "source": "ray",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "inputs": {
+            "location": file_reference(LOCATION_PATH), "policy": file_reference(POLICY_PATH),
+            "observer": file_reference(OBSERVER_PATH), "code_duty_curve": file_reference(CURVE_PATH),
+        },
+        "camera": {"backend": "remote", "v2_capture_timing_capability_available": True,
+                   "v2_capture_capability": "remote_v2_capture_timing_v1",
+                   "resolved_capture_settings": {"owner": "remote_backend.resolve_capture_settings",
+                       "iso": "100", "aperture": "f/4", "image_format": "RAW"}},
+        "timing_contract": timing_contract(2), "cold_proxy": 600, "cold_proxy_wait_s": 600,
+        "state_dwell_s": 120, "captures": captures,
+        "capture_ids": [str(step["capture_id"]) for step in captures],
+        "frozen_shutters": frozen, "exposure_setup_required": [],
+        "shutter_ledger_provenance": {"owner": "experiment_capture_steps",
+            "required_cache_keys": sorted(frozen),
+            "frozen_shutters_sha256": canonical_sha256(frozen)},
+        "native_raw_ambient_policy": AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+        "budgets": {"formal_cap": 0, "ambient_cap": 0, "diagnostic_cap": 4,
+                    "diagnostic_dark_cap": 0, "physical_cr3_cap": 4,
+                    "setup_physical_cr3_cap": 0, "retry": 0},
+        "execution_authorization": {
+            "schema": "direct_guide9_h300_reference_emission_path_diag_v1",
+            "human_authorization_required": False, "human_authorization_verified": True,
+            "human_authorization_experiment_id": GUIDE9_H300_REFERENCE_DIAG_EXPERIMENT_ID,
+            "experiment_id": GUIDE9_H300_REFERENCE_DIAG_EXPERIMENT_ID,
+            "bounded_device_scope": True, "remote_v2_capability": True,
+        },
+        "analysis_contract": {
+            "classification_branches": ["R-A", "R-B", "R-C", "R-D"],
+            "h0_shutter": "1/16000", "h300_shutter": "1/2500",
+            "state_evidence_before_feature_extraction": True,
+            "root1_strip_pooling": False, "steady_claim": False,
+        },
         "cleanup": {"python_finally": "required", "shell_trap": "EXIT_INT_TERM_HUP_required"},
         "formal_capture_eligible": False,
     }

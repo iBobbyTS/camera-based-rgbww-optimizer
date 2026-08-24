@@ -54,8 +54,12 @@
 
 ## Exact next experiment
 
-- Execute `GUIDE9_H300_S100_FAST_DIRECT_BATCH1_V1` under FAST-DIRECT with Ray `1/2500`, strip `1/125`, reset600/D120/A120/tested120, two Ray references and four offline-selected strip candidates.
-- Candidate 1 is the retained P2 H300/S100 command `CW406/WW0/R4095/G0/B1541`; the other three are bounded face-local discriminating commands.
-- Cap 6 formal/6 physical, ambient 0, retry 0. Keep 13-node grid, boundary, Gate-6, P8 and LUT locked.
+- Advisor corrected the prior handoff: one root had a valid H300 Q-before plus four valid strip captures and only lacked Q-after; one later root had a near-dark H300 observation without complete pre-capture Ray state evidence. This is not two established measurement failures.
+- Current classification: `intermittent_H300_reference_emission_or_optical_path_dropout_unresolved`.
+- Execute only `GUIDE9_RAY_H300_S100_REFERENCE_EMISSION_PATH_DIAG_V1`: two order-balanced Ray-only sessions, each with off600 and two dwell120 captures. Session 1 is H0/S0 then H300/S100; session 2 reverses the order.
+- Use qualified shutters H0/S0 `1/16000` and H300/S100 `1/2500`; cap 0 formal/4 physical, ambient 0, retry 0, strip commands 0.
+- Persist set response, immediate readback, post-capture readback, exact command hash, intensity and strip-zero evidence before feature extraction, including rejected captures.
+- R-A permits one complete fresh H300 Batch 1. R-B/R-C close S100 and continue H300/S50. R-D stops HSI at a system-level Human physical gate.
+- Never pool the incomplete root's strip frames with new Ray frames. Keep 13-node grid, boundary, Gate-6, P8 and LUT locked.
 
 Keep 13-node grid, boundary, Gate-6, P8 and LUT installation locked.

@@ -265,6 +265,77 @@ def analyze_guide8_emission_exposure(run_dir: str | Path) -> dict[str, Any]:
     return report
 
 
+def evaluate_guide9_h300_reference_pair(
+    left: Mapping[str, Any], right: Mapping[str, Any],
+) -> dict[str, Any]:
+    feature_ids = tuple(
+        json.loads(thermal.POLICY_PATH.read_text(encoding="utf-8"))["feature_set"]["ids"]
+    )
+    left_values = left.get("feature_values")
+    right_values = right.get("feature_values")
+    if not isinstance(left_values, Mapping) or not isinstance(right_values, Mapping):
+        return {"status": "fail", "pass": False, "reason": "missing_frozen_features"}
+    result = frozen_same_state_compatibility_diagnostic(
+        _unit(left_values, feature_ids), _unit(right_values, feature_ids),
+        source="ray", state="C", feature_ids=feature_ids,
+    )
+    return {"status": "pass" if result["decision"] == "pass" else "fail",
+            "pass": result["decision"] == "pass", "diagnostic": result}
+
+
+def analyze_guide9_h300_reference_diagnostic(run_dir: str | Path) -> dict[str, Any]:
+    """Validate and report the Advisor-defined H300 reference/path branches."""
+    root = Path(run_dir).resolve()
+    spec = _load_json(root / "experiment-spec.json")
+    canonical = thermal.build_direct_plan(
+        thermal.TD_C, variant=thermal.GUIDE9_H300_REFERENCE_DIAG_VARIANT,
+    )
+    stable_fields = (
+        "guide_experiment_id", "variant", "captures", "capture_ids",
+        "frozen_shutters", "budgets", "execution_authorization", "analysis_contract",
+    )
+    if any(spec.get(key) != canonical.get(key) for key in stable_fields):
+        raise ValueError("GUIDE9 H300 reference diagnostic spec differs")
+    run = _load_json(root / "run.json")
+    if run.get("status") != "complete" or run.get("cleanup") != "pass":
+        raise ValueError("GUIDE9 H300 reference analysis requires complete cleanup")
+    evidence = _load_json(root / "guide9-h300-reference-diagnostic.json")
+    quality = _load_json(root / "quality.json")
+    state_rows = _load_jsonl(root / "ray-state-evidence.jsonl")
+    if (
+        evidence.get("schema")
+        != "guide9_h300_reference_emission_path_diagnostic_evidence_v1"
+        or quality.get("status") != "pass"
+        or len(state_rows) != 4
+        or [str(row.get("capture_id")) for row in state_rows] != canonical["capture_ids"]
+    ):
+        raise ValueError("GUIDE9 H300 reference diagnostic evidence is incomplete")
+    branch = str(evidence.get("branch"))
+    if branch not in {"R-A", "R-B", "R-C", "R-D"}:
+        raise ValueError("GUIDE9 H300 reference diagnostic branch is invalid")
+    next_action = {
+        "R-A": "GUIDE9_H300_S100_FAST_DIRECT_BATCH1_V1",
+        "R-B": "GUIDE9_H300_S50_FAST_DIRECT_ROUTE",
+        "R-C": "GUIDE9_H300_S50_FAST_DIRECT_ROUTE",
+        "R-D": "HUMAN_GATE_REQUIRED_SYSTEM_LEVEL_PHYSICAL_INSPECTION",
+    }[branch]
+    return {
+        "schema": "guide9_h300_reference_emission_path_diagnostic_analysis_v1",
+        "status": "classified", "branch": branch,
+        "classification": evidence["classification"], "next": next_action,
+        "derived_from_root": str(root), "formal_capture_count": 0,
+        "physical_capture_count": 4, "state_evidence_count": 4,
+        "control_valid": evidence["control_valid"],
+        "h300_valid": evidence["h300_valid"],
+        "h300_pair_evaluation": evidence.get("h300_pair_evaluation"),
+        "root1_strip_pooling": False,
+        "exposure_policy_changed": False,
+        "locks": {"h300_strip_batch": branch != "R-A", "grid": True,
+                  "boundary": True, "gate6": True, "p8": True,
+                  "lut_installation": True},
+    }
+
+
 def write_guide8_analysis_and_policy(
     run_dir: str | Path, *, analysis_output: str | Path,
     policy_output: str | Path = thermal.GUIDE8_EXPOSURE_POLICY_V2_PATH,
@@ -4674,11 +4745,22 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--guide6-seed-negative-output", type=Path)
     parser.add_argument("--guide8-emission-exposure-output", type=Path)
     parser.add_argument("--guide8-exposure-policy-output", type=Path)
+    parser.add_argument("--guide9-h300-reference-analysis-output", type=Path)
     return parser.parse_args(argv)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(argv)
+    if args.guide9_h300_reference_analysis_output is not None:
+        output = args.guide9_h300_reference_analysis_output.resolve()
+        if output.exists():
+            raise FileExistsError("GUIDE9 H300 reference analysis is immutable and already exists")
+        report = analyze_guide9_h300_reference_diagnostic(args.run_dir)
+        _write_text_atomic(
+            output, json.dumps(report, indent=2, sort_keys=True, allow_nan=False) + "\n",
+        )
+        print(output)
+        return 0
     if args.guide8_emission_exposure_output is not None:
         analysis, policy = write_guide8_analysis_and_policy(
             args.run_dir,
