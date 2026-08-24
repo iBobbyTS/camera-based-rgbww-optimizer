@@ -101,5 +101,11 @@
   gate boundaries but remained just outside. Execute one second preregistered
   paired step for those two nodes, then move all remaining failures to bounded
   per-node probes.
+- Second confirmation completed 4/4; both `3200/GM200` and `20000/GM200`
+  passed all strict paired gates. Five historical-Jacobian nodes are now locally
+  corrected. For the six remaining failed nodes without a retained Jacobian,
+  run one bounded current-session local-probe block per node: one Ray reference,
+  one base and four independent free-channel probes. Use the resulting local
+  Jacobian only to preregister the next paired candidate.
 
 Keep 13-node grid, boundary, Gate-6, P8 and LUT installation locked.

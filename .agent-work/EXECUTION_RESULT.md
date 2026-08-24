@@ -131,3 +131,16 @@
 - A second local-Jacobian step is preregistered for only these two nodes. This
   is a substantive residual-driven correction, not a blind retry; global model
   and default LUT remain unchanged.
+
+## White local-Jacobian second confirmation
+
+- Root:
+  `/Volumes/4T/temp/rgbww-optimizer/guide9-white-confirm2-20260824/20260824-081417-gm200-confirm2`.
+- Acquisition completed 4/4 with quality, cleanup, source isolation, final zero
+  and clean checkpoint `dbb7ae3`.
+- Both nodes passed: `3200/GM200` at `-0.585 K / +0.0545 mired /
+  +0.000000295 Duv`; `20000/GM200` at `-5.493 K / +0.0340 mired /
+  +0.00008334 Duv`.
+- Five nodes with retained historical Jacobians are now corrected. Six failed
+  nodes without a retained Jacobian remain and require bounded local probes before
+  any candidate may be proposed. Default LUT/global model remain unchanged.
