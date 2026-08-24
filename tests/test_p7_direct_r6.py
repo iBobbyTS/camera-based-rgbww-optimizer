@@ -2846,6 +2846,45 @@ class DirectR6Tests(unittest.TestCase):
             self.assertEqual(report["classification"], "H300_S50_faithful")
             self.assertEqual(report["next"], "H300_ROUTE_COMPLETE")
 
+    def test_guide9_h300_s50_best_repeat_runtime_wires_source_isolation(self):
+        plan = thermal.build_direct_plan(
+            thermal.TD_C, variant=thermal.GUIDE9_H300_S50_BEST_REPEAT_VARIANT,
+        )
+        routed = {}
+
+        class FakeBackend:
+            backend_name = "remote"
+            v2_capture_capability = measure.REMOTE_V2_CAPABILITY
+
+            def connect(self):
+                return object()
+
+            def resolve_capture_settings(self, **_kwargs):
+                return SimpleNamespace(iso="100", aperture="f/4", image_format="RAW")
+
+            def capture_with_timing(self, **_kwargs):
+                raise AssertionError("runtime wiring test must not capture")
+
+        def fake_execute(_plan, **kwargs):
+            routed.update(kwargs)
+            return Path("/fake/guide9-h300-s50-best")
+
+        with (
+            patch.object(measure, "execute_plan", side_effect=fake_execute),
+            patch(
+                "camera_based_rgbww_optimizer.optimization.measure_raw_observer_validation.build_native_raw_capture_step_fn",
+                return_value=lambda _step: None,
+            ),
+        ):
+            result = measure.run_authorized_plan(
+                plan, output_dir=Path("/fake"), run_name="guide9-h300-s50-best",
+                camera_backend=FakeBackend(),
+            )
+
+        self.assertEqual(result, Path("/fake/guide9-h300-s50-best"))
+        self.assertTrue(callable(routed["source_isolation_check_fn"]))
+        self.assertTrue(callable(routed["post_capture_validator_fn"]))
+
     def test_guide9_h300_reference_diagnostic_is_order_balanced_and_bounded(self):
         plan = thermal.build_direct_plan(
             thermal.TD_C, variant=thermal.GUIDE9_H300_REFERENCE_DIAG_VARIANT,
