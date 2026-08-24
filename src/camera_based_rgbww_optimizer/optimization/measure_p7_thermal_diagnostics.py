@@ -3343,7 +3343,9 @@ def run_authorized_plan(
             if (
                 direct_ray_continuous or direct_strip_history
                 or direct_guide6_target_local or direct_guide7_f2 or direct_f2_short
-            or direct_f2_scale3072 or direct_guide8_emission_exposure or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_best or direct_guide9_s25
+                or direct_f2_scale3072 or direct_guide8_emission_exposure
+                or direct_guide9_h300_reference_diag or direct_guide9_scale_age
+                or direct_guide9_s50 or direct_guide9_best or direct_guide9_s25
                 or direct_guide6_strip_exposure
             )
             else None
