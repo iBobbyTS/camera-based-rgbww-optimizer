@@ -88,6 +88,8 @@ GUIDE9_H300_S50_BATCH1_EXPERIMENT_ID = "GUIDE9_H300_S50_FAST_DIRECT_BATCH1_V1"
 GUIDE9_H300_S50_BATCH1_VARIANT = "guide9-h300-s50-fast-direct-batch1"
 GUIDE9_H300_S50_BEST_REPEAT_EXPERIMENT_ID = "GUIDE9_H300_S50_BEST_REPEAT_V1"
 GUIDE9_H300_S50_BEST_REPEAT_VARIANT = "guide9-h300-s50-best-repeat"
+GUIDE9_WHITE12_EXPERIMENT_ID = "GUIDE9_WHITE_FAST_DIRECT_REPRESENTATIVE_12_V1"
+GUIDE9_WHITE12_VARIANT = "guide9-white-fast-direct-representative-12"
 GUIDE9_H300_REFERENCE_DIAG_EXPERIMENT_ID = (
     "GUIDE9_RAY_H300_S100_REFERENCE_EMISSION_PATH_DIAG_V1"
 )
@@ -103,6 +105,13 @@ GUIDE8_RAY_EMISSION_EXPOSURE_LADDER = (
 )
 GUIDE8_EXPOSURE_POLICY_V2_PATH = (
     PROJECT_ROOT / "config/hsi/ray-h120-s100-exposure-policy-v2.json"
+)
+GUIDE9_WHITE_70_CANDIDATE_PATH = Path(
+    "/Volumes/4T/temp/rgbww-optimizer/white-lut-calibration/"
+    "14x5-off-cycle-refined-v2-20260713/white-lut-calibration.json"
+)
+GUIDE9_WHITE_70_CANDIDATE_SHA256 = (
+    "ea8bffce67332b8de8a9bc54bbc047f0159abc6d79e69de2ac699b90ab2a9006"
 )
 GUIDE8_P1_REPEATABILITY_RUN = Path(
     "/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/"
@@ -1035,6 +1044,8 @@ def build_direct_plan(
         plan = _build_guide9_h300_s50_batch1_plan()
     elif experiment_id == TD_C and variant == GUIDE9_H300_S50_BEST_REPEAT_VARIANT:
         plan = _build_guide9_h300_s50_best_repeat_plan()
+    elif experiment_id == TD_C and variant == GUIDE9_WHITE12_VARIANT:
+        plan = _build_guide9_white12_plan()
     else:
         if experiment_id == TD_C and variant != "core":
             raise ValueError("TD-C direct execution supports core or frozen GUIDE5 variants")
@@ -1069,6 +1080,7 @@ def build_direct_plan(
                 GUIDE9_H0_S0_BEST_REPEAT_VARIANT,
                 GUIDE9_H300_S50_BATCH1_VARIANT,
                 GUIDE9_H300_S50_BEST_REPEAT_VARIANT,
+                GUIDE9_WHITE12_VARIANT,
             }
             else "deferred_diagnostic_only"
             if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT
@@ -1112,15 +1124,17 @@ def build_direct_plan(
                 if variant == GUIDE9_H300_S50_BATCH1_VARIANT
                 else "direct_guide9_h300_s50_best_repeat_v1"
                 if variant == GUIDE9_H300_S50_BEST_REPEAT_VARIANT
+                else "direct_guide9_white12_v1"
+                if variant == GUIDE9_WHITE12_VARIANT
                 else "direct_td_c_fast_anchor_direction_b_v1"
                 if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT
                 else f"direct_{'strip_td_b' if experiment_id == TD_B else 'td_c_core'}_authority_v1"
             ),
-            "human_authorization_verified": variant not in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT, GUIDE7_F2_SCALE3072_STABILITY_VARIANT, GUIDE7_F2_SCALE2048_STABILITY_VARIANT, GUIDE9_H120_S100_SCALE_AGE_VARIANT, GUIDE9_H120_S50_BATCH1_VARIANT, GUIDE9_H120_S50_BEST_REPEAT_VARIANT, GUIDE9_H120_S25_BATCH1_VARIANT, GUIDE9_H120_S25_BEST_REPEAT_VARIANT, GUIDE9_H0_S0_BATCH1_VARIANT, GUIDE9_H0_S0_BEST_REPEAT_VARIANT, GUIDE9_H300_S100_BATCH1_VARIANT, GUIDE9_H300_S50_BATCH1_VARIANT, GUIDE9_H300_S50_BEST_REPEAT_VARIANT},
+            "human_authorization_verified": variant not in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT, GUIDE7_F2_SCALE3072_STABILITY_VARIANT, GUIDE7_F2_SCALE2048_STABILITY_VARIANT, GUIDE9_H120_S100_SCALE_AGE_VARIANT, GUIDE9_H120_S50_BATCH1_VARIANT, GUIDE9_H120_S50_BEST_REPEAT_VARIANT, GUIDE9_H120_S25_BATCH1_VARIANT, GUIDE9_H120_S25_BEST_REPEAT_VARIANT, GUIDE9_H0_S0_BATCH1_VARIANT, GUIDE9_H0_S0_BEST_REPEAT_VARIANT, GUIDE9_H300_S100_BATCH1_VARIANT, GUIDE9_H300_S50_BATCH1_VARIANT, GUIDE9_H300_S50_BEST_REPEAT_VARIANT, GUIDE9_WHITE12_VARIANT},
             "human_authorization_experiment_id": (
-                None if variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT, GUIDE7_F2_SCALE3072_STABILITY_VARIANT, GUIDE7_F2_SCALE2048_STABILITY_VARIANT, GUIDE9_H120_S100_SCALE_AGE_VARIANT, GUIDE9_H120_S50_BATCH1_VARIANT, GUIDE9_H120_S50_BEST_REPEAT_VARIANT, GUIDE9_H120_S25_BATCH1_VARIANT, GUIDE9_H120_S25_BEST_REPEAT_VARIANT, GUIDE9_H0_S0_BATCH1_VARIANT, GUIDE9_H0_S0_BEST_REPEAT_VARIANT, GUIDE9_H300_S100_BATCH1_VARIANT, GUIDE9_H300_S50_BATCH1_VARIANT, GUIDE9_H300_S50_BEST_REPEAT_VARIANT} else experiment_id
+                None if variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT, GUIDE7_F2_SCALE3072_STABILITY_VARIANT, GUIDE7_F2_SCALE2048_STABILITY_VARIANT, GUIDE9_H120_S100_SCALE_AGE_VARIANT, GUIDE9_H120_S50_BATCH1_VARIANT, GUIDE9_H120_S50_BEST_REPEAT_VARIANT, GUIDE9_H120_S25_BATCH1_VARIANT, GUIDE9_H120_S25_BEST_REPEAT_VARIANT, GUIDE9_H0_S0_BATCH1_VARIANT, GUIDE9_H0_S0_BEST_REPEAT_VARIANT, GUIDE9_H300_S100_BATCH1_VARIANT, GUIDE9_H300_S50_BATCH1_VARIANT, GUIDE9_H300_S50_BEST_REPEAT_VARIANT, GUIDE9_WHITE12_VARIANT} else experiment_id
             ),
-            "bounded_device_scope": variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT, GUIDE7_F2_SCALE3072_STABILITY_VARIANT, GUIDE7_F2_SCALE2048_STABILITY_VARIANT, GUIDE9_H120_S100_SCALE_AGE_VARIANT, GUIDE9_H120_S50_BATCH1_VARIANT, GUIDE9_H120_S50_BEST_REPEAT_VARIANT, GUIDE9_H120_S25_BATCH1_VARIANT, GUIDE9_H120_S25_BEST_REPEAT_VARIANT, GUIDE9_H0_S0_BATCH1_VARIANT, GUIDE9_H0_S0_BEST_REPEAT_VARIANT, GUIDE9_H300_S100_BATCH1_VARIANT, GUIDE9_H300_S50_BATCH1_VARIANT, GUIDE9_H300_S50_BEST_REPEAT_VARIANT},
+            "bounded_device_scope": variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT, GUIDE7_F2_SCALE3072_STABILITY_VARIANT, GUIDE7_F2_SCALE2048_STABILITY_VARIANT, GUIDE9_H120_S100_SCALE_AGE_VARIANT, GUIDE9_H120_S50_BATCH1_VARIANT, GUIDE9_H120_S50_BEST_REPEAT_VARIANT, GUIDE9_H120_S25_BATCH1_VARIANT, GUIDE9_H120_S25_BEST_REPEAT_VARIANT, GUIDE9_H0_S0_BATCH1_VARIANT, GUIDE9_H0_S0_BEST_REPEAT_VARIANT, GUIDE9_H300_S100_BATCH1_VARIANT, GUIDE9_H300_S50_BATCH1_VARIANT, GUIDE9_H300_S50_BEST_REPEAT_VARIANT, GUIDE9_WHITE12_VARIANT},
             "human_authorization_required": False,
             "experiment_id": (
                 TD_C_FAST_ENDPOINT_HOLDOUT_EXPERIMENT_ID
@@ -1157,6 +1171,8 @@ def build_direct_plan(
                 if variant == GUIDE9_H300_S50_BATCH1_VARIANT else
                 GUIDE9_H300_S50_BEST_REPEAT_EXPERIMENT_ID
                 if variant == GUIDE9_H300_S50_BEST_REPEAT_VARIANT else
+                GUIDE9_WHITE12_EXPERIMENT_ID
+                if variant == GUIDE9_WHITE12_VARIANT else
                 TD_C_FAST_ANCHOR_DIRECTION_B_EXPERIMENT_ID
                 if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT else experiment_id
             ),
@@ -2187,6 +2203,110 @@ def _build_guide9_h300_s50_best_repeat_plan() -> dict[str, Any]:
         },
     }
     return plan
+
+
+def _build_guide9_white12_plan() -> dict[str, Any]:
+    """Validate the retained 14x5 white candidate at 12 representative nodes."""
+    baseline = GUIDE9_WHITE_70_CANDIDATE_PATH
+    if (
+        not baseline.is_file()
+        or hashlib.sha256(baseline.read_bytes()).hexdigest()
+        != GUIDE9_WHITE_70_CANDIDATE_SHA256
+    ):
+        raise ValueError("GUIDE9 white 70-node candidate identity differs")
+    payload = json.loads(baseline.read_text(encoding="utf-8"))
+    by_target = {
+        (int(row["cct"]), int(row["gm"])): row
+        for row in payload.get("targets", ())
+    }
+    targets = [(cct, gm) for cct in (1800, 3200, 5600, 20000) for gm in (0, 100, 200)]
+    if any(key not in by_target for key in targets):
+        raise ValueError("GUIDE9 white candidate lacks a representative target")
+
+    captures: list[dict[str, Any]] = []
+    frozen_shutters: dict[str, str] = {}
+    target_contracts = []
+    capture_index = 0
+    for target_index, (cct, gm) in enumerate(targets):
+        row = by_target[(cct, gm)]
+        ray_shutter = str(row["ray"]["auto_exposure"]["final"]["shutter_speed"])
+        strip_shutter = str(row["feedback_optimizer"]["best"]["capture"]["shutter_speed"])
+        command = {channel: int(row["selected_command"][channel]) for channel in CHANNELS}
+        key = f"white-{cct}-gm{gm}"
+        frozen_shutters[f"ray-{key}"] = ray_shutter
+        frozen_shutters[f"strip-{key}"] = strip_shutter
+        source_order = ("ray", "strip") if target_index % 2 == 0 else ("strip", "ray")
+        target_contracts.append({
+            "target_index": target_index, "cct": cct, "gm": gm,
+            "source_order": list(source_order), "strip_command": command,
+            "resolved_cct_tolerance_K": float(row["feedback_goal"]["resolved_cct_tolerance_K"]),
+            "cct_tolerance_mired": float(row["feedback_goal"]["cct_tolerance_mired"]),
+            "duv_tolerance": float(row["feedback_goal"]["duv_tolerance"]),
+        })
+        for order_index, source in enumerate(source_order, start=1):
+            role = f"{source}_cct{cct}_gm{gm}"
+            source_command: dict[str, Any] = (
+                {"mode": "cct", "cct": cct, "gm": gm, "intensity_percent": 100.0}
+                if source == "ray" else dict(command)
+            )
+            captures.append({
+                "capture_id": f"{capture_index:03d}-{source}-guide9-white-cct{cct}-gm{gm}",
+                "source_id": source, "state_id": f"CCT{cct}_GM{gm}", "role": role,
+                "capture_role": "formal", "formal_measurement": True,
+                "command": source_command,
+                "exact_command_hash": canonical_sha256(source_command),
+                "requested_elapsed_s": 120,
+                "nominal_shutter": ray_shutter if source == "ray" else strip_shutter,
+                "exposure_cache_key": f"{source}-{key}",
+                "timing_acceptance": "observed_elapsed_record_only",
+                "strip_zero_required": source == "ray",
+                "ray_zero_required": source == "strip",
+                "session_index": target_index + 1, "source_order": order_index,
+                "target_cct": cct, "target_gm": gm, "steady_claim": False,
+            })
+            capture_index += 1
+    return {
+        "schema": PLAN_SCHEMA_V2, "status": "execute_authorized",
+        "experiment_id": TD_C, "guide_experiment_id": GUIDE9_WHITE12_EXPERIMENT_ID,
+        "variant": GUIDE9_WHITE12_VARIANT, "stage": "GUIDE9-WHITE-FAST-DIRECT-12",
+        "phase": "formal", "source": "white_representative_validation",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "inputs": {
+            "location": file_reference(LOCATION_PATH), "policy": file_reference(POLICY_PATH),
+            "uncertainty": file_reference(UNCERTAINTY_PATH),
+            "code_duty_curve": file_reference(CURVE_PATH),
+            "white_70_candidate": file_reference(baseline),
+        },
+        "captures": captures, "capture_ids": [row["capture_id"] for row in captures],
+        "timing_contract": timing_contract(2), "cold_proxy": 600,
+        "cold_proxy_wait_s": 600,
+        "native_raw_ambient_policy": AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+        "frozen_shutters": frozen_shutters, "exposure_setup_required": [],
+        "shutter_ledger_provenance": {
+            "owner": "experiment_capture_steps",
+            "required_cache_keys": sorted(frozen_shutters),
+            "frozen_shutters_sha256": canonical_sha256(frozen_shutters),
+        },
+        "budgets": {
+            "ray_cap": 12, "strip_cap": 12, "formal_cap": 24,
+            "physical_cr3_cap": 24, "ambient_cap": 0, "retry": 0,
+        },
+        "execution_authorization": {
+            "schema": "direct_guide9_white12_v1", "human_authorization_required": False,
+            "human_authorization_verified": True,
+            "human_authorization_experiment_id": GUIDE9_WHITE12_EXPERIMENT_ID,
+            "bounded_device_scope": True, "experiment_id": GUIDE9_WHITE12_EXPERIMENT_ID,
+            "remote_v2_capability": True,
+        },
+        "analysis_contract": {
+            "method": "white_fast_direct_representative_12",
+            "target_contracts": target_contracts, "independent_reset_s": 600,
+            "dwell_s": 120, "source_order_balanced": True,
+            "local_correction_only_for_failed_nodes": True,
+            "global_model_refit": False, "default_lut_installation": False,
+            "steady_claim": False,
+        },
+    }
 
 
 def _build_guide6_strip_exposure_qualification_plan() -> dict[str, Any]:

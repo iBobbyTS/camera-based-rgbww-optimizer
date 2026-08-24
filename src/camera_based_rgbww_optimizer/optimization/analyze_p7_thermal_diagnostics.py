@@ -538,7 +538,8 @@ def analyze_thermal_run(
         guide9_h300 = direct_schema == "direct_guide9_h300_s100_batch1_v1"
         guide9_h300_s50 = direct_schema == "direct_guide9_h300_s50_batch1_v1"
         guide9_h300_s50_best = direct_schema == "direct_guide9_h300_s50_best_repeat_v1"
-        guide6_direct = guide6_direct or short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best or guide9_s25 or guide9_s25_best or guide9_h0 or guide9_h0_best or guide9_h300 or guide9_h300_s50 or guide9_h300_s50_best
+        guide9_white12 = direct_schema == "direct_guide9_white12_v1"
+        guide6_direct = guide6_direct or short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best or guide9_s25 or guide9_s25_best or guide9_h0 or guide9_h0_best or guide9_h300 or guide9_h300_s50 or guide9_h300_s50_best or guide9_white12
         prerequisite = plan.get("scientific_prerequisite")
         if (
             not guide6_direct
@@ -581,7 +582,7 @@ def analyze_thermal_run(
                 local_protocol_evidence = _load_json(evidence_path)
         _validate_required_execution_artifacts(
             root, allow_python_direct=guide6_direct,
-            allow_short_endpoint=short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best or guide9_s25 or guide9_s25_best or guide9_h0 or guide9_h0_best or guide9_h300 or guide9_h300_s50 or guide9_h300_s50_best,
+            allow_short_endpoint=short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best or guide9_s25 or guide9_s25_best or guide9_h0 or guide9_h0_best or guide9_h300 or guide9_h300_s50 or guide9_h300_s50_best or guide9_white12,
         )
         _validate_reproducibility_checkpoint(root, plan, run)
         captures = _load_jsonl(root / "captures.jsonl")
@@ -674,6 +675,7 @@ def analyze_thermal_run(
                     "direct_guide9_h300_s100_batch1_v1",
                     "direct_guide9_h300_s50_batch1_v1",
                     "direct_guide9_h300_s50_best_repeat_v1",
+                    "direct_guide9_white12_v1",
                 }
             ):
                 ray_zero = capture.get("ray_zero_before_capture")
@@ -710,7 +712,7 @@ def analyze_thermal_run(
                 raise ValueError("GUIDE6 isolation ledger lacks per-measurement gates")
             if any(row.get("evidence", {}).get("status") != "pass" for row in local_gates):
                 raise ValueError("GUIDE6 isolation ledger contains a failed gate")
-        elif not (short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best or guide9_s25 or guide9_s25_best or guide9_h0 or guide9_h0_best or guide9_h300 or guide9_h300_s50 or guide9_h300_s50_best):
+        elif not (short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best or guide9_s25 or guide9_s25_best or guide9_h0 or guide9_h0_best or guide9_h300 or guide9_h300_s50 or guide9_h300_s50_best or guide9_white12):
             _validate_commands_and_gates(plan, root)
         _validate_cleanup_and_wrapper(
             root, allow_python_direct=guide6_direct,
@@ -722,7 +724,12 @@ def analyze_thermal_run(
             enriched["engineering_quality_status"] = "pass"
             enriched["run_root"] = str(root)
             formal_rows.append(enriched)
-        if guide9_best or guide9_s25_best or guide9_h0_best or guide9_h300_s50_best:
+        if guide9_white12:
+            result = analyze_guide9_white12(
+                formal_rows, feature_ids=feature_ids,
+                target_contracts=plan["analysis_contract"]["target_contracts"],
+            )
+        elif guide9_best or guide9_s25_best or guide9_h0_best or guide9_h300_s50_best:
             result = analyze_guide9_h120_s50_best_repeat(
                 formal_rows,
                 feature_ids=feature_ids,
@@ -2227,6 +2234,109 @@ def analyze_guide9_h120_s50_best_repeat(
         classification = "H120_S50_faithful" if faithful else "H120_S50_stable_nonfaithful" if repeat["decision"] == "pass" else "H120_S50_operating_repeatability_unresolved"
         next_action = "H120/S25"
     return {"schema": f"guide9_h{target_hue}_s{target_sat}_best_repeat_analysis_v1", "classification": classification, "measurement_valid": True, "faithful": faithful, "ray_bracket": frozen_same_state_compatibility_diagnostic(ray_before, ray_after, source="ray", state="D", feature_ids=feature_ids), "best_command": dict(by_role["best_repeat_2"]["plan_step"]["command"]), "repeatability": repeat, "direct_scores": direct_scores, "downward_search_stopped": target_sat == 25, "next": next_action, "gamut_inference": "prohibited", "steady_claim": False}
+
+
+def _guide9_white_observation(row: Mapping[str, Any]) -> dict[str, Any]:
+    from camera_based_rgbww_optimizer.optimization import white_calibration_common
+
+    capture = row["capture"]
+    report = _load_json(Path(capture["patch_statistics"]))
+    white_patch = next(
+        (
+            patch for patch in report["patches"]
+            if "white" in {str(role).lower() for role in patch["patch"].get("roles", ())}
+        ),
+        None,
+    )
+    if not isinstance(white_patch, Mapping):
+        raise ValueError("GUIDE9 white observation lacks the chart white patch")
+    planes = white_patch["planes"]
+    values = {
+        name: float(planes[name]["statistics"]["normalized_per_second"]["trimmed_mean"])
+        for name in ("R", "G1", "G2", "B")
+    }
+    green = (values["G1"] + values["G2"]) / 2.0
+    if any(not math.isfinite(value) or value <= 0 for value in (*values.values(), green)):
+        raise ValueError("GUIDE9 white observation has an invalid white-patch response")
+    camera_neutral = np.asarray([values["R"] / green, 1.0, values["B"] / green])
+    raw_path = Path(capture["saved_file"])
+    matrix = white_calibration_common.load_rawpy_rgb_xyz_matrix(raw_path, np)
+    white_point = white_calibration_common.estimate_white_point_from_camera_neutral(
+        camera_neutral, matrix, np_module=np,
+    )
+    return {
+        "white_patch_normalized_per_second": values,
+        "neutral_log_chroma": {
+            "log_R_over_G": float(math.log(values["R"] / green)),
+            "log_B_over_G": float(math.log(values["B"] / green)),
+            "G1_minus_G2_over_mean_G": float((values["G1"] - values["G2"]) / green),
+        },
+        "white_point": white_point,
+    }
+
+
+def analyze_guide9_white12(
+    captures: Sequence[Mapping[str, Any]], *, feature_ids: Sequence[str],
+    target_contracts: Sequence[Mapping[str, Any]],
+    observation_fn: Callable[[Mapping[str, Any]], Mapping[str, Any]] = _guide9_white_observation,
+) -> dict[str, Any]:
+    expected = {(int(row["cct"]), int(row["gm"])) for row in target_contracts}
+    grouped: dict[tuple[int, int], dict[str, Mapping[str, Any]]] = defaultdict(dict)
+    for row in captures:
+        step = row["plan_step"]
+        key = (int(step["target_cct"]), int(step["target_gm"]))
+        grouped[key][str(step["source_id"])] = row
+    if set(grouped) != expected or any(set(rows) != {"ray", "strip"} for rows in grouped.values()):
+        raise ValueError("GUIDE9 white validation lacks its 12 exact Ray/strip pairs")
+    contracts = {(int(row["cct"]), int(row["gm"])): row for row in target_contracts}
+    variance = _same_state_variance(source="strip", state="A") + _same_state_variance(source="ray", state="D")
+    nodes = []
+    for key in sorted(grouped):
+        ray_row, strip_row = grouped[key]["ray"], grouped[key]["strip"]
+        ray = dict(observation_fn(ray_row))
+        strip = dict(observation_fn(strip_row))
+        ray_point, strip_point = ray["white_point"], strip["white_point"]
+        cct_error = float(strip_point["cct_K"] - ray_point["cct_K"])
+        mired_error = float(1_000_000.0 / strip_point["cct_K"] - 1_000_000.0 / ray_point["cct_K"])
+        duv_error = float(strip_point["duv"] - ray_point["duv"])
+        contract = contracts[key]
+        cct_pass = abs(cct_error) <= float(contract["resolved_cct_tolerance_K"])
+        mired_pass = abs(mired_error) <= float(contract["cct_tolerance_mired"])
+        duv_pass = abs(duv_error) <= float(contract["duv_tolerance"])
+        ray_features = _unit(_features(ray_row, feature_ids), feature_ids)
+        strip_features = _unit(_features(strip_row, feature_ids), feature_ids)
+        multipatch_score = float(direct_whitened_norm(strip_features - ray_features, variance))
+        ray_log = ray["neutral_log_chroma"]
+        strip_log = strip["neutral_log_chroma"]
+        nodes.append({
+            "cct": key[0], "gm": key[1], "status": "pass" if cct_pass and mired_pass and duv_pass else "fail",
+            "source_order": list(contract["source_order"]),
+            "strip_command": dict(contract["strip_command"]),
+            "ray": ray, "strip": strip,
+            "neutral_log_chroma_delta": {
+                name: float(strip_log[name] - ray_log[name]) for name in ray_log
+            },
+            "cct_error_K": cct_error, "mired_error": mired_error, "duv_error": duv_error,
+            "gates": {"cct": cct_pass, "mired": mired_pass, "duv": duv_pass},
+            "limits": {
+                "cct_K": float(contract["resolved_cct_tolerance_K"]),
+                "mired": float(contract["cct_tolerance_mired"]),
+                "duv": float(contract["duv_tolerance"]),
+            },
+            "multipatch_direct_58_feature_score_diagnostic": multipatch_score,
+        })
+    failed = [node for node in nodes if node["status"] != "pass"]
+    return {
+        "schema": "guide9_white_fast_direct_representative_12_analysis_v1",
+        "status": "pass" if not failed else "local_correction_required",
+        "classification": "white_representative_12_pass" if not failed else "white_representative_nodes_require_local_correction",
+        "capture_count": len(captures), "node_count": len(nodes),
+        "passed_node_count": len(nodes) - len(failed), "failed_node_count": len(failed),
+        "nodes": nodes,
+        "next": "GUIDE9_WHITE_FAST_DIRECT_70_V1" if not failed else "GUIDE9_WHITE12_LOCAL_NODE_CORRECTION",
+        "global_model_refit": False, "default_lut_installation": False,
+        "steady_claim": False,
+    }
 
 
 def analyze_guide6_local_controllability(

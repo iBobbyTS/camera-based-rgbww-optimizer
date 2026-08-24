@@ -1049,6 +1049,9 @@ class DirectR6Tests(unittest.TestCase):
                 return SimpleNamespace(iso="100", aperture="f/4", image_format="RAW")
 
             def capture_with_timing(self, **_kwargs):
+                raise AssertionError("runtime wiring test must not capture")
+
+            def capture_with_timing(self, **_kwargs):
                 raise AssertionError("sequence wiring test must not capture")
 
         def fake_execute(plan, **kwargs):
@@ -2884,6 +2887,108 @@ class DirectR6Tests(unittest.TestCase):
         self.assertEqual(result, Path("/fake/guide9-h300-s50-best"))
         self.assertTrue(callable(routed["source_isolation_check_fn"]))
         self.assertTrue(callable(routed["post_capture_validator_fn"]))
+
+    def test_guide9_white12_is_balanced_bounded_and_analyzable(self):
+        plan = thermal.build_direct_plan(
+            thermal.TD_C, variant=thermal.GUIDE9_WHITE12_VARIANT,
+        )
+        self.assertEqual(plan["guide_experiment_id"], thermal.GUIDE9_WHITE12_EXPERIMENT_ID)
+        self.assertEqual(plan["budgets"], {
+            "ray_cap": 12, "strip_cap": 12, "formal_cap": 24,
+            "physical_cr3_cap": 24, "ambient_cap": 0, "retry": 0,
+        })
+        self.assertEqual(len(plan["captures"]), 24)
+        self.assertEqual(
+            [row["source_order"] for row in plan["analysis_contract"]["target_contracts"]],
+            [["ray", "strip"], ["strip", "ray"]] * 6,
+        )
+        self.assertTrue(all(
+            step["requested_elapsed_s"] == 120 and step["steady_claim"] is False
+            for step in plan["captures"]
+        ))
+        self.assertTrue(all(
+            step["strip_zero_required"] for step in plan["captures"]
+            if step["source_id"] == "ray"
+        ))
+        self.assertTrue(all(
+            step["ray_zero_required"] for step in plan["captures"]
+            if step["source_id"] == "strip"
+        ))
+        measure.validate_authorized_execution_plan(plan)
+
+        feature_ids = tuple(json.loads(thermal.POLICY_PATH.read_text())["feature_set"]["ids"])
+        rows = [
+            {"plan_step": step, "feature_values": {name: 1.0 for name in feature_ids}}
+            for step in plan["captures"]
+        ]
+        def observation(row):
+            source = row["plan_step"]["source_id"]
+            base = float(row["plan_step"]["target_cct"])
+            cct = base + (0.5 if source == "strip" else 0.0)
+            return {
+                "white_patch_normalized_per_second": {"R": 1.0, "G1": 1.0, "G2": 1.0, "B": 1.0},
+                "neutral_log_chroma": {"log_R_over_G": 0.0, "log_B_over_G": 0.0, "G1_minus_G2_over_mean_G": 0.0},
+                "white_point": {"cct_K": cct, "duv": 0.0, "xy": [0.3, 0.3], "uv1960": [0.2, 0.3], "approx_XYZ": [1.0, 1.0, 1.0]},
+            }
+        report = analyze.analyze_guide9_white12(
+            rows, feature_ids=feature_ids,
+            target_contracts=plan["analysis_contract"]["target_contracts"],
+            observation_fn=observation,
+        )
+        self.assertEqual(report["classification"], "white_representative_12_pass")
+        self.assertEqual(report["passed_node_count"], 12)
+        self.assertEqual(report["next"], "GUIDE9_WHITE_FAST_DIRECT_70_V1")
+
+    def test_guide9_white12_runtime_uses_cct_owner_and_isolation(self):
+        plan = thermal.build_direct_plan(
+            thermal.TD_C, variant=thermal.GUIDE9_WHITE12_VARIANT,
+        )
+        routed = {}
+
+        class FakeBackend:
+            backend_name = "remote"
+            v2_capture_capability = measure.REMOTE_V2_CAPABILITY
+
+            def connect(self):
+                return object()
+
+            def resolve_capture_settings(self, **_kwargs):
+                return SimpleNamespace(iso="100", aperture="f/4", image_format="RAW")
+
+            def capture_with_timing(self, **_kwargs):
+                raise AssertionError("runtime wiring test must not capture")
+
+        def fake_execute(_plan, **kwargs):
+            ray_step = next(step for step in _plan["captures"] if step["source_id"] == "ray")
+            routed["applied"] = kwargs["apply_command_fn"](ray_step)
+            routed["readback"] = kwargs["readback_fn"](ray_step)
+            routed["source_isolation"] = kwargs["source_isolation_check_fn"]
+            return Path("/fake/guide9-white12")
+
+        with (
+            patch.object(measure, "execute_plan", side_effect=fake_execute),
+            patch(
+                "camera_based_rgbww_optimizer.optimization.measure_raw_observer_validation.build_native_raw_capture_step_fn",
+                return_value=lambda _step: None,
+            ),
+            patch(
+                "camera_based_rgbww_optimizer.control.ray120c.set_cct",
+                return_value={"data": {"cct": 1800, "gm": 0, "intensity": 1000}},
+            ) as set_cct,
+            patch(
+                "camera_based_rgbww_optimizer.control.ray120c.get_cct",
+                return_value={"data": {"cct": 1800, "gm": 0, "intensity": 1000}},
+            ),
+        ):
+            result = measure.run_authorized_plan(
+                plan, output_dir=Path("/fake"), run_name="guide9-white12",
+                camera_backend=FakeBackend(),
+            )
+
+        self.assertEqual(result, Path("/fake/guide9-white12"))
+        set_cct.assert_called_once_with(1800, gm=0, intensity_percent=100.0)
+        self.assertEqual(routed["readback"]["data"]["cct"], 1800)
+        self.assertTrue(callable(routed["source_isolation"]))
 
     def test_guide9_h300_reference_diagnostic_is_order_balanced_and_bounded(self):
         plan = thermal.build_direct_plan(

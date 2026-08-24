@@ -86,5 +86,9 @@
   the GUIDE9 mandatory Advisor gate because H120/S25 and H300/S50 are both
   measurable and repeatable. Continue with the independent GUIDE9 white route,
   starting with the 12-point FAST-DIRECT representative validation.
+- White12 engineering boundary is ready: `GUIDE9_WHITE_FAST_DIRECT_REPRESENTATIVE_12_V1`
+  freezes 12 nodes from the retained 14x5 candidate, 24 Ray/strip captures,
+  alternating within-node source order, per-capture reset600/dwell120, historical
+  source-specific shutters, exact source isolation, and no global refit or LUT install.
 
 Keep 13-node grid, boundary, Gate-6, P8 and LUT installation locked.

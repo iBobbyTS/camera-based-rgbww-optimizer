@@ -89,3 +89,16 @@
   chromatic Hue. The mandatory Advisor condition is not met because H120/S25
   and H300/S50 are both measurement-valid and repeatable. The active route moves
   to independent white FAST-DIRECT representative validation.
+
+## GUIDE9 white representative readiness
+
+- Implemented `GUIDE9_WHITE_FAST_DIRECT_REPRESENTATIVE_12_V1` against the retained
+  14x5/70-node candidate identity `ea8bffce...a9006`.
+- Scope: 12 nodes (`1800/3200/5600/20000 K x GM 0/100/200`), 24 physical/formal
+  captures, each reset600 then dwell120, alternating Ray/strip source order.
+- Frozen per-node Ray/strip shutters and exact strip commands come from the retained
+  candidate. No adaptive solver, global refit, ambient, retry, or LUT installation.
+- Analyzer reports native RAW white log-chroma, CCT/mired/Duv paired errors and
+  full 58-feature multipatch diagnostic. Failed nodes route only to local correction.
+- Focused behavior/runtime: 2/2 passed; dry-run and compileall passed; full suite:
+  538/538 passed; `git diff --check` passed.
