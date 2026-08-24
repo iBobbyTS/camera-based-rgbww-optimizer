@@ -90,6 +90,8 @@ GUIDE9_H300_S50_BEST_REPEAT_EXPERIMENT_ID = "GUIDE9_H300_S50_BEST_REPEAT_V1"
 GUIDE9_H300_S50_BEST_REPEAT_VARIANT = "guide9-h300-s50-best-repeat"
 GUIDE9_WHITE12_EXPERIMENT_ID = "GUIDE9_WHITE_FAST_DIRECT_REPRESENTATIVE_12_V1"
 GUIDE9_WHITE12_VARIANT = "guide9-white-fast-direct-representative-12"
+GUIDE9_WHITE_LOCAL_JAC_EXPERIMENT_ID = "GUIDE9_WHITE12_LOCAL_JACOBIAN_CANDIDATES_V1"
+GUIDE9_WHITE_LOCAL_JAC_VARIANT = "guide9-white12-local-jacobian-candidates"
 GUIDE9_H300_REFERENCE_DIAG_EXPERIMENT_ID = (
     "GUIDE9_RAY_H300_S100_REFERENCE_EMISSION_PATH_DIAG_V1"
 )
@@ -1046,6 +1048,8 @@ def build_direct_plan(
         plan = _build_guide9_h300_s50_best_repeat_plan()
     elif experiment_id == TD_C and variant == GUIDE9_WHITE12_VARIANT:
         plan = _build_guide9_white12_plan()
+    elif experiment_id == TD_C and variant == GUIDE9_WHITE_LOCAL_JAC_VARIANT:
+        plan = _build_guide9_white_local_jacobian_plan()
     else:
         if experiment_id == TD_C and variant != "core":
             raise ValueError("TD-C direct execution supports core or frozen GUIDE5 variants")
@@ -1081,6 +1085,7 @@ def build_direct_plan(
                 GUIDE9_H300_S50_BATCH1_VARIANT,
                 GUIDE9_H300_S50_BEST_REPEAT_VARIANT,
                 GUIDE9_WHITE12_VARIANT,
+                GUIDE9_WHITE_LOCAL_JAC_VARIANT,
             }
             else "deferred_diagnostic_only"
             if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT
@@ -1126,15 +1131,17 @@ def build_direct_plan(
                 if variant == GUIDE9_H300_S50_BEST_REPEAT_VARIANT
                 else "direct_guide9_white12_v1"
                 if variant == GUIDE9_WHITE12_VARIANT
+                else "direct_guide9_white_local_jacobian_v1"
+                if variant == GUIDE9_WHITE_LOCAL_JAC_VARIANT
                 else "direct_td_c_fast_anchor_direction_b_v1"
                 if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT
                 else f"direct_{'strip_td_b' if experiment_id == TD_B else 'td_c_core'}_authority_v1"
             ),
-            "human_authorization_verified": variant not in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT, GUIDE7_F2_SCALE3072_STABILITY_VARIANT, GUIDE7_F2_SCALE2048_STABILITY_VARIANT, GUIDE9_H120_S100_SCALE_AGE_VARIANT, GUIDE9_H120_S50_BATCH1_VARIANT, GUIDE9_H120_S50_BEST_REPEAT_VARIANT, GUIDE9_H120_S25_BATCH1_VARIANT, GUIDE9_H120_S25_BEST_REPEAT_VARIANT, GUIDE9_H0_S0_BATCH1_VARIANT, GUIDE9_H0_S0_BEST_REPEAT_VARIANT, GUIDE9_H300_S100_BATCH1_VARIANT, GUIDE9_H300_S50_BATCH1_VARIANT, GUIDE9_H300_S50_BEST_REPEAT_VARIANT, GUIDE9_WHITE12_VARIANT},
+            "human_authorization_verified": variant not in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT, GUIDE7_F2_SCALE3072_STABILITY_VARIANT, GUIDE7_F2_SCALE2048_STABILITY_VARIANT, GUIDE9_H120_S100_SCALE_AGE_VARIANT, GUIDE9_H120_S50_BATCH1_VARIANT, GUIDE9_H120_S50_BEST_REPEAT_VARIANT, GUIDE9_H120_S25_BATCH1_VARIANT, GUIDE9_H120_S25_BEST_REPEAT_VARIANT, GUIDE9_H0_S0_BATCH1_VARIANT, GUIDE9_H0_S0_BEST_REPEAT_VARIANT, GUIDE9_H300_S100_BATCH1_VARIANT, GUIDE9_H300_S50_BATCH1_VARIANT, GUIDE9_H300_S50_BEST_REPEAT_VARIANT, GUIDE9_WHITE12_VARIANT, GUIDE9_WHITE_LOCAL_JAC_VARIANT},
             "human_authorization_experiment_id": (
-                None if variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT, GUIDE7_F2_SCALE3072_STABILITY_VARIANT, GUIDE7_F2_SCALE2048_STABILITY_VARIANT, GUIDE9_H120_S100_SCALE_AGE_VARIANT, GUIDE9_H120_S50_BATCH1_VARIANT, GUIDE9_H120_S50_BEST_REPEAT_VARIANT, GUIDE9_H120_S25_BATCH1_VARIANT, GUIDE9_H120_S25_BEST_REPEAT_VARIANT, GUIDE9_H0_S0_BATCH1_VARIANT, GUIDE9_H0_S0_BEST_REPEAT_VARIANT, GUIDE9_H300_S100_BATCH1_VARIANT, GUIDE9_H300_S50_BATCH1_VARIANT, GUIDE9_H300_S50_BEST_REPEAT_VARIANT, GUIDE9_WHITE12_VARIANT} else experiment_id
+                None if variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT, GUIDE7_F2_SCALE3072_STABILITY_VARIANT, GUIDE7_F2_SCALE2048_STABILITY_VARIANT, GUIDE9_H120_S100_SCALE_AGE_VARIANT, GUIDE9_H120_S50_BATCH1_VARIANT, GUIDE9_H120_S50_BEST_REPEAT_VARIANT, GUIDE9_H120_S25_BATCH1_VARIANT, GUIDE9_H120_S25_BEST_REPEAT_VARIANT, GUIDE9_H0_S0_BATCH1_VARIANT, GUIDE9_H0_S0_BEST_REPEAT_VARIANT, GUIDE9_H300_S100_BATCH1_VARIANT, GUIDE9_H300_S50_BATCH1_VARIANT, GUIDE9_H300_S50_BEST_REPEAT_VARIANT, GUIDE9_WHITE12_VARIANT, GUIDE9_WHITE_LOCAL_JAC_VARIANT} else experiment_id
             ),
-            "bounded_device_scope": variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT, GUIDE7_F2_SCALE3072_STABILITY_VARIANT, GUIDE7_F2_SCALE2048_STABILITY_VARIANT, GUIDE9_H120_S100_SCALE_AGE_VARIANT, GUIDE9_H120_S50_BATCH1_VARIANT, GUIDE9_H120_S50_BEST_REPEAT_VARIANT, GUIDE9_H120_S25_BATCH1_VARIANT, GUIDE9_H120_S25_BEST_REPEAT_VARIANT, GUIDE9_H0_S0_BATCH1_VARIANT, GUIDE9_H0_S0_BEST_REPEAT_VARIANT, GUIDE9_H300_S100_BATCH1_VARIANT, GUIDE9_H300_S50_BATCH1_VARIANT, GUIDE9_H300_S50_BEST_REPEAT_VARIANT, GUIDE9_WHITE12_VARIANT},
+            "bounded_device_scope": variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT, GUIDE7_F2_SCALE3072_STABILITY_VARIANT, GUIDE7_F2_SCALE2048_STABILITY_VARIANT, GUIDE9_H120_S100_SCALE_AGE_VARIANT, GUIDE9_H120_S50_BATCH1_VARIANT, GUIDE9_H120_S50_BEST_REPEAT_VARIANT, GUIDE9_H120_S25_BATCH1_VARIANT, GUIDE9_H120_S25_BEST_REPEAT_VARIANT, GUIDE9_H0_S0_BATCH1_VARIANT, GUIDE9_H0_S0_BEST_REPEAT_VARIANT, GUIDE9_H300_S100_BATCH1_VARIANT, GUIDE9_H300_S50_BATCH1_VARIANT, GUIDE9_H300_S50_BEST_REPEAT_VARIANT, GUIDE9_WHITE12_VARIANT, GUIDE9_WHITE_LOCAL_JAC_VARIANT},
             "human_authorization_required": False,
             "experiment_id": (
                 TD_C_FAST_ENDPOINT_HOLDOUT_EXPERIMENT_ID
@@ -1173,6 +1180,8 @@ def build_direct_plan(
                 if variant == GUIDE9_H300_S50_BEST_REPEAT_VARIANT else
                 GUIDE9_WHITE12_EXPERIMENT_ID
                 if variant == GUIDE9_WHITE12_VARIANT else
+                GUIDE9_WHITE_LOCAL_JAC_EXPERIMENT_ID
+                if variant == GUIDE9_WHITE_LOCAL_JAC_VARIANT else
                 TD_C_FAST_ANCHOR_DIRECTION_B_EXPERIMENT_ID
                 if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT else experiment_id
             ),
@@ -2307,6 +2316,77 @@ def _build_guide9_white12_plan() -> dict[str, Any]:
             "steady_claim": False,
         },
     }
+
+
+def _build_guide9_white_local_jacobian_plan() -> dict[str, Any]:
+    """Recheck five failed white nodes with preregistered local-model candidates."""
+    parent = _build_guide9_white12_plan()
+    candidates = {
+        (3200, 100): {"cw": 2271, "ww": 506, "r": 4095, "g": 1939, "b": 56},
+        (3200, 200): {"cw": 755, "ww": 440, "r": 4095, "g": 2418, "b": 34},
+        (5600, 100): {"cw": 4095, "ww": 428, "r": 142, "g": 17, "b": 116},
+        (20000, 100): {"cw": 0, "ww": 196, "r": 3201, "g": 4095, "b": 3529},
+        (20000, 200): {"cw": 4095, "ww": 98, "r": 400, "g": 3778, "b": 3079},
+    }
+    target_contracts = [
+        dict(row) for row in parent["analysis_contract"]["target_contracts"]
+        if (int(row["cct"]), int(row["gm"])) in candidates
+    ]
+    for row in target_contracts:
+        row["strip_command"] = candidates[(int(row["cct"]), int(row["gm"]))]
+        row["candidate_owner"] = "node_local_historical_jacobian_plus_current_paired_residual"
+    contract_by_key = {(int(row["cct"]), int(row["gm"])): row for row in target_contracts}
+    captures = []
+    for step in parent["captures"]:
+        key = (int(step["target_cct"]), int(step["target_gm"]))
+        if key not in candidates:
+            continue
+        item = dict(step)
+        item["capture_id"] = item["capture_id"].replace("guide9-white", "guide9-white-local-jac")
+        if item["source_id"] == "strip":
+            item["command"] = dict(candidates[key])
+            item["exact_command_hash"] = canonical_sha256(item["command"])
+        captures.append(item)
+    frozen_shutters = {
+        key: value for key, value in parent["frozen_shutters"].items()
+        if any(f"-{cct}-gm{gm}" in key for cct, gm in candidates)
+    }
+    parent.update({
+        "guide_experiment_id": GUIDE9_WHITE_LOCAL_JAC_EXPERIMENT_ID,
+        "variant": GUIDE9_WHITE_LOCAL_JAC_VARIANT,
+        "stage": "GUIDE9-WHITE12-LOCAL-JACOBIAN-CANDIDATES",
+        "captures": captures,
+        "capture_ids": [row["capture_id"] for row in captures],
+        "frozen_shutters": frozen_shutters,
+        "shutter_ledger_provenance": {
+            "owner": "experiment_capture_steps",
+            "required_cache_keys": sorted(frozen_shutters),
+            "frozen_shutters_sha256": canonical_sha256(frozen_shutters),
+        },
+        "budgets": {
+            "ray_cap": 5, "strip_cap": 5, "formal_cap": 10,
+            "physical_cr3_cap": 10, "ambient_cap": 0, "retry": 0,
+        },
+        "execution_authorization": {
+            **parent["execution_authorization"],
+            "schema": "direct_guide9_white_local_jacobian_v1",
+            "experiment_id": GUIDE9_WHITE_LOCAL_JAC_EXPERIMENT_ID,
+            "human_authorization_experiment_id": None,
+        },
+        "analysis_contract": {
+            **parent["analysis_contract"],
+            "method": "white12_failed_node_local_jacobian_candidates",
+            "target_contracts": target_contracts,
+            "parent_analysis": file_reference(
+                "/Volumes/4T/temp/rgbww-optimizer/guide9-white12-20260824/"
+                "20260824-010145-representative12/analysis.json"
+            ),
+            "pass_next": "GUIDE9_WHITE12_LOCAL_PROBE_CORRECTION",
+            "failure_next": "GUIDE9_WHITE12_LOCAL_JACOBIAN_REASSESSMENT",
+            "global_model_refit": False,
+        },
+    })
+    return parent
 
 
 def _build_guide6_strip_exposure_qualification_plan() -> dict[str, Any]:

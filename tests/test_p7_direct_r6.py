@@ -2990,6 +2990,31 @@ class DirectR6Tests(unittest.TestCase):
         self.assertEqual(routed["readback"]["data"]["cct"], 1800)
         self.assertTrue(callable(routed["source_isolation"]))
 
+    def test_guide9_white_local_jacobian_candidates_are_bounded(self):
+        plan = thermal.build_direct_plan(
+            thermal.TD_C, variant=thermal.GUIDE9_WHITE_LOCAL_JAC_VARIANT,
+        )
+        self.assertEqual(plan["guide_experiment_id"], thermal.GUIDE9_WHITE_LOCAL_JAC_EXPERIMENT_ID)
+        self.assertEqual(plan["budgets"], {
+            "ray_cap": 5, "strip_cap": 5, "formal_cap": 10,
+            "physical_cr3_cap": 10, "ambient_cap": 0, "retry": 0,
+        })
+        self.assertEqual(
+            [(row["cct"], row["gm"]) for row in plan["analysis_contract"]["target_contracts"]],
+            [(3200, 100), (3200, 200), (5600, 100), (20000, 100), (20000, 200)],
+        )
+        self.assertEqual(
+            plan["analysis_contract"]["target_contracts"][0]["strip_command"],
+            {"cw": 2271, "ww": 506, "r": 4095, "g": 1939, "b": 56},
+        )
+        self.assertEqual(len(plan["captures"]), 10)
+        self.assertTrue(all(
+            step["strip_zero_required"] if step["source_id"] == "ray"
+            else step["ray_zero_required"]
+            for step in plan["captures"]
+        ))
+        measure.validate_authorized_execution_plan(plan)
+
     def test_guide9_h300_reference_diagnostic_is_order_balanced_and_bounded(self):
         plan = thermal.build_direct_plan(
             thermal.TD_C, variant=thermal.GUIDE9_H300_REFERENCE_DIAG_VARIANT,

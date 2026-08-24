@@ -538,7 +538,9 @@ def analyze_thermal_run(
         guide9_h300 = direct_schema == "direct_guide9_h300_s100_batch1_v1"
         guide9_h300_s50 = direct_schema == "direct_guide9_h300_s50_batch1_v1"
         guide9_h300_s50_best = direct_schema == "direct_guide9_h300_s50_best_repeat_v1"
-        guide9_white12 = direct_schema == "direct_guide9_white12_v1"
+        guide9_white12 = direct_schema in {
+            "direct_guide9_white12_v1", "direct_guide9_white_local_jacobian_v1",
+        }
         guide6_direct = guide6_direct or short_endpoint or scale3072_stability or guide9_scale_age or guide9_s50 or guide9_best or guide9_s25 or guide9_s25_best or guide9_h0 or guide9_h0_best or guide9_h300 or guide9_h300_s50 or guide9_h300_s50_best or guide9_white12
         prerequisite = plan.get("scientific_prerequisite")
         if (
@@ -728,6 +730,8 @@ def analyze_thermal_run(
             result = analyze_guide9_white12(
                 formal_rows, feature_ids=feature_ids,
                 target_contracts=plan["analysis_contract"]["target_contracts"],
+                pass_next=str(plan["analysis_contract"].get("pass_next", "GUIDE9_WHITE_FAST_DIRECT_70_V1")),
+                failure_next=str(plan["analysis_contract"].get("failure_next", "GUIDE9_WHITE12_LOCAL_NODE_CORRECTION")),
             )
         elif guide9_best or guide9_s25_best or guide9_h0_best or guide9_h300_s50_best:
             result = analyze_guide9_h120_s50_best_repeat(
@@ -2279,6 +2283,8 @@ def analyze_guide9_white12(
     captures: Sequence[Mapping[str, Any]], *, feature_ids: Sequence[str],
     target_contracts: Sequence[Mapping[str, Any]],
     observation_fn: Callable[[Mapping[str, Any]], Mapping[str, Any]] = _guide9_white_observation,
+    pass_next: str = "GUIDE9_WHITE_FAST_DIRECT_70_V1",
+    failure_next: str = "GUIDE9_WHITE12_LOCAL_NODE_CORRECTION",
 ) -> dict[str, Any]:
     expected = {(int(row["cct"]), int(row["gm"])) for row in target_contracts}
     grouped: dict[tuple[int, int], dict[str, Mapping[str, Any]]] = defaultdict(dict)
@@ -2333,7 +2339,7 @@ def analyze_guide9_white12(
         "capture_count": len(captures), "node_count": len(nodes),
         "passed_node_count": len(nodes) - len(failed), "failed_node_count": len(failed),
         "nodes": nodes,
-        "next": "GUIDE9_WHITE_FAST_DIRECT_70_V1" if not failed else "GUIDE9_WHITE12_LOCAL_NODE_CORRECTION",
+        "next": pass_next if not failed else failure_next,
         "global_model_refit": False, "default_lut_installation": False,
         "steady_claim": False,
     }
