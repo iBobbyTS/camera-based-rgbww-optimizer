@@ -13,7 +13,7 @@ from camera_based_rgbww_optimizer.optimization import measure_p7_thermal_diagnos
 from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
 output_dir, run_name = sys.argv[1:]
 plan=thermal.build_direct_plan(thermal.TD_C,variant=thermal.GUIDE9_WHITE_LOCAL_PROBES_VARIANT)
-key=(1800,100); command={"cw":0,"ww":0,"r":4095,"g":934,"b":0}
+key=(1800,100); command={"cw":0,"ww":0,"r":4095,"g":1196,"b":0}
 steps=[s for s in plan['captures'] if (int(s['target_cct']),int(s['target_gm']))==key]
 ray=dict(next(s for s in steps if s['source_id']=='ray')); strip=dict(next(s for s in steps if s['role']=='strip_base'))
 captures=[]
