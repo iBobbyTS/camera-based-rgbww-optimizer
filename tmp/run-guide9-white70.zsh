@@ -54,6 +54,16 @@ plan={'schema':thermal.PLAN_SCHEMA_V2,'status':'execute_authorized','experiment_
 if resume_from:
     plan["captures"] = [step for step in plan["captures"] if int(step["capture_id"].split("-", 1)[0]) >= resume_from]
     plan["capture_ids"] = [step["capture_id"] for step in plan["captures"]]
+    remaining_keys = {str(step["exposure_cache_key"]) for step in plan["captures"]}
+    plan["frozen_shutters"] = {
+        key: value for key, value in plan["frozen_shutters"].items()
+        if key in remaining_keys
+    }
+    plan["shutter_ledger_provenance"] = {
+        "owner": "experiment_capture_steps",
+        "required_cache_keys": sorted(remaining_keys),
+        "frozen_shutters_sha256": thermal.canonical_sha256(plan["frozen_shutters"]),
+    }
     plan["budgets"] = {
         "ray_cap": sum(step["source_id"] == "ray" for step in plan["captures"]),
         "strip_cap": sum(step["source_id"] == "strip" for step in plan["captures"]),
