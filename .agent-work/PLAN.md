@@ -113,4 +113,22 @@
   preregisters one candidate per node; it does not capture candidates, refit the
   global model or modify the default LUT.
 
+## Interrupted local-probe recovery gate
+
+- Root `/Volumes/4T/temp/rgbww-optimizer/guide9-white-local-probes-20260824/20260824-092424-no-model6`
+  completed 24/36 accepted observations: the complete `1800/GM0,100,200` and
+  `3200/GM0` six-observation blocks are retained and must not be repeated.
+- Physical return 25, the `5600/GM0` Ray reference, was a near-dark frame and
+  failed all 58 required features. Two bounded recovery diagnostics at
+  `5600K/GM0` and `5600K/GM100`, both at 100% and `1/2500`, reproduced the same
+  dark RAW distribution (`median=512`, `p99=521`, `max=534`). API command
+  success therefore does not establish current physical Ray emission.
+- Current classification: `HUMAN_GATE_REQUIRED / Ray emission or optical path
+  absent`. Human must restore/confirm Ray power and visible output toward the
+  chart. No automation is appropriate while waiting for physical intervention.
+- After visible Ray output is restored, validate one bounded Ray reference,
+  then recover only the remaining `5600/GM0` and `20000/GM0` blocks in a new
+  root. Combine them offline with the immutable four-node prefix; do not pool
+  the rejected dark Ray frame and do not reacquire the first 24 observations.
+
 Keep 13-node grid, boundary, Gate-6, P8 and LUT installation locked.

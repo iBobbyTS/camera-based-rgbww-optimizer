@@ -157,3 +157,27 @@
   refit and default LUT mutation are prohibited in this root.
 - Focused behavior: 1/1 passed; direct module: 77/77 passed; dry-run, compileall
   and `git diff --check` passed.
+
+## White local-probe interrupted attempt
+
+- Root:
+  `/Volumes/4T/temp/rgbww-optimizer/guide9-white-local-probes-20260824/20260824-092424-no-model6`.
+- Completed/expected: `24/36` accepted formal observations plus one rejected
+  physical return. The first four target blocks are complete and recoverable.
+- Failure classification: `DEVICE_OR_SAFETY_FAILURE` leading to
+  `HUMAN_GATE_REQUIRED`; capture 25 (`5600/GM0` Ray reference) rejected all 58
+  required features as near-noise.
+- Two fresh non-formal diagnostics at `5600K/GM0` and `5600K/GM100`, 100%
+  intensity and `1/2500`, both produced dark RAW frames with `median=512`,
+  `p99=521`, and `max=534`. This rules out a GM0-only state issue and confirms
+  that command/readback success is not currently accompanied by Ray emission
+  reaching the camera.
+- `science_delta=none` for the interrupted fifth block. The four completed
+  blocks remain valid recoverable observations; the rejected frame and two
+  diagnostics are not scientific inputs.
+- Python cleanup passed; independent final readback confirmed Ray intensity 0
+  and all five strip channels 0. Git remained clean at checkpoint `b15c310`.
+- Fresh retry is justified only after Human restores/confirms physical Ray
+  emission and optical path. Recovery must collect only the remaining two
+  blocks and combine them offline with the immutable prefix; it must not repeat
+  the first 24 observations.
