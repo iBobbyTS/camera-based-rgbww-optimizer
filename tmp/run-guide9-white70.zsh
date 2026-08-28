@@ -36,9 +36,16 @@ corrections={
  (20000,100):{"cw":0,"ww":196,"r":3201,"g":4095,"b":3529},
  (20000,200):{"cw":4095,"ww":114,"r":400,"g":3792,"b":3067},
 }
+correction_file = os.environ.get("GUIDE9_CORRECTIONS_JSON")
+if correction_file:
+    loaded = json.loads(open(correction_file).read())
+    corrections.update({tuple(map(int, key.split(":"))): value for key, value in loaded["candidates"].items()})
+target_filter = os.environ.get("GUIDE9_TARGET_KEYS")
+target_keys = None if not target_filter else {tuple(map(int, value.split(":"))) for value in target_filter.split(",")}
 captures=[]; contracts=[]; shutters={}
 for index,row in enumerate(payload['targets']):
  cct,gm=int(row['cct']),int(row['gm']); key=(cct,gm)
+ if target_keys is not None and key not in target_keys: continue
  command=corrections.get(key,{ch:int(row['selected_command'][ch]) for ch in thermal.CHANNELS})
  ray_shutter=str(row['ray']['auto_exposure']['final']['shutter_speed'])
  strip_shutter=str(row['feedback_optimizer']['best']['capture']['shutter_speed'])
