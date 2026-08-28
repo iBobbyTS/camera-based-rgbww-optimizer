@@ -113,6 +113,22 @@
   preregisters one candidate per node; it does not capture candidates, refit the
   global model or modify the default LUT.
 
+## GUIDE9 full white FAST-DIRECT result
+
+- The first full-grid attempt was interrupted after four captures by a user
+  `KeyboardInterrupt`; those four captures were preserved.
+- Recovery suffixes completed the remaining 136 observations without repeating
+  the accepted prefix. The combined evidence contains exactly 140 unique
+  Ray/strip captures, with quality and source-isolation checks passing and
+  final Ray/strip zero confirmed.
+- Frozen white-grid analysis classified `11/70` nodes as passing and `59/70`
+  as requiring local correction. This is a valid scientific local-correction
+  result, not a reason to refit the global model or install the default LUT.
+- The next route is `GUIDE9_WHITE70_LOCAL_NODE_CORRECTION`: generate and test
+  node-local corrections only, retaining the 70-node candidate identity and
+  all accepted 140 observations. Do not repeat successful nodes or enter the
+  interpolation holdout until the failed nodes are corrected and reconfirmed.
+
 ## Interrupted local-probe recovery gate
 
 - Root `/Volumes/4T/temp/rgbww-optimizer/guide9-white-local-probes-20260824/20260824-092424-no-model6`

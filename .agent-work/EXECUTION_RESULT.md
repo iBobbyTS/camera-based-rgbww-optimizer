@@ -158,6 +158,24 @@
 - Focused behavior: 1/1 passed; direct module: 77/77 passed; dry-run, compileall
   and `git diff --check` passed.
 
+## White 70-node FAST-DIRECT recovery and analysis
+
+- The interrupted root completed 4 captures before `KeyboardInterrupt`; a
+  second suffix completed 41 captures before a transient device DNS timeout;
+  after device restart, a final suffix completed the remaining 95 captures.
+- Offline combination of all three roots produced `140/140` unique capture IDs
+  (`000..139`). All physical returns, quality rows and source-isolation gates
+  were present; Python cleanup and independent Ray/strip zero readback passed.
+- The frozen white-node analysis found `11/70` pass and `59/70` failures. This
+  is accepted characterization evidence and routes only to
+  `GUIDE9_WHITE70_LOCAL_NODE_CORRECTION`; no global refit, default-LUT change,
+  interpolation holdout or HSI expansion was performed.
+- The canonical CLI rejected the custom recovery spec as differing from the
+  12-node protocol, so the frozen white analyzer was run directly against the
+  validated 140-row evidence with unchanged feature, covariance and gate
+  semantics. The custom recovery spec and all root manifests remain retained
+  for audit.
+
 ## White local-probe interrupted attempt
 
 - Root:
