@@ -2434,14 +2434,16 @@ def validate_direct_protocol_post_capture(
     """Validate direct strip/TD-C output from the same real scheduler."""
     root = Path(run_root).resolve()
     expected_ids = [str(step["capture_id"]) for step in plan["captures"]]
+    captures_path = root / "captures.jsonl"
+    physical_path = root / "physical-returns.jsonl"
     captures = [
-        json.loads(line) for line in (root / "captures.jsonl").read_text(encoding="utf-8").splitlines()
+        json.loads(line) for line in captures_path.read_text(encoding="utf-8").splitlines()
         if line.strip()
-    ]
+    ] if captures_path.is_file() else []
     physical = [
-        json.loads(line) for line in (root / "physical-returns.jsonl").read_text(encoding="utf-8").splitlines()
+        json.loads(line) for line in physical_path.read_text(encoding="utf-8").splitlines()
         if line.strip()
-    ]
+    ] if physical_path.is_file() else []
     if [str(row.get("capture_id")) for row in captures] != expected_ids:
         raise ValueError("direct protocol capture order differs from its spec")
     if [str(row.get("capture_id")) for row in physical] != expected_ids:
