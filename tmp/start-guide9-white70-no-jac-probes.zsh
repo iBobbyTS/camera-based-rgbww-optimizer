@@ -1,0 +1,7 @@
+#!/bin/zsh
+set -euo pipefail
+cd "${0:A:h:h}"
+exec ./tmp/run-guide9-white70-no-jac-probes.zsh \
+  /Volumes/4T/temp/rgbww-optimizer/guide9-white70-no-jac-probes-20260829 \
+  20260829-19-node-probes \
+  2000:0,2000:70,2000:130,2000:200,2300:0,2700:200,3800:0,3800:70,3800:130,4500:100,4500:130,5000:70,5000:100,6500:130,6500:200,8000:0,8000:70,10000:70,20000:130
