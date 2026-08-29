@@ -8,12 +8,14 @@ cleanup() { cd "$PROJECT_ROOT"; .venv/bin/python -m camera_based_rgbww_optimizer
 trap cleanup EXIT INT TERM
 cd "$PROJECT_ROOT"
 .venv/bin/python - "$OUTPUT_DIR" "$RUN_NAME" "$TARGET_KEYS" <<'PY'
-import json, sys
+import json, re, sys
 from camera_based_rgbww_optimizer.control import camera_remote
 from camera_based_rgbww_optimizer.optimization import measure_p7_thermal_diagnostics as measure
 from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
 out_dir, run_name, keys_value = sys.argv[1:]
-keys={tuple(map(int,k.split(':'))) for k in keys_value.split(',')}
+keys={tuple(map(int,m)) for m in re.findall(r'(\d+):(\d+)', keys_value)}
+if len(keys) != 19:
+    raise ValueError(f"expected 19 target keys, got {sorted(keys)}")
 plan=thermal.build_direct_plan(thermal.TD_C,variant=thermal.GUIDE9_WHITE_LOCAL_PROBES_VARIANT)
 plan['captures']=[s for s in plan['captures'] if (int(s['target_cct']),int(s['target_gm'])) in keys]
 plan['capture_ids']=[s['capture_id'] for s in plan['captures']]
