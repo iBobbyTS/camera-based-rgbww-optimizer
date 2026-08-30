@@ -37,8 +37,8 @@ plan['captures']=[s for s in plan['captures'] if (int(s['target_cct']),int(s['ta
 plan['capture_ids']=[s['capture_id'] for s in plan['captures']]
 plan['analysis_contract']['target_contracts']=[r for r in plan['analysis_contract']['target_contracts'] if (int(r['cct']),int(r['gm'])) in keys]
 plan['budgets']={'ray_cap':len(keys),'strip_cap':len(keys)*5,'formal_cap':len(plan['captures']),'physical_cr3_cap':len(plan['captures']),'ambient_cap':0,'retry':0}
-required={str(s['exposure_cache_key']) for s in plan['captures']}
-plan['frozen_shutters']={k:v for k,v in plan['frozen_shutters'].items() if k in required}
+plan['frozen_shutters']={str(s['exposure_cache_key']):str(s['nominal_shutter']) for s in plan['captures']}
+required=set(plan['frozen_shutters'])
 plan['shutter_ledger_provenance']={'owner':'experiment_capture_steps','required_cache_keys':sorted(required),'frozen_shutters_sha256':thermal.canonical_sha256(plan['frozen_shutters'])}
 plan['recovery_contract']={'schema':'guide9_white70_no_jacobian_probe_batch_v1','targets':sorted([list(k) for k in keys]),'candidate_capture_count':0,'global_model_refit':False}
 print(measure.run_authorized_plan(plan,output_dir=out_dir,run_name=run_name,camera_backend=camera_remote.create_camera_backend('remote')))
