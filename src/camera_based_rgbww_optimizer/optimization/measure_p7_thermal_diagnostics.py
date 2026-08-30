@@ -361,14 +361,28 @@ def _runtime_git_provenance() -> dict[str, Any]:
         ("git", "rev-parse", "HEAD"), cwd=PROJECT_ROOT, check=True,
         capture_output=True, text=True, timeout=30,
     ).stdout.strip()
-    dirty_output = subprocess.run(
-        ("git", "status", "--porcelain"), cwd=PROJECT_ROOT, check=True,
-        capture_output=True, text=True, timeout=30,
+    tracked = subprocess.run(
+        ("git", "diff", "--quiet", "HEAD", "--"), cwd=PROJECT_ROOT,
+        check=False, timeout=30,
+    ).returncode
+    staged = subprocess.run(
+        ("git", "diff", "--cached", "--quiet"), cwd=PROJECT_ROOT,
+        check=False, timeout=30,
+    ).returncode
+    untracked = subprocess.run(
+        ("git", "ls-files", "--others", "--exclude-standard"), cwd=PROJECT_ROOT,
+        check=True, capture_output=True, text=True, timeout=30,
     ).stdout
+    dirty_entries = []
+    if tracked != 0:
+        dirty_entries.append("tracked changes")
+    if staged != 0:
+        dirty_entries.append("staged changes")
+    dirty_entries.extend(line for line in untracked.splitlines() if line.strip())
     return {
         "commit": commit,
-        "dirty": bool(dirty_output.strip()),
-        "dirty_entries": dirty_output.splitlines(),
+        "dirty": bool(dirty_entries),
+        "dirty_entries": dirty_entries,
     }
 
 
