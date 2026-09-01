@@ -429,13 +429,14 @@ def capture_remote_image_v2(
             raise RemoteCameraV2Error("v2 capture destination already exists")
         temporary_path = destination.with_name(f".{destination.name}.{os.getpid()}.part")
         metadata_temporary_path = metadata_destination.with_name(f".{metadata_destination.name}.{os.getpid()}.part")
-        temporary_path.write_bytes(parsed.cr3_bytes)
+        with temporary_path.open("wb") as handle:
+            handle.write(parsed.cr3_bytes)
+            handle.flush()
+            os.fsync(handle.fileno())
         with metadata_temporary_path.open("w", encoding="utf-8") as handle:
             json.dump(metadata, handle, indent=2, sort_keys=True, allow_nan=False)
             handle.write("\n")
             handle.flush()
-            os.fsync(handle.fileno())
-        with temporary_path.open("rb") as handle:
             os.fsync(handle.fileno())
         os.replace(temporary_path, destination)
         try:

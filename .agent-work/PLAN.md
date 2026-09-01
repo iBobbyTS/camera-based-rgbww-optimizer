@@ -1,4 +1,27 @@
-# PLAN — GUIDE9 H120/S100 scale × source-age discrimination
+# PLAN - GUIDE9 white70 local-probe recovery on Windows
+
+## Active route
+
+- Data root: `D:\rgbww-optimizer`.
+- Runtime: PowerShell plus `D:\rgbww-optimizer\.venv-windows\Scripts\python.exe`.
+- Retain the migrated zsh launchers for macOS provenance; they are frozen and are
+  not the active execution path.
+- Parent root `20260829-19-node-probes-rerun7` is a failed `KeyboardInterrupt`
+  attempt with 85 accepted observations and passing cleanup.
+- Its capture and physical ledgers are the exact 85-observation prefix of the
+  frozen 114-observation plan. No retained capture may be repeated or overwritten.
+- Execute only captures `085..113` in one unique 29-observation suffix root.
+- After suffix completion and zero-state verification, combine the immutable
+  85-observation prefix with the 29-observation suffix offline. Remap migrated
+  `/Volumes/4T/...` paths to their corresponding D-drive run roots without editing
+  the retained parent evidence.
+- Run the frozen local-probe analyzer once on exactly 114 unique observations.
+  Generate one candidate per node; do not refit the global model or modify the
+  default LUT.
+- Keep interpolation holdout, HSI grid, boundary, Gate-6, P8 and LUT installation
+  locked until the local candidates pass their paired validation.
+
+## Historical record
 
 ## Active route
 

@@ -18,7 +18,7 @@ from camera_based_rgbww_optimizer.measurement.hsi_policy_v2 import (
 from camera_based_rgbww_optimizer.optimization.measure_raw_observer_validation import (
     AMBIENT_POLICY_REQUIRE_PRECEDING, AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
 )
-from camera_based_rgbww_optimizer.paths import PROJECT_ROOT
+from camera_based_rgbww_optimizer.paths import PROJECT_ROOT, PROJECT_TMP_DIR
 
 TD_A = "p7_td_a_cold_settling_v1"
 TD_B = "p7_td_b_command_switch_history_v1"
@@ -112,9 +112,9 @@ GUIDE8_RAY_EMISSION_EXPOSURE_LADDER = (
 GUIDE8_EXPOSURE_POLICY_V2_PATH = (
     PROJECT_ROOT / "config/hsi/ray-h120-s100-exposure-policy-v2.json"
 )
-GUIDE9_WHITE_70_CANDIDATE_PATH = Path(
-    "/Volumes/4T/temp/rgbww-optimizer/white-lut-calibration/"
-    "14x5-off-cycle-refined-v2-20260713/white-lut-calibration.json"
+GUIDE9_WHITE_70_CANDIDATE_PATH = (
+    PROJECT_TMP_DIR
+    / "white-lut-calibration/14x5-off-cycle-refined-v2-20260713/white-lut-calibration.json"
 )
 GUIDE9_WHITE_70_CANDIDATE_SHA256 = (
     "ea8bffce67332b8de8a9bc54bbc047f0159abc6d79e69de2ac699b90ab2a9006"

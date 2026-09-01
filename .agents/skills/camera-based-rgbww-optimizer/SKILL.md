@@ -72,10 +72,21 @@ adding root-level compatibility wrappers.
 - Start new channel tests at low PWM, verify order and thermal behavior, then
   ramp only within the plan. Any script that can leave the fixture on must turn
   it off before exit unless it is an explicit light-on/control tool.
-- Keep raw experimental outputs and disposable caches under
-  `/Volumes/4T/temp/rgbww-optimizer`. Repository `tmp/` may hold versioned
+- Keep raw experimental outputs and disposable caches under the workstation's
+  declared data root. The active Windows lab root is `D:\rgbww-optimizer`;
+  retained macOS evidence may still reference `/Volumes/4T/temp/rgbww-optimizer`.
+  Repository `tmp/` may hold versioned
   non-raw logs, reports and compile evidence; `tmp/*.zsh` files are versioned
   wrappers.
+- On the Windows lab workstation, use PowerShell wrappers and the interpreter at
+  `D:\rgbww-optimizer\.venv-windows\Scripts\python.exe`. Retain migrated zsh
+  wrappers for provenance, but do not extend them while the pwsh route is active.
+- `camera_based_rgbww_optimizer.paths.PROJECT_TMP_DIR` is the data-root owner.
+  Override it only with `CAMERA_BASED_RGBWW_OPTIMIZER_DATA_ROOT`.
+- When analyzing migrated runs, preserve stored evidence and remap only the
+  absolute RAW/measurement paths to the declared local data root. A recovery
+  suffix must validate the retained capture and physical ledgers as the exact
+  frozen-plan prefix before any device access.
 - Ray120c is the CCT/G-M reference. Never infer its CCT from camera RGB.
 - Formal camera work uses `control.camera_remote.RemoteCameraBackend`; do not
   expose credentials in arguments, logs, artifacts, or source.

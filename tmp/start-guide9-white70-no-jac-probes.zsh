@@ -1,4 +1,6 @@
 #!/bin/zsh
+# MIGRATION FREEZE (2026-09-01): retained for macOS provenance and replay only.
+# Do not update this launcher while Windows/pwsh owns the active recovery route.
 set -euo pipefail
 cd "${0:A:h:h}"
 exec ./tmp/run-guide9-white70-no-jac-probes.zsh \

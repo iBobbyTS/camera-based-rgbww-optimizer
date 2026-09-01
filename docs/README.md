@@ -1388,6 +1388,28 @@ strategy to follow the measured evidence.
 
 ## Validation
 
+On the active Windows lab workstation, experiment data and the project virtual
+environment live under `D:\rgbww-optimizer`. Use PowerShell for new execution
+wrappers. Migrated `.zsh` wrappers are retained as historical macOS entry points
+and are temporarily frozen rather than deleted.
+Override the data root for another workstation with
+`CAMERA_BASED_RGBWW_OPTIMIZER_DATA_ROOT`; Windows defaults to
+`D:\rgbww-optimizer`, while macOS retains `/Volumes/4T/temp/rgbww-optimizer`.
+
+The interrupted GUIDE9 19-node probe batch is recovered with:
+
+```powershell
+pwsh -File tmp/run-guide9-white70-no-jac-probes-recovery.ps1 -Action Inspect
+pwsh -File tmp/run-guide9-white70-no-jac-probes-recovery.ps1 -Action RunSuffix
+pwsh -File tmp/run-guide9-white70-no-jac-probes-recovery.ps1 -Action CombineAnalyze
+```
+
+`RunSuffix` first proves that the retained capture and physical ledgers are the
+exact frozen-plan prefix, then writes only the missing suffix to a unique run
+root. `CombineAnalyze` maps retained `/Volumes/4T/...` paths to the corresponding
+Windows run directories without mutating the old evidence, verifies the exact
+combined capture order, and runs the frozen local-probe analyzer.
+
 Run:
 
 ```bash

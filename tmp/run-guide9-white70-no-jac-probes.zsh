@@ -1,4 +1,6 @@
 #!/bin/zsh
+# MIGRATION FREEZE (2026-09-01): retained for macOS provenance and replay only.
+# New development and GUIDE9 recovery execution use the PowerShell entry point.
 set -euo pipefail
 PROJECT_ROOT="${0:A:h:h}"
 OUTPUT_DIR="${1:?output directory required}"
