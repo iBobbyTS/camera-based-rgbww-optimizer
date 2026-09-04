@@ -149,6 +149,49 @@ def _portable_capture(row: Mapping[str, Any], root: Path) -> dict[str, Any]:
     return value
 
 
+def rebuild_probe_contracts(plan: Mapping[str, Any]) -> list[dict[str, Any]]:
+    source_contracts = list(plan["analysis_contract"]["target_contracts"])
+    if not source_contracts:
+        return []
+    steps_by_target: dict[tuple[int, int], list[Mapping[str, Any]]] = {}
+    for step in plan["captures"]:
+        key = (int(step["target_cct"]), int(step["target_gm"]))
+        steps_by_target.setdefault(key, []).append(step)
+    rebuilt = []
+    for source_contract in source_contracts:
+        contract = copy.deepcopy(dict(source_contract))
+        key = (int(contract["cct"]), int(contract["gm"]))
+        steps = steps_by_target.get(key, [])
+        base_steps = [step for step in steps if step["role"] == "strip_base"]
+        probe_steps = [step for step in steps if str(step["role"]).startswith("strip_probe_")]
+        active = str(contract["active_channel"])
+        expected_channels = set(thermal.CHANNELS) - {active}
+        if len(base_steps) != 1 or len(probe_steps) != 4:
+            raise ValueError("GUIDE9 recovery plan lacks one base and four probe steps per target")
+        base = {channel: int(base_steps[0]["command"][channel]) for channel in thermal.CHANNELS}
+        if base != {channel: int(contract["base_command"][channel]) for channel in thermal.CHANNELS}:
+            raise ValueError("GUIDE9 recovery probe base differs from its target contract")
+        probes = []
+        observed_channels = set()
+        for step in probe_steps:
+            channel = str(step["role"]).removeprefix("strip_probe_")
+            if channel not in expected_channels or channel in observed_channels:
+                raise ValueError("GUIDE9 recovery probe channels differ from the four free channels")
+            command = {name: int(step["command"][name]) for name in thermal.CHANNELS}
+            changed = {name for name in thermal.CHANNELS if command[name] != base[name]}
+            delta = command[channel] - base[channel]
+            if changed != {channel} or delta not in {-256, 256}:
+                raise ValueError("GUIDE9 recovery probe command is not one bounded channel step")
+            probes.append({"channel": channel, "delta_code": delta, "command": command})
+            observed_channels.add(channel)
+        if observed_channels != expected_channels:
+            raise ValueError("GUIDE9 recovery probe set does not cover the four free channels")
+        contract["probes"] = probes
+        contract["probe_step_abs"] = 256
+        rebuilt.append(contract)
+    return rebuilt
+
+
 def combine_and_analyze(parent_root: str | Path, suffix_root: str | Path, *, output: str | Path) -> Path:
     retained = validate_prefix(parent_root)
     suffix_path = Path(suffix_root).resolve()
@@ -169,7 +212,7 @@ def combine_and_analyze(parent_root: str | Path, suffix_root: str | Path, *, out
     if [row["capture_id"] for row in combined] != retained["plan"]["capture_ids"]:
         raise ValueError("GUIDE9 recovery combined evidence is not the exact frozen plan")
     report = analyze.analyze_guide9_white_local_probes(
-        combined, target_contracts=retained["plan"]["analysis_contract"]["target_contracts"],
+        combined, target_contracts=rebuild_probe_contracts(retained["plan"]),
     )
     report["recovery_evidence"] = {
         "schema": RECOVERY_SCHEMA,

@@ -60,6 +60,44 @@ class Guide9White70RecoveryTests(unittest.TestCase):
         self.assertEqual(Path(mapped["capture"]["patch_statistics"]).name, "a.json")
         self.assertIn("rgbww-optimizer", mapped["capture"]["saved_file"])
 
+    def test_rebuild_probe_contracts_derives_four_bounded_free_channel_steps(self):
+        channels = ("cw", "ww", "r", "g", "b")
+        base = {"cw": 4095, "ww": 10, "r": 20, "g": 30, "b": 40}
+        captures = [{"target_cct": 6500, "target_gm": 200, "role": "strip_base", "command": base}]
+        for channel in channels[1:]:
+            command = dict(base)
+            command[channel] += 256
+            captures.append({"target_cct": 6500, "target_gm": 200, "role": f"strip_probe_{channel}", "command": command})
+        plan = {
+            "captures": captures,
+            "analysis_contract": {"target_contracts": [{
+                "cct": 6500, "gm": 200, "active_channel": "cw",
+                "base_command": base, "probes": [],
+            }]},
+        }
+        contracts = recovery.rebuild_probe_contracts(plan)
+        self.assertEqual({probe["channel"] for probe in contracts[0]["probes"]}, set(channels[1:]))
+        self.assertTrue(all(probe["delta_code"] == 256 for probe in contracts[0]["probes"]))
+
+    def test_rebuild_probe_contracts_rejects_multichannel_probe(self):
+        base = {"cw": 4095, "ww": 10, "r": 20, "g": 30, "b": 40}
+        captures = [{"target_cct": 6500, "target_gm": 200, "role": "strip_base", "command": base}]
+        for channel in ("ww", "r", "g", "b"):
+            command = dict(base)
+            command[channel] += 256
+            if channel == "b":
+                command["g"] += 1
+            captures.append({"target_cct": 6500, "target_gm": 200, "role": f"strip_probe_{channel}", "command": command})
+        plan = {
+            "captures": captures,
+            "analysis_contract": {"target_contracts": [{
+                "cct": 6500, "gm": 200, "active_channel": "cw",
+                "base_command": base, "probes": [],
+            }]},
+        }
+        with self.assertRaisesRegex(ValueError, "one bounded channel step"):
+            recovery.rebuild_probe_contracts(plan)
+
     def test_build_suffix_plan_keeps_only_missing_ids_and_rebuilds_budgets(self):
         with tempfile.TemporaryDirectory() as temporary:
             parent = self.make_parent(Path(temporary))
