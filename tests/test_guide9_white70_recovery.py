@@ -111,6 +111,78 @@ class Guide9White70RecoveryTests(unittest.TestCase):
         self.assertEqual(suffix["budgets"]["strip_cap"], 1)
         self.assertEqual(suffix["recovery_contract"]["parent_capture_count"], 2)
 
+    def test_build_candidate_plan_creates_one_exact_pair_per_analysis_node(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            parent = root / "parent"
+            parent.mkdir()
+            base = {"cw": 4095, "ww": 20, "r": 30, "g": 40, "b": 50}
+            ray = {
+                "target_cct": 6500, "target_gm": 200, "role": "ray_reference",
+                "source_id": "ray", "command": {"mode": "cct"},
+                "exposure_cache_key": "ray-white-6500-gm200", "nominal_shutter": "1/2500",
+            }
+            strip = {
+                "target_cct": 6500, "target_gm": 200, "role": "strip_base",
+                "source_id": "strip", "command": base,
+                "exposure_cache_key": "strip-white-6500-gm200", "nominal_shutter": "1/80",
+            }
+            plan = {
+                "captures": [ray, strip], "inputs": {}, "budgets": {},
+                "frozen_shutters": {}, "shutter_ledger_provenance": {},
+                "execution_authorization": {},
+                "analysis_contract": {"target_contracts": [{
+                    "cct": 6500, "gm": 200, "active_channel": "cw", "base_command": base,
+                }]},
+            }
+            write_json(parent / "experiment-spec.json", plan)
+            candidate = {**base, "ww": 25}
+            analysis = root / "analysis.json"
+            write_json(analysis, {
+                "status": "candidates_preregistered", "node_count": 1, "capture_count": 6,
+                "global_model_refit": False, "default_lut_installation": False,
+                "recovery_evidence": {
+                    "combined_capture_count": 6, "rejected_dark_capture_included": False,
+                    "diagnostic_captures_included": False,
+                },
+                "nodes": [{"cct": 6500, "gm": 200, "candidate": {"command": candidate}}],
+            })
+            with patch.object(recovery, "_current_input_references", return_value={}), patch.object(
+                recovery.measure, "validate_authorized_execution_plan",
+            ):
+                result = recovery.build_candidate_plan(parent, analysis, data_root=root)
+        self.assertEqual(result["budgets"]["formal_cap"], 2)
+        self.assertEqual([row["source_id"] for row in result["captures"]], ["ray", "strip"])
+        self.assertEqual(result["captures"][1]["command"], candidate)
+        self.assertEqual(result["analysis_contract"]["target_contracts"][0]["source_order"], ["ray", "strip"])
+        self.assertEqual(result["candidate_contract"]["node_count"], 1)
+
+    def test_build_candidate_plan_rejects_candidate_that_changes_active_channel(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            parent = root / "parent"
+            parent.mkdir()
+            base = {"cw": 4095, "ww": 20, "r": 30, "g": 40, "b": 50}
+            write_json(parent / "experiment-spec.json", {
+                "captures": [], "analysis_contract": {"target_contracts": [{
+                    "cct": 6500, "gm": 200, "active_channel": "cw", "base_command": base,
+                }]},
+            })
+            analysis = root / "analysis.json"
+            write_json(analysis, {
+                "status": "candidates_preregistered", "node_count": 1, "capture_count": 6,
+                "global_model_refit": False, "default_lut_installation": False,
+                "recovery_evidence": {
+                    "combined_capture_count": 6, "rejected_dark_capture_included": False,
+                    "diagnostic_captures_included": False,
+                },
+                "nodes": [{"cct": 6500, "gm": 200, "candidate": {
+                    "command": {**base, "cw": 4094},
+                }}],
+            })
+            with self.assertRaisesRegex(ValueError, "full-scale active channel"):
+                recovery.build_candidate_plan(parent, analysis, data_root=root)
+
     def test_combine_analyze_uses_exact_suffix_and_portable_paths(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

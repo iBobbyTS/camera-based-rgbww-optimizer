@@ -192,6 +192,138 @@ def rebuild_probe_contracts(plan: Mapping[str, Any]) -> list[dict[str, Any]]:
     return rebuilt
 
 
+def build_candidate_plan(
+    parent_root: str | Path, analysis: str | Path, *, data_root: str | Path,
+) -> dict[str, Any]:
+    parent_path = Path(parent_root).resolve()
+    analysis_path = Path(analysis).resolve()
+    plan = _load_json(parent_path / "experiment-spec.json")
+    report = _load_json(analysis_path)
+    recovery = report.get("recovery_evidence") or {}
+    if report.get("status") != "candidates_preregistered":
+        raise ValueError("GUIDE9 candidate execution requires a preregistered probe analysis")
+    if (
+        recovery.get("rejected_dark_capture_included") is not False
+        or recovery.get("diagnostic_captures_included") is not False
+    ):
+        raise ValueError("GUIDE9 candidate analysis includes prohibited recovery observations")
+    if report.get("global_model_refit") is not False or report.get("default_lut_installation") is not False:
+        raise ValueError("GUIDE9 candidate analysis changed a locked global artifact")
+
+    source_contracts = {
+        (int(row["cct"]), int(row["gm"])): row
+        for row in plan["analysis_contract"]["target_contracts"]
+    }
+    nodes = {
+        (int(row["cct"]), int(row["gm"])): row for row in report["nodes"]
+    }
+    if (
+        len(nodes) != int(report.get("node_count", -1))
+        or set(nodes) != set(source_contracts)
+        or int(recovery.get("combined_capture_count", -1)) != int(report.get("capture_count", -2))
+    ):
+        raise ValueError("GUIDE9 candidate analysis differs from the frozen target or capture set")
+
+    steps_by_target: dict[tuple[int, int], list[Mapping[str, Any]]] = {}
+    for step in plan["captures"]:
+        key = (int(step["target_cct"]), int(step["target_gm"]))
+        steps_by_target.setdefault(key, []).append(step)
+    contracts = []
+    captures = []
+    for target_index, key in enumerate(sorted(source_contracts)):
+        source_contract = source_contracts[key]
+        node = nodes[key]
+        command = {
+            channel: int(node["candidate"]["command"][channel]) for channel in thermal.CHANNELS
+        }
+        if set(node["candidate"]["command"]) != set(thermal.CHANNELS) or any(
+            value < 0 or value > 4095 for value in command.values()
+        ):
+            raise ValueError("GUIDE9 candidate command is outside the five-channel bounds")
+        active = str(source_contract["active_channel"])
+        if command[active] != int(source_contract["base_command"][active]):
+            raise ValueError("GUIDE9 candidate changed the frozen full-scale active channel")
+        contract = copy.deepcopy(dict(source_contract))
+        contract.update({
+            "target_index": target_index,
+            "strip_command": command,
+            "source_order": ["ray", "strip"],
+            "candidate_owner": "recovered_19_node_current_session_local_probe_jacobian",
+        })
+        contracts.append(contract)
+
+        source_steps = steps_by_target.get(key, [])
+        ray_steps = [step for step in source_steps if step["role"] == "ray_reference"]
+        strip_steps = [step for step in source_steps if step["role"] == "strip_base"]
+        if len(ray_steps) != 1 or len(strip_steps) != 1:
+            raise ValueError("GUIDE9 candidate plan lacks one Ray/base template per target")
+        for source, template in (("ray", ray_steps[0]), ("strip", strip_steps[0])):
+            index = len(captures)
+            step = copy.deepcopy(dict(template))
+            step.update({
+                "capture_id": (
+                    f"{index:03d}-{source}-guide9-white70-local-probe-candidate-"
+                    f"cct{key[0]}-gm{key[1]}"
+                ),
+                "role": "ray_reference" if source == "ray" else "strip_candidate",
+                "session_index": index + 1,
+                "source_order": 1 if source == "ray" else 2,
+            })
+            if source == "strip":
+                step["command"] = command
+                step["exact_command_hash"] = thermal.canonical_sha256(command)
+            captures.append(step)
+
+    frozen_shutters = {
+        str(step["exposure_cache_key"]): str(step["nominal_shutter"]) for step in captures
+    }
+    plan.update({
+        "guide_experiment_id": thermal.GUIDE9_WHITE_LOCAL_JAC_EXPERIMENT_ID,
+        "variant": thermal.GUIDE9_WHITE_LOCAL_JAC_VARIANT,
+        "stage": "GUIDE9-WHITE70-LOCAL-PROBE-CANDIDATES",
+        "captures": captures,
+        "capture_ids": [step["capture_id"] for step in captures],
+        "frozen_shutters": frozen_shutters,
+        "shutter_ledger_provenance": {
+            "owner": "experiment_capture_steps",
+            "required_cache_keys": sorted(frozen_shutters),
+            "frozen_shutters_sha256": _canonical_sha256(frozen_shutters),
+        },
+        "budgets": {
+            "ray_cap": len(contracts), "strip_cap": len(contracts),
+            "formal_cap": len(captures), "physical_cr3_cap": len(captures),
+            "ambient_cap": 0, "retry": 0,
+        },
+        "inputs": _current_input_references(plan, Path(data_root).resolve()),
+        "execution_authorization": {
+            **plan["execution_authorization"],
+            "schema": "direct_guide9_white_local_jacobian_v1",
+            "experiment_id": thermal.GUIDE9_WHITE_LOCAL_JAC_EXPERIMENT_ID,
+            "human_authorization_experiment_id": None,
+        },
+        "analysis_contract": {
+            **plan["analysis_contract"],
+            "method": "white70_recovered_local_probe_candidates",
+            "target_contracts": contracts,
+            "parent_analysis": {
+                "path": str(analysis_path),
+                "sha256": hashlib.sha256(analysis_path.read_bytes()).hexdigest(),
+            },
+            "pass_next": "GUIDE9_WHITE70_LOCAL_NODE_CORRECTION_CONTINUE",
+            "failure_next": "GUIDE9_WHITE70_LOCAL_PROBE_REASSESSMENT",
+            "global_model_refit": False,
+        },
+        "candidate_contract": {
+            "schema": "guide9_white70_recovered_local_probe_candidates_v1",
+            "node_count": len(contracts), "capture_count": len(captures),
+            "parent_root": str(parent_path), "paired_validation": True,
+            "global_model_refit": False, "default_lut_installation": False,
+        },
+    })
+    measure.validate_authorized_execution_plan(plan)
+    return plan
+
+
 def combine_and_analyze(parent_root: str | Path, suffix_root: str | Path, *, output: str | Path) -> Path:
     retained = validate_prefix(parent_root)
     suffix_path = Path(suffix_root).resolve()
@@ -245,6 +377,14 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     combine_parser.add_argument("--parent-root", type=Path, required=True)
     combine_parser.add_argument("--suffix-root", type=Path, required=True)
     combine_parser.add_argument("--output", type=Path, required=True)
+    for name in ("inspect-candidates", "run-candidates"):
+        candidate_parser = commands.add_parser(name)
+        candidate_parser.add_argument("--parent-root", type=Path, required=True)
+        candidate_parser.add_argument("--analysis", type=Path, required=True)
+        candidate_parser.add_argument("--data-root", type=Path, required=True)
+        if name == "run-candidates":
+            candidate_parser.add_argument("--output-dir", type=Path, required=True)
+            candidate_parser.add_argument("--run-name", required=True)
     return parser.parse_args(argv)
 
 
@@ -259,6 +399,21 @@ def main(argv: Sequence[str] | None = None) -> int:
         plan = build_suffix_plan(args.parent_root, data_root=args.data_root)
         backend = camera_remote.create_camera_backend("remote")
         print(measure.run_authorized_plan(plan, output_dir=args.output_dir, run_name=args.run_name, camera_backend=backend))
+        return 0
+    if args.command in {"inspect-candidates", "run-candidates"}:
+        plan = build_candidate_plan(args.parent_root, args.analysis, data_root=args.data_root)
+        if args.command == "inspect-candidates":
+            print(json.dumps({
+                "status": "ready", "stage": plan["stage"],
+                "node_count": plan["candidate_contract"]["node_count"],
+                "capture_count": plan["candidate_contract"]["capture_count"],
+                "parent_analysis": plan["analysis_contract"]["parent_analysis"],
+            }, indent=2))
+            return 0
+        backend = camera_remote.create_camera_backend("remote")
+        print(measure.run_authorized_plan(
+            plan, output_dir=args.output_dir, run_name=args.run_name, camera_backend=backend,
+        ))
         return 0
     print(combine_and_analyze(args.parent_root, args.suffix_root, output=args.output))
     return 0

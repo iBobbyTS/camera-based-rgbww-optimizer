@@ -18,6 +18,15 @@
 - Run the frozen local-probe analyzer once on exactly 114 unique observations.
   Generate one candidate per node; do not refit the global model or modify the
   default LUT.
+- Recovery suffix completed 29/29 with quality, source isolation, cleanup and
+  independent final zero passing. The exact 85+29 observations produced 19
+  preregistered candidates; recovered analysis SHA-256 is
+  `19522c01d399fadc0edb85eb7ba3a6b4b400b845f50209e12247a69df244fa1f`.
+- Execute `GUIDE9-WHITE70-LOCAL-PROBE-CANDIDATES`: one Ray reference and one
+  preregistered strip candidate for each of the 19 nodes, 38 formal captures,
+  using the frozen per-node shutters, reset/dwell and source-isolation contract.
+  This paired validation does not refit the global model or modify the default
+  LUT.
 - Keep interpolation holdout, HSI grid, boundary, Gate-6, P8 and LUT installation
   locked until the local candidates pass their paired validation.
 
