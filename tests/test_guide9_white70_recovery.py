@@ -185,6 +185,7 @@ class Guide9White70RecoveryTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "full-scale active channel"):
                 recovery.build_candidate_plan(parent, analysis, data_root=root)
 
+
     def test_combine_analyze_uses_exact_suffix_and_portable_paths(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

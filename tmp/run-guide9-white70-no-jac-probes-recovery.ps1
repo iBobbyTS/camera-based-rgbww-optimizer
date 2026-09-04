@@ -5,7 +5,8 @@ param(
     [string]$SuffixRunName = '20260901-19-node-probes-rerun7-suffix',
     [string]$CandidateRunName = '20260903-19-node-local-probe-candidates-r1',
     [string]$CandidateAnalysisPath = 'D:\rgbww-optimizer\guide9-white70-no-jac-probes-20260829\20260903-19-node-local-probe-candidates-analysis.json',
-    [ValidateSet('Inspect', 'RunSuffix', 'CombineAnalyze', 'InspectCandidates', 'RunCandidates', 'AnalyzeCandidates')]
+    [string]$ReassessmentRunName = '20260904-3-node-local-probe-reassessment-r1',
+    [ValidateSet('Inspect', 'RunSuffix', 'CombineAnalyze', 'InspectCandidates', 'RunCandidates', 'AnalyzeCandidates', 'RunReassessment')]
     [string]$Action = 'Inspect'
 )
 
@@ -50,6 +51,13 @@ try {
             & $python -m camera_based_rgbww_optimizer.optimization.guide9_white70_recovery `
                 analyze-candidates --run-root (Join-Path $runParent $CandidateRunName) `
                 --output $CandidateAnalysisPath
+        }
+        'RunReassessment' {
+            & $python -m camera_based_rgbww_optimizer.optimization.guide9_white70_recovery `
+                run-reassessment --candidate-root (Join-Path $runParent $CandidateRunName) `
+                --candidate-analysis $CandidateAnalysisPath `
+                --probe-analysis $analysis --data-root $DataRoot --output-dir $runParent `
+                --run-name $ReassessmentRunName
         }
     }
     if ($LASTEXITCODE -ne 0) { throw "GUIDE9 recovery action failed with exit code $LASTEXITCODE" }

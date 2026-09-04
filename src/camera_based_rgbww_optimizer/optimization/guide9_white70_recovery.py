@@ -11,6 +11,7 @@ from camera_based_rgbww_optimizer.control import camera_remote
 from camera_based_rgbww_optimizer.optimization import analyze_p7_thermal_diagnostics as analyze
 from camera_based_rgbww_optimizer.optimization import measure_p7_thermal_diagnostics as measure
 from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
+from camera_based_rgbww_optimizer.optimization import white_lut_feedback
 
 
 RECOVERY_SCHEMA = "guide9_white70_no_jacobian_probe_suffix_v1"
@@ -387,6 +388,65 @@ def analyze_candidate_run(run_root: str | Path, *, output: str | Path) -> Path:
     return output_path
 
 
+def build_reassessment_plan(
+    candidate_root: str | Path, candidate_analysis: str | Path, probe_analysis: str | Path,
+    *, data_root: str | Path,
+) -> dict[str, Any]:
+    plan = _load_json(Path(candidate_root).resolve() / "experiment-spec.json")
+    current = _load_json(Path(candidate_analysis).resolve())
+    probes = _load_json(Path(probe_analysis).resolve())
+    failed = {(int(row["cct"]), int(row["gm"])): row for row in current["nodes"] if row["status"] == "fail"}
+    if not failed or len(failed) > 3:
+        raise ValueError("GUIDE9 reassessment requires the bounded current failed-node set")
+    old = {(int(row["cct"]), int(row["gm"])): row for row in probes["nodes"]}
+    contracts_by_key = {(int(row["cct"]), int(row["gm"])): row for row in plan["analysis_contract"]["target_contracts"]}
+    captures_by_key: dict[tuple[int, int], list[Mapping[str, Any]]] = {}
+    for step in plan["captures"]:
+        captures_by_key.setdefault((int(step["target_cct"]), int(step["target_gm"])), []).append(step)
+    contracts, captures = [], []
+    for index, key in enumerate(sorted(failed)):
+        contract = copy.deepcopy(dict(contracts_by_key[key]))
+        node, previous = failed[key], old[key]
+        command = white_lut_feedback.solve_damped_step(
+            node["strip_command"], node["strip"]["white_point"], node["ray"]["white_point"],
+            previous["local_jacobian"], active_channel=str(contract["active_channel"]),
+            cct_tolerance_K=float(contract["resolved_cct_tolerance_K"]),
+            duv_tolerance=float(contract["duv_tolerance"]), max_code=4095,
+            max_step_code=int(contract["maximum_step_code"]), damping=float(contract["damping"]),
+            rgb_penalty=0.0, channel_penalties=contract["channel_penalties"],
+        )["command"]
+        contract.update({"target_index": index, "strip_command": command, "source_order": ["ray", "strip"], "candidate_owner": "failed_candidate_local_jacobian_reassessment"})
+        contracts.append(contract)
+        templates = captures_by_key[key]
+        ray = next(step for step in templates if step["source_id"] == "ray")
+        for source, template in (("ray", ray), ("strip", ray)):
+            step = copy.deepcopy(dict(template))
+            step.update({"capture_id": f"{len(captures):03d}-{source}-guide9-white70-reassessment-cct{key[0]}-gm{key[1]}", "source_id": source, "role": "ray_reference" if source == "ray" else "strip_candidate", "source_order": 1 if source == "ray" else 2, "session_index": len(captures) + 1})
+            if source == "strip":
+                strip_template = next(item for item in templates if item["source_id"] == "strip")
+                step.update({"nominal_shutter": strip_template["nominal_shutter"], "exposure_cache_key": strip_template["exposure_cache_key"], "command": command, "exact_command_hash": thermal.canonical_sha256(command), "ray_zero_required": True, "strip_zero_required": False})
+            captures.append(step)
+    plan.update({
+        "experiment_id": thermal.TD_C,
+        "guide_experiment_id": thermal.GUIDE9_WHITE_LOCAL_CONFIRM2_EXPERIMENT_ID,
+        "variant": thermal.GUIDE9_WHITE_LOCAL_CONFIRM2_VARIANT,
+        "stage": "GUIDE9-WHITE70-LOCAL-PROBE-REASSESSMENT",
+        "captures": captures, "capture_ids": [step["capture_id"] for step in captures],
+        "budgets": {"ray_cap": len(contracts), "strip_cap": len(contracts), "formal_cap": len(captures), "physical_cr3_cap": len(captures), "ambient_cap": 0, "retry": 0},
+        "frozen_shutters": {str(step["exposure_cache_key"]): str(step["nominal_shutter"]) for step in captures},
+        "execution_authorization": {**plan["execution_authorization"], "schema": "direct_guide9_white_local_confirm2_v1", "experiment_id": thermal.GUIDE9_WHITE_LOCAL_CONFIRM2_EXPERIMENT_ID, "human_authorization_experiment_id": None},
+        "analysis_contract": {**plan["analysis_contract"], "method": "white70_failed_node_local_jacobian_reassessment", "target_contracts": contracts, "parent_analysis": {"path": str(Path(candidate_analysis).resolve()), "sha256": hashlib.sha256(Path(candidate_analysis).read_bytes()).hexdigest()}, "pass_next": "GUIDE9_WHITE70_LOCAL_NODE_CORRECTION_CONTINUE", "failure_next": "GUIDE9_WHITE70_LOCAL_PROBE_REASSESSMENT", "global_model_refit": False},
+        "candidate_contract": {"schema": "guide9_white70_reassessment_v1", "node_count": len(contracts), "capture_count": len(captures), "paired_validation": True, "global_model_refit": False, "default_lut_installation": False},
+        "inputs": _current_input_references(plan, Path(data_root).resolve()),
+    })
+    plan["native_raw_ambient_policy"] = thermal.expected_native_raw_ambient_policy(
+        thermal.TD_C, plan_schema=plan["schema"],
+    )
+    plan["shutter_ledger_provenance"] = {"owner": "experiment_capture_steps", "required_cache_keys": sorted(plan["frozen_shutters"]), "frozen_shutters_sha256": _canonical_sha256(plan["frozen_shutters"])}
+    measure.validate_authorized_execution_plan(plan)
+    return plan
+
+
 def combine_and_analyze(parent_root: str | Path, suffix_root: str | Path, *, output: str | Path) -> Path:
     retained = validate_prefix(parent_root)
     suffix_path = Path(suffix_root).resolve()
@@ -451,6 +511,13 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     analyze_parser = commands.add_parser("analyze-candidates")
     analyze_parser.add_argument("--run-root", type=Path, required=True)
     analyze_parser.add_argument("--output", type=Path, required=True)
+    reassess_parser = commands.add_parser("run-reassessment")
+    reassess_parser.add_argument("--candidate-root", type=Path, required=True)
+    reassess_parser.add_argument("--candidate-analysis", type=Path, required=True)
+    reassess_parser.add_argument("--probe-analysis", type=Path, required=True)
+    reassess_parser.add_argument("--data-root", type=Path, required=True)
+    reassess_parser.add_argument("--output-dir", type=Path, required=True)
+    reassess_parser.add_argument("--run-name", required=True)
     return parser.parse_args(argv)
 
 
@@ -483,6 +550,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
     if args.command == "analyze-candidates":
         print(analyze_candidate_run(args.run_root, output=args.output))
+        return 0
+    if args.command == "run-reassessment":
+        plan = build_reassessment_plan(args.candidate_root, args.candidate_analysis, args.probe_analysis, data_root=args.data_root)
+        backend = camera_remote.create_camera_backend("remote")
+        print(measure.run_authorized_plan(plan, output_dir=args.output_dir, run_name=args.run_name, camera_backend=backend))
         return 0
     print(combine_and_analyze(args.parent_root, args.suffix_root, output=args.output))
     return 0
