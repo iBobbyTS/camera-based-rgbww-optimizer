@@ -27,6 +27,14 @@
   using the frozen per-node shutters, reset/dwell and source-isolation contract.
   This paired validation does not refit the global model or modify the default
   LUT.
+- Candidate validation completed 38/38 with quality, source isolation, cleanup
+  and final zero passing. Sixteen of nineteen nodes passed the strict paired
+  gate; a bounded reassessment of the remaining three nodes completed 6/6 and
+  passed all three (`2000/GM0`, `10000/GM70`, `20000/GM130`). Reassessment
+  analysis SHA-256 is `2a057601cbb5be61d036567f9599ae61167ac75dc9980daa966e42c7bba163c6`.
+- The next route is `GUIDE9_WHITE70_LOCAL_NODE_CORRECTION_CONTINUE`; no global
+  refit, default LUT mutation, interpolation holdout, HSI grid, boundary,
+  Gate-6 or P8 action has been started.
 - Keep interpolation holdout, HSI grid, boundary, Gate-6, P8 and LUT installation
   locked until the local candidates pass their paired validation.
 
