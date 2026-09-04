@@ -223,6 +223,11 @@ def build_candidate_plan(
         or int(recovery.get("combined_capture_count", -1)) != int(report.get("capture_count", -2))
     ):
         raise ValueError("GUIDE9 candidate analysis differs from the frozen target or capture set")
+    baseline = _load_json(thermal.GUIDE9_WHITE_70_CANDIDATE_PATH)
+    baseline_goals = {
+        (int(row["cct"]), int(row["gm"])): row["feedback_goal"]
+        for row in baseline["targets"]
+    }
 
     steps_by_target: dict[tuple[int, int], list[Mapping[str, Any]]] = {}
     for step in plan["captures"]:
@@ -244,6 +249,11 @@ def build_candidate_plan(
         if command[active] != int(source_contract["base_command"][active]):
             raise ValueError("GUIDE9 candidate changed the frozen full-scale active channel")
         contract = copy.deepcopy(dict(source_contract))
+        if "cct_tolerance_mired" not in contract:
+            try:
+                contract["cct_tolerance_mired"] = float(baseline_goals[key]["cct_tolerance_mired"])
+            except KeyError as exc:
+                raise ValueError("GUIDE9 candidate target lacks its frozen mired tolerance") from exc
         contract.update({
             "target_index": target_index,
             "strip_command": command,
@@ -345,10 +355,23 @@ def analyze_candidate_run(run_root: str | Path, *, output: str | Path) -> Path:
         enriched["run_root"] = str(root)
         formal_rows.append(enriched)
     feature_ids = analyze._feature_ids_from_artifact(thermal.POLICY_PATH)
+    baseline = _load_json(thermal.GUIDE9_WHITE_70_CANDIDATE_PATH)
+    baseline_goals = {
+        (int(row["cct"]), int(row["gm"])): row["feedback_goal"]
+        for row in baseline["targets"]
+    }
+    target_contracts = []
+    for source_contract in plan["analysis_contract"]["target_contracts"]:
+        contract = copy.deepcopy(dict(source_contract))
+        if "cct_tolerance_mired" not in contract:
+            contract["cct_tolerance_mired"] = float(
+                baseline_goals[(int(contract["cct"]), int(contract["gm"]))]["cct_tolerance_mired"]
+            )
+        target_contracts.append(contract)
     result = analyze.analyze_guide9_white12(
         formal_rows,
         feature_ids=feature_ids,
-        target_contracts=plan["analysis_contract"]["target_contracts"],
+        target_contracts=target_contracts,
         pass_next=str(plan["analysis_contract"].get("pass_next", "GUIDE9_WHITE70_LOCAL_NODE_CORRECTION_CONTINUE")),
         failure_next=str(plan["analysis_contract"].get("failure_next", "GUIDE9_WHITE70_LOCAL_PROBE_REASSESSMENT")),
     )

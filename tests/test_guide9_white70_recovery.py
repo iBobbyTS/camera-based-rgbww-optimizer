@@ -157,6 +157,7 @@ class Guide9White70RecoveryTests(unittest.TestCase):
         self.assertEqual(result["analysis_contract"]["target_contracts"][0]["source_order"], ["ray", "strip"])
         self.assertEqual(result["candidate_contract"]["node_count"], 1)
         self.assertEqual(result["experiment_id"], "GUIDE9_WHITE12_LOCAL_JACOBIAN_CANDIDATES_V1")
+        self.assertEqual(result["analysis_contract"]["target_contracts"][0]["cct_tolerance_mired"], 1.0)
 
     def test_build_candidate_plan_rejects_candidate_that_changes_active_channel(self):
         with tempfile.TemporaryDirectory() as temporary:
