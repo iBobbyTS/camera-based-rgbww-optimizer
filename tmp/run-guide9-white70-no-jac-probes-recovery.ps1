@@ -4,7 +4,8 @@ param(
     [string]$ParentRunName = '20260829-19-node-probes-rerun7',
     [string]$SuffixRunName = '20260901-19-node-probes-rerun7-suffix',
     [string]$CandidateRunName = '20260903-19-node-local-probe-candidates-r1',
-    [ValidateSet('Inspect', 'RunSuffix', 'CombineAnalyze', 'InspectCandidates', 'RunCandidates')]
+    [string]$CandidateAnalysisPath = 'D:\rgbww-optimizer\guide9-white70-no-jac-probes-20260829\20260903-19-node-local-probe-candidates-analysis.json',
+    [ValidateSet('Inspect', 'RunSuffix', 'CombineAnalyze', 'InspectCandidates', 'RunCandidates', 'AnalyzeCandidates')]
     [string]$Action = 'Inspect'
 )
 
@@ -44,6 +45,11 @@ try {
             & $python -m camera_based_rgbww_optimizer.optimization.guide9_white70_recovery `
                 run-candidates --parent-root $parentRoot --analysis $analysis --data-root $DataRoot `
                 --output-dir $runParent --run-name $CandidateRunName
+        }
+        'AnalyzeCandidates' {
+            & $python -m camera_based_rgbww_optimizer.optimization.guide9_white70_recovery `
+                analyze-candidates --run-root (Join-Path $runParent $CandidateRunName) `
+                --output $CandidateAnalysisPath
         }
     }
     if ($LASTEXITCODE -ne 0) { throw "GUIDE9 recovery action failed with exit code $LASTEXITCODE" }

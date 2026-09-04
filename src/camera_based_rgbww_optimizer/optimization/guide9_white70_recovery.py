@@ -278,6 +278,7 @@ def build_candidate_plan(
         str(step["exposure_cache_key"]): str(step["nominal_shutter"]) for step in captures
     }
     plan.update({
+        "experiment_id": thermal.GUIDE9_WHITE_LOCAL_JAC_EXPERIMENT_ID,
         "guide_experiment_id": thermal.GUIDE9_WHITE_LOCAL_JAC_EXPERIMENT_ID,
         "variant": thermal.GUIDE9_WHITE_LOCAL_JAC_VARIANT,
         "stage": "GUIDE9-WHITE70-LOCAL-PROBE-CANDIDATES",
@@ -322,6 +323,45 @@ def build_candidate_plan(
     })
     measure.validate_authorized_execution_plan(plan)
     return plan
+
+
+def analyze_candidate_run(run_root: str | Path, *, output: str | Path) -> Path:
+    root = Path(run_root).resolve()
+    run = _load_json(root / "run.json")
+    if run.get("status") != "complete" or run.get("cleanup") != "pass":
+        raise ValueError("GUIDE9 candidate run is not complete with passing cleanup")
+    if (root / "failure.json").exists():
+        raise ValueError("GUIDE9 candidate run contains failure evidence")
+    plan = _load_json(root / "experiment-spec.json")
+    captures = _load_jsonl(root / "captures.jsonl")
+    if len(captures) != int(plan["candidate_contract"]["capture_count"]):
+        raise ValueError("GUIDE9 candidate capture count differs from its frozen plan")
+    formal_rows = []
+    for row in captures:
+        enriched = dict(row)
+        capture = dict(row["capture"])
+        enriched["feature_values"] = capture["feature_values"]
+        enriched["engineering_quality_status"] = "pass"
+        enriched["run_root"] = str(root)
+        formal_rows.append(enriched)
+    feature_ids = analyze._feature_ids_from_artifact(thermal.POLICY_PATH)
+    result = analyze.analyze_guide9_white12(
+        formal_rows,
+        feature_ids=feature_ids,
+        target_contracts=plan["analysis_contract"]["target_contracts"],
+        pass_next=str(plan["analysis_contract"].get("pass_next", "GUIDE9_WHITE70_LOCAL_NODE_CORRECTION_CONTINUE")),
+        failure_next=str(plan["analysis_contract"].get("failure_next", "GUIDE9_WHITE70_LOCAL_PROBE_REASSESSMENT")),
+    )
+    result["candidate_validation_evidence"] = {
+        "schema": "guide9_white70_local_probe_candidates_run_v1",
+        "run_root": str(root), "capture_count": len(formal_rows),
+        "node_count": result["node_count"], "global_model_refit": False,
+        "default_lut_installation": False,
+    }
+    output_path = Path(output).resolve()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    _write_json(output_path, result)
+    return output_path
 
 
 def combine_and_analyze(parent_root: str | Path, suffix_root: str | Path, *, output: str | Path) -> Path:
@@ -385,6 +425,9 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         if name == "run-candidates":
             candidate_parser.add_argument("--output-dir", type=Path, required=True)
             candidate_parser.add_argument("--run-name", required=True)
+    analyze_parser = commands.add_parser("analyze-candidates")
+    analyze_parser.add_argument("--run-root", type=Path, required=True)
+    analyze_parser.add_argument("--output", type=Path, required=True)
     return parser.parse_args(argv)
 
 
@@ -414,6 +457,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(measure.run_authorized_plan(
             plan, output_dir=args.output_dir, run_name=args.run_name, camera_backend=backend,
         ))
+        return 0
+    if args.command == "analyze-candidates":
+        print(analyze_candidate_run(args.run_root, output=args.output))
         return 0
     print(combine_and_analyze(args.parent_root, args.suffix_root, output=args.output))
     return 0
