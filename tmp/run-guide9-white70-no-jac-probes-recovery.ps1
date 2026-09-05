@@ -6,7 +6,9 @@ param(
     [string]$CandidateRunName = '20260903-19-node-local-probe-candidates-r1',
     [string]$CandidateAnalysisPath = 'D:\rgbww-optimizer\guide9-white70-no-jac-probes-20260829\20260903-19-node-local-probe-candidates-analysis.json',
     [string]$ReassessmentRunName = '20260904-3-node-local-probe-reassessment-r1',
-    [ValidateSet('Inspect', 'RunSuffix', 'CombineAnalyze', 'InspectCandidates', 'RunCandidates', 'AnalyzeCandidates', 'RunReassessment')]
+    [string]$ResumeRunRoot,
+    [string]$ResumeRunName = 'resume-r1',
+    [ValidateSet('Inspect', 'RunSuffix', 'CombineAnalyze', 'InspectCandidates', 'RunCandidates', 'AnalyzeCandidates', 'RunReassessment', 'Resume')]
     [string]$Action = 'Inspect'
 )
 
@@ -17,6 +19,7 @@ $runParent = Join-Path $DataRoot 'guide9-white70-no-jac-probes-20260829'
 $parentRoot = Join-Path $runParent $ParentRunName
 $suffixRoot = Join-Path $runParent $SuffixRunName
 $analysis = Join-Path $runParent 'guide9-white70-no-jac-probes-recovered-analysis.json'
+$resumeRoot = if ($ResumeRunRoot) { $ResumeRunRoot } else { $parentRoot }
 
 if (-not (Test-Path -LiteralPath $python)) {
     throw "Windows experiment Python is missing: $python"
@@ -33,6 +36,11 @@ try {
             & $python -m camera_based_rgbww_optimizer.optimization.guide9_white70_recovery `
                 run-suffix --parent-root $parentRoot --data-root $DataRoot `
                 --output-dir $runParent --run-name $SuffixRunName
+        }
+        'Resume' {
+            & $python -m camera_based_rgbww_optimizer.optimization.guide9_white70_recovery `
+                resume --run-root $resumeRoot --data-root $DataRoot `
+                --output-dir $runParent --run-name $ResumeRunName
         }
         'CombineAnalyze' {
             & $python -m camera_based_rgbww_optimizer.optimization.guide9_white70_recovery `

@@ -15,6 +15,7 @@ from camera_based_rgbww_optimizer.optimization import white_lut_feedback
 
 
 RECOVERY_SCHEMA = "guide9_white70_no_jacobian_probe_suffix_v1"
+CHECKPOINT_SCHEMA = "guide9_checkpoint_resume_v1"
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -132,6 +133,82 @@ def build_suffix_plan(parent_root: str | Path, *, data_root: str | Path) -> dict
         "combined_capture_count": int(retained["total_count"]),
         "duplicate_capture_count": 0,
         "global_model_refit": False,
+    }
+    measure.validate_authorized_execution_plan(plan)
+    return plan
+
+
+def validate_checkpoint(run_root: str | Path) -> dict[str, Any]:
+    """Validate an interrupted run as an immutable capture prefix.
+
+    The original root is never mutated or resumed in place.  A resume plan is
+    emitted for the missing suffix so every accepted observation keeps its
+    original identity and files.
+    """
+    root = Path(run_root).resolve()
+    plan = _load_json(root / "experiment-spec.json")
+    run = _load_json(root / "run.json")
+    captures = _load_jsonl(root / "captures.jsonl")
+    physical = _load_jsonl(root / "physical-returns.jsonl")
+    expected_ids = [str(value) for value in plan.get("capture_ids", ())]
+    capture_ids = [str(row.get("capture_id")) for row in captures]
+    physical_ids = [str(row.get("capture_id")) for row in physical]
+    if not expected_ids:
+        raise ValueError("GUIDE9 checkpoint lacks frozen capture IDs")
+    if capture_ids != expected_ids[:len(captures)] or physical_ids != capture_ids:
+        raise ValueError("GUIDE9 checkpoint ledgers are not an exact frozen prefix")
+    if len(captures) != len(physical):
+        raise ValueError("GUIDE9 checkpoint capture and physical ledgers differ")
+    accepted = int(run.get("accepted_formal_count", -1))
+    if accepted != len(captures):
+        raise ValueError("GUIDE9 checkpoint accepted count differs from captures")
+    status = str(run.get("status", ""))
+    if status == "complete":
+        raise ValueError("GUIDE9 checkpoint is already complete")
+    if len(captures) >= len(expected_ids):
+        raise ValueError("GUIDE9 checkpoint has no missing suffix")
+    return {
+        "root": root, "plan": plan, "run": run, "captures": captures,
+        "physical": physical, "prefix_count": len(captures),
+        "total_count": len(expected_ids),
+        "remaining_count": len(expected_ids) - len(captures),
+        "first_missing_capture_id": expected_ids[len(captures)],
+    }
+
+
+def build_resume_plan(run_root: str | Path, *, data_root: str | Path) -> dict[str, Any]:
+    """Build a bounded new-root plan for the missing suffix of a checkpoint."""
+    retained = validate_checkpoint(run_root)
+    plan = copy.deepcopy(retained["plan"])
+    prefix_count = int(retained["prefix_count"])
+    suffix = list(plan["captures"])[prefix_count:]
+    if not suffix:
+        raise ValueError("GUIDE9 checkpoint has no resumable steps")
+    plan["captures"] = suffix
+    plan["capture_ids"] = [str(step["capture_id"]) for step in suffix]
+    plan["budgets"] = {
+        "ray_cap": sum(step["source_id"] == "ray" for step in suffix),
+        "strip_cap": sum(step["source_id"] == "strip" for step in suffix),
+        "formal_cap": len(suffix), "physical_cr3_cap": len(suffix),
+        "ambient_cap": 0, "retry": 0,
+    }
+    plan["frozen_shutters"] = {
+        str(step["exposure_cache_key"]): str(step["nominal_shutter"])
+        for step in suffix
+    }
+    plan["shutter_ledger_provenance"] = {
+        "owner": "experiment_capture_steps",
+        "required_cache_keys": sorted(plan["frozen_shutters"]),
+        "frozen_shutters_sha256": _canonical_sha256(plan["frozen_shutters"]),
+    }
+    plan["inputs"] = _current_input_references(plan, Path(data_root).resolve())
+    plan["recovery_contract"] = {
+        "schema": CHECKPOINT_SCHEMA, "parent_root": str(retained["root"]),
+        "parent_capture_count": prefix_count,
+        "parent_last_capture_id": retained["captures"][-1]["capture_id"] if prefix_count else None,
+        "first_missing_capture_id": retained["first_missing_capture_id"],
+        "suffix_capture_count": len(suffix), "combined_capture_count": retained["total_count"],
+        "duplicate_capture_count": 0, "global_model_refit": False,
     }
     measure.validate_authorized_execution_plan(plan)
     return plan
@@ -496,6 +573,11 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     run_parser.add_argument("--data-root", type=Path, required=True)
     run_parser.add_argument("--output-dir", type=Path, required=True)
     run_parser.add_argument("--run-name", required=True)
+    resume_parser = commands.add_parser("resume")
+    resume_parser.add_argument("--run-root", type=Path, required=True)
+    resume_parser.add_argument("--data-root", type=Path, required=True)
+    resume_parser.add_argument("--output-dir", type=Path, required=True)
+    resume_parser.add_argument("--run-name", required=True)
     combine_parser = commands.add_parser("combine-analyze")
     combine_parser.add_argument("--parent-root", type=Path, required=True)
     combine_parser.add_argument("--suffix-root", type=Path, required=True)
@@ -530,6 +612,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
     if args.command == "run-suffix":
         plan = build_suffix_plan(args.parent_root, data_root=args.data_root)
+        backend = camera_remote.create_camera_backend("remote")
+        print(measure.run_authorized_plan(plan, output_dir=args.output_dir, run_name=args.run_name, camera_backend=backend))
+        return 0
+    if args.command == "resume":
+        plan = build_resume_plan(args.run_root, data_root=args.data_root)
         backend = camera_remote.create_camera_backend("remote")
         print(measure.run_authorized_plan(plan, output_dir=args.output_dir, run_name=args.run_name, camera_backend=backend))
         return 0

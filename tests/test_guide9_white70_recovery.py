@@ -111,6 +111,30 @@ class Guide9White70RecoveryTests(unittest.TestCase):
         self.assertEqual(suffix["budgets"]["strip_cap"], 1)
         self.assertEqual(suffix["recovery_contract"]["parent_capture_count"], 2)
 
+    def test_build_resume_plan_slices_an_interrupted_checkpoint(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            parent = self.make_parent(Path(temporary))
+            run = json.loads((parent / "run.json").read_text())
+            run["status"] = "running"
+            write_json(parent / "run.json", run)
+            with patch.object(recovery, "_current_input_references", return_value={}), patch.object(
+                recovery.measure, "validate_authorized_execution_plan",
+            ):
+                resumed = recovery.build_resume_plan(parent, data_root=Path(temporary))
+        self.assertEqual(resumed["capture_ids"], ["002-strip-sample"])
+        self.assertEqual(resumed["budgets"]["formal_cap"], 1)
+        self.assertEqual(resumed["recovery_contract"]["schema"], recovery.CHECKPOINT_SCHEMA)
+        self.assertEqual(resumed["recovery_contract"]["parent_capture_count"], 2)
+
+    def test_validate_checkpoint_rejects_completed_root(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            parent = self.make_parent(Path(temporary))
+            run = json.loads((parent / "run.json").read_text())
+            run["status"] = "complete"
+            write_json(parent / "run.json", run)
+            with self.assertRaisesRegex(ValueError, "already complete"):
+                recovery.validate_checkpoint(parent)
+
     def test_build_candidate_plan_creates_one_exact_pair_per_analysis_node(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

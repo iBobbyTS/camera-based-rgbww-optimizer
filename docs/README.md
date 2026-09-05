@@ -1410,6 +1410,20 @@ root. `CombineAnalyze` maps retained `/Volumes/4T/...` paths to the correspondin
 Windows run directories without mutating the old evidence, verifies the exact
 combined capture order, and runs the frozen local-probe analyzer.
 
+中断的 Windows 运行可从严格的已接受 prefix 恢复到唯一新 root；原 root
+不会被改写：
+
+```powershell
+pwsh -File tmp/run-guide9-white70-no-jac-probes-recovery.ps1 `
+  -Action Resume `
+  -ResumeRunRoot D:\rgbww-optimizer\<experiment>\<interrupted-run> `
+  -ResumeRunName <unique-resume-run>
+```
+
+`Resume` 会校验 `captures.jsonl` 与 `physical-returns.jsonl` 是冻结
+`capture_ids` 的严格前缀、`run.json` 不是已完成状态，并只执行缺失 suffix。
+已完成 root、重复或错位 ledger 会在设备访问前拒绝。
+
 Run:
 
 ```bash
