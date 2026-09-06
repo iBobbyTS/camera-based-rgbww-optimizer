@@ -16,6 +16,7 @@ from camera_based_rgbww_optimizer.optimization import white_lut_feedback
 
 RECOVERY_SCHEMA = "guide9_white70_no_jacobian_probe_suffix_v1"
 CHECKPOINT_SCHEMA = "guide9_checkpoint_resume_v1"
+REMAINING_PROBE_SCHEMA = "guide9_white_local_probes_remaining_suffix_v1"
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -209,6 +210,50 @@ def build_resume_plan(run_root: str | Path, *, data_root: str | Path) -> dict[st
         "first_missing_capture_id": retained["first_missing_capture_id"],
         "suffix_capture_count": len(suffix), "combined_capture_count": retained["total_count"],
         "duplicate_capture_count": 0, "global_model_refit": False,
+    }
+    measure.validate_authorized_execution_plan(plan)
+    return plan
+
+
+def build_remaining_probe_plan(*, prefix_root: str | Path, data_root: str | Path) -> dict[str, Any]:
+    """Freeze the two clean remaining blocks after the rejected dark Ray frame."""
+    prefix = Path(prefix_root).resolve()
+    run = _load_json(prefix / "run.json")
+    if int(run.get("accepted_formal_count", -1)) != 24 or run.get("cleanup") != "pass":
+        raise ValueError("remaining probe recovery requires the accepted 24-capture prefix")
+    failure = _load_json(prefix / "failure.json")
+    rejected = failure.get("rejected_capture") or {}
+    if str(rejected.get("capture_id", "")).startswith("024-") is not True:
+        raise ValueError("remaining probe recovery requires the rejected capture-024 dark frame")
+    remaining = {(5600, 0), (20000, 0)}
+    plan = thermal.build_direct_plan(thermal.TD_C, variant=thermal.GUIDE9_WHITE_LOCAL_PROBES_VARIANT)
+    plan["captures"] = [
+        step for step in plan["captures"]
+        if (int(step["target_cct"]), int(step["target_gm"])) in remaining
+    ]
+    plan["capture_ids"] = [str(step["capture_id"]) for step in plan["captures"]]
+    plan["analysis_contract"]["target_contracts"] = [
+        row for row in plan["analysis_contract"]["target_contracts"]
+        if (int(row["cct"]), int(row["gm"])) in remaining
+    ]
+    plan["budgets"] = {
+        "ray_cap": 2, "strip_cap": 10, "formal_cap": 12,
+        "physical_cr3_cap": 12, "ambient_cap": 0, "retry": 0,
+    }
+    required = {str(step["exposure_cache_key"]) for step in plan["captures"]}
+    plan["frozen_shutters"] = {
+        key: value for key, value in plan["frozen_shutters"].items() if key in required
+    }
+    plan["shutter_ledger_provenance"] = {
+        "owner": "experiment_capture_steps", "required_cache_keys": sorted(required),
+        "frozen_shutters_sha256": _canonical_sha256(plan["frozen_shutters"]),
+    }
+    plan["inputs"] = _current_input_references(plan, Path(data_root).resolve())
+    plan["recovery_contract"] = {
+        "schema": REMAINING_PROBE_SCHEMA, "immutable_prefix_root": str(prefix),
+        "immutable_prefix_accepted_count": 24,
+        "remaining_targets": [[5600, 0], [20000, 0]],
+        "rejected_dark_capture_allowed": False,
     }
     measure.validate_authorized_execution_plan(plan)
     return plan
@@ -603,6 +648,11 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     reassess_parser.add_argument("--data-root", type=Path, required=True)
     reassess_parser.add_argument("--output-dir", type=Path, required=True)
     reassess_parser.add_argument("--run-name", required=True)
+    remaining_parser = commands.add_parser("run-remaining-probes")
+    remaining_parser.add_argument("--prefix-root", type=Path, required=True)
+    remaining_parser.add_argument("--data-root", type=Path, required=True)
+    remaining_parser.add_argument("--output-dir", type=Path, required=True)
+    remaining_parser.add_argument("--run-name", required=True)
     return parser.parse_args(argv)
 
 
@@ -652,6 +702,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
     if args.command == "run-reassessment":
         plan = build_reassessment_plan(args.candidate_root, args.candidate_analysis, args.probe_analysis, data_root=args.data_root)
+        backend = camera_remote.create_camera_backend("remote")
+        print(measure.run_authorized_plan(plan, output_dir=args.output_dir, run_name=args.run_name, camera_backend=backend))
+        return 0
+    if args.command == "run-remaining-probes":
+        plan = build_remaining_probe_plan(prefix_root=args.prefix_root, data_root=args.data_root)
         backend = camera_remote.create_camera_backend("remote")
         print(measure.run_authorized_plan(plan, output_dir=args.output_dir, run_name=args.run_name, camera_backend=backend))
         return 0
