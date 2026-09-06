@@ -573,6 +573,9 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     run_parser.add_argument("--data-root", type=Path, required=True)
     run_parser.add_argument("--output-dir", type=Path, required=True)
     run_parser.add_argument("--run-name", required=True)
+    inspect_resume_parser = commands.add_parser("inspect-resume")
+    inspect_resume_parser.add_argument("--run-root", type=Path, required=True)
+    inspect_resume_parser.add_argument("--data-root", type=Path, required=True)
     resume_parser = commands.add_parser("resume")
     resume_parser.add_argument("--run-root", type=Path, required=True)
     resume_parser.add_argument("--data-root", type=Path, required=True)
@@ -619,6 +622,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         plan = build_resume_plan(args.run_root, data_root=args.data_root)
         backend = camera_remote.create_camera_backend("remote")
         print(measure.run_authorized_plan(plan, output_dir=args.output_dir, run_name=args.run_name, camera_backend=backend))
+        return 0
+    if args.command == "inspect-resume":
+        plan = build_resume_plan(args.run_root, data_root=args.data_root)
+        print(json.dumps({
+            "status": "ready", "parent_root": plan["recovery_contract"]["parent_root"],
+            "first_missing_capture_id": plan["recovery_contract"]["first_missing_capture_id"],
+            "suffix_capture_count": plan["recovery_contract"]["suffix_capture_count"],
+            "total_capture_count": plan["recovery_contract"]["combined_capture_count"],
+        }, indent=2))
         return 0
     if args.command in {"inspect-candidates", "run-candidates"}:
         plan = build_candidate_plan(args.parent_root, args.analysis, data_root=args.data_root)

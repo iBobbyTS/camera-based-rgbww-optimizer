@@ -135,6 +135,21 @@ class Guide9White70RecoveryTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "already complete"):
                 recovery.validate_checkpoint(parent)
 
+    def test_build_resume_plan_is_offline_and_reports_missing_suffix(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            parent = self.make_parent(Path(temporary))
+            run = json.loads((parent / "run.json").read_text())
+            run["status"] = "running"
+            write_json(parent / "run.json", run)
+            with patch.object(recovery, "_current_input_references", return_value={}), patch.object(
+                recovery.measure, "validate_authorized_execution_plan",
+            ):
+                result = recovery.main([
+                    "inspect-resume", "--run-root", str(parent),
+                    "--data-root", temporary,
+                ])
+        self.assertEqual(result, 0)
+
     def test_build_candidate_plan_creates_one_exact_pair_per_analysis_node(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

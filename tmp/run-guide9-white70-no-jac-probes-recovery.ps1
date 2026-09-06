@@ -8,7 +8,7 @@ param(
     [string]$ReassessmentRunName = '20260904-3-node-local-probe-reassessment-r1',
     [string]$ResumeRunRoot,
     [string]$ResumeRunName = 'resume-r1',
-    [ValidateSet('Inspect', 'RunSuffix', 'CombineAnalyze', 'InspectCandidates', 'RunCandidates', 'AnalyzeCandidates', 'RunReassessment', 'Resume')]
+    [ValidateSet('Inspect', 'RunSuffix', 'CombineAnalyze', 'InspectCandidates', 'RunCandidates', 'AnalyzeCandidates', 'RunReassessment', 'InspectResume', 'Resume')]
     [string]$Action = 'Inspect'
 )
 
@@ -41,6 +41,10 @@ try {
             & $python -m camera_based_rgbww_optimizer.optimization.guide9_white70_recovery `
                 resume --run-root $resumeRoot --data-root $DataRoot `
                 --output-dir $runParent --run-name $ResumeRunName
+        }
+        'InspectResume' {
+            & $python -m camera_based_rgbww_optimizer.optimization.guide9_white70_recovery `
+                inspect-resume --run-root $resumeRoot --data-root $DataRoot
         }
         'CombineAnalyze' {
             & $python -m camera_based_rgbww_optimizer.optimization.guide9_white70_recovery `

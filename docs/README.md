@@ -1415,6 +1415,10 @@ combined capture order, and runs the frozen local-probe analyzer.
 
 ```powershell
 pwsh -File tmp/run-guide9-white70-no-jac-probes-recovery.ps1 `
+  -Action InspectResume `
+  -ResumeRunRoot D:\rgbww-optimizer\<experiment>\<interrupted-run>
+
+pwsh -File tmp/run-guide9-white70-no-jac-probes-recovery.ps1 `
   -Action Resume `
   -ResumeRunRoot D:\rgbww-optimizer\<experiment>\<interrupted-run> `
   -ResumeRunName <unique-resume-run>
