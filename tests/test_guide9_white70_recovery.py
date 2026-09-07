@@ -167,6 +167,7 @@ class Guide9White70RecoveryTests(unittest.TestCase):
                 "exposure_cache_key": "strip-white-6500-gm200", "nominal_shutter": "1/80",
             }
             plan = {
+                "schema": "p7_thermal_diagnostic_plan_v2",
                 "captures": [ray, strip], "inputs": {}, "budgets": {},
                 "frozen_shutters": {}, "shutter_ledger_provenance": {},
                 "execution_authorization": {},
@@ -188,6 +189,8 @@ class Guide9White70RecoveryTests(unittest.TestCase):
             })
             with patch.object(recovery, "_current_input_references", return_value={}), patch.object(
                 recovery.measure, "validate_authorized_execution_plan",
+            ), patch.object(
+                recovery.thermal, "expected_native_raw_ambient_policy", return_value={"owner": "current"},
             ):
                 result = recovery.build_candidate_plan(parent, analysis, data_root=root)
         self.assertEqual(result["budgets"]["formal_cap"], 2)
@@ -195,8 +198,13 @@ class Guide9White70RecoveryTests(unittest.TestCase):
         self.assertEqual(result["captures"][1]["command"], candidate)
         self.assertEqual(result["analysis_contract"]["target_contracts"][0]["source_order"], ["ray", "strip"])
         self.assertEqual(result["candidate_contract"]["node_count"], 1)
-        self.assertEqual(result["experiment_id"], "GUIDE9_WHITE12_LOCAL_JACOBIAN_CANDIDATES_V1")
+        self.assertEqual(result["experiment_id"], recovery.thermal.TD_C)
+        self.assertEqual(
+            result["guide_experiment_id"],
+            "GUIDE9_WHITE12_LOCAL_JACOBIAN_CANDIDATES_V1",
+        )
         self.assertEqual(result["analysis_contract"]["target_contracts"][0]["cct_tolerance_mired"], 1.0)
+        self.assertEqual(result["native_raw_ambient_policy"], {"owner": "current"})
 
     def test_build_candidate_plan_rejects_candidate_that_changes_active_channel(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -264,6 +272,71 @@ class Guide9White70RecoveryTests(unittest.TestCase):
             stored = json.loads(output.read_text())
             self.assertEqual(stored["recovery_evidence"]["combined_capture_count"], 3)
             self.assertEqual(stored["recovery_evidence"]["duplicate_capture_count"], 0)
+
+    def test_combine_recovered_probe_series_preserves_three_segment_lineage(self):
+        expected_ids = [f"{index:03d}-sample" for index in range(36)]
+
+        def rows(ids: list[str]) -> list[dict[str, object]]:
+            return [{"capture_id": capture_id, "capture": {
+                "saved_file": f"/old/{capture_id}.cr3",
+                "patch_statistics": f"/old/{capture_id}.json",
+            }} for capture_id in ids]
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            prefix, recovery_root, resume = root / "prefix", root / "recovery", root / "resume"
+            for path in (prefix, recovery_root, resume):
+                path.mkdir()
+            prefix_plan = {
+                "capture_ids": expected_ids,
+                "captures": [],
+                "analysis_contract": {"target_contracts": []},
+            }
+            write_json(prefix / "experiment-spec.json", prefix_plan)
+            write_json(prefix / "run.json", {"status": "failed", "cleanup": "pass", "accepted_formal_count": 24})
+            write_json(prefix / "failure.json", {"rejected_capture": {"capture_id": expected_ids[24]}})
+            write_json(prefix / "all-off-python.json", {"status": "pass", "steps": [{"ok": True}]})
+            (prefix / "captures.jsonl").write_text("".join(json.dumps(row) + "\n" for row in rows(expected_ids[:24])))
+            (prefix / "physical-returns.jsonl").write_text("".join(
+                json.dumps({"capture_id": capture_id}) + "\n" for capture_id in expected_ids[:25]
+            ))
+            recovery_plan = {
+                "capture_ids": expected_ids[24:],
+                "recovery_contract": {
+                    "schema": recovery.REMAINING_PROBE_SCHEMA,
+                    "immutable_prefix_root": str(prefix),
+                },
+            }
+            write_json(recovery_root / "experiment-spec.json", recovery_plan)
+            write_json(recovery_root / "run.json", {"status": "running", "cleanup": "pending", "accepted_formal_count": 7})
+            (recovery_root / "captures.jsonl").write_text("".join(json.dumps(row) + "\n" for row in rows(expected_ids[24:31])))
+            (recovery_root / "physical-returns.jsonl").write_text("".join(
+                json.dumps({"capture_id": capture_id}) + "\n" for capture_id in expected_ids[24:31]
+            ))
+            resume_contract = {
+                "schema": recovery.CHECKPOINT_SCHEMA,
+                "parent_root": str(recovery_root),
+                "parent_capture_count": 7,
+                "first_missing_capture_id": expected_ids[31],
+                "combined_capture_count": 12,
+            }
+            write_json(resume / "experiment-spec.json", {"recovery_contract": resume_contract})
+            write_json(resume / "run.json", {"status": "complete", "cleanup": "pass", "accepted_formal_count": 5})
+            (resume / "captures.jsonl").write_text("".join(json.dumps(row) + "\n" for row in rows(expected_ids[31:])))
+            (resume / "physical-returns.jsonl").write_text("".join(
+                json.dumps({"capture_id": capture_id}) + "\n" for capture_id in expected_ids[31:]
+            ))
+            output = root / "analysis.json"
+            with patch.object(recovery, "rebuild_probe_contracts", return_value=[]), patch.object(
+                recovery.analyze, "analyze_guide9_white_local_probes",
+                return_value={"status": "candidates_preregistered", "capture_count": 36},
+            ) as analyze_call:
+                recovery.combine_recovered_probe_series(prefix, recovery_root, resume, output=output)
+            combined = analyze_call.call_args.args[0]
+            self.assertEqual([row["capture_id"] for row in combined], expected_ids)
+            evidence = json.loads(output.read_text())["recovery_evidence"]
+            self.assertEqual(evidence["segment_capture_counts"], [24, 7, 5])
+            self.assertFalse(evidence["rejected_dark_capture_included"])
 
 
 if __name__ == "__main__":

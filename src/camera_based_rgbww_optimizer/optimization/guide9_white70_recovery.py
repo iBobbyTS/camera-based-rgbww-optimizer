@@ -17,6 +17,7 @@ from camera_based_rgbww_optimizer.optimization import white_lut_feedback
 RECOVERY_SCHEMA = "guide9_white70_no_jacobian_probe_suffix_v1"
 CHECKPOINT_SCHEMA = "guide9_checkpoint_resume_v1"
 REMAINING_PROBE_SCHEMA = "guide9_white_local_probes_remaining_suffix_v1"
+RECOVERED_PROBE_SERIES_SCHEMA = "guide9_white_local_probes_recovered_series_v1"
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -411,7 +412,7 @@ def build_candidate_plan(
         str(step["exposure_cache_key"]): str(step["nominal_shutter"]) for step in captures
     }
     plan.update({
-        "experiment_id": thermal.GUIDE9_WHITE_LOCAL_JAC_EXPERIMENT_ID,
+        "experiment_id": thermal.TD_C,
         "guide_experiment_id": thermal.GUIDE9_WHITE_LOCAL_JAC_EXPERIMENT_ID,
         "variant": thermal.GUIDE9_WHITE_LOCAL_JAC_VARIANT,
         "stage": "GUIDE9-WHITE70-LOCAL-PROBE-CANDIDATES",
@@ -454,6 +455,9 @@ def build_candidate_plan(
             "global_model_refit": False, "default_lut_installation": False,
         },
     })
+    plan["native_raw_ambient_policy"] = thermal.expected_native_raw_ambient_policy(
+        thermal.TD_C, plan_schema=plan["schema"],
+    )
     measure.validate_authorized_execution_plan(plan)
     return plan
 
@@ -608,6 +612,101 @@ def combine_and_analyze(parent_root: str | Path, suffix_root: str | Path, *, out
     return output_path
 
 
+def combine_recovered_probe_series(
+    prefix_root: str | Path,
+    recovery_root: str | Path,
+    resume_root: str | Path,
+    *,
+    output: str | Path,
+) -> Path:
+    """Analyze the accepted 24 + interrupted 7 + resumed 5 probe observations."""
+    prefix_path = Path(prefix_root).resolve()
+    recovery_path = Path(recovery_root).resolve()
+    resume_path = Path(resume_root).resolve()
+
+    prefix_plan = _load_json(prefix_path / "experiment-spec.json")
+    expected_ids = [str(value) for value in prefix_plan["capture_ids"]]
+    if len(expected_ids) != 36:
+        raise ValueError("GUIDE9 recovered probe series requires the frozen 36-capture plan")
+    prefix_run = _load_json(prefix_path / "run.json")
+    prefix_rows = _load_jsonl(prefix_path / "captures.jsonl")
+    prefix_physical = _load_jsonl(prefix_path / "physical-returns.jsonl")
+    prefix_ids = [str(row["capture_id"]) for row in prefix_rows]
+    physical_ids = [str(row["capture_id"]) for row in prefix_physical]
+    if (
+        prefix_run.get("status") != "failed"
+        or prefix_run.get("cleanup") != "pass"
+        or int(prefix_run.get("accepted_formal_count", -1)) != 24
+        or prefix_ids != expected_ids[:24]
+        or physical_ids != expected_ids[:25]
+    ):
+        raise ValueError("GUIDE9 recovered probe prefix differs from its accepted 24 plus rejected return")
+    failure = _load_json(prefix_path / "failure.json")
+    rejected = failure.get("rejected_capture") or {}
+    if str(rejected.get("capture_id")) != expected_ids[24]:
+        raise ValueError("GUIDE9 recovered probe prefix lacks the exact rejected dark capture")
+    cleanup = _load_json(prefix_path / "all-off-python.json")
+    if cleanup.get("status") != "pass" or any(not step.get("ok") for step in cleanup.get("steps", ())):
+        raise ValueError("GUIDE9 recovered probe prefix lacks passing cleanup evidence")
+
+    recovery = validate_checkpoint(recovery_path)
+    recovery_contract = recovery["plan"].get("recovery_contract") or {}
+    if (
+        recovery_contract.get("schema") != REMAINING_PROBE_SCHEMA
+        or Path(str(recovery_contract.get("immutable_prefix_root"))).resolve() != prefix_path
+        or recovery["prefix_count"] != 7
+        or [str(row["capture_id"]) for row in recovery["captures"]] != expected_ids[24:31]
+    ):
+        raise ValueError("GUIDE9 seven-capture recovery lacks its exact prefix lineage")
+
+    resume_run = _load_json(resume_path / "run.json")
+    resume_plan = _load_json(resume_path / "experiment-spec.json")
+    resume_rows = _load_jsonl(resume_path / "captures.jsonl")
+    resume_physical = _load_jsonl(resume_path / "physical-returns.jsonl")
+    resume_ids = [str(row["capture_id"]) for row in resume_rows]
+    resume_contract = resume_plan.get("recovery_contract") or {}
+    if (
+        resume_run.get("status") != "complete"
+        or resume_run.get("cleanup") != "pass"
+        or int(resume_run.get("accepted_formal_count", -1)) != 5
+        or resume_ids != expected_ids[31:]
+        or [str(row["capture_id"]) for row in resume_physical] != resume_ids
+        or resume_contract.get("schema") != CHECKPOINT_SCHEMA
+        or Path(str(resume_contract.get("parent_root"))).resolve() != recovery_path
+        or int(resume_contract.get("parent_capture_count", -1)) != 7
+        or str(resume_contract.get("first_missing_capture_id")) != expected_ids[31]
+        or int(resume_contract.get("combined_capture_count", -1)) != 12
+    ):
+        raise ValueError("GUIDE9 five-capture resume lacks its exact checkpoint lineage")
+    if (resume_path / "failure.json").exists():
+        raise ValueError("GUIDE9 five-capture resume contains failure evidence")
+
+    combined = [
+        *(_portable_capture(row, prefix_path) for row in prefix_rows),
+        *(_portable_capture(row, recovery_path) for row in recovery["captures"]),
+        *(_portable_capture(row, resume_path) for row in resume_rows),
+    ]
+    if [str(row["capture_id"]) for row in combined] != expected_ids:
+        raise ValueError("GUIDE9 recovered probe evidence is not the exact frozen plan")
+    report = analyze.analyze_guide9_white_local_probes(
+        combined, target_contracts=rebuild_probe_contracts(prefix_plan),
+    )
+    report["recovery_evidence"] = {
+        "schema": RECOVERED_PROBE_SERIES_SCHEMA,
+        "roots": [str(prefix_path), str(recovery_path), str(resume_path)],
+        "segment_capture_counts": [24, 7, 5],
+        "combined_capture_count": len(combined),
+        "duplicate_capture_count": 0,
+        "rejected_dark_capture_id": expected_ids[24],
+        "rejected_dark_capture_included": False,
+        "diagnostic_captures_included": False,
+    }
+    output_path = Path(output).resolve()
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    _write_json(output_path, report)
+    return output_path
+
+
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Recover the interrupted GUIDE9 white70 probe batch.")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -630,6 +729,11 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     combine_parser.add_argument("--parent-root", type=Path, required=True)
     combine_parser.add_argument("--suffix-root", type=Path, required=True)
     combine_parser.add_argument("--output", type=Path, required=True)
+    recovered_parser = commands.add_parser("combine-recovered-probes")
+    recovered_parser.add_argument("--prefix-root", type=Path, required=True)
+    recovered_parser.add_argument("--recovery-root", type=Path, required=True)
+    recovered_parser.add_argument("--resume-root", type=Path, required=True)
+    recovered_parser.add_argument("--output", type=Path, required=True)
     for name in ("inspect-candidates", "run-candidates"):
         candidate_parser = commands.add_parser(name)
         candidate_parser.add_argument("--parent-root", type=Path, required=True)
@@ -709,6 +813,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         plan = build_remaining_probe_plan(prefix_root=args.prefix_root, data_root=args.data_root)
         backend = camera_remote.create_camera_backend("remote")
         print(measure.run_authorized_plan(plan, output_dir=args.output_dir, run_name=args.run_name, camera_backend=backend))
+        return 0
+    if args.command == "combine-recovered-probes":
+        print(combine_recovered_probe_series(
+            args.prefix_root, args.recovery_root, args.resume_root, output=args.output,
+        ))
         return 0
     print(combine_and_analyze(args.parent_root, args.suffix_root, output=args.output))
     return 0
