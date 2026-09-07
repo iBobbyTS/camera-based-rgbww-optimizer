@@ -189,6 +189,12 @@ This project is used only for the Human-owned and Human-maintained local photogr
   After the third successful check, estimate the remaining completion time and
   configure a thread automation that can wake this thread. End the response only
   after the automation has been created successfully.
+- This project must always create monitoring automations with `mode=create`; never
+  use `mode=suggested_create`, which only renders a Human-confirmation card and
+  does not persist an unattended automation. For an immediate heartbeat create,
+  omit `DTSTART` and express the wake-up as a minute-based RRULE interval. Treat
+  creation as successful only when the tool returns an `automationId`, and retain
+  that ID for subsequent view, update, or delete operations.
 - This automation handoff is a temporary scheduling state, not a scientific or
   authorization stop. It does not replace `HUMAN_GATE_REQUIRED` or
   `ADVISOR_GATE_REQUIRED`, and it must not be used merely to hide an unresolved
