@@ -460,7 +460,11 @@ def _install_interrupt_handlers() -> dict[int, Any]:
     def interrupt(signum: int, _frame: Any) -> None:
         raise InterruptedError(f"received {signal.Signals(signum).name}")
 
-    for signum in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+    signals = [signal.SIGINT, signal.SIGTERM]
+    sighup = getattr(signal, "SIGHUP", None)
+    if sighup is not None:
+        signals.append(sighup)
+    for signum in signals:
         previous[signum] = signal.getsignal(signum)
         signal.signal(signum, interrupt)
     return previous

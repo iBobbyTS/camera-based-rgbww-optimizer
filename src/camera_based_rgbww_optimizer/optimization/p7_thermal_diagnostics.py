@@ -96,6 +96,12 @@ GUIDE9_WHITE_LOCAL_CONFIRM2_EXPERIMENT_ID = "GUIDE9_WHITE12_LOCAL_JACOBIAN_CONFI
 GUIDE9_WHITE_LOCAL_CONFIRM2_VARIANT = "guide9-white12-local-jacobian-confirm2"
 GUIDE9_WHITE_LOCAL_PROBES_EXPERIMENT_ID = "GUIDE9_WHITE12_LOCAL_PROBES_V1"
 GUIDE9_WHITE_LOCAL_PROBES_VARIANT = "guide9-white12-local-probes"
+GUIDE10_WHITE_1800_GM100_MICROBRACKET_EXPERIMENT_ID = (
+    "GUIDE10_WHITE_1800_GM100_MIRED_ALIGNED_MICROBRACKET_V1"
+)
+GUIDE10_WHITE_1800_GM100_MICROBRACKET_VARIANT = (
+    "guide10-white-1800-gm100-mired-aligned-microbracket"
+)
 GUIDE9_H300_REFERENCE_DIAG_EXPERIMENT_ID = (
     "GUIDE9_RAY_H300_S100_REFERENCE_EMISSION_PATH_DIAG_V1"
 )
@@ -971,6 +977,8 @@ def build_direct_plan(
     references and capture steps, but no release, lineage, stage-gate, Git or
     plan-parser authority.
     """
+    if experiment_id == GUIDE10_WHITE_1800_GM100_MICROBRACKET_EXPERIMENT_ID:
+        experiment_id = TD_C
     if experiment_id == TD_B and source == "ray" and variant == "core":
         return build_ray_r6_spec()
     if experiment_id not in {TD_B, TD_C}:
@@ -1058,6 +1066,8 @@ def build_direct_plan(
         plan = _build_guide9_white_local_confirm2_plan()
     elif experiment_id == TD_C and variant == GUIDE9_WHITE_LOCAL_PROBES_VARIANT:
         plan = _build_guide9_white_local_probes_plan()
+    elif experiment_id == TD_C and variant == GUIDE10_WHITE_1800_GM100_MICROBRACKET_VARIANT:
+        plan = _build_guide10_white_1800_gm100_microbracket_plan()
     else:
         if experiment_id == TD_C and variant != "core":
             raise ValueError("TD-C direct execution supports core or frozen GUIDE5 variants")
@@ -1096,6 +1106,7 @@ def build_direct_plan(
                 GUIDE9_WHITE_LOCAL_JAC_VARIANT,
                 GUIDE9_WHITE_LOCAL_CONFIRM2_VARIANT,
                 GUIDE9_WHITE_LOCAL_PROBES_VARIANT,
+                GUIDE10_WHITE_1800_GM100_MICROBRACKET_VARIANT,
             }
             else "deferred_diagnostic_only"
             if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT
@@ -1147,6 +1158,8 @@ def build_direct_plan(
                 if variant == GUIDE9_WHITE_LOCAL_CONFIRM2_VARIANT
                 else "direct_guide9_white_local_probes_v1"
                 if variant == GUIDE9_WHITE_LOCAL_PROBES_VARIANT
+                else "direct_guide10_white_mired_microbracket_v1"
+                if variant == GUIDE10_WHITE_1800_GM100_MICROBRACKET_VARIANT
                 else "direct_td_c_fast_anchor_direction_b_v1"
                 if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT
                 else f"direct_{'strip_td_b' if experiment_id == TD_B else 'td_c_core'}_authority_v1"
@@ -1215,6 +1228,15 @@ def build_direct_plan(
             },
         },
     })
+    if variant == GUIDE10_WHITE_1800_GM100_MICROBRACKET_VARIANT:
+        plan["execution_authorization"].update({
+            "schema": "direct_guide10_white_mired_microbracket_v1",
+            "human_authorization_verified": True,
+            "human_authorization_experiment_id": GUIDE10_WHITE_1800_GM100_MICROBRACKET_EXPERIMENT_ID,
+            "bounded_device_scope": True,
+            "human_authorization_required": False,
+            "experiment_id": GUIDE10_WHITE_1800_GM100_MICROBRACKET_EXPERIMENT_ID,
+        })
     return plan
 
 
@@ -2567,6 +2589,93 @@ def _build_guide9_white_local_probes_plan() -> dict[str, Any]:
             "probe_count_per_node": 4, "candidate_capture_count": 0,
             "next": "GUIDE9_WHITE12_LOCAL_PROBE_CANDIDATES",
             "global_model_refit": False,
+        },
+    })
+    return parent
+
+
+def _build_guide10_white_1800_gm100_microbracket_plan() -> dict[str, Any]:
+    """Build GUIDE10's final, preregistered five-capture white bracket."""
+    parent = _build_guide9_white12_plan()
+    key = (1800, 100)
+    ray_template = next(
+        step for step in parent["captures"]
+        if step["source_id"] == "ray"
+        and (int(step["target_cct"]), int(step["target_gm"])) == key
+    )
+    strip_template = next(
+        step for step in parent["captures"]
+        if step["source_id"] == "strip"
+        and (int(step["target_cct"]), int(step["target_gm"])) == key
+    )
+    commands = [
+        {"cw": 0, "ww": 0, "r": 4095, "g": 1197, "b": 0},
+        {"cw": 0, "ww": 0, "r": 4095, "g": 1204, "b": 0},
+        {"cw": 0, "ww": 0, "r": 4095, "g": 1200, "b": 0},
+    ]
+    captures = []
+    for index, (source, role, command) in enumerate(
+        [("ray", "ray_reference_before", dict(ray_template["command"]))]
+        + [("strip", f"strip_g{command['g']}", command) for command in commands]
+        + [("ray", "ray_reference_after", dict(ray_template["command"]))]
+    ):
+        template = ray_template if source == "ray" else strip_template
+        item = dict(template)
+        item.update({
+            "capture_id": f"{index:03d}-{source}-guide10-white-1800-gm100-{role}",
+            "role": role,
+            "command": dict(command),
+            "exact_command_hash": canonical_sha256(command),
+            "session_index": index + 1,
+            "source_order": 1 if source == "ray" else 2,
+        })
+        captures.append(item)
+    contract = next(
+        dict(row) for row in parent["analysis_contract"]["target_contracts"]
+        if (int(row["cct"]), int(row["gm"])) == key
+    )
+    contract.update({
+        "strip_command": None,
+        "candidate_owner": "guide10_mired_aligned_microbracket",
+        "test_g_codes": [1197, 1204, 1200],
+        "selection_rule": "frozen_guide10_section_5_6",
+    })
+    frozen = {
+        f"ray-white-{key[0]}-gm{key[1]}": str(ray_template["nominal_shutter"]),
+        f"strip-white-{key[0]}-gm{key[1]}": str(strip_template["nominal_shutter"]),
+    }
+    parent.update({
+        "guide_experiment_id": GUIDE10_WHITE_1800_GM100_MICROBRACKET_EXPERIMENT_ID,
+        "variant": GUIDE10_WHITE_1800_GM100_MICROBRACKET_VARIANT,
+        "stage": "GUIDE10-WHITE-1800-GM100-MIRED-ALIGNED-MICROBRACKET",
+        "captures": captures,
+        "capture_ids": [row["capture_id"] for row in captures],
+        "frozen_shutters": frozen,
+        "shutter_ledger_provenance": {
+            "owner": "experiment_capture_steps",
+            "required_cache_keys": sorted(frozen),
+            "frozen_shutters_sha256": canonical_sha256(frozen),
+        },
+        "budgets": {
+            "ray_cap": 2, "strip_cap": 3, "formal_cap": 5,
+            "physical_cr3_cap": 5, "ambient_cap": 0, "retry": 0,
+        },
+        "execution_authorization": {
+            **parent["execution_authorization"],
+            "schema": "direct_guide10_white_mired_microbracket_v1",
+            "experiment_id": GUIDE10_WHITE_1800_GM100_MICROBRACKET_EXPERIMENT_ID,
+            "human_authorization_verified": True,
+            "human_authorization_experiment_id": GUIDE10_WHITE_1800_GM100_MICROBRACKET_EXPERIMENT_ID,
+            "bounded_device_scope": True,
+        },
+        "analysis_contract": {
+            **parent["analysis_contract"],
+            "method": "guide10_white_1800_gm100_mired_aligned_microbracket",
+            "target_contracts": [contract],
+            "global_model_refit": False,
+            "max_unique_g_codes": 5,
+            "phase_a_g_codes": [1197, 1204, 1200],
+            "ray_reference_count": 2,
         },
     })
     return parent

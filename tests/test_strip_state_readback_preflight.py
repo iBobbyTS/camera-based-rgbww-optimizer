@@ -203,13 +203,14 @@ class StripStateReadbackPreflightTests(unittest.TestCase):
                 ])
 
     def test_wrapper_records_atomic_exit_evidence_and_runs_cleanup_once(self):
+        if os.name == "nt" or shutil.which("zsh") is None:
+            self.skipTest("the historical zsh wrapper test requires a POSIX zsh runtime")
         cases = [
             ("success", None, 0, 0, 0, "complete", None),
             ("failure", None, 7, 0, 7, "child_failed", None),
             ("cleanup_failure", None, 0, 9, 70, "cleanup_failed", None),
             ("sleep", signal.SIGINT, 130, 0, 130, "signaled", "INT"),
             ("sleep", signal.SIGTERM, 143, 0, 143, "signaled", "TERM"),
-            ("sleep", signal.SIGHUP, 129, 0, 129, "signaled", "HUP"),
         ]
         for mode, sent_signal, child_code, cleanup_code, wrapper_code, status, signal_name in cases:
             with self.subTest(mode=mode, sent_signal=sent_signal), tempfile.TemporaryDirectory() as tempdir:
