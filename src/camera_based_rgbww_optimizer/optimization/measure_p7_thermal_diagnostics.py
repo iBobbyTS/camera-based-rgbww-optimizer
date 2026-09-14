@@ -39,6 +39,7 @@ GUIDE9_CANDIDATE_BATCH_SCHEMAS = {
     "direct_guide9_white_local_confirm2_v1",
     "direct_guide9_white_local_probes_v1",
     "direct_guide10_white_mired_microbracket_v1",
+    "direct_guide10_white_mired_microbracket_confirmation_v1",
 }
 GUIDE9_BEST_REPEAT_SCHEMAS = {
     "direct_guide9_h120_s50_best_repeat_v1",
@@ -299,6 +300,10 @@ def validate_authorized_execution_plan(
         isinstance(authorization, Mapping)
         and authorization.get("schema") == "direct_guide10_white_mired_microbracket_v1"
     )
+    direct_guide10_white_confirmation = (
+        isinstance(authorization, Mapping)
+        and authorization.get("schema") == "direct_guide10_white_mired_microbracket_confirmation_v1"
+    )
     if (
         direct_ray_history or direct_strip_history
         or direct_ray_fast_long_bridge or direct_td_c_fast_endpoint
@@ -306,7 +311,7 @@ def validate_authorized_execution_plan(
         or direct_f2_scale3072 or direct_guide8_emission_exposure
         or direct_guide9_h300_reference_diag
         or direct_guide6_strip_exposure or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_best or direct_guide9_s25
-        or direct_guide10_white_microbracket
+        or direct_guide10_white_microbracket or direct_guide10_white_confirmation
     ):
         valid_execution_scope = (
             authorization.get("bounded_device_scope") is True
@@ -3454,6 +3459,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
             thermal.GUIDE9_WHITE_LOCAL_CONFIRM2_EXPERIMENT_ID,
             thermal.GUIDE9_WHITE_LOCAL_PROBES_EXPERIMENT_ID,
             thermal.GUIDE10_WHITE_1800_GM100_MICROBRACKET_EXPERIMENT_ID,
+            thermal.TD_C,
             thermal.GUIDE9_H300_REFERENCE_DIAG_EXPERIMENT_ID,
         ),
         required=True,
@@ -3461,7 +3467,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--source", choices=("ray", "strip"))
     parser.add_argument(
         "--variant",
-        choices=("core", "expansion", "history", thermal.TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, thermal.GUIDE7_F2_VARIANT, thermal.GUIDE7_F2_SHORT_ENDPOINT_VARIANT, thermal.GUIDE7_F2_SCALE3072_STABILITY_VARIANT, thermal.GUIDE7_F2_SCALE2048_STABILITY_VARIANT, thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT, thermal.GUIDE9_H300_REFERENCE_DIAG_VARIANT, thermal.GUIDE6_STRIP_EXPOSURE_QUALIFICATION_VARIANT, thermal.GUIDE9_H120_S100_SCALE_AGE_VARIANT, thermal.GUIDE9_H120_S50_BATCH1_VARIANT, thermal.GUIDE9_H120_S50_BEST_REPEAT_VARIANT, thermal.GUIDE9_H120_S25_BATCH1_VARIANT, thermal.GUIDE9_H120_S25_BEST_REPEAT_VARIANT, thermal.GUIDE9_H0_S0_BATCH1_VARIANT, thermal.GUIDE9_H0_S0_BEST_REPEAT_VARIANT, thermal.GUIDE9_H300_S100_BATCH1_VARIANT, thermal.GUIDE9_H300_S50_BATCH1_VARIANT, thermal.GUIDE9_H300_S50_BEST_REPEAT_VARIANT, thermal.GUIDE9_WHITE12_VARIANT, thermal.GUIDE9_WHITE_LOCAL_JAC_VARIANT, thermal.GUIDE9_WHITE_LOCAL_CONFIRM2_VARIANT, thermal.GUIDE9_WHITE_LOCAL_PROBES_VARIANT, thermal.GUIDE10_WHITE_1800_GM100_MICROBRACKET_VARIANT),
+        choices=("core", "expansion", "history", thermal.TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, thermal.GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, thermal.GUIDE7_F2_VARIANT, thermal.GUIDE7_F2_SHORT_ENDPOINT_VARIANT, thermal.GUIDE7_F2_SCALE3072_STABILITY_VARIANT, thermal.GUIDE7_F2_SCALE2048_STABILITY_VARIANT, thermal.GUIDE8_RAY_EMISSION_EXPOSURE_VARIANT, thermal.GUIDE9_H300_REFERENCE_DIAG_VARIANT, thermal.GUIDE6_STRIP_EXPOSURE_QUALIFICATION_VARIANT, thermal.GUIDE9_H120_S100_SCALE_AGE_VARIANT, thermal.GUIDE9_H120_S50_BATCH1_VARIANT, thermal.GUIDE9_H120_S50_BEST_REPEAT_VARIANT, thermal.GUIDE9_H120_S25_BATCH1_VARIANT, thermal.GUIDE9_H120_S25_BEST_REPEAT_VARIANT, thermal.GUIDE9_H0_S0_BATCH1_VARIANT, thermal.GUIDE9_H0_S0_BEST_REPEAT_VARIANT, thermal.GUIDE9_H300_S100_BATCH1_VARIANT, thermal.GUIDE9_H300_S50_BATCH1_VARIANT, thermal.GUIDE9_H300_S50_BEST_REPEAT_VARIANT, thermal.GUIDE9_WHITE12_VARIANT, thermal.GUIDE9_WHITE_LOCAL_JAC_VARIANT, thermal.GUIDE9_WHITE_LOCAL_CONFIRM2_VARIANT, thermal.GUIDE9_WHITE_LOCAL_PROBES_VARIANT, thermal.GUIDE10_WHITE_1800_GM100_MICROBRACKET_VARIANT, thermal.GUIDE10_WHITE_1800_GM100_CONFIRM_VARIANT),
         default="core",
     )
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
@@ -3526,6 +3532,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     direct.add_argument("--direct-guide9-white-local-confirm2", action="store_true", help="execute GUIDE9 white local Jacobian second confirmations")
     direct.add_argument("--direct-guide9-white-local-probes", action="store_true", help="execute GUIDE9 white local probe blocks")
     direct.add_argument("--direct-guide10-white-microbracket", action="store_true", help="execute GUIDE10 1800K/GM100 mired-aligned micro-bracket")
+    direct.add_argument("--direct-guide10-white-confirmation", action="store_true", help="execute GUIDE10 selected-command independent confirmation")
     direct.add_argument(
         "--direct-guide9-h300-reference-diagnostic", action="store_true",
         help="execute the GUIDE9 Ray-only H300/H0 reference emission/path diagnostic",
@@ -3568,6 +3575,7 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
         "guide9-white-local-confirm2" if args.direct_guide9_white_local_confirm2 else
         "guide9-white-local-probes" if args.direct_guide9_white_local_probes else
         "guide10-white-microbracket" if args.direct_guide10_white_microbracket else
+        "guide10-white-confirmation" if args.direct_guide10_white_confirmation else
         "guide9-h300-reference-diagnostic" if args.direct_guide9_h300_reference_diagnostic else
         "td-c-core"
     )
@@ -3613,6 +3621,7 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
         "guide9-white-local-confirm2": (thermal.GUIDE9_WHITE_LOCAL_CONFIRM2_EXPERIMENT_ID, None, thermal.GUIDE9_WHITE_LOCAL_CONFIRM2_VARIANT),
         "guide9-white-local-probes": (thermal.GUIDE9_WHITE_LOCAL_PROBES_EXPERIMENT_ID, None, thermal.GUIDE9_WHITE_LOCAL_PROBES_VARIANT),
         "guide10-white-microbracket": (thermal.GUIDE10_WHITE_1800_GM100_MICROBRACKET_EXPERIMENT_ID, None, thermal.GUIDE10_WHITE_1800_GM100_MICROBRACKET_VARIANT),
+        "guide10-white-confirmation": (thermal.TD_C, None, thermal.GUIDE10_WHITE_1800_GM100_CONFIRM_VARIANT),
         "guide9-h300-reference-diagnostic": (
             thermal.GUIDE9_H300_REFERENCE_DIAG_EXPERIMENT_ID,
             "ray", thermal.GUIDE9_H300_REFERENCE_DIAG_VARIANT,
@@ -3817,6 +3826,14 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
         plan = thermal.build_direct_plan(thermal.TD_C, variant=thermal.GUIDE9_WHITE_LOCAL_PROBES_VARIANT)
     if direct_kind == "guide10-white-microbracket":
         plan = thermal.build_direct_plan(thermal.TD_C, variant=thermal.GUIDE10_WHITE_1800_GM100_MICROBRACKET_VARIANT)
+    if direct_kind == "guide10-white-confirmation":
+        plan = thermal.build_direct_plan(thermal.TD_C, variant=thermal.GUIDE10_WHITE_1800_GM100_CONFIRM_VARIANT)
+        plan["execution_authorization"].update({
+            "schema": "direct_guide10_white_mired_microbracket_confirmation_v1",
+            "bounded_device_scope": True,
+            "experiment_id": thermal.GUIDE10_WHITE_1800_GM100_MICROBRACKET_EXPERIMENT_ID,
+            "human_authorization_experiment_id": thermal.GUIDE10_WHITE_1800_GM100_MICROBRACKET_EXPERIMENT_ID,
+        })
     if direct_kind not in {
         "ray-r6", "ray-history-3x3", "strip-history-3x3",
         "ray-fast-long-bridge", "td-c-fast-endpoint-holdout", "guide6-h120-s100",
@@ -3839,6 +3856,7 @@ def main(argv: Sequence[str] | None = None, *, backend_factory: Callable[..., An
         "guide9-white-local-confirm2",
         "guide9-white-local-probes",
         "guide10-white-microbracket",
+        "guide10-white-confirmation",
     }:
         if args.prerequisite_analysis is None:
             raise PermissionError(f"{direct_kind} requires a prior scientific analysis artifact")

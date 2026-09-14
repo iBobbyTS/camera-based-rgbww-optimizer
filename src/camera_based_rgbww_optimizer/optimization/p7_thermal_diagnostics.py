@@ -102,6 +102,9 @@ GUIDE10_WHITE_1800_GM100_MICROBRACKET_EXPERIMENT_ID = (
 GUIDE10_WHITE_1800_GM100_MICROBRACKET_VARIANT = (
     "guide10-white-1800-gm100-mired-aligned-microbracket"
 )
+GUIDE10_WHITE_1800_GM100_CONFIRM_VARIANT = (
+    "guide10-white-1800-gm100-independent-confirmation"
+)
 GUIDE9_H300_REFERENCE_DIAG_EXPERIMENT_ID = (
     "GUIDE9_RAY_H300_S100_REFERENCE_EMISSION_PATH_DIAG_V1"
 )
@@ -1068,6 +1071,8 @@ def build_direct_plan(
         plan = _build_guide9_white_local_probes_plan()
     elif experiment_id == TD_C and variant == GUIDE10_WHITE_1800_GM100_MICROBRACKET_VARIANT:
         plan = _build_guide10_white_1800_gm100_microbracket_plan()
+    elif experiment_id == TD_C and variant == GUIDE10_WHITE_1800_GM100_CONFIRM_VARIANT:
+        plan = _build_guide10_white_1800_gm100_confirmation_plan()
     else:
         if experiment_id == TD_C and variant != "core":
             raise ValueError("TD-C direct execution supports core or frozen GUIDE5 variants")
@@ -1159,7 +1164,7 @@ def build_direct_plan(
                 else "direct_guide9_white_local_probes_v1"
                 if variant == GUIDE9_WHITE_LOCAL_PROBES_VARIANT
                 else "direct_guide10_white_mired_microbracket_v1"
-                if variant == GUIDE10_WHITE_1800_GM100_MICROBRACKET_VARIANT
+                if variant in {GUIDE10_WHITE_1800_GM100_MICROBRACKET_VARIANT, GUIDE10_WHITE_1800_GM100_CONFIRM_VARIANT}
                 else "direct_td_c_fast_anchor_direction_b_v1"
                 if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT
                 else f"direct_{'strip_td_b' if experiment_id == TD_B else 'td_c_core'}_authority_v1"
@@ -2677,6 +2682,45 @@ def _build_guide10_white_1800_gm100_microbracket_plan() -> dict[str, Any]:
             "phase_a_g_codes": [1197, 1204, 1200],
             "ray_reference_count": 2,
         },
+    })
+    return parent
+
+
+def _build_guide10_white_1800_gm100_confirmation_plan() -> dict[str, Any]:
+    """Build the frozen independent confirmation for the selected G1197 command."""
+    parent = _build_guide10_white_1800_gm100_microbracket_plan()
+    ray = next(step for step in parent["captures"] if step["role"] == "ray_reference_before")
+    strip = next(step for step in parent["captures"] if step["role"] == "strip_g1197")
+    command = dict(strip["command"])
+    captures = []
+    roles = [("ray", "ray_reference_before", dict(ray["command"])),
+             ("strip", "strip_g1197_confirmation_1", command),
+             ("strip", "strip_g1197_confirmation_2", command),
+             ("ray", "ray_reference_after", dict(ray["command"]))]
+    for index, (source, role, payload) in enumerate(roles):
+        template = ray if source == "ray" else strip
+        item = dict(template)
+        item.update({"capture_id": f"{index:03d}-{source}-guide10-white-1800-gm100-{role}",
+                     "role": role, "command": payload,
+                     "exact_command_hash": canonical_sha256(payload),
+                     "session_index": index + 1,
+                     "source_order": 1 if source == "ray" else 2})
+        captures.append(item)
+    parent.update({
+        "guide_experiment_id": GUIDE10_WHITE_1800_GM100_MICROBRACKET_EXPERIMENT_ID,
+        "variant": GUIDE10_WHITE_1800_GM100_CONFIRM_VARIANT,
+        "stage": "GUIDE10-WHITE-1800-GM100-INDEPENDENT-CONFIRMATION",
+        "captures": captures, "capture_ids": [row["capture_id"] for row in captures],
+        "budgets": {"ray_cap": 2, "strip_cap": 2, "formal_cap": 4,
+                    "physical_cr3_cap": 4, "ambient_cap": 0, "retry": 0},
+        "execution_authorization": {**parent["execution_authorization"],
+            "schema": "direct_guide10_white_mired_microbracket_confirmation_v1",
+            "experiment_id": GUIDE10_WHITE_1800_GM100_MICROBRACKET_EXPERIMENT_ID,
+            "human_authorization_experiment_id": GUIDE10_WHITE_1800_GM100_MICROBRACKET_EXPERIMENT_ID,
+            "bounded_device_scope": True},
+        "analysis_contract": {**parent["analysis_contract"],
+            "method": "guide10_white_1800_gm100_independent_confirmation",
+            "selected_command": command, "confirmation_count": 2},
     })
     return parent
 
