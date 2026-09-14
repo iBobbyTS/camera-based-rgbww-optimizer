@@ -40,6 +40,7 @@ GUIDE9_CANDIDATE_BATCH_SCHEMAS = {
     "direct_guide9_white_local_probes_v1",
     "direct_guide10_white_mired_microbracket_v1",
     "direct_guide10_white_mired_microbracket_confirmation_v1",
+    "direct_guide10_white70_round1_v1",
 }
 GUIDE9_BEST_REPEAT_SCHEMAS = {
     "direct_guide9_h120_s50_best_repeat_v1",

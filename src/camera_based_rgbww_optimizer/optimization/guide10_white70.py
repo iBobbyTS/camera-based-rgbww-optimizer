@@ -133,6 +133,156 @@ def build_guide10_white70_candidates(
     }
 
 
+def build_guide10_white70_validation_plan(
+    candidates: Mapping[str, Any],
+    calibration: Mapping[str, Any],
+    *,
+    candidate_reference: Mapping[str, Any],
+    calibration_reference: Mapping[str, Any],
+) -> dict[str, Any]:
+    from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
+
+    if candidates.get("schema") != "guide10_white70_canonical_and_correction_field_v1":
+        raise ValueError("GUIDE10 white70 validation requires the frozen candidate schema")
+    if candidates.get("status") != "candidate_generation_complete":
+        raise ValueError("GUIDE10 white70 candidates are not complete")
+    candidate_rows = {
+        (int(row["cct"]), int(row["gm"])): row for row in candidates.get("nodes", ())
+    }
+    calibration_rows = {
+        (int(row["cct"]), int(row["gm"])): row for row in calibration.get("targets", ())
+    }
+    if len(candidate_rows) != 70 or set(candidate_rows) != set(calibration_rows):
+        raise ValueError("GUIDE10 white70 candidates must match the exact frozen 14x5 grid")
+
+    captures = []
+    contracts = []
+    frozen_shutters = {}
+    capture_index = 0
+    for target_index, key in enumerate(sorted(candidate_rows)):
+        cct, gm = key
+        candidate = candidate_rows[key]
+        calibration_row = calibration_rows[key]
+        command = {name: int(candidate["candidate_command"][name]) for name in CHANNELS}
+        ray_shutter = str(calibration_row["ray"]["auto_exposure"]["final"]["shutter_speed"])
+        strip_shutter = str(calibration_row["feedback_optimizer"]["best"]["capture"]["shutter_speed"])
+        cache_key = f"white-{cct}-gm{gm}"
+        frozen_shutters[f"ray-{cache_key}"] = ray_shutter
+        frozen_shutters[f"strip-{cache_key}"] = strip_shutter
+        source_order = ("ray", "strip") if target_index % 2 == 0 else ("strip", "ray")
+        contracts.append({
+            "target_index": target_index,
+            "cct": cct,
+            "gm": gm,
+            "source_order": list(source_order),
+            "strip_command": command,
+            "resolved_cct_tolerance_K": float(calibration_row["feedback_goal"]["resolved_cct_tolerance_K"]),
+            "cct_tolerance_mired": float(calibration_row["feedback_goal"]["cct_tolerance_mired"]),
+            "duv_tolerance": float(calibration_row["feedback_goal"]["duv_tolerance"]),
+            "candidate_status": str(candidate["status"]),
+            "field_action": str(candidate["field_action"]),
+        })
+        for source_order_index, source in enumerate(source_order, start=1):
+            source_command = (
+                {"mode": "cct", "cct": cct, "gm": gm, "intensity_percent": 100.0}
+                if source == "ray" else dict(command)
+            )
+            captures.append({
+                "capture_id": f"{capture_index:03d}-{source}-guide10-white70-r1-cct{cct}-gm{gm}",
+                "source_id": source,
+                "state_id": f"CCT{cct}_GM{gm}",
+                "role": f"{source}_cct{cct}_gm{gm}",
+                "capture_role": "formal",
+                "formal_measurement": True,
+                "command": source_command,
+                "exact_command_hash": thermal.canonical_sha256(source_command),
+                "requested_elapsed_s": 120,
+                "nominal_shutter": ray_shutter if source == "ray" else strip_shutter,
+                "exposure_cache_key": f"{source}-{cache_key}",
+                "timing_acceptance": "observed_elapsed_record_only",
+                "strip_zero_required": source == "ray",
+                "ray_zero_required": source == "strip",
+                "session_index": target_index + 1,
+                "source_order": source_order_index,
+                "target_cct": cct,
+                "target_gm": gm,
+                "steady_claim": False,
+            })
+            capture_index += 1
+    return {
+        "schema": thermal.PLAN_SCHEMA_V2,
+        "status": "execute_authorized",
+        "experiment_id": thermal.TD_C,
+        "guide_experiment_id": "GUIDE10_WHITE70_FAST_VALIDATION_ROUND1_V1",
+        "variant": "guide10-white70-fast-validation-round1",
+        "stage": "GUIDE10-WHITE70-FAST-VALIDATION-ROUND1",
+        "phase": "formal",
+        "source": "white70_candidate_validation",
+        "created_at": thermal.datetime.now(thermal.timezone.utc).isoformat(),
+        "inputs": {
+            "location": thermal.file_reference(thermal.LOCATION_PATH),
+            "policy": thermal.file_reference(thermal.POLICY_PATH),
+            "uncertainty": thermal.file_reference(thermal.UNCERTAINTY_PATH),
+            "code_duty_curve": thermal.file_reference(thermal.CURVE_PATH),
+            "guide10_candidates": dict(candidate_reference),
+            "white_70_calibration": dict(calibration_reference),
+        },
+        "captures": captures,
+        "capture_ids": [row["capture_id"] for row in captures],
+        "timing_contract": thermal.timing_contract(2),
+        "timing_resolution": "guide10_reset600_D120",
+        "cold_proxy": 600,
+        "cold_proxy_wait_s": 600,
+        "native_raw_ambient_policy": thermal.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+        "frozen_shutters": frozen_shutters,
+        "exposure_setup_required": [],
+        "shutter_ledger_provenance": {
+            "owner": "experiment_capture_steps",
+            "required_cache_keys": sorted(frozen_shutters),
+            "frozen_shutters_sha256": thermal.canonical_sha256(frozen_shutters),
+        },
+        "budgets": {
+            "ray_cap": 70,
+            "strip_cap": 70,
+            "formal_cap": 140,
+            "physical_cr3_cap": 140,
+            "ambient_cap": 0,
+            "retry": 0,
+        },
+        "execution_authorization": {
+            "schema": "direct_guide10_white70_round1_v1",
+            "human_authorization_required": False,
+            "human_authorization_verified": True,
+            "human_authorization_experiment_id": "GUIDE10_WHITE70_FAST_VALIDATION_ROUND1_V1",
+            "bounded_device_scope": True,
+            "experiment_id": "GUIDE10_WHITE70_FAST_VALIDATION_ROUND1_V1",
+            "remote_v2_capability": True,
+        },
+        "camera": {
+            "backend": "remote",
+            "v2_capture_timing_capability_available": True,
+            "v2_capture_capability": "remote_v2_capture_timing_v1",
+            "resolved_capture_settings": {
+                "owner": "remote_backend.resolve_capture_settings",
+                "iso": "100",
+                "aperture": "f/4",
+                "image_format": "RAW",
+            },
+        },
+        "analysis_contract": {
+            "method": "white_fast_direct_representative_12",
+            "target_contracts": contracts,
+            "independent_reset_s": 600,
+            "dwell_s": 120,
+            "source_order_balanced": True,
+            "candidate_generation_round": 1,
+            "global_model_refit": False,
+            "default_lut_installation": False,
+            "steady_claim": False,
+        },
+    }
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Build GUIDE10 canonical white70 and one-time correction-field candidates.")
     parser.add_argument("--baseline", type=Path, required=True)
