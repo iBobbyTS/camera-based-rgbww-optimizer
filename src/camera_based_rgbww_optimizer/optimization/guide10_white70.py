@@ -15,6 +15,10 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _read_jsonl(path: Path) -> list[dict[str, Any]]:
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+
+
 def _active_face(command: Mapping[str, Any]) -> tuple[str, ...]:
     return tuple(name for name in CHANNELS if int(command[name]) >= 4095)
 
@@ -152,6 +156,8 @@ def build_guide10_white70_validation_plan(
     calibration_rows = {
         (int(row["cct"]), int(row["gm"])): row for row in calibration.get("targets", ())
     }
+
+
     if len(candidate_rows) != 70 or set(candidate_rows) != set(calibration_rows):
         raise ValueError("GUIDE10 white70 candidates must match the exact frozen 14x5 grid")
 
@@ -281,6 +287,68 @@ def build_guide10_white70_validation_plan(
             "steady_claim": False,
         },
     }
+
+
+def build_guide10_white70_recovery_suffix(interrupted_root: Path) -> dict[str, Any]:
+    run = json.loads((interrupted_root / "run.json").read_text(encoding="utf-8"))
+    pause_path = interrupted_root / "pause-evidence.json"
+    pause = json.loads(pause_path.read_text(encoding="utf-8"))
+    plan_path = interrupted_root / "experiment-spec.json"
+    captures_path = interrupted_root / "captures.jsonl"
+    returns_path = interrupted_root / "physical-returns.jsonl"
+    plan = json.loads(plan_path.read_text(encoding="utf-8"))
+    captures = _read_jsonl(captures_path)
+    returns = _read_jsonl(returns_path)
+    if run.get("status") != "interrupted" or run.get("interruption_reason") != "user_requested_pause":
+        raise ValueError("GUIDE10 recovery requires an explicitly paused run")
+    if run.get("cleanup") != "pass" or pause.get("status") != "pass":
+        raise ValueError("GUIDE10 recovery requires passed pause cleanup evidence")
+    expected_zero = {"blue": 0, "green": 0, "cold_white": 0, "red": 0, "warm_white": 0}
+    if pause.get("rgbww_zero_readback") != expected_zero or int(pause.get("ray_zero_readback", {}).get("intensity", -1)) != 0:
+        raise ValueError("GUIDE10 recovery requires exact RGBWW and Ray zero readback")
+    if len(captures) != len(returns) or len(captures) != int(run.get("completed_formal", -1)):
+        raise ValueError("GUIDE10 recovery ledgers disagree on the completed prefix")
+    expected = plan.get("captures", [])
+    if not captures or len(captures) >= len(expected) or len(captures) % 2:
+        raise ValueError("GUIDE10 recovery prefix must end on a complete Ray/strip node")
+    for index, (capture, returned, step) in enumerate(zip(captures, returns, expected)):
+        capture_id = str(step["capture_id"])
+        if str(capture.get("capture_id")) != capture_id or str(returned.get("capture_id")) != capture_id:
+            raise ValueError(f"GUIDE10 recovery prefix diverges at index {index}")
+        receipt = capture.get("capture", {}).get("physical_return_receipt", {})
+        if str(receipt.get("cr3_sha256")) != str(returned.get("cr3_sha256")) or int(receipt.get("cr3_byte_count", -1)) != int(returned.get("cr3_byte_count", -2)):
+            raise ValueError(f"GUIDE10 recovery physical receipt diverges at index {index}")
+        raw_path = Path(str(returned["cr3_path"]))
+        if not raw_path.is_file() or raw_path.stat().st_size != int(returned["cr3_byte_count"]):
+            raise ValueError(f"GUIDE10 recovery RAW artifact is missing at index {index}")
+    suffix = json.loads(json.dumps(plan))
+    suffix["captures"] = expected[len(captures):]
+    suffix["capture_ids"] = [row["capture_id"] for row in suffix["captures"]]
+    required_cache_keys = sorted({str(row["exposure_cache_key"]) for row in suffix["captures"]})
+    suffix["frozen_shutters"] = {
+        key: value for key, value in suffix["frozen_shutters"].items() if key in required_cache_keys
+    }
+    suffix["shutter_ledger_provenance"]["required_cache_keys"] = required_cache_keys
+    suffix["shutter_ledger_provenance"]["frozen_shutters_sha256"] = hashlib.sha256(
+        json.dumps(suffix["frozen_shutters"], sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+    ray_count = sum(row["source_id"] == "ray" for row in suffix["captures"])
+    strip_count = sum(row["source_id"] == "strip" for row in suffix["captures"])
+    suffix["budgets"].update(ray_cap=ray_count, strip_cap=strip_count, formal_cap=len(suffix["captures"]), physical_cr3_cap=len(suffix["captures"]))
+    suffix["stage"] = "GUIDE10-WHITE70-FAST-VALIDATION-ROUND1-RECOVERY-SUFFIX"
+    suffix["variant"] = "guide10-white70-fast-validation-round1-recovery-suffix"
+    suffix["recovery"] = {
+        "schema": "guide10_white70_round1_recovery_suffix_v1",
+        "parent_root": str(interrupted_root.resolve()),
+        "completed_prefix_count": len(captures),
+        "remaining_suffix_count": len(suffix["captures"]),
+        "parent_plan_sha256": _sha256(plan_path),
+        "parent_captures_sha256": _sha256(captures_path),
+        "parent_physical_returns_sha256": _sha256(returns_path),
+        "pause_evidence": {"path": str(pause_path.resolve()), "sha256": _sha256(pause_path)},
+    }
+    suffix["analysis_contract"]["recovery_parent_prefix_count"] = len(captures)
+    return suffix
 
 
 def main(argv: Sequence[str] | None = None) -> int:

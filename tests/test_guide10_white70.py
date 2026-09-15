@@ -1,7 +1,11 @@
 import unittest
+import json
+import tempfile
+from pathlib import Path
 
 from camera_based_rgbww_optimizer.optimization.guide10_white70 import (
     build_guide10_white70_candidates,
+    build_guide10_white70_recovery_suffix,
     build_guide10_white70_validation_plan,
 )
 
@@ -74,6 +78,35 @@ class Guide10White70Tests(unittest.TestCase):
             if row["cct"] == 1800 and row["gm"] == 100
         )
         self.assertEqual(selected["strip_command"]["g"], 1197)
+
+    def test_recovery_suffix_requires_exact_complete_node_prefix(self):
+        baseline, pass_row, confirmation = self._inputs()
+        candidates = build_guide10_white70_candidates(baseline, [("pass", {"nodes": [pass_row]})], confirmation)
+        calibration = {"targets": [{
+            "cct": row["cct"], "gm": row["gm"],
+            "ray": {"auto_exposure": {"final": {"shutter_speed": "1/1600"}}},
+            "feedback_optimizer": {"best": {"capture": {"shutter_speed": "1/50"}}},
+            "feedback_goal": {"resolved_cct_tolerance_K": 25, "cct_tolerance_mired": 1, "duv_tolerance": 0.0005},
+        } for row in candidates["nodes"]]}
+        plan = build_guide10_white70_validation_plan(candidates, calibration, candidate_reference={}, calibration_reference={})
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "experiment-spec.json").write_text(json.dumps(plan))
+            (root / "run.json").write_text(json.dumps({"status": "interrupted", "interruption_reason": "user_requested_pause", "cleanup": "pass", "completed_formal": 2}))
+            (root / "pause-evidence.json").write_text(json.dumps({"status": "pass", "rgbww_zero_readback": {"blue": 0, "green": 0, "cold_white": 0, "red": 0, "warm_white": 0}, "ray_zero_readback": {"intensity": 0}}))
+            capture_rows, return_rows = [], []
+            for step in plan["captures"][:2]:
+                raw = root / f"{step['capture_id']}.cr3"
+                raw.write_bytes(b"raw")
+                receipt = {"cr3_sha256": "hash", "cr3_byte_count": 3}
+                capture_rows.append({"capture_id": step["capture_id"], "capture": {"physical_return_receipt": receipt}})
+                return_rows.append({"capture_id": step["capture_id"], "cr3_sha256": "hash", "cr3_byte_count": 3, "cr3_path": str(raw)})
+            (root / "captures.jsonl").write_text("".join(json.dumps(row) + "\n" for row in capture_rows))
+            (root / "physical-returns.jsonl").write_text("".join(json.dumps(row) + "\n" for row in return_rows))
+            suffix = build_guide10_white70_recovery_suffix(root)
+            self.assertEqual(len(suffix["captures"]), 138)
+            self.assertEqual(suffix["recovery"]["completed_prefix_count"], 2)
+            self.assertEqual(suffix["budgets"]["formal_cap"], 138)
 
 
 if __name__ == "__main__":

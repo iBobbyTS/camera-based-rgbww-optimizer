@@ -9,6 +9,7 @@ from typing import Any, Sequence
 from camera_based_rgbww_optimizer.control import camera_remote
 from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
 from camera_based_rgbww_optimizer.optimization.guide10_white70 import (
+    build_guide10_white70_recovery_suffix,
     build_guide10_white70_validation_plan,
 )
 from camera_based_rgbww_optimizer.optimization.measure_p7_thermal_diagnostics import (
@@ -30,6 +31,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--calibration", type=Path, default=thermal.GUIDE9_WHITE_70_CANDIDATE_PATH)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--run-name", required=True)
+    parser.add_argument("--resume-run-root", type=Path)
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--dry-run", action="store_true")
     mode.add_argument("--execute", action="store_true")
@@ -40,14 +42,17 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(argv)
-    candidates = json.loads(args.candidates.read_text(encoding="utf-8"))
-    calibration = json.loads(args.calibration.read_text(encoding="utf-8"))
-    plan = build_guide10_white70_validation_plan(
-        candidates,
-        calibration,
-        candidate_reference=_reference(args.candidates),
-        calibration_reference=_reference(args.calibration),
-    )
+    if args.resume_run_root is not None:
+        plan = build_guide10_white70_recovery_suffix(args.resume_run_root.resolve())
+    else:
+        candidates = json.loads(args.candidates.read_text(encoding="utf-8"))
+        calibration = json.loads(args.calibration.read_text(encoding="utf-8"))
+        plan = build_guide10_white70_validation_plan(
+            candidates,
+            calibration,
+            candidate_reference=_reference(args.candidates),
+            calibration_reference=_reference(args.calibration),
+        )
     if args.dry_run:
         root = (args.output_dir / args.run_name).resolve()
         root.mkdir(parents=True, exist_ok=False)
