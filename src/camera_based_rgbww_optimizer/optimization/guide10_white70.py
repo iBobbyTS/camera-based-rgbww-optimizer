@@ -456,6 +456,7 @@ def build_guide10_white70_w5_plan(
         "captures": captures, "capture_ids": [x["capture_id"] for x in captures],
         "timing_contract": thermal.timing_contract(2), "timing_resolution": "guide10_reset600_D120", "cold_proxy": 600, "cold_proxy_wait_s": 600,
         "native_raw_ambient_policy": thermal.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+        "exposure_setup_required": [],
         "frozen_shutters": frozen_shutters,
         "shutter_ledger_provenance": {"owner": "experiment_capture_steps", "required_cache_keys": sorted(frozen_shutters), "frozen_shutters_sha256": thermal.canonical_sha256(frozen_shutters)},
         "budgets": {"ray_cap": len(captures)//2, "strip_cap": len(captures)//2, "formal_cap": len(captures), "physical_cr3_cap": len(captures), "ambient_cap": 0, "retry": 0},
