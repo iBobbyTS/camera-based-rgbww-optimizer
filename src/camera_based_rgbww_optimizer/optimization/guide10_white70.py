@@ -452,7 +452,12 @@ def build_guide10_white70_w5_plan(
         "schema": thermal.PLAN_SCHEMA_V2, "status": "execute_authorized", "experiment_id": thermal.TD_C,
         "guide_experiment_id": "GUIDE10_WHITE70_W5_LOCAL_CORRECTION_V1", "variant": "guide10-white70-w5-local-correction",
         "stage": "GUIDE10-WHITE70-W5-LOCAL-CORRECTION", "phase": "formal", "source": "white70_round1_residuals",
-        "inputs": {"round1_analysis": dict(analysis_reference), "round1_plan": dict(round1_reference), "calibration": dict(calibration_reference)},
+        "inputs": {
+            **dict(round1_plan.get("inputs", {})),
+            "round1_analysis": dict(analysis_reference),
+            "round1_plan": dict(round1_reference),
+            "calibration": dict(calibration_reference),
+        },
         "captures": captures, "capture_ids": [x["capture_id"] for x in captures],
         "timing_contract": thermal.timing_contract(2), "timing_resolution": "guide10_reset600_D120", "cold_proxy": 600, "cold_proxy_wait_s": 600,
         "native_raw_ambient_policy": thermal.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
