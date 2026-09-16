@@ -241,6 +241,7 @@ def build_guide10_white70_validation_plan(
         "cold_proxy": 600,
         "cold_proxy_wait_s": 600,
         "native_raw_ambient_policy": thermal.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+        "exposure_setup_required": [],
         "frozen_shutters": frozen_shutters,
         "exposure_setup_required": [],
         "shutter_ledger_provenance": {
