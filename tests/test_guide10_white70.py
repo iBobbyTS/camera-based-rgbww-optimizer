@@ -7,6 +7,7 @@ from camera_based_rgbww_optimizer.optimization.guide10_white70 import (
     build_guide10_white70_candidates,
     build_guide10_white70_recovery_suffix,
     build_guide10_white70_validation_plan,
+    build_guide10_white70_w5_plan,
 )
 
 
@@ -107,6 +108,40 @@ class Guide10White70Tests(unittest.TestCase):
             self.assertEqual(len(suffix["captures"]), 138)
             self.assertEqual(suffix["recovery"]["completed_prefix_count"], 2)
             self.assertEqual(suffix["budgets"]["formal_cap"], 138)
+
+    def test_w5_preserves_source_specific_shutters_when_round1_order_is_strip_first(self):
+        baseline, pass_row, confirmation = self._inputs()
+        candidates = build_guide10_white70_candidates(baseline, [("pass", {"nodes": [pass_row]})], confirmation)
+        calibration = {"targets": [{
+            "cct": row["cct"], "gm": row["gm"],
+            "ray": {"auto_exposure": {"final": {"shutter_speed": "1/1600"}}},
+            "feedback_optimizer": {
+                "active_channel": "r", "final_jacobian": None,
+                "best": {"capture": {"shutter_speed": "1/50"}},
+            },
+            "feedback_goal": {"resolved_cct_tolerance_K": 25, "cct_tolerance_mired": 1, "duv_tolerance": 0.0005},
+        } for row in candidates["nodes"]]}
+        round1 = build_guide10_white70_validation_plan(candidates, calibration, candidate_reference={}, calibration_reference={})
+        node = candidates["nodes"][1]
+        failed = {
+            "node_count": 70,
+            "nodes": [{
+                "cct": node["cct"], "gm": node["gm"], "status": "fail",
+                "strip_command": node["candidate_command"],
+                "mired_error": 2.0, "duv_error": 0.0,
+                "limits": {"cct_K": 25, "mired": 1, "duv": 0.0005},
+                "ray": {"white_point": {"cct_K": 1800, "duv": 0.0}},
+                "strip": {"white_point": {"cct_K": 1794, "duv": 0.0}},
+            }],
+        }
+        w5 = build_guide10_white70_w5_plan(
+            failed, round1, calibration,
+            analysis_reference={}, round1_reference={}, calibration_reference={},
+        )
+        first_ray, first_strip = w5["captures"][:2]
+        self.assertEqual((first_ray["source_id"], first_ray["nominal_shutter"]), ("ray", "1/1600"))
+        self.assertEqual((first_strip["source_id"], first_strip["nominal_shutter"]), ("strip", "1/50"))
+        self.assertEqual(first_strip["exposure_cache_key"], f"strip-white-{node['cct']}-gm{node['gm']}")
 
 
 if __name__ == "__main__":

@@ -377,7 +377,10 @@ def build_guide10_white70_w5_plan(
         raise ValueError("GUIDE10 W5 requires the frozen nonconforming node set")
     if int(round1_analysis.get("node_count", 0)) != 70:
         raise ValueError("GUIDE10 W5 requires the 70-node round-1 analysis")
-    plan_by_key = {(int(x["target_cct"]), int(x["target_gm"])): x for x in round1_plan.get("captures", ())}
+    templates_by_key: dict[tuple[int, int], dict[str, Mapping[str, Any]]] = {}
+    for step in round1_plan.get("captures", ()):
+        key = (int(step["target_cct"]), int(step["target_gm"]))
+        templates_by_key.setdefault(key, {})[str(step["source_id"])] = step
     contract_by_key = {(int(x["cct"]), int(x["gm"])): x for x in round1_plan["analysis_contract"]["target_contracts"]}
     cal_by_key = {(int(x["cct"]), int(x["gm"])): x for x in calibration.get("targets", ())}
     captures: list[dict[str, Any]] = []
@@ -385,7 +388,9 @@ def build_guide10_white70_w5_plan(
     candidate_rows: list[dict[str, Any]] = []
     for node_index, node in enumerate(sorted(failed, key=lambda x: (int(x["cct"]), int(x["gm"])) )):
         key = (int(node["cct"]), int(node["gm"]))
-        template = plan_by_key[key]
+        templates = templates_by_key[key]
+        if set(templates) != {"ray", "strip"}:
+            raise ValueError(f"GUIDE10 W5 lacks frozen Ray/strip templates for {key}")
         contract = copy.deepcopy(contract_by_key[key])
         calibration_row = cal_by_key[key]
         base = {name: int(node["strip_command"][name]) for name in CHANNELS}
@@ -428,8 +433,8 @@ def build_guide10_white70_w5_plan(
         candidate_rows.append({"cct": key[0], "gm": key[1], "base_command": base, "active_channel": active, "method": method, "commands": candidates, "max_unique_commands": 5})
         contract.update({"target_index": node_index, "strip_command": candidates[0], "source_order": list(contract.get("source_order", ["ray", "strip"])), "candidate_owner": "guide10_w5_bounded_local_candidate"})
         contracts.append(contract)
-        ray_template = {**template, "source_id": "ray", "role": "ray_reference"}
-        strip_template = {**template, "source_id": "strip", "role": "strip_candidate"}
+        ray_template = {**templates["ray"], "role": "ray_reference"}
+        strip_template = {**templates["strip"], "role": "strip_candidate"}
         for candidate_index, command in enumerate(candidates):
             for source, source_template in (("ray", ray_template), ("strip", strip_template)):
                 step = copy.deepcopy(source_template)
