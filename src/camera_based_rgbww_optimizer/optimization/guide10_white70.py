@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 import math
+import copy
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -349,6 +350,118 @@ def build_guide10_white70_recovery_suffix(interrupted_root: Path) -> dict[str, A
     }
     suffix["analysis_contract"]["recovery_parent_prefix_count"] = len(captures)
     return suffix
+
+
+def build_guide10_white70_w5_plan(
+    round1_analysis: Mapping[str, Any],
+    round1_plan: Mapping[str, Any],
+    calibration: Mapping[str, Any],
+    *,
+    analysis_reference: Mapping[str, Any],
+    round1_reference: Mapping[str, Any],
+    calibration_reference: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Build the single bounded W5 local-candidate batch.
+
+    This consumes only the frozen round-1 residuals. Historical Jacobians are
+    used where present; nodes without one receive three explicitly labelled
+    directional fallback commands. No global refit or in-run feedback loop is
+    introduced here.
+    """
+    from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
+    from camera_based_rgbww_optimizer.optimization import white_lut_feedback
+
+    failed = [row for row in round1_analysis.get("nodes", ()) if row.get("status") != "pass"]
+    if not failed:
+        raise ValueError("GUIDE10 W5 requires the frozen nonconforming node set")
+    if int(round1_analysis.get("node_count", 0)) != 70:
+        raise ValueError("GUIDE10 W5 requires the 70-node round-1 analysis")
+    plan_by_key = {(int(x["target_cct"]), int(x["target_gm"])): x for x in round1_plan.get("captures", ())}
+    contract_by_key = {(int(x["cct"]), int(x["gm"])): x for x in round1_plan["analysis_contract"]["target_contracts"]}
+    cal_by_key = {(int(x["cct"]), int(x["gm"])): x for x in calibration.get("targets", ())}
+    captures: list[dict[str, Any]] = []
+    contracts: list[dict[str, Any]] = []
+    candidate_rows: list[dict[str, Any]] = []
+    for node_index, node in enumerate(sorted(failed, key=lambda x: (int(x["cct"]), int(x["gm"])) )):
+        key = (int(node["cct"]), int(node["gm"]))
+        template = plan_by_key[key]
+        contract = copy.deepcopy(contract_by_key[key])
+        calibration_row = cal_by_key[key]
+        base = {name: int(node["strip_command"][name]) for name in CHANNELS}
+        active = str(calibration_row.get("feedback_optimizer", {}).get("active_channel", contract.get("active_channel", "r")))
+        jac = calibration_row.get("feedback_optimizer", {}).get("final_jacobian")
+        candidates: list[dict[str, int]] = []
+        method = "historical_jacobian_gate_aligned"
+        if jac is not None:
+            step = white_lut_feedback.solve_damped_step(
+                base, node["strip"]["white_point"], node["ray"]["white_point"], jac,
+                active_channel=active, cct_tolerance_K=float(node["limits"]["cct_K"]),
+                duv_tolerance=float(node["limits"]["duv"]), max_code=4095,
+                max_step_code=min(768, int(calibration_row["feedback_optimizer"].get("final_max_step_code", 768))),
+                damping=float(calibration_row["feedback_optimizer"].get("damping", 0.05)),
+                rgb_penalty=0.0, channel_penalties=calibration_row["feedback_optimizer"].get("channel_penalties"),
+            )["command"]
+            candidates.append({name: int(step[name]) for name in CHANNELS})
+        else:
+            method = "bounded_directional_fallback_no_jacobian"
+        # Keep the candidate batch finite and gate-aligned: two bounded
+        # micro-steps around the first prediction, or around the measured base.
+        seed = candidates[0] if candidates else base
+        residual_mired = float(node.get("mired_error", 0.0))
+        residual_duv = float(node.get("duv_error", 0.0))
+        free = [name for name in CHANNELS if name != active]
+        ranked = sorted(free, key=lambda name: (int(seed[name]) in (0, 4095), name))
+        direction = -1 if residual_mired > 0 else 1
+        if residual_duv > 0:
+            direction *= -1
+        for offset in (256, 512):
+            command = dict(seed)
+            channel = ranked[0]
+            value = max(0, min(4095, int(command[channel]) + direction * offset))
+            command[channel] = value
+            if command != base and command not in candidates:
+                candidates.append(command)
+        if not candidates:
+            candidates = [base]
+        candidates = candidates[:3]
+        candidate_rows.append({"cct": key[0], "gm": key[1], "base_command": base, "active_channel": active, "method": method, "commands": candidates, "max_unique_commands": 5})
+        contract.update({"target_index": node_index, "strip_command": candidates[0], "source_order": list(contract.get("source_order", ["ray", "strip"])), "candidate_owner": "guide10_w5_bounded_local_candidate"})
+        contracts.append(contract)
+        ray_template = {**template, "source_id": "ray", "role": "ray_reference"}
+        strip_template = {**template, "source_id": "strip", "role": "strip_candidate"}
+        for candidate_index, command in enumerate(candidates):
+            for source, source_template in (("ray", ray_template), ("strip", strip_template)):
+                step = copy.deepcopy(source_template)
+                step.update({
+                    "capture_id": f"{len(captures):03d}-{source}-guide10-white70-w5-cct{key[0]}-gm{key[1]}-candidate{candidate_index}",
+                    "state_id": f"CCT{key[0]}_GM{key[1]}_W5_C{candidate_index}",
+                    "role": "ray_reference" if source == "ray" else "strip_candidate",
+                    "capture_role": "formal", "formal_measurement": True,
+                    "session_index": len(captures) + 1,
+                    "source_order": 1 if source == "ray" else 2,
+                })
+                if source == "strip":
+                    step["command"] = dict(command)
+                    step["exact_command_hash"] = thermal.canonical_sha256(command)
+                captures.append(step)
+    if len(captures) != sum(len(x["commands"]) for x in candidate_rows) * 2:
+        raise AssertionError("GUIDE10 W5 capture construction is not paired")
+    frozen_shutters = {str(step["exposure_cache_key"]): str(step["nominal_shutter"]) for step in captures}
+    return {
+        "schema": thermal.PLAN_SCHEMA_V2, "status": "execute_authorized", "experiment_id": thermal.TD_C,
+        "guide_experiment_id": "GUIDE10_WHITE70_W5_LOCAL_CORRECTION_V1", "variant": "guide10-white70-w5-local-correction",
+        "stage": "GUIDE10-WHITE70-W5-LOCAL-CORRECTION", "phase": "formal", "source": "white70_round1_residuals",
+        "inputs": {"round1_analysis": dict(analysis_reference), "round1_plan": dict(round1_reference), "calibration": dict(calibration_reference)},
+        "captures": captures, "capture_ids": [x["capture_id"] for x in captures],
+        "timing_contract": thermal.timing_contract(2), "timing_resolution": "guide10_reset600_D120", "cold_proxy": 600, "cold_proxy_wait_s": 600,
+        "native_raw_ambient_policy": thermal.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+        "frozen_shutters": frozen_shutters,
+        "shutter_ledger_provenance": {"owner": "experiment_capture_steps", "required_cache_keys": sorted(frozen_shutters), "frozen_shutters_sha256": thermal.canonical_sha256(frozen_shutters)},
+        "budgets": {"ray_cap": len(captures)//2, "strip_cap": len(captures)//2, "formal_cap": len(captures), "physical_cr3_cap": len(captures), "ambient_cap": 0, "retry": 0},
+        "execution_authorization": {"schema": "direct_guide10_white70_w5_local_correction_v1", "human_authorization_required": False, "human_authorization_verified": True, "experiment_id": "GUIDE10_WHITE70_W5_LOCAL_CORRECTION_V1", "bounded_device_scope": True, "remote_v2_capability": True},
+        "camera": {"backend": "remote", "v2_capture_timing_capability_available": True, "v2_capture_capability": "remote_v2_capture_timing_v1", "resolved_capture_settings": {"owner": "remote_backend.resolve_capture_settings", "iso": "100", "aperture": "f/4", "image_format": "RAW"}},
+        "analysis_contract": {"method": "guide10_white70_w5_bounded_local_candidates", "target_contracts": contracts, "candidate_rows": candidate_rows, "round1_failed_node_count": len(failed), "independent_reset_s": 600, "dwell_s": 120, "global_model_refit": False, "third_local_generation": False, "max_unique_commands_per_node": 5, "refinement_budget_per_node": 2, "best_command_valid_observations": 3, "pass_next": "GUIDE10_WHITE70_W6_FINAL_VALIDATION", "failure_next": "GUIDE10_WHITE70_W6_FINAL_VALIDATION"},
+    }
 
 
 def main(argv: Sequence[str] | None = None) -> int:

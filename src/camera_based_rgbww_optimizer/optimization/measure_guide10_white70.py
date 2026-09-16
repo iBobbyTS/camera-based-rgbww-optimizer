@@ -11,6 +11,7 @@ from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as 
 from camera_based_rgbww_optimizer.optimization.guide10_white70 import (
     build_guide10_white70_recovery_suffix,
     build_guide10_white70_validation_plan,
+    build_guide10_white70_w5_plan,
 )
 from camera_based_rgbww_optimizer.optimization.measure_p7_thermal_diagnostics import (
     run_authorized_plan,
@@ -32,6 +33,8 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--run-name", required=True)
     parser.add_argument("--resume-run-root", type=Path)
+    parser.add_argument("--w5-analysis", type=Path)
+    parser.add_argument("--w5-round1-plan", type=Path)
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--dry-run", action="store_true")
     mode.add_argument("--execute", action="store_true")
@@ -42,7 +45,20 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(argv)
-    if args.resume_run_root is not None:
+    if args.w5_analysis is not None or args.w5_round1_plan is not None:
+        if args.w5_analysis is None or args.w5_round1_plan is None:
+            raise ValueError("W5 requires --w5-analysis and --w5-round1-plan together")
+        candidates = json.loads(args.candidates.read_text(encoding="utf-8"))
+        calibration = json.loads(args.calibration.read_text(encoding="utf-8"))
+        plan = build_guide10_white70_w5_plan(
+            json.loads(args.w5_analysis.read_text(encoding="utf-8")),
+            json.loads(args.w5_round1_plan.read_text(encoding="utf-8")),
+            calibration,
+            analysis_reference=_reference(args.w5_analysis),
+            round1_reference=_reference(args.w5_round1_plan),
+            calibration_reference=_reference(args.calibration),
+        )
+    elif args.resume_run_root is not None:
         plan = build_guide10_white70_recovery_suffix(args.resume_run_root.resolve())
     else:
         candidates = json.loads(args.candidates.read_text(encoding="utf-8"))
