@@ -476,6 +476,47 @@ def build_guide10_white70_w5_plan(
     }
 
 
+def build_guide10_white70_w5_recovery_suffix(interrupted_root: Path) -> dict[str, Any]:
+    """Recover an explicitly paused W5 run as an immutable suffix plan."""
+    from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
+    run = json.loads((interrupted_root / "run.json").read_text(encoding="utf-8"))
+    pause = json.loads((interrupted_root / "pause-evidence.json").read_text(encoding="utf-8"))
+    plan_path = interrupted_root / "experiment-spec.json"
+    plan = json.loads(plan_path.read_text(encoding="utf-8"))
+    captures = _read_jsonl(interrupted_root / "captures.jsonl")
+    returns = _read_jsonl(interrupted_root / "physical-returns.jsonl")
+    expected = list(plan.get("captures", ()))
+    if run.get("status") != "interrupted" or run.get("interruption_reason") != "user_requested_pause":
+        raise ValueError("GUIDE10 W5 recovery requires an explicitly paused run")
+    if run.get("cleanup") != "pass" or pause.get("status") != "pass":
+        raise ValueError("GUIDE10 W5 recovery requires passing pause cleanup evidence")
+    if len(captures) != len(returns) or len(captures) != int(run.get("completed_formal", -1)):
+        raise ValueError("GUIDE10 W5 recovery ledgers disagree on completed prefix")
+    if not captures or len(captures) >= len(expected):
+        raise ValueError("GUIDE10 W5 recovery requires a non-empty incomplete prefix")
+    for index, (capture, returned, step) in enumerate(zip(captures, returns, expected)):
+        if capture.get("capture_id") != step.get("capture_id") or returned.get("capture_id") != step.get("capture_id"):
+            raise ValueError(f"GUIDE10 W5 recovery prefix diverges at index {index}")
+        receipt = capture.get("capture", {}).get("physical_return_receipt", {})
+        if receipt.get("cr3_sha256") != returned.get("cr3_sha256") or int(receipt.get("cr3_byte_count", -1)) != int(returned.get("cr3_byte_count", -2)):
+            raise ValueError(f"GUIDE10 W5 physical receipt diverges at index {index}")
+        raw = Path(str(returned.get("cr3_path", "")))
+        if not raw.is_file() or raw.stat().st_size != int(returned.get("cr3_byte_count", -1)):
+            raise ValueError(f"GUIDE10 W5 RAW artifact missing at index {index}")
+    suffix = copy.deepcopy(plan)
+    suffix["captures"] = expected[len(captures):]
+    suffix["capture_ids"] = [x["capture_id"] for x in suffix["captures"]]
+    required = sorted({str(x["exposure_cache_key"]) for x in suffix["captures"]})
+    suffix["frozen_shutters"] = {key: value for key, value in plan["frozen_shutters"].items() if key in required}
+    suffix["shutter_ledger_provenance"]["required_cache_keys"] = required
+    suffix["shutter_ledger_provenance"]["frozen_shutters_sha256"] = thermal.canonical_sha256(suffix["frozen_shutters"])
+    suffix["budgets"].update(ray_cap=sum(x["source_id"] == "ray" for x in suffix["captures"]), strip_cap=sum(x["source_id"] == "strip" for x in suffix["captures"]), formal_cap=len(suffix["captures"]), physical_cr3_cap=len(suffix["captures"]))
+    suffix["stage"] = "GUIDE10-WHITE70-W5-LOCAL-CORRECTION-RECOVERY-SUFFIX"
+    suffix["variant"] = "guide10-white70-w5-local-correction-recovery-suffix"
+    suffix["recovery"] = {"schema": "guide10_white70_w5_recovery_suffix_v1", "parent_root": str(interrupted_root.resolve()), "completed_prefix_count": len(captures), "remaining_suffix_count": len(suffix["captures"]), "parent_plan_sha256": _sha256(plan_path)}
+    return suffix
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Build GUIDE10 canonical white70 and one-time correction-field candidates.")
     parser.add_argument("--baseline", type=Path, required=True)

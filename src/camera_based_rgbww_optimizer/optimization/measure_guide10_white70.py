@@ -10,6 +10,7 @@ from camera_based_rgbww_optimizer.control import camera_remote
 from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
 from camera_based_rgbww_optimizer.optimization.guide10_white70 import (
     build_guide10_white70_recovery_suffix,
+    build_guide10_white70_w5_recovery_suffix,
     build_guide10_white70_validation_plan,
     build_guide10_white70_w5_plan,
 )
@@ -59,7 +60,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             calibration_reference=_reference(args.calibration),
         )
     elif args.resume_run_root is not None:
-        plan = build_guide10_white70_recovery_suffix(args.resume_run_root.resolve())
+        parent_plan = json.loads((args.resume_run_root.resolve() / "experiment-spec.json").read_text(encoding="utf-8"))
+        if parent_plan.get("guide_experiment_id") == "GUIDE10_WHITE70_W5_LOCAL_CORRECTION_V1":
+            plan = build_guide10_white70_w5_recovery_suffix(args.resume_run_root.resolve())
+        else:
+            plan = build_guide10_white70_recovery_suffix(args.resume_run_root.resolve())
     else:
         candidates = json.loads(args.candidates.read_text(encoding="utf-8"))
         calibration = json.loads(args.calibration.read_text(encoding="utf-8"))
