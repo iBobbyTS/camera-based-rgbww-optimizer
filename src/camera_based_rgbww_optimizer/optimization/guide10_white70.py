@@ -486,10 +486,19 @@ def build_guide10_white70_w5_recovery_suffix(interrupted_root: Path) -> dict[str
     captures = _read_jsonl(interrupted_root / "captures.jsonl")
     returns = _read_jsonl(interrupted_root / "physical-returns.jsonl")
     expected = list(plan.get("captures", ()))
-    if run.get("status") != "interrupted" or run.get("interruption_reason") != "user_requested_pause":
+    if (
+        run.get("status") != "interrupted"
+        or not str(run.get("interruption_reason", "")).startswith("user_requested_pause")
+    ):
         raise ValueError("GUIDE10 W5 recovery requires an explicitly paused run")
     if run.get("cleanup") != "pass" or pause.get("status") != "pass":
         raise ValueError("GUIDE10 W5 recovery requires passing pause cleanup evidence")
+    expected_zero = {"blue": 0, "green": 0, "cold_white": 0, "red": 0, "warm_white": 0}
+    if (
+        pause.get("rgbww_zero_readback") != expected_zero
+        or int(pause.get("ray_zero_readback", {}).get("intensity", -1)) != 0
+    ):
+        raise ValueError("GUIDE10 W5 recovery requires exact RGBWW and Ray zero readback")
     if len(captures) != len(returns) or len(captures) != int(run.get("completed_formal", -1)):
         raise ValueError("GUIDE10 W5 recovery ledgers disagree on completed prefix")
     if not captures or len(captures) >= len(expected):
