@@ -526,6 +526,31 @@ def build_guide10_white70_w5_recovery_suffix(interrupted_root: Path) -> dict[str
     return suffix
 
 
+def build_guide10_white70_w6_plan(round1_plan: Mapping[str, Any], w5_analysis: Mapping[str, Any]) -> dict[str, Any]:
+    """Freeze one command per canonical node for the independent W6 validation."""
+    from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
+    selected = {(int(x["cct"]), int(x["gm"])): x for x in w5_analysis.get("nodes", ())}
+    contracts = {(int(x["cct"]), int(x["gm"])): x for x in round1_plan["analysis_contract"]["target_contracts"]}
+    templates = {}
+    for step in round1_plan["captures"]:
+        templates.setdefault((int(step["target_cct"]), int(step["target_gm"])), {})[step["source_id"]] = step
+    captures, target_contracts = [], []
+    for index, key in enumerate(sorted(contracts)):
+        contract = dict(contracts[key]); node = selected.get(key)
+        command = dict(node["strip_command"]) if node else dict(contract["strip_command"])
+        contract.update(target_index=index, strip_command=command, candidate_owner="guide10_w6_final_frozen_command")
+        target_contracts.append(contract)
+        order = contract.get("source_order", ["ray", "strip"])
+        for source_index, source in enumerate(order, 1):
+            step = dict(templates[key][source])
+            step.update(capture_id=f"{len(captures):03d}-{source}-guide10-white70-w6-cct{key[0]}-gm{key[1]}", role="ray_reference" if source == "ray" else "strip_final", session_index=index + 1, source_order=source_index, state_id=f"CCT{key[0]}_GM{key[1]}_W6")
+            if source == "strip":
+                step["command"] = command; step["exact_command_hash"] = thermal.canonical_sha256(command)
+            captures.append(step)
+    frozen = {str(x["exposure_cache_key"]): str(x["nominal_shutter"]) for x in captures}
+    return {**round1_plan, "guide_experiment_id":"GUIDE10_WHITE70_W6_FINAL_VALIDATION_V1", "variant":"guide10-white70-w6-final-validation", "stage":"GUIDE10-WHITE70-W6-FINAL-VALIDATION", "captures":captures, "capture_ids":[x["capture_id"] for x in captures], "frozen_shutters":frozen, "exposure_setup_required":[], "shutter_ledger_provenance":{"owner":"experiment_capture_steps","required_cache_keys":sorted(frozen),"frozen_shutters_sha256":thermal.canonical_sha256(frozen)}, "budgets":{"ray_cap":70,"strip_cap":70,"formal_cap":140,"physical_cr3_cap":140,"ambient_cap":0,"retry":0}, "execution_authorization":{"schema":"direct_guide10_white70_w6_final_validation_v1","human_authorization_required":False,"human_authorization_verified":True,"experiment_id":"GUIDE10_WHITE70_W6_FINAL_VALIDATION_V1","bounded_device_scope":True,"remote_v2_capability":True}, "analysis_contract":{"method":"guide10_white70_w6_final_frozen_commands","target_contracts":target_contracts,"global_model_refit":False,"steady_claim":False}}
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Build GUIDE10 canonical white70 and one-time correction-field candidates.")
     parser.add_argument("--baseline", type=Path, required=True)

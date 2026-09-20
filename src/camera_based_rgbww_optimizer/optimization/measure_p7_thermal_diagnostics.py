@@ -42,6 +42,7 @@ GUIDE9_CANDIDATE_BATCH_SCHEMAS = {
     "direct_guide10_white_mired_microbracket_confirmation_v1",
     "direct_guide10_white70_round1_v1",
     "direct_guide10_white70_w5_local_correction_v1",
+    "direct_guide10_white70_w6_final_validation_v1",
 }
 GUIDE9_BEST_REPEAT_SCHEMAS = {
     "direct_guide9_h120_s50_best_repeat_v1",
@@ -310,6 +311,10 @@ def validate_authorized_execution_plan(
         isinstance(authorization, Mapping)
         and authorization.get("schema") == "direct_guide10_white70_w5_local_correction_v1"
     )
+    direct_guide10_white70_w6 = (
+        isinstance(authorization, Mapping)
+        and authorization.get("schema") == "direct_guide10_white70_w6_final_validation_v1"
+    )
     if (
         direct_ray_history or direct_strip_history
         or direct_ray_fast_long_bridge or direct_td_c_fast_endpoint
@@ -319,6 +324,7 @@ def validate_authorized_execution_plan(
         or direct_guide6_strip_exposure or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_best or direct_guide9_s25
         or direct_guide10_white_microbracket or direct_guide10_white_confirmation
         or direct_guide10_white70_w5
+        or direct_guide10_white70_w6
     ):
         valid_execution_scope = (
             authorization.get("bounded_device_scope") is True
