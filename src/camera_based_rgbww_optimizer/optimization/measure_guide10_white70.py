@@ -16,6 +16,7 @@ from camera_based_rgbww_optimizer.optimization.guide10_white70 import (
     build_guide10_white70_w6_plan,
     build_guide10_white70_w7_plan,
     build_guide10_white70_w7_long_plan,
+    build_guide10_white70_w7_long_recovery_suffix,
 )
 from camera_based_rgbww_optimizer.optimization.measure_p7_thermal_diagnostics import (
     run_authorized_plan,
@@ -74,7 +75,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         )
     elif args.resume_run_root is not None:
         parent_plan = json.loads((args.resume_run_root.resolve() / "experiment-spec.json").read_text(encoding="utf-8"))
-        if parent_plan.get("guide_experiment_id") == "GUIDE10_WHITE70_W5_LOCAL_CORRECTION_V1":
+        if parent_plan.get("guide_experiment_id") == "GUIDE10_WHITE70_W7_LONG_HOLDOUT_V1":
+            plan = build_guide10_white70_w7_long_recovery_suffix(args.resume_run_root.resolve())
+        elif parent_plan.get("guide_experiment_id") == "GUIDE10_WHITE70_W5_LOCAL_CORRECTION_V1":
             plan = build_guide10_white70_w5_recovery_suffix(args.resume_run_root.resolve())
         else:
             plan = build_guide10_white70_recovery_suffix(args.resume_run_root.resolve())
