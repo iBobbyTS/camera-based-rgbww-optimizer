@@ -551,6 +551,24 @@ def build_guide10_white70_w6_plan(round1_plan: Mapping[str, Any], w5_analysis: M
     return {**round1_plan, "guide_experiment_id":"GUIDE10_WHITE70_W6_FINAL_VALIDATION_V1", "variant":"guide10-white70-w6-final-validation", "stage":"GUIDE10-WHITE70-W6-FINAL-VALIDATION", "captures":captures, "capture_ids":[x["capture_id"] for x in captures], "frozen_shutters":frozen, "exposure_setup_required":[], "shutter_ledger_provenance":{"owner":"experiment_capture_steps","required_cache_keys":sorted(frozen),"frozen_shutters_sha256":thermal.canonical_sha256(frozen)}, "budgets":{"ray_cap":70,"strip_cap":70,"formal_cap":140,"physical_cr3_cap":140,"ambient_cap":0,"retry":0}, "execution_authorization":{"schema":"direct_guide10_white70_w6_final_validation_v1","human_authorization_required":False,"human_authorization_verified":True,"experiment_id":"GUIDE10_WHITE70_W6_FINAL_VALIDATION_V1","bounded_device_scope":True,"remote_v2_capability":True}, "analysis_contract":{"method":"guide10_white70_w6_final_frozen_commands","target_contracts":target_contracts,"global_model_refit":False,"steady_claim":False}}
 
 
+def build_guide10_white70_w7_plan(w6_plan: Mapping[str, Any]) -> dict[str, Any]:
+    """Build the frozen 20-point interpolation holdout from nearest W6 knots."""
+    from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
+    points = [(1800, 35), (1800, 165), (1900, 100), (2150, 35), (2150, 165), (2500, 35), (2500, 165), (3000, 100), (3500, 35), (3500, 165), (4100, 100), (4750, 35), (4750, 165), (5300, 100), (6100, 35), (6100, 165), (7250, 100), (9000, 35), (12000, 165), (17000, 100)]
+    knots = {(int(x["target_cct"]), int(x["target_gm"])): x for x in w6_plan["captures"] if x["source_id"] == "strip"}
+    rays = {(int(x["target_cct"]), int(x["target_gm"])): x for x in w6_plan["captures"] if x["source_id"] == "ray"}
+    captures = []
+    for index, (cct, gm) in enumerate(points):
+        nearest = min(knots, key=lambda key: abs(key[0] - cct) / max(cct, 1) + abs(key[1] - gm) / 200)
+        strip_template = dict(knots[nearest]); ray_template = dict(rays[nearest])
+        for source, template in (("ray", ray_template), ("strip", strip_template)):
+            step = dict(template); step.update(capture_id=f"{len(captures):03d}-{source}-guide10-white70-w7-holdout-cct{cct}-gm{gm}", target_cct=cct, target_gm=gm, state_id=f"CCT{cct}_GM{gm}_W7", session_index=index + 1, source_order=1 if source == "ray" else 2, role="ray_reference" if source == "ray" else "strip_holdout")
+            if source == "ray": step["command"] = {"mode":"cct","cct":cct,"gm":gm,"intensity_percent":100.0}; step["exact_command_hash"] = thermal.canonical_sha256(step["command"])
+            captures.append(step)
+    frozen = {str(x["exposure_cache_key"]): str(x["nominal_shutter"]) for x in captures}
+    return {**w6_plan, "guide_experiment_id":"GUIDE10_WHITE70_W7_INTERPOLATION_HOLDOUT_V1", "variant":"guide10-white70-w7-interpolation-holdout", "stage":"GUIDE10-WHITE70-W7-INTERPOLATION-HOLDOUT", "captures":captures, "capture_ids":[x["capture_id"] for x in captures], "frozen_shutters":frozen, "shutter_ledger_provenance":{"owner":"experiment_capture_steps","required_cache_keys":sorted(frozen),"frozen_shutters_sha256":thermal.canonical_sha256(frozen)}, "budgets":{"ray_cap":20,"strip_cap":20,"formal_cap":40,"physical_cr3_cap":40,"ambient_cap":0,"retry":0}, "execution_authorization":{"schema":"direct_guide10_white70_w7_interpolation_holdout_v1","human_authorization_required":False,"human_authorization_verified":True,"experiment_id":"GUIDE10_WHITE70_W7_INTERPOLATION_HOLDOUT_V1","bounded_device_scope":True,"remote_v2_capability":True}, "analysis_contract":{"method":"guide10_white70_w7_interpolation_holdout","holdout_count":20,"global_model_refit":False,"steady_claim":False}}
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Build GUIDE10 canonical white70 and one-time correction-field candidates.")
     parser.add_argument("--baseline", type=Path, required=True)

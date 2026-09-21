@@ -14,6 +14,7 @@ from camera_based_rgbww_optimizer.optimization.guide10_white70 import (
     build_guide10_white70_validation_plan,
     build_guide10_white70_w5_plan,
     build_guide10_white70_w6_plan,
+    build_guide10_white70_w7_plan,
 )
 from camera_based_rgbww_optimizer.optimization.measure_p7_thermal_diagnostics import (
     run_authorized_plan,
@@ -39,6 +40,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--w5-round1-plan", type=Path)
     parser.add_argument("--w6-analysis", type=Path)
     parser.add_argument("--w6-round1-plan", type=Path)
+    parser.add_argument("--w7-w6-plan", type=Path)
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--dry-run", action="store_true")
     mode.add_argument("--execute", action="store_true")
@@ -49,7 +51,9 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(argv)
-    if args.w6_analysis is not None or args.w6_round1_plan is not None:
+    if args.w7_w6_plan is not None:
+        plan = build_guide10_white70_w7_plan(json.loads(args.w7_w6_plan.read_text()))
+    elif args.w6_analysis is not None or args.w6_round1_plan is not None:
         plan = build_guide10_white70_w6_plan(json.loads(args.w6_round1_plan.read_text()), json.loads(args.w6_analysis.read_text()))
     elif args.w5_analysis is not None or args.w5_round1_plan is not None:
         if args.w5_analysis is None or args.w5_round1_plan is None:

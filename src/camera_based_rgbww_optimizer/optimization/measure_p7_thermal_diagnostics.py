@@ -43,6 +43,7 @@ GUIDE9_CANDIDATE_BATCH_SCHEMAS = {
     "direct_guide10_white70_round1_v1",
     "direct_guide10_white70_w5_local_correction_v1",
     "direct_guide10_white70_w6_final_validation_v1",
+    "direct_guide10_white70_w7_interpolation_holdout_v1",
 }
 GUIDE9_BEST_REPEAT_SCHEMAS = {
     "direct_guide9_h120_s50_best_repeat_v1",
