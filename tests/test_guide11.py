@@ -189,6 +189,91 @@ class Guide11TimingLabelTests(unittest.TestCase):
             measure.validate_authorized_execution_plan(plan)
 
 
+class Guide11FullToleranceNavigationTests(unittest.TestCase):
+    def test_mired_violation_blocks_pass_despite_cct_duv_within(self):
+        from camera_based_rgbww_optimizer.optimization import white_lut_feedback
+
+        candidate = {"cct_K": 10150.0, "duv": 0.0}
+        target = {"cct_K": 10000.0, "duv": 0.0}
+        metrics = white_lut_feedback.white_point_metrics(
+            candidate, target,
+            cct_tolerance_K=200.0, duv_tolerance=0.002, mired_tolerance=8.0,
+        )
+        self.assertLess(metrics["normalized_gates"]["cct_K"], 1.0)
+        self.assertLess(metrics["normalized_gates"]["duv"], 1.0)
+        # |1e6/10150 - 1e6/10000| = 1.48 mired < 8: still passing here.
+        self.assertLess(metrics["normalized_gates"]["mired"], 1.0)
+        self.assertTrue(metrics["within_goal"])
+        tight = white_lut_feedback.white_point_metrics(
+            candidate, target,
+            cct_tolerance_K=200.0, duv_tolerance=0.002, mired_tolerance=1.0,
+        )
+        self.assertLess(tight["normalized_gates"]["cct_K"], 1.0)
+        self.assertGreaterEqual(tight["normalized_gates"]["mired"], 1.0)
+        self.assertFalse(tight["within_goal"])
+        self.assertEqual(tight["goal_score"], tight["normalized_gates"]["mired"])
+
+    def test_w5_candidate_method_labels_recorded(self):
+        from camera_based_rgbww_optimizer.optimization import guide10_white70
+
+        def node(cct, gm, status, command):
+            return {
+                "cct": cct, "gm": gm, "status": status,
+                "strip_command": dict(command),
+                "strip": {"white_point": {"cct_K": 3000.0, "duv": 0.0}},
+                "ray": {"white_point": {"cct_K": 3200.0, "duv": 0.0}},
+                "limits": {"cct_K": 150.0, "duv": 0.002},
+            }
+
+        failed = node(1800, 100, "fail", {"cw": 1000, "ww": 500, "r": 4095, "g": 200, "b": 100})
+        nodes = [failed] + [
+            node(1800 + i * 100, 0, "pass", {"cw": 10, "ww": 10, "r": 4095, "g": 10, "b": 10})
+            for i in range(69)
+        ]
+        step_template = {
+            "source_id": "ray", "capture_id": "x", "exposure_cache_key": "k",
+            "nominal_shutter": "1/100", "requested_elapsed_s": 120,
+            "formal_measurement": True, "capture_role": "formal",
+            "command": {}, "exact_command_hash": "h", "state_id": "s",
+        }
+        plan = {
+            "captures": [
+                {**step_template, "source_id": "ray", "target_cct": 1800, "target_gm": 100},
+                {**step_template, "source_id": "strip", "target_cct": 1800, "target_gm": 100},
+            ],
+            "analysis_contract": {
+                "target_contracts": [{
+                    "cct": 1800, "gm": 100, "source_order": ["ray", "strip"],
+                    "resolved_cct_tolerance_K": 150.0, "cct_tolerance_mired": 8.0,
+                    "duv_tolerance": 0.002, "strip_command": {},
+                }],
+            },
+        }
+        calibration = {"targets": [{
+            "cct": 1800, "gm": 100,
+            "feedback_goal": {"resolved_cct_tolerance_K": 150.0},
+            "feedback_optimizer": {"active_channel": "r", "damping": 0.05},
+        }]}
+        result = guide10_white70.build_guide10_white70_w5_plan(
+            {"node_count": 70, "nodes": nodes}, plan, calibration,
+            analysis_reference={}, round1_reference={}, calibration_reference={},
+        )
+        rows = result["analysis_contract"]["candidate_rows"]
+        self.assertEqual(len(rows), 1)
+        row = rows[0]
+        self.assertEqual(row["method"], "measured_secant_toward_passing_neighbor")
+        self.assertEqual(row["objective"], "guide11_full_tolerance_E_max")
+        self.assertEqual(row["tolerances"]["mired"], 8.0)
+        # The same-face passing neighbors exist (r-saturated face), so the
+        # secant path must produce a bounded step, never a ±256 name-ranked
+        # guess on channel "b" by letter order.
+        base = row["base_command"]
+        stepped = row["commands"][0]
+        changed = {name: stepped[name] - base[name] for name in base if stepped[name] != base[name]}
+        self.assertTrue(changed)
+        self.assertTrue(all(abs(delta) <= 768 for delta in changed.values()))
+
+
 class _FakeClock:
     def __init__(self):
         self.now = 1000.0

@@ -364,10 +364,14 @@ def build_guide10_white70_w5_plan(
 ) -> dict[str, Any]:
     """Build the single bounded W5 local-candidate batch.
 
-    This consumes only the frozen round-1 residuals. Historical Jacobians are
-    used where present; nodes without one receive three explicitly labelled
-    directional fallback commands. No global refit or in-run feedback loop is
-    introduced here.
+    GUIDE11 navigation semantics: every candidate list is generated against
+    the full tolerance objective ``E(u) = max(|e_K|/tau_K, |e_mired|/tau_mired,
+    |e_Duv|/tau_Duv)``. Historical Jacobians are initial values only. Without
+    a Jacobian the fallback never guesses a channel action from channel names
+    or error signs: it uses the measured secant toward the nearest passing
+    same-face node when one exists inside the hull, and otherwise spends
+    explicitly labelled probe captures (measurements, not claimed
+    corrections). No global refit or in-run feedback loop is introduced here.
     """
     from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
     from camera_based_rgbww_optimizer.optimization import white_lut_feedback
@@ -383,6 +387,11 @@ def build_guide10_white70_w5_plan(
         templates_by_key.setdefault(key, {})[str(step["source_id"])] = step
     contract_by_key = {(int(x["cct"]), int(x["gm"])): x for x in round1_plan["analysis_contract"]["target_contracts"]}
     cal_by_key = {(int(x["cct"]), int(x["gm"])): x for x in calibration.get("targets", ())}
+    passing_nodes = [row for row in round1_analysis.get("nodes", ()) if row.get("status") == "pass"]
+    mired_values_all = [1_000_000.0 / int(row["cct"]) for row in round1_analysis.get("nodes", ())]
+    gm_values_all = [float(int(row["gm"])) for row in round1_analysis.get("nodes", ())]
+    field_spans = (max(mired_values_all) - min(mired_values_all), max(gm_values_all) - min(gm_values_all))
+    failed_keys = {(int(row["cct"]), int(row["gm"])) for row in failed}
     captures: list[dict[str, Any]] = []
     contracts: list[dict[str, Any]] = []
     candidate_rows: list[dict[str, Any]] = []
@@ -396,41 +405,88 @@ def build_guide10_white70_w5_plan(
         base = {name: int(node["strip_command"][name]) for name in CHANNELS}
         active = str(calibration_row.get("feedback_optimizer", {}).get("active_channel", contract.get("active_channel", "r")))
         jac = calibration_row.get("feedback_optimizer", {}).get("final_jacobian")
+        mired_tolerance = contract.get("cct_tolerance_mired")
         candidates: list[dict[str, int]] = []
         method = "historical_jacobian_gate_aligned"
         if jac is not None:
             step = white_lut_feedback.solve_damped_step(
                 base, node["strip"]["white_point"], node["ray"]["white_point"], jac,
                 active_channel=active, cct_tolerance_K=float(node["limits"]["cct_K"]),
-                duv_tolerance=float(node["limits"]["duv"]), max_code=4095,
+                duv_tolerance=float(node["limits"]["duv"]),
+                mired_tolerance=float(mired_tolerance) if mired_tolerance is not None else None,
+                max_code=4095,
                 max_step_code=min(768, int(calibration_row["feedback_optimizer"].get("final_max_step_code", 768))),
                 damping=float(calibration_row["feedback_optimizer"].get("damping", 0.05)),
                 rgb_penalty=0.0, channel_penalties=calibration_row["feedback_optimizer"].get("channel_penalties"),
             )["command"]
             candidates.append({name: int(step[name]) for name in CHANNELS})
         else:
-            method = "bounded_directional_fallback_no_jacobian"
-        # Keep the candidate batch finite and gate-aligned: two bounded
-        # micro-steps around the first prediction, or around the measured base.
-        seed = candidates[0] if candidates else base
-        residual_mired = float(node.get("mired_error", 0.0))
-        residual_duv = float(node.get("duv_error", 0.0))
-        free = [name for name in CHANNELS if name != active]
-        ranked = sorted(free, key=lambda name: (int(seed[name]) in (0, 4095), name))
-        direction = -1 if residual_mired > 0 else 1
-        if residual_duv > 0:
-            direction *= -1
-        for offset in (256, 512):
-            command = dict(seed)
-            channel = ranked[0]
-            value = max(0, min(4095, int(command[channel]) + direction * offset))
-            command[channel] = value
-            if command != base and command not in candidates:
-                candidates.append(command)
+            method = "measured_secant_or_probe_no_jacobian"
+            point = (1_000_000.0 / key[0], float(key[1]))
+            face = tuple(name for name in CHANNELS if int(base[name]) >= 4095)
+            same_face_passing = [
+                row for row in passing_nodes
+                if (int(row["cct"]), int(row["gm"])) not in failed_keys
+                and tuple(name for name in CHANNELS if int(row["strip_command"][name]) >= 4095) == face
+            ]
+            if same_face_passing:
+                nearest_pass = min(
+                    same_face_passing,
+                    key=lambda row: _distance(
+                        (1_000_000.0 / int(row["cct"]), float(int(row["gm"]))), point, field_spans
+                    ),
+                )
+                max_step = min(768, int(calibration_row["feedback_optimizer"].get("final_max_step_code", 768)))
+                delta = {
+                    name: max(-max_step, min(max_step, int(nearest_pass["strip_command"][name]) - base[name]))
+                    for name in CHANNELS
+                }
+                if any(delta.values()):
+                    method = "measured_secant_toward_passing_neighbor"
+                    for scale in (1.0, 0.5):
+                        stepped = {
+                            name: max(0, min(4095, base[name] + int(round(scale * delta[name]))))
+                            for name in CHANNELS
+                        }
+                        if stepped != base and stepped not in candidates:
+                            candidates.append(stepped)
+            # Explicitly labelled probes: bounded single-channel perturbations
+            # chosen by measurable headroom (not by channel name or error
+            # sign). They measure the local response; they never claim a
+            # corrective direction.
+            if len(candidates) < 2:
+                free = [name for name in CHANNELS if name != active]
+                headroom = sorted(
+                    free,
+                    key=lambda name: min(int(base[name]), 4095 - int(base[name])),
+                    reverse=True,
+                )
+                for channel in headroom[: 2 - len(candidates)]:
+                    room_up = 4095 - int(base[channel])
+                    room_down = int(base[channel])
+                    step_code = min(256, max(room_up, room_down))
+                    if step_code <= 0:
+                        continue
+                    probe_command = dict(base)
+                    probe_command[channel] = (
+                        int(base[channel]) + step_code if room_up >= room_down
+                        else int(base[channel]) - step_code
+                    )
+                    if probe_command != base and probe_command not in candidates:
+                        candidates.append(probe_command)
         if not candidates:
             candidates = [base]
         candidates = candidates[:3]
-        candidate_rows.append({"cct": key[0], "gm": key[1], "base_command": base, "active_channel": active, "method": method, "commands": candidates, "max_unique_commands": 5})
+        candidate_rows.append({
+            "cct": key[0], "gm": key[1], "base_command": base, "active_channel": active,
+            "method": method, "commands": candidates, "max_unique_commands": 5,
+            "tolerances": {
+                "cct_K": float(node["limits"]["cct_K"]),
+                "duv": float(node["limits"]["duv"]),
+                **({"mired": float(mired_tolerance)} if mired_tolerance is not None else {}),
+            },
+            "objective": "guide11_full_tolerance_E_max",
+        })
         contract.update({"target_index": node_index, "strip_command": candidates[0], "source_order": list(contract.get("source_order", ["ray", "strip"])), "candidate_owner": "guide10_w5_bounded_local_candidate"})
         contracts.append(contract)
         ray_template = {**templates["ray"], "role": "ray_reference"}

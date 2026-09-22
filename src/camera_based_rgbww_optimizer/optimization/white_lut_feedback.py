@@ -48,22 +48,47 @@ def white_point_metrics(
     *,
     cct_tolerance_K: float,
     duv_tolerance: float,
+    mired_tolerance: float | None = None,
 ) -> dict[str, Any]:
+    """GUIDE11 full-tolerance white navigation metric.
+
+    ``goal_score`` is ``E(u) = max(|e_K|/tau_K, |e_mired|/tau_mired,
+    |e_Duv|/tau_Duv)`` when a mired tolerance is supplied. CCT and mired
+    propagate from the same white-point chromaticity (mired = 1e6 / CCT), so
+    they are never two independent noise directions, but both gates must be
+    navigated: a candidate whose CCT error improves while its mired error
+    leaves tolerance cannot pass. ``normalized_error`` stays
+    two-dimensional (CCT, Duv) for the damped least-squares solve; the
+    acceptance fields carry the true multi-gate objective.
+    """
     if cct_tolerance_K <= 0:
         raise ValueError("cct_tolerance_K must be positive")
     if duv_tolerance <= 0:
         raise ValueError("duv_tolerance must be positive")
+    if mired_tolerance is not None and mired_tolerance <= 0:
+        raise ValueError("mired_tolerance must be positive")
     cct_error = float(candidate["cct_K"]) - float(target["cct_K"])
     duv_error = float(candidate["duv"]) - float(target["duv"])
+    candidate_mired = float(candidate.get("mired", 1_000_000.0 / float(candidate["cct_K"])))
+    target_mired = float(target.get("mired", 1_000_000.0 / float(target["cct_K"])))
+    mired_error = candidate_mired - target_mired
     normalized_error = [cct_error / float(cct_tolerance_K), duv_error / float(duv_tolerance)]
+    gates = {"cct_K": abs(normalized_error[0]), "duv": abs(normalized_error[1])}
+    if mired_tolerance is not None:
+        gates["mired"] = abs(mired_error) / float(mired_tolerance)
     return {
         "cct_error_K": cct_error,
         "duv_error": duv_error,
+        "mired_error": mired_error,
+        "candidate_mired": candidate_mired,
+        "target_mired": target_mired,
         "absolute_cct_error_K": abs(cct_error),
         "absolute_duv_error": abs(duv_error),
+        "absolute_mired_error": abs(mired_error),
         "normalized_error": normalized_error,
-        "goal_score": max(abs(normalized_error[0]), abs(normalized_error[1])),
-        "within_goal": abs(cct_error) < float(cct_tolerance_K) and abs(duv_error) < float(duv_tolerance),
+        "normalized_gates": gates,
+        "goal_score": max(gates.values()),
+        "within_goal": all(value < 1.0 for value in gates.values()),
     }
 
 
@@ -182,6 +207,7 @@ def solve_damped_step(
     rgb_penalty: float,
     channel_penalties: Mapping[str, float] | None = None,
     channels: Sequence[str] = DEFAULT_CHANNELS,
+    mired_tolerance: float | None = None,
 ) -> dict[str, Any]:
     if max_step_code <= 0:
         raise ValueError("max_step_code must be positive")
@@ -197,6 +223,7 @@ def solve_damped_step(
             target_white_point,
             cct_tolerance_K=cct_tolerance_K,
             duv_tolerance=duv_tolerance,
+            mired_tolerance=mired_tolerance,
         )["normalized_error"],
         dtype="float64",
     )
