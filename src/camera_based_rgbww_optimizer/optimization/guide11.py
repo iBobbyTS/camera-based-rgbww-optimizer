@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import copy
 import math
+from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 
@@ -345,3 +346,176 @@ def build_guide11_n1_session_plan(
         },
     }
     return plan
+
+
+def rejoin_thermal_covariates_by_physical_identity(
+    observations_path: Path,
+    output_path: Path,
+) -> dict[str, Any]:
+    """Rebuild the thermal join of an OBSERVATIONS-style index by identity.
+
+    GUIDE11 correction: the packaged index joined ``thermal_covariates`` by
+    ``state_id``, so paired Ray/strip observations sharing one state crossed
+    sources (W6: 70/140 rows mismatched). The corrected join chain is
+    physical: observation ``cr3_sha256`` -> the root's
+    ``physical-returns.jsonl`` (capture_id plus the CR3's original run root
+    via ``cr3_path``) -> that root's ``captures.jsonl`` row order -> the same
+    row in ``thermal-covariates.jsonl``. Originals are never modified; the
+    corrected index is a derived artifact.
+    """
+    import json
+    from pathlib import Path as _Path
+
+    rows = [
+        json.loads(line)
+        for line in _Path(observations_path).read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    ledger_cache: dict[str, dict[str, Any]] = {}
+
+    def load_ledger(root_value: str) -> dict[str, Any]:
+        if root_value in ledger_cache:
+            return ledger_cache[root_value]
+        root = Path(root_value)
+        phys_path = root / "physical-returns.jsonl"
+        ledger = {"phys_by_sha": {}, "phys_by_capture": {}, "cov": [], "cap_index": {}}
+        if phys_path.is_file():
+            for line in phys_path.read_text(encoding="utf-8").splitlines():
+                if not line.strip():
+                    continue
+                row = json.loads(line)
+                ledger["phys_by_sha"][str(row.get("cr3_sha256"))] = row
+                ledger["phys_by_capture"][str(row.get("capture_id"))] = row
+        cov_path = root / "thermal-covariates.jsonl"
+        if cov_path.is_file():
+            ledger["cov"] = [
+                json.loads(line)
+                for line in cov_path.read_text(encoding="utf-8").splitlines()
+                if line.strip()
+            ]
+        caps_path = root / "captures.jsonl"
+        if caps_path.is_file():
+            for index, line in enumerate(caps_path.read_text(encoding="utf-8").splitlines()):
+                if line.strip():
+                    cap = json.loads(line)
+                    ledger["cap_index"][str(cap.get("capture_id"))] = index
+        ledger_cache[root_value] = ledger
+        return ledger
+
+    def resolve_covariate(row: Mapping[str, Any]) -> tuple[dict[str, Any] | None, dict[str, Any]]:
+        identity = row.get("physical_identity") or {}
+        sha = str(identity.get("cr3_sha256", ""))
+        root_value = str(row.get("root", ""))
+        capture_id = str(row.get("capture_id", ""))
+        chain: list[str] = []
+        for probe_root in (root_value,):
+            ledger = load_ledger(probe_root)
+            phys = ledger["phys_by_sha"].get(sha) or ledger["phys_by_capture"].get(capture_id)
+            if phys is None:
+                continue
+            origin = None
+            cr3_path = str(phys.get("cr3_path", ""))
+            if cr3_path:
+                origin = str(Path(cr3_path).parent.parent)
+            for cov_root_value in (probe_root, origin) if origin else (probe_root,):
+                cov_ledger = load_ledger(cov_root_value)
+                index = cov_ledger["cap_index"].get(str(phys.get("capture_id")))
+                if index is not None and index < len(cov_ledger["cov"]):
+                    chain = [probe_root, str(phys.get("capture_id")), cov_root_value]
+                    return cov_ledger["cov"][index], {
+                        "status": "rejoined_by_physical_identity",
+                        "chain": chain,
+                    }
+        return None, {
+            "status": "unresolved",
+            "reason": "no physical covariate row reachable from cr3 identity",
+        }
+
+    corrected = 0
+    unresolved = 0
+    for row in rows:
+        match, join = resolve_covariate(row)
+        if match is None:
+            unresolved += 1
+        else:
+            old = row.get("thermal_covariates") or {}
+            old_source = old.get("source_id") or old.get("source")
+            if old_source != match.get("source_id") or old != match:
+                corrected += 1
+            row["thermal_covariates"] = match
+            join["previous_source_id"] = old_source
+            join["joined_source_id"] = match.get("source_id")
+        row["thermal_covariates_join"] = join
+    report = {
+        "schema": "guide11_thermal_covariates_rejoin_v1",
+        "source_index": str(Path(observations_path).resolve()),
+        "row_count": len(rows),
+        "corrected_rows": corrected,
+        "unresolved_rows": unresolved,
+        "join_chain": "cr3_sha256 -> physical-returns -> origin run root -> capture row order",
+    }
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    newline = "\n"
+    output_path.write_text(
+        "".join(json.dumps(row, sort_keys=True) + newline for row in rows),
+        encoding="utf-8",
+    )
+    return report
+
+
+def build_w7_long_mislabel_reclassification(
+    run_root: Path, output_path: Path,
+) -> dict[str, Any]:
+    """Immutable derived reclassification of the mislabelled W7 'LONG' run.
+
+    The GUIDE10 W7 'long' plan inherited reset600/D120 execution through the
+    GUIDE9 branch while carrying LONG labels: its twelve photos are FAST
+    (600/120) observations. Originals stay untouched; this derived artifact
+    records, per capture, the effective protocol actually executed and the
+    corrected scientific label for every downstream consumer.
+    """
+    import json
+
+    root = Path(run_root)
+    plan = json.loads((root / "experiment-spec.json").read_text(encoding="utf-8"))
+    captures = [
+        json.loads(line)
+        for line in (root / "captures.jsonl").read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    reset_s = float(plan.get("cold_proxy_wait_s", -1))
+    dwell_values = sorted({float(step.get("requested_elapsed_s", -1)) for step in plan.get("captures", ())})
+    effective = "FAST_reset600_D120" if (reset_s == 600 and dwell_values == [120]) else (
+        "LONG_reset1800_D600" if (reset_s == 1800 and dwell_values == [600]) else f"UNVERIFIED_reset{reset_s:g}_D{dwell_values}"
+    )
+    rows = []
+    for capture in captures:
+        step = capture.get("plan_step", {})
+        rows.append({
+            "capture_id": capture.get("capture_id"),
+            "state_id": capture.get("state_id"),
+            "source_id": capture.get("source_id"),
+            "original_label": "W7_LONG",
+            "effective_protocol": effective,
+            "reclassified_scientific_label": "FAST_appended_derived",
+            "usable_as_true_long": False,
+            "independent_source_observation_retained": True,
+            "plan_timing_resolution": plan.get("timing_resolution"),
+            "plan_cold_proxy_wait_s": reset_s,
+            "plan_dwell_values_s": dwell_values,
+        })
+    artifact = {
+        "schema": "guide11_w7_long_derived_reclassification_v1",
+        "run_root": str(root.resolve()),
+        "effective_protocol": effective,
+        "capture_count": len(rows),
+        "note": (
+            "Derived classification only; original run files are immutable. "
+            "The 1800/GM100 pair crossed a long pause and must not be treated "
+            "as an ordinary short-dwell pairing."
+        ),
+        "captures": rows,
+    }
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(artifact, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return artifact
