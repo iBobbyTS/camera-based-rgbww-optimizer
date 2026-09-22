@@ -1,4 +1,5 @@
 import hashlib
+import math
 import json
 import tempfile
 import unittest
@@ -495,3 +496,82 @@ class Guide11ExecutionProtocolTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Guide11N1AnalysisTests(unittest.TestCase):
+    def _write_session(self, root: Path, session: int, cct_noise: float = 0.0):
+        import numpy as np
+        plan = guide11.build_guide11_n1_session_plan(
+            synthetic_lut(), synthetic_shutters(), session_index=session, cycle_index=session,
+        )
+        root.mkdir(parents=True, exist_ok=True)
+        (root / "experiment-spec.json").write_text(json.dumps(plan), encoding="utf-8")
+        rows = []
+        index = 0
+        for step in plan["captures"]:
+            capture_id = step["capture_id"]
+            raw = root / "camera" / f"{capture_id}.cr3"
+            raw.parent.mkdir(parents=True, exist_ok=True)
+            raw.write_bytes(b"fake-cr3")
+            sidecar = root / "measurements" / f"{capture_id}.patch-statistics.json"
+            sidecar.parent.mkdir(parents=True, exist_ok=True)
+            base_r, base_g, base_b = 900.0, 600.0, 300.0
+            jitter = cct_noise * (1 if index % 2 else -1)
+            sidecar.write_text(json.dumps({
+                "patches": [{
+                    "index": 6, "name": "block_06",
+                    "planes": {
+                        plane: {"statistics": {"normalized_per_second": {
+                            "trimmed_mean": value,
+                        }}}
+                        for plane, value in (
+                            ("R", base_r + 30 * index + jitter),
+                            ("G1", base_g + 10 * index),
+                            ("G2", base_g + 10 * index + 2),
+                            ("B", base_b + 5 * index - jitter),
+                        )
+                    },
+                }],
+            }), encoding="utf-8")
+            rows.append({
+                "capture_id": capture_id,
+                "source_id": step["source_id"],
+                "plan_step": step,
+                "capture": {"saved_file": str(raw)},
+                "best_effort_exposure_start_elapsed_s": 120.0,
+            })
+            index += 1
+        (root / "captures.jsonl").write_text(
+            "".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8"
+        )
+        return root
+
+    def test_two_session_analysis_layers(self):
+        import tempfile
+
+        from camera_based_rgbww_optimizer.optimization import analyze_guide11_n1 as analyzer
+
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            s1 = self._write_session(base / "s1", 1, cct_noise=0.0)
+            s2 = self._write_session(base / "s2", 2, cct_noise=0.0)
+            with patch.object(
+                analyzer.common, "_load_rawpy_rgb_xyz_matrix",
+                side_effect=lambda *_args, **_kwargs: [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+            ):
+                result = analyzer.analyze_guide11_n1([s1, s2])
+        self.assertEqual(result["observation_count"], 36)
+        self.assertEqual(len(result["points"]), 6)
+        by_point = {(p["cct"], p["gm"]): p for p in result["points"]}
+        burst_point = by_point[(1800, 100)]
+        self.assertTrue(burst_point["is_burst_point"])
+        self.assertIn("ray", burst_point["burst_layer"])
+        self.assertEqual(burst_point["burst_layer"]["ray"]["n"], 3)
+        # Identical sessions give identical cycle differences: zero spread
+        # with n=2 cycles reported per point.
+        point = by_point[(3200, 0)]
+        self.assertEqual(point["cct_K_diff"]["status"], "ok")
+        self.assertEqual(point["cct_K_diff"]["n"], 2)
+        for cycle in ("1", "2"):
+            z = point["product_chromaticity"][cycle]["ray_z"]["log_R_over_G"]
+            self.assertTrue(math.isfinite(z))
