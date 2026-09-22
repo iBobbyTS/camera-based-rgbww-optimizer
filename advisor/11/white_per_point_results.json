@@ -1,0 +1,5518 @@
+{
+  "method": {
+    "seed": 20260922,
+    "draws_per_source_per_pair": 12000,
+    "confidence_scope": "conditional propagation of frozen source-specific diagonal 58-feature variance, not total CI or prediction interval",
+    "camera_already_in_source_variance": true,
+    "absolute_CIE_validity_claim": false,
+    "marginal_vs_simultaneous": "95% marginal and Bonferroni simultaneous box (95% lower bound); historical 99.73% gates not modified",
+    "long_label_correction": "all six legacy long pairs executed FAST 600/120, not LONG 1800/600",
+    "covariance_limitation": "frozen diagonal approximation; historical state transfer, source temperature, between-session, common-reference and interpolation effects not included",
+    "max_replay_center_difference_K_mired_duv": [
+      0.0005666246706823586,
+      6.461408588620543e-06,
+      3.226585665316861e-16
+    ],
+    "threshold_provenance": {
+      "w6": "exact experiment-spec analysis_contract.target_contracts; not one common Kelvin tolerance",
+      "w7": "25 K / 1 mired / 0.0005 Duv diagnostic reconstruction; W7 spec has no per-target tolerance table and original W8 generator was not retained. Reported 1/20 comes from W8 itself. Do not treat these as a newly validated off-grid tolerance contract."
+    }
+  },
+  "summary": {
+    "additional_FAST_mislabeled_LONG": {
+      "count": 6,
+      "point_pass_count": 2,
+      "conditional_simultaneous_pass_count": 1,
+      "error_distribution": {
+        "cct_K": {
+          "n": 6,
+          "mean": -48.185392977937376,
+          "sd": 101.35116744478427,
+          "minimum": -253.77432121450147,
+          "q025": -224.45025156407024,
+          "q25": -17.708725175369977,
+          "median": -11.307681167879991,
+          "q75": -8.082194867087651,
+          "q95": 8.678154903752556,
+          "q975": 11.402459932206625,
+          "maximum": 14.126764960660694,
+          "mae": 52.89431463149094,
+          "abs_median": 13.70818681449282,
+          "abs_p90": 136.47804261277656,
+          "abs_p95": 195.12618191363902,
+          "rmse": 104.31625655567227
+        },
+        "mired": {
+          "n": 6,
+          "mean": 0.761792017469555,
+          "sd": 1.809823924054832,
+          "minimum": -2.3662808674297935,
+          "q025": -2.065485374273919,
+          "q25": 0.15253407497922922,
+          "median": 1.1392046023553064,
+          "q75": 1.9708829535877967,
+          "q95": 2.4480705712718347,
+          "q975": 2.5174706844779244,
+          "maximum": 2.586870797684014,
+          "mae": 1.5505523066128195,
+          "abs_median": 1.9100960151402973,
+          "abs_p90": 2.476575832556904,
+          "abs_p95": 2.531723315120459,
+          "rmse": 1.8193073612269846
+        },
+        "duv": {
+          "n": 6,
+          "mean": 0.00016270542703122965,
+          "sd": 0.00021202434302936173,
+          "minimum": -0.0001542233236619308,
+          "q025": -0.0001231805141998979,
+          "q25": 9.660857989276898e-05,
+          "median": 0.00011701494942784963,
+          "q75": 0.00031351880566641037,
+          "q95": 0.0004143764283397876,
+          "q975": 0.00042098793376986216,
+          "maximum": 0.0004275994391999367,
+          "mae": 0.00021411320158520658,
+          "abs_median": 0.00014208817952477554,
+          "abs_p90": 0.00040115341747963855,
+          "abs_p95": 0.0004143764283397876,
+          "rmse": 0.00025285369488357325
+        }
+      },
+      "multipatch_unit58_relative_rmse": {
+        "n": 6,
+        "mean": 0.18789507450652862,
+        "sd": 0.004804608896279361,
+        "minimum": 0.1814192245209362,
+        "q025": 0.18195619732510152,
+        "q25": 0.18579491017458213,
+        "median": 0.1866880168674555,
+        "q75": 0.19088900301451242,
+        "q95": 0.1941093700120174,
+        "q975": 0.19444900956075967,
+        "maximum": 0.19478864910950194,
+        "mae": 0.18789507450652862,
+        "abs_median": 0.1866880168674555,
+        "abs_p90": 0.19343009091453287,
+        "abs_p95": 0.1941093700120174,
+        "rmse": 0.18794625804385084
+      },
+      "conditional_u_distribution": {
+        "cct_K": {
+          "n": 6,
+          "mean": 14.119658665676129,
+          "sd": 17.745782163497445,
+          "minimum": 1.2637833748965956,
+          "q025": 1.327072965010801,
+          "q25": 2.024325867705855,
+          "median": 4.278827004743193,
+          "q75": 25.06966657632651,
+          "q95": 39.09347497219561,
+          "q975": 40.358608829827524,
+          "maximum": 41.62374268745944,
+          "mae": 14.119658665676129,
+          "abs_median": 4.278827004743193,
+          "abs_p90": 36.563207256931776,
+          "abs_p95": 39.09347497219561,
+          "rmse": 21.489348089936474
+        },
+        "mired": {
+          "n": 6,
+          "mean": 0.26380204149013703,
+          "sd": 0.05204369528199588,
+          "minimum": 0.2122476569487383,
+          "q025": 0.2129019873187522,
+          "q25": 0.22497406449788998,
+          "median": 0.25300066047739145,
+          "q75": 0.28812046560787424,
+          "q95": 0.3363224117227177,
+          "q975": 0.34271337480196373,
+          "maximum": 0.34910433788120976,
+          "mae": 0.26380204149013703,
+          "abs_median": 0.25300066047739145,
+          "abs_p90": 0.3235404855642257,
+          "abs_p95": 0.3363224117227177,
+          "rmse": 0.2680459642359901
+        },
+        "duv": {
+          "n": 6,
+          "mean": 8.688299733086698e-05,
+          "sd": 2.3774942692999565e-05,
+          "minimum": 5.926267959242388e-05,
+          "q025": 5.988811277120908e-05,
+          "q25": 6.714072872496561e-05,
+          "median": 8.624845390544783e-05,
+          "q75": 0.00010750369564989189,
+          "q95": 0.00011340712956597972,
+          "q975": 0.00011379263145917535,
+          "maximum": 0.00011417813335237098,
+          "mae": 8.688299733086698e-05,
+          "abs_median": 8.624845390544783e-05,
+          "abs_p90": 0.00011263612577958848,
+          "abs_p95": 0.00011340712956597972,
+          "rmse": 8.955275061051049e-05
+        }
+      }
+    },
+    "w6": {
+      "count": 70,
+      "point_pass_count": 36,
+      "conditional_simultaneous_pass_count": 15,
+      "error_distribution": {
+        "cct_K": {
+          "n": 70,
+          "mean": -152.15854242314677,
+          "sd": 545.8329314070601,
+          "minimum": -3764.1816484499304,
+          "q025": -1526.2373467825173,
+          "q25": -33.94183528677513,
+          "median": -8.720362757626617,
+          "q75": -1.8537912049134206,
+          "q95": 27.120116293316904,
+          "q975": 66.33108802364679,
+          "maximum": 213.97397591071785,
+          "mae": 166.56187851594262,
+          "abs_median": 13.45362377395577,
+          "abs_p90": 283.54850604618514,
+          "abs_p95": 802.8301358446963,
+          "rmse": 562.8762003425524
+        },
+        "mired": {
+          "n": 70,
+          "mean": 1.7815894772537502,
+          "sd": 8.742245967486408,
+          "minimum": -42.388687260549204,
+          "q025": -9.822851939211246,
+          "q25": 0.0654844093565039,
+          "median": 0.5932358063121654,
+          "q75": 1.5509647571482645,
+          "q95": 18.638592567740236,
+          "q975": 20.889320342135516,
+          "maximum": 22.285821239327746,
+          "mae": 4.015878273174097,
+          "abs_median": 0.770541698929037,
+          "abs_p90": 15.424289554656903,
+          "abs_p95": 21.117153278842284,
+          "rmse": 8.860536850027385
+        },
+        "duv": {
+          "n": 70,
+          "mean": -0.0007419107438007898,
+          "sd": 0.0019569868855305772,
+          "minimum": -0.008402860502681254,
+          "q025": -0.007569420880839397,
+          "q25": -0.0002321400888307632,
+          "median": -2.0257849760311683e-05,
+          "q75": 9.94314167800409e-05,
+          "q95": 0.0003550152726912608,
+          "q975": 0.000397855922171316,
+          "maximum": 0.0005840771463357852,
+          "mae": 0.000886104049382703,
+          "abs_median": 0.0001366908874184179,
+          "abs_p90": 0.0030145422618912867,
+          "abs_p95": 0.005428112812410088,
+          "rmse": 0.0020797879282797123
+        }
+      },
+      "multipatch_unit58_relative_rmse": {
+        "n": 70,
+        "mean": 0.18593551724979246,
+        "sd": 0.0044464962803601,
+        "minimum": 0.1776355051307369,
+        "q025": 0.1783815786328495,
+        "q25": 0.18292133413814712,
+        "median": 0.1858389882310319,
+        "q75": 0.18915891267778384,
+        "q95": 0.19249263004944708,
+        "q975": 0.19295344277684884,
+        "maximum": 0.20240019008081675,
+        "mae": 0.18593551724979246,
+        "abs_median": 0.1858389882310319,
+        "abs_p90": 0.1912806828791755,
+        "abs_p95": 0.19249263004944708,
+        "rmse": 0.18598791750153967
+      },
+      "conditional_u_distribution": {
+        "cct_K": {
+          "n": 70,
+          "mean": 9.038631189056485,
+          "sd": 11.611882692367313,
+          "minimum": 1.2248465057473015,
+          "q025": 1.2492334379840107,
+          "q25": 2.2527073756761222,
+          "median": 4.554945881911478,
+          "q75": 9.629185491879756,
+          "q95": 34.094905673592486,
+          "q975": 42.74131603447377,
+          "maximum": 60.320339896040544,
+          "mae": 9.038631189056485,
+          "abs_median": 4.554945881911478,
+          "abs_p90": 23.66489357478661,
+          "abs_p95": 34.094905673592486,
+          "rmse": 14.649452120742358
+        },
+        "mired": {
+          "n": 70,
+          "mean": 0.24997212202070607,
+          "sd": 0.05578716917405784,
+          "minimum": 0.16050692260994653,
+          "q025": 0.16458801332922707,
+          "q25": 0.20463601588479297,
+          "median": 0.24261921641704848,
+          "q75": 0.29706898233056567,
+          "q95": 0.3484185708068521,
+          "q975": 0.35257760920817177,
+          "maximum": 0.35766294839266183,
+          "mae": 0.24997212202070607,
+          "abs_median": 0.24261921641704848,
+          "abs_p90": 0.32766474413652436,
+          "abs_p95": 0.3484185708068521,
+          "rmse": 0.2560347826257436
+        },
+        "duv": {
+          "n": 70,
+          "mean": 8.824333662251592e-05,
+          "sd": 1.8658224642281407e-05,
+          "minimum": 5.895818414126384e-05,
+          "q025": 5.939022087318545e-05,
+          "q25": 7.023619145698487e-05,
+          "median": 9.106234865617754e-05,
+          "q75": 0.00010411902567555768,
+          "q95": 0.0001135871859991062,
+          "q975": 0.00011481757440844177,
+          "maximum": 0.00011821151635375397,
+          "mae": 8.824333662251592e-05,
+          "abs_median": 9.106234865617754e-05,
+          "abs_p90": 0.00011199218076032996,
+          "abs_p95": 0.0001135871859991062,
+          "rmse": 9.016674846468411e-05
+        }
+      }
+    },
+    "w7": {
+      "count": 20,
+      "point_pass_count": 1,
+      "conditional_simultaneous_pass_count": 0,
+      "error_distribution": {
+        "cct_K": {
+          "n": 20,
+          "mean": -340.4586418209619,
+          "sd": 518.8980408175862,
+          "minimum": -1787.7018685993953,
+          "q025": -1592.8876459877984,
+          "q25": -302.29032157440304,
+          "median": -202.14780437304148,
+          "q75": -101.23014015817438,
+          "q95": 162.4523704993586,
+          "q975": 252.16826688158739,
+          "maximum": 341.88416326381684,
+          "mae": 392.06696068161125,
+          "abs_median": 213.36251313155344,
+          "abs_p90": 1159.2552958041392,
+          "abs_p95": 1398.0734233762016,
+          "rmse": 609.6757373528054
+        },
+        "mired": {
+          "n": 20,
+          "mean": 16.569128369049785,
+          "sd": 16.55974021371114,
+          "minimum": -15.026297905431932,
+          "q025": -12.778956990700983,
+          "q25": 7.431011847867531,
+          "median": 14.51609675668864,
+          "q75": 30.730448935143045,
+          "q95": 40.23212548269348,
+          "q975": 42.64334915899358,
+          "maximum": 45.0545728352937,
+          "mae": 19.16995077303062,
+          "abs_median": 14.905039887829972,
+          "abs_p90": 34.663743588508304,
+          "abs_p95": 40.23212548269348,
+          "rmse": 23.13114266650855
+        },
+        "duv": {
+          "n": 20,
+          "mean": 0.0024586851231550525,
+          "sd": 0.0037925899894696207,
+          "minimum": -0.005170079050087784,
+          "q025": -0.003559358687564339,
+          "q25": -0.00026885989749467773,
+          "median": 0.0012543360117201123,
+          "q75": 0.005187169218529654,
+          "q95": 0.008438899636481015,
+          "q975": 0.008655595697851223,
+          "maximum": 0.008872291759221435,
+          "mae": 0.003330125658361163,
+          "abs_median": 0.0024398352554508966,
+          "abs_p90": 0.007533895624188187,
+          "abs_p95": 0.008438899636481015,
+          "rmse": 0.0044395590345931765
+        }
+      },
+      "multipatch_unit58_relative_rmse": {
+        "n": 20,
+        "mean": 0.18610875325456394,
+        "sd": 0.003939458189276865,
+        "minimum": 0.18071262267369095,
+        "q025": 0.18091595858267642,
+        "q25": 0.1826701217713685,
+        "median": 0.18561305578067683,
+        "q75": 0.18970172027192583,
+        "q95": 0.19146321263436056,
+        "q975": 0.19260267336596398,
+        "maximum": 0.19374213409756744,
+        "mae": 0.18610875325456394,
+        "abs_median": 0.18561305578067683,
+        "abs_p90": 0.19067405453504108,
+        "abs_p95": 0.19146321263436056,
+        "rmse": 0.1861483585806009
+      },
+      "conditional_u_distribution": {
+        "cct_K": {
+          "n": 20,
+          "mean": 6.055816237018375,
+          "sd": 7.125651877054144,
+          "minimum": 1.2459590246537122,
+          "q025": 1.2553585069434983,
+          "q25": 1.9037415807600342,
+          "median": 3.717020630329658,
+          "q75": 6.217084742406664,
+          "q95": 16.210241049232437,
+          "q975": 23.724182832618254,
+          "maximum": 31.23812461600413,
+          "mae": 6.055816237018375,
+          "abs_median": 3.717020630329658,
+          "abs_p90": 13.746074882918952,
+          "abs_p95": 16.210241049232437,
+          "rmse": 9.214612267255328
+        },
+        "mired": {
+          "n": 20,
+          "mean": 0.261421897804636,
+          "sd": 0.056548809897551414,
+          "minimum": 0.17987854102279321,
+          "q025": 0.18045319699260717,
+          "q25": 0.2130311548510964,
+          "median": 0.25725200588229086,
+          "q75": 0.30958771623898973,
+          "q95": 0.35172503311808206,
+          "q975": 0.3544641318253329,
+          "maximum": 0.3572032305325837,
+          "mae": 0.261421897804636,
+          "abs_median": 0.25725200588229086,
+          "abs_p90": 0.33113987190534316,
+          "abs_p95": 0.35172503311808206,
+          "rmse": 0.26716902544562593
+        },
+        "duv": {
+          "n": 20,
+          "mean": 8.334456651251362e-05,
+          "sd": 1.829441426578686e-05,
+          "minimum": 5.9430246248835943e-05,
+          "q025": 5.955977929185958e-05,
+          "q25": 6.609668564125026e-05,
+          "median": 8.372711133252707e-05,
+          "q75": 9.880266396743589e-05,
+          "q95": 0.00011104437672530028,
+          "q975": 0.00011151154075986317,
+          "maximum": 0.00011197870479442607,
+          "mae": 8.334456651251362e-05,
+          "abs_median": 8.372711133252707e-05,
+          "abs_p90": 0.00010537939681693248,
+          "abs_p95": 0.00011104437672530028,
+          "rmse": 8.52306757031799e-05
+        }
+      }
+    }
+  },
+  "points": [
+    {
+      "group": "w6",
+      "target": {
+        "cct": 1800,
+        "gm": 0
+      },
+      "command": {
+        "cw": 105,
+        "ww": 4090,
+        "r": 4095,
+        "g": 12,
+        "b": 82
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:000-ray-guide10-white70-w6-cct1800-gm0",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:001-strip-guide10-white70-w6-cct1800-gm0",
+      "errors": {
+        "cct_K": -7.546391226515198,
+        "mired": 2.1169086632833114,
+        "duv": -1.5434213390294084e-05
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -10.085743631732617,
+          -5.029479404582981
+        ],
+        "mired": [
+          1.412198957012805,
+          2.8266477592063777
+        ],
+        "duv": [
+          -0.00012878910064386984,
+          0.00010202503505421409
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 1.279405079517363,
+        "mired": 0.35766294839266183,
+        "duv": 5.953449472114239e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.1811397441539194,
+      "unit58_cosine": 0.9835941965439263,
+      "optimal_scale_relative_rmse": 0.18039527855547663,
+      "whitened58_diagnostic_score": 1202.201648484629,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 1800,
+        "gm": 70
+      },
+      "command": {
+        "cw": 39,
+        "ww": 25,
+        "r": 4095,
+        "g": 1170,
+        "b": 17
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:003-ray-guide10-white70-w6-cct1800-gm70",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:002-strip-guide10-white70-w6-cct1800-gm70",
+      "errors": {
+        "cct_K": -4.619463120405499,
+        "mired": 1.2731463733832697,
+        "duv": 4.426006192419273e-05
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -7.0876521678497735,
+          -2.1289619023320374
+        ],
+        "mired": [
+          0.5876480628343017,
+          1.9511551760886903
+        ],
+        "duv": [
+          -7.054447732489838e-05,
+          0.00016191274536650585
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 1.2722049033382168,
+        "mired": 0.3499004152466999,
+        "duv": 5.925306631704259e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18818914313221055,
+      "unit58_cosine": 0.9822924232035826,
+      "optimal_scale_relative_rmse": 0.1873541974892313,
+      "whitened58_diagnostic_score": 1251.7468879691057,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 1800,
+        "gm": 100
+      },
+      "command": {
+        "cw": 0,
+        "ww": 0,
+        "r": 4095,
+        "g": 1197,
+        "b": 0
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:004-ray-guide10-white70-w6-cct1800-gm100",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:005-strip-guide10-white70-w6-cct1800-gm100",
+      "errors": {
+        "cct_K": -6.174865291387505,
+        "mired": 1.711911438793095,
+        "duv": 0.00039091347695126375
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -8.583430999742466,
+          -3.6807981736297632
+        ],
+        "mired": [
+          1.0213651080912682,
+          2.377259854181753
+        ],
+        "duv": [
+          0.00027446567206791564,
+          0.000508028286804938
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 1.253667139398206,
+        "mired": 0.3466074276025938,
+        "duv": 5.895818414126384e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18734399498057494,
+      "unit58_cosine": 0.982451113772359,
+      "optimal_scale_relative_rmse": 0.18652026444183273,
+      "whitened58_diagnostic_score": 1245.0455328961161,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 1800,
+        "gm": 130
+      },
+      "command": {
+        "cw": 25,
+        "ww": 755,
+        "r": 4095,
+        "g": 905,
+        "b": 0
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:007-ray-guide10-white70-w6-cct1800-gm130",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:006-strip-guide10-white70-w6-cct1800-gm130",
+      "errors": {
+        "cct_K": -1.7392061069742795,
+        "mired": 0.4996649443191927,
+        "duv": -4.9312977773502496e-05
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -4.104292724865166,
+          0.6830150222907755
+        ],
+        "mired": [
+          -0.19644060580408787,
+          1.1780535238328298
+        ],
+        "duv": [
+          -0.00016692046261911823,
+          6.373080404611337e-05
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 1.2248465057473015,
+        "mired": 0.3516208723736582,
+        "duv": 5.9442245015170666e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.1819762415307825,
+      "unit58_cosine": 0.9834423237591651,
+      "optimal_scale_relative_rmse": 0.18122140005852938,
+      "whitened58_diagnostic_score": 1204.7076622868387,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 1800,
+        "gm": 200
+      },
+      "command": {
+        "cw": 1,
+        "ww": 788,
+        "r": 4095,
+        "g": 900,
+        "b": 0
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:008-ray-guide10-white70-w6-cct1800-gm200",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:009-strip-guide10-white70-w6-cct1800-gm200",
+      "errors": {
+        "cct_K": -8.697241859061933,
+        "mired": 2.5054137391912263,
+        "duv": -0.00033691294628568607
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -11.111772424606698,
+          -6.22158627927372
+        ],
+        "mired": [
+          1.7943290434028483,
+          3.197187330148179
+        ],
+        "duv": [
+          -0.00045314651724140826,
+          -0.00022002285035087674
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 1.2375445888011325,
+        "mired": 0.3550999154082531,
+        "duv": 5.959073048014402e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18160864518727907,
+      "unit58_cosine": 0.9835091499966205,
+      "optimal_scale_relative_rmse": 0.18085837518048486,
+      "whitened58_diagnostic_score": 1201.9727335620641,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 2000,
+        "gm": 0
+      },
+      "command": {
+        "cw": 30,
+        "ww": 4095,
+        "r": 3059,
+        "g": 88,
+        "b": 0
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:011-ray-guide10-white70-w6-cct2000-gm0",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:010-strip-guide10-white70-w6-cct2000-gm0",
+      "errors": {
+        "cct_K": -45.905983862005996,
+        "mired": 10.606986569745686,
+        "duv": -0.007894356443096643
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -48.82693968734814,
+          -42.9893896545402
+        ],
+        "mired": [
+          9.944699267459809,
+          11.268744481619729
+        ],
+        "duv": [
+          -0.008012913920017429,
+          -0.007773566582750371
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 1.4961093598148674,
+        "mired": 0.33915770046730803,
+        "duv": 6.126162229716209e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.1810470074739085,
+      "unit58_cosine": 0.9836109905423713,
+      "optimal_scale_relative_rmse": 0.1803036862747268,
+      "whitened58_diagnostic_score": 1211.190167635151,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 2000,
+        "gm": 70
+      },
+      "command": {
+        "cw": 0,
+        "ww": 4095,
+        "r": 3013,
+        "g": 484,
+        "b": 0
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:012-ray-guide10-white70-w6-cct2000-gm70",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:013-strip-guide10-white70-w6-cct2000-gm70",
+      "errors": {
+        "cct_K": 128.4793716004533,
+        "mired": -26.61211889463908,
+        "duv": -0.0019104238656452413
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          125.56690115488145,
+          131.4374249177709
+        ],
+        "mired": [
+          -27.25797923838258,
+          -25.978269529489715
+        ],
+        "duv": [
+          -0.0020287995138481255,
+          -0.0017914371260173852
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 1.5033019051094783,
+        "mired": 0.3273894117128246,
+        "duv": 6.088549722155367e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18660536275458348,
+      "unit58_cosine": 0.9825892192956152,
+      "optimal_scale_relative_rmse": 0.18579135104744127,
+      "whitened58_diagnostic_score": 1241.9346035012359,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 2000,
+        "gm": 100
+      },
+      "command": {
+        "cw": 40,
+        "ww": 25,
+        "r": 4095,
+        "g": 1435,
+        "b": 2
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:015-ray-guide10-white70-w6-cct2000-gm100",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:014-strip-guide10-white70-w6-cct2000-gm100",
+      "errors": {
+        "cct_K": -8.71850475323663,
+        "mired": 1.9080033615880438,
+        "duv": -0.00021413328941615514
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -11.606413597727329,
+          -5.785037300889783
+        ],
+        "mired": [
+          1.2672981308481794,
+          2.538192484070933
+        ],
+        "duv": [
+          -0.00033332432371039196,
+          -9.560296368041133e-05
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 1.4920153661949498,
+        "mired": 0.325383452113103,
+        "duv": 6.090520832470777e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.19025815367716786,
+      "unit58_cosine": 0.9819009174796774,
+      "optimal_scale_relative_rmse": 0.18939532267869663,
+      "whitened58_diagnostic_score": 1269.028921494212,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 2000,
+        "gm": 130
+      },
+      "command": {
+        "cw": 0,
+        "ww": 0,
+        "r": 4095,
+        "g": 1463,
+        "b": 0
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:016-ray-guide10-white70-w6-cct2000-gm130",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:017-strip-guide10-white70-w6-cct2000-gm130",
+      "errors": {
+        "cct_K": -8.306711292963882,
+        "mired": 1.815804300207958,
+        "duv": 0.00015297268094116318
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -11.215028605619773,
+          -5.430801039697566
+        ],
+        "mired": [
+          1.1880918363012767,
+          2.4489211924365675
+        ],
+        "duv": [
+          3.1315904808076696e-05,
+          0.00027064134976281253
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 1.4779029478709997,
+        "mired": 0.3220004635793378,
+        "duv": 6.065302870014639e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.1903350583453023,
+      "unit58_cosine": 0.981886282782345,
+      "optimal_scale_relative_rmse": 0.18947117903224445,
+      "whitened58_diagnostic_score": 1269.3674274542573,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 2000,
+        "gm": 200
+      },
+      "command": {
+        "cw": 0,
+        "ww": 0,
+        "r": 4095,
+        "g": 1718,
+        "b": 0
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:019-ray-guide10-white70-w6-cct2000-gm200",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:018-strip-guide10-white70-w6-cct2000-gm200",
+      "errors": {
+        "cct_K": 213.97397591071785,
+        "mired": -42.388687260549204,
+        "duv": -0.003012746134788695
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          211.07410498728507,
+          216.88877868446497
+        ],
+        "mired": [
+          -43.02048076406695,
+          -41.767697745413095
+        ],
+        "duv": [
+          -0.0031330055923396516,
+          -0.0028921135537207515
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 1.4855074369314563,
+        "mired": 0.3191329262090921,
+        "duv": 6.173433566407445e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.20345566357033207,
+      "unit58_cosine": 0.9793028964805778,
+      "optimal_scale_relative_rmse": 0.20240019008081675,
+      "whitened58_diagnostic_score": 1358.5884064227373,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 2300,
+        "gm": 0
+      },
+      "command": {
+        "cw": 314,
+        "ww": 4095,
+        "r": 1924,
+        "g": 25,
+        "b": 352
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:020-ray-guide10-white70-w6-cct2300-gm0",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:021-strip-guide10-white70-w6-cct2300-gm0",
+      "errors": {
+        "cct_K": -5.067486900952645,
+        "mired": 0.863541972987548,
+        "duv": -2.098064629522077e-05
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -8.884653488292576,
+          -1.266608656414964
+        ],
+        "mired": [
+          0.21607844180043118,
+          1.511374157261325
+        ],
+        "duv": [
+          -0.00014776348272947155,
+          0.00010799370311471273
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 1.9408955590870407,
+        "mired": 0.3301427359498223,
+        "duv": 6.55030984984668e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.180981571375267,
+      "unit58_cosine": 0.9836228354112695,
+      "optimal_scale_relative_rmse": 0.18023905697016573,
+      "whitened58_diagnostic_score": 1215.012510013879,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 2300,
+        "gm": 70
+      },
+      "command": {
+        "cw": 80,
+        "ww": 45,
+        "r": 4095,
+        "g": 1701,
+        "b": 152
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:023-ray-guide10-white70-w6-cct2300-gm70",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:022-strip-guide10-white70-w6-cct2300-gm70",
+      "errors": {
+        "cct_K": -4.257158187123423,
+        "mired": 0.7173346263709277,
+        "duv": 5.1100007432096275e-05
+      },
+      "limits": {
+        "cct_K": 12.5,
+        "mired": 0.5,
+        "duv": 0.00025
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -7.8425728490807725,
+          -0.7060996213139337
+        ],
+        "mired": [
+          0.11919569006802533,
+          1.3200479893451398
+        ],
+        "duv": [
+          -7.595100818776621e-05,
+          0.0001795018155859576
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 1.8212983436377481,
+        "mired": 0.30642913749091377,
+        "duv": 6.52399643016903e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.19068653184849785,
+      "unit58_cosine": 0.9818193232857959,
+      "optimal_scale_relative_rmse": 0.18981785064271942,
+      "whitened58_diagnostic_score": 1278.7665289755662,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 2300,
+        "gm": 100
+      },
+      "command": {
+        "cw": 0,
+        "ww": 4095,
+        "r": 2015,
+        "g": 364,
+        "b": 0
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:024-ray-guide10-white70-w6-cct2300-gm100",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:025-strip-guide10-white70-w6-cct2300-gm100",
+      "errors": {
+        "cct_K": -8.033950069248931,
+        "mired": 1.3459954487387336,
+        "duv": 9.284698109028426e-05
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -11.521167381310352,
+          -4.550921332312862
+        ],
+        "mired": [
+          0.7637552859193661,
+          1.927622998735967
+        ],
+        "duv": [
+          -3.5523545565562404e-05,
+          0.00022118883648773247
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 1.7836599807853386,
+        "mired": 0.29798909740051327,
+        "duv": 6.510000986843408e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.17934230653829536,
+      "unit58_cosine": 0.9839181685427623,
+      "optimal_scale_relative_rmse": 0.1786198130428326,
+      "whitened58_diagnostic_score": 1196.2276076305848,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 2300,
+        "gm": 130
+      },
+      "command": {
+        "cw": 0,
+        "ww": 4095,
+        "r": 4095,
+        "g": 1303,
+        "b": 0
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:027-ray-guide10-white70-w6-cct2300-gm130",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:026-strip-guide10-white70-w6-cct2300-gm130",
+      "errors": {
+        "cct_K": 20.711192730865605,
+        "mired": -3.4545093009455172,
+        "duv": 2.519084448975896e-05
+      },
+      "limits": {
+        "cct_K": 12.5,
+        "mired": 0.5,
+        "duv": 0.00025
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          17.176019856349264,
+          24.070390647019266
+        ],
+        "mired": [
+          -4.0197324342247835,
+          -2.8609924358616783
+        ],
+        "duv": [
+          -9.789061517737493e-05,
+          0.00015353898004219995
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 1.7703632435953223,
+        "mired": 0.29741619202919156,
+        "duv": 6.436793200162686e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18195271505926322,
+      "unit58_cosine": 0.9834466047412813,
+      "optimal_scale_relative_rmse": 0.18119816672043354,
+      "whitened58_diagnostic_score": 1214.2347252380023,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 2300,
+        "gm": 200
+      },
+      "command": {
+        "cw": 0,
+        "ww": 4095,
+        "r": 4095,
+        "g": 1288,
+        "b": 0
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:028-ray-guide10-white70-w6-cct2300-gm200",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:029-strip-guide10-white70-w6-cct2300-gm200",
+      "errors": {
+        "cct_K": 13.606378416806365,
+        "mired": -2.2742506060424716,
+        "duv": 0.0001405042682286889
+      },
+      "limits": {
+        "cct_K": 12.5,
+        "mired": 0.5,
+        "duv": 0.00025
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          10.196779751376834,
+          17.09217179809624
+        ],
+        "mired": [
+          -2.8603985537351293,
+          -1.702140694792047
+        ],
+        "duv": [
+          1.1159867499848648e-05,
+          0.0002671567731413948
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 1.7625819334164536,
+        "mired": 0.2960273532346881,
+        "duv": 6.463878314452422e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18191214887589113,
+      "unit58_cosine": 0.9834539850456779,
+      "optimal_scale_relative_rmse": 0.18115810580201894,
+      "whitened58_diagnostic_score": 1213.9196132259483,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 2700,
+        "gm": 0
+      },
+      "command": {
+        "cw": 195,
+        "ww": 4095,
+        "r": 963,
+        "g": 27,
+        "b": 601
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:031-ray-guide10-white70-w6-cct2700-gm0",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:030-strip-guide10-white70-w6-cct2700-gm0",
+      "errors": {
+        "cct_K": 0.8360158337368375,
+        "mired": -0.1053258993762256,
+        "duv": -6.214835386328214e-05
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -4.201397690497094,
+          5.823738180058717
+        ],
+        "mired": [
+          -0.7348296990495683,
+          0.5283201815511117
+        ],
+        "duv": [
+          -0.00019774665364143416,
+          7.682855365052335e-05
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 2.547727602971924,
+        "mired": 0.32105453492200403,
+        "duv": 7.071434030798638e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.1821092651918153,
+      "unit58_cosine": 0.9834181077656486,
+      "optimal_scale_relative_rmse": 0.1813527648497012,
+      "whitened58_diagnostic_score": 1232.4370185931,
+      "conditional_simultaneous_box_within_legacy_limits": true,
+      "conditional_marginal_95_box_within_legacy_limits": true
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 2700,
+        "gm": 70
+      },
+      "command": {
+        "cw": 317,
+        "ww": 4095,
+        "r": 677,
+        "g": 66,
+        "b": 203
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:032-ray-guide10-white70-w6-cct2700-gm70",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:033-strip-guide10-white70-w6-cct2700-gm70",
+      "errors": {
+        "cct_K": -1.1752473190899764,
+        "mired": 0.14587607605557196,
+        "duv": -0.00014953742779292547
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -5.680681614505692,
+          3.3351330799098364
+        ],
+        "mired": [
+          -0.41431171280265316,
+          0.7043149919361196
+        ],
+        "duv": [
+          -0.00028739551309882533,
+          -1.2008791580425302e-05
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 2.3045477314865708,
+        "mired": 0.28594200869547537,
+        "duv": 7.013918073320222e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18013426487537632,
+      "unit58_cosine": 0.9837758233089038,
+      "optimal_scale_relative_rmse": 0.17940214456044984,
+      "whitened58_diagnostic_score": 1210.2668755251186,
+      "conditional_simultaneous_box_within_legacy_limits": true,
+      "conditional_marginal_95_box_within_legacy_limits": true
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 2700,
+        "gm": 100
+      },
+      "command": {
+        "cw": 1386,
+        "ww": 4095,
+        "r": 3903,
+        "g": 1601,
+        "b": 17
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:035-ray-guide10-white70-w6-cct2700-gm100",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:034-strip-guide10-white70-w6-cct2700-gm100",
+      "errors": {
+        "cct_K": -9.170482245950552,
+        "mired": 1.1398731006936487,
+        "duv": 0.0001030636215800856
+      },
+      "limits": {
+        "cct_K": 12.5,
+        "mired": 0.5,
+        "duv": 0.00025
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -13.599508864516395,
+          -4.850559703979696
+        ],
+        "mired": [
+          0.6035254714514693,
+          1.6884492821113666
+        ],
+        "duv": [
+          -3.488336981222967e-05,
+          0.00024373481648498892
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 2.2354272570726397,
+        "mired": 0.2770750987637619,
+        "duv": 7.052722362833282e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18454752396518465,
+      "unit58_cosine": 0.9829711056991597,
+      "optimal_scale_relative_rmse": 0.18376018437238095,
+      "whitened58_diagnostic_score": 1238.3871056251874,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 2700,
+        "gm": 130
+      },
+      "command": {
+        "cw": 29,
+        "ww": 4095,
+        "r": 166,
+        "g": 20,
+        "b": 20
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:036-ray-guide10-white70-w6-cct2700-gm130",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:037-strip-guide10-white70-w6-cct2700-gm130",
+      "errors": {
+        "cct_K": 1.4732128678592744,
+        "mired": -0.1822305108520368,
+        "duv": 1.3233531453207478e-05
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -2.7992063211627736,
+          5.733443007029621
+        ],
+        "mired": [
+          -0.7102959661158351,
+          0.3459530726404765
+        ],
+        "duv": [
+          -0.00012107348573640666,
+          0.00015104068677232932
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 2.1690473723746364,
+        "mired": 0.2684228132352319,
+        "duv": 6.9955940772981e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.17846543971369289,
+      "unit58_cosine": 0.9840750434138992,
+      "optimal_scale_relative_rmse": 0.17775350609743956,
+      "whitened58_diagnostic_score": 1194.496925920814,
+      "conditional_simultaneous_box_within_legacy_limits": true,
+      "conditional_marginal_95_box_within_legacy_limits": true
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 2700,
+        "gm": 200
+      },
+      "command": {
+        "cw": 16,
+        "ww": 4095,
+        "r": 149,
+        "g": 24,
+        "b": 5
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:039-ray-guide10-white70-w6-cct2700-gm200",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:038-strip-guide10-white70-w6-cct2700-gm200",
+      "errors": {
+        "cct_K": 1.808644661813105,
+        "mired": -0.22404627405632027,
+        "duv": 9.568165496713285e-05
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -2.403916627088915,
+          6.115159632864821
+        ],
+        "mired": [
+          -0.7586662544951437,
+          0.2974443487662368
+        ],
+        "duv": [
+          -4.3000982134963704e-05,
+          0.00023292313818813604
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 2.1530737690576447,
+        "mired": 0.26685851459745874,
+        "duv": 6.96146953272027e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.17834600849595197,
+      "unit58_cosine": 0.9840963506267808,
+      "optimal_scale_relative_rmse": 0.1776355051307369,
+      "whitened58_diagnostic_score": 1193.260666396128,
+      "conditional_simultaneous_box_within_legacy_limits": true,
+      "conditional_marginal_95_box_within_legacy_limits": true
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 3200,
+        "gm": 0
+      },
+      "command": {
+        "cw": 24,
+        "ww": 4095,
+        "r": 157,
+        "g": 10,
+        "b": 580
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:040-ray-guide10-white70-w6-cct3200-gm0",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:041-strip-guide10-white70-w6-cct3200-gm0",
+      "errors": {
+        "cct_K": -182.24178980023316,
+        "mired": 17.813548811235364,
+        "duv": -0.008402860502681254
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -189.0002896663282,
+          -175.58598610917437
+        ],
+        "mired": [
+          17.19326558180882,
+          18.443520555465092
+        ],
+        "duv": [
+          -0.008554263204508453,
+          -0.008249172480035129
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 3.4591323914563645,
+        "mired": 0.32132765635526456,
+        "duv": 7.76563077950356e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18339146413127308,
+      "unit58_cosine": 0.983183785441894,
+      "optimal_scale_relative_rmse": 0.18261884909326243,
+      "whitened58_diagnostic_score": 1252.2993198840218,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 3200,
+        "gm": 70
+      },
+      "command": {
+        "cw": 1104,
+        "ww": 4095,
+        "r": 166,
+        "g": 5,
+        "b": 296
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:043-ray-guide10-white70-w6-cct3200-gm70",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:042-strip-guide10-white70-w6-cct3200-gm70",
+      "errors": {
+        "cct_K": -17.394482677858377,
+        "mired": 1.6192878599514415,
+        "duv": 0.00014978790822048641
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -23.241641855175022,
+          -11.655722797913837
+        ],
+        "mired": [
+          1.0861164510792647,
+          2.1605701959579973
+        ],
+        "duv": [
+          1.2488505527855254e-06,
+          0.0003002818180030315
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 2.94077971244416,
+        "mired": 0.27251174998921607,
+        "duv": 7.630051832943841e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18209252239906232,
+      "unit58_cosine": 0.9834211566431734,
+      "optimal_scale_relative_rmse": 0.1813362309815746,
+      "whitened58_diagnostic_score": 1231.2289134071568,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 3200,
+        "gm": 100
+      },
+      "command": {
+        "cw": 2272,
+        "ww": 480,
+        "r": 4095,
+        "g": 1941,
+        "b": 56
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:044-ray-guide10-white70-w6-cct3200-gm100",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:045-strip-guide10-white70-w6-cct3200-gm100",
+      "errors": {
+        "cct_K": -20.662969518997215,
+        "mired": 1.9242147893634751,
+        "duv": 0.00013287750660814692
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -26.14812014224568,
+          -15.268826804175594
+        ],
+        "mired": [
+          1.4245134972305848,
+          2.430611982623021
+        ],
+        "duv": [
+          -1.8430100398680524e-05,
+          0.0002868997308803088
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 2.7751783059323487,
+        "mired": 0.25703346813501854,
+        "duv": 7.719796360924775e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18781106275743273,
+      "unit58_cosine": 0.9823635023529617,
+      "optimal_scale_relative_rmse": 0.1869811467630431,
+      "whitened58_diagnostic_score": 1268.3597140115762,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 3200,
+        "gm": 130
+      },
+      "command": {
+        "cw": 1086,
+        "ww": 4095,
+        "r": 113,
+        "g": 221,
+        "b": 6
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:047-ray-guide10-white70-w6-cct3200-gm130",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:046-strip-guide10-white70-w6-cct3200-gm130",
+      "errors": {
+        "cct_K": -0.4663200447816962,
+        "mired": 0.04315840114873026,
+        "duv": 3.942042197557782e-06
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -5.690948070501736,
+          4.905156304053753
+        ],
+        "mired": [
+          -0.45450724173268353,
+          0.5257687675488183
+        ],
+        "duv": [
+          -0.0001432199492877345,
+          0.0001539808258255745
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 2.670159634711169,
+        "mired": 0.2470982370409285,
+        "duv": 7.66971707068118e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.1810717591024082,
+      "unit58_cosine": 0.9836065090277799,
+      "optimal_scale_relative_rmse": 0.18032813257554653,
+      "whitened58_diagnostic_score": 1218.4282294957923,
+      "conditional_simultaneous_box_within_legacy_limits": true,
+      "conditional_marginal_95_box_within_legacy_limits": true
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 3200,
+        "gm": 200
+      },
+      "command": {
+        "cw": 756,
+        "ww": 440,
+        "r": 4095,
+        "g": 2431,
+        "b": 32
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:048-ray-guide10-white70-w6-cct3200-gm200",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:049-strip-guide10-white70-w6-cct3200-gm200",
+      "errors": {
+        "cct_K": -9.902437611601727,
+        "mired": 0.9214359364057714,
+        "duv": 6.0042789943891284e-05
+      },
+      "limits": {
+        "cct_K": 12.5,
+        "mired": 0.5,
+        "duv": 0.00025
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -14.858327541639824,
+          -4.891101119327267
+        ],
+        "mired": [
+          0.45567266267701,
+          1.3815198132810362
+        ],
+        "duv": [
+          -9.080433165026374e-05,
+          0.00020694070883840382
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 2.5418938307822314,
+        "mired": 0.23591410728291992,
+        "duv": 7.59381036811088e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18694088952780008,
+      "unit58_cosine": 0.9825265519112778,
+      "optimal_scale_relative_rmse": 0.18612247255324962,
+      "whitened58_diagnostic_score": 1257.593077477131,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 3800,
+        "gm": 0
+      },
+      "command": {
+        "cw": 372,
+        "ww": 4095,
+        "r": 0,
+        "g": 80,
+        "b": 836
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:051-ray-guide10-white70-w6-cct3800-gm0",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:050-strip-guide10-white70-w6-cct3800-gm0",
+      "errors": {
+        "cct_K": -261.8877369014017,
+        "mired": 19.31362836851696,
+        "duv": -0.0074461694606728565
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -270.6507135402328,
+          -252.8991090218
+        ],
+        "mired": [
+          18.69092323154256,
+          19.918172186795594
+        ],
+        "duv": [
+          -0.007612401612691366,
+          -0.0072809401114304366
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 4.5120464836865,
+        "mired": 0.31224860874216787,
+        "duv": 8.419135249494908e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18405612370624616,
+      "unit58_cosine": 0.9830616716631156,
+      "optimal_scale_relative_rmse": 0.1832750656988578,
+      "whitened58_diagnostic_score": 1264.1844992250403,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 3800,
+        "gm": 70
+      },
+      "command": {
+        "cw": 2788,
+        "ww": 4095,
+        "r": 85,
+        "g": 20,
+        "b": 382
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:052-ray-guide10-white70-w6-cct3800-gm70",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:053-strip-guide10-white70-w6-cct3800-gm70",
+      "errors": {
+        "cct_K": -8.499169339272157,
+        "mired": 0.5921772905769558,
+        "duv": -0.00012918151494267695
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -15.737873248789061,
+          -1.4251301033938837
+        ],
+        "mired": [
+          0.0994388033953399,
+          1.0947310360459581
+        ],
+        "duv": [
+          -0.00028840430794543074,
+          3.7227333755856016e-05
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 3.6808916353744934,
+        "mired": 0.25596314913089907,
+        "duv": 8.326504978532605e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.1846410277856994,
+      "unit58_cosine": 0.98295384542912,
+      "optimal_scale_relative_rmse": 0.18385248912132143,
+      "whitened58_diagnostic_score": 1256.5572529908306,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 3800,
+        "gm": 100
+      },
+      "command": {
+        "cw": 3458,
+        "ww": 4095,
+        "r": 0,
+        "g": 78,
+        "b": 76
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:055-ray-guide10-white70-w6-cct3800-gm100",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:054-strip-guide10-white70-w6-cct3800-gm100",
+      "errors": {
+        "cct_K": 2.620766464092867,
+        "mired": -0.18232287067030484,
+        "duv": 0.00010068133738434359
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -4.153390722700737,
+          9.300406494337675
+        ],
+        "mired": [
+          -0.6481097236025434,
+          0.2883672411756691
+        ],
+        "duv": [
+          -6.615641873165523e-05,
+          0.0002624896096772895
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 3.44511006843374,
+        "mired": 0.23980414394760774,
+        "duv": 8.315330227056929e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18398435421837211,
+      "unit58_cosine": 0.9830748787014245,
+      "optimal_scale_relative_rmse": 0.18320421083091798,
+      "whitened58_diagnostic_score": 1248.260590013609,
+      "conditional_simultaneous_box_within_legacy_limits": true,
+      "conditional_marginal_95_box_within_legacy_limits": true
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 3800,
+        "gm": 130
+      },
+      "command": {
+        "cw": 2735,
+        "ww": 4095,
+        "r": 0,
+        "g": 419,
+        "b": 13
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:056-ray-guide10-white70-w6-cct3800-gm130",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:057-strip-guide10-white70-w6-cct3800-gm130",
+      "errors": {
+        "cct_K": -8.722220762016605,
+        "mired": 0.6076857116898395,
+        "duv": 0.00022057986268726737
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -15.238667989394719,
+          -2.3843801729660985
+        ],
+        "mired": [
+          0.16632093428237057,
+          1.0593556716739696
+        ],
+        "duv": [
+          5.974481177836123e-05,
+          0.00038362004314146066
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 3.273101906149682,
+        "mired": 0.22758329644311967,
+        "duv": 8.277156994817464e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18306418890595977,
+      "unit58_cosine": 0.9832437513701013,
+      "optimal_scale_relative_rmse": 0.18229570864847672,
+      "whitened58_diagnostic_score": 1239.0432272800233,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 3800,
+        "gm": 200
+      },
+      "command": {
+        "cw": 1022,
+        "ww": 4095,
+        "r": 41,
+        "g": 1115,
+        "b": 0
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:059-ray-guide10-white70-w6-cct3800-gm200",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:058-strip-guide10-white70-w6-cct3800-gm200",
+      "errors": {
+        "cct_K": -3.301561227853199,
+        "mired": 0.23180548797597567,
+        "duv": -3.095313990826229e-05
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -8.932081652765248,
+          2.6297232215727586
+        ],
+        "mired": [
+          -0.18489816181977545,
+          0.6261645636507337
+        ],
+        "duv": [
+          -0.00019336826917847673,
+          0.00013233208985468034
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 2.949930368120313,
+        "mired": 0.20696825218330117,
+        "duv": 8.288057127868216e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18122596777994546,
+      "unit58_cosine": 0.9835785743011112,
+      "optimal_scale_relative_rmse": 0.18048043709996267,
+      "whitened58_diagnostic_score": 1221.0244006123903,
+      "conditional_simultaneous_box_within_legacy_limits": true,
+      "conditional_marginal_95_box_within_legacy_limits": true
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 4500,
+        "gm": 0
+      },
+      "command": {
+        "cw": 1596,
+        "ww": 4095,
+        "r": 0,
+        "g": 82,
+        "b": 1329
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:060-ray-guide10-white70-w6-cct4500-gm0",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:061-strip-guide10-white70-w6-cct4500-gm0",
+      "errors": {
+        "cct_K": -6.598715210997398,
+        "mired": 0.3355833340833385,
+        "duv": -1.2291055402118e-05
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -18.108232755666904,
+          4.923707561002942
+        ],
+        "mired": [
+          -0.25105534040731214,
+          0.9196071358233464
+        ],
+        "duv": [
+          -0.00018808225735921042,
+          0.00016537356025314023
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 5.904641463752746,
+        "mired": 0.2998990031434851,
+        "duv": 9.049042744912245e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18636666131373014,
+      "unit58_cosine": 0.9826337337753867,
+      "optimal_scale_relative_rmse": 0.18555577395123707,
+      "whitened58_diagnostic_score": 1289.5811565953245,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": true
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 4500,
+        "gm": 70
+      },
+      "command": {
+        "cw": 45,
+        "ww": 4095,
+        "r": 68,
+        "g": 944,
+        "b": 1139
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:063-ray-guide10-white70-w6-cct4500-gm70",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:062-strip-guide10-white70-w6-cct4500-gm70",
+      "errors": {
+        "cct_K": -23.2973736066524,
+        "mired": 1.226365464950561,
+        "duv": 0.0005840771463357852
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -32.43202685390865,
+          -14.017261153034905
+        ],
+        "mired": [
+          0.7394280782258115,
+          1.7038053099723938
+        ],
+        "duv": [
+          0.00040612201570717994,
+          0.0007597636780333398
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 4.6840759882808545,
+        "mired": 0.24543428888648924,
+        "duv": 8.983080359205092e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18360232885808145,
+      "unit58_cosine": 0.9831450924189442,
+      "optimal_scale_relative_rmse": 0.18282704190722351,
+      "whitened58_diagnostic_score": 1258.5361733460516,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 4500,
+        "gm": 100
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 2063,
+        "r": 0,
+        "g": 14,
+        "b": 62
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:064-ray-guide10-white70-w6-cct4500-gm100",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:065-strip-guide10-white70-w6-cct4500-gm100",
+      "errors": {
+        "cct_K": -12.71763829612064,
+        "mired": 0.6730495587173948,
+        "duv": -5.197894345134683e-05
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -21.16680257914395,
+          -4.465155521613202
+        ],
+        "mired": [
+          0.23660404978731436,
+          1.1180261826773896
+        ],
+        "duv": [
+          -0.0002292852729440003,
+          0.00011962482148432209
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 4.279455876767464,
+        "mired": 0.22590139724953837,
+        "duv": 8.920893941977682e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.1851601521843927,
+      "unit58_cosine": 0.9828578590215261,
+      "optimal_scale_relative_rmse": 0.1843649341920038,
+      "whitened58_diagnostic_score": 1263.9238583266763,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 4500,
+        "gm": 130
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 2536,
+        "r": 0,
+        "g": 463,
+        "b": 27
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:067-ray-guide10-white70-w6-cct4500-gm130",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:066-strip-guide10-white70-w6-cct4500-gm130",
+      "errors": {
+        "cct_K": -4.103030893921641,
+        "mired": 0.21828862610666988,
+        "duv": 0.0001885588299521384
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -11.877789871713366,
+          3.6427032830828225
+        ],
+        "mired": [
+          -0.19411320696267678,
+          0.6307290277703329
+        ],
+        "duv": [
+          1.2794277053231793e-05,
+          0.0003646757611066111
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 3.965060915759843,
+        "mired": 0.21077405389948078,
+        "duv": 8.943672613900879e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.1847677468758349,
+      "unit58_cosine": 0.9829304398572137,
+      "optimal_scale_relative_rmse": 0.18397758124865188,
+      "whitened58_diagnostic_score": 1257.8047640923967,
+      "conditional_simultaneous_box_within_legacy_limits": true,
+      "conditional_marginal_95_box_within_legacy_limits": true
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 4500,
+        "gm": 200
+      },
+      "command": {
+        "cw": 135,
+        "ww": 1436,
+        "r": 3939,
+        "g": 4095,
+        "b": 736
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:068-ray-guide10-white70-w6-cct4500-gm200",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:069-strip-guide10-white70-w6-cct4500-gm200",
+      "errors": {
+        "cct_K": -11.05312081457214,
+        "mired": 0.5942943220473751,
+        "duv": -5.325759696762217e-05
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -17.81239957106293,
+          -4.025013894829118
+        ],
+        "mired": [
+          0.2165735555040243,
+          0.9565441573574097
+        ],
+        "duv": [
+          -0.00022866567635917442,
+          0.0001221257538193918
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 3.531437555942903,
+        "mired": 0.18946683723174235,
+        "duv": 8.991916619158937e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18670190301043849,
+      "unit58_cosine": 0.9825711997061403,
+      "optimal_scale_relative_rmse": 0.18588662541462256,
+      "whitened58_diagnostic_score": 1265.391624161668,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": true
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 5000,
+        "gm": 0
+      },
+      "command": {
+        "cw": 2140,
+        "ww": 4095,
+        "r": 0,
+        "g": 160,
+        "b": 1492
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:071-ray-guide10-white70-w6-cct5000-gm0",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:070-strip-guide10-white70-w6-cct5000-gm0",
+      "errors": {
+        "cct_K": 4.460097140366088,
+        "mired": -0.1922971497796766,
+        "duv": 0.00037168786296658263
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -8.67436768079417,
+          17.43538396407748
+        ],
+        "mired": [
+          -0.7530907444632277,
+          0.373358102041038
+        ],
+        "duv": [
+          0.00018866157555960956,
+          0.0005538409391486988
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 6.630579994621291,
+        "mired": 0.28610889462045797,
+        "duv": 9.310411154625397e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18756642409094867,
+      "unit58_cosine": 0.9824094182768669,
+      "optimal_scale_relative_rmse": 0.18673975174265386,
+      "whitened58_diagnostic_score": 1301.7293548481782,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 5000,
+        "gm": 70
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 2128,
+        "r": 0,
+        "g": 30,
+        "b": 491
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:072-ray-guide10-white70-w6-cct5000-gm70",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:073-strip-guide10-white70-w6-cct5000-gm70",
+      "errors": {
+        "cct_K": -11.647300584141703,
+        "mired": 0.5144309019025854,
+        "duv": -0.00018650940529724115
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -22.504733929229882,
+          -1.2278372443224381
+        ],
+        "mired": [
+          0.05433674198410049,
+          0.9918959463218433
+        ],
+        "duv": [
+          -0.0003712025172355287,
+          -4.604080112347593e-06
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 5.428013813648148,
+        "mired": 0.23922483891978144,
+        "duv": 9.328097176565224e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18650863264565484,
+      "unit58_cosine": 0.982607264974324,
+      "optimal_scale_relative_rmse": 0.1856958879988422,
+      "whitened58_diagnostic_score": 1282.4360711956742,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": true
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 5000,
+        "gm": 100
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 1302,
+        "r": 0,
+        "g": 4,
+        "b": 104
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:075-ray-guide10-white70-w6-cct5000-gm100",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:074-strip-guide10-white70-w6-cct5000-gm100",
+      "errors": {
+        "cct_K": -20.726320452276013,
+        "mired": 0.9263551749167505,
+        "duv": -6.660577600558007e-05
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -30.314723649761437,
+          -11.228773894220515
+        ],
+        "mired": [
+          0.5027202525317029,
+          1.35234639383287
+        ],
+        "duv": [
+          -0.00024585112106957006,
+          0.00011385290390451178
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 4.850030630224589,
+        "mired": 0.21594241693094646,
+        "duv": 9.163426986323261e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18571675619182207,
+      "unit58_cosine": 0.9827546432347937,
+      "optimal_scale_relative_rmse": 0.1849143347619471,
+      "whitened58_diagnostic_score": 1272.6449717664352,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 5000,
+        "gm": 130
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 487,
+        "r": 788,
+        "g": 674,
+        "b": 21
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:076-ray-guide10-white70-w6-cct5000-gm130",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:077-strip-guide10-white70-w6-cct5000-gm130",
+      "errors": {
+        "cct_K": 19.184419554264423,
+        "mired": -0.8525775833279852,
+        "duv": -0.00042256765634484175
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          10.143464930392678,
+          28.07371978709968
+        ],
+        "mired": [
+          -1.2499789357774511,
+          -0.45020109602569325
+        ],
+        "duv": [
+          -0.0006069906639392305,
+          -0.00023723825858918885
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 4.564343845212115,
+        "mired": 0.20354769360266362,
+        "duv": 9.437871345213027e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18556060860871423,
+      "unit58_cosine": 0.9827836302663818,
+      "optimal_scale_relative_rmse": 0.18476021238467918,
+      "whitened58_diagnostic_score": 1268.4364562297005,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 5000,
+        "gm": 200
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 3351,
+        "r": 8,
+        "g": 2071,
+        "b": 60
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:079-ray-guide10-white70-w6-cct5000-gm200",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:078-strip-guide10-white70-w6-cct5000-gm200",
+      "errors": {
+        "cct_K": 0.42213145805908425,
+        "mired": -0.019152836803527862,
+        "duv": 0.00010831040583323195
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -7.279774894670117,
+          7.948177743145606
+        ],
+        "mired": [
+          -0.3610122631399129,
+          0.3301302717564276
+        ],
+        "duv": [
+          -7.667376650822912e-05,
+          0.0002917646598193598
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 3.901753320413805,
+        "mired": 0.17704190743386425,
+        "duv": 9.328798591785574e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18474347360938076,
+      "unit58_cosine": 0.98293492447937,
+      "optimal_scale_relative_rmse": 0.18395361980329494,
+      "whitened58_diagnostic_score": 1254.5804275267717,
+      "conditional_simultaneous_box_within_legacy_limits": true,
+      "conditional_marginal_95_box_within_legacy_limits": true
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 5600,
+        "gm": 0
+      },
+      "command": {
+        "cw": 2892,
+        "ww": 4095,
+        "r": 14,
+        "g": 91,
+        "b": 1415
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:080-ray-guide10-white70-w6-cct5600-gm0",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:081-strip-guide10-white70-w6-cct5600-gm0",
+      "errors": {
+        "cct_K": -384.76764934845596,
+        "mired": 15.124548226119856,
+        "duv": -0.003486867090562413
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -399.51048999283466,
+          -369.8454912276223
+        ],
+        "mired": [
+          14.57409081484975,
+          15.662165111432444
+        ],
+        "duv": [
+          -0.0036746707531541537,
+          -0.0032974262832109924
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 7.568714153418116,
+        "mired": 0.2781702402727741,
+        "duv": 9.57371043957717e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18743394299501284,
+      "unit58_cosine": 0.982434258506671,
+      "optimal_scale_relative_rmse": 0.18660902366297175,
+      "whitened58_diagnostic_score": 1299.9356653440989,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 5600,
+        "gm": 70
+      },
+      "command": {
+        "cw": 50,
+        "ww": 54,
+        "r": 4095,
+        "g": 3348,
+        "b": 1605
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:083-ray-guide10-white70-w6-cct5600-gm70",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:082-strip-guide10-white70-w6-cct5600-gm70",
+      "errors": {
+        "cct_K": -14.06209774990657,
+        "mired": 0.5148066568618503,
+        "duv": -0.00027253892992035265
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -26.34390320486375,
+          -2.218962044096523
+        ],
+        "mired": [
+          0.0813303604478989,
+          0.9622977080643728
+        ],
+        "duv": [
+          -0.0004582324544242748,
+          -8.083604618736688e-05
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 6.166284013704605,
+        "mired": 0.22522010755121388,
+        "duv": 9.650351653541325e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.19247567053126816,
+      "unit58_cosine": 0.9814765581267696,
+      "optimal_scale_relative_rmse": 0.1915822691368643,
+      "whitened58_diagnostic_score": 1330.3827908834207,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 5600,
+        "gm": 100
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 428,
+        "r": 142,
+        "g": 17,
+        "b": 116
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:084-ray-guide10-white70-w6-cct5600-gm100",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:085-strip-guide10-white70-w6-cct5600-gm100",
+      "errors": {
+        "cct_K": -13.300869131105173,
+        "mired": 0.4903006917396624,
+        "duv": 9.277575269020944e-05
+      },
+      "limits": {
+        "cct_K": 25.10729224769198,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -24.815436544386237,
+          -2.1803345215425702
+        ],
+        "mired": [
+          0.08057007753201689,
+          0.9133479029571603
+        ],
+        "duv": [
+          -9.90517233607227e-05,
+          0.0002817459670706348
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 5.785011380682245,
+        "mired": 0.2127692034249112,
+        "duv": 9.628525559302825e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18620183959269773,
+      "unit58_cosine": 0.982664437466148,
+      "optimal_scale_relative_rmse": 0.1853931048861822,
+      "whitened58_diagnostic_score": 1282.0293107613495,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": true
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 5600,
+        "gm": 130
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 614,
+        "r": 27,
+        "g": 238,
+        "b": 56
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:087-ray-guide10-white70-w6-cct5600-gm130",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:086-strip-guide10-white70-w6-cct5600-gm130",
+      "errors": {
+        "cct_K": -21.659896820549875,
+        "mired": 0.808750510754777,
+        "duv": 0.00023953243556484004
+      },
+      "limits": {
+        "cct_K": 25.145697514035863,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -31.97082037505545,
+          -11.359308116575551
+        ],
+        "mired": [
+          0.42487896023486377,
+          1.1918366712403823
+        ],
+        "duv": [
+          5.073926737159244e-05,
+          0.0004304908920155231
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 5.286062093197429,
+        "mired": 0.19666600977917828,
+        "duv": 9.614288244400803e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18591019209829024,
+      "unit58_cosine": 0.9827187002369887,
+      "optimal_scale_relative_rmse": 0.18510525709585748,
+      "whitened58_diagnostic_score": 1275.6587975130365,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 5600,
+        "gm": 200
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 1476,
+        "r": 4,
+        "g": 1525,
+        "b": 46
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:088-ray-guide10-white70-w6-cct5600-gm200",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:089-strip-guide10-white70-w6-cct5600-gm200",
+      "errors": {
+        "cct_K": 0.9712370851693777,
+        "mired": -0.036606720287835515,
+        "duv": 0.0002961745589415178
+      },
+      "limits": {
+        "cct_K": 25.04547256327925,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -7.781462501350279,
+          10.002896214809137
+        ],
+        "mired": [
+          -0.3775610687726065,
+          0.29296011820464324
+        ],
+        "duv": [
+          0.00010327348976652004,
+          0.0004824639594448767
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 4.545547918610842,
+        "mired": 0.17136283443486264,
+        "duv": 9.714074953794605e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18454618596352867,
+      "unit58_cosine": 0.9829713526231574,
+      "optimal_scale_relative_rmse": 0.18375886352010448,
+      "whitened58_diagnostic_score": 1258.3391077363096,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": true
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 6500,
+        "gm": 0
+      },
+      "command": {
+        "cw": 3888,
+        "ww": 4095,
+        "r": 0,
+        "g": 124,
+        "b": 2181
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:091-ray-guide10-white70-w6-cct6500-gm0",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:090-strip-guide10-white70-w6-cct6500-gm0",
+      "errors": {
+        "cct_K": 42.75760114968671,
+        "mired": -1.2226120753501846,
+        "duv": 0.00026532095976418077
+      },
+      "limits": {
+        "cct_K": 30.46823532290966,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          24.490622777536394,
+          61.26487630415222
+        ],
+        "mired": [
+          -1.757029165608286,
+          -0.6985866270115488
+        ],
+        "duv": [
+          6.710519027788878e-05,
+          0.00045898552263386617
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 9.372595938792855,
+        "mired": 0.26966658216838246,
+        "duv": 9.995056554352559e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.1908051394192363,
+      "unit58_cosine": 0.981796699385603,
+      "optimal_scale_relative_rmse": 0.18993483376025563,
+      "whitened58_diagnostic_score": 1334.334918134048,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 6500,
+        "gm": 70
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 805,
+        "r": 51,
+        "g": 8,
+        "b": 544
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:092-ray-guide10-white70-w6-cct6500-gm70",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:093-strip-guide10-white70-w6-cct6500-gm70",
+      "errors": {
+        "cct_K": -26.837077855831012,
+        "mired": 0.7766098956089991,
+        "duv": 0.0004161587322969091
+      },
+      "limits": {
+        "cct_K": 31.142022586862357,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -41.7167715496661,
+          -11.97618901176152
+        ],
+        "mired": [
+          0.34729437013392117,
+          1.2048396006023125
+        ],
+        "duv": [
+          0.00022250839006157715,
+          0.0006083315724400872
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 7.606154542592226,
+        "mired": 0.21926079778249496,
+        "duv": 9.878661970316122e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.1880798722322093,
+      "unit58_cosine": 0.9823129808305576,
+      "optimal_scale_relative_rmse": 0.18724638231961802,
+      "whitened58_diagnostic_score": 1305.5733474175224,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 6500,
+        "gm": 100
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 0,
+        "r": 94,
+        "g": 1,
+        "b": 201
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:095-ray-guide10-white70-w6-cct6500-gm100",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:094-strip-guide10-white70-w6-cct6500-gm100",
+      "errors": {
+        "cct_K": -2.197546498730844,
+        "mired": 0.06354787185077271,
+        "duv": 4.058710386247192e-05
+      },
+      "limits": {
+        "cct_K": 31.49890660599039,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -16.387346413664908,
+          11.800184253070139
+        ],
+        "mired": [
+          -0.3420342921483872,
+          0.4726450849759785
+        ],
+        "duv": [
+          -0.00015539500772584997,
+          0.00024157462593050425
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 7.203716686623274,
+        "mired": 0.20824527738267862,
+        "duv": 0.00010112137860523531
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18700951150533923,
+      "unit58_cosine": 0.9825137213032673,
+      "optimal_scale_relative_rmse": 0.18619019160741399,
+      "whitened58_diagnostic_score": 1294.644765478644,
+      "conditional_simultaneous_box_within_legacy_limits": true,
+      "conditional_marginal_95_box_within_legacy_limits": true
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 6500,
+        "gm": 130
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 0,
+        "r": 3,
+        "g": 165,
+        "b": 0
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:096-ray-guide10-white70-w6-cct6500-gm130",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:097-strip-guide10-white70-w6-cct6500-gm130",
+      "errors": {
+        "cct_K": -298.03539638740403,
+        "mired": 9.134027710347738,
+        "duv": -0.00303070740581461
+      },
+      "limits": {
+        "cct_K": 31.735685088702773,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -310.8899685600612,
+          -285.1980118209066
+        ],
+        "mired": [
+          8.758410928890303,
+          9.50882854345313
+        ],
+        "duv": [
+          -0.0032270590336505043,
+          -0.0028336991680520964
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 6.50400837804093,
+        "mired": 0.19051853146883857,
+        "duv": 0.00010047873748208009
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18544393236367096,
+      "unit58_cosine": 0.982805273974749,
+      "optimal_scale_relative_rmse": 0.1846450471781425,
+      "whitened58_diagnostic_score": 1275.8192125181158,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 6500,
+        "gm": 200
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 67,
+        "r": 3,
+        "g": 956,
+        "b": 41
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:099-ray-guide10-white70-w6-cct6500-gm200",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:098-strip-guide10-white70-w6-cct6500-gm200",
+      "errors": {
+        "cct_K": -8.616693038402445,
+        "mired": 0.2545118805618358,
+        "duv": -6.479071624282753e-05
+      },
+      "limits": {
+        "cct_K": 31.838775045923484,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -19.512820257651015,
+          2.494771839357371
+        ],
+        "mired": [
+          -0.0738613877353302,
+          0.5754423477045115
+        ],
+        "duv": [
+          -0.0002631044890495364,
+          0.00013746099136626686
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 5.60083706748429,
+        "mired": 0.16522596027634326,
+        "duv": 0.00010206060701608285
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18519379695795782,
+      "unit58_cosine": 0.9828516287841473,
+      "optimal_scale_relative_rmse": 0.184398144774693,
+      "whitened58_diagnostic_score": 1269.4415657954403,
+      "conditional_simultaneous_box_within_legacy_limits": true,
+      "conditional_marginal_95_box_within_legacy_limits": true
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 8000,
+        "gm": 0
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 2886,
+        "r": 0,
+        "g": 155,
+        "b": 1839
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:100-ray-guide10-white70-w6-cct8000-gm0",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:101-strip-guide10-white70-w6-cct8000-gm0",
+      "errors": {
+        "cct_K": -673.9911200965671,
+        "mired": 15.15881630392596,
+        "duv": -0.002741338496133394
+      },
+      "limits": {
+        "cct_K": 42.11188303985643,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -698.7261018636084,
+          -650.0745450864002
+        ],
+        "mired": [
+          14.662469671073165,
+          15.667278527092027
+        ],
+        "duv": [
+          -0.0029468469102499335,
+          -0.002535608346829454
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 12.369416698420483,
+        "mired": 0.2547180034470758,
+        "duv": 0.00010417529172067333
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18970341723945336,
+      "unit58_cosine": 0.9820063067438367,
+      "optimal_scale_relative_rmse": 0.18884812288007963,
+      "whitened58_diagnostic_score": 1328.9800903356986,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 8000,
+        "gm": 70
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 341,
+        "r": 0,
+        "g": 34,
+        "b": 345
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:103-ray-guide10-white70-w6-cct8000-gm70",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:102-strip-guide10-white70-w6-cct8000-gm70",
+      "errors": {
+        "cct_K": -908.2438760022578,
+        "mired": 21.489970811635175,
+        "duv": -0.005910320427798854
+      },
+      "limits": {
+        "cct_K": 42.51867048072433,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -928.4045085448162,
+          -888.5673597062498
+        ],
+        "mired": [
+          21.075448831191554,
+          21.91056588958893
+        ],
+        "duv": [
+          -0.006115262212236848,
+          -0.005705747789951538
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 10.206801405491545,
+        "mired": 0.21331705295937176,
+        "duv": 0.00010368127012699233
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18795135485403486,
+      "unit58_cosine": 0.9823371441042664,
+      "optimal_scale_relative_rmse": 0.18711957490619127,
+      "whitened58_diagnostic_score": 1309.0500241671978,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 8000,
+        "gm": 100
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 87,
+        "r": 0,
+        "g": 177,
+        "b": 516
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:104-ray-guide10-white70-w6-cct8000-gm100",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:105-strip-guide10-white70-w6-cct8000-gm100",
+      "errors": {
+        "cct_K": -4.671655610063681,
+        "mired": 0.09712014564829019,
+        "duv": -0.00011632625079644604
+      },
+      "limits": {
+        "cct_K": 42.71107997429818,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -23.98083936830276,
+          14.182821934193635
+        ],
+        "mired": [
+          -0.2954169015042439,
+          0.4976764766534913
+        ],
+        "duv": [
+          -0.00032490600968041323,
+          9.336150647273902e-05
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 9.714715342908724,
+        "mired": 0.20183824907652298,
+        "duv": 0.00010457538611883514
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18820185528817734,
+      "unit58_cosine": 0.9822900308330439,
+      "optimal_scale_relative_rmse": 0.18736674018090224,
+      "whitened58_diagnostic_score": 1311.3705109850682,
+      "conditional_simultaneous_box_within_legacy_limits": true,
+      "conditional_marginal_95_box_within_legacy_limits": true
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 8000,
+        "gm": 130
+      },
+      "command": {
+        "cw": 328,
+        "ww": 4095,
+        "r": 1151,
+        "g": 3868,
+        "b": 3012
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:107-ray-guide10-white70-w6-cct8000-gm130",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:106-strip-guide10-white70-w6-cct8000-gm130",
+      "errors": {
+        "cct_K": -12.163311284700285,
+        "mired": 0.25558102786013137,
+        "duv": -0.00035799450391723123
+      },
+      "limits": {
+        "cct_K": 21.50420777812874,
+        "mired": 0.5,
+        "duv": 0.00025
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -29.33442356870082,
+          5.262361261174818
+        ],
+        "mired": [
+          -0.11082664600748655,
+          0.6150908776008136
+        ],
+        "duv": [
+          -0.0005687620011374499,
+          -0.00015738109738162913
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 8.889092070539103,
+        "mired": 0.18651591273537335,
+        "duv": 0.00010395022754021073
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18936700169843151,
+      "unit58_cosine": 0.982070069333873,
+      "optimal_scale_relative_rmse": 0.1885162563774327,
+      "whitened58_diagnostic_score": 1316.1322114991385,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 8000,
+        "gm": 200
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 71,
+        "r": 17,
+        "g": 1542,
+        "b": 553
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:108-ray-guide10-white70-w6-cct8000-gm200",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:109-strip-guide10-white70-w6-cct8000-gm200",
+      "errors": {
+        "cct_K": -35.81241890167712,
+        "mired": 0.764473502249075,
+        "duv": 0.0002023904151339656
+      },
+      "limits": {
+        "cct_K": 43.27602457550201,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -50.41961956429316,
+          -21.061590507067724
+        ],
+        "mired": [
+          0.45013036153122316,
+          1.0741793787277847
+        ],
+        "duv": [
+          -7.576237246043406e-06,
+          0.0004174320296013666
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 7.552261543353015,
+        "mired": 0.16050692260994653,
+        "duv": 0.0001081311807411829
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.1869205868530449,
+      "unit58_cosine": 0.9825303471052571,
+      "optimal_scale_relative_rmse": 0.18610243689222064,
+      "whitened58_diagnostic_score": 1290.5232208114169,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 10000,
+        "gm": 0
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 2014,
+        "r": 32,
+        "g": 83,
+        "b": 1891
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:111-ray-guide10-white70-w6-cct10000-gm0",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:110-strip-guide10-white70-w6-cct10000-gm0",
+      "errors": {
+        "cct_K": -47.800844606934334,
+        "mired": 0.6653918066845534,
+        "duv": -4.7239585705925735e-05
+      },
+      "limits": {
+        "cct_K": 59.15023386664378,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -83.14963604018449,
+          -12.154134126989012
+        ],
+        "mired": [
+          0.17024283032837037,
+          1.1533941094519782
+        ],
+        "duv": [
+          -0.00025738659918882493,
+          0.0001623166110294695
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 18.11193534609619,
+        "mired": 0.2509503947035606,
+        "duv": 0.00010677889902566474
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.19149738404038685,
+      "unit58_cosine": 0.9816643759528443,
+      "optimal_scale_relative_rmse": 0.19061755686481963,
+      "whitened58_diagnostic_score": 1353.4983336075304,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 10000,
+        "gm": 70
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 0,
+        "r": 1,
+        "g": 31,
+        "b": 485
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:112-ray-guide10-white70-w6-cct10000-gm70",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:113-strip-guide10-white70-w6-cct10000-gm70",
+      "errors": {
+        "cct_K": -1302.3269040846117,
+        "mired": 22.285821239327746,
+        "duv": -0.004838747949157158
+      },
+      "limits": {
+        "cct_K": 58.705334748872076,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -1330.0033578899445,
+          -1274.5796386706463
+        ],
+        "mired": [
+          21.874686279777297,
+          22.69465814530253
+        ],
+        "duv": [
+          -0.005048922709199284,
+          -0.004623643122734686
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 14.334043505950737,
+        "mired": 0.21082566618844348,
+        "duv": 0.00010744220350297766
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18832800237426275,
+      "unit58_cosine": 0.98226628176086,
+      "optimal_scale_relative_rmse": 0.18749120436888467,
+      "whitened58_diagnostic_score": 1318.6784162948995,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 10000,
+        "gm": 100
+      },
+      "command": {
+        "cw": 3853,
+        "ww": 2974,
+        "r": 1613,
+        "g": 3735,
+        "b": 4095
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:115-ray-guide10-white70-w6-cct10000-gm100",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:114-strip-guide10-white70-w6-cct10000-gm100",
+      "errors": {
+        "cct_K": -30.400199090978276,
+        "mired": 0.4464683347467684,
+        "duv": 2.882354564185275e-05
+      },
+      "limits": {
+        "cct_K": 59.01035920269156,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -57.310518036265876,
+          -3.973631958723357
+        ],
+        "mired": [
+          0.058555058708006064,
+          0.8388499198324186
+        ],
+        "duv": [
+          -0.0001779055598356232,
+          0.0002432457064058111
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 13.616406011101397,
+        "mired": 0.19936712296325773,
+        "duv": 0.00010829823949061267
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.1934849112594233,
+      "unit58_cosine": 0.9812817945574667,
+      "optimal_scale_relative_rmse": 0.19257736022200983,
+      "whitened58_diagnostic_score": 1357.0405667398634,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": true
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 10000,
+        "gm": 130
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 189,
+        "r": 1,
+        "g": 810,
+        "b": 1030
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:116-ray-guide10-white70-w6-cct10000-gm130",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:117-strip-guide10-white70-w6-cct10000-gm130",
+      "errors": {
+        "cct_K": -3.7963379495176923,
+        "mired": 0.05627529254736885,
+        "duv": -3.870380969515225e-05
+      },
+      "limits": {
+        "cct_K": 59.36630640583336,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -28.356705555058443,
+          20.65972783757647
+        ],
+        "mired": [
+          -0.3072230847749253,
+          0.41928899990954194
+        ],
+        "duv": [
+          -0.0002529520821637761,
+          0.00017428070764538082
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 12.542471764017678,
+        "mired": 0.18585266003133064,
+        "duv": 0.00010793755177195
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.1889326607793633,
+      "unit58_cosine": 0.982152224845415,
+      "optimal_scale_relative_rmse": 0.18808776470361224,
+      "whitened58_diagnostic_score": 1321.2284527885356,
+      "conditional_simultaneous_box_within_legacy_limits": true,
+      "conditional_marginal_95_box_within_legacy_limits": true
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 10000,
+        "gm": 200
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 0,
+        "r": 0,
+        "g": 1889,
+        "b": 1109
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:119-ray-guide10-white70-w6-cct10000-gm200",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:118-strip-guide10-white70-w6-cct10000-gm200",
+      "errors": {
+        "cct_K": -35.12238068537408,
+        "mired": 0.5287793683935433,
+        "duv": -5.0798794647990975e-05
+      },
+      "limits": {
+        "cct_K": 59.03887294587735,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -56.37372708198857,
+          -13.497430822895058
+        ],
+        "mired": [
+          0.20371343073089462,
+          0.8465654193788757
+        ],
+        "duv": [
+          -0.00026579516562419316,
+          0.0001610188668144886
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 10.859008718270466,
+        "mired": 0.16290615319592072,
+        "duv": 0.00011000260400043842
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.1882105737848141,
+      "unit58_cosine": 0.9822883899577954,
+      "optimal_scale_relative_rmse": 0.18737534243897183,
+      "whitened58_diagnostic_score": 1308.3509808676147,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": true
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 14000,
+        "gm": 0
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 1542,
+        "r": 21,
+        "g": 90,
+        "b": 1979
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:120-ray-guide10-white70-w6-cct14000-gm0",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:121-strip-guide10-white70-w6-cct14000-gm0",
+      "errors": {
+        "cct_K": -281.9388515638275,
+        "mired": 2.2493768769591185,
+        "duv": 0.0003346376623547566
+      },
+      "limits": {
+        "cct_K": 48.64828457459104,
+        "mired": 0.5,
+        "duv": 0.00025
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -345.57962986483074,
+          -218.7361049829704
+        ],
+        "mired": [
+          1.7521875596744287,
+          2.7423819716269344
+        ],
+        "duv": [
+          0.00012193286590707628,
+          0.0005523725525016642
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 32.09976763852094,
+        "mired": 0.25086454360404614,
+        "duv": 0.00011046529985066984
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.19215383766293206,
+      "unit58_cosine": 0.9815384513357038,
+      "optimal_scale_relative_rmse": 0.19126491719473332,
+      "whitened58_diagnostic_score": 1366.3796562947798,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 14000,
+        "gm": 70
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 4,
+        "r": 18,
+        "g": 255,
+        "b": 1148
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:123-ray-guide10-white70-w6-cct14000-gm70",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:122-strip-guide10-white70-w6-cct14000-gm70",
+      "errors": {
+        "cct_K": 20.447937347731568,
+        "mired": -0.1724363544352201,
+        "duv": -1.9535053225402596e-05
+      },
+      "limits": {
+        "cct_K": 95.62790886999122,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -30.489439185428637,
+          70.11502674723259
+        ],
+        "mired": [
+          -0.5932763171742319,
+          0.2558731056928796
+        ],
+        "duv": [
+          -0.0002353029495129306,
+          0.0002005250069504412
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 25.806443732882734,
+        "mired": 0.21796278147713474,
+        "duv": 0.0001109639085273515
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.19118180472468635,
+      "unit58_cosine": 0.9817247587711058,
+      "optimal_scale_relative_rmse": 0.1903063267887176,
+      "whitened58_diagnostic_score": 1353.247350175285,
+      "conditional_simultaneous_box_within_legacy_limits": true,
+      "conditional_marginal_95_box_within_legacy_limits": true
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 14000,
+        "gm": 100
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 69,
+        "r": 75,
+        "g": 691,
+        "b": 1357
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:124-ray-guide10-white70-w6-cct14000-gm100",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:125-strip-guide10-white70-w6-cct14000-gm100",
+      "errors": {
+        "cct_K": 32.36378102623166,
+        "mired": -0.2809335200965819,
+        "duv": -1.1158682178204422e-05
+      },
+      "limits": {
+        "cct_K": 95.66326750581919,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -14.222460088327443,
+          78.86745127961248
+        ],
+        "mired": [
+          -0.6866247640423545,
+          0.12308497958674665
+        ],
+        "duv": [
+          -0.00023230184902047745,
+          0.00020648396276880536
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 23.42694355722037,
+        "mired": 0.20385860378529022,
+        "duv": 0.00011185270962875101
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.1909822835283866,
+      "unit58_cosine": 0.9817628836891416,
+      "optimal_scale_relative_rmse": 0.19010954792009035,
+      "whitened58_diagnostic_score": 1349.1254652817822,
+      "conditional_simultaneous_box_within_legacy_limits": true,
+      "conditional_marginal_95_box_within_legacy_limits": true
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 14000,
+        "gm": 130
+      },
+      "command": {
+        "cw": 3779,
+        "ww": 2252,
+        "r": 796,
+        "g": 3701,
+        "b": 4095
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:127-ray-guide10-white70-w6-cct14000-gm130",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:126-strip-guide10-white70-w6-cct14000-gm130",
+      "errors": {
+        "cct_K": -60.314342386218414,
+        "mired": 0.5408545880444251,
+        "duv": 4.513856827677819e-05
+      },
+      "limits": {
+        "cct_K": 46.1834576928669,
+        "mired": 0.5,
+        "duv": 0.00025
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -102.1686895036094,
+          -17.395429316021914
+        ],
+        "mired": [
+          0.15641958919973858,
+          0.9129600276188196
+        ],
+        "duv": [
+          -0.00017677803197771732,
+          0.0002681516830084127
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 21.52840772442535,
+        "mired": 0.19216223355768983,
+        "duv": 0.00011345944193430099
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.1934899697090751,
+      "unit58_cosine": 0.9812808158109905,
+      "optimal_scale_relative_rmse": 0.19258234737721167,
+      "whitened58_diagnostic_score": 1363.3193538454168,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 14000,
+        "gm": 200
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 43,
+        "r": 14,
+        "g": 2489,
+        "b": 1918
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:128-ray-guide10-white70-w6-cct14000-gm200",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:129-strip-guide10-white70-w6-cct14000-gm200",
+      "errors": {
+        "cct_K": -104.08784031817959,
+        "mired": 0.9968725523426087,
+        "duv": 5.4913139652168486e-05
+      },
+      "limits": {
+        "cct_K": 89.80408951813851,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -140.21278355341263,
+          -69.02509729043409
+        ],
+        "mired": [
+          0.6627553463766315,
+          1.3396114871717315
+        ],
+        "duv": [
+          -0.00017264765415432273,
+          0.00027658266527625817
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 18.085070127353422,
+        "mired": 0.17174359725670243,
+        "duv": 0.00011457703805849228
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.19012350690553392,
+      "unit58_cosine": 0.9819265260609709,
+      "optimal_scale_relative_rmse": 0.1892625092770186,
+      "whitened58_diagnostic_score": 1331.413251790179,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 20000,
+        "gm": 0
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 1078,
+        "r": 5,
+        "g": 59,
+        "b": 1701
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:131-ray-guide10-white70-w6-cct20000-gm0",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:130-strip-guide10-white70-w6-cct20000-gm0",
+      "errors": {
+        "cct_K": -3764.1816484499304,
+        "mired": 20.66148740542876,
+        "duv": -0.002298421982855344
+      },
+      "limits": {
+        "cct_K": 158.3122254258303,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -3882.2829503570574,
+          -3645.2588367380977
+        ],
+        "mired": [
+          20.14820706738458,
+          21.16718343202688
+        ],
+        "duv": [
+          -0.002521025917528452,
+          -0.0020720807773642576
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 60.320339896040544,
+        "mired": 0.2585971338665634,
+        "duv": 0.00011324742094454049
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.19199265157262355,
+      "unit58_cosine": 0.9815694108710565,
+      "optimal_scale_relative_rmse": 0.19110596966669316,
+      "whitened58_diagnostic_score": 1366.740040477265,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 20000,
+        "gm": 70
+      },
+      "command": {
+        "cw": 0,
+        "ww": 2674,
+        "r": 1427,
+        "g": 3343,
+        "b": 4095
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:132-ray-guide10-white70-w6-cct20000-gm70",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:133-strip-guide10-white70-w6-cct20000-gm70",
+      "errors": {
+        "cct_K": -189.0065483291437,
+        "mired": 0.9544157340879451,
+        "duv": -3.915718816144189e-05
+      },
+      "limits": {
+        "cct_K": 147.84510952789233,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -279.30450670658036,
+          -100.64244753351821
+        ],
+        "mired": [
+          0.5100517676456271,
+          1.4038221625775504
+        ],
+        "duv": [
+          -0.00026257124955376883,
+          0.00018453640078132445
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 45.429202068031245,
+        "mired": 0.22692323613676943,
+        "duv": 0.00011328893111460979
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.1932939330521539,
+      "unit58_cosine": 0.9813187277226147,
+      "optimal_scale_relative_rmse": 0.19238907094964816,
+      "whitened58_diagnostic_score": 1375.05111800082,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 20000,
+        "gm": 100
+      },
+      "command": {
+        "cw": 0,
+        "ww": 181,
+        "r": 3214,
+        "g": 4095,
+        "b": 3581
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:135-ray-guide10-white70-w6-cct20000-gm100",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:134-strip-guide10-white70-w6-cct20000-gm100",
+      "errors": {
+        "cct_K": -13.724925679405715,
+        "mired": 0.07129402187369749,
+        "duv": -0.00023814235530229924
+      },
+      "limits": {
+        "cct_K": 146.9615456911066,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -95.92890200763418,
+          66.42122596890945
+        ],
+        "mired": [
+          -0.3467630882989624,
+          0.49676251211586925
+        ],
+        "duv": [
+          -0.0004654933769444698,
+          -9.661178874192953e-06
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 41.721773056227875,
+        "mired": 0.21651522757825922,
+        "duv": 0.00011545171569467226
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.1948588384068242,
+      "unit58_cosine": 0.9810150165473714,
+      "optimal_scale_relative_rmse": 0.1939317851940742,
+      "whitened58_diagnostic_score": 1384.0591775244445,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": true
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 20000,
+        "gm": 130
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 248,
+        "r": 5,
+        "g": 1532,
+        "b": 1837
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:136-ray-guide10-white70-w6-cct20000-gm130",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:137-strip-guide10-white70-w6-cct20000-gm130",
+      "errors": {
+        "cct_K": -2116.5466957133594,
+        "mired": 13.838332682417445,
+        "duv": -0.002640451334707558
+      },
+      "limits": {
+        "cct_K": 143.6915718508511,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -2186.993118320044,
+          -2049.0447409131634
+        ],
+        "mired": [
+          13.454828392961021,
+          14.235484574086154
+        ],
+        "duv": [
+          -0.002865710892094349,
+          -0.0024175580609023645
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 35.72729133865105,
+        "mired": 0.2008901012890966,
+        "duv": 0.00011369170387031046
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.19120259552804095,
+      "unit58_cosine": 0.98172078373167,
+      "optimal_scale_relative_rmse": 0.19032683150117216,
+      "whitened58_diagnostic_score": 1349.7431490374515,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w6",
+      "target": {
+        "cct": 20000,
+        "gm": 200
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 86,
+        "r": 398,
+        "g": 3786,
+        "b": 3082
+      },
+      "ray_id": "guide10-white70-w6:formal-20260920-1230:139-ray-guide10-white70-w6-cct20000-gm200",
+      "strip_id": "guide10-white70-w6:formal-20260920-1230:138-strip-guide10-white70-w6-cct20000-gm200",
+      "errors": {
+        "cct_K": -78.97272530738155,
+        "mired": 0.47716547200919024,
+        "duv": -0.00030891585457818935
+      },
+      "limits": {
+        "cct_K": 67.63378604848273,
+        "mired": 0.5,
+        "duv": 0.00025
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -138.0913511111678,
+          -18.737651838527427
+        ],
+        "mired": [
+          0.11371592463356778,
+          0.8304701605260916
+        ],
+        "duv": [
+          -0.0005393361467855597,
+          -7.857268189711666e-05
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 30.525113747380118,
+        "mired": 0.1835203798519018,
+        "duv": 0.00011821151635375397
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.19231371867220282,
+      "unit58_cosine": 0.9815077168052344,
+      "optimal_scale_relative_rmse": 0.19142257403915508,
+      "whitened58_diagnostic_score": 1354.691088010427,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w7",
+      "target": {
+        "cct": 1800,
+        "gm": 35
+      },
+      "command": {
+        "cw": 105,
+        "ww": 4090,
+        "r": 4095,
+        "g": 12,
+        "b": 82
+      },
+      "ray_id": "guide10-white70-w7:formal-20260921-holdout:000-ray-guide10-white70-w7-holdout-cct1800-gm35",
+      "strip_id": "guide10-white70-w7:formal-20260921-holdout:001-strip-guide10-white70-w7-holdout-cct1800-gm35",
+      "errors": {
+        "cct_K": -11.432431405595707,
+        "mired": 3.190733896626284,
+        "duv": 0.003100581697705472
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -13.867977201555187,
+          -8.943158754291744
+        ],
+        "mired": [
+          2.4986364404178403,
+          3.8672308729962706
+        ],
+        "duv": [
+          0.002985284872839736,
+          0.0032172083040800754
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 1.2657474084216829,
+        "mired": 0.3514367069383714,
+        "duv": 5.9430246248835943e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18146106254375755,
+      "unit58_cosine": 0.9835359413902454,
+      "optimal_scale_relative_rmse": 0.18071262267369095,
+      "whitened58_diagnostic_score": 1206.7950094732541,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w7",
+      "target": {
+        "cct": 1800,
+        "gm": 165
+      },
+      "command": {
+        "cw": 25,
+        "ww": 755,
+        "r": 4095,
+        "g": 905,
+        "b": 0
+      },
+      "ray_id": "guide10-white70-w7:formal-20260921-holdout:002-ray-guide10-white70-w7-holdout-cct1800-gm165",
+      "strip_id": "guide10-white70-w7:formal-20260921-holdout:003-strip-guide10-white70-w7-holdout-cct1800-gm165",
+      "errors": {
+        "cct_K": -1.2421449418857264,
+        "mired": 0.3563177560868098,
+        "duv": -6.916229624323415e-05
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -3.6844321683131906,
+          1.243602879959115
+        ],
+        "mired": [
+          -0.357019187277848,
+          1.0557059002015872
+        ],
+        "duv": [
+          -0.0001861388775073047,
+          4.79972530134242e-05
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 1.2459590246537122,
+        "mired": 0.3572032305325837,
+        "duv": 5.9955334721208715e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18189452186576852,
+      "unit58_cosine": 0.9834571914576117,
+      "optimal_scale_relative_rmse": 0.18114069827155507,
+      "whitened58_diagnostic_score": 1204.2084004754397,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w7",
+      "target": {
+        "cct": 1900,
+        "gm": 100
+      },
+      "command": {
+        "cw": 0,
+        "ww": 0,
+        "r": 4095,
+        "g": 1197,
+        "b": 0
+      },
+      "ray_id": "guide10-white70-w7:formal-20260921-holdout:004-ray-guide10-white70-w7-holdout-cct1900-gm100",
+      "strip_id": "guide10-white70-w7:formal-20260921-holdout:005-strip-guide10-white70-w7-holdout-cct1900-gm100",
+      "errors": {
+        "cct_K": -131.16270974236727,
+        "mired": 34.07323593566082,
+        "duv": 0.0012143640512317809
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -133.78549718388132,
+          -128.56262505150792
+        ],
+        "mired": [
+          33.438769364414135,
+          34.716043080029124
+        ],
+        "duv": [
+          0.0010972496809200161,
+          0.0013318127353815266
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 1.3389757484912606,
+        "mired": 0.3285180963105403,
+        "duv": 5.9702947392043605e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.19005496116146126,
+      "unit58_cosine": 0.9819395558689579,
+      "optimal_scale_relative_rmse": 0.18919489586105057,
+      "whitened58_diagnostic_score": 1263.4983963601458,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w7",
+      "target": {
+        "cct": 2150,
+        "gm": 35
+      },
+      "command": {
+        "cw": 30,
+        "ww": 4095,
+        "r": 3059,
+        "g": 88,
+        "b": 0
+      },
+      "ray_id": "guide10-white70-w7:formal-20260921-holdout:006-ray-guide10-white70-w7-holdout-cct2150-gm35",
+      "strip_id": "guide10-white70-w7:formal-20260921-holdout:007-strip-guide10-white70-w7-holdout-cct2150-gm35",
+      "errors": {
+        "cct_K": -209.8357686753343,
+        "mired": 45.0545728352937,
+        "duv": -0.005170079050087784
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -213.0670372336612,
+          -206.57809892172185
+        ],
+        "mired": [
+          44.4092580244737,
+          45.68991394600791
+        ],
+        "duv": [
+          -0.005292928890095893,
+          -0.005049577168719925
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 1.6675926887150299,
+        "mired": 0.32888466801278443,
+        "duv": 6.253610781869276e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18490734242266998,
+      "unit58_cosine": 0.9829046373590931,
+      "optimal_scale_relative_rmse": 0.18411538191576965,
+      "whitened58_diagnostic_score": 1237.9422506754127,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w7",
+      "target": {
+        "cct": 2150,
+        "gm": 165
+      },
+      "command": {
+        "cw": 0,
+        "ww": 0,
+        "r": 4095,
+        "g": 1463,
+        "b": 0
+      },
+      "ray_id": "guide10-white70-w7:formal-20260921-holdout:008-ray-guide10-white70-w7-holdout-cct2150-gm165",
+      "strip_id": "guide10-white70-w7:formal-20260921-holdout:009-strip-guide10-white70-w7-holdout-cct2150-gm165",
+      "errors": {
+        "cct_K": -165.1217413929271,
+        "mired": 33.607161007909895,
+        "duv": 0.0009011677359747304
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -168.32605076814767,
+          -161.974918910113
+        ],
+        "mired": [
+          33.005398104312754,
+          34.21740895112011
+        ],
+        "duv": [
+          0.0007800057942156501,
+          0.001023340400344383
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 1.6195270833855722,
+        "mired": 0.3088826256047923,
+        "duv": 6.21931166626943e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.19223329476099058,
+      "unit58_cosine": 0.9815231801926675,
+      "optimal_scale_relative_rmse": 0.19134326939945492,
+      "whitened58_diagnostic_score": 1281.9539645394605,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w7",
+      "target": {
+        "cct": 2500,
+        "gm": 35
+      },
+      "command": {
+        "cw": 314,
+        "ww": 4095,
+        "r": 1924,
+        "g": 25,
+        "b": 352
+      },
+      "ray_id": "guide10-white70-w7:formal-20260921-holdout:010-ray-guide10-white70-w7-holdout-cct2500-gm35",
+      "strip_id": "guide10-white70-w7:formal-20260921-holdout:011-strip-guide10-white70-w7-holdout-cct2500-gm35",
+      "errors": {
+        "cct_K": -216.8892575877726,
+        "mired": 33.975452771759876,
+        "duv": 0.0038785505248724846
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -221.12517705632925,
+          -212.7425353896298
+        ],
+        "mired": [
+          33.37281219694993,
+          34.589473811575786
+        ],
+        "duv": [
+          0.0037466535055073365,
+          0.004011053941919791
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 2.1429615420308115,
+        "mired": 0.3117029881415819,
+        "duv": 6.760475768344945e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18252679190156468,
+      "unit58_cosine": 0.9833419851190615,
+      "optimal_scale_relative_rmse": 0.18176506898219888,
+      "whitened58_diagnostic_score": 1225.319306713264,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w7",
+      "target": {
+        "cct": 2500,
+        "gm": 165
+      },
+      "command": {
+        "cw": 0,
+        "ww": 4095,
+        "r": 4095,
+        "g": 1303,
+        "b": 0
+      },
+      "ray_id": "guide10-white70-w7:formal-20260921-holdout:012-ray-guide10-white70-w7-holdout-cct2500-gm165",
+      "strip_id": "guide10-white70-w7:formal-20260921-holdout:013-strip-guide10-white70-w7-holdout-cct2500-gm165",
+      "errors": {
+        "cct_K": -194.45984007074867,
+        "mired": 29.771544910887428,
+        "duv": 0.0012943079722084437
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -198.359052416618,
+          -190.5980614139789
+        ],
+        "mired": [
+          29.217056542103347,
+          30.32708861620507
+        ],
+        "duv": [
+          0.0011649312604371457,
+          0.0014290352989316543
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 1.982457878108369,
+        "mired": 0.28394437206420337,
+        "duv": 6.72835449154361e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18287742079687205,
+      "unit58_cosine": 0.9832779244813417,
+      "optimal_scale_relative_rmse": 0.1821112935203771,
+      "whitened58_diagnostic_score": 1220.914999456968,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w7",
+      "target": {
+        "cct": 3000,
+        "gm": 100
+      },
+      "command": {
+        "cw": 2272,
+        "ww": 480,
+        "r": 4095,
+        "g": 1941,
+        "b": 56
+      },
+      "ray_id": "guide10-white70-w7:formal-20260921-holdout:014-ray-guide10-white70-w7-holdout-cct3000-gm100",
+      "strip_id": "guide10-white70-w7:formal-20260921-holdout:015-strip-guide10-white70-w7-holdout-cct3000-gm100",
+      "errors": {
+        "cct_K": 153.00859193280803,
+        "mired": -15.026297905431932,
+        "duv": 0.00036020821719506737
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          147.91213889991488,
+          157.99838014415553
+        ],
+        "mired": [
+          -15.537486679147124,
+          -14.504321888556934
+        ],
+        "duv": [
+          0.00021678281051992337,
+          0.000503749671521755
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 2.5586744401406576,
+        "mired": 0.26184835163975856,
+        "duv": 7.346162626136279e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.19147927453289112,
+      "unit58_cosine": 0.981667843712179,
+      "optimal_scale_relative_rmse": 0.19059969732788398,
+      "whitened58_diagnostic_score": 1294.8796041679302,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w7",
+      "target": {
+        "cct": 3500,
+        "gm": 35
+      },
+      "command": {
+        "cw": 24,
+        "ww": 4095,
+        "r": 157,
+        "g": 10,
+        "b": 580
+      },
+      "ray_id": "guide10-white70-w7:formal-20260921-holdout:016-ray-guide10-white70-w7-holdout-cct3500-gm35",
+      "strip_id": "guide10-white70-w7:formal-20260921-holdout:017-strip-guide10-white70-w7-holdout-cct3500-gm35",
+      "errors": {
+        "cct_K": -441.4135480469772,
+        "mired": 39.97831246413557,
+        "duv": -0.001779088813196321
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -448.59170660224845,
+          -434.24043501880465
+        ],
+        "mired": [
+          39.39993209088595,
+          40.555172620263065
+        ],
+        "duv": [
+          -0.0019357060414494343,
+          -0.0016177188288929326
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 3.648238979875327,
+        "mired": 0.2937012643906599,
+        "duv": 8.083729020945942e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.1845414331128081,
+      "unit58_cosine": 0.9829722297323354,
+      "optimal_scale_relative_rmse": 0.1837541715854113,
+      "whitened58_diagnostic_score": 1255.634079108379,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w7",
+      "target": {
+        "cct": 3500,
+        "gm": 165
+      },
+      "command": {
+        "cw": 1086,
+        "ww": 4095,
+        "r": 113,
+        "g": 221,
+        "b": 6
+      },
+      "ray_id": "guide10-white70-w7:formal-20260921-holdout:018-ray-guide10-white70-w7-holdout-cct3500-gm165",
+      "strip_id": "guide10-white70-w7:formal-20260921-holdout:019-strip-guide10-white70-w7-holdout-cct3500-gm165",
+      "errors": {
+        "cct_K": -252.279317695994,
+        "mired": 21.671693336577164,
+        "duv": 0.005230472026676864
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -257.8265152556479,
+          -246.62631377412103
+        ],
+        "mired": [
+          21.214814255307772,
+          22.117448733498218
+        ],
+        "duv": [
+          0.005073128239367685,
+          0.005388252145314884
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 2.8594810917334526,
+        "mired": 0.23033574896009468,
+        "duv": 8.122258542959676e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18232031948958632,
+      "unit58_cosine": 0.9833796505506077,
+      "optimal_scale_relative_rmse": 0.1815611822030376,
+      "whitened58_diagnostic_score": 1226.6075176625436,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w7",
+      "target": {
+        "cct": 4100,
+        "gm": 100
+      },
+      "command": {
+        "cw": 3458,
+        "ww": 4095,
+        "r": 0,
+        "g": 78,
+        "b": 76
+      },
+      "ray_id": "guide10-white70-w7:formal-20260921-holdout:020-ray-guide10-white70-w7-holdout-cct4100-gm100",
+      "strip_id": "guide10-white70-w7:formal-20260921-holdout:021-strip-guide10-white70-w7-holdout-cct4100-gm100",
+      "errors": {
+        "cct_K": -236.22575235470094,
+        "mired": 15.453697333118726,
+        "duv": -0.0002562303396859509
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -243.87987093075031,
+          -228.86876654559433
+        ],
+        "mired": [
+          14.99777288022572,
+          15.928185443066726
+        ],
+        "duv": [
+          -0.0004253510536394884,
+          -8.475502179084701e-05
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 3.785802280783989,
+        "mired": 0.23491118893551197,
+        "duv": 8.623163723545736e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.1836320620576,
+      "unit58_cosine": 0.9831396328922368,
+      "optimal_scale_relative_rmse": 0.1828563978550323,
+      "whitened58_diagnostic_score": 1246.1337410734354,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w7",
+      "target": {
+        "cct": 4750,
+        "gm": 35
+      },
+      "command": {
+        "cw": 1596,
+        "ww": 4095,
+        "r": 0,
+        "g": 82,
+        "b": 1329
+      },
+      "ray_id": "guide10-white70-w7:formal-20260921-holdout:022-ray-guide10-white70-w7-holdout-cct4750-gm35",
+      "strip_id": "guide10-white70-w7:formal-20260921-holdout:023-strip-guide10-white70-w7-holdout-cct4750-gm35",
+      "errors": {
+        "cct_K": -180.81145997792737,
+        "mired": 8.844437831614613,
+        "duv": 0.008416089524757834
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -192.00036764524492,
+          -169.90166452900152
+        ],
+        "mired": [
+          8.327989831442839,
+          9.371477097147931
+        ],
+        "duv": [
+          0.008233255178862304,
+          0.008594653849714152
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 5.622353307397975,
+        "mired": 0.2658756374379747,
+        "duv": 9.168656648433203e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18826963203535305,
+      "unit58_cosine": 0.9822772728266365,
+      "optimal_scale_relative_rmse": 0.1874336130160906,
+      "whitened58_diagnostic_score": 1306.2369543819693,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w7",
+      "target": {
+        "cct": 4750,
+        "gm": 165
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 2536,
+        "r": 0,
+        "g": 463,
+        "b": 27
+      },
+      "ray_id": "guide10-white70-w7:formal-20260921-holdout:024-ray-guide10-white70-w7-holdout-cct4750-gm165",
+      "strip_id": "guide10-white70-w7:formal-20260921-holdout:025-strip-guide10-white70-w7-holdout-cct4750-gm165",
+      "errors": {
+        "cct_K": -190.24416776005182,
+        "mired": 9.701832053850978,
+        "duv": 0.007435874079680447
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -198.22525410033182,
+          -182.3091899672438
+        ],
+        "mired": [
+          9.310940934332395,
+          10.092899463807619
+        ],
+        "duv": [
+          0.007256697368814511,
+          0.007617954654019365
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 4.012795632527748,
+        "mired": 0.19727882411706368,
+        "duv": 9.184183360023387e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.1864756226591139,
+      "unit58_cosine": 0.9826134210769478,
+      "optimal_scale_relative_rmse": 0.18566331010583867,
+      "whitened58_diagnostic_score": 1271.1973960266969,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w7",
+      "target": {
+        "cct": 5300,
+        "gm": 100
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 1302,
+        "r": 0,
+        "g": 4,
+        "b": 104
+      },
+      "ray_id": "guide10-white70-w7:formal-20260921-holdout:026-ray-guide10-white70-w7-holdout-cct5300-gm100",
+      "strip_id": "guide10-white70-w7:formal-20260921-holdout:027-strip-guide10-white70-w7-holdout-cct5300-gm100",
+      "errors": {
+        "cct_K": -255.91591275021165,
+        "mired": 10.891654819838038,
+        "duv": -0.0004906543980405477
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -266.22359348212865,
+          -245.52612915446943
+        ],
+        "mired": [
+          10.46822996719726,
+          11.31162505721705
+        ],
+        "duv": [
+          -0.0006741377055893165,
+          -0.0003070882741803542
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 5.27883594796801,
+        "mired": 0.21465143006623083,
+        "duv": 9.424974692886166e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18518571430949107,
+      "unit58_cosine": 0.9828531256078415,
+      "optimal_scale_relative_rmse": 0.18439016644847528,
+      "whitened58_diagnostic_score": 1268.9654082670293,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w7",
+      "target": {
+        "cct": 6100,
+        "gm": 35
+      },
+      "command": {
+        "cw": 3888,
+        "ww": 4095,
+        "r": 0,
+        "g": 124,
+        "b": 2181
+      },
+      "ray_id": "guide10-white70-w7:formal-20260921-holdout:028-ray-guide10-white70-w7-holdout-cct6100-gm35",
+      "strip_id": "guide10-white70-w7:formal-20260921-holdout:029-strip-guide10-white70-w7-holdout-cct6100-gm35",
+      "errors": {
+        "cct_K": 341.88416326381684,
+        "mired": -10.29505387441941,
+        "duv": 0.008872291759221435
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          326.2393711497132,
+          357.55293767088665
+        ],
+        "mired": [
+          -10.792925392689245,
+          -9.803359339797904
+        ],
+        "duv": [
+          0.008672785534250027,
+          0.00906414940612654
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 8.00127904743273,
+        "mired": 0.25265566012482316,
+        "duv": 9.866442530054973e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.19466643961209934,
+      "unit58_cosine": 0.9810524886443743,
+      "optimal_scale_relative_rmse": 0.19374213409756744,
+      "whitened58_diagnostic_score": 1370.4157637382932,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w7",
+      "target": {
+        "cct": 6100,
+        "gm": 165
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 0,
+        "r": 3,
+        "g": 165,
+        "b": 0
+      },
+      "ray_id": "guide10-white70-w7:formal-20260921-holdout:030-ray-guide10-white70-w7-holdout-cct6100-gm165",
+      "strip_id": "guide10-white70-w7:formal-20260921-holdout:031-strip-guide10-white70-w7-holdout-cct6100-gm165",
+      "errors": {
+        "cct_K": 21.190433409869,
+        "mired": -0.6868722599569708,
+        "duv": 0.00517273494914725
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          10.155461586972114,
+          32.03313851973878
+        ],
+        "mired": [
+          -1.0403277947055685,
+          -0.32900772789230964
+        ],
+        "duv": [
+          0.004978797588852042,
+          0.005368167158636347
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 5.568748572113029,
+        "mired": 0.18108834306450683,
+        "duv": 9.921737996809435e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.1871600530950697,
+      "unit58_cosine": 0.982485557262725,
+      "optimal_scale_relative_rmse": 0.18633875004988268,
+      "whitened58_diagnostic_score": 1290.3412495658745,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w7",
+      "target": {
+        "cct": 7250,
+        "gm": 100
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 0,
+        "r": 94,
+        "g": 1,
+        "b": 201
+      },
+      "ray_id": "guide10-white70-w7:formal-20260921-holdout:032-ray-guide10-white70-w7-holdout-cct7250-gm100",
+      "strip_id": "guide10-white70-w7:formal-20260921-holdout:033-strip-guide10-white70-w7-holdout-cct7250-gm100",
+      "errors": {
+        "cct_K": -537.9549637069795,
+        "mired": 14.248411643149268,
+        "duv": -0.000642441883886419
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -554.2878521523394,
+          -521.6355540417474
+        ],
+        "mired": [
+          13.847655856760278,
+          14.646515872097854
+        ],
+        "duv": [
+          -0.0008432556175388032,
+          -0.00044069302923614435
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 8.299308639450947,
+        "mired": 0.2037835472050353,
+        "duv": 0.00010304285852004129
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.1863737819027089,
+      "unit58_cosine": 0.9826324067096409,
+      "optimal_scale_relative_rmse": 0.185562801455515,
+      "whitened58_diagnostic_score": 1290.4720346061954,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w7",
+      "target": {
+        "cct": 9000,
+        "gm": 35
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 2886,
+        "r": 0,
+        "g": 155,
+        "b": 1839
+      },
+      "ray_id": "guide10-white70-w7:formal-20260921-holdout:034-ray-guide10-white70-w7-holdout-cct9000-gm35",
+      "strip_id": "guide10-white70-w7:formal-20260921-holdout:035-strip-guide10-white70-w7-holdout-cct9000-gm35",
+      "errors": {
+        "cct_K": -1377.5666631012964,
+        "mired": 28.13981138694757,
+        "duv": 0.004656795950638974
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -1403.7733976025825,
+          -1350.6171121519496
+        ],
+        "mired": [
+          27.672467624731492,
+          28.58716145492904
+        ],
+        "duv": [
+          0.004452762002857074,
+          0.004865411137787487
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 13.560161002257052,
+        "mired": 0.23368640231771715,
+        "duv": 0.0001047554185117286
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.1912134259227219,
+      "unit58_cosine": 0.9817187128734483,
+      "optimal_scale_relative_rmse": 0.1903375128399551,
+      "whitened58_diagnostic_score": 1337.8314790640334,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w7",
+      "target": {
+        "cct": 12000,
+        "gm": 165
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 189,
+        "r": 1,
+        "g": 810,
+        "b": 1030
+      },
+      "ray_id": "guide10-white70-w7:formal-20260921-holdout:036-ray-guide10-white70-w7-holdout-cct12000-gm165",
+      "strip_id": "guide10-white70-w7:formal-20260921-holdout:037-strip-guide10-white70-w7-holdout-cct12000-gm165",
+      "errors": {
+        "cct_K": -1134.9984772155658,
+        "mired": 14.783781870228012,
+        "duv": 0.007354669325851371
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -1165.4518905792759,
+          -1104.7648354890728
+        ],
+        "mired": [
+          14.429665923232672,
+          15.138020558419466
+        ],
+        "duv": [
+          0.007135415192957339,
+          0.0075722719738613884
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 15.41929980887602,
+        "mired": 0.17987854102279321,
+        "duv": 0.00011099520156376734
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.19079487061681574,
+      "unit58_cosine": 0.9817986586731563,
+      "optimal_scale_relative_rmse": 0.1899247056798856,
+      "whitened58_diagnostic_score": 1331.7653000147648,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "w7",
+      "target": {
+        "cct": 17000,
+        "gm": 100
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 69,
+        "r": 75,
+        "g": 691,
+        "b": 1357
+      },
+      "ray_id": "guide10-white70-w7:formal-20260921-holdout:038-ray-guide10-white70-w7-holdout-cct17000-gm100",
+      "strip_id": "guide10-white70-w7:formal-20260921-holdout:039-strip-guide10-white70-w7-holdout-cct17000-gm100",
+      "errors": {
+        "cct_K": -1787.7018685993953,
+        "mired": 13.64813956711933,
+        "duv": -0.00030674857092085814
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -1848.6139299434806,
+          -1727.1047359910058
+        ],
+        "mired": [
+          13.240217326224629,
+          14.054592757722084
+        ],
+        "duv": [
+          -0.0005267254735529339,
+          -8.770799875078302e-05
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 31.23812461600413,
+        "mired": 0.20817032920569306,
+        "duv": 0.00011197870479442607
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.19049343265181873,
+      "unit58_cosine": 0.9818561260582637,
+      "optimal_scale_relative_rmse": 0.18962739180260593,
+      "whitened58_diagnostic_score": 1345.5269829959848,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "additional_FAST_mislabeled_LONG",
+      "target": {
+        "cct": 1800,
+        "gm": 100
+      },
+      "command": {
+        "cw": 0,
+        "ww": 0,
+        "r": 4095,
+        "g": 1197,
+        "b": 0
+      },
+      "ray_id": "guide10-white70-w7:formal-20260921-long:000-ray-guide10-white70-w7-long-cct1800-gm100",
+      "strip_id": "guide10-white70-w7:formal-20260921-long-resume:001-strip-guide10-white70-w7-long-cct1800-gm100",
+      "errors": {
+        "cct_K": -9.325753667435038,
+        "mired": 2.586870797684014,
+        "duv": 0.0004275994391999367
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -11.8427497344583,
+          -6.840585108104074
+        ],
+        "mired": [
+          1.9000973120922082,
+          3.281601084456963
+        ],
+        "duv": [
+          0.00031176375969371305,
+          0.0005442443958017151
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 1.2637833748965956,
+        "mired": 0.34910433788120976,
+        "duv": 5.926267959242388e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.1865280052558142,
+      "unit58_cosine": 0.9826036516276436,
+      "optimal_scale_relative_rmse": 0.18571500695425863,
+      "whitened58_diagnostic_score": 1239.6029523637596,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "additional_FAST_mislabeled_LONG",
+      "target": {
+        "cct": 2300,
+        "gm": 200
+      },
+      "command": {
+        "cw": 0,
+        "ww": 4095,
+        "r": 4095,
+        "g": 1288,
+        "b": 0
+      },
+      "ray_id": "guide10-white70-w7:formal-20260921-long-resume:002-ray-guide10-white70-w7-long-cct2300-gm200",
+      "strip_id": "guide10-white70-w7:formal-20260921-long-resume:003-strip-guide10-white70-w7-long-cct2300-gm200",
+      "errors": {
+        "cct_K": 14.126764960660694,
+        "mired": -2.3662808674297935,
+        "duv": 0.00012995303538762028
+      },
+      "limits": {
+        "cct_K": 12.5,
+        "mired": 0.5,
+        "duv": 0.00025
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          10.616702474283944,
+          17.490323172111744
+        ],
+        "mired": [
+          -2.933188177284046,
+          -1.775671746587524
+        ],
+        "duv": [
+          6.818224365611608e-06,
+          0.0002556655875014026
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 1.770100095810239,
+        "mired": 0.29797663324724166,
+        "duv": 6.426614502270546e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.18217656505207938,
+      "unit58_cosine": 0.9834058495729127,
+      "optimal_scale_relative_rmse": 0.1814192245209362,
+      "whitened58_diagnostic_score": 1215.6472815905458,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "additional_FAST_mislabeled_LONG",
+      "target": {
+        "cct": 3200,
+        "gm": 100
+      },
+      "command": {
+        "cw": 2272,
+        "ww": 480,
+        "r": 4095,
+        "g": 1941,
+        "b": 56
+      },
+      "ray_id": "guide10-white70-w7:formal-20260921-long-resume:004-ray-guide10-white70-w7-long-cct3200-gm100",
+      "strip_id": "guide10-white70-w7:formal-20260921-long-resume:005-strip-guide10-white70-w7-long-cct3200-gm100",
+      "errors": {
+        "cct_K": -19.181764011051655,
+        "mired": 1.7885221382452983,
+        "duv": 0.00010407686346807898
+      },
+      "limits": {
+        "cct_K": 25.0,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -24.62459842229947,
+          -13.684952286370844
+        ],
+        "mired": [
+          1.2782179836636558,
+          2.292699611224323
+        ],
+        "duv": [
+          -4.6802320992129764e-05,
+          0.0002504638164608149
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 2.7870031833927023,
+        "mired": 0.25855196268977204,
+        "duv": 7.576447983174606e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.1881761868472274,
+      "unit58_cosine": 0.982294861351819,
+      "optimal_scale_relative_rmse": 0.18734141389935835,
+      "whitened58_diagnostic_score": 1270.7911666836806,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "additional_FAST_mislabeled_LONG",
+      "target": {
+        "cct": 5600,
+        "gm": 100
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 428,
+        "r": 142,
+        "g": 17,
+        "b": 116
+      },
+      "ray_id": "guide10-white70-w7:formal-20260921-long-resume:006-ray-guide10-white70-w7-long-cct5600-gm100",
+      "strip_id": "guide10-white70-w7:formal-20260921-long-resume:007-strip-guide10-white70-w7-long-cct5600-gm100",
+      "errors": {
+        "cct_K": -13.289608668324945,
+        "mired": 0.48988706646531455,
+        "duv": 9.411915203433232e-05
+      },
+      "limits": {
+        "cct_K": 25.10729224769198,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -24.704030376499396,
+          -1.9963523343754142
+        ],
+        "mired": [
+          0.07378197090017623,
+          0.9086302623321281
+        ],
+        "duv": [
+          -9.432139339564318e-05,
+          0.0002818632635722698
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 5.770650826093684,
+        "mired": 0.2122476569487383,
+        "duv": 9.67324279791496e-05
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.1868518664413223,
+      "unit58_cosine": 0.9825431900036972,
+      "optimal_scale_relative_rmse": 0.18603461983555267,
+      "whitened58_diagnostic_score": 1286.487487293687,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": true
+    },
+    {
+      "group": "additional_FAST_mislabeled_LONG",
+      "target": {
+        "cct": 14000,
+        "gm": 0
+      },
+      "command": {
+        "cw": 4095,
+        "ww": 1542,
+        "r": 21,
+        "g": 90,
+        "b": 1979
+      },
+      "ray_id": "guide10-white70-w7:formal-20260921-long-resume:008-ray-guide10-white70-w7-long-cct14000-gm0",
+      "strip_id": "guide10-white70-w7:formal-20260921-long-resume:009-strip-guide10-white70-w7-long-cct14000-gm0",
+      "errors": {
+        "cct_K": -253.77432121450147,
+        "mired": 2.0316698920352962,
+        "duv": 0.0003747073957593404
+      },
+      "limits": {
+        "cct_K": 48.64828457459104,
+        "mired": 0.5,
+        "duv": 0.00025
+      },
+      "legacy_point_pass": false,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -316.3704037442605,
+          -193.34222060337606
+        ],
+        "mired": [
+          1.554797402738774,
+          2.5206324453557203
+        ],
+        "duv": [
+          0.00015664376826469178,
+          0.0005947393949671796
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 31.502671826404118,
+        "mired": 0.24744935826501085,
+        "duv": 0.00011109411820680597
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.19297187233983212,
+      "unit58_cosine": 0.9813809282428294,
+      "optimal_scale_relative_rmse": 0.1920715327195638,
+      "whitened58_diagnostic_score": 1372.2645141288026,
+      "conditional_simultaneous_box_within_legacy_limits": false,
+      "conditional_marginal_95_box_within_legacy_limits": false
+    },
+    {
+      "group": "additional_FAST_mislabeled_LONG",
+      "target": {
+        "cct": 20000,
+        "gm": 100
+      },
+      "command": {
+        "cw": 0,
+        "ww": 181,
+        "r": 3214,
+        "g": 4095,
+        "b": 3581
+      },
+      "ray_id": "guide10-white70-w7:formal-20260921-long-resume:010-ray-guide10-white70-w7-long-cct20000-gm100",
+      "strip_id": "guide10-white70-w7:formal-20260921-long-resume:011-strip-guide10-white70-w7-long-cct20000-gm100",
+      "errors": {
+        "cct_K": -7.667675266971855,
+        "mired": 0.040083077817200774,
+        "duv": -0.0001542233236619308
+      },
+      "limits": {
+        "cct_K": 146.9615456911066,
+        "mired": 1.0,
+        "duv": 0.0005
+      },
+      "legacy_point_pass": true,
+      "conditional_frozen_model_95_intervals": {
+        "cct_K": [
+          -90.2745496269963,
+          74.35016676924101
+        ],
+        "mired": [
+          -0.3905622042637599,
+          0.46969604534097725
+        ],
+        "duv": [
+          -0.00037547372945475395,
+          6.858953293289057e-05
+        ]
+      },
+      "conditional_standard_uncertainties": {
+        "cct_K": 41.62374268745944,
+        "mired": 0.2174822999088497,
+        "duv": 0.00011417813335237098
+      },
+      "full_predictive_uncertainty_identified": false,
+      "unit58_l2": 0.19572818576884835,
+      "unit58_cosine": 0.9808452386478181,
+      "optimal_scale_relative_rmse": 0.19478864910950194,
+      "whitened58_diagnostic_score": 1390.167688231326,
+      "conditional_simultaneous_box_within_legacy_limits": true,
+      "conditional_marginal_95_box_within_legacy_limits": true
+    }
+  ]
+}

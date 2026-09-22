@@ -1,0 +1,75 @@
+{
+  "date": "2026-09-22",
+  "files": [
+    {
+      "path": "11.GUIDE.md",
+      "bytes": 19092,
+      "sha256": "d422daa248a32209f8b983bb67bda874c4a86953b4718c86c8a4ee8c7ca1c1a1"
+    },
+    {
+      "path": "11.RESEARCH.md",
+      "bytes": 14998,
+      "sha256": "371d4e1e815af0672a8e27fab9a1948c3a4d55a08584a50511109b21c536353a"
+    },
+    {
+      "path": "CODEX_GUIDE11_IMPLEMENTATION_PROMPT.md",
+      "bytes": 4665,
+      "sha256": "d77430086af28e4a180418ebc32c4abc5825b4aa5d210b9bf44f44586310faa3"
+    },
+    {
+      "path": "GUIDE10_AUDIT.json",
+      "bytes": 25828,
+      "sha256": "f6fffa20926c6cbc10df68a9011fb5ae536efdc0a128d015015b315b9543c9ad"
+    },
+    {
+      "path": "README.md",
+      "bytes": 2243,
+      "sha256": "350d8b05180d9fedaf0dad9967e8d2ecb752722029cbeb6862f610522ae54c1a"
+    },
+    {
+      "path": "WHITE_POINTS.md",
+      "bytes": 13913,
+      "sha256": "089563741ff749ac0b16b83861558911b260c94cf6076be63971fd869968db5a"
+    },
+    {
+      "path": "analysis_utils.py",
+      "bytes": 4130,
+      "sha256": "fc53301a501a101177f0bb5b305cd3c78b60484f6c7ef0713447cdc70d87c0ee"
+    },
+    {
+      "path": "analyze_hsi.py",
+      "bytes": 5723,
+      "sha256": "f2a4fc9684abb513e67a1ab6691a75c25b579541b64ef9323b981c2fa629987b"
+    },
+    {
+      "path": "analyze_noise.py",
+      "bytes": 2897,
+      "sha256": "04a5f6b2ba193829e0992040ec4fa7e46e2d84ea6f6a3c13b3a79ecca20f710c"
+    },
+    {
+      "path": "analyze_white.py",
+      "bytes": 4985,
+      "sha256": "8cc8e51f9ae6965cc38c5c7bbf136ac8f2fcd771c4c61178e5eacac9de7d5993"
+    },
+    {
+      "path": "build_report.py",
+      "bytes": 21184,
+      "sha256": "ecefd218c80a86d6fbe311049041b2b93f2be0c0549905a7264871de54394fa2"
+    },
+    {
+      "path": "hsi_projection_diagnostics.json",
+      "bytes": 15193,
+      "sha256": "11720df621131da464328912552dfda39a8a1f9d2d04e65ce8cb286ce319b8f3"
+    },
+    {
+      "path": "noise_and_model_diagnostics.json",
+      "bytes": 33326,
+      "sha256": "32b011a42ae6eac520b0afe075ad5061ed04874eb20c298bd0e107d497bf2842"
+    },
+    {
+      "path": "white_per_point_results.json",
+      "bytes": 166965,
+      "sha256": "c1f57f141a614e39adea868f0091bfc9bb7ee7dac7459852ada9d582bea6848c"
+    }
+  ]
+}

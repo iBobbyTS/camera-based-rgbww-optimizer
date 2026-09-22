@@ -1,0 +1,424 @@
+{
+  "method": {
+    "P6_center": "per-feature median; SAT0 pooled median unit direction on original common feature space; bilinear raw-feature interpolation then unit-normalize ordered58",
+    "global_search": "bounded solve of all 72 piecewise cells, analytic residual Jacobian",
+    "weight": "frozen Sigma_R+Sigma_S diagonal; no covariance inflation",
+    "intervals": "conditional fixed-manifold projection only, exclude manifold/session/model uncertainty",
+    "current_best_repeat_count_in_each_confirmation_root": 2,
+    "strict_equivalence_claim": false
+  },
+  "results": [
+    {
+      "label": "guide9-h120-s50-best",
+      "root": [
+        "D:\\rgbww-optimizer\\guide9-h120-s50-best-repeat-20260821\\20260821-193335-high-white-g-retry2"
+      ],
+      "sources": {
+        "ray": {
+          "nearest_hue": 120.71199831816064,
+          "nearest_sat": 50.24738939171529,
+          "whitened_distance_to_historical_manifold": 42.044568686914744,
+          "unit58_distance": 0.006175139978025561,
+          "conditional_fixed_manifold_projection_sd": [
+            0.04125115248171557,
+            0.04778707894839309
+          ],
+          "conditional_fixed_manifold_projection_95_intervals": [
+            [
+              120.63114605929647,
+              120.79285057702481
+            ],
+            [
+              50.153726716976436,
+              50.34105206645414
+            ]
+          ],
+          "interval_scope": "delta-method local projection of source measurement noise only; NOT valid Ray-equivalent coverage interval",
+          "alternative_separated_solution": [
+            {
+              "hue": 110.03868130402994,
+              "sat": 80.0,
+              "score": 444.9527038353134
+            }
+          ],
+          "cell": [
+            4,
+            3
+          ],
+          "on_cell_boundary": false,
+          "hessian_eigenvalues": [
+            143.1142271932859,
+            494.156573545186
+          ],
+          "observation_ids": [
+            "guide9-h120-s50-best:20260821-193335-high-white-g-retry2:000-ray-guide9-s50-best-ray_q_before",
+            "guide9-h120-s50-best:20260821-193335-high-white-g-retry2:003-ray-guide9-s50-best-ray_q_after"
+          ],
+          "n": 2,
+          "requested_target": {},
+          "command": {
+            "hue": 120,
+            "intensity_percent": 100.0,
+            "sat": 50
+          }
+        },
+        "strip": {
+          "nearest_hue": 122.41697497963618,
+          "nearest_sat": 47.25209650348699,
+          "whitened_distance_to_historical_manifold": 1172.4239367277012,
+          "unit58_distance": 0.17190020134296363,
+          "conditional_fixed_manifold_projection_sd": [
+            0.018124369231650107,
+            0.008737272822013559
+          ],
+          "conditional_fixed_manifold_projection_95_intervals": [
+            [
+              122.38145121594215,
+              122.45249874333021
+            ],
+            [
+              47.23497144875584,
+              47.269221558218135
+            ]
+          ],
+          "interval_scope": "delta-method local projection of source measurement noise only; NOT valid Ray-equivalent coverage interval",
+          "alternative_separated_solution": [
+            {
+              "hue": 120.0,
+              "sat": 46.48255758371573,
+              "score": 1172.9645440096144
+            }
+          ],
+          "cell": [
+            4,
+            2
+          ],
+          "on_cell_boundary": false,
+          "hessian_eigenvalues": [
+            199.6408081773177,
+            927.1045794939523
+          ],
+          "observation_ids": [
+            "guide9-h120-s50-best:20260821-193335-high-white-g-retry2:001-strip-guide9-s50-best-best_repeat_2",
+            "guide9-h120-s50-best:20260821-193335-high-white-g-retry2:002-strip-guide9-s50-best-best_repeat_3"
+          ],
+          "n": 2,
+          "requested_target": {},
+          "command": {
+            "cw": 2111,
+            "ww": 1919,
+            "r": 0,
+            "g": 4095,
+            "b": 831
+          }
+        }
+      },
+      "valid_Ray_equivalent_or_gamut_claim": false,
+      "reason": "no demonstrated current-to-P6 transfer and large orthogonal multi-material residual; nearest projection is not a valid saturation ceiling"
+    },
+    {
+      "label": "guide9-h120-s25-best",
+      "root": [
+        "D:\\rgbww-optimizer\\guide9-h120-s25-best-repeat-20260821\\20260821-233147-rgb-dominant-retry4"
+      ],
+      "sources": {
+        "ray": {
+          "nearest_hue": 121.13540931904672,
+          "nearest_sat": 26.29757246242132,
+          "whitened_distance_to_historical_manifold": 45.980239518435035,
+          "unit58_distance": 0.006710249034644278,
+          "conditional_fixed_manifold_projection_sd": [
+            0.07928257992164266,
+            0.038061488010658104
+          ],
+          "conditional_fixed_manifold_projection_95_intervals": [
+            [
+              120.9800154624003,
+              121.29080317569313
+            ],
+            [
+              26.22297194592043,
+              26.37217297892221
+            ]
+          ],
+          "interval_scope": "delta-method local projection of source measurement noise only; NOT valid Ray-equivalent coverage interval",
+          "alternative_separated_solution": [
+            {
+              "hue": 120.0,
+              "sat": 20.0,
+              "score": 128.73183633368149
+            }
+          ],
+          "cell": [
+            4,
+            2
+          ],
+          "on_cell_boundary": false,
+          "hessian_eigenvalues": [
+            63.26146866795613,
+            462.4771961573416
+          ],
+          "observation_ids": [
+            "guide9-h120-s25-best:20260821-233147-rgb-dominant-retry4:000-ray-guide9-s25-best-ray_q_before",
+            "guide9-h120-s25-best:20260821-233147-rgb-dominant-retry4:003-ray-guide9-s25-best-ray_q_after"
+          ],
+          "n": 2,
+          "requested_target": {},
+          "command": {
+            "hue": 120,
+            "intensity_percent": 100.0,
+            "sat": 25
+          }
+        },
+        "strip": {
+          "nearest_hue": 108.9231260963525,
+          "nearest_sat": 14.081557613727767,
+          "whitened_distance_to_historical_manifold": 1227.756079998474,
+          "unit58_distance": 0.17855196760544406,
+          "conditional_fixed_manifold_projection_sd": [
+            0.07888491637062019,
+            0.025568929501059996
+          ],
+          "conditional_fixed_manifold_projection_95_intervals": [
+            [
+              108.76851166026609,
+              109.07774053243892
+            ],
+            [
+              14.03144251190569,
+              14.131672715549845
+            ]
+          ],
+          "interval_scope": "delta-method local projection of source measurement noise only; NOT valid Ray-equivalent coverage interval",
+          "alternative_separated_solution": [
+            {
+              "hue": 120.0,
+              "sat": 11.66310455102337,
+              "score": 1228.309580619359
+            }
+          ],
+          "cell": [
+            3,
+            1
+          ],
+          "on_cell_boundary": false,
+          "hessian_eigenvalues": [
+            16.95412270977127,
+            602.4884242497783
+          ],
+          "observation_ids": [
+            "guide9-h120-s25-best:20260821-233147-rgb-dominant-retry4:001-strip-guide9-s25-best-best_repeat_2",
+            "guide9-h120-s25-best:20260821-233147-rgb-dominant-retry4:002-strip-guide9-s25-best-best_repeat_3"
+          ],
+          "n": 2,
+          "requested_target": {},
+          "command": {
+            "cw": 0,
+            "ww": 0,
+            "r": 4095,
+            "g": 4095,
+            "b": 1599
+          }
+        }
+      },
+      "valid_Ray_equivalent_or_gamut_claim": false,
+      "reason": "no demonstrated current-to-P6 transfer and large orthogonal multi-material residual; nearest projection is not a valid saturation ceiling"
+    },
+    {
+      "label": "guide9-h0-s0-best",
+      "root": [
+        "D:\\rgbww-optimizer\\guide9-h0-s0-best-repeat-20260821\\20260821-031503-high-white"
+      ],
+      "sources": {
+        "ray": {
+          "nearest_sat": 0.2019435999855641,
+          "whitened_distance_to_historical_manifold": 42.21108336211157,
+          "unit58_distance": 0.0061710231806016225,
+          "conditional_fixed_manifold_projection_sd": null,
+          "conditional_fixed_manifold_projection_95_intervals": null,
+          "interval_scope": "delta-method local projection of source measurement noise only; NOT valid Ray-equivalent coverage interval",
+          "alternative_separated_solution": [
+            {
+              "hue": 273.54895783253625,
+              "sat": 0.20874809694074176,
+              "score": 42.238136279344424
+            }
+          ],
+          "cell": [
+            8,
+            0
+          ],
+          "on_cell_boundary": false,
+          "hessian_eigenvalues": [
+            0.03809111710274344,
+            1746.014784177518
+          ],
+          "observation_ids": [
+            "guide9-h0-s0-best:20260821-031503-high-white:000-ray-guide9-h0-s0-best-ray_q_before",
+            "guide9-h0-s0-best:20260821-031503-high-white:003-ray-guide9-h0-s0-best-ray_q_after"
+          ],
+          "n": 2,
+          "requested_target": {},
+          "command": {
+            "hue": 0,
+            "intensity_percent": 100.0,
+            "sat": 0
+          },
+          "unconstrained_optimizer_hue_diagnostic": 262.0399129446007,
+          "nearest_hue": null,
+          "interval_warning": "SAT0 target has no meaningful Hue; strip solution lies on a cell boundary. No smooth local Gaussian H/S interval is reported."
+        },
+        "strip": {
+          "nearest_sat": 3.3460607632049917,
+          "whitened_distance_to_historical_manifold": 1212.8062088519398,
+          "unit58_distance": 0.175629331623251,
+          "conditional_fixed_manifold_projection_sd": null,
+          "conditional_fixed_manifold_projection_95_intervals": null,
+          "interval_scope": "delta-method local projection of source measurement noise only; NOT valid Ray-equivalent coverage interval",
+          "alternative_separated_solution": [
+            {
+              "hue": 330.0000000000008,
+              "sat": 2.5634324140655194,
+              "score": 1214.2624851112423
+            }
+          ],
+          "cell": [
+            10,
+            0
+          ],
+          "on_cell_boundary": true,
+          "hessian_eigenvalues": [
+            3.8800047507597526,
+            1347.4930542472084
+          ],
+          "observation_ids": [
+            "guide9-h0-s0-best:20260821-031503-high-white:001-strip-guide9-h0-s0-best-best_repeat_2",
+            "guide9-h0-s0-best:20260821-031503-high-white:002-strip-guide9-h0-s0-best-best_repeat_3"
+          ],
+          "n": 2,
+          "requested_target": {},
+          "command": {
+            "cw": 4095,
+            "ww": 4095,
+            "r": 0,
+            "g": 1279,
+            "b": 1663
+          },
+          "unconstrained_optimizer_hue_diagnostic": 300.0,
+          "nearest_hue": null,
+          "interval_warning": "SAT0 target has no meaningful Hue; strip solution lies on a cell boundary. No smooth local Gaussian H/S interval is reported."
+        }
+      },
+      "valid_Ray_equivalent_or_gamut_claim": false,
+      "reason": "no demonstrated current-to-P6 transfer and large orthogonal multi-material residual; nearest projection is not a valid saturation ceiling"
+    },
+    {
+      "label": "guide9-h300-s50-best",
+      "root": [
+        "D:\\rgbww-optimizer\\guide9-h300-s50-best-repeat-20260823\\20260823-234058-p2-best-ww-wired"
+      ],
+      "sources": {
+        "ray": {
+          "nearest_hue": 300.204399763929,
+          "nearest_sat": 50.525075568877554,
+          "whitened_distance_to_historical_manifold": 32.40348609041244,
+          "unit58_distance": 0.004617644737647576,
+          "conditional_fixed_manifold_projection_sd": [
+            0.022379049149844593,
+            0.024540546976429895
+          ],
+          "conditional_fixed_manifold_projection_95_intervals": [
+            [
+              300.1605368275953,
+              300.2482627002627
+            ],
+            [
+              50.47697609680375,
+              50.573175040951355
+            ]
+          ],
+          "interval_scope": "delta-method local projection of source measurement noise only; NOT valid Ray-equivalent coverage interval",
+          "alternative_separated_solution": [
+            {
+              "hue": 330.0,
+              "sat": 43.52212945361077,
+              "score": 943.72425309873
+            }
+          ],
+          "cell": [
+            10,
+            3
+          ],
+          "on_cell_boundary": false,
+          "hessian_eigenvalues": [
+            638.4635319599257,
+            986.2960237155246
+          ],
+          "observation_ids": [
+            "guide9-h300-s50-best:20260823-234058-p2-best-ww-wired:000-ray-guide9-h300-s50-best-ray_q_before",
+            "guide9-h300-s50-best:20260823-234058-p2-best-ww-wired:003-ray-guide9-h300-s50-best-ray_q_after"
+          ],
+          "n": 2,
+          "requested_target": {},
+          "command": {
+            "hue": 300,
+            "intensity_percent": 100.0,
+            "sat": 50
+          }
+        },
+        "strip": {
+          "nearest_hue": 301.23366675815424,
+          "nearest_sat": 48.272938070408756,
+          "whitened_distance_to_historical_manifold": 1273.369893685497,
+          "unit58_distance": 0.18082045540303296,
+          "conditional_fixed_manifold_projection_sd": [
+            0.00995486574985029,
+            0.0039047856104533485
+          ],
+          "conditional_fixed_manifold_projection_95_intervals": [
+            [
+              301.21415522128456,
+              301.25317829502393
+            ],
+            [
+              48.26528469061227,
+              48.28059145020524
+            ]
+          ],
+          "interval_scope": "delta-method local projection of source measurement noise only; NOT valid Ray-equivalent coverage interval",
+          "alternative_separated_solution": [
+            {
+              "hue": 330.0,
+              "sat": 42.05336627538455,
+              "score": 1535.7996489577436
+            }
+          ],
+          "cell": [
+            10,
+            2
+          ],
+          "on_cell_boundary": false,
+          "hessian_eigenvalues": [
+            781.8796352434924,
+            4523.317089727714
+          ],
+          "observation_ids": [
+            "guide9-h300-s50-best:20260823-234058-p2-best-ww-wired:001-strip-guide9-h300-s50-best-best_repeat_2",
+            "guide9-h300-s50-best:20260823-234058-p2-best-ww-wired:002-strip-guide9-h300-s50-best-best_repeat_3"
+          ],
+          "n": 2,
+          "requested_target": {},
+          "command": {
+            "cw": 192,
+            "ww": 4095,
+            "r": 2495,
+            "g": 0,
+            "b": 2559
+          }
+        }
+      },
+      "valid_Ray_equivalent_or_gamut_claim": false,
+      "reason": "no demonstrated current-to-P6 transfer and large orthogonal multi-material residual; nearest projection is not a valid saturation ceiling"
+    }
+  ]
+}
