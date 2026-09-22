@@ -53,10 +53,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     plan = build_guide11_n1_session_plan(
         lut, frozen_shutters, session_index=args.session, cycle_index=args.session,
     )
-    plan["inputs"] = {
+    plan["inputs"].update({
         "canonical_lut": _reference(args.lut),
         "w6_plan": _reference(args.w6_plan),
-    }
+    })
     if args.dry_run:
         root = (args.output_dir / args.run_name).resolve()
         root.mkdir(parents=True, exist_ok=False)
