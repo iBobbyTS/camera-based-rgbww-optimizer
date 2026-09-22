@@ -535,7 +535,7 @@ def build_ray_r6_spec(policy: Mapping[str, Any] | None = None) -> dict[str, Any]
                    "resolved_capture_settings": {"owner": "remote_backend.resolve_capture_settings",
                        "iso": "100", "aperture": "f/4", "image_format": "RAW"}},
         "execution_authorization": {"schema": "direct_ray_r6_authority_v1",
-            "human_authorization_verified": True,
+            "human_authorization_verified": False,
             "human_authorization_experiment_id": TD_B_R6_EXPERIMENT_ID,
             "remote_v2_capability": True},
         "cleanup": {"python_finally": "required", "shell_trap": "EXIT_INT_TERM_HUP_required"},
@@ -1169,7 +1169,7 @@ def build_direct_plan(
                 if variant == TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT
                 else f"direct_{'strip_td_b' if experiment_id == TD_B else 'td_c_core'}_authority_v1"
             ),
-            "human_authorization_verified": variant not in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT, GUIDE7_F2_SCALE3072_STABILITY_VARIANT, GUIDE7_F2_SCALE2048_STABILITY_VARIANT, GUIDE9_H120_S100_SCALE_AGE_VARIANT, GUIDE9_H120_S50_BATCH1_VARIANT, GUIDE9_H120_S50_BEST_REPEAT_VARIANT, GUIDE9_H120_S25_BATCH1_VARIANT, GUIDE9_H120_S25_BEST_REPEAT_VARIANT, GUIDE9_H0_S0_BATCH1_VARIANT, GUIDE9_H0_S0_BEST_REPEAT_VARIANT, GUIDE9_H300_S100_BATCH1_VARIANT, GUIDE9_H300_S50_BATCH1_VARIANT, GUIDE9_H300_S50_BEST_REPEAT_VARIANT, GUIDE9_WHITE12_VARIANT, GUIDE9_WHITE_LOCAL_JAC_VARIANT, GUIDE9_WHITE_LOCAL_CONFIRM2_VARIANT, GUIDE9_WHITE_LOCAL_PROBES_VARIANT},
+            "human_authorization_verified": False,
             "human_authorization_experiment_id": (
                 None if variant in {TD_C_FAST_ENDPOINT_HOLDOUT_VARIANT, TD_C_FAST_ANCHOR_DIRECTION_B_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_VARIANT, GUIDE6_DIRECT_TARGET_LOCAL_H120_S100_CONTINUATION_VARIANT, GUIDE7_F2_VARIANT, GUIDE7_F2_SHORT_ENDPOINT_VARIANT, GUIDE7_F2_SCALE3072_STABILITY_VARIANT, GUIDE7_F2_SCALE2048_STABILITY_VARIANT, GUIDE9_H120_S100_SCALE_AGE_VARIANT, GUIDE9_H120_S50_BATCH1_VARIANT, GUIDE9_H120_S50_BEST_REPEAT_VARIANT, GUIDE9_H120_S25_BATCH1_VARIANT, GUIDE9_H120_S25_BEST_REPEAT_VARIANT, GUIDE9_H0_S0_BATCH1_VARIANT, GUIDE9_H0_S0_BEST_REPEAT_VARIANT, GUIDE9_H300_S100_BATCH1_VARIANT, GUIDE9_H300_S50_BATCH1_VARIANT, GUIDE9_H300_S50_BEST_REPEAT_VARIANT, GUIDE9_WHITE12_VARIANT, GUIDE9_WHITE_LOCAL_JAC_VARIANT, GUIDE9_WHITE_LOCAL_CONFIRM2_VARIANT, GUIDE9_WHITE_LOCAL_PROBES_VARIANT} else experiment_id
             ),
@@ -1236,7 +1236,7 @@ def build_direct_plan(
     if variant == GUIDE10_WHITE_1800_GM100_MICROBRACKET_VARIANT:
         plan["execution_authorization"].update({
             "schema": "direct_guide10_white_mired_microbracket_v1",
-            "human_authorization_verified": True,
+            "human_authorization_verified": False,
             "human_authorization_experiment_id": GUIDE10_WHITE_1800_GM100_MICROBRACKET_EXPERIMENT_ID,
             "bounded_device_scope": True,
             "human_authorization_required": False,
@@ -1319,7 +1319,7 @@ def _build_guide8_ray_emission_exposure_plan() -> dict[str, Any]:
                     "setup_physical_cr3_cap": 0, "retry": 0},
         "execution_authorization": {"schema": "direct_guide8_ray_emission_exposure_v1",
                                     "human_authorization_required": False,
-                                    "human_authorization_verified": True,
+                                    "human_authorization_verified": False,
                                     "human_authorization_experiment_id": GUIDE8_RAY_EMISSION_EXPOSURE_EXPERIMENT_ID,
                                     "experiment_id": GUIDE8_RAY_EMISSION_EXPOSURE_EXPERIMENT_ID,
                                     "bounded_device_scope": True, "remote_v2_capability": True},
@@ -1392,7 +1392,7 @@ def _build_guide9_h300_reference_diagnostic_plan() -> dict[str, Any]:
                     "setup_physical_cr3_cap": 0, "retry": 0},
         "execution_authorization": {
             "schema": "direct_guide9_h300_reference_emission_path_diag_v1",
-            "human_authorization_required": False, "human_authorization_verified": True,
+            "human_authorization_required": False, "human_authorization_verified": False,
             "human_authorization_experiment_id": GUIDE9_H300_REFERENCE_DIAG_EXPERIMENT_ID,
             "experiment_id": GUIDE9_H300_REFERENCE_DIAG_EXPERIMENT_ID,
             "bounded_device_scope": True, "remote_v2_capability": True,
@@ -1696,7 +1696,7 @@ def _build_guide6_direct_target_local_h120_s100_plan(
         "execution_authorization": {
             "schema": "direct_guide6_target_local_h120_s100_v1",
             "human_authorization_required": False,
-            "human_authorization_verified": True,
+            "human_authorization_verified": False,
             "human_authorization_experiment_id": guide_experiment_id,
             "bounded_device_scope": True,
             "remote_v2_capability": True,
@@ -1820,7 +1820,7 @@ def _build_guide7_f2_alternate_face_plan() -> dict[str, Any]:
                 "strip-h120-s100-fullscale": "1/400",
             }),
         },
-        "execution_authorization": {"schema": "direct_guide7_f2_alternate_face_v1", "human_authorization_required": False, "human_authorization_verified": True, "human_authorization_experiment_id": GUIDE7_F2_EXPERIMENT_ID, "bounded_device_scope": True, "experiment_id": GUIDE7_F2_EXPERIMENT_ID, "remote_v2_capability": True},
+        "execution_authorization": {"schema": "direct_guide7_f2_alternate_face_v1", "human_authorization_required": False, "human_authorization_verified": False, "human_authorization_experiment_id": GUIDE7_F2_EXPERIMENT_ID, "bounded_device_scope": True, "experiment_id": GUIDE7_F2_EXPERIMENT_ID, "remote_v2_capability": True},
         "analysis_contract": {"method": "direct_target_local_ray_vs_strip_same_block", "cross_experiment_absolute_synthesis": False, "active_face": selection["selected_face"], "active_channel": selection["selected_face"], "repeat_best_nonfaithful": 3, "continuation_generation": 0, "steady_claim": False},
         "local_controllability_contract": {"schema": "guide6_h120_s100_direct_local_controllability_v1", "command_order": list(CHANNELS), "base_command": base, "active_channel": selection["selected_face"], "active_value": 4095, "free_channels": free, "probe_step_linearized_code": 256, "probes": {role: row["command"] for role, row in ((item["role"], item) for item in captures) if role.startswith("strip_probe_")}, "base_anchor_after_probe_numbers": [2, 4], "navigation_coordinate": "direct_whitened_58_feature_residual", "maximum_feedback_candidates": 4, "maximum_absolute_step": 768, "backtrack_factors": [1.0, 0.5, 0.25], "maximum_model_rebases": 1, "rebase_extra_probes": 0, "confirmation_count": 3, "repeat_best_nonfaithful_count": 3, "strip_reset_s": 600, "per_measurement_precondition": [{"state_id": "D", "dwell_s": 120}, {"state_id": "A", "dwell_s": 120}], "tested_command_dwell_s": 120, "first_block_terminal_multi_start_unresolved_allowed": False, "gamut_inference": "prohibited", "continuation_generation": 0},
         "hard_locks": {"legacy_absolute_synthesis": True, "G_active_fullscale_face": True, "solver_sentinel": True, "P8": True},
@@ -1841,7 +1841,7 @@ def _build_guide7_f2_short_endpoint_plan() -> dict[str, Any]:
     add(4, "strip", "base_2", base)
     add(5, "strip", "candidate_3", candidate)
     add(6, "ray", "ray_q_after", RAY_STATES["A"])
-    return {"schema": PLAN_SCHEMA_V2, "status": "execute_authorized", "experiment_id": TD_C, "guide_experiment_id": GUIDE7_F2_SHORT_ENDPOINT_EXPERIMENT_ID, "variant": GUIDE7_F2_SHORT_ENDPOINT_VARIANT, "stage": "GUIDE7-F2-SHORT-ENDPOINT", "phase": "formal", "source": "target_local_pair", "created_at": datetime.now(timezone.utc).isoformat(), "inputs": {"location": file_reference(LOCATION_PATH), "policy": file_reference(POLICY_PATH), "code_duty_curve": file_reference(CURVE_PATH)}, "target": {"hue": 120, "sat": 100, "intensity": 100}, "captures": captures, "capture_ids": [x["capture_id"] for x in captures], "timing_contract": timing_contract(2), "cold_proxy": 600, "cold_proxy_wait_s": 600, "native_raw_ambient_policy": AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT, "frozen_shutters": {"ray-h120-s100": "1/5000", "strip-h120-s100-fullscale": "1/400"}, "exposure_setup_required": [], "shutter_ledger_provenance": {"owner": "experiment_capture_steps", "required_cache_keys": ["ray-h120-s100", "strip-h120-s100-fullscale"], "frozen_shutters_sha256": canonical_sha256({"ray-h120-s100": "1/5000", "strip-h120-s100-fullscale": "1/400"})}, "budgets": {"formal_cap": 7, "physical_cr3_cap": 7, "ambient_cap": 0, "retry": 0}, "execution_authorization": {"schema": "direct_guide7_f2_short_endpoint_v1", "human_authorization_required": False, "human_authorization_verified": True, "human_authorization_experiment_id": GUIDE7_F2_SHORT_ENDPOINT_EXPERIMENT_ID, "bounded_device_scope": True, "experiment_id": GUIDE7_F2_SHORT_ENDPOINT_EXPERIMENT_ID, "remote_v2_capability": True}, "analysis_contract": {"base_command": base, "candidate_command": candidate, "order_balanced": True, "no_probes": True, "no_solver": True, "steady_claim": False}, "formal_capture_eligible": True}
+    return {"schema": PLAN_SCHEMA_V2, "status": "execute_authorized", "experiment_id": TD_C, "guide_experiment_id": GUIDE7_F2_SHORT_ENDPOINT_EXPERIMENT_ID, "variant": GUIDE7_F2_SHORT_ENDPOINT_VARIANT, "stage": "GUIDE7-F2-SHORT-ENDPOINT", "phase": "formal", "source": "target_local_pair", "created_at": datetime.now(timezone.utc).isoformat(), "inputs": {"location": file_reference(LOCATION_PATH), "policy": file_reference(POLICY_PATH), "code_duty_curve": file_reference(CURVE_PATH)}, "target": {"hue": 120, "sat": 100, "intensity": 100}, "captures": captures, "capture_ids": [x["capture_id"] for x in captures], "timing_contract": timing_contract(2), "cold_proxy": 600, "cold_proxy_wait_s": 600, "native_raw_ambient_policy": AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT, "frozen_shutters": {"ray-h120-s100": "1/5000", "strip-h120-s100-fullscale": "1/400"}, "exposure_setup_required": [], "shutter_ledger_provenance": {"owner": "experiment_capture_steps", "required_cache_keys": ["ray-h120-s100", "strip-h120-s100-fullscale"], "frozen_shutters_sha256": canonical_sha256({"ray-h120-s100": "1/5000", "strip-h120-s100-fullscale": "1/400"})}, "budgets": {"formal_cap": 7, "physical_cr3_cap": 7, "ambient_cap": 0, "retry": 0}, "execution_authorization": {"schema": "direct_guide7_f2_short_endpoint_v1", "human_authorization_required": False, "human_authorization_verified": False, "human_authorization_experiment_id": GUIDE7_F2_SHORT_ENDPOINT_EXPERIMENT_ID, "bounded_device_scope": True, "experiment_id": GUIDE7_F2_SHORT_ENDPOINT_EXPERIMENT_ID, "remote_v2_capability": True}, "analysis_contract": {"base_command": base, "candidate_command": candidate, "order_balanced": True, "no_probes": True, "no_solver": True, "steady_claim": False}, "formal_capture_eligible": True}
 
 
 def _build_guide7_f2_scale3072_stability_plan() -> dict[str, Any]:
@@ -1927,7 +1927,7 @@ def _build_guide7_f2_scale_stability_plan(
         "execution_authorization": {
             "schema": authorization_schema,
             "human_authorization_required": False,
-            "human_authorization_verified": True,
+            "human_authorization_verified": False,
             "human_authorization_experiment_id": experiment_id,
             "bounded_device_scope": True,
             "experiment_id": experiment_id,
@@ -1996,7 +1996,7 @@ def _build_guide9_scale_age_discrimination_plan() -> dict[str, Any]:
         "frozen_shutters": frozen, "exposure_setup_required": [],
         "shutter_ledger_provenance": {"owner": "experiment_capture_steps", "required_cache_keys": sorted(frozen), "frozen_shutters_sha256": canonical_sha256(frozen)},
         "budgets": {"ray_cap": 2, "strip_cap": 8, "formal_cap": 10, "physical_cr3_cap": 10, "ambient_cap": 0, "retry": 0, "probes": 0, "solver_candidates": 0},
-        "execution_authorization": {"schema": "direct_guide9_scale_age_discrimination_v1", "human_authorization_required": False, "human_authorization_verified": True, "human_authorization_experiment_id": GUIDE9_H120_S100_SCALE_AGE_EXPERIMENT_ID, "bounded_device_scope": True, "experiment_id": GUIDE9_H120_S100_SCALE_AGE_EXPERIMENT_ID, "remote_v2_capability": True},
+        "execution_authorization": {"schema": "direct_guide9_scale_age_discrimination_v1", "human_authorization_required": False, "human_authorization_verified": False, "human_authorization_experiment_id": GUIDE9_H120_S100_SCALE_AGE_EXPERIMENT_ID, "bounded_device_scope": True, "experiment_id": GUIDE9_H120_S100_SCALE_AGE_EXPERIMENT_ID, "remote_v2_capability": True},
         "analysis_contract": {"method": "scale_by_source_age_discrimination", "scales": [4095, 2048], "cycle_order": [4095, 2048, 2048, 4095], "fast_elapsed_s": 120, "long_elapsed_s": 600, "independent_reset_s": 600, "no_pool_fast_long": True, "gamut_inference": "prohibited", "steady_claim": False},
     }
 
@@ -2017,7 +2017,7 @@ def _build_guide9_h120_s50_batch1_plan() -> dict[str, Any]:
     for index, (label, command) in enumerate(candidates, start=1): add(index, "strip", label, command)
     add(5, "ray", "ray_q_after", ray)
     frozen = {"ray-h120-s50": "1/6400", "strip-h120-s50": "1/400"}
-    return {"schema": PLAN_SCHEMA_V2, "status": "execute_authorized", "experiment_id": TD_C, "guide_experiment_id": GUIDE9_H120_S50_BATCH1_EXPERIMENT_ID, "variant": GUIDE9_H120_S50_BATCH1_VARIANT, "stage": "GUIDE9-H120-S50-FAST-DIRECT-BATCH1", "phase": "formal", "source": "target_local_candidate_batch", "created_at": datetime.now(timezone.utc).isoformat(), "inputs": {"location": file_reference(LOCATION_PATH), "policy": file_reference(POLICY_PATH), "uncertainty": file_reference(UNCERTAINTY_PATH), "manifold": file_reference(MANIFOLD_PATH), "code_duty_curve": file_reference(CURVE_PATH)}, "target": {"hue": 120, "sat": 50, "intensity": 100}, "captures": captures, "capture_ids": [x["capture_id"] for x in captures], "timing_contract": timing_contract(2), "cold_proxy": 600, "cold_proxy_wait_s": 600, "native_raw_ambient_policy": AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT, "frozen_shutters": frozen, "exposure_setup_required": [], "shutter_ledger_provenance": {"owner": "experiment_capture_steps", "required_cache_keys": sorted(frozen), "frozen_shutters_sha256": canonical_sha256(frozen)}, "budgets": {"ray_cap": 2, "strip_cap": 4, "formal_cap": 6, "physical_cr3_cap": 6, "ambient_cap": 0, "retry": 0, "candidate_batches": 1, "unique_commands": 4}, "execution_authorization": {"schema": "direct_guide9_h120_s50_batch1_v1", "human_authorization_required": False, "human_authorization_verified": True, "human_authorization_experiment_id": GUIDE9_H120_S50_BATCH1_EXPERIMENT_ID, "bounded_device_scope": True, "experiment_id": GUIDE9_H120_S50_BATCH1_EXPERIMENT_ID, "remote_v2_capability": True}, "analysis_contract": {"method": "fast_direct_candidate_batch", "candidate_labels": [x[0] for x in candidates], "independent_reset_s": 600, "dwell_s": 120, "select_lowest_direct_score": True, "best_total_repeats_required": 3, "no_prediction_pass": True, "gamut_inference": "prohibited", "steady_claim": False}}
+    return {"schema": PLAN_SCHEMA_V2, "status": "execute_authorized", "experiment_id": TD_C, "guide_experiment_id": GUIDE9_H120_S50_BATCH1_EXPERIMENT_ID, "variant": GUIDE9_H120_S50_BATCH1_VARIANT, "stage": "GUIDE9-H120-S50-FAST-DIRECT-BATCH1", "phase": "formal", "source": "target_local_candidate_batch", "created_at": datetime.now(timezone.utc).isoformat(), "inputs": {"location": file_reference(LOCATION_PATH), "policy": file_reference(POLICY_PATH), "uncertainty": file_reference(UNCERTAINTY_PATH), "manifold": file_reference(MANIFOLD_PATH), "code_duty_curve": file_reference(CURVE_PATH)}, "target": {"hue": 120, "sat": 50, "intensity": 100}, "captures": captures, "capture_ids": [x["capture_id"] for x in captures], "timing_contract": timing_contract(2), "cold_proxy": 600, "cold_proxy_wait_s": 600, "native_raw_ambient_policy": AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT, "frozen_shutters": frozen, "exposure_setup_required": [], "shutter_ledger_provenance": {"owner": "experiment_capture_steps", "required_cache_keys": sorted(frozen), "frozen_shutters_sha256": canonical_sha256(frozen)}, "budgets": {"ray_cap": 2, "strip_cap": 4, "formal_cap": 6, "physical_cr3_cap": 6, "ambient_cap": 0, "retry": 0, "candidate_batches": 1, "unique_commands": 4}, "execution_authorization": {"schema": "direct_guide9_h120_s50_batch1_v1", "human_authorization_required": False, "human_authorization_verified": False, "human_authorization_experiment_id": GUIDE9_H120_S50_BATCH1_EXPERIMENT_ID, "bounded_device_scope": True, "experiment_id": GUIDE9_H120_S50_BATCH1_EXPERIMENT_ID, "remote_v2_capability": True}, "analysis_contract": {"method": "fast_direct_candidate_batch", "candidate_labels": [x[0] for x in candidates], "independent_reset_s": 600, "dwell_s": 120, "select_lowest_direct_score": True, "best_total_repeats_required": 3, "no_prediction_pass": True, "gamut_inference": "prohibited", "steady_claim": False}}
 
 
 def _build_guide9_h120_s50_best_repeat_plan() -> dict[str, Any]:
@@ -2028,7 +2028,7 @@ def _build_guide9_h120_s50_best_repeat_plan() -> dict[str, Any]:
         captures.append({"capture_id": f"{index:03d}-{source}-guide9-s50-best-{role}", "source_id": source, "state_id": "D", "role": role, "capture_role": "formal", "formal_measurement": True, "command": dict(command), "exact_command_hash": canonical_sha256(command), "requested_elapsed_s": 120, "nominal_shutter": "1/6400" if source == "ray" else "1/400", "exposure_cache_key": "ray-h120-s50" if source == "ray" else "strip-h120-s50", "timing_acceptance": "observed_elapsed_record_only", "strip_zero_required": source == "ray", "ray_zero_required": source == "strip", "session_index": index, "steady_claim": False})
     add(0, "ray", "ray_q_before", ray); add(1, "strip", "best_repeat_2", best); add(2, "strip", "best_repeat_3", best); add(3, "ray", "ray_q_after", ray)
     frozen = {"ray-h120-s50": "1/6400", "strip-h120-s50": "1/400"}
-    return {"schema": PLAN_SCHEMA_V2, "status": "execute_authorized", "experiment_id": TD_C, "guide_experiment_id": GUIDE9_H120_S50_BEST_REPEAT_EXPERIMENT_ID, "variant": GUIDE9_H120_S50_BEST_REPEAT_VARIANT, "stage": "GUIDE9-H120-S50-FAST-DIRECT-BEST-REPEAT", "phase": "formal", "source": "target_local_best_repeat", "created_at": datetime.now(timezone.utc).isoformat(), "inputs": {"location": file_reference(LOCATION_PATH), "policy": file_reference(POLICY_PATH), "uncertainty": file_reference(UNCERTAINTY_PATH), "code_duty_curve": file_reference(CURVE_PATH)}, "target": {"hue": 120, "sat": 50, "intensity": 100}, "captures": captures, "capture_ids": [x["capture_id"] for x in captures], "timing_contract": timing_contract(2), "cold_proxy": 600, "cold_proxy_wait_s": 600, "native_raw_ambient_policy": AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT, "frozen_shutters": frozen, "exposure_setup_required": [], "shutter_ledger_provenance": {"owner": "experiment_capture_steps", "required_cache_keys": sorted(frozen), "frozen_shutters_sha256": canonical_sha256(frozen)}, "budgets": {"ray_cap": 2, "strip_cap": 2, "formal_cap": 4, "physical_cr3_cap": 4, "ambient_cap": 0, "retry": 0, "candidate_batches": 0, "unique_commands": 1}, "execution_authorization": {"schema": "direct_guide9_h120_s50_best_repeat_v1", "human_authorization_required": False, "human_authorization_verified": True, "human_authorization_experiment_id": GUIDE9_H120_S50_BEST_REPEAT_EXPERIMENT_ID, "bounded_device_scope": True, "experiment_id": GUIDE9_H120_S50_BEST_REPEAT_EXPERIMENT_ID, "remote_v2_capability": True}, "analysis_contract": {"method": "fast_direct_best_repeat", "best_command": best, "independent_reset_s": 600, "dwell_s": 120, "total_repeats": 3, "prior_batch_capture_role": "high_white_g", "gamut_inference": "prohibited", "steady_claim": False}}
+    return {"schema": PLAN_SCHEMA_V2, "status": "execute_authorized", "experiment_id": TD_C, "guide_experiment_id": GUIDE9_H120_S50_BEST_REPEAT_EXPERIMENT_ID, "variant": GUIDE9_H120_S50_BEST_REPEAT_VARIANT, "stage": "GUIDE9-H120-S50-FAST-DIRECT-BEST-REPEAT", "phase": "formal", "source": "target_local_best_repeat", "created_at": datetime.now(timezone.utc).isoformat(), "inputs": {"location": file_reference(LOCATION_PATH), "policy": file_reference(POLICY_PATH), "uncertainty": file_reference(UNCERTAINTY_PATH), "code_duty_curve": file_reference(CURVE_PATH)}, "target": {"hue": 120, "sat": 50, "intensity": 100}, "captures": captures, "capture_ids": [x["capture_id"] for x in captures], "timing_contract": timing_contract(2), "cold_proxy": 600, "cold_proxy_wait_s": 600, "native_raw_ambient_policy": AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT, "frozen_shutters": frozen, "exposure_setup_required": [], "shutter_ledger_provenance": {"owner": "experiment_capture_steps", "required_cache_keys": sorted(frozen), "frozen_shutters_sha256": canonical_sha256(frozen)}, "budgets": {"ray_cap": 2, "strip_cap": 2, "formal_cap": 4, "physical_cr3_cap": 4, "ambient_cap": 0, "retry": 0, "candidate_batches": 0, "unique_commands": 1}, "execution_authorization": {"schema": "direct_guide9_h120_s50_best_repeat_v1", "human_authorization_required": False, "human_authorization_verified": False, "human_authorization_experiment_id": GUIDE9_H120_S50_BEST_REPEAT_EXPERIMENT_ID, "bounded_device_scope": True, "experiment_id": GUIDE9_H120_S50_BEST_REPEAT_EXPERIMENT_ID, "remote_v2_capability": True}, "analysis_contract": {"method": "fast_direct_best_repeat", "best_command": best, "independent_reset_s": 600, "dwell_s": 120, "total_repeats": 3, "prior_batch_capture_role": "high_white_g", "gamut_inference": "prohibited", "steady_claim": False}}
 
 
 def _build_guide9_h120_s25_batch1_plan() -> dict[str, Any]:
@@ -2347,7 +2347,7 @@ def _build_guide9_white12_plan() -> dict[str, Any]:
         },
         "execution_authorization": {
             "schema": "direct_guide9_white12_v1", "human_authorization_required": False,
-            "human_authorization_verified": True,
+            "human_authorization_verified": False,
             "human_authorization_experiment_id": GUIDE9_WHITE12_EXPERIMENT_ID,
             "bounded_device_scope": True, "experiment_id": GUIDE9_WHITE12_EXPERIMENT_ID,
             "remote_v2_capability": True,
@@ -2669,7 +2669,7 @@ def _build_guide10_white_1800_gm100_microbracket_plan() -> dict[str, Any]:
             **parent["execution_authorization"],
             "schema": "direct_guide10_white_mired_microbracket_v1",
             "experiment_id": GUIDE10_WHITE_1800_GM100_MICROBRACKET_EXPERIMENT_ID,
-            "human_authorization_verified": True,
+            "human_authorization_verified": False,
             "human_authorization_experiment_id": GUIDE10_WHITE_1800_GM100_MICROBRACKET_EXPERIMENT_ID,
             "bounded_device_scope": True,
         },
@@ -2798,7 +2798,7 @@ def _build_guide6_strip_exposure_qualification_plan() -> dict[str, Any]:
         "execution_authorization": {
             "schema": "direct_guide6_strip_exposure_qualification_v1",
             "human_authorization_required": False,
-            "human_authorization_verified": True,
+            "human_authorization_verified": False,
             "experiment_id": GUIDE6_STRIP_EXPOSURE_QUALIFICATION_EXPERIMENT_ID,
             "bounded_device_scope": True, "remote_v2_capability": True,
         },
@@ -3209,7 +3209,7 @@ def timing_sequence_identity(experiment_id: str, step: Mapping[str, Any]) -> tup
         return (experiment_id, source, state, role)
     if experiment_id == TD_C:
         session = step.get("session_index")
-        if type(session) is not int or session <= 0:
+        if type(session) is not int or session < 0:
             raise ValueError("TD-C timing sequence lacks session identity")
         return (experiment_id, source, state, session)
     raise ValueError(f"unsupported thermal experiment identity: {experiment_id}")

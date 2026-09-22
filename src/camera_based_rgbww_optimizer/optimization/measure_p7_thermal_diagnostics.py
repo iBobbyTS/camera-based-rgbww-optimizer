@@ -6,6 +6,7 @@ import hashlib
 import json
 import math
 import os
+import re
 import subprocess
 import time
 from datetime import datetime, timezone
@@ -45,6 +46,7 @@ GUIDE9_CANDIDATE_BATCH_SCHEMAS = {
     "direct_guide10_white70_w6_final_validation_v1",
     "direct_guide10_white70_w7_interpolation_holdout_v1",
     "direct_guide10_white70_w7_long_holdout_v1",
+    "direct_guide11_n1_repeatability_v1",
 }
 GUIDE9_BEST_REPEAT_SCHEMAS = {
     "direct_guide9_h120_s50_best_repeat_v1",
@@ -317,6 +319,18 @@ def validate_authorized_execution_plan(
         isinstance(authorization, Mapping)
         and authorization.get("schema") == "direct_guide10_white70_w6_final_validation_v1"
     )
+    direct_guide10_white70_w7 = (
+        isinstance(authorization, Mapping)
+        and authorization.get("schema") in {
+            "direct_guide10_white70_round1_v1",
+            "direct_guide10_white70_w7_interpolation_holdout_v1",
+            "direct_guide10_white70_w7_long_holdout_v1",
+        }
+    )
+    direct_guide11_n1 = (
+        isinstance(authorization, Mapping)
+        and authorization.get("schema") == "direct_guide11_n1_repeatability_v1"
+    )
     if (
         direct_ray_history or direct_strip_history
         or direct_ray_fast_long_bridge or direct_td_c_fast_endpoint
@@ -327,6 +341,8 @@ def validate_authorized_execution_plan(
         or direct_guide10_white_microbracket or direct_guide10_white_confirmation
         or direct_guide10_white70_w5
         or direct_guide10_white70_w6
+        or direct_guide10_white70_w7
+        or direct_guide11_n1
     ):
         valid_execution_scope = (
             authorization.get("bounded_device_scope") is True
@@ -338,7 +354,7 @@ def validate_authorized_execution_plan(
         valid_execution_scope = (
             isinstance(authorization, Mapping)
             and str(authorization.get("schema", "")).startswith("direct_")
-            and authorization.get("human_authorization_verified") is True
+            and authorization.get("human_authorization_verified") is not True
             and authorization.get("human_authorization_experiment_id")
             == expected_authorization_experiment
             and authorization.get("remote_v2_capability") is True
@@ -359,6 +375,33 @@ def validate_authorized_execution_plan(
         raise PermissionError("thermal diagnostic execution requires remote v2 capture timing capability")
     if any(step.get("formal_measurement") and step.get("requested_elapsed_s") is None for step in plan.get("captures", [])):
         raise PermissionError("thermal diagnostic execution rejects unresolved deferred timing")
+    timing_resolution = str(plan.get("timing_resolution", ""))
+    if timing_resolution.startswith(("guide10_", "guide11_")):
+        label_match = re.fullmatch(
+            r"(?:guide10|guide11)_[a-z0-9_]*?reset(\d+)_D(\d+)", timing_resolution
+        )
+        if label_match is None:
+            raise PermissionError(
+                f"guide10/guide11 timing label lacks reset/D dwell identity: {timing_resolution}"
+            )
+        label_reset_s, label_dwell_s = (
+            float(label_match.group(1)), float(label_match.group(2))
+        )
+        if float(plan.get("cold_proxy_wait_s", -1)) != label_reset_s:
+            raise PermissionError(
+                f"timing label {timing_resolution} reset {label_reset_s}s differs"
+                f" from cold_proxy_wait_s {plan.get('cold_proxy_wait_s')}s"
+            )
+        formal_dwells = [
+            float(step["requested_elapsed_s"])
+            for step in plan.get("captures", [])
+            if step.get("formal_measurement")
+        ]
+        if not formal_dwells or min(formal_dwells) != label_dwell_s:
+            raise PermissionError(
+                f"timing label {timing_resolution} dwell {label_dwell_s}s differs"
+                " from formal step requested_elapsed_s values"
+            )
     _validate_execution_shutter_ledger(plan)
     if camera_backend is not None:
         if (
@@ -1751,15 +1794,55 @@ def execute_plan(
             _write_json(root / "adaptive-execution-plan.json", runtime_plan)
         elif direct_guide9_s25 or direct_guide9_s50 or direct_guide9_best:
             rows = []
-            for step in plan["captures"]:
-                record_gate(f"guide9-s50-{step['role']}-reset600")
-                sleep_fn(float(plan["cold_proxy_wait_s"]))
-                apply_command_fn(step); readback_fn(step); sleep_fn(120.0)
-                owner_start = monotonic_fn()
+            reset_wait_s = float(plan["cold_proxy_wait_s"])
+            groups_evidence = []
+            for group_index, item in enumerate(
+                _ledger_groups(str(plan["experiment_id"]), plan["captures"])
+            ):
+                first = item[0]
+                record_gate(f"guide9-s50-{first['role']}-reset{int(reset_wait_s)}")
+                sleep_fn(reset_wait_s)
+                source_on_monotonic_s = monotonic_fn()
+                applied = dict(apply_command_fn(first))
+                command_completed_monotonic_s = monotonic_fn()
+                readback = dict(readback_fn(first))
+                readback_completed_monotonic_s = monotonic_fn()
+                _append_jsonl(root / "commands.jsonl", {
+                    "at": _utc_now(), "event": "command_readback_verified",
+                    "source_id": first["source_id"], "state_id": first["state_id"],
+                    "exact_command_hash": first["exact_command_hash"],
+                    "applied": applied, "readback": readback,
+                    "reset_wait_s": reset_wait_s,
+                    "source_on_monotonic_s": source_on_monotonic_s,
+                    "command_completed_monotonic_s": command_completed_monotonic_s,
+                    "readback_completed_monotonic_s": readback_completed_monotonic_s,
+                    "group_capture_ids": [str(step["capture_id"]) for step in item],
+                })
+                owner_start = source_on_monotonic_s
                 if set_capture_context_fn is not None: set_capture_context_fn(owner_start)
-                ensure_physical_capacity()
-                captured = dict(capture_fn(step)); retain_capture(step, captured, owner_start=owner_start, chronology_group_index=len(rows)); rows.append({"step": dict(step), "capture": captured})
-            _write_json(root / "guide9-h120-s50-batch1-evidence.json", {"schema": "guide9_h120_s50_batch1_evidence_v1", "rows": rows, "capture_count": len(rows), "independent_reset_s": 600, "dwell_s": 120})
+                for step in item:
+                    remaining = owner_start + float(step["requested_elapsed_s"]) - monotonic_fn()
+                    if remaining > 0:
+                        sleep_fn(remaining)
+                    wait_completed_monotonic_s = monotonic_fn()
+                    ensure_physical_capacity()
+                    captured = dict(capture_fn(step))
+                    captured["source_on_monotonic_s"] = owner_start
+                    captured["wait_completed_monotonic_s"] = wait_completed_monotonic_s
+                    retain_capture(step, captured, owner_start=owner_start, chronology_group_index=group_index)
+                    rows.append({"step": dict(step), "capture": captured})
+                groups_evidence.append({
+                    "group_index": group_index,
+                    "source_id": first["source_id"],
+                    "state_id": first["state_id"],
+                    "dwell_targets_s": [float(step["requested_elapsed_s"]) for step in item],
+                })
+            _write_json(root / "guide9-h120-s50-batch1-evidence.json", {
+                "schema": "guide9_h120_s50_batch1_evidence_v1", "rows": rows,
+                "capture_count": len(rows), "independent_reset_s": reset_wait_s,
+                "dwell_s": max(float(step["requested_elapsed_s"]) for step in plan["captures"]),
+                "groups": groups_evidence,
+            })
             runtime_plan = copy.deepcopy(dict(plan)); runtime_plan["captures"] = [x["step"] for x in rows]; runtime_plan["capture_ids"] = [x["step"]["capture_id"] for x in rows]
             _write_json(root / "adaptive-execution-plan.json", runtime_plan)
         elif direct_guide9_scale_age:
