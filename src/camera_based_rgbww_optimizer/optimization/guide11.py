@@ -906,3 +906,99 @@ def build_guide11_w2_plan(
         },
     }
     return plan
+
+
+def build_guide11_w2_recovery_suffix(interrupted_root: Path) -> dict[str, Any]:
+    """Recover a paused GUIDE11 W2 run as an immutable suffix plan.
+
+    The completed prefix is validated against the pause evidence (ledger
+    agreement, capture order, physical CR3 presence, evidence hashes) and is
+    never mutated; only the remaining suffix captures are re-executed in a
+    fresh run.
+    """
+    import hashlib
+    import json
+
+    from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
+
+    root = Path(interrupted_root)
+    run = json.loads((root / "run.json").read_text(encoding="utf-8"))
+    pause = json.loads((root / "pause-evidence.json").read_text(encoding="utf-8"))
+    plan_path = root / "experiment-spec.json"
+    plan = json.loads(plan_path.read_text(encoding="utf-8"))
+    if plan.get("guide_experiment_id") != W2_EXPERIMENT_ID:
+        raise ValueError("GUIDE11 W2 recovery requires the frozen W2 plan")
+    if run.get("status") != "interrupted" or not str(run.get("interruption_reason", "")).startswith("user_requested_pause"):
+        raise ValueError("GUIDE11 W2 recovery requires an explicitly paused run")
+    if run.get("cleanup") not in {"pass", "pass_external_verified"} or pause.get("status") != "pass":
+        raise ValueError("GUIDE11 W2 recovery requires verified pause cleanup evidence")
+    expected_zero = {"blue": 0, "green": 0, "cold_white": 0, "red": 0, "warm_white": 0}
+    cleanup_block = pause.get("external_cleanup") if isinstance(pause.get("external_cleanup"), dict) else {}
+    rgbww_zero = pause.get("rgbww_zero_readback") or cleanup_block.get("rgbww_zero_readback")
+    ray_zero = pause.get("ray_zero_readback") or cleanup_block.get("ray_zero_readback")
+    if rgbww_zero != expected_zero or int((ray_zero or {}).get("intensity", -1)) != 0:
+        raise ValueError("GUIDE11 W2 recovery requires exact both-device zero readback")
+    captures = [
+        json.loads(line)
+        for line in (root / "captures.jsonl").read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    returns = [
+        json.loads(line)
+        for line in (root / "physical-returns.jsonl").read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    if len(captures) != len(returns) or len(captures) != int(run.get("completed_formal", -1)):
+        raise ValueError("GUIDE11 W2 recovery ledgers disagree on the completed prefix")
+    expected = list(plan.get("captures", ()))
+    if not captures or len(captures) >= len(expected):
+        raise ValueError("GUIDE11 W2 recovery requires a non-empty incomplete prefix")
+    for index, (capture, returned, step) in enumerate(zip(captures, returns, expected)):
+        if str(capture.get("capture_id")) != str(step["capture_id"]) or str(returned.get("capture_id")) != str(step["capture_id"]):
+            raise ValueError(f"GUIDE11 W2 recovery prefix diverges at index {index}")
+        raw = Path(str(returned.get("cr3_path", "")))
+        if not raw.is_file() or raw.stat().st_size != int(returned.get("cr3_byte_count", -1)):
+            raise ValueError(f"GUIDE11 W2 recovery RAW artifact missing at index {index}")
+
+    def _sha(path: Path) -> str:
+        return hashlib.sha256(path.read_bytes()).hexdigest()
+
+    if pause.get("evidence_hashes", {}).get("captures_jsonl") != _sha(root / "captures.jsonl"):
+        raise ValueError("GUIDE11 W2 recovery captures ledger hash drifted")
+    if pause.get("evidence_hashes", {}).get("physical_returns_jsonl") != _sha(root / "physical-returns.jsonl"):
+        raise ValueError("GUIDE11 W2 recovery physical-returns ledger hash drifted")
+    suffix = json.loads(json.dumps(plan))
+    suffix["captures"] = expected[len(captures):]
+    suffix["capture_ids"] = [str(step["capture_id"]) for step in suffix["captures"]]
+    required = sorted({str(step["exposure_cache_key"]) for step in suffix["captures"]})
+    suffix["frozen_shutters"] = {
+        key: value for key, value in plan["frozen_shutters"].items() if key in required
+    }
+    suffix["shutter_ledger_provenance"] = {
+        "owner": "experiment_capture_steps",
+        "required_cache_keys": required,
+        "frozen_shutters_sha256": thermal.canonical_sha256(suffix["frozen_shutters"]),
+    }
+    suffix["budgets"].update(
+        ray_cap=sum(s["source_id"] == "ray" for s in suffix["captures"]),
+        strip_cap=sum(s["source_id"] == "strip" for s in suffix["captures"]),
+        formal_cap=len(suffix["captures"]),
+        physical_cr3_cap=len(suffix["captures"]),
+    )
+    suffix["stage"] = "GUIDE11-W2-BOUNDED-CORRECTION-RECOVERY-SUFFIX"
+    suffix["variant"] = f"{W2_VARIANT}-recovery-suffix"
+    suffix["recovery"] = {
+        "schema": "guide11_w2_recovery_suffix_v1",
+        "parent_root": str(root.resolve()),
+        "completed_prefix_count": len(captures),
+        "remaining_suffix_count": len(suffix["captures"]),
+        "parent_plan_sha256": _sha(plan_path),
+        "pause_evidence_sha256": _sha(root / "pause-evidence.json"),
+        "parent_captures_sha256": _sha(root / "captures.jsonl"),
+        "parent_physical_returns_sha256": _sha(root / "physical-returns.jsonl"),
+    }
+    suffix["analysis_contract"] = {
+        **dict(suffix["analysis_contract"]),
+        "recovery_parent_prefix_count": len(captures),
+    }
+    return suffix
