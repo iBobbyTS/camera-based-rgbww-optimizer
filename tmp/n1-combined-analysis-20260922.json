@@ -1,0 +1,820 @@
+{
+  "observation_count": 36,
+  "points": [
+    {
+      "burst_layer": {
+        "ray": {
+          "capture_ids": [
+            "003-ray-guide11-n1-s1-cct1800-gm100-c1-b0",
+            "004-ray-guide11-n1-s1-cct1800-gm100-c1-b1",
+            "005-ray-guide11-n1-s1-cct1800-gm100-c1-b2"
+          ],
+          "cct_K_spread": {
+            "ci_high": 1898.9862797727772,
+            "ci_low": 1898.136942111955,
+            "max": 1898.670113976921,
+            "mean": 1898.561610942366,
+            "min": 1898.3645649587377,
+            "n": 3,
+            "note": "Student-t conditional interval; normality not verified",
+            "sample_sd": 0.1709384128893528,
+            "status": "ok"
+          },
+          "n": 3,
+          "product_z_spread": {
+            "log_B_over_G": {
+              "ci_high": -1.5278505975494878,
+              "ci_low": -1.530618849813228,
+              "max": -1.5286374574041424,
+              "mean": -1.529234723681358,
+              "min": -1.5297403848287554,
+              "n": 3,
+              "note": "Student-t conditional interval; normality not verified",
+              "sample_sd": 0.0005571407818923435,
+              "status": "ok"
+            },
+            "log_R_over_G": {
+              "ci_high": 0.3097015751581967,
+              "ci_low": 0.3091293412760487,
+              "max": 0.30954792089512034,
+              "mean": 0.3094154582171227,
+              "min": 0.30933903078495617,
+              "n": 3,
+              "note": "Student-t conditional interval; normality not verified",
+              "sample_sd": 0.00011516827302960063,
+              "status": "ok"
+            }
+          }
+        },
+        "strip": {
+          "capture_ids": [
+            "000-strip-guide11-n1-s1-cct1800-gm100-c1-b0",
+            "001-strip-guide11-n1-s1-cct1800-gm100-c1-b1",
+            "002-strip-guide11-n1-s1-cct1800-gm100-c1-b2"
+          ],
+          "cct_K_spread": {
+            "ci_high": 1894.101425059661,
+            "ci_low": 1890.441398289188,
+            "max": 1893.0214622692024,
+            "mean": 1892.2714116744246,
+            "min": 1891.5490001270625,
+            "n": 3,
+            "note": "Student-t conditional interval; normality not verified",
+            "sample_sd": 0.7366200701279539,
+            "status": "ok"
+          },
+          "n": 3,
+          "product_z_spread": {
+            "log_B_over_G": {
+              "ci_high": -1.5120884689200762,
+              "ci_low": -1.5139225842498785,
+              "max": -1.5125826123335129,
+              "mean": -1.5130055265849773,
+              "min": -1.5132630134845313,
+              "n": 3,
+              "note": "Student-t conditional interval; normality not verified",
+              "sample_sd": 0.0003691355958817297,
+              "status": "ok"
+            },
+            "log_R_over_G": {
+              "ci_high": 0.3144871247356995,
+              "ci_low": 0.3121015880840362,
+              "max": 0.31376434457560615,
+              "mean": 0.31329435640986786,
+              "min": 0.31280471773706664,
+              "n": 3,
+              "note": "Student-t conditional interval; normality not verified",
+              "sample_sd": 0.00048011511550065476,
+              "status": "ok"
+            }
+          }
+        }
+      },
+      "cct": 1800,
+      "cct_K_diff": {
+        "ci_high": 2.2612435806322573,
+        "ci_low": -14.567871797563843,
+        "max": -5.491063385256439,
+        "mean": -6.153314108465793,
+        "min": -6.815564831675147,
+        "n": 2,
+        "note": "Student-t conditional interval; normality not verified",
+        "sample_sd": 0.936563954454059,
+        "status": "ok"
+      },
+      "cycles": {
+        "1": {
+          "diff": {
+            "cct_K": -6.815564831675147,
+            "duv": 0.0004028500928836701,
+            "mired": 1.8980368438958521
+          },
+          "ray_capture": "003-ray-guide11-n1-s1-cct1800-gm100-c1-b0",
+          "ray_cct_K": 1898.3645649587377,
+          "strip_capture": "000-strip-guide11-n1-s1-cct1800-gm100-c1-b0",
+          "strip_cct_K": 1891.5490001270625
+        },
+        "2": {
+          "diff": {
+            "cct_K": -5.491063385256439,
+            "duv": 0.00040302531574924923,
+            "mired": 1.5228239967407262
+          },
+          "ray_capture": "000-ray-guide11-n1-s2-cct1800-gm100-c2",
+          "ray_cct_K": 1901.6531047000058,
+          "strip_capture": "001-strip-guide11-n1-s2-cct1800-gm100-c2",
+          "strip_cct_K": 1896.1620413147493
+        }
+      },
+      "duv_diff": {
+        "ci_high": 0.0004040508951814838,
+        "ci_low": 0.0004018245134514355,
+        "max": 0.00040302531574924923,
+        "mean": 0.00040293770431645967,
+        "min": 0.0004028500928836701,
+        "n": 2,
+        "note": "Student-t conditional interval; normality not verified",
+        "sample_sd": 1.239012764699332e-07,
+        "status": "ok"
+      },
+      "gm": 100,
+      "is_burst_point": true,
+      "mired_diff": {
+        "ci_high": 4.094157638294805,
+        "ci_low": -0.6732967976582258,
+        "max": 1.8980368438958521,
+        "mean": 1.7104304203182892,
+        "min": 1.5228239967407262,
+        "n": 2,
+        "note": "Student-t conditional interval; normality not verified",
+        "sample_sd": 0.26531554861170115,
+        "status": "ok"
+      },
+      "product_chromaticity": {
+        "1": {
+          "ray_z": {
+            "g1_minus_g2_over_mean_g": -0.001624515308110774,
+            "log_B_over_G": -1.5297403848287554,
+            "log_R_over_G": 0.30954792089512034
+          },
+          "strip_z": {
+            "g1_minus_g2_over_mean_g": -0.0019891279732788575,
+            "log_B_over_G": -1.5132630134845313,
+            "log_R_over_G": 0.31376434457560615
+          }
+        },
+        "2": {
+          "ray_z": {
+            "g1_minus_g2_over_mean_g": -0.001677251201949727,
+            "log_B_over_G": -1.5294562265123137,
+            "log_R_over_G": 0.3074286362689222
+          },
+          "strip_z": {
+            "g1_minus_g2_over_mean_g": -0.0019046817807282707,
+            "log_B_over_G": -1.5121483060528476,
+            "log_R_over_G": 0.3107727580287577
+          }
+        }
+      }
+    },
+    {
+      "burst_layer": {},
+      "cct": 2300,
+      "cct_K_diff": {
+        "ci_high": 23.615797226779613,
+        "ci_low": 4.673718840199493,
+        "max": 14.89015699408219,
+        "mean": 14.144758033489552,
+        "min": 13.399359072896914,
+        "n": 2,
+        "note": "Student-t conditional interval; normality not verified",
+        "sample_sd": 1.054153319448917,
+        "status": "ok"
+      },
+      "cycles": {
+        "1": {
+          "diff": {
+            "cct_K": 14.89015699408219,
+            "duv": 0.00010560203939138403,
+            "mired": -2.4965073040871175
+          },
+          "ray_capture": "006-ray-guide11-n1-s1-cct2300-gm200-c1",
+          "ray_cct_K": 2434.7774655756116,
+          "strip_capture": "007-strip-guide11-n1-s1-cct2300-gm200-c1",
+          "strip_cct_K": 2449.667622569694
+        },
+        "2": {
+          "diff": {
+            "cct_K": 13.399359072896914,
+            "duv": 0.00014110442268409733,
+            "mired": -2.2429831451566997
+          },
+          "ray_capture": "003-ray-guide11-n1-s2-cct2300-gm200-c2",
+          "ray_cct_K": 2437.4659869103743,
+          "strip_capture": "002-strip-guide11-n1-s2-cct2300-gm200-c2",
+          "strip_cct_K": 2450.8653459832713
+        }
+      },
+      "duv_diff": {
+        "ci_high": 0.0003488998720963482,
+        "ci_low": -0.00010219341002086686,
+        "max": 0.00014110442268409733,
+        "mean": 0.00012335323103774068,
+        "min": 0.00010560203939138403,
+        "n": 2,
+        "note": "Student-t conditional interval; normality not verified",
+        "sample_sd": 2.510397597456156e-05,
+        "status": "ok"
+      },
+      "gm": 200,
+      "is_burst_point": false,
+      "mired_diff": {
+        "ci_high": -0.7591062429369644,
+        "ci_low": -3.980384206306853,
+        "max": -2.2429831451566997,
+        "mean": -2.3697452246219086,
+        "min": -2.4965073040871175,
+        "n": 2,
+        "note": "Student-t conditional interval; normality not verified",
+        "sample_sd": 0.17926865197431444,
+        "status": "ok"
+      },
+      "product_chromaticity": {
+        "1": {
+          "ray_z": {
+            "g1_minus_g2_over_mean_g": -0.0013161161464402612,
+            "log_B_over_G": -1.318372411021365,
+            "log_R_over_G": 0.015916561169688172
+          },
+          "strip_z": {
+            "g1_minus_g2_over_mean_g": -0.0012263683174090745,
+            "log_B_over_G": -1.3056269482882954,
+            "log_R_over_G": 0.009109300376628797
+          }
+        },
+        "2": {
+          "ray_z": {
+            "g1_minus_g2_over_mean_g": -0.0012528482031192178,
+            "log_B_over_G": -1.3185297330666754,
+            "log_R_over_G": 0.014650799693729831
+          },
+          "strip_z": {
+            "g1_minus_g2_over_mean_g": -0.0012219913389479716,
+            "log_B_over_G": -1.305374235080997,
+            "log_R_over_G": 0.008554089937736282
+          }
+        }
+      }
+    },
+    {
+      "burst_layer": {},
+      "cct": 3200,
+      "cct_K_diff": {
+        "ci_high": -157.90045218972645,
+        "ci_low": -201.78966797062222,
+        "max": -178.1179541545921,
+        "mean": -179.84506008017433,
+        "min": -181.57216600575657,
+        "n": 2,
+        "note": "Student-t conditional interval; normality not verified",
+        "sample_sd": 2.4424966236133363,
+        "status": "ok"
+      },
+      "cycles": {
+        "1": {
+          "diff": {
+            "cct_K": -178.1179541545921,
+            "duv": -0.008380953557016834,
+            "mired": 17.474270562346305
+          },
+          "ray_capture": "009-ray-guide11-n1-s1-cct3200-gm0-c1",
+          "ray_cct_K": 3282.9730074407216,
+          "strip_capture": "008-strip-guide11-n1-s1-cct3200-gm0-c1",
+          "strip_cct_K": 3104.8550532861295
+        },
+        "2": {
+          "diff": {
+            "cct_K": -181.57216600575657,
+            "duv": -0.008403509336746997,
+            "mired": 17.756674690201294
+          },
+          "ray_capture": "004-ray-guide11-n1-s2-cct3200-gm0-c2",
+          "ray_cct_K": 3289.8194843754254,
+          "strip_capture": "005-strip-guide11-n1-s2-cct3200-gm0-c2",
+          "strip_cct_K": 3108.247318369669
+        }
+      },
+      "duv_diff": {
+        "ci_high": -0.00824893457825619,
+        "ci_low": -0.00853552831550764,
+        "max": -0.008380953557016834,
+        "mean": -0.008392231446881915,
+        "min": -0.008403509336746997,
+        "n": 2,
+        "note": "Student-t conditional interval; normality not verified",
+        "sample_sd": 1.594934480214824e-05,
+        "status": "ok"
+      },
+      "gm": 0,
+      "is_burst_point": false,
+      "mired_diff": {
+        "ci_high": 19.40958605053654,
+        "ci_low": 15.821359202011058,
+        "max": 17.756674690201294,
+        "mean": 17.6154726262738,
+        "min": 17.474270562346305,
+        "n": 2,
+        "note": "Student-t conditional interval; normality not verified",
+        "sample_sd": 0.19968987384133513,
+        "status": "ok"
+      },
+      "product_chromaticity": {
+        "1": {
+          "ray_z": {
+            "g1_minus_g2_over_mean_g": -0.0010436707449955258,
+            "log_B_over_G": -0.4730287343264456,
+            "log_R_over_G": -0.23138896914478396
+          },
+          "strip_z": {
+            "g1_minus_g2_over_mean_g": -0.0010525847689323963,
+            "log_B_over_G": -0.6357493078976669,
+            "log_R_over_G": -0.20539108931289923
+          }
+        },
+        "2": {
+          "ray_z": {
+            "g1_minus_g2_over_mean_g": -0.0008820321424560558,
+            "log_B_over_G": -0.47160438915295533,
+            "log_R_over_G": -0.23291137690593605
+          },
+          "strip_z": {
+            "g1_minus_g2_over_mean_g": -0.0009329729641610299,
+            "log_B_over_G": -0.6350155996932441,
+            "log_R_over_G": -0.20633443307261476
+          }
+        }
+      }
+    },
+    {
+      "burst_layer": {
+        "ray": {
+          "capture_ids": [
+            "010-ray-guide11-n1-s1-cct5600-gm100-c1-b0",
+            "011-ray-guide11-n1-s1-cct5600-gm100-c1-b1",
+            "012-ray-guide11-n1-s1-cct5600-gm100-c1-b2"
+          ],
+          "cct_K_spread": {
+            "ci_high": 5215.43640727913,
+            "ci_low": 5202.662314972389,
+            "max": 5210.877530801017,
+            "mean": 5209.04936112576,
+            "min": 5206.109689977647,
+            "n": 3,
+            "note": "Student-t conditional interval; normality not verified",
+            "sample_sd": 2.5709245753949994,
+            "status": "ok"
+          },
+          "n": 3,
+          "product_z_spread": {
+            "log_B_over_G": {
+              "ci_high": -0.4466171310064146,
+              "ci_low": -0.4473436246087584,
+              "max": -0.44687070062168216,
+              "mean": -0.4469803778075865,
+              "min": -0.4471463781242812,
+              "n": 3,
+              "note": "Student-t conditional interval; normality not verified",
+              "sample_sd": 0.00014621471422649856,
+              "status": "ok"
+            },
+            "log_R_over_G": {
+              "ci_high": -0.6547756181639662,
+              "ci_low": -0.6570265579647535,
+              "max": -0.6553823952134704,
+              "mean": -0.6559010880643599,
+              "min": -0.6562191787464845,
+              "n": 3,
+              "note": "Student-t conditional interval; normality not verified",
+              "sample_sd": 0.00045302603994221586,
+              "status": "ok"
+            }
+          }
+        },
+        "strip": {
+          "capture_ids": [
+            "013-strip-guide11-n1-s1-cct5600-gm100-c1-b0",
+            "014-strip-guide11-n1-s1-cct5600-gm100-c1-b1",
+            "015-strip-guide11-n1-s1-cct5600-gm100-c1-b2"
+          ],
+          "cct_K_spread": {
+            "ci_high": 5205.528629907034,
+            "ci_low": 5191.437564399206,
+            "max": 5200.123400534423,
+            "mean": 5198.48309715312,
+            "min": 5195.208391626469,
+            "n": 3,
+            "note": "Student-t conditional interval; normality not verified",
+            "sample_sd": 2.835979710938783,
+            "status": "ok"
+          },
+          "n": 3,
+          "product_z_spread": {
+            "log_B_over_G": {
+              "ci_high": -0.4455205641451696,
+              "ci_low": -0.44730685232162926,
+              "max": -0.4461881418471721,
+              "mean": -0.44641370823339943,
+              "min": -0.44682829797953644,
+              "n": 3,
+              "note": "Student-t conditional interval; normality not verified",
+              "sample_sd": 0.00035950986272225403,
+              "status": "ok"
+            },
+            "log_R_over_G": {
+              "ci_high": -0.6523318211992406,
+              "ci_low": -0.6541398291584375,
+              "max": -0.6528158771657125,
+              "mean": -0.653235825178839,
+              "min": -0.6534577273320524,
+              "n": 3,
+              "note": "Student-t conditional interval; normality not verified",
+              "sample_sd": 0.0003638812044873414,
+              "status": "ok"
+            }
+          }
+        }
+      },
+      "cct": 5600,
+      "cct_K_diff": {
+        "ci_high": -9.552211316240854,
+        "ci_low": -12.053524590121643,
+        "max": -10.704437555184995,
+        "mean": -10.802867953181249,
+        "min": -10.901298351177502,
+        "n": 2,
+        "note": "Student-t conditional interval; normality not verified",
+        "sample_sd": 0.13920160379608296,
+        "status": "ok"
+      },
+      "cycles": {
+        "1": {
+          "diff": {
+            "cct_K": -10.901298351177502,
+            "duv": 0.0001810728041440864,
+            "mired": 0.40305279648549686
+          },
+          "ray_capture": "010-ray-guide11-n1-s1-cct5600-gm100-c1-b0",
+          "ray_cct_K": 5206.109689977647,
+          "strip_capture": "013-strip-guide11-n1-s1-cct5600-gm100-c1-b0",
+          "strip_cct_K": 5195.208391626469
+        },
+        "2": {
+          "diff": {
+            "cct_K": -10.704437555184995,
+            "duv": 0.00011825780418377521,
+            "mired": 0.3948890352062904
+          },
+          "ray_capture": "007-ray-guide11-n1-s2-cct5600-gm100-c2",
+          "ray_cct_K": 5211.837182799159,
+          "strip_capture": "006-strip-guide11-n1-s2-cct5600-gm100-c2",
+          "strip_cct_K": 5201.132745243974
+        }
+      },
+      "duv_diff": {
+        "ci_high": 0.0005487289989117877,
+        "ci_low": -0.00024939839058392606,
+        "max": 0.0001810728041440864,
+        "mean": 0.0001496653041639308,
+        "min": 0.00011825780418377521,
+        "n": 2,
+        "note": "Student-t conditional interval; normality not verified",
+        "sample_sd": 4.441691243216875e-05,
+        "status": "ok"
+      },
+      "gm": 100,
+      "is_burst_point": true,
+      "mired_diff": {
+        "ci_high": 0.4508352912526924,
+        "ci_low": 0.34710654043909484,
+        "max": 0.40305279648549686,
+        "mean": 0.3989709158458936,
+        "min": 0.3948890352062904,
+        "n": 2,
+        "note": "Student-t conditional interval; normality not verified",
+        "sample_sd": 0.005772650960515068,
+        "status": "ok"
+      },
+      "product_chromaticity": {
+        "1": {
+          "ray_z": {
+            "g1_minus_g2_over_mean_g": -0.0007176701937161189,
+            "log_B_over_G": -0.4471463781242812,
+            "log_R_over_G": -0.6553823952134704
+          },
+          "strip_z": {
+            "g1_minus_g2_over_mean_g": -0.0006498252849348621,
+            "log_B_over_G": -0.44682829797953644,
+            "log_R_over_G": -0.6528158771657125
+          }
+        },
+        "2": {
+          "ray_z": {
+            "g1_minus_g2_over_mean_g": -0.0006121769492233103,
+            "log_B_over_G": -0.4461156466808819,
+            "log_R_over_G": -0.6559037896871482
+          },
+          "strip_z": {
+            "g1_minus_g2_over_mean_g": -0.0006710258082249838,
+            "log_B_over_G": -0.44637571358776224,
+            "log_R_over_G": -0.6537800272157018
+          }
+        }
+      }
+    },
+    {
+      "burst_layer": {},
+      "cct": 14000,
+      "cct_K_diff": {
+        "ci_high": -137.29897774796973,
+        "ci_low": -337.951037634356,
+        "max": -229.72905066745807,
+        "mean": -237.62500769116286,
+        "min": -245.52096471486766,
+        "n": 2,
+        "note": "Student-t conditional interval; normality not verified",
+        "sample_sd": 11.16656951083842,
+        "status": "ok"
+      },
+      "cycles": {
+        "1": {
+          "diff": {
+            "cct_K": -229.72905066745807,
+            "duv": 0.000393626620889969,
+            "mired": 1.849577486942863
+          },
+          "ray_capture": "017-ray-guide11-n1-s1-cct14000-gm0-c1",
+          "ray_cct_K": 11260.241413503363,
+          "strip_capture": "016-strip-guide11-n1-s1-cct14000-gm0-c1",
+          "strip_cct_K": 11030.512362835905
+        },
+        "2": {
+          "diff": {
+            "cct_K": -245.52096471486766,
+            "duv": 0.0004249266847480733,
+            "mired": 1.969668217065248
+          },
+          "ray_capture": "008-ray-guide11-n1-s2-cct14000-gm0-c2",
+          "ray_cct_K": 11288.153215691205,
+          "strip_capture": "009-strip-guide11-n1-s2-cct14000-gm0-c2",
+          "strip_cct_K": 11042.632250976338
+        }
+      },
+      "duv_diff": {
+        "ci_high": 0.0006081259585095577,
+        "ci_low": 0.00021042734712848455,
+        "max": 0.0004249266847480733,
+        "mean": 0.00040927665281902115,
+        "min": 0.000393626620889969,
+        "n": 2,
+        "note": "Student-t conditional interval; normality not verified",
+        "sample_sd": 2.2132487405637522e-05,
+        "status": "ok"
+      },
+      "gm": 0,
+      "is_burst_point": false,
+      "mired_diff": {
+        "ci_high": 2.6725592604715676,
+        "ci_low": 1.1466864435365436,
+        "max": 1.969668217065248,
+        "mean": 1.9096228520040555,
+        "min": 1.849577486942863,
+        "n": 2,
+        "note": "Student-t conditional interval; normality not verified",
+        "sample_sd": 0.08491696962718204,
+        "status": "ok"
+      },
+      "product_chromaticity": {
+        "1": {
+          "ray_z": {
+            "g1_minus_g2_over_mean_g": -0.0006095541140697534,
+            "log_B_over_G": 0.01709748294592118,
+            "log_R_over_G": -0.7067501957054638
+          },
+          "strip_z": {
+            "g1_minus_g2_over_mean_g": -0.0006322985986958225,
+            "log_B_over_G": 0.01486410179764585,
+            "log_R_over_G": -0.699349292871001
+          }
+        },
+        "2": {
+          "ray_z": {
+            "g1_minus_g2_over_mean_g": -0.0005113648609102237,
+            "log_B_over_G": 0.01738214094264538,
+            "log_R_over_G": -0.7075919669366317
+          },
+          "strip_z": {
+            "g1_minus_g2_over_mean_g": -0.0006018091904401361,
+            "log_B_over_G": 0.01502717396372059,
+            "log_R_over_G": -0.699652470803592
+          }
+        }
+      }
+    },
+    {
+      "burst_layer": {
+        "ray": {
+          "capture_ids": [
+            "018-ray-guide11-n1-s1-cct20000-gm100-c1-b0",
+            "019-ray-guide11-n1-s1-cct20000-gm100-c1-b1",
+            "020-ray-guide11-n1-s1-cct20000-gm100-c1-b2"
+          ],
+          "cct_K_spread": {
+            "ci_high": 13786.028777064763,
+            "ci_low": 13734.901531122141,
+            "max": 13770.414860735953,
+            "mean": 13760.465154093452,
+            "min": 13749.865818208888,
+            "n": 3,
+            "note": "Student-t conditional interval; normality not verified",
+            "sample_sd": 10.289912575376574,
+            "status": "ok"
+          },
+          "n": 3,
+          "product_z_spread": {
+            "log_B_over_G": {
+              "ci_high": -0.037082290745568895,
+              "ci_low": -0.03803793801010085,
+              "max": -0.037368711651535554,
+              "mean": -0.03756011437783487,
+              "min": -0.03775336705267005,
+              "n": 3,
+              "note": "Student-t conditional interval; normality not verified",
+              "sample_sd": 0.00019233437326092922,
+              "status": "ok"
+            },
+            "log_R_over_G": {
+              "ci_high": -0.9804609099611747,
+              "ci_low": -0.9805977641531634,
+              "max": -0.9805060782971567,
+              "mean": -0.980529337057169,
+              "min": -0.9805597523598556,
+              "n": 3,
+              "note": "Student-t conditional interval; normality not verified",
+              "sample_sd": 2.7543389931819405e-05,
+              "status": "ok"
+            }
+          }
+        },
+        "strip": {
+          "capture_ids": [
+            "021-strip-guide11-n1-s1-cct20000-gm100-c1-b0",
+            "022-strip-guide11-n1-s1-cct20000-gm100-c1-b1",
+            "023-strip-guide11-n1-s1-cct20000-gm100-c1-b2"
+          ],
+          "cct_K_spread": {
+            "ci_high": 13891.775161947238,
+            "ci_low": 13743.824730988608,
+            "max": 13845.699382141896,
+            "mean": 13817.799946467923,
+            "min": 13786.447248667559,
+            "n": 3,
+            "note": "Student-t conditional interval; normality not verified",
+            "sample_sd": 29.776628331635706,
+            "status": "ok"
+          },
+          "n": 3,
+          "product_z_spread": {
+            "log_B_over_G": {
+              "ci_high": -0.036481532131137556,
+              "ci_low": -0.037771863771668704,
+              "max": -0.0369075894453668,
+              "mean": -0.03712669795140313,
+              "min": -0.03741354905157517,
+              "n": 3,
+              "note": "Student-t conditional interval; normality not verified",
+              "sample_sd": 0.0002596932326299841,
+              "status": "ok"
+            },
+            "log_R_over_G": {
+              "ci_high": -0.9802335397687822,
+              "ci_low": -0.9845007308538798,
+              "max": -0.9815141897539618,
+              "mean": -0.982367135311331,
+              "min": -0.9832317086195359,
+              "n": 3,
+              "note": "Student-t conditional interval; normality not verified",
+              "sample_sd": 0.0008588184714145885,
+              "status": "ok"
+            }
+          }
+        }
+      },
+      "cct": 20000,
+      "cct_K_diff": {
+        "ci_high": 345.34009404179255,
+        "ci_low": -369.53838090029444,
+        "max": 16.032387931605626,
+        "mean": -12.099143429250944,
+        "min": -40.230674790107514,
+        "n": 2,
+        "note": "Student-t conditional interval; normality not verified",
+        "sample_sd": 39.78399318084741,
+        "status": "ok"
+      },
+      "cycles": {
+        "1": {
+          "diff": {
+            "cct_K": 16.032387931605626,
+            "duv": -6.639422825508649e-05,
+            "mired": -0.0844498388139101
+          },
+          "ray_capture": "018-ray-guide11-n1-s1-cct20000-gm100-c1-b0",
+          "ray_cct_K": 13770.414860735953,
+          "strip_capture": "021-strip-guide11-n1-s1-cct20000-gm100-c1-b0",
+          "strip_cct_K": 13786.447248667559
+        },
+        "2": {
+          "diff": {
+            "cct_K": -40.230674790107514,
+            "duv": -0.00014608489500674774,
+            "mired": 0.21096773527635548
+          },
+          "ray_capture": "011-ray-guide11-n1-s2-cct20000-gm100-c2",
+          "ray_cct_K": 13829.39735142052,
+          "strip_capture": "010-strip-guide11-n1-s2-cct20000-gm100-c2",
+          "strip_cct_K": 13789.166676630413
+        }
+      },
+      "duv_diff": {
+        "ci_high": 0.00040003524424238676,
+        "ci_low": -0.000612514367504221,
+        "max": -6.639422825508649e-05,
+        "mean": -0.00010623956163091712,
+        "min": -0.00014608489500674774,
+        "n": 2,
+        "note": "Student-t conditional interval; normality not verified",
+        "sample_sd": 5.634981085737701e-05,
+        "status": "ok"
+      },
+      "gm": 100,
+      "is_burst_point": true,
+      "mired_diff": {
+        "ci_high": 1.94004679642668,
+        "ci_low": -1.8135288999642347,
+        "max": 0.21096773527635548,
+        "mean": 0.06325894823122269,
+        "min": -0.0844498388139101,
+        "n": 2,
+        "note": "Student-t conditional interval; normality not verified",
+        "sample_sd": 0.20889176992090613,
+        "status": "ok"
+      },
+      "product_chromaticity": {
+        "1": {
+          "ray_z": {
+            "g1_minus_g2_over_mean_g": -0.0005520927408269222,
+            "log_B_over_G": -0.037368711651535554,
+            "log_R_over_G": -0.9805060782971567
+          },
+          "strip_z": {
+            "g1_minus_g2_over_mean_g": -0.0005078639220262468,
+            "log_B_over_G": -0.03741354905157517,
+            "log_R_over_G": -0.9815141897539618
+          }
+        },
+        "2": {
+          "ray_z": {
+            "g1_minus_g2_over_mean_g": -0.00041728088269076577,
+            "log_B_over_G": -0.036225827034024716,
+            "log_R_over_G": -0.9803198445548951
+          },
+          "strip_z": {
+            "g1_minus_g2_over_mean_g": -0.00057009687076009,
+            "log_B_over_G": -0.03736680231349073,
+            "log_R_over_G": -0.9815237322334347
+          }
+        }
+      }
+    }
+  ],
+  "schema": "guide11_n1_repeatability_analysis_v1",
+  "sessions": [
+    {
+      "capture_count": 24,
+      "root": "D:\\rgbww-optimizer\\guide11-n1\\formal-n1-s1-20260922-r2",
+      "session_index": 1
+    },
+    {
+      "capture_count": 12,
+      "root": "D:\\rgbww-optimizer\\guide11-n1\\formal-n1-s2-20260922",
+      "session_index": 2
+    }
+  ],
+  "steady_claim": false,
+  "uncertainty_model": {
+    "burst_layer": "same-dwell adjacent captures, no extra reset",
+    "cycle_layer": "paired strip-minus-Ray difference per cycle",
+    "interval": "Student-t conditional; prediction intervals need the pooled N1 model",
+    "session_layer": "cycle differences split across operating sessions"
+  }
+}
