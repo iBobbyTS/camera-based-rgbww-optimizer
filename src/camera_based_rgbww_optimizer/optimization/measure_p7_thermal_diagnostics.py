@@ -47,6 +47,7 @@ GUIDE9_CANDIDATE_BATCH_SCHEMAS = {
     "direct_guide10_white70_w7_interpolation_holdout_v1",
     "direct_guide10_white70_w7_long_holdout_v1",
     "direct_guide11_n1_repeatability_v1",
+    "direct_guide11_w2_bounded_correction_v1",
 }
 GUIDE9_BEST_REPEAT_SCHEMAS = {
     "direct_guide9_h120_s50_best_repeat_v1",
@@ -329,7 +330,10 @@ def validate_authorized_execution_plan(
     )
     direct_guide11_n1 = (
         isinstance(authorization, Mapping)
-        and authorization.get("schema") == "direct_guide11_n1_repeatability_v1"
+        and authorization.get("schema") in {
+            "direct_guide11_n1_repeatability_v1",
+            "direct_guide11_w2_bounded_correction_v1",
+        }
     )
     if (
         direct_ray_history or direct_strip_history

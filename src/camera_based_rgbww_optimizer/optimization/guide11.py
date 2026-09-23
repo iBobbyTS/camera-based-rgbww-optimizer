@@ -619,3 +619,290 @@ def build_guide11_w1_frozen_targets(
         json.dumps(artifact, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
     return artifact
+
+
+W2_PER_NODE_COMMAND_CAP = 3
+W2_CLOSED_POINTS = ((1800, 100),)
+
+
+def _w6_node_status_rows(w6_analysis_path: Path) -> dict[tuple[int, int], dict[str, Any]]:
+    import json
+
+    analysis = json.loads(Path(w6_analysis_path).read_text(encoding="utf-8"))
+    if isinstance(analysis.get("canonical_lut"), list):
+        # The W8 final artifact carries the same per-node frozen commands and
+        # status labels; normalize to the analysis-node shape.
+        analysis = {
+            "nodes": [
+                {**row, "strip_command": row.get("command", {})}
+                for row in analysis["canonical_lut"]
+            ]
+        }
+    return {
+        (int(row["cct"]), int(row["gm"])): row
+        for row in analysis.get("nodes", ())
+    }
+
+
+def build_guide11_w2_candidate_rows(
+    frozen_targets: Mapping[str, Any],
+    w6_analysis_path: Path,
+) -> list[dict[str, Any]]:
+    """GUIDE11 W2 bounded-correction candidates from measured evidence only.
+
+    Open nodes are W6 non-passing nodes excluding the permanently closed
+    1800/100 point. Candidates come from the measured secant evidence frozen
+    in W1 (>=2 distinct same-node commands with paired Ray-referenced
+    observations): a full-tolerance E(u) best observation is kept as the
+    measured fallback, a local secant step toward the frozen target is the
+    correction candidate, and a half step bounds the risk. Nodes without
+    measured direction evidence carry no fabricated candidates here.
+    """
+    import json
+
+    rows_by_key = _w6_node_status_rows(w6_analysis_path)
+    candidates_out = []
+    for node in frozen_targets.get("nodes", ()):
+        key = (int(node["cct"]), int(node["gm"]))
+        if key in W2_CLOSED_POINTS:
+            continue
+        w6_row = rows_by_key.get(key)
+        if w6_row is None or w6_row.get("status") == "pass":
+            continue
+        tolerances = node["tolerances"]
+        target = node["ray_target"]
+        evidence = node.get("measured_secant_evidence", {})
+        observations = evidence.get("observations", ())
+        commands = [obs["command"] for obs in observations]
+        unique = {tuple(sorted(c.items())) for c in commands}
+        row: dict[str, Any] = {
+            "cct": key[0], "gm": key[1],
+            "w6_status": w6_row.get("status"),
+            "tolerances": tolerances,
+            "objective": "guide11_full_tolerance_E_max",
+        }
+        if not unique:
+            row.update({
+                "method": "no_measured_direction_evidence",
+                "commands": [],
+                "fallback_command": dict(w6_row.get("strip_command", {})),
+            })
+            candidates_out.append(row)
+            continue
+
+        def eu_of(obs: Mapping[str, Any]) -> float:
+            wp = obs["strip_white_point"]
+            e_k = (wp["cct_K"] - target["cct_K"]) / tolerances["cct_K"]
+            e_m = (wp["mired"] - target["mired"]) / tolerances["mired"]
+            e_d = (wp["duv"] - target["duv"]) / tolerances["duv"]
+            return max(abs(e_k), abs(e_m), abs(e_d))
+
+        ranked = sorted(observations, key=eu_of)
+        best = ranked[0]
+        row["fallback_command"] = dict(best["command"])
+        row["fallback_eu"] = eu_of(best)
+        if len(unique) < 2:
+            row.update({
+                "method": "single_measured_command_no_direction",
+                "commands": [],
+            })
+            candidates_out.append(row)
+            continue
+        # Measured local response: least squares over paired observations of
+        # E-component error differences vs command differences, using the two
+        # E-dominant axes of the best observation.
+        import numpy as np
+
+        names = list(CHANNELS)
+        base_cmd = np.array([float(best["command"][n]) for n in names])
+        target_vec = np.array([
+            target["cct_K"] / tolerances["cct_K"],
+            target["mired"] / tolerances["mired"],
+            target["duv"] / tolerances["duv"],
+        ])
+        a_rows, b_rows = [], []
+        base_residual = None
+        for obs in observations:
+            cmd = np.array([float(obs["command"][n]) for n in names])
+            wp = obs["strip_white_point"]
+            err_vec = np.array([
+                wp["cct_K"] / tolerances["cct_K"],
+                wp["mired"] / tolerances["mired"],
+                wp["duv"] / tolerances["duv"],
+            ])
+            residual = err_vec - target_vec
+            if np.allclose(cmd, base_cmd):
+                base_residual = residual
+                continue
+            a_rows.append(cmd - base_cmd)
+            b_rows.append(residual)
+        if len(a_rows) >= 1 and base_residual is not None:
+            sensitivity, *_ = np.linalg.lstsq(
+                np.asarray(a_rows), np.asarray(b_rows), rcond=None
+            )
+            # Two-stage secant: measured sensitivity maps command deltas to
+            # normalized error deltas; solve for the bounded command step that
+            # cancels the best observation's residual as the smooth surrogate
+            # for the max-form E(u).
+            step, *_ = np.linalg.lstsq(sensitivity.T, -base_residual, rcond=None)
+            max_step = 768.0
+            step = np.clip(step, -max_step, max_step)
+            proposed = {}
+            for full, half in ((1.0, "correction"), (0.5, "half_step")):
+                command = {
+                    name: max(0, min(4095, int(round(float(base_cmd[i]) + full * float(step[i])))))
+                    for i, name in enumerate(names)
+                }
+                if command != dict(best["command"]):
+                    proposed[half] = command
+            row.update({
+                "method": "measured_secant_full_tolerance_step",
+                "commands": list(proposed.values())[: W2_PER_NODE_COMMAND_CAP - 1],
+            })
+        else:
+            row.update({
+                "method": "single_measured_command_no_direction",
+                "commands": [],
+            })
+        candidates_out.append(row)
+    return candidates_out
+
+
+W2_EXPERIMENT_ID = "GUIDE11_W2_BOUNDED_CORRECTION_V1"
+W2_VARIANT = "guide11-w2-bounded-correction"
+W2_AUTHORIZATION_SCHEMA = "direct_guide11_w2_bounded_correction_v1"
+
+
+def build_guide11_w2_plan(
+    candidate_rows: Sequence[Mapping[str, Any]],
+    w6_plan: Mapping[str, Any],
+    *,
+    inputs_references: Mapping[str, Mapping[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """Assemble the GUIDE11 W2 bounded-correction execution plan.
+
+    One paired FAST Ray/strip capture per proposed command; the measured
+    fallback command stays outside this batch (W6 evidence already covers
+    it). Node order follows the frozen grid; source order alternates.
+    """
+    import copy
+
+    from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
+
+    templates: dict[tuple[int, int], dict[str, Mapping[str, Any]]] = {}
+    for step in w6_plan.get("captures", ()):
+        key = (int(step["target_cct"]), int(step["target_gm"]))
+        templates.setdefault(key, {})[str(step["source_id"])] = step
+    captures: list[dict[str, Any]] = []
+    contracts: list[dict[str, Any]] = []
+    for node_index, row in enumerate(
+        sorted(candidate_rows, key=lambda r: (int(r["cct"]), int(r["gm"])))
+    ):
+        key = (int(row["cct"]), int(row["gm"]))
+        node_templates = templates.get(key)
+        if not node_templates or set(node_templates) != {"ray", "strip"}:
+            raise ValueError(f"GUIDE11 W2 lacks frozen templates for {key}")
+        ray_first = node_index % 2 == 0
+        order = ("ray", "strip") if ray_first else ("strip", "ray")
+        contracts.append({
+            "target_index": node_index,
+            "cct": key[0], "gm": key[1],
+            "method": row["method"],
+            "candidate_commands": [dict(c) for c in row["commands"]],
+            "fallback_command": dict(row.get("fallback_command", {})),
+            "tolerances": dict(row["tolerances"]),
+        })
+        for candidate_index, command in enumerate(row["commands"]):
+            for source_index, source in enumerate(order, start=1):
+                template = node_templates[source]
+                step = copy.deepcopy(template)
+                step.update({
+                    "capture_id": (
+                        f"{len(captures):03d}-{source}-guide11-w2-cct{key[0]}"
+                        f"-gm{key[1]}-candidate{candidate_index}"
+                    ),
+                    "state_id": f"CCT{key[0]}_GM{key[1]}_W2_C{candidate_index}_{source.upper()}",
+                    "role": "ray_reference" if source == "ray" else "strip_candidate",
+                    "capture_role": "formal",
+                    "formal_measurement": True,
+                    "session_index": len(captures) + 1,
+                    "source_order": source_index,
+                    "requested_elapsed_s": 120,
+                })
+                if source == "strip":
+                    step["command"] = dict(command)
+                    step["exact_command_hash"] = thermal.canonical_sha256(command)
+                captures.append(step)
+    frozen = {str(step["exposure_cache_key"]): str(step["nominal_shutter"]) for step in captures}
+    plan: dict[str, Any] = {
+        "schema": thermal.PLAN_SCHEMA_V2,
+        "status": "execute_authorized",
+        "experiment_id": thermal.TD_C,
+        "guide_experiment_id": W2_EXPERIMENT_ID,
+        "variant": W2_VARIANT,
+        "stage": "GUIDE11-W2-BOUNDED-CORRECTION",
+        "phase": "formal",
+        "source": "guide11_w1_frozen_targets_measured_secants",
+        "created_at": thermal.datetime.now(thermal.timezone.utc).isoformat(),
+        "inputs": {
+            "location": thermal.file_reference(thermal.LOCATION_PATH),
+            "policy": thermal.file_reference(thermal.POLICY_PATH),
+            "code_duty_curve": thermal.file_reference(thermal.CURVE_PATH),
+            **{k: dict(v) for k, v in (inputs_references or {}).items()},
+        },
+        "captures": captures,
+        "capture_ids": [step["capture_id"] for step in captures],
+        "timing_contract": thermal.timing_contract(2),
+        "timing_resolution": "guide11_w2_reset600_D120",
+        "cold_proxy": 600,
+        "cold_proxy_wait_s": 600,
+        "native_raw_ambient_policy": thermal.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+        "exposure_setup_required": [],
+        "frozen_shutters": frozen,
+        "shutter_ledger_provenance": {
+            "owner": "experiment_capture_steps",
+            "required_cache_keys": sorted(frozen),
+            "frozen_shutters_sha256": thermal.canonical_sha256(frozen),
+        },
+        "budgets": {
+            "ray_cap": sum(s["source_id"] == "ray" for s in captures),
+            "strip_cap": sum(s["source_id"] == "strip" for s in captures),
+            "formal_cap": len(captures),
+            "physical_cr3_cap": len(captures),
+            "ambient_cap": 0,
+            "retry": 0,
+        },
+        "execution_authorization": {
+            "schema": W2_AUTHORIZATION_SCHEMA,
+            "human_authorization_required": False,
+            "human_authorization_verified": False,
+            "device_use_granted_by": "operator_cli_allow_device_control",
+            "experiment_id": W2_EXPERIMENT_ID,
+            "bounded_device_scope": True,
+            "remote_v2_capability": True,
+        },
+        "camera": {
+            "backend": "remote",
+            "v2_capture_timing_capability_available": True,
+            "v2_capture_capability": "remote_v2_capture_timing_v1",
+            "resolved_capture_settings": {
+                "owner": "remote_backend.resolve_capture_settings",
+                "iso": "100", "aperture": "f/4", "image_format": "RAW",
+            },
+        },
+        "analysis_contract": {
+            "method": "guide11_w2_bounded_correction_measured_secants",
+            "node_count": len(candidate_rows),
+            "nodes_with_candidates": sum(1 for r in candidate_rows if r["commands"]),
+            "target_contracts": contracts,
+            "independent_reset_s": 600,
+            "dwell_s": 120,
+            "per_node_command_cap": W2_PER_NODE_COMMAND_CAP,
+            "closed_points": [list(p) for p in W2_CLOSED_POINTS],
+            "objective": "guide11_full_tolerance_E_max",
+            "fallback_policy": "measured W6/W5 best command retained outside this batch",
+            "global_model_refit": False,
+            "steady_claim": False,
+        },
+    }
+    return plan
