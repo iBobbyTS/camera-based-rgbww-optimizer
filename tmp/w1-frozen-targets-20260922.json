@@ -1,0 +1,3657 @@
+{
+  "mired_cct_relation": "same white-point chromaticity, never independent noises",
+  "missing_ray_targets": [],
+  "node_count": 70,
+  "nodes": [
+    {
+      "cct": 1800,
+      "gm": 0,
+      "measured_secant_evidence": {
+        "observation_count": 0,
+        "observations": [],
+        "unique_command_count": 0,
+        "usable_for_local_response": false
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "000-ray-guide10-white70-w6-cct1800-gm0",
+        "cct_K": 1891.8491676530577,
+        "duv": 0.004606341184586042,
+        "mired": 528.5833654701736
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 1800,
+      "gm": 70,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "001-strip-guide10-white70-w5-cct1800-gm70-candidate0",
+            "command": {
+              "b": 17,
+              "cw": 39,
+              "g": 1170,
+              "r": 4095,
+              "ww": 25
+            },
+            "strip_white_point": {
+              "cct_K": 1903.4796085982364,
+              "duv": -0.002622239595915222,
+              "mired": 525.3536709733505
+            }
+          },
+          {
+            "capture_id": "003-strip-guide10-white70-w5-cct1800-gm70-candidate1",
+            "command": {
+              "b": 273,
+              "cw": 39,
+              "g": 1170,
+              "r": 4095,
+              "ww": 25
+            },
+            "strip_white_point": {
+              "cct_K": 1967.7040126322286,
+              "duv": 0.01356337070675074,
+              "mired": 508.2065156040843
+            }
+          },
+          {
+            "capture_id": "005-strip-guide10-white70-w5-cct1800-gm70-candidate2",
+            "command": {
+              "b": 529,
+              "cw": 39,
+              "g": 1170,
+              "r": 4095,
+              "ww": 25
+            },
+            "strip_white_point": {
+              "cct_K": 2044.4953112576404,
+              "duv": 0.028478502972327506,
+              "mired": 489.11826527245256
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "003-ray-guide10-white70-w6-cct1800-gm70",
+        "cct_K": 1907.1427159182056,
+        "duv": -0.0026113995798770972,
+        "mired": 524.3446081163065
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 1800,
+      "gm": 100,
+      "measured_secant_evidence": {
+        "observation_count": 0,
+        "observations": [],
+        "unique_command_count": 0,
+        "usable_for_local_response": false
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "004-ray-guide10-white70-w6-cct1800-gm100",
+        "cct_K": 1902.3004169195924,
+        "duv": -0.0051598029644903,
+        "mired": 525.6793254660095
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 1800,
+      "gm": 130,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "007-strip-guide10-white70-w5-cct1800-gm130-candidate0",
+            "command": {
+              "b": 0,
+              "cw": 25,
+              "g": 905,
+              "r": 4095,
+              "ww": 755
+            },
+            "strip_white_point": {
+              "cct_K": 1866.5899912893813,
+              "duv": -0.002567137402351692,
+              "mired": 535.7362916690835
+            }
+          },
+          {
+            "capture_id": "009-strip-guide10-white70-w5-cct1800-gm130-candidate1",
+            "command": {
+              "b": 0,
+              "cw": 281,
+              "g": 905,
+              "r": 4095,
+              "ww": 755
+            },
+            "strip_white_point": {
+              "cct_K": 1947.3002615911012,
+              "duv": -0.0006155192576502731,
+              "mired": 513.5314875287489
+            }
+          },
+          {
+            "capture_id": "011-strip-guide10-white70-w5-cct1800-gm130-candidate2",
+            "command": {
+              "b": 0,
+              "cw": 537,
+              "g": 905,
+              "r": 4095,
+              "ww": 755
+            },
+            "strip_white_point": {
+              "cct_K": 2018.2834309090592,
+              "duv": 0.0010692463109616495,
+              "mired": 495.4705492229047
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "007-ray-guide10-white70-w6-cct1800-gm130",
+        "cct_K": 1866.5452063479859,
+        "duv": -0.0024678724059167393,
+        "mired": 535.7491458546367
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 1800,
+      "gm": 200,
+      "measured_secant_evidence": {
+        "observation_count": 1,
+        "observations": [
+          {
+            "capture_id": "013-strip-guide10-white70-w5-cct1800-gm200-candidate0",
+            "command": {
+              "b": 0,
+              "cw": 1,
+              "g": 900,
+              "r": 4095,
+              "ww": 788
+            },
+            "strip_white_point": {
+              "cct_K": 1860.9230858930414,
+              "duv": -0.0028591748105494213,
+              "mired": 537.3677222775215
+            }
+          }
+        ],
+        "unique_command_count": 1,
+        "usable_for_local_response": false
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "008-ray-guide10-white70-w6-cct1800-gm200",
+        "cct_K": 1867.5175335243155,
+        "duv": -0.0024831313780100113,
+        "mired": 535.4702068648502
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 2000,
+      "gm": 0,
+      "measured_secant_evidence": {
+        "observation_count": 1,
+        "observations": [
+          {
+            "capture_id": "015-strip-guide10-white70-w5-cct2000-gm0-candidate0",
+            "command": {
+              "b": 0,
+              "cw": 30,
+              "g": 88,
+              "r": 3059,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 2055.567888890807,
+              "duv": -0.0009470735502768828,
+              "mired": 486.48356758462705
+            }
+          }
+        ],
+        "unique_command_count": 1,
+        "usable_for_local_response": false
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "011-ray-guide10-white70-w6-cct2000-gm0",
+        "cct_K": 2103.440307502428,
+        "duv": 0.006916024626315405,
+        "mired": 475.4116370373138
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 2000,
+      "gm": 70,
+      "measured_secant_evidence": {
+        "observation_count": 2,
+        "observations": [
+          {
+            "capture_id": "017-strip-guide10-white70-w5-cct2000-gm70-candidate0",
+            "command": {
+              "b": 0,
+              "cw": 0,
+              "g": 484,
+              "r": 3013,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 2265.99011725928,
+              "duv": -0.0045455472969704,
+              "mired": 441.30819123320015
+            }
+          },
+          {
+            "capture_id": "019-strip-guide10-white70-w5-cct2000-gm70-candidate1",
+            "command": {
+              "b": 0,
+              "cw": 0,
+              "g": 740,
+              "r": 3013,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 2433.40023751671,
+              "duv": -0.0073355228538154365,
+              "mired": 410.9476051586573
+            }
+          }
+        ],
+        "unique_command_count": 2,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "012-ray-guide10-white70-w6-cct2000-gm70",
+        "cct_K": 2133.9365454531485,
+        "duv": -0.002550424202329903,
+        "mired": 468.61749574078675
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 2000,
+      "gm": 100,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "021-strip-guide10-white70-w5-cct2000-gm100-candidate0",
+            "command": {
+              "b": 2,
+              "cw": 40,
+              "g": 1435,
+              "r": 4095,
+              "ww": 25
+            },
+            "strip_white_point": {
+              "cct_K": 2135.7610830154554,
+              "duv": -0.006759992756725188,
+              "mired": 468.2171652777342
+            }
+          },
+          {
+            "capture_id": "023-strip-guide10-white70-w5-cct2000-gm100-candidate1",
+            "command": {
+              "b": 258,
+              "cw": 40,
+              "g": 1435,
+              "r": 4095,
+              "ww": 25
+            },
+            "strip_white_point": {
+              "cct_K": 2213.5719092580593,
+              "duv": 0.008064262572035569,
+              "mired": 451.75853371539125
+            }
+          },
+          {
+            "capture_id": "025-strip-guide10-white70-w5-cct2000-gm100-candidate2",
+            "command": {
+              "b": 514,
+              "cw": 40,
+              "g": 1435,
+              "r": 4095,
+              "ww": 25
+            },
+            "strip_white_point": {
+              "cct_K": 2306.4887837311794,
+              "duv": 0.021544353937534517,
+              "mired": 433.55944631229113
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "015-ray-guide10-white70-w6-cct2000-gm100",
+        "cct_K": 2141.988286640099,
+        "duv": -0.006488512823079141,
+        "mired": 466.8559609952815
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 2000,
+      "gm": 130,
+      "measured_secant_evidence": {
+        "observation_count": 0,
+        "observations": [],
+        "unique_command_count": 0,
+        "usable_for_local_response": false
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "016-ray-guide10-white70-w6-cct2000-gm130",
+        "cct_K": 2143.005960146723,
+        "duv": -0.007794645681416093,
+        "mired": 466.63425981864003
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 2000,
+      "gm": 200,
+      "measured_secant_evidence": {
+        "observation_count": 2,
+        "observations": [
+          {
+            "capture_id": "027-strip-guide10-white70-w5-cct2000-gm200-candidate0",
+            "command": {
+              "b": 0,
+              "cw": 0,
+              "g": 1718,
+              "r": 4095,
+              "ww": 0
+            },
+            "strip_white_point": {
+              "cct_K": 2360.660396178308,
+              "duv": -0.010903072201404513,
+              "mired": 423.61027516660505
+            }
+          },
+          {
+            "capture_id": "029-strip-guide10-white70-w5-cct2000-gm200-candidate1",
+            "command": {
+              "b": 0,
+              "cw": 0,
+              "g": 1974,
+              "r": 4095,
+              "ww": 0
+            },
+            "strip_white_point": {
+              "cct_K": 2697.1323231393003,
+              "duv": -0.016478372486188282,
+              "mired": 370.76415992674026
+            }
+          }
+        ],
+        "unique_command_count": 2,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "019-ray-guide10-white70-w6-cct2000-gm200",
+        "cct_K": 2142.312698979217,
+        "duv": -0.007803552523483421,
+        "mired": 466.78526457714895
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 2300,
+      "gm": 0,
+      "measured_secant_evidence": {
+        "observation_count": 0,
+        "observations": [],
+        "unique_command_count": 0,
+        "usable_for_local_response": false
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "020-ray-guide10-white70-w6-cct2300-gm0",
+        "cct_K": 2424.9837840924756,
+        "duv": 0.010214019488903837,
+        "mired": 412.37389155335705
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 2300,
+      "gm": 70,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "031-strip-guide10-white70-w5-cct2300-gm70-candidate0",
+            "command": {
+              "b": 152,
+              "cw": 80,
+              "g": 1701,
+              "r": 4095,
+              "ww": 45
+            },
+            "strip_white_point": {
+              "cct_K": 2438.5270544166924,
+              "duv": -0.0019546037001539293,
+              "mired": 410.08361920315247
+            }
+          },
+          {
+            "capture_id": "033-strip-guide10-white70-w5-cct2300-gm70-candidate1",
+            "command": {
+              "b": 408,
+              "cw": 80,
+              "g": 1701,
+              "r": 4095,
+              "ww": 45
+            },
+            "strip_white_point": {
+              "cct_K": 2538.369110137491,
+              "duv": 0.010337517210594643,
+              "mired": 393.95373825118554
+            }
+          },
+          {
+            "capture_id": "035-strip-guide10-white70-w5-cct2300-gm70-candidate2",
+            "command": {
+              "b": 664,
+              "cw": 80,
+              "g": 1701,
+              "r": 4095,
+              "ww": 45
+            },
+            "strip_white_point": {
+              "cct_K": 2670.803358512627,
+              "duv": 0.021653173471286584,
+              "mired": 374.41917871366655
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "023-ray-guide10-white70-w6-cct2300-gm70",
+        "cct_K": 2438.2512993585383,
+        "duv": -0.0019206967762760907,
+        "mired": 410.12999778287116
+      },
+      "tolerances": {
+        "cct_K": 12.5,
+        "duv": 0.00025,
+        "mired": 0.5
+      }
+    },
+    {
+      "cct": 2300,
+      "gm": 100,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "037-strip-guide10-white70-w5-cct2300-gm100-candidate0",
+            "command": {
+              "b": 0,
+              "cw": 0,
+              "g": 364,
+              "r": 2015,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 2442.4405063708327,
+              "duv": -0.006831214309001653,
+              "mired": 409.42655405182313
+            }
+          },
+          {
+            "capture_id": "039-strip-guide10-white70-w5-cct2300-gm100-candidate1",
+            "command": {
+              "b": 0,
+              "cw": 0,
+              "g": 108,
+              "r": 2015,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 2292.27551037342,
+              "duv": -0.004275137356811949,
+              "mired": 436.24773526333075
+            }
+          },
+          {
+            "capture_id": "041-strip-guide10-white70-w5-cct2300-gm100-candidate2",
+            "command": {
+              "b": 0,
+              "cw": 0,
+              "g": 0,
+              "r": 2015,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 2219.634302511221,
+              "duv": -0.003071191902697599,
+              "mired": 450.52466474708604
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "024-ray-guide10-white70-w6-cct2300-gm100",
+        "cct_K": 2447.1288547253143,
+        "duv": -0.006836496576483811,
+        "mired": 408.6421514212614
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 2300,
+      "gm": 130,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "043-strip-guide10-white70-w5-cct2300-gm130-candidate0",
+            "command": {
+              "b": 0,
+              "cw": 0,
+              "g": 1303,
+              "r": 4095,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 2465.0942092916,
+              "duv": -0.00831931249716711,
+              "mired": 405.6640092012437
+            }
+          },
+          {
+            "capture_id": "045-strip-guide10-white70-w5-cct2300-gm130-candidate1",
+            "command": {
+              "b": 0,
+              "cw": 0,
+              "g": 1047,
+              "r": 4095,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 2357.949667112224,
+              "duv": -0.006501904674987967,
+              "mired": 424.0972629516295
+            }
+          },
+          {
+            "capture_id": "047-strip-guide10-white70-w5-cct2300-gm130-candidate2",
+            "command": {
+              "b": 0,
+              "cw": 0,
+              "g": 791,
+              "r": 4095,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 2249.0704007073073,
+              "duv": -0.004738902721020201,
+              "mired": 444.62814489289053
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "027-ray-guide10-white70-w6-cct2300-gm130",
+        "cct_K": 2438.218529041246,
+        "duv": -0.008238723274366526,
+        "mired": 410.1355100411033
+      },
+      "tolerances": {
+        "cct_K": 12.5,
+        "duv": 0.00025,
+        "mired": 0.5
+      }
+    },
+    {
+      "cct": 2300,
+      "gm": 200,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "049-strip-guide10-white70-w5-cct2300-gm200-candidate0",
+            "command": {
+              "b": 0,
+              "cw": 0,
+              "g": 1288,
+              "r": 4095,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 2458.4573586018164,
+              "duv": -0.008211973176467557,
+              "mired": 406.75913962922016
+            }
+          },
+          {
+            "capture_id": "051-strip-guide10-white70-w5-cct2300-gm200-candidate1",
+            "command": {
+              "b": 0,
+              "cw": 0,
+              "g": 1032,
+              "r": 4095,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 2351.9947670137776,
+              "duv": -0.006411275489369741,
+              "mired": 425.17101399407244
+            }
+          },
+          {
+            "capture_id": "053-strip-guide10-white70-w5-cct2300-gm200-candidate2",
+            "command": {
+              "b": 0,
+              "cw": 0,
+              "g": 776,
+              "r": 4095,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 2238.963910873592,
+              "duv": -0.0045940619543491665,
+              "mired": 446.6351579601045
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "028-ray-guide10-white70-w6-cct2300-gm200",
+        "cct_K": 2439.181830738055,
+        "duv": -0.008244476401107703,
+        "mired": 409.97353596120263
+      },
+      "tolerances": {
+        "cct_K": 12.5,
+        "duv": 0.00025,
+        "mired": 0.5
+      }
+    },
+    {
+      "cct": 2700,
+      "gm": 0,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "055-strip-guide10-white70-w5-cct2700-gm0-candidate0",
+            "command": {
+              "b": 601,
+              "cw": 195,
+              "g": 27,
+              "r": 963,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 2821.195626766647,
+              "duv": 0.014299584138345643,
+              "mired": 354.4596448797467
+            }
+          },
+          {
+            "capture_id": "057-strip-guide10-white70-w5-cct2700-gm0-candidate1",
+            "command": {
+              "b": 345,
+              "cw": 195,
+              "g": 27,
+              "r": 963,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 2720.083463973067,
+              "duv": 0.0056330038968292005,
+              "mired": 367.6357778151993
+            }
+          },
+          {
+            "capture_id": "059-strip-guide10-white70-w5-cct2700-gm0-candidate2",
+            "command": {
+              "b": 89,
+              "cw": 195,
+              "g": 27,
+              "r": 963,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 2637.081586696109,
+              "duv": -0.003271561626917951,
+              "mired": 379.20707688564875
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "031-ray-guide10-white70-w6-cct2700-gm0",
+        "cct_K": 2816.9246307147273,
+        "duv": 0.014569297947851893,
+        "mired": 354.9970734383028
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 2700,
+      "gm": 70,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "061-strip-guide10-white70-w5-cct2700-gm70-candidate0",
+            "command": {
+              "b": 203,
+              "cw": 317,
+              "g": 66,
+              "r": 677,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 2841.292648793714,
+              "duv": -0.0012732515938956976,
+              "mired": 351.9524820593737
+            }
+          },
+          {
+            "capture_id": "063-strip-guide10-white70-w5-cct2700-gm70-candidate1",
+            "command": {
+              "b": 459,
+              "cw": 317,
+              "g": 66,
+              "r": 677,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 2948.2005900509957,
+              "duv": 0.007279780507585166,
+              "mired": 339.18994636070636
+            }
+          },
+          {
+            "capture_id": "065-strip-guide10-white70-w5-cct2700-gm70-candidate2",
+            "command": {
+              "b": 715,
+              "cw": 317,
+              "g": 66,
+              "r": 677,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 3068.1808100592425,
+              "duv": 0.014785735185626175,
+              "mired": 325.9260330165129
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "032-ray-guide10-white70-w6-cct2700-gm70",
+        "cct_K": 2838.9811495835165,
+        "duv": -0.0009627123704781633,
+        "mired": 352.2390418642624
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 2700,
+      "gm": 100,
+      "measured_secant_evidence": {
+        "observation_count": 2,
+        "observations": [
+          {
+            "capture_id": "067-strip-guide10-white70-w5-cct2700-gm100-candidate0",
+            "command": {
+              "b": 17,
+              "cw": 1386,
+              "g": 1601,
+              "r": 3903,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 2839.114449988891,
+              "duv": -0.007386734610526174,
+              "mired": 352.2225037472205
+            }
+          },
+          {
+            "capture_id": "069-strip-guide10-white70-w5-cct2700-gm100-candidate1",
+            "command": {
+              "b": 0,
+              "cw": 1386,
+              "g": 1601,
+              "r": 3903,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 2833.041882154809,
+              "duv": -0.007927066975387836,
+              "mired": 352.97748554264257
+            }
+          }
+        ],
+        "unique_command_count": 2,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "035-ray-guide10-white70-w6-cct2700-gm100",
+        "cct_K": 2840.9912851851695,
+        "duv": -0.007344478912394043,
+        "mired": 351.9898160950614
+      },
+      "tolerances": {
+        "cct_K": 12.5,
+        "duv": 0.00025,
+        "mired": 0.5
+      }
+    },
+    {
+      "cct": 2700,
+      "gm": 130,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "071-strip-guide10-white70-w5-cct2700-gm130-candidate0",
+            "command": {
+              "b": 20,
+              "cw": 29,
+              "g": 20,
+              "r": 166,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 2846.984114797209,
+              "duv": -0.010890150717574092,
+              "mired": 351.2488864277454
+            }
+          },
+          {
+            "capture_id": "073-strip-guide10-white70-w5-cct2700-gm130-candidate1",
+            "command": {
+              "b": 276,
+              "cw": 29,
+              "g": 20,
+              "r": 166,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 2958.2811845597894,
+              "duv": -0.0011260447104006924,
+              "mired": 338.03412779668076
+            }
+          },
+          {
+            "capture_id": "075-strip-guide10-white70-w5-cct2700-gm130-candidate2",
+            "command": {
+              "b": 532,
+              "cw": 29,
+              "g": 20,
+              "r": 166,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 3090.446605379125,
+              "duv": 0.007959035017832876,
+              "mired": 323.57782796163974
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "036-ray-guide10-white70-w6-cct2700-gm130",
+        "cct_K": 2842.560349210892,
+        "duv": -0.010778508016690152,
+        "mired": 351.79552134314565
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 2700,
+      "gm": 200,
+      "measured_secant_evidence": {
+        "observation_count": 0,
+        "observations": [],
+        "unique_command_count": 0,
+        "usable_for_local_response": false
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "039-ray-guide10-white70-w6-cct2700-gm200",
+        "cct_K": 2840.3347899403034,
+        "duv": -0.01188013391463943,
+        "mired": 352.0711725750532
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 3200,
+      "gm": 0,
+      "measured_secant_evidence": {
+        "observation_count": 2,
+        "observations": [
+          {
+            "capture_id": "077-strip-guide10-white70-w5-cct3200-gm0-candidate0",
+            "command": {
+              "b": 580,
+              "cw": 24,
+              "g": 10,
+              "r": 157,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 3110.780252849765,
+              "duv": 0.009682503214714014,
+              "mired": 321.46275812439876
+            }
+          },
+          {
+            "capture_id": "079-strip-guide10-white70-w5-cct3200-gm0-candidate1",
+            "command": {
+              "b": 324,
+              "cw": 24,
+              "g": 10,
+              "r": 157,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 2973.4599890906675,
+              "duv": 0.0005929114741595119,
+              "mired": 336.30854414349
+            }
+          }
+        ],
+        "unique_command_count": 2,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "040-ray-guide10-white70-w6-cct3200-gm0",
+        "cct_K": 3290.9363055364884,
+        "duv": 0.018279611557555035,
+        "mired": 303.8648904622236
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 3200,
+      "gm": 70,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "081-strip-guide10-white70-w5-cct3200-gm70-candidate0",
+            "command": {
+              "b": 296,
+              "cw": 1104,
+              "g": 5,
+              "r": 166,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 3267.058116728374,
+              "duv": 0.00021997647058786,
+              "mired": 306.085770216233
+            }
+          },
+          {
+            "capture_id": "083-strip-guide10-white70-w5-cct3200-gm70-candidate1",
+            "command": {
+              "b": 552,
+              "cw": 1104,
+              "g": 5,
+              "r": 166,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 3414.5790224396783,
+              "duv": 0.007631560369971472,
+              "mired": 292.86187065177694
+            }
+          },
+          {
+            "capture_id": "085-strip-guide10-white70-w5-cct3200-gm70-candidate2",
+            "command": {
+              "b": 808,
+              "cw": 1104,
+              "g": 5,
+              "r": 166,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 3587.961885081258,
+              "duv": 0.014215296421990816,
+              "mired": 278.7097611482438
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "043-ray-guide10-white70-w6-cct3200-gm70",
+        "cct_K": 3286.2165406563654,
+        "duv": 0.0002492317924227714,
+        "mired": 304.301310527841
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 3200,
+      "gm": 100,
+      "measured_secant_evidence": {
+        "observation_count": 0,
+        "observations": [],
+        "unique_command_count": 0,
+        "usable_for_local_response": false
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "044-ray-guide10-white70-w6-cct3200-gm100",
+        "cct_K": 3287.2960994960563,
+        "duv": -0.007126402218636932,
+        "mired": 304.2013769776627
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 3200,
+      "gm": 130,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "087-strip-guide10-white70-w5-cct3200-gm130-candidate0",
+            "command": {
+              "b": 6,
+              "cw": 1086,
+              "g": 221,
+              "r": 113,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 3284.2870788466817,
+              "duv": -0.012048334048743921,
+              "mired": 304.4800822804937
+            }
+          },
+          {
+            "capture_id": "089-strip-guide10-white70-w5-cct3200-gm130-candidate1",
+            "command": {
+              "b": 262,
+              "cw": 1086,
+              "g": 221,
+              "r": 113,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 3420.258016448732,
+              "duv": -0.004616900657257145,
+              "mired": 292.3756030073731
+            }
+          },
+          {
+            "capture_id": "091-strip-guide10-white70-w5-cct3200-gm130-candidate2",
+            "command": {
+              "b": 518,
+              "cw": 1086,
+              "g": 221,
+              "r": 113,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 3579.0157576065512,
+              "duv": 0.002200728916292482,
+              "mired": 279.4064256003011
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "047-ray-guide10-white70-w6-cct3200-gm130",
+        "cct_K": 3287.306313810554,
+        "duv": -0.011998486273673186,
+        "mired": 304.20043176348474
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 3200,
+      "gm": 200,
+      "measured_secant_evidence": {
+        "observation_count": 0,
+        "observations": [],
+        "unique_command_count": 0,
+        "usable_for_local_response": false
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "048-ray-guide10-white70-w6-cct3200-gm200",
+        "cct_K": 3283.17789374963,
+        "duv": -0.019017497769104035,
+        "mired": 304.582947486262
+      },
+      "tolerances": {
+        "cct_K": 12.5,
+        "duv": 0.00025,
+        "mired": 0.5
+      }
+    },
+    {
+      "cct": 3800,
+      "gm": 0,
+      "measured_secant_evidence": {
+        "observation_count": 2,
+        "observations": [
+          {
+            "capture_id": "093-strip-guide10-white70-w5-cct3800-gm0-candidate0",
+            "command": {
+              "b": 836,
+              "cw": 372,
+              "g": 80,
+              "r": 0,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 3553.30233739113,
+              "duv": 0.013667033889313266,
+              "mired": 281.4283460985225
+            }
+          },
+          {
+            "capture_id": "095-strip-guide10-white70-w5-cct3800-gm0-candidate1",
+            "command": {
+              "b": 580,
+              "cw": 372,
+              "g": 80,
+              "r": 0,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 3380.153725709126,
+              "duv": 0.00654552496247509,
+              "mired": 295.84453286668463
+            }
+          }
+        ],
+        "unique_command_count": 2,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "051-ray-guide10-white70-w6-cct3800-gm0",
+        "cct_K": 3815.6262306124922,
+        "duv": 0.021074369887980615,
+        "mired": 262.0801775543612
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 3800,
+      "gm": 70,
+      "measured_secant_evidence": {
+        "observation_count": 0,
+        "observations": [],
+        "unique_command_count": 0,
+        "usable_for_local_response": false
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "052-ray-guide10-white70-w6-cct3800-gm70",
+        "cct_K": 3792.70900817716,
+        "duv": 0.0012712702446056646,
+        "mired": 263.66378170431193
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 3800,
+      "gm": 100,
+      "measured_secant_evidence": {
+        "observation_count": 2,
+        "observations": [
+          {
+            "capture_id": "097-strip-guide10-white70-w5-cct3800-gm100-candidate0",
+            "command": {
+              "b": 76,
+              "cw": 3458,
+              "g": 78,
+              "r": 0,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 3792.6575176781625,
+              "duv": -0.006728816172182782,
+              "mired": 263.66736129978665
+            }
+          },
+          {
+            "capture_id": "099-strip-guide10-white70-w5-cct3800-gm100-candidate1",
+            "command": {
+              "b": 0,
+              "cw": 3458,
+              "g": 78,
+              "r": 0,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 3749.824712796282,
+              "duv": -0.008463796592358588,
+              "mired": 266.67913211716234
+            }
+          }
+        ],
+        "unique_command_count": 2,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "055-ray-guide10-white70-w6-cct3800-gm100",
+        "cct_K": 3790.0372936894328,
+        "duv": -0.006778745685912021,
+        "mired": 263.8496464573161
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 3800,
+      "gm": 130,
+      "measured_secant_evidence": {
+        "observation_count": 0,
+        "observations": [],
+        "unique_command_count": 0,
+        "usable_for_local_response": false
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "056-ray-guide10-white70-w6-cct3800-gm130",
+        "cct_K": 3792.9223568686775,
+        "duv": -0.012823715767074284,
+        "mired": 263.6489508384163
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 3800,
+      "gm": 200,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "101-strip-guide10-white70-w5-cct3800-gm200-candidate0",
+            "command": {
+              "b": 0,
+              "cw": 1022,
+              "g": 1115,
+              "r": 41,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 3779.6149592884303,
+              "duv": -0.025160701223243414,
+              "mired": 264.57721507914266
+            }
+          },
+          {
+            "capture_id": "103-strip-guide10-white70-w5-cct3800-gm200-candidate1",
+            "command": {
+              "b": 0,
+              "cw": 1278,
+              "g": 1115,
+              "r": 41,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 3819.201618379803,
+              "duv": -0.024474947752975477,
+              "mired": 261.83482830221044
+            }
+          },
+          {
+            "capture_id": "105-strip-guide10-white70-w5-cct3800-gm200-candidate2",
+            "command": {
+              "b": 0,
+              "cw": 1534,
+              "g": 1115,
+              "r": 41,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 3856.4361540318573,
+              "duv": -0.02384833343695373,
+              "mired": 259.3067692705121
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "059-ray-guide10-white70-w6-cct3800-gm200",
+        "cct_K": 3775.615732131064,
+        "duv": -0.02490738886379738,
+        "mired": 264.85746192067376
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 4500,
+      "gm": 0,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "107-strip-guide10-white70-w5-cct4500-gm0-candidate0",
+            "command": {
+              "b": 1329,
+              "cw": 1596,
+              "g": 82,
+              "r": 0,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 4437.5003739463955,
+              "duv": 0.02128108219552993,
+              "mired": 225.35209368572325
+            }
+          },
+          {
+            "capture_id": "109-strip-guide10-white70-w5-cct4500-gm0-candidate1",
+            "command": {
+              "b": 1073,
+              "cw": 1596,
+              "g": 82,
+              "r": 0,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 4117.132861766697,
+              "duv": 0.015515952074684985,
+              "mired": 242.88747377729547
+            }
+          },
+          {
+            "capture_id": "111-strip-guide10-white70-w5-cct4500-gm0-candidate2",
+            "command": {
+              "b": 817,
+              "cw": 1596,
+              "g": 82,
+              "r": 0,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 3876.83736351705,
+              "duv": 0.009893479523579893,
+              "mired": 257.9422106819576
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "060-ray-guide10-white70-w6-cct4500-gm0",
+        "cct_K": 4437.645803954238,
+        "duv": 0.021300100141290086,
+        "mired": 225.34470847333816
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 4500,
+      "gm": 70,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "113-strip-guide10-white70-w5-cct4500-gm70-candidate0",
+            "command": {
+              "b": 1139,
+              "cw": 45,
+              "g": 944,
+              "r": 68,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 4370.832584603,
+              "duv": 0.0020832564645440472,
+              "mired": 228.78936235688133
+            }
+          },
+          {
+            "capture_id": "115-strip-guide10-white70-w5-cct4500-gm70-candidate1",
+            "command": {
+              "b": 883,
+              "cw": 45,
+              "g": 944,
+              "r": 68,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 4126.3801640280435,
+              "duv": -0.0038947101362253396,
+              "mired": 242.3431579856741
+            }
+          },
+          {
+            "capture_id": "117-strip-guide10-white70-w5-cct4500-gm70-candidate2",
+            "command": {
+              "b": 627,
+              "cw": 45,
+              "g": 944,
+              "r": 68,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 3942.755333273255,
+              "duv": -0.009308565016133771,
+              "mired": 253.62973744805137
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "063-ray-guide10-white70-w6-cct4500-gm70",
+        "cct_K": 4370.229243084618,
+        "duv": 0.002049744718362477,
+        "mired": 228.82094837070258
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 4500,
+      "gm": 100,
+      "measured_secant_evidence": {
+        "observation_count": 0,
+        "observations": [],
+        "unique_command_count": 0,
+        "usable_for_local_response": false
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "064-ray-guide10-white70-w6-cct4500-gm100",
+        "cct_K": 4353.2641024242275,
+        "duv": -0.0057821154702318595,
+        "mired": 229.7126883349724
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 4500,
+      "gm": 130,
+      "measured_secant_evidence": {
+        "observation_count": 0,
+        "observations": [],
+        "unique_command_count": 0,
+        "usable_for_local_response": false
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "067-ray-guide10-white70-w6-cct4500-gm130",
+        "cct_K": 4337.528533395824,
+        "duv": -0.013161737181089239,
+        "mired": 230.54603383026193
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 4500,
+      "gm": 200,
+      "measured_secant_evidence": {
+        "observation_count": 0,
+        "observations": [],
+        "unique_command_count": 0,
+        "usable_for_local_response": false
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "068-ray-guide10-white70-w6-cct4500-gm200",
+        "cct_K": 4318.154822328736,
+        "duv": -0.02820728152615888,
+        "mired": 231.58039513291706
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 5000,
+      "gm": 0,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "119-strip-guide10-white70-w5-cct5000-gm0-candidate0",
+            "command": {
+              "b": 1492,
+              "cw": 2140,
+              "g": 160,
+              "r": 0,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 4827.210222742106,
+              "duv": 0.020850209816190287,
+              "mired": 207.1589911889
+            }
+          },
+          {
+            "capture_id": "121-strip-guide10-white70-w5-cct5000-gm0-candidate1",
+            "command": {
+              "b": 1236,
+              "cw": 2140,
+              "g": 160,
+              "r": 0,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 4456.39702440913,
+              "duv": 0.015761768197038884,
+              "mired": 224.39652358680704
+            }
+          },
+          {
+            "capture_id": "123-strip-guide10-white70-w5-cct5000-gm0-candidate2",
+            "command": {
+              "b": 980,
+              "cw": 2140,
+              "g": 160,
+              "r": 0,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 4183.537802433542,
+              "duv": 0.010677069035305855,
+              "mired": 239.03214150910867
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "071-ray-guide10-white70-w6-cct5000-gm0",
+        "cct_K": 4813.762228461319,
+        "duv": 0.02049985132094693,
+        "mired": 207.73772208513134
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 5000,
+      "gm": 70,
+      "measured_secant_evidence": {
+        "observation_count": 0,
+        "observations": [],
+        "unique_command_count": 0,
+        "usable_for_local_response": false
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "072-ray-guide10-white70-w6-cct5000-gm70",
+        "cct_K": 4764.097604780286,
+        "duv": 0.002260050626189243,
+        "mired": 209.90334014076495
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 5000,
+      "gm": 100,
+      "measured_secant_evidence": {
+        "observation_count": 0,
+        "observations": [],
+        "unique_command_count": 0,
+        "usable_for_local_response": false
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "075-ray-guide10-white70-w6-cct5000-gm100",
+        "cct_K": 4740.496469168582,
+        "duv": -0.005109076306589708,
+        "mired": 210.9483693330092
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 5000,
+      "gm": 130,
+      "measured_secant_evidence": {
+        "observation_count": 0,
+        "observations": [],
+        "unique_command_count": 0,
+        "usable_for_local_response": false
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "076-ray-guide10-white70-w6-cct5000-gm130",
+        "cct_K": 4734.010024484494,
+        "duv": -0.013047361809210182,
+        "mired": 211.2374065175103
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 5000,
+      "gm": 200,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "125-strip-guide10-white70-w5-cct5000-gm200-candidate0",
+            "command": {
+              "b": 60,
+              "cw": 4095,
+              "g": 2071,
+              "r": 8,
+              "ww": 3351
+            },
+            "strip_white_point": {
+              "cct_K": 4697.878884403531,
+              "duv": -0.03042134047176996,
+              "mired": 212.8620223309494
+            }
+          },
+          {
+            "capture_id": "127-strip-guide10-white70-w5-cct5000-gm200-candidate1",
+            "command": {
+              "b": 316,
+              "cw": 4095,
+              "g": 2071,
+              "r": 8,
+              "ww": 3351
+            },
+            "strip_white_point": {
+              "cct_K": 4848.675600897034,
+              "duv": -0.027139416198722496,
+              "mired": 206.24188589044687
+            }
+          },
+          {
+            "capture_id": "129-strip-guide10-white70-w5-cct5000-gm200-candidate2",
+            "command": {
+              "b": 572,
+              "cw": 4095,
+              "g": 2071,
+              "r": 8,
+              "ww": 3351
+            },
+            "strip_white_point": {
+              "cct_K": 5018.273822054876,
+              "duv": -0.023928127613181194,
+              "mired": 199.2717088503794
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "079-ray-guide10-white70-w6-cct5000-gm200",
+        "cct_K": 4694.483096920721,
+        "duv": -0.03044843543432322,
+        "mired": 213.01599757722752
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 5600,
+      "gm": 0,
+      "measured_secant_evidence": {
+        "observation_count": 2,
+        "observations": [
+          {
+            "capture_id": "131-strip-guide10-white70-w5-cct5600-gm0-candidate0",
+            "command": {
+              "b": 1415,
+              "cw": 2892,
+              "g": 91,
+              "r": 14,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 4862.5771930095025,
+              "duv": 0.017943721751371274,
+              "mired": 205.65226222785967
+            }
+          },
+          {
+            "capture_id": "133-strip-guide10-white70-w5-cct5600-gm0-candidate1",
+            "command": {
+              "b": 1159,
+              "cw": 2892,
+              "g": 91,
+              "r": 14,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 4532.903679907524,
+              "duv": 0.01343514003516094,
+              "mired": 220.60914385465193
+            }
+          }
+        ],
+        "unique_command_count": 2,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "080-ray-guide10-white70-w6-cct5600-gm0",
+        "cct_K": 5239.853967082094,
+        "duv": 0.021457515001052748,
+        "mired": 190.84501329277845
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 5600,
+      "gm": 70,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "135-strip-guide10-white70-w5-cct5600-gm70-candidate0",
+            "command": {
+              "b": 1605,
+              "cw": 50,
+              "g": 3348,
+              "r": 4095,
+              "ww": 54
+            },
+            "strip_white_point": {
+              "cct_K": 5211.309649292811,
+              "duv": 0.002725971321382954,
+              "mired": 191.890343751825
+            }
+          },
+          {
+            "capture_id": "137-strip-guide10-white70-w5-cct5600-gm70-candidate1",
+            "command": {
+              "b": 1861,
+              "cw": 50,
+              "g": 3348,
+              "r": 4095,
+              "ww": 54
+            },
+            "strip_white_point": {
+              "cct_K": 5575.286151204982,
+              "duv": 0.006510997947891111,
+              "mired": 179.36299104286707
+            }
+          },
+          {
+            "capture_id": "139-strip-guide10-white70-w5-cct5600-gm70-candidate2",
+            "command": {
+              "b": 2117,
+              "cw": 50,
+              "g": 3348,
+              "r": 4095,
+              "ww": 54
+            },
+            "strip_white_point": {
+              "cct_K": 6031.267648946549,
+              "duv": 0.010141078625316869,
+              "mired": 165.80262362832877
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "083-ray-guide10-white70-w6-cct5600-gm70",
+        "cct_K": 5233.439798414349,
+        "duv": 0.0030372721571292746,
+        "mired": 191.07891530594935
+      },
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 5600,
+      "gm": 100,
+      "measured_secant_evidence": {
+        "observation_count": 0,
+        "observations": [],
+        "unique_command_count": 0,
+        "usable_for_local_response": false
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "084-ray-guide10-white70-w6-cct5600-gm100",
+        "cct_K": 5215.107772548158,
+        "duv": -0.00426486038465343,
+        "mired": 191.750591476538
+      },
+      "tolerances": {
+        "cct_K": 25.10729224769198,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 5600,
+      "gm": 130,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "141-strip-guide10-white70-w5-cct5600-gm130-candidate0",
+            "command": {
+              "b": 56,
+              "cw": 4095,
+              "g": 238,
+              "r": 27,
+              "ww": 614
+            },
+            "strip_white_point": {
+              "cct_K": 5164.082148413352,
+              "duv": -0.01211852637176361,
+              "mired": 193.6452541343183
+            }
+          },
+          {
+            "capture_id": "143-strip-guide10-white70-w5-cct5600-gm130-candidate1",
+            "command": {
+              "b": 312,
+              "cw": 4095,
+              "g": 238,
+              "r": 27,
+              "ww": 614
+            },
+            "strip_white_point": {
+              "cct_K": 5635.1053215339325,
+              "duv": -0.0066108882985208796,
+              "mired": 177.4589724487687
+            }
+          },
+          {
+            "capture_id": "145-strip-guide10-white70-w5-cct5600-gm130-candidate2",
+            "command": {
+              "b": 568,
+              "cw": 4095,
+              "g": 238,
+              "r": 27,
+              "ww": 614
+            },
+            "strip_white_point": {
+              "cct_K": 6285.509842760009,
+              "duv": -0.001018679605942251,
+              "mired": 159.09608369348976
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "087-ray-guide10-white70-w6-cct5600-gm130",
+        "cct_K": 5185.967037655878,
+        "duv": -0.012314723025450417,
+        "mired": 192.82806711629476
+      },
+      "tolerances": {
+        "cct_K": 25.145697514035863,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 5600,
+      "gm": 200,
+      "measured_secant_evidence": {
+        "observation_count": 0,
+        "observations": [],
+        "unique_command_count": 0,
+        "usable_for_local_response": false
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "088-ray-guide10-white70-w6-cct5600-gm200",
+        "cct_K": 5150.4037242736385,
+        "duv": -0.03067599566807034,
+        "mired": 194.15953652080546
+      },
+      "tolerances": {
+        "cct_K": 25.04547256327925,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 6500,
+      "gm": 0,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "147-strip-guide10-white70-w5-cct6500-gm0-candidate0",
+            "command": {
+              "b": 2181,
+              "cw": 3888,
+              "g": 124,
+              "r": 0,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 5944.782406653169,
+              "duv": 0.022735281951767588,
+              "mired": 168.21473547641355
+            }
+          },
+          {
+            "capture_id": "149-strip-guide10-white70-w5-cct6500-gm0-candidate1",
+            "command": {
+              "b": 1925,
+              "cw": 3888,
+              "g": 124,
+              "r": 0,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 5528.009563757609,
+              "duv": 0.019937701054830146,
+              "mired": 180.89693739969945
+            }
+          },
+          {
+            "capture_id": "151-strip-guide10-white70-w5-cct6500-gm0-candidate2",
+            "command": {
+              "b": 1669,
+              "cw": 3888,
+              "g": 124,
+              "r": 0,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 5219.144798229781,
+              "duv": 0.017302463305730206,
+              "mired": 191.60227176283323
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "091-ray-guide10-white70-w6-cct6500-gm0",
+        "cct_K": 5892.401187783206,
+        "duv": 0.022524055258387705,
+        "mired": 169.71010087930082
+      },
+      "tolerances": {
+        "cct_K": 30.46823532290966,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 6500,
+      "gm": 70,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "153-strip-guide10-white70-w5-cct6500-gm70-candidate0",
+            "command": {
+              "b": 544,
+              "cw": 4095,
+              "g": 8,
+              "r": 51,
+              "ww": 805
+            },
+            "strip_white_point": {
+              "cct_K": 5864.163770130807,
+              "duv": 0.004240810608186146,
+              "mired": 170.52729753106703
+            }
+          },
+          {
+            "capture_id": "155-strip-guide10-white70-w5-cct6500-gm70-candidate1",
+            "command": {
+              "b": 800,
+              "cw": 4095,
+              "g": 8,
+              "r": 51,
+              "ww": 805
+            },
+            "strip_white_point": {
+              "cct_K": 6618.012000734272,
+              "duv": 0.009330093922528218,
+              "mired": 151.10277827979905
+            }
+          },
+          {
+            "capture_id": "157-strip-guide10-white70-w5-cct6500-gm70-candidate2",
+            "command": {
+              "b": 1056,
+              "cw": 4095,
+              "g": 8,
+              "r": 51,
+              "ww": 805
+            },
+            "strip_white_point": {
+              "cct_K": 7707.180963993353,
+              "duv": 0.013901953471445391,
+              "mired": 129.74912677823852
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "092-ray-guide10-white70-w6-cct6500-gm70",
+        "cct_K": 5891.928852199583,
+        "duv": 0.003898985861456371,
+        "mired": 169.72370595185964
+      },
+      "tolerances": {
+        "cct_K": 31.142022586862357,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 6500,
+      "gm": 100,
+      "measured_secant_evidence": {
+        "observation_count": 2,
+        "observations": [
+          {
+            "capture_id": "159-strip-guide10-white70-w5-cct6500-gm100-candidate0",
+            "command": {
+              "b": 201,
+              "cw": 4095,
+              "g": 1,
+              "r": 94,
+              "ww": 0
+            },
+            "strip_white_point": {
+              "cct_K": 5875.569827921227,
+              "duv": -0.003268467281190471,
+              "mired": 170.19625828424532
+            }
+          },
+          {
+            "capture_id": "161-strip-guide10-white70-w5-cct6500-gm100-candidate1",
+            "command": {
+              "b": 0,
+              "cw": 4095,
+              "g": 1,
+              "r": 94,
+              "ww": 0
+            },
+            "strip_white_point": {
+              "cct_K": 5370.707547343562,
+              "duv": -0.00868402216232421,
+              "mired": 186.19520634569204
+            }
+          }
+        ],
+        "unique_command_count": 2,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "095-ray-guide10-white70-w6-cct6500-gm100",
+        "cct_K": 5881.656785196763,
+        "duv": -0.003262201992817829,
+        "mired": 170.02012128909803
+      },
+      "tolerances": {
+        "cct_K": 31.49890660599039,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 6500,
+      "gm": 130,
+      "measured_secant_evidence": {
+        "observation_count": 1,
+        "observations": [
+          {
+            "capture_id": "163-strip-guide10-white70-w5-cct6500-gm130-candidate0",
+            "command": {
+              "b": 0,
+              "cw": 4095,
+              "g": 165,
+              "r": 3,
+              "ww": 0
+            },
+            "strip_white_point": {
+              "cct_K": 5562.688849340448,
+              "duv": -0.014587978885050716,
+              "mired": 179.76917765561652
+            }
+          }
+        ],
+        "unique_command_count": 1,
+        "usable_for_local_response": false
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "096-ray-guide10-white70-w6-cct6500-gm130",
+        "cct_K": 5863.152657478997,
+        "duv": -0.011514455066089701,
+        "mired": 170.55670531184396
+      },
+      "tolerances": {
+        "cct_K": 31.735685088702773,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 6500,
+      "gm": 200,
+      "measured_secant_evidence": {
+        "observation_count": 0,
+        "observations": [],
+        "unique_command_count": 0,
+        "usable_for_local_response": false
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "099-ray-guide10-white70-w6-cct6500-gm200",
+        "cct_K": 5822.880176551872,
+        "duv": -0.029743263784859145,
+        "mired": 171.73631771213414
+      },
+      "tolerances": {
+        "cct_K": 31.838775045923484,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 8000,
+      "gm": 0,
+      "measured_secant_evidence": {
+        "observation_count": 2,
+        "observations": [
+          {
+            "capture_id": "165-strip-guide10-white70-w5-cct8000-gm0-candidate0",
+            "command": {
+              "b": 1839,
+              "cw": 4095,
+              "g": 155,
+              "r": 0,
+              "ww": 2886
+            },
+            "strip_white_point": {
+              "cct_K": 6348.186239242445,
+              "duv": 0.01933997523418747,
+              "mired": 157.52530916914847
+            }
+          },
+          {
+            "capture_id": "167-strip-guide10-white70-w5-cct8000-gm0-candidate1",
+            "command": {
+              "b": 1583,
+              "cw": 4095,
+              "g": 155,
+              "r": 0,
+              "ww": 2886
+            },
+            "strip_white_point": {
+              "cct_K": 5893.444693353573,
+              "duv": 0.01670605278966533,
+              "mired": 169.68005165599774
+            }
+          }
+        ],
+        "unique_command_count": 2,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "100-ray-guide10-white70-w6-cct8000-gm0",
+        "cct_K": 7013.488259508262,
+        "duv": 0.022128906443519378,
+        "mired": 142.58240165217205
+      },
+      "tolerances": {
+        "cct_K": 42.11188303985643,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 8000,
+      "gm": 70,
+      "measured_secant_evidence": {
+        "observation_count": 2,
+        "observations": [
+          {
+            "capture_id": "169-strip-guide10-white70-w5-cct8000-gm70-candidate0",
+            "command": {
+              "b": 345,
+              "cw": 4095,
+              "g": 34,
+              "r": 0,
+              "ww": 341
+            },
+            "strip_white_point": {
+              "cct_K": 6060.980774435157,
+              "duv": -0.0010380685589289824,
+              "mired": 164.98979904670514
+            }
+          },
+          {
+            "capture_id": "171-strip-guide10-white70-w5-cct8000-gm70-candidate1",
+            "command": {
+              "b": 89,
+              "cw": 4095,
+              "g": 34,
+              "r": 0,
+              "ww": 341
+            },
+            "strip_white_point": {
+              "cct_K": 5426.4166690043,
+              "duv": -0.007306514626997702,
+              "mired": 184.28367392279355
+            }
+          }
+        ],
+        "unique_command_count": 2,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "103-ray-guide10-white70-w6-cct8000-gm70",
+        "cct_K": 6971.010982387992,
+        "duv": 0.004911343917937174,
+        "mired": 143.45121568829313
+      },
+      "tolerances": {
+        "cct_K": 42.51867048072433,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 8000,
+      "gm": 100,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "173-strip-guide10-white70-w5-cct8000-gm100-candidate0",
+            "command": {
+              "b": 516,
+              "cw": 4095,
+              "g": 177,
+              "r": 0,
+              "ww": 87
+            },
+            "strip_white_point": {
+              "cct_K": 6926.609712825787,
+              "duv": -0.002241405739479971,
+              "mired": 144.37077321511723
+            }
+          },
+          {
+            "capture_id": "175-strip-guide10-white70-w5-cct8000-gm100-candidate1",
+            "command": {
+              "b": 772,
+              "cw": 4095,
+              "g": 177,
+              "r": 0,
+              "ww": 87
+            },
+            "strip_white_point": {
+              "cct_K": 7900.903287924553,
+              "duv": 0.002083580598695206,
+              "mired": 126.56780668716232
+            }
+          },
+          {
+            "capture_id": "177-strip-guide10-white70-w5-cct8000-gm100-candidate2",
+            "command": {
+              "b": 1028,
+              "cw": 4095,
+              "g": 177,
+              "r": 0,
+              "ww": 87
+            },
+            "strip_white_point": {
+              "cct_K": 9546.068948721459,
+              "duv": 0.006658999119209656,
+              "mired": 104.75516208521978
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "104-ray-guide10-white70-w6-cct8000-gm100",
+        "cct_K": 6937.8836697207635,
+        "duv": -0.0020782045690444554,
+        "mired": 144.1361728742056
+      },
+      "tolerances": {
+        "cct_K": 42.71107997429818,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 8000,
+      "gm": 130,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "179-strip-guide10-white70-w5-cct8000-gm130-candidate0",
+            "command": {
+              "b": 3012,
+              "cw": 328,
+              "g": 3868,
+              "r": 1151,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 6882.053180269885,
+              "duv": -0.010668481575189641,
+              "mired": 145.30547407958045
+            }
+          },
+          {
+            "capture_id": "181-strip-guide10-white70-w5-cct8000-gm130-candidate1",
+            "command": {
+              "b": 2756,
+              "cw": 328,
+              "g": 3868,
+              "r": 1151,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 6478.457672408279,
+              "duv": -0.013355607486881183,
+              "mired": 154.35772687980895
+            }
+          },
+          {
+            "capture_id": "183-strip-guide10-white70-w5-cct8000-gm130-candidate2",
+            "command": {
+              "b": 2500,
+              "cw": 328,
+              "g": 3868,
+              "r": 1151,
+              "ww": 4095
+            },
+            "strip_white_point": {
+              "cct_K": 6141.404821848666,
+              "duv": -0.016082835232419327,
+              "mired": 162.8291944609154
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "107-ray-guide10-white70-w6-cct8000-gm130",
+        "cct_K": 6904.6945092791175,
+        "duv": -0.010128041092450238,
+        "mired": 144.82899984294957
+      },
+      "tolerances": {
+        "cct_K": 21.50420777812874,
+        "duv": 0.00025,
+        "mired": 0.5
+      }
+    },
+    {
+      "cct": 8000,
+      "gm": 200,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "185-strip-guide10-white70-w5-cct8000-gm200-candidate0",
+            "command": {
+              "b": 553,
+              "cw": 4095,
+              "g": 1542,
+              "r": 17,
+              "ww": 71
+            },
+            "strip_white_point": {
+              "cct_K": 6821.989897144514,
+              "duv": -0.028429039253249702,
+              "mired": 146.58479638302762
+            }
+          },
+          {
+            "capture_id": "187-strip-guide10-white70-w5-cct8000-gm200-candidate1",
+            "command": {
+              "b": 809,
+              "cw": 4095,
+              "g": 1542,
+              "r": 17,
+              "ww": 71
+            },
+            "strip_white_point": {
+              "cct_K": 7350.387459100371,
+              "duv": -0.02484175205982003,
+              "mired": 136.04724996665578
+            }
+          },
+          {
+            "capture_id": "189-strip-guide10-white70-w5-cct8000-gm200-candidate2",
+            "command": {
+              "b": 1065,
+              "cw": 4095,
+              "g": 1542,
+              "r": 17,
+              "ww": 71
+            },
+            "strip_white_point": {
+              "cct_K": 8053.376389065085,
+              "duv": -0.021061636063622484,
+              "mired": 124.17152156923957
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "108-ray-guide10-white70-w6-cct8000-gm200",
+        "cct_K": 6862.333208724158,
+        "duv": -0.028613765320506215,
+        "mired": 145.72303174213243
+      },
+      "tolerances": {
+        "cct_K": 43.27602457550201,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 10000,
+      "gm": 0,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "191-strip-guide10-white70-w5-cct10000-gm0-candidate0",
+            "command": {
+              "b": 1891,
+              "cw": 4095,
+              "g": 83,
+              "r": 32,
+              "ww": 2014
+            },
+            "strip_white_point": {
+              "cct_K": 8399.023443821925,
+              "duv": 0.02220371627974177,
+              "mired": 119.06146073869702
+            }
+          },
+          {
+            "capture_id": "193-strip-guide10-white70-w5-cct10000-gm0-candidate1",
+            "command": {
+              "b": 2147,
+              "cw": 4095,
+              "g": 83,
+              "r": 32,
+              "ww": 2014
+            },
+            "strip_white_point": {
+              "cct_K": 9897.27693481441,
+              "duv": 0.024845055205807053,
+              "mired": 101.0378921986537
+            }
+          },
+          {
+            "capture_id": "195-strip-guide10-white70-w5-cct10000-gm0-candidate2",
+            "command": {
+              "b": 2403,
+              "cw": 4095,
+              "g": 83,
+              "r": 32,
+              "ww": 2014
+            },
+            "strip_white_point": {
+              "cct_K": 12798.59912751546,
+              "duv": 0.027617024207626333,
+              "mired": 78.13355118296654
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "111-ray-guide10-white70-w6-cct10000-gm0",
+        "cct_K": 8499.702122303172,
+        "duv": 0.022372038118293046,
+        "mired": 117.65118184271488
+      },
+      "tolerances": {
+        "cct_K": 59.15023386664378,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 10000,
+      "gm": 70,
+      "measured_secant_evidence": {
+        "observation_count": 2,
+        "observations": [
+          {
+            "capture_id": "197-strip-guide10-white70-w5-cct10000-gm70-candidate0",
+            "command": {
+              "b": 485,
+              "cw": 4095,
+              "g": 31,
+              "r": 1,
+              "ww": 0
+            },
+            "strip_white_point": {
+              "cct_K": 7013.803795091979,
+              "duv": 0.0004964692474389688,
+              "mired": 142.57598718398225
+            }
+          },
+          {
+            "capture_id": "199-strip-guide10-white70-w5-cct10000-gm70-candidate1",
+            "command": {
+              "b": 229,
+              "cw": 4095,
+              "g": 31,
+              "r": 1,
+              "ww": 0
+            },
+            "strip_white_point": {
+              "cct_K": 6123.752672709468,
+              "duv": -0.005250054019813009,
+              "mired": 163.2985611023294
+            }
+          }
+        ],
+        "unique_command_count": 2,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "112-ray-guide10-white70-w6-cct10000-gm70",
+        "cct_K": 8323.286957582444,
+        "duv": 0.005379544709898391,
+        "mired": 120.14484242778731
+      },
+      "tolerances": {
+        "cct_K": 58.705334748872076,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 10000,
+      "gm": 100,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "201-strip-guide10-white70-w5-cct10000-gm100-candidate0",
+            "command": {
+              "b": 4095,
+              "cw": 3853,
+              "g": 3735,
+              "r": 1613,
+              "ww": 2974
+            },
+            "strip_white_point": {
+              "cct_K": 8186.758305658999,
+              "duv": -0.0011361828063784208,
+              "mired": 122.14846984169081
+            }
+          },
+          {
+            "capture_id": "203-strip-guide10-white70-w5-cct10000-gm100-candidate1",
+            "command": {
+              "b": 4095,
+              "cw": 3597,
+              "g": 3735,
+              "r": 1613,
+              "ww": 2974
+            },
+            "strip_white_point": {
+              "cct_K": 8258.519304292375,
+              "duv": -0.0009686797038199138,
+              "mired": 121.087081491745
+            }
+          },
+          {
+            "capture_id": "205-strip-guide10-white70-w5-cct10000-gm100-candidate2",
+            "command": {
+              "b": 4095,
+              "cw": 3341,
+              "g": 3735,
+              "r": 1613,
+              "ww": 2974
+            },
+            "strip_white_point": {
+              "cct_K": 8351.469905637523,
+              "duv": -0.0006797842032709488,
+              "mired": 119.7394005245671
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "115-ray-guide10-white70-w6-cct10000-gm100",
+        "cct_K": 8266.903693831675,
+        "duv": -0.0012114482834688397,
+        "mired": 120.96427357030262
+      },
+      "tolerances": {
+        "cct_K": 59.01035920269156,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 10000,
+      "gm": 130,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "207-strip-guide10-white70-w5-cct10000-gm130-candidate0",
+            "command": {
+              "b": 1030,
+              "cw": 4095,
+              "g": 810,
+              "r": 1,
+              "ww": 189
+            },
+            "strip_white_point": {
+              "cct_K": 8206.499288140265,
+              "duv": -0.009080321203533907,
+              "mired": 121.85463799956258
+            }
+          },
+          {
+            "capture_id": "209-strip-guide10-white70-w5-cct10000-gm130-candidate1",
+            "command": {
+              "b": 774,
+              "cw": 4095,
+              "g": 810,
+              "r": 1,
+              "ww": 189
+            },
+            "strip_white_point": {
+              "cct_K": 7351.317020517178,
+              "duv": -0.013021293480131375,
+              "mired": 136.03004702545778
+            }
+          },
+          {
+            "capture_id": "211-strip-guide10-white70-w5-cct10000-gm130-candidate2",
+            "command": {
+              "b": 518,
+              "cw": 4095,
+              "g": 810,
+              "r": 1,
+              "ww": 189
+            },
+            "strip_white_point": {
+              "cct_K": 6704.300329360409,
+              "duv": -0.01694152028121236,
+              "mired": 149.15799574500866
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "116-ray-guide10-white70-w6-cct10000-gm130",
+        "cct_K": 8215.309330863442,
+        "duv": -0.009017258884440993,
+        "mired": 121.72396190161454
+      },
+      "tolerances": {
+        "cct_K": 59.36630640583336,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 10000,
+      "gm": 200,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "213-strip-guide10-white70-w5-cct10000-gm200-candidate0",
+            "command": {
+              "b": 1109,
+              "cw": 4095,
+              "g": 1889,
+              "r": 0,
+              "ww": 0
+            },
+            "strip_white_point": {
+              "cct_K": 8128.106972127013,
+              "duv": -0.02722810497808823,
+              "mired": 123.02987687406306
+            }
+          },
+          {
+            "capture_id": "215-strip-guide10-white70-w5-cct10000-gm200-candidate1",
+            "command": {
+              "b": 853,
+              "cw": 4095,
+              "g": 1889,
+              "r": 0,
+              "ww": 0
+            },
+            "strip_white_point": {
+              "cct_K": 7455.046241579034,
+              "duv": -0.030967061282894896,
+              "mired": 134.13733028545138
+            }
+          },
+          {
+            "capture_id": "217-strip-guide10-white70-w5-cct10000-gm200-candidate2",
+            "command": {
+              "b": 597,
+              "cw": 4095,
+              "g": 1889,
+              "r": 0,
+              "ww": 0
+            },
+            "strip_white_point": {
+              "cct_K": 6966.021963380064,
+              "duv": -0.03439528334842797,
+              "mired": 143.55395450329277
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "119-ray-guide10-white70-w6-cct10000-gm200",
+        "cct_K": 8167.525938501444,
+        "duv": -0.027173711547228942,
+        "mired": 122.43609723796939
+      },
+      "tolerances": {
+        "cct_K": 59.03887294587735,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 14000,
+      "gm": 0,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "219-strip-guide10-white70-w5-cct14000-gm0-candidate0",
+            "command": {
+              "b": 1979,
+              "cw": 4095,
+              "g": 90,
+              "r": 21,
+              "ww": 1542
+            },
+            "strip_white_point": {
+              "cct_K": 11023.009700208595,
+              "duv": 0.022933299742011866,
+              "mired": 90.7193250479564
+            }
+          },
+          {
+            "capture_id": "221-strip-guide10-white70-w5-cct14000-gm0-candidate1",
+            "command": {
+              "b": 1723,
+              "cw": 4095,
+              "g": 90,
+              "r": 21,
+              "ww": 1542
+            },
+            "strip_white_point": {
+              "cct_K": 9352.683485361942,
+              "duv": 0.020705072249589153,
+              "mired": 106.92118487331668
+            }
+          },
+          {
+            "capture_id": "223-strip-guide10-white70-w5-cct14000-gm0-candidate2",
+            "command": {
+              "b": 1467,
+              "cw": 4095,
+              "g": 90,
+              "r": 21,
+              "ww": 1542
+            },
+            "strip_white_point": {
+              "cct_K": 8056.380897381125,
+              "duv": 0.017891261582417915,
+              "mired": 124.12521363346518
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "120-ray-guide10-white70-w6-cct14000-gm0",
+        "cct_K": 11337.430517469713,
+        "duv": 0.022677911014363502,
+        "mired": 88.20340715289164
+      },
+      "tolerances": {
+        "cct_K": 48.64828457459104,
+        "duv": 0.00025,
+        "mired": 0.5
+      }
+    },
+    {
+      "cct": 14000,
+      "gm": 70,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "225-strip-guide10-white70-w5-cct14000-gm70-candidate0",
+            "command": {
+              "b": 1148,
+              "cw": 4095,
+              "g": 255,
+              "r": 18,
+              "ww": 4
+            },
+            "strip_white_point": {
+              "cct_K": 10884.905357134168,
+              "duv": 0.006373368962905491,
+              "mired": 91.87034403974688
+            }
+          },
+          {
+            "capture_id": "227-strip-guide10-white70-w5-cct14000-gm70-candidate1",
+            "command": {
+              "b": 892,
+              "cw": 4095,
+              "g": 255,
+              "r": 18,
+              "ww": 4
+            },
+            "strip_white_point": {
+              "cct_K": 8606.20123226091,
+              "duv": 0.0017612441260092557,
+              "mired": 116.19528442484408
+            }
+          },
+          {
+            "capture_id": "229-strip-guide10-white70-w5-cct14000-gm70-candidate2",
+            "command": {
+              "b": 636,
+              "cw": 4095,
+              "g": 255,
+              "r": 18,
+              "ww": 4
+            },
+            "strip_white_point": {
+              "cct_K": 7515.212372703508,
+              "duv": -0.0023204469758384104,
+              "mired": 133.06343858387356
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "123-ray-guide10-white70-w6-cct14000-gm70",
+        "cct_K": 10879.340942051978,
+        "duv": 0.006401913025390268,
+        "mired": 91.91733261476293
+      },
+      "tolerances": {
+        "cct_K": 95.62790886999122,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 14000,
+      "gm": 100,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "231-strip-guide10-white70-w5-cct14000-gm100-candidate0",
+            "command": {
+              "b": 1357,
+              "cw": 4095,
+              "g": 691,
+              "r": 75,
+              "ww": 69
+            },
+            "strip_white_point": {
+              "cct_K": 10747.795219646901,
+              "duv": -0.00011144245604169706,
+              "mired": 93.04233841113816
+            }
+          },
+          {
+            "capture_id": "233-strip-guide10-white70-w5-cct14000-gm100-candidate1",
+            "command": {
+              "b": 1101,
+              "cw": 4095,
+              "g": 691,
+              "r": 75,
+              "ww": 69
+            },
+            "strip_white_point": {
+              "cct_K": 8797.499215932798,
+              "duv": -0.004578217635861231,
+              "mired": 113.66866599873521
+            }
+          },
+          {
+            "capture_id": "235-strip-guide10-white70-w5-cct14000-gm100-candidate2",
+            "command": {
+              "b": 845,
+              "cw": 4095,
+              "g": 691,
+              "r": 75,
+              "ww": 69
+            },
+            "strip_white_point": {
+              "cct_K": 7693.798033427612,
+              "duv": -0.008689214226642091,
+              "mired": 129.9748181139214
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "124-ray-guide10-white70-w6-cct14000-gm100",
+        "cct_K": 10716.996315776536,
+        "duv": -1.4383215154961312e-05,
+        "mired": 93.30972695473412
+      },
+      "tolerances": {
+        "cct_K": 95.66326750581919,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 14000,
+      "gm": 130,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "237-strip-guide10-white70-w5-cct14000-gm130-candidate0",
+            "command": {
+              "b": 4095,
+              "cw": 3779,
+              "g": 3701,
+              "r": 796,
+              "ww": 2252
+            },
+            "strip_white_point": {
+              "cct_K": 10432.217733303247,
+              "duv": -0.007904832048015224,
+              "mired": 95.85689501165741
+            }
+          },
+          {
+            "capture_id": "239-strip-guide10-white70-w5-cct14000-gm130-candidate1",
+            "command": {
+              "b": 4095,
+              "cw": 4035,
+              "g": 3701,
+              "r": 796,
+              "ww": 2252
+            },
+            "strip_white_point": {
+              "cct_K": 10286.954298000128,
+              "duv": -0.007884320464468715,
+              "mired": 97.21050283993277
+            }
+          },
+          {
+            "capture_id": "241-strip-guide10-white70-w5-cct14000-gm130-candidate2",
+            "command": {
+              "b": 4095,
+              "cw": 4095,
+              "g": 3701,
+              "r": 796,
+              "ww": 2252
+            },
+            "strip_white_point": {
+              "cct_K": 10284.66334924564,
+              "duv": -0.007887095922507343,
+              "mired": 97.23215685745785
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "127-ray-guide10-white70-w6-cct14000-gm130",
+        "cct_K": 10590.349072518555,
+        "duv": -0.008078696514888791,
+        "mired": 94.42559382626507
+      },
+      "tolerances": {
+        "cct_K": 46.1834576928669,
+        "duv": 0.00025,
+        "mired": 0.5
+      }
+    },
+    {
+      "cct": 14000,
+      "gm": 200,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "243-strip-guide10-white70-w5-cct14000-gm200-candidate0",
+            "command": {
+              "b": 1918,
+              "cw": 4095,
+              "g": 2489,
+              "r": 14,
+              "ww": 43
+            },
+            "strip_white_point": {
+              "cct_K": 10139.795246954856,
+              "duv": -0.025961691645834832,
+              "mired": 98.62132081023195
+            }
+          },
+          {
+            "capture_id": "245-strip-guide10-white70-w5-cct14000-gm200-candidate1",
+            "command": {
+              "b": 1662,
+              "cw": 4095,
+              "g": 2489,
+              "r": 14,
+              "ww": 43
+            },
+            "strip_white_point": {
+              "cct_K": 9355.89429335809,
+              "duv": -0.02821183439078941,
+              "mired": 106.88449106462407
+            }
+          },
+          {
+            "capture_id": "247-strip-guide10-white70-w5-cct14000-gm200-candidate2",
+            "command": {
+              "b": 1406,
+              "cw": 4095,
+              "g": 2489,
+              "r": 14,
+              "ww": 43
+            },
+            "strip_white_point": {
+              "cct_K": 8602.082701920166,
+              "duv": -0.03103113911771256,
+              "mired": 116.25091674331135
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "128-ray-guide10-white70-w6-cct14000-gm200",
+        "cct_K": 10270.512466369848,
+        "duv": -0.025954559424456475,
+        "mired": 97.36612494015635
+      },
+      "tolerances": {
+        "cct_K": 89.80408951813851,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 20000,
+      "gm": 0,
+      "measured_secant_evidence": {
+        "observation_count": 2,
+        "observations": [
+          {
+            "capture_id": "249-strip-guide10-white70-w5-cct20000-gm0-candidate0",
+            "command": {
+              "b": 1701,
+              "cw": 4095,
+              "g": 59,
+              "r": 5,
+              "ww": 1078
+            },
+            "strip_white_point": {
+              "cct_K": 11778.1483604321,
+              "duv": 0.020838972120367442,
+              "mired": 84.90298894174512
+            }
+          },
+          {
+            "capture_id": "251-strip-guide10-white70-w5-cct20000-gm0-candidate1",
+            "command": {
+              "b": 1445,
+              "cw": 4095,
+              "g": 59,
+              "r": 5,
+              "ww": 1078
+            },
+            "strip_white_point": {
+              "cct_K": 9549.307274934044,
+              "duv": 0.018112484419522495,
+              "mired": 104.71963789718002
+            }
+          }
+        ],
+        "unique_command_count": 2,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "131-ray-guide10-white70-w6-cct20000-gm0",
+        "cct_K": 15510.214116328221,
+        "duv": 0.023133737694672415,
+        "mired": 64.47364249776926
+      },
+      "tolerances": {
+        "cct_K": 158.3122254258303,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 20000,
+      "gm": 70,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "253-strip-guide10-white70-w5-cct20000-gm70-candidate0",
+            "command": {
+              "b": 4095,
+              "cw": 0,
+              "g": 3343,
+              "r": 1427,
+              "ww": 2674
+            },
+            "strip_white_point": {
+              "cct_K": 13915.394277216334,
+              "duv": 0.006765612833851407,
+              "mired": 71.86285778745768
+            }
+          },
+          {
+            "capture_id": "255-strip-guide10-white70-w5-cct20000-gm70-candidate1",
+            "command": {
+              "b": 4095,
+              "cw": 0,
+              "g": 3087,
+              "r": 1427,
+              "ww": 2674
+            },
+            "strip_white_point": {
+              "cct_K": 15477.662526689715,
+              "duv": 0.010650358115494587,
+              "mired": 64.60923917132821
+            }
+          },
+          {
+            "capture_id": "257-strip-guide10-white70-w5-cct20000-gm70-candidate2",
+            "command": {
+              "b": 4095,
+              "cw": 0,
+              "g": 2831,
+              "r": 1427,
+              "ww": 2674
+            },
+            "strip_white_point": {
+              "cct_K": 18146.92593990221,
+              "duv": 0.014628565165331507,
+              "mired": 55.10575197759301
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "132-ray-guide10-white70-w6-cct20000-gm70",
+        "cct_K": 14167.267869010735,
+        "duv": 0.006801320401356955,
+        "mired": 70.58523981094369
+      },
+      "tolerances": {
+        "cct_K": 147.84510952789233,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 20000,
+      "gm": 100,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "259-strip-guide10-white70-w5-cct20000-gm100-candidate0",
+            "command": {
+              "b": 3581,
+              "cw": 0,
+              "g": 4095,
+              "r": 3214,
+              "ww": 181
+            },
+            "strip_white_point": {
+              "cct_K": 13829.444033818196,
+              "duv": 0.0005129511561442288,
+              "mired": 72.30948674108834
+            }
+          },
+          {
+            "capture_id": "261-strip-guide10-white70-w5-cct20000-gm100-candidate1",
+            "command": {
+              "b": 3325,
+              "cw": 0,
+              "g": 4095,
+              "r": 3214,
+              "ww": 181
+            },
+            "strip_white_point": {
+              "cct_K": 11964.780579659588,
+              "duv": -0.001378764961935879,
+              "mired": 83.57863258270058
+            }
+          },
+          {
+            "capture_id": "263-strip-guide10-white70-w5-cct20000-gm100-candidate2",
+            "command": {
+              "b": 3069,
+              "cw": 0,
+              "g": 4095,
+              "r": 3214,
+              "ww": 181
+            },
+            "strip_white_point": {
+              "cct_K": 10558.835530433109,
+              "duv": -0.0033832801182018674,
+              "mired": 94.70741324815212
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "135-ray-guide10-white70-w6-cct20000-gm100",
+        "cct_K": 13881.718840186026,
+        "duv": 0.0007198391360060493,
+        "mired": 72.0371887309165
+      },
+      "tolerances": {
+        "cct_K": 146.9615456911066,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 20000,
+      "gm": 130,
+      "measured_secant_evidence": {
+        "observation_count": 2,
+        "observations": [
+          {
+            "capture_id": "265-strip-guide10-white70-w5-cct20000-gm130-candidate0",
+            "command": {
+              "b": 1837,
+              "cw": 4095,
+              "g": 1532,
+              "r": 5,
+              "ww": 248
+            },
+            "strip_white_point": {
+              "cct_K": 11349.974148945279,
+              "duv": -0.009893429826557068,
+              "mired": 88.10592754459509
+            }
+          },
+          {
+            "capture_id": "267-strip-guide10-white70-w5-cct20000-gm130-candidate1",
+            "command": {
+              "b": 1581,
+              "cw": 4095,
+              "g": 1532,
+              "r": 5,
+              "ww": 248
+            },
+            "strip_white_point": {
+              "cct_K": 10054.890631051005,
+              "duv": -0.01236713811136942,
+              "mired": 99.45409022270721
+            }
+          }
+        ],
+        "unique_command_count": 2,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "136-ray-guide10-white70-w6-cct20000-gm130",
+        "cct_K": 13470.688214572074,
+        "duv": -0.00724027301492593,
+        "mired": 74.23525688303278
+      },
+      "tolerances": {
+        "cct_K": 143.6915718508511,
+        "duv": 0.0005,
+        "mired": 1.0
+      }
+    },
+    {
+      "cct": 20000,
+      "gm": 200,
+      "measured_secant_evidence": {
+        "observation_count": 3,
+        "observations": [
+          {
+            "capture_id": "269-strip-guide10-white70-w5-cct20000-gm200-candidate0",
+            "command": {
+              "b": 3082,
+              "cw": 4095,
+              "g": 3786,
+              "r": 398,
+              "ww": 86
+            },
+            "strip_white_point": {
+              "cct_K": 12824.460134848878,
+              "duv": -0.02539237914292413,
+              "mired": 77.9759919314361
+            }
+          },
+          {
+            "capture_id": "271-strip-guide10-white70-w5-cct20000-gm200-candidate1",
+            "command": {
+              "b": 2826,
+              "cw": 4095,
+              "g": 3786,
+              "r": 398,
+              "ww": 86
+            },
+            "strip_white_point": {
+              "cct_K": 11509.979752081294,
+              "duv": -0.027448124386217045,
+              "mired": 86.88112590460247
+            }
+          },
+          {
+            "capture_id": "273-strip-guide10-white70-w5-cct20000-gm200-candidate2",
+            "command": {
+              "b": 2570,
+              "cw": 4095,
+              "g": 3786,
+              "r": 398,
+              "ww": 86
+            },
+            "strip_white_point": {
+              "cct_K": 10351.945065361666,
+              "duv": -0.029916638299446442,
+              "mired": 96.60020350630242
+            }
+          }
+        ],
+        "unique_command_count": 3,
+        "usable_for_local_response": true
+      },
+      "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+      "ray_target": {
+        "capture_id": "139-ray-guide10-white70-w6-cct20000-gm200",
+        "cct_K": 12904.377136676485,
+        "duv": -0.025090151035683975,
+        "mired": 77.49308543980987
+      },
+      "tolerances": {
+        "cct_K": 67.63378604848273,
+        "duv": 0.00025,
+        "mired": 0.5
+      }
+    }
+  ],
+  "objective": "guide11_full_tolerance_E_max",
+  "schema": "guide11_w1_frozen_targets_v1",
+  "steady_claim": false
+}

@@ -519,3 +519,103 @@ def build_w7_long_mislabel_reclassification(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(artifact, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return artifact
+
+
+def build_guide11_w1_frozen_targets(
+    rejoined_observations_path: Path,
+    w6_plan: Mapping[str, Any],
+    output_path: Path,
+) -> dict[str, Any]:
+    """Freeze the GUIDE11 W1 white targets, tolerances, and response evidence.
+
+    Targets come from the W6 Ray observations joined by physical identity;
+    tolerances come from the frozen W6 validation contracts. The navigation
+    objective is the full-tolerance ``E(u)`` of ``11.GUIDE.md`` section 4/W1.
+    Same-node strip commands observed at more than one code (W5 candidate
+    batches) are listed as measured secant evidence; no historical Jacobian is
+    promoted to a derivative truth.
+    """
+    import json
+
+    rows = [
+        json.loads(line)
+        for line in Path(rejoined_observations_path).read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    contracts = {
+        (int(x["cct"]), int(x["gm"])): x
+        for x in w6_plan.get("analysis_contract", {}).get("target_contracts", ())
+    }
+    ray_by_key: dict[tuple[int, int], dict[str, Any]] = {}
+    measured_pairs: dict[tuple[int, int], list[dict[str, Any]]] = {}
+    for row in rows:
+        capture_id = str(row.get("capture_id", ""))
+        source = str(row.get("source_id", ""))
+        plan_step = row.get("plan_step") or {}
+        key = (int(plan_step.get("target_cct", 0) or row.get("target", {}).get("cct", 0)),
+               int(plan_step.get("target_gm", 0) or row.get("target", {}).get("gm", 0)))
+        white = (row.get("white_observation") or {}).get("white_point") or {}
+        command = row.get("command") or {}
+        if not white or not command:
+            continue
+        if "w6" in capture_id and source == "ray" and key not in ray_by_key:
+            ray_by_key[key] = {
+                "cct_K": float(white["cct_K"]),
+                "duv": float(white["duv"]),
+                "mired": 1_000_000.0 / float(white["cct_K"]),
+                "capture_id": capture_id,
+            }
+        if "w5" in capture_id and source == "strip":
+            channel_command = {
+                name: int(command.get(name, 0)) for name in CHANNELS
+            }
+            measured_pairs.setdefault(key, []).append({
+                "capture_id": capture_id,
+                "command": channel_command,
+                "strip_white_point": {
+                    "cct_K": float(white["cct_K"]),
+                    "duv": float(white["duv"]),
+                    "mired": 1_000_000.0 / float(white["cct_K"]),
+                },
+            })
+    nodes = []
+    missing_targets = []
+    for key in sorted(contracts):
+        contract = contracts[key]
+        ray = ray_by_key.get(key)
+        if ray is None:
+            missing_targets.append(key)
+            continue
+        pairs = measured_pairs.get(key, [])
+        unique_commands = {tuple(sorted(p["command"].items())) for p in pairs}
+        nodes.append({
+            "cct": key[0],
+            "gm": key[1],
+            "ray_target": ray,
+            "tolerances": {
+                "cct_K": float(contract["resolved_cct_tolerance_K"]),
+                "mired": float(contract["cct_tolerance_mired"]),
+                "duv": float(contract["duv_tolerance"]),
+            },
+            "navigation_objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv)",
+            "measured_secant_evidence": {
+                "observation_count": len(pairs),
+                "unique_command_count": len(unique_commands),
+                "usable_for_local_response": len(unique_commands) >= 2,
+                "observations": pairs,
+            },
+        })
+    artifact = {
+        "schema": "guide11_w1_frozen_targets_v1",
+        "node_count": len(nodes),
+        "missing_ray_targets": [list(key) for key in missing_targets],
+        "objective": "guide11_full_tolerance_E_max",
+        "mired_cct_relation": "same white-point chromaticity, never independent noises",
+        "nodes": nodes,
+        "steady_claim": False,
+    }
+    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+    Path(output_path).write_text(
+        json.dumps(artifact, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    return artifact
