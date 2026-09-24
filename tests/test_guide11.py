@@ -575,3 +575,44 @@ class Guide11N1AnalysisTests(unittest.TestCase):
         for cycle in ("1", "2"):
             z = point["product_chromaticity"][cycle]["ray_z"]["log_R_over_G"]
             self.assertTrue(math.isfinite(z))
+
+
+class Guide11C1ProductLayerTests(unittest.TestCase):
+    def test_block06_gate_and_accepted_features(self):
+        report = {
+            "patches": [{
+                "index": 6, "name": "block_06", "quality_status": "accepted",
+                "planes": {
+                    plane: {"statistics": {"normalized_per_second": {"trimmed_mean": 500.0 + i}}}
+                    for i, plane in enumerate(("R", "G1", "G2", "B"))
+                },
+            }],
+        }
+        good = measure._c1_block06_quality(report)
+        self.assertTrue(good["accepted"])
+        self.assertEqual(good["planes"]["R"], 500.0)
+        clipped = {
+            "patches": [{
+                "index": 6, "quality_status": "accepted",
+                "planes": {
+                    plane: {
+                        "statistics": {"normalized_per_second": {"trimmed_mean": 500.0}},
+                        "quality": {"clipped": plane == "R"},
+                    }
+                    for plane in ("R", "G1", "G2", "B")
+                },
+            }],
+        }
+        self.assertFalse(measure._c1_block06_quality(clipped)["accepted"])
+        missing = {"patches": []}
+        self.assertIsNone(measure._c1_block06_quality(missing))
+        negative = {
+            "patches": [{
+                "index": 6, "quality_status": "accepted",
+                "planes": {
+                    plane: {"statistics": {"normalized_per_second": {"trimmed_mean": 0.0}}}
+                    for plane in ("R", "G1", "G2", "B")
+                },
+            }],
+        }
+        self.assertFalse(measure._c1_block06_quality(negative)["accepted"])

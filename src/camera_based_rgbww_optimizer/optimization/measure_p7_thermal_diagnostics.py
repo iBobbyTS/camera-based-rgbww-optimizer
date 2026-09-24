@@ -211,6 +211,67 @@ def _resolve_remote_capture_settings(camera_backend: Any) -> tuple[Any, dict[str
     return resolved, provenance
 
 
+def _c1_block06_quality(report: Mapping[str, Any]) -> dict[str, Any] | None:
+    """Product-layer gate input: block_06 patch quality from a RAW report."""
+    patches = report.get("patches") or []
+    block = next(
+        (p for p in patches if isinstance(p, Mapping) and str(p.get("index")) == "6"),
+        None,
+    )
+    if block is None:
+        block = next(
+            (p for p in patches if isinstance(p, Mapping) and "block_06" in str(p.get("name", ""))),
+            None,
+        )
+    if block is None:
+        return None
+    planes = block.get("planes")
+    if not isinstance(planes, Mapping):
+        return None
+    values = {}
+    for plane in ("R", "G1", "G2", "B"):
+        entry = planes.get(plane)
+        stats = (entry or {}).get("statistics") or {}
+        trimmed = ((stats.get("normalized_per_second") or {}).get("trimmed_mean"))
+        if not isinstance(trimmed, (int, float)) or float(trimmed) <= 0:
+            return {"accepted": False, "reason": f"plane {plane} invalid"}
+        values[plane] = float(trimmed)
+    quality = block.get("quality_status")
+    clipped = any(
+        ((planes.get(plane) or {}).get("quality") or {}).get("clipped")
+        for plane in ("R", "G1", "G2", "B")
+        if isinstance((planes.get(plane) or {}).get("quality"), Mapping)
+    )
+    return {
+        "accepted": quality in (None, "accepted") and not clipped,
+        "quality_status": quality,
+        "clipped": clipped,
+        "planes": values,
+    }
+
+
+def _c1_accepted_features(
+    report: Mapping[str, Any], feature_ids: Sequence[str], statistic: str,
+) -> dict[str, float]:
+    from camera_based_rgbww_optimizer.optimization.hsi_objective import (
+        collect_patch_plane_features,
+    )
+
+    collection = collect_patch_plane_features([report], statistic=statistic)
+    by_id = {str(item["feature_id"]): item for item in collection["observations"]}
+    accepted = {}
+    for feature in feature_ids:
+        item = by_id.get(str(feature))
+        if item is None:
+            continue
+        if item["status"] != "included" or item["quality_status"] != "accepted":
+            continue
+        if item["value"] is None or not math.isfinite(float(item["value"])):
+            continue
+        accepted[str(feature)] = float(item["value"])
+    return accepted
+
+
 def validate_authorized_execution_plan(
     plan: Mapping[str, Any], *, camera_backend: Any | None = None,
 ) -> None:
@@ -2606,10 +2667,20 @@ def validate_direct_protocol_post_capture(
             raise ValueError("direct protocol feature artifact is missing or non-finite")
         if row.get("formal_measurement"):
             direct_quality = capture.get("direct_quality")
+            product_layer_ok = (
+                str(plan.get("execution_authorization", {}).get("schema"))
+                == "direct_guide11_c1_hsi_main_nodes_v1"
+                and isinstance(direct_quality, Mapping)
+                and direct_quality.get("status") == "product_layer_block06_accepted"
+                and direct_quality.get("feature_count") == len(values)
+            )
             if (
                 not isinstance(direct_quality, Mapping)
-                or direct_quality.get("status") != "pass"
-                or direct_quality.get("feature_count") != len(values)
+                or not (
+                    direct_quality.get("status") == "pass"
+                    and direct_quality.get("feature_count") == len(values)
+                )
+                and not product_layer_ok
             ):
                 raise ValueError("direct protocol capture lacks accepted RAW feature quality")
         if row.get("source_id") == "ray":
@@ -3383,7 +3454,21 @@ def run_authorized_plan(
                     report, feature_ids, statistic=feature_statistic,
                 )
             except HsiRejectedFeaturesError as exc:
-                if not (
+                if str(plan["execution_authorization"].get("schema")) == "direct_guide11_c1_hsi_main_nodes_v1":
+                    accepted = _c1_accepted_features(report, feature_ids, feature_statistic)
+                    block06 = _c1_block06_quality(report)
+                    if block06 is None or not block06["accepted"] or not accepted:
+                        raise
+                    output["feature_values"] = accepted
+                    output["direct_quality"] = {
+                        "status": "product_layer_block06_accepted",
+                        "feature_count": len(accepted),
+                        "required_feature_count": len(feature_ids),
+                        "rejected_count": len(exc.rejected),
+                        "block06": block06,
+                        "recorded_exposure_owner": "Canon:ExposureTime",
+                    }
+                elif not (
                     direct_guide8_emission_exposure
                     or direct_guide9_h300_reference_diag
                     or direct_guide6_strip_exposure
