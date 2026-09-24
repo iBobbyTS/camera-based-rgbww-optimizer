@@ -1,0 +1,812 @@
+{
+  "difficult_region_within": 0,
+  "node_baseline_caveat": "pass-node baselines use W6 status (E recorded 0.0 as pass); W2-selected nodes use the selection frame",
+  "objective": "E(u) vs W1 frozen targets; node-baseline residual and interpolation increment reported separately",
+  "point_count": 20,
+  "points": [
+    {
+      "cct": 1800,
+      "command": {
+        "b": 52,
+        "cw": 72,
+        "g": 591,
+        "r": 4095,
+        "ww": 2058
+      },
+      "differs_from_nearest_copy": true,
+      "gm": 35,
+      "holdout_E": 9.748521061529232,
+      "holdout_error_gates": {
+        "cct_K": -1.3813416905771465,
+        "duv": 1.9682113210249286,
+        "mired": 9.748521061529232
+      },
+      "holdout_within_tolerance": false,
+      "interpolation_increment_gates": {
+        "cct_K": -1.3813416905771465,
+        "duv": 1.9682113210249286,
+        "mired": 9.748521061529232
+      },
+      "nearest_node": {
+        "E": 0.0,
+        "basis": "w6_observation_vs_frozen_target",
+        "cct": 1800,
+        "gm": 0
+      },
+      "ray_white_point": {
+        "cct_K": 1899.4828189078364,
+        "duv": 0.0014933366155132995,
+        "mired": 526.4590919411313
+      },
+      "strip_white_point": {
+        "cct_K": 1864.9492766434078,
+        "duv": 0.0024774422760257637,
+        "mired": 536.2076130026605
+      }
+    },
+    {
+      "cct": 1800,
+      "command": {
+        "b": 0,
+        "cw": 13,
+        "g": 902,
+        "r": 4095,
+        "ww": 772
+      },
+      "differs_from_nearest_copy": true,
+      "gm": 165,
+      "holdout_E": 1.106479666852465,
+      "holdout_error_gates": {
+        "cct_K": -0.15392771578543943,
+        "duv": -0.3909964875801483,
+        "mired": 1.106479666852465
+      },
+      "holdout_within_tolerance": false,
+      "interpolation_increment_gates": {
+        "cct_K": -0.15392771578543943,
+        "duv": -0.3909964875801483,
+        "mired": 1.106479666852465
+      },
+      "nearest_node": {
+        "E": 0.0,
+        "basis": "w6_observation_vs_frozen_target",
+        "cct": 1800,
+        "gm": 130
+      },
+      "ray_white_point": {
+        "cct_K": 1866.830022754409,
+        "duv": -0.002452889983712425,
+        "mired": 535.667408286349
+      },
+      "strip_white_point": {
+        "cct_K": 1862.981829859773,
+        "duv": -0.0026483882275024993,
+        "mired": 536.7738879532014
+      }
+    },
+    {
+      "cct": 1900,
+      "command": {
+        "b": 6,
+        "cw": 21,
+        "g": 1322,
+        "r": 4095,
+        "ww": 13
+      },
+      "differs_from_nearest_copy": true,
+      "gm": 100,
+      "holdout_E": 1.4896988327181542,
+      "holdout_error_gates": {
+        "cct_K": -0.061249387897432825,
+        "duv": 1.4896988327181542,
+        "mired": 0.37260475009617267
+      },
+      "holdout_within_tolerance": false,
+      "interpolation_increment_gates": {
+        "cct_K": -0.2184909471679657,
+        "duv": 0.6711547435524697,
+        "mired": -0.4857581321658131
+      },
+      "nearest_node": {
+        "E": 0.8583628822619858,
+        "basis": "w2_selection_frame",
+        "cct": 2000,
+        "gm": 100
+      },
+      "ray_white_point": {
+        "cct_K": 2027.9661805036528,
+        "duv": -0.006009436723401579,
+        "mired": 493.10487009780724
+      },
+      "strip_white_point": {
+        "cct_K": 2026.434945806217,
+        "duv": -0.005264587307042502,
+        "mired": 493.4774748479034
+      }
+    },
+    {
+      "cct": 2150,
+      "command": {
+        "b": 135,
+        "cw": 112,
+        "g": 595,
+        "r": 3022,
+        "ww": 3012
+      },
+      "differs_from_nearest_copy": true,
+      "gm": 35,
+      "holdout_E": 6.536250534266379,
+      "holdout_error_gates": {
+        "cct_K": 1.0480027042430082,
+        "duv": -6.536250534266379,
+        "mired": -5.051308373510551
+      },
+      "holdout_within_tolerance": false,
+      "interpolation_increment_gates": {
+        "cct_K": 1.0480027042430082,
+        "duv": -6.536250534266379,
+        "mired": -5.051308373510551
+      },
+      "nearest_node": {
+        "E": 0.0,
+        "basis": "w6_observation_vs_frozen_target",
+        "cct": 2300,
+        "gm": 0
+      },
+      "ray_white_point": {
+        "cct_K": 2264.3898118240204,
+        "duv": 0.00413986470725185,
+        "mired": 441.62007565052414
+      },
+      "strip_white_point": {
+        "cct_K": 2290.5898794300956,
+        "duv": 0.0008717394401186604,
+        "mired": 436.5687672770136
+      }
+    },
+    {
+      "cct": 2150,
+      "command": {
+        "b": 0,
+        "cw": 0,
+        "g": 1433,
+        "r": 4095,
+        "ww": 2190
+      },
+      "differs_from_nearest_copy": true,
+      "gm": 165,
+      "holdout_E": 28.501973511422307,
+      "holdout_error_gates": {
+        "cct_K": 6.236660926259974,
+        "duv": 0.8516643130411228,
+        "mired": -28.501973511422307
+      },
+      "holdout_within_tolerance": false,
+      "interpolation_increment_gates": {
+        "cct_K": 6.236660926259974,
+        "duv": 0.8516643130411228,
+        "mired": -28.501973511422307
+      },
+      "nearest_node": {
+        "E": 0.0,
+        "basis": "w6_observation_vs_frozen_target",
+        "cct": 2300,
+        "gm": 130
+      },
+      "ray_white_point": {
+        "cct_K": 2300.229233026658,
+        "duv": -0.008564187846002715,
+        "mired": 434.7392797387384
+      },
+      "strip_white_point": {
+        "cct_K": 2378.187494604908,
+        "duv": -0.008351271767742434,
+        "mired": 420.48829298302724
+      }
+    },
+    {
+      "cct": 2500,
+      "command": {
+        "b": 333,
+        "cw": 229,
+        "g": 422,
+        "r": 1827,
+        "ww": 3164
+      },
+      "differs_from_nearest_copy": true,
+      "gm": 35,
+      "holdout_E": 2.8237337761584627,
+      "holdout_error_gates": {
+        "cct_K": -0.7793620216964701,
+        "duv": 0.9447013932134002,
+        "mired": 2.8237337761584627
+      },
+      "holdout_within_tolerance": false,
+      "interpolation_increment_gates": {
+        "cct_K": -0.7793620216964701,
+        "duv": 0.9447013932134002,
+        "mired": 2.8237337761584627
+      },
+      "nearest_node": {
+        "E": 0.0,
+        "basis": "w6_observation_vs_frozen_target",
+        "cct": 2700,
+        "gm": 0
+      },
+      "ray_white_point": {
+        "cct_K": 2636.5645769428866,
+        "duv": 0.006313760819873464,
+        "mired": 379.2814364363138
+      },
+      "strip_white_point": {
+        "cct_K": 2617.080526400475,
+        "duv": 0.006786111516480164,
+        "mired": 382.1051702124723
+      }
+    },
+    {
+      "cct": 2500,
+      "command": {
+        "b": 7,
+        "cw": 12,
+        "g": 608,
+        "r": 1969,
+        "ww": 4095
+      },
+      "differs_from_nearest_copy": true,
+      "gm": 165,
+      "holdout_E": 6.283029865441904,
+      "holdout_error_gates": {
+        "cct_K": -1.7424522218444691,
+        "duv": 0.7344366206630606,
+        "mired": 6.283029865441904
+      },
+      "holdout_within_tolerance": false,
+      "interpolation_increment_gates": {
+        "cct_K": -1.7424522218444691,
+        "duv": 0.7344366206630606,
+        "mired": 6.283029865441904
+      },
+      "nearest_node": {
+        "E": 0.0,
+        "basis": "w6_observation_vs_frozen_target",
+        "cct": 2700,
+        "gm": 130
+      },
+      "ray_white_point": {
+        "cct_K": 2654.9618132553546,
+        "duv": -0.009517907923876951,
+        "mired": 376.6532516615974
+      },
+      "strip_white_point": {
+        "cct_K": 2611.400507709243,
+        "duv": -0.009150689613545421,
+        "mired": 382.9362815270393
+      }
+    },
+    {
+      "cct": 3000,
+      "command": {
+        "b": 42,
+        "cw": 1953,
+        "g": 1819,
+        "r": 4026,
+        "ww": 1781
+      },
+      "differs_from_nearest_copy": true,
+      "gm": 100,
+      "holdout_E": 6.942008362784065,
+      "holdout_error_gates": {
+        "cct_K": -2.6369987770641456,
+        "duv": 2.2020218518064882,
+        "mired": 6.942008362784065
+      },
+      "holdout_within_tolerance": false,
+      "interpolation_increment_gates": {
+        "cct_K": -2.6369987770641456,
+        "duv": 2.2020218518064882,
+        "mired": 6.942008362784065
+      },
+      "nearest_node": {
+        "E": 0.0,
+        "basis": "w6_observation_vs_frozen_target",
+        "cct": 3200,
+        "gm": 100
+      },
+      "ray_white_point": {
+        "cct_K": 3114.7823146523674,
+        "duv": -0.007346082151464968,
+        "mired": 321.0497232168879
+      },
+      "strip_white_point": {
+        "cct_K": 3048.8573452257638,
+        "duv": -0.006245071225561723,
+        "mired": 327.991731579672
+      }
+    },
+    {
+      "cct": 3200,
+      "command": {
+        "b": 438,
+        "cw": 564,
+        "g": 8,
+        "r": 162,
+        "ww": 4095
+      },
+      "differs_from_nearest_copy": true,
+      "gm": 35,
+      "holdout_E": 11.092337005577804,
+      "holdout_error_gates": {
+        "cct_K": -4.382132063560311,
+        "duv": -11.092337005577804,
+        "mired": 10.476903961258301
+      },
+      "holdout_within_tolerance": false,
+      "interpolation_increment_gates": {
+        "cct_K": -4.382132063560311,
+        "duv": -11.092337005577804,
+        "mired": 10.476903961258301
+      },
+      "nearest_node": {
+        "E": 0.0,
+        "basis": "w6_observation_vs_frozen_target",
+        "cct": 3200,
+        "gm": 0
+      },
+      "ray_white_point": {
+        "cct_K": 3288.91470189021,
+        "duv": 0.010368750667390288,
+        "mired": 304.0516676900372
+      },
+      "strip_white_point": {
+        "cct_K": 3179.361400301202,
+        "duv": 0.004822582164601386,
+        "mired": 314.5285716512955
+      }
+    },
+    {
+      "cct": 3200,
+      "command": {
+        "b": 19,
+        "cw": 921,
+        "g": 1326,
+        "r": 2104,
+        "ww": 2268
+      },
+      "differs_from_nearest_copy": true,
+      "gm": 165,
+      "holdout_E": 13.812355328164642,
+      "holdout_error_gates": {
+        "cct_K": -5.701099364394377,
+        "duv": 6.464666284997297,
+        "mired": 13.812355328164642
+      },
+      "holdout_within_tolerance": false,
+      "interpolation_increment_gates": {
+        "cct_K": -5.701099364394377,
+        "duv": 6.464666284997297,
+        "mired": 13.812355328164642
+      },
+      "nearest_node": {
+        "E": 0.0,
+        "basis": "w6_observation_vs_frozen_target",
+        "cct": 3200,
+        "gm": 130
+      },
+      "ray_white_point": {
+        "cct_K": 3284.34925002104,
+        "duv": -0.01622802646125867,
+        "mired": 304.4743186168748
+      },
+      "strip_white_point": {
+        "cct_K": 3141.8217659111806,
+        "duv": -0.012995693318760021,
+        "mired": 318.28667394503947
+      }
+    },
+    {
+      "cct": 4100,
+      "command": {
+        "b": 69,
+        "cw": 3758,
+        "g": 48,
+        "r": 0,
+        "ww": 3139
+      },
+      "differs_from_nearest_copy": true,
+      "gm": 100,
+      "holdout_E": 3.471753554168714,
+      "holdout_error_gates": {
+        "cct_K": -2.2250129414891853,
+        "duv": 0.38838420794847295,
+        "mired": 3.471753554168714
+      },
+      "holdout_within_tolerance": false,
+      "interpolation_increment_gates": {
+        "cct_K": -2.2250129414891853,
+        "duv": 0.38838420794847295,
+        "mired": 3.471753554168714
+      },
+      "nearest_node": {
+        "E": 0.0,
+        "basis": "w6_observation_vs_frozen_target",
+        "cct": 3800,
+        "gm": 100
+      },
+      "ray_white_point": {
+        "cct_K": 4030.690295331228,
+        "duv": -0.006423436697678488,
+        "mired": 248.09646158086267
+      },
+      "strip_white_point": {
+        "cct_K": 3975.064971793998,
+        "duv": -0.006229244593704252,
+        "mired": 251.56821513503138
+      }
+    },
+    {
+      "cct": 4750,
+      "command": {
+        "b": 1106,
+        "cw": 2029,
+        "g": 293,
+        "r": 16,
+        "ww": 3577
+      },
+      "differs_from_nearest_copy": true,
+      "gm": 35,
+      "holdout_E": 4.050495417995961,
+      "holdout_error_gates": {
+        "cct_K": -3.3820686731929164,
+        "duv": -2.4216547734116323,
+        "mired": 4.050495417995961
+      },
+      "holdout_within_tolerance": false,
+      "interpolation_increment_gates": {
+        "cct_K": -3.3820686731929164,
+        "duv": -2.4216547734116323,
+        "mired": 4.050495417995961
+      },
+      "nearest_node": {
+        "E": 0.0,
+        "basis": "w6_observation_vs_frozen_target",
+        "cct": 5000,
+        "gm": 0
+      },
+      "ray_white_point": {
+        "cct_K": 4611.323997254246,
+        "duv": 0.01285926114634487,
+        "mired": 216.8574579872152
+      },
+      "strip_white_point": {
+        "cct_K": 4526.772280424423,
+        "duv": 0.011648433759639054,
+        "mired": 220.90795340521117
+      }
+    },
+    {
+      "cct": 4750,
+      "command": {
+        "b": 202,
+        "cw": 3157,
+        "g": 1802,
+        "r": 1142,
+        "ww": 1951
+      },
+      "differs_from_nearest_copy": true,
+      "gm": 165,
+      "holdout_E": 2.3985557072895176,
+      "holdout_error_gates": {
+        "cct_K": -1.942547034497511,
+        "duv": 1.4488024966060817,
+        "mired": 2.3985557072895176
+      },
+      "holdout_within_tolerance": false,
+      "interpolation_increment_gates": {
+        "cct_K": -1.942547034497511,
+        "duv": 1.4488024966060817,
+        "mired": 2.3985557072895176
+      },
+      "nearest_node": {
+        "E": 0.0,
+        "basis": "w6_observation_vs_frozen_target",
+        "cct": 5000,
+        "gm": 130
+      },
+      "ray_white_point": {
+        "cct_K": 4524.019496332529,
+        "duv": -0.020402733821496866,
+        "mired": 221.04237190194834
+      },
+      "strip_white_point": {
+        "cct_K": 4475.455820470092,
+        "duv": -0.019678332573193826,
+        "mired": 223.44092760923786
+      }
+    },
+    {
+      "cct": 5300,
+      "command": {
+        "b": 110,
+        "cw": 4095,
+        "g": 11,
+        "r": 75,
+        "ww": 840
+      },
+      "differs_from_nearest_copy": true,
+      "gm": 100,
+      "holdout_E": 1.6681413632153692,
+      "holdout_error_gates": {
+        "cct_K": -1.632047492282664,
+        "duv": 0.10829897002540521,
+        "mired": 1.6681413632153692
+      },
+      "holdout_within_tolerance": false,
+      "interpolation_increment_gates": {
+        "cct_K": -1.632047492282664,
+        "duv": 0.10829897002540521,
+        "mired": 1.6681413632153692
+      },
+      "nearest_node": {
+        "E": 0.0,
+        "basis": "w6_observation_vs_frozen_target",
+        "cct": 5600,
+        "gm": 100
+      },
+      "ray_white_point": {
+        "cct_K": 4976.742888968661,
+        "duv": -0.004649663591777737,
+        "mired": 200.93463180840186
+      },
+      "strip_white_point": {
+        "cct_K": 4935.766595617807,
+        "duv": -0.0045955141067650345,
+        "mired": 202.60277317161723
+      }
+    },
+    {
+      "cct": 6100,
+      "command": {
+        "b": 1417,
+        "cw": 2963,
+        "g": 741,
+        "r": 853,
+        "ww": 2297
+      },
+      "differs_from_nearest_copy": true,
+      "gm": 35,
+      "holdout_E": 0.41321197715425,
+      "holdout_error_gates": {
+        "cct_K": -0.41321197715425,
+        "duv": 0.09992765350532243,
+        "mired": 0.40316244010944047
+      },
+      "holdout_within_tolerance": true,
+      "interpolation_increment_gates": {
+        "cct_K": -0.5348898544684781,
+        "duv": 0.022328124832968893,
+        "mired": 0.2964534153042564
+      },
+      "nearest_node": {
+        "E": 0.12167787731422815,
+        "basis": "w2_selection_frame",
+        "cct": 6500,
+        "gm": 0
+      },
+      "ray_white_point": {
+        "cct_K": 5594.474374314997,
+        "duv": 0.01386130122045082,
+        "mired": 178.74780240144418
+      },
+      "strip_white_point": {
+        "cct_K": 5581.884534556816,
+        "duv": 0.013911265047203481,
+        "mired": 179.15096484155362
+      }
+    },
+    {
+      "cct": 6100,
+      "command": {
+        "b": 33,
+        "cw": 4095,
+        "g": 691,
+        "r": 8,
+        "ww": 446
+      },
+      "differs_from_nearest_copy": true,
+      "gm": 165,
+      "holdout_E": 6.15063787145266,
+      "holdout_error_gates": {
+        "cct_K": -3.2588490497877136,
+        "duv": -6.15063787145266,
+        "mired": 3.4300433748773855
+      },
+      "holdout_within_tolerance": false,
+      "interpolation_increment_gates": {
+        "cct_K": -3.2588490497877136,
+        "duv": -6.15063787145266,
+        "mired": 3.4300433748773855
+      },
+      "nearest_node": {
+        "E": 0.0,
+        "basis": "w6_observation_vs_frozen_target",
+        "cct": 6500,
+        "gm": 130
+      },
+      "ray_white_point": {
+        "cct_K": 5543.015220808471,
+        "duv": -0.01973062417196707,
+        "mired": 180.40722606100763
+      },
+      "strip_white_point": {
+        "cct_K": 5439.59341361279,
+        "duv": -0.0228059431076934,
+        "mired": 183.83726943588502
+      }
+    },
+    {
+      "cct": 7250,
+      "command": {
+        "b": 375,
+        "cw": 4095,
+        "g": 98,
+        "r": 42,
+        "ww": 48
+      },
+      "differs_from_nearest_copy": true,
+      "gm": 100,
+      "holdout_E": 0.36606011762059865,
+      "holdout_error_gates": {
+        "cct_K": 0.13218155480521404,
+        "duv": -0.36606011762059865,
+        "mired": -0.13696290272702072
+      },
+      "holdout_within_tolerance": true,
+      "interpolation_increment_gates": {
+        "cct_K": 0.13218155480521404,
+        "duv": -0.36606011762059865,
+        "mired": -0.13696290272702072
+      },
+      "nearest_node": {
+        "E": 0.0,
+        "basis": "w6_observation_vs_frozen_target",
+        "cct": 8000,
+        "gm": 100
+      },
+      "ray_white_point": {
+        "cct_K": 6417.461652843347,
+        "duv": -0.0026067690147808997,
+        "mired": 155.82485008803064
+      },
+      "strip_white_point": {
+        "cct_K": 6423.10726980176,
+        "duv": -0.002789799073591199,
+        "mired": 155.68788718530362
+      }
+    },
+    {
+      "cct": 9000,
+      "command": {
+        "b": 1145,
+        "cw": 4095,
+        "g": 74,
+        "r": 9,
+        "ww": 1277
+      },
+      "differs_from_nearest_copy": true,
+      "gm": 35,
+      "holdout_E": 11.805404785365255,
+      "holdout_error_gates": {
+        "cct_K": -10.88280353297245,
+        "duv": -3.89483397107758,
+        "mired": 11.805404785365255
+      },
+      "holdout_within_tolerance": false,
+      "interpolation_increment_gates": {
+        "cct_K": -10.88280353297245,
+        "duv": -3.89483397107758,
+        "mired": 11.805404785365255
+      },
+      "nearest_node": {
+        "E": 0.0,
+        "basis": "w6_observation_vs_frozen_target",
+        "cct": 10000,
+        "gm": 0
+      },
+      "ray_white_point": {
+        "cct_K": 7713.151862754181,
+        "duv": 0.014730732479809341,
+        "mired": 129.6486854911896
+      },
+      "strip_white_point": {
+        "cct_K": 7069.431488654123,
+        "duv": 0.012783315494270552,
+        "mired": 141.45409027655487
+      }
+    },
+    {
+      "cct": 14000,
+      "command": {
+        "b": 1564,
+        "cw": 4095,
+        "g": 172,
+        "r": 20,
+        "ww": 773
+      },
+      "differs_from_nearest_copy": true,
+      "gm": 35,
+      "holdout_E": 14.804830615991795,
+      "holdout_error_gates": {
+        "cct_K": 14.804830615991795,
+        "duv": 4.844928110863317,
+        "mired": -11.01832415908737
+      },
+      "holdout_within_tolerance": false,
+      "interpolation_increment_gates": {
+        "cct_K": 14.804830615991795,
+        "duv": 4.844928110863317,
+        "mired": -11.01832415908737
+      },
+      "nearest_node": {
+        "E": 0.0,
+        "basis": "w6_observation_vs_frozen_target",
+        "cct": 14000,
+        "gm": 0
+      },
+      "ray_white_point": {
+        "cct_K": 11079.410620006029,
+        "duv": 0.015404869077278276,
+        "mired": 90.25750866154429
+      },
+      "strip_white_point": {
+        "cct_K": 11799.640232891416,
+        "duv": 0.016616101104994105,
+        "mired": 84.74834658200061
+      }
+    },
+    {
+      "cct": 17000,
+      "command": {
+        "b": 2665,
+        "cw": 1686,
+        "g": 2693,
+        "r": 1921,
+        "ww": 135
+      },
+      "differs_from_nearest_copy": true,
+      "gm": 100,
+      "holdout_E": 7.602257389454219,
+      "holdout_error_gates": {
+        "cct_K": 7.602257389454219,
+        "duv": 5.048034573039562,
+        "mired": -6.709479544271332
+      },
+      "holdout_within_tolerance": false,
+      "interpolation_increment_gates": {
+        "cct_K": 7.602257389454219,
+        "duv": 5.048034573039562,
+        "mired": -6.709479544271332
+      },
+      "nearest_node": {
+        "E": 0.0,
+        "basis": "w6_observation_vs_frozen_target",
+        "cct": 20000,
+        "gm": 100
+      },
+      "ray_white_point": {
+        "cct_K": 12357.595739190572,
+        "duv": 0.0003086541916975717,
+        "mired": 80.9218897514688
+      },
+      "strip_white_point": {
+        "cct_K": 13474.835235886401,
+        "duv": 0.0028326714782173526,
+        "mired": 74.21241020719746
+      }
+    }
+  ],
+  "run_root": "D:\\rgbww-optimizer\\guide11-w3\\formal-w3-20260923",
+  "schema": "guide11_w3_holdout_analysis_v1",
+  "steady_claim": false,
+  "within_tolerance": 2
+}
