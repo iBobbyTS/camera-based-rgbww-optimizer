@@ -1307,3 +1307,205 @@ def build_guide11_w4_protocol_plan(
             "thermal_causal_claim": False,
         },
     }
+
+
+C1_EXPERIMENT_ID = "GUIDE11_C1_HSI_MAIN_NODES_V1"
+C1_TARGETS: tuple[tuple[int, int], ...] = (
+    (0, 50), (0, 100), (60, 50), (60, 100),
+    (180, 50), (180, 100), (240, 50), (240, 100),
+)
+
+
+def _c1_sector_candidates(hue: int, sat: int) -> list[tuple[str, dict[str, int]]]:
+    """Four structurally diverse candidates for a C1 main node.
+
+    Structure follows the frozen GUIDE9 HSI batch pattern (distinct active
+    faces / channel dominances, no directionality claim), with the dominant
+    channels rotated by hue sector. SAT enters through the white-channel
+    floor: S50 keeps half the white base of S100.
+    """
+    sat_scale = sat / 100.0
+    white = int(round(2100 * (1.0 - sat_scale) + 1050 * sat_scale * 0.0))
+    white_s50 = 1050
+    base_white = white_s50 if sat == 50 else 0
+    full = 4095
+    half = 2048
+    quarter = 1024
+    if hue == 0:
+        dominant = ("r",)
+        secondary = {"g": quarter, "b": quarter}
+    elif hue == 60:
+        dominant = ("r", "g")
+        secondary = {"b": quarter}
+    elif hue == 180:
+        dominant = ("g", "b")
+        secondary = {"r": quarter}
+    else:  # 240
+        dominant = ("b",)
+        secondary = {"r": quarter, "g": half}
+    pure = {name: 0 for name in CHANNELS}
+    for name in dominant:
+        pure[name] = full
+    for name, value in secondary.items():
+        pure[name] = max(pure[name], value)
+    candidates: list[tuple[str, dict[str, int]]] = [
+        ("fullscale_dominant", pure),
+        ("high_white_dominant", {
+            **{name: 0 for name in CHANNELS},
+            "cw": base_white, "ww": base_white,
+            **{name: (half if name in dominant else 0) for name in CHANNELS[2:]},
+            **{name: (half if name in dominant else 0) for name in CHANNELS[:2]},
+        }),
+        ("white_biased_mix", {
+            **{name: 0 for name in CHANNELS},
+            "cw": max(base_white, 1500), "ww": max(base_white, 1500),
+            **{name: (int(full * sat_scale) if name in dominant else int(quarter * sat_scale)) for name in ("r", "g", "b")},
+        }),
+        ("continuity_s100_anchor", {
+            **{name: 0 for name in CHANNELS},
+            **{name: (full if name in dominant else 0) for name in ("r", "g", "b")},
+        }),
+    ]
+    # Drop empty/degenerate entries and keep four distinct commands.
+    seen: set[tuple] = set()
+    unique: list[tuple[str, dict[str, int]]] = []
+    for label, command in candidates:
+        key = tuple(sorted(command.items()))
+        if key not in seen and any(command.values()):
+            seen.add(key)
+            unique.append((label, {k: max(0, min(4095, v)) for k, v in command.items()}))
+    if len(unique) < 2:
+        raise ValueError(f"C1 candidates degenerate for hue {hue}")
+    return unique[:4]
+
+
+
+
+def build_guide11_c1_batch_plan(
+    *,
+    inputs_references: Mapping[str, Mapping[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """GUIDE11 C1 batch-1 plan: eight remaining HSI main nodes.
+
+    Each target carries one paired Ray reference bracket (q_before/q_after,
+    locally acquired per GUIDE11 C1) around its structurally diverse strip
+    candidates; per-command independent FAST resets; product-layer z
+    chromaticity and legacy 58-feature are reported side by side in analysis.
+    """
+    from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
+
+    captures: list[dict[str, Any]] = []
+    target_contracts = []
+    for target_index, (hue, sat) in enumerate(C1_TARGETS):
+        ray_command = {"hue": hue, "sat": sat, "intensity_percent": 100.0}
+        candidates = _c1_sector_candidates(hue, sat)
+        target_contracts.append({
+            "target_index": target_index, "hue": hue, "sat": sat,
+            "candidate_labels": [label for label, _ in candidates],
+            "candidates": [dict(cmd) for _, cmd in candidates],
+        })
+        ray_cache = f"ray-c1-h{hue}-s{sat}"
+        strip_cache = f"strip-c1-h{hue}-s{sat}"
+        bracket = [
+            ("ray", "ray_q_before", ray_command, "1/6400", ray_cache),
+        ] + [
+            ("strip", f"candidate_{index}_{label}", dict(command), "1/400", strip_cache)
+            for index, (label, command) in enumerate(candidates)
+        ] + [
+            ("ray", "ray_q_after", ray_command, "1/6400", ray_cache),
+        ]
+        for source, role, command, shutter, cache in bracket:
+            captures.append({
+                "capture_id": f"{len(captures):03d}-{source}-guide11-c1-h{hue}-s{sat}-{role}",
+                "source_id": source,
+                "state_id": f"C1_H{hue}_S{sat}_{role.upper()}",
+                "role": f"{source}_c1_h{hue}_s{sat}_{role}",
+                "capture_role": "formal",
+                "formal_measurement": True,
+                "command": dict(command),
+                "exact_command_hash": thermal.canonical_sha256(command),
+                "requested_elapsed_s": 120,
+                "nominal_shutter": shutter,
+                "exposure_cache_key": cache,
+                "timing_acceptance": "observed_elapsed_record_only",
+                "strip_zero_required": source == "ray",
+                "ray_zero_required": source == "strip",
+                "session_index": len(captures) + 1,
+                "source_order": 1 if source == "ray" else 2,
+                "target_cct": None,
+                "target_gm": None,
+                "c1_hue": hue,
+                "c1_sat": sat,
+                "steady_claim": False,
+            })
+    frozen: dict[str, str] = {}
+    for step in captures:
+        frozen[str(step["exposure_cache_key"])] = str(step["nominal_shutter"])
+    return {
+        "schema": thermal.PLAN_SCHEMA_V2,
+        "status": "execute_authorized",
+        "experiment_id": thermal.TD_C,
+        "guide_experiment_id": C1_EXPERIMENT_ID,
+        "variant": "guide11-c1-hsi-main-nodes",
+        "stage": "GUIDE11-C1-HSI-MAIN-NODES",
+        "phase": "formal",
+        "source": "guide11_c1_remaining_main_nodes",
+        "created_at": thermal.datetime.now(thermal.timezone.utc).isoformat(),
+        "inputs": {
+            "location": thermal.file_reference(thermal.LOCATION_PATH),
+            "policy": thermal.file_reference(thermal.POLICY_PATH),
+            "code_duty_curve": thermal.file_reference(thermal.CURVE_PATH),
+            **{k: dict(v) for k, v in (inputs_references or {}).items()},
+        },
+        "captures": captures,
+        "capture_ids": [step["capture_id"] for step in captures],
+        "timing_contract": thermal.timing_contract(2),
+        "timing_resolution": "guide11_c1_reset600_D120",
+        "cold_proxy": 600,
+        "cold_proxy_wait_s": 600,
+        "native_raw_ambient_policy": thermal.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+        "exposure_setup_required": [],
+        "frozen_shutters": frozen,
+        "shutter_ledger_provenance": {
+            "owner": "experiment_capture_steps",
+            "required_cache_keys": sorted(frozen),
+            "frozen_shutters_sha256": thermal.canonical_sha256(frozen),
+        },
+        "budgets": {
+            "ray_cap": 16, "strip_cap": 32, "formal_cap": 48,
+            "physical_cr3_cap": 48, "ambient_cap": 0, "retry": 0,
+            "candidate_batches": 1, "unique_commands_per_target_cap": 4,
+        },
+        "execution_authorization": {
+            "schema": "direct_guide11_c1_hsi_main_nodes_v1",
+            "human_authorization_required": False,
+            "human_authorization_verified": False,
+            "device_use_granted_by": "operator_cli_allow_device_control",
+            "experiment_id": C1_EXPERIMENT_ID,
+            "bounded_device_scope": True,
+            "remote_v2_capability": True,
+        },
+        "camera": {
+            "backend": "remote",
+            "v2_capture_timing_capability_available": True,
+            "v2_capture_capability": "remote_v2_capture_timing_v1",
+            "resolved_capture_settings": {
+                "owner": "remote_backend.resolve_capture_settings",
+                "iso": "100", "aperture": "f/4", "image_format": "RAW",
+            },
+        },
+        "analysis_contract": {
+            "method": "guide11_c1_main_node_batch1",
+            "targets": target_contracts,
+            "product_layer": "z=[log(R/Gmean), log(B/Gmean)] from paired Ray reference per target",
+            "legacy_layer": "frozen 58-feature reported side by side; product pass never mapped to strict pass",
+            "sat0_hue_gate": "not_applicable",
+            "batch1_command_cap": 4,
+            "batch2_entry": "only with measured improvement",
+            "closed_routes_not_reopened": ["H120/S100", "H300/S100"],
+            "independent_reset_s": 600,
+            "dwell_s": 120,
+            "best_requires_independent_confirmation": True,
+            "steady_claim": False,
+        },
+    }
