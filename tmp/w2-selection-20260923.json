@@ -1,0 +1,1451 @@
+{
+  "node_count": 25,
+  "nodes": [
+    {
+      "all_candidates": [
+        {
+          "E": 0.7636369294269798,
+          "candidate_index": 0,
+          "capture_id": "001-strip-guide11-w2-cct1800-gm70-candidate0",
+          "command": {},
+          "e_gates": {
+            "cct_K": 0.11093823959559813,
+            "duv": 0.5486911309585821,
+            "mired": 0.7636369294269798
+          },
+          "white_point": {
+            "cct_K": 1904.3692599283156,
+            "duv": -0.002337054014397806,
+            "mired": 525.1082450457335
+          }
+        },
+        {
+          "E": 0.800120062764563,
+          "candidate_index": 1,
+          "capture_id": "003-strip-guide11-w2-cct1800-gm70-candidate1",
+          "command": {},
+          "e_gates": {
+            "cct_K": 0.11623029368323841,
+            "duv": 0.3841879963827404,
+            "mired": 0.800120062764563
+          },
+          "white_point": {
+            "cct_K": 1904.2369585761246,
+            "duv": -0.002419305581685727,
+            "mired": 525.1447281790711
+          }
+        }
+      ],
+      "candidate_count": 2,
+      "cct": 1800,
+      "certification": "selection_frame_only_independent_FAST_confirmation_required",
+      "gm": 70,
+      "selected": {
+        "E": 0.7636369294269798,
+        "candidate_index": 0,
+        "capture_id": "001-strip-guide11-w2-cct1800-gm70-candidate0",
+        "command": {},
+        "e_gates": {
+          "cct_K": 0.11093823959559813,
+          "duv": 0.5486911309585821,
+          "mired": 0.7636369294269798
+        },
+        "white_point": {
+          "cct_K": 1904.3692599283156,
+          "duv": -0.002337054014397806,
+          "mired": 525.1082450457335
+        }
+      },
+      "selected_within_tolerance": true,
+      "w6_status": "fail"
+    },
+    {
+      "all_candidates": [
+        {
+          "E": 14.176613282398534,
+          "candidate_index": 0,
+          "capture_id": "004-strip-guide11-w2-cct2000-gm70-candidate0",
+          "command": {},
+          "e_gates": {
+            "cct_K": 2.662787996573952,
+            "duv": 1.8793637440362174,
+            "mired": 14.176613282398534
+          },
+          "white_point": {
+            "cct_K": 2200.5062453674973,
+            "duv": -0.003490106074348012,
+            "mired": 454.4408824583882
+          }
+        },
+        {
+          "E": 20.342528615961157,
+          "candidate_index": 1,
+          "capture_id": "006-strip-guide11-w2-cct2000-gm70-candidate1",
+          "command": {},
+          "e_gates": {
+            "cct_K": 3.8734855545425306,
+            "duv": 2.8044051691091574,
+            "mired": 20.342528615961157
+          },
+          "white_point": {
+            "cct_K": 2230.7736843167118,
+            "duv": -0.003952626786884482,
+            "mired": 448.2749671248256
+          }
+        }
+      ],
+      "candidate_count": 2,
+      "cct": 2000,
+      "certification": "selection_frame_only_independent_FAST_confirmation_required",
+      "gm": 70,
+      "selected": {
+        "E": 14.176613282398534,
+        "candidate_index": 0,
+        "capture_id": "004-strip-guide11-w2-cct2000-gm70-candidate0",
+        "command": {},
+        "e_gates": {
+          "cct_K": 2.662787996573952,
+          "duv": 1.8793637440362174,
+          "mired": 14.176613282398534
+        },
+        "white_point": {
+          "cct_K": 2200.5062453674973,
+          "duv": -0.003490106074348012,
+          "mired": 454.4408824583882
+        }
+      },
+      "selected_within_tolerance": false,
+      "w6_status": "fail"
+    },
+    {
+      "all_candidates": [
+        {
+          "E": 0.8583628822619858,
+          "candidate_index": 0,
+          "capture_id": "009-strip-guide11-w2-cct2000-gm100-candidate0",
+          "command": {},
+          "e_gates": {
+            "cct_K": 0.15724155927053288,
+            "duv": 0.8185440891656844,
+            "mired": 0.8583628822619858
+          },
+          "white_point": {
+            "cct_K": 2138.0572476583357,
+            "duv": -0.006079240778496299,
+            "mired": 467.7143238775435
+          }
+        },
+        {
+          "E": 1.218912155971907,
+          "candidate_index": 1,
+          "capture_id": "011-strip-guide11-w2-cct2000-gm100-candidate1",
+          "command": {},
+          "e_gates": {
+            "cct_K": 0.22311777113412973,
+            "duv": 0.305010724450272,
+            "mired": 1.218912155971907
+          },
+          "white_point": {
+            "cct_K": 2136.4103423617457,
+            "duv": -0.006336007460854005,
+            "mired": 468.0748731512534
+          }
+        }
+      ],
+      "candidate_count": 2,
+      "cct": 2000,
+      "certification": "selection_frame_only_independent_FAST_confirmation_required",
+      "gm": 100,
+      "selected": {
+        "E": 0.8583628822619858,
+        "candidate_index": 0,
+        "capture_id": "009-strip-guide11-w2-cct2000-gm100-candidate0",
+        "command": {},
+        "e_gates": {
+          "cct_K": 0.15724155927053288,
+          "duv": 0.8185440891656844,
+          "mired": 0.8583628822619858
+        },
+        "white_point": {
+          "cct_K": 2138.0572476583357,
+          "duv": -0.006079240778496299,
+          "mired": 467.7143238775435
+        }
+      },
+      "selected_within_tolerance": true,
+      "w6_status": "fail"
+    },
+    {
+      "all_candidates": [
+        {
+          "E": 23.75613670900384,
+          "candidate_index": 0,
+          "capture_id": "012-strip-guide11-w2-cct2000-gm200-candidate0",
+          "command": {},
+          "e_gates": {
+            "cct_K": 4.595009235197031,
+            "duv": 3.0709109840366207,
+            "mired": 23.75613670900384
+          },
+          "white_point": {
+            "cct_K": 2257.187929859143,
+            "duv": -0.009339008015501731,
+            "mired": 443.0291278681451
+          }
+        },
+        {
+          "E": 33.46514867884326,
+          "candidate_index": 1,
+          "capture_id": "014-strip-guide11-w2-cct2000-gm200-candidate1",
+          "command": {},
+          "e_gates": {
+            "cct_K": 6.617999982695364,
+            "duv": 4.563666797792883,
+            "mired": 33.46514867884326
+          },
+          "white_point": {
+            "cct_K": 2307.7626985466013,
+            "duv": -0.010085385922379862,
+            "mired": 433.3201158983057
+          }
+        }
+      ],
+      "candidate_count": 2,
+      "cct": 2000,
+      "certification": "selection_frame_only_independent_FAST_confirmation_required",
+      "gm": 200,
+      "selected": {
+        "E": 23.75613670900384,
+        "candidate_index": 0,
+        "capture_id": "012-strip-guide11-w2-cct2000-gm200-candidate0",
+        "command": {},
+        "e_gates": {
+          "cct_K": 4.595009235197031,
+          "duv": 3.0709109840366207,
+          "mired": 23.75613670900384
+        },
+        "white_point": {
+          "cct_K": 2257.187929859143,
+          "duv": -0.009339008015501731,
+          "mired": 443.0291278681451
+        }
+      },
+      "selected_within_tolerance": false,
+      "w6_status": "fail"
+    },
+    {
+      "all_candidates": [
+        {
+          "E": 0.7091757550952593,
+          "candidate_index": 0,
+          "capture_id": "017-strip-guide11-w2-cct2300-gm100-candidate0",
+          "command": {},
+          "e_gates": {
+            "cct_K": 0.1695799513181919,
+            "duv": 0.072438903347561,
+            "mired": 0.7091757550952593
+          },
+          "white_point": {
+            "cct_K": 2442.8893559423595,
+            "duv": -0.006800277124810031,
+            "mired": 409.3513271763567
+          }
+        },
+        {
+          "E": 1.0810223558806342,
+          "candidate_index": 1,
+          "capture_id": "019-strip-guide11-w2-cct2300-gm100-candidate1",
+          "command": {},
+          "e_gates": {
+            "cct_K": 0.2582622774583433,
+            "duv": 0.12473332125161746,
+            "mired": 1.0810223558806342
+          },
+          "white_point": {
+            "cct_K": 2440.6722977888558,
+            "duv": -0.0067741299158580025,
+            "mired": 409.72317377714205
+          }
+        }
+      ],
+      "candidate_count": 2,
+      "cct": 2300,
+      "certification": "selection_frame_only_independent_FAST_confirmation_required",
+      "gm": 100,
+      "selected": {
+        "E": 0.7091757550952593,
+        "candidate_index": 0,
+        "capture_id": "017-strip-guide11-w2-cct2300-gm100-candidate0",
+        "command": {},
+        "e_gates": {
+          "cct_K": 0.1695799513181919,
+          "duv": 0.072438903347561,
+          "mired": 0.7091757550952593
+        },
+        "white_point": {
+          "cct_K": 2442.8893559423595,
+          "duv": -0.006800277124810031,
+          "mired": 409.3513271763567
+        }
+      },
+      "selected_within_tolerance": true,
+      "w6_status": "fail"
+    },
+    {
+      "all_candidates": [
+        {
+          "E": 2.4942897875795325,
+          "candidate_index": 1,
+          "capture_id": "022-strip-guide11-w2-cct2300-gm130-candidate1",
+          "command": {},
+          "e_gates": {
+            "cct_K": 0.5949421989235271,
+            "duv": 1.0622366796549307,
+            "mired": 2.4942897875795325
+          },
+          "white_point": {
+            "cct_K": 2445.65530652779,
+            "duv": -0.007973164104452793,
+            "mired": 408.88836514731355
+          }
+        },
+        {
+          "E": 2.513902243818279,
+          "candidate_index": 0,
+          "capture_id": "020-strip-guide11-w2-cct2300-gm130-candidate0",
+          "command": {},
+          "e_gates": {
+            "cct_K": 0.5959703795979294,
+            "duv": 2.030062240568082,
+            "mired": 2.513902243818279
+          },
+          "white_point": {
+            "cct_K": 2430.7688992962717,
+            "duv": -0.007731207714224505,
+            "mired": 411.39246116301246
+          }
+        }
+      ],
+      "candidate_count": 2,
+      "cct": 2300,
+      "certification": "selection_frame_only_independent_FAST_confirmation_required",
+      "gm": 130,
+      "selected": {
+        "E": 2.4942897875795325,
+        "candidate_index": 1,
+        "capture_id": "022-strip-guide11-w2-cct2300-gm130-candidate1",
+        "command": {},
+        "e_gates": {
+          "cct_K": 0.5949421989235271,
+          "duv": 1.0622366796549307,
+          "mired": 2.4942897875795325
+        },
+        "white_point": {
+          "cct_K": 2445.65530652779,
+          "duv": -0.007973164104452793,
+          "mired": 408.88836514731355
+        }
+      },
+      "selected_within_tolerance": false,
+      "w6_status": "fail"
+    },
+    {
+      "all_candidates": [
+        {
+          "E": 1.515606254927775,
+          "candidate_index": 1,
+          "capture_id": "027-strip-guide11-w2-cct2300-gm200-candidate1",
+          "command": {},
+          "e_gates": {
+            "cct_K": 0.3613584662518042,
+            "duv": 1.1937439996845476,
+            "mired": 1.515606254927775
+          },
+          "white_point": {
+            "cct_K": 2443.6988115662025,
+            "duv": -0.007946040401186566,
+            "mired": 409.21573283373874
+          }
+        },
+        {
+          "E": 1.8362998843241378,
+          "candidate_index": 0,
+          "capture_id": "025-strip-guide11-w2-cct2300-gm200-candidate0",
+          "command": {},
+          "e_gates": {
+            "cct_K": 0.3969430435146205,
+            "duv": 1.8362998843241378,
+            "mired": 1.671337638654677
+          },
+          "white_point": {
+            "cct_K": 2434.220042694122,
+            "duv": -0.007785401430026669,
+            "mired": 410.80920478052997
+          }
+        }
+      ],
+      "candidate_count": 2,
+      "cct": 2300,
+      "certification": "selection_frame_only_independent_FAST_confirmation_required",
+      "gm": 200,
+      "selected": {
+        "E": 1.515606254927775,
+        "candidate_index": 1,
+        "capture_id": "027-strip-guide11-w2-cct2300-gm200-candidate1",
+        "command": {},
+        "e_gates": {
+          "cct_K": 0.3613584662518042,
+          "duv": 1.1937439996845476,
+          "mired": 1.515606254927775
+        },
+        "white_point": {
+          "cct_K": 2443.6988115662025,
+          "duv": -0.007946040401186566,
+          "mired": 409.21573283373874
+        }
+      },
+      "selected_within_tolerance": false,
+      "w6_status": "fail"
+    },
+    {
+      "all_candidates": [
+        {
+          "E": 1.9971507871439371,
+          "candidate_index": 1,
+          "capture_id": "030-strip-guide11-w2-cct2700-gm100-candidate1",
+          "command": {},
+          "e_gates": {
+            "cct_K": 0.6429546260769348,
+            "duv": 0.45147536548224493,
+            "mired": 1.9971507871439371
+          },
+          "white_point": {
+            "cct_K": 2832.954352359208,
+            "duv": -0.007231610071023482,
+            "mired": 352.9883914886334
+          }
+        },
+        {
+          "E": 2.1443791393344327,
+          "candidate_index": 0,
+          "capture_id": "028-strip-guide11-w2-cct2700-gm100-candidate0",
+          "command": {},
+          "e_gates": {
+            "cct_K": 0.6902087847727671,
+            "duv": 0.5974118812008474,
+            "mired": 2.1443791393344327
+          },
+          "white_point": {
+            "cct_K": 2832.36367537551,
+            "duv": -0.007195125942093831,
+            "mired": 353.06200566472864
+          }
+        }
+      ],
+      "candidate_count": 2,
+      "cct": 2700,
+      "certification": "selection_frame_only_independent_FAST_confirmation_required",
+      "gm": 100,
+      "selected": {
+        "E": 1.9971507871439371,
+        "candidate_index": 1,
+        "capture_id": "030-strip-guide11-w2-cct2700-gm100-candidate1",
+        "command": {},
+        "e_gates": {
+          "cct_K": 0.6429546260769348,
+          "duv": 0.45147536548224493,
+          "mired": 1.9971507871439371
+        },
+        "white_point": {
+          "cct_K": 2832.954352359208,
+          "duv": -0.007231610071023482,
+          "mired": 352.9883914886334
+        }
+      },
+      "selected_within_tolerance": false,
+      "w6_status": "fail"
+    },
+    {
+      "all_candidates": [
+        {
+          "E": 10.214921226606293,
+          "candidate_index": 0,
+          "capture_id": "033-strip-guide11-w2-cct3200-gm0-candidate0",
+          "command": {},
+          "e_gates": {
+            "cct_K": 4.281288242255959,
+            "duv": 8.337899510770036,
+            "mired": 10.214921226606293
+          },
+          "white_point": {
+            "cct_K": 3183.9040994800894,
+            "duv": 0.014110661802170016,
+            "mired": 314.0798116888299
+          }
+        },
+        {
+          "E": 13.797970096755876,
+          "candidate_index": 1,
+          "capture_id": "035-strip-guide11-w2-cct3200-gm0-candidate1",
+          "command": {},
+          "e_gates": {
+            "cct_K": 5.717790320746662,
+            "duv": 12.398791836703104,
+            "mired": 13.797970096755876
+          },
+          "white_point": {
+            "cct_K": 3147.991547517822,
+            "duv": 0.012080215639203482,
+            "mired": 317.6628605589795
+          }
+        }
+      ],
+      "candidate_count": 2,
+      "cct": 3200,
+      "certification": "selection_frame_only_independent_FAST_confirmation_required",
+      "gm": 0,
+      "selected": {
+        "E": 10.214921226606293,
+        "candidate_index": 0,
+        "capture_id": "033-strip-guide11-w2-cct3200-gm0-candidate0",
+        "command": {},
+        "e_gates": {
+          "cct_K": 4.281288242255959,
+          "duv": 8.337899510770036,
+          "mired": 10.214921226606293
+        },
+        "white_point": {
+          "cct_K": 3183.9040994800894,
+          "duv": 0.014110661802170016,
+          "mired": 314.0798116888299
+        }
+      },
+      "selected_within_tolerance": false,
+      "w6_status": "fail"
+    },
+    {
+      "all_candidates": [
+        {
+          "E": 1.171856257540469,
+          "candidate_index": 1,
+          "capture_id": "038-strip-guide11-w2-cct3200-gm70-candidate1",
+          "command": {},
+          "e_gates": {
+            "cct_K": 0.5042633966611902,
+            "duv": 0.7895973904071973,
+            "mired": 1.171856257540469
+          },
+          "white_point": {
+            "cct_K": 3273.6099557398356,
+            "duv": 0.00064403048762637,
+            "mired": 305.47316678538147
+          }
+        },
+        {
+          "E": 1.2700514107210412,
+          "candidate_index": 0,
+          "capture_id": "036-strip-guide11-w2-cct3200-gm70-candidate0",
+          "command": {},
+          "e_gates": {
+            "cct_K": 0.3174732406811745,
+            "duv": 1.2700514107210412,
+            "mired": 0.7367242254583743
+          },
+          "white_point": {
+            "cct_K": 3278.279709639336,
+            "duv": 0.000884257497783292,
+            "mired": 305.03803475329937
+          }
+        }
+      ],
+      "candidate_count": 2,
+      "cct": 3200,
+      "certification": "selection_frame_only_independent_FAST_confirmation_required",
+      "gm": 70,
+      "selected": {
+        "E": 1.171856257540469,
+        "candidate_index": 1,
+        "capture_id": "038-strip-guide11-w2-cct3200-gm70-candidate1",
+        "command": {},
+        "e_gates": {
+          "cct_K": 0.5042633966611902,
+          "duv": 0.7895973904071973,
+          "mired": 1.171856257540469
+        },
+        "white_point": {
+          "cct_K": 3273.6099557398356,
+          "duv": 0.00064403048762637,
+          "mired": 305.47316678538147
+        }
+      },
+      "selected_within_tolerance": false,
+      "w6_status": "fail"
+    },
+    {
+      "all_candidates": [
+        {
+          "E": 9.093762627204853,
+          "candidate_index": 0,
+          "capture_id": "041-strip-guide11-w2-cct3800-gm0-candidate0",
+          "command": {},
+          "e_gates": {
+            "cct_K": 5.118249812956783,
+            "duv": 6.616614053360087,
+            "mired": 9.093762627204853
+          },
+          "white_point": {
+            "cct_K": 3687.6699852885727,
+            "duv": 0.01776606286130057,
+            "mired": 271.1739401815661
+          }
+        },
+        {
+          "E": 14.210522692932045,
+          "candidate_index": 1,
+          "capture_id": "043-strip-guide11-w2-cct3800-gm0-candidate1",
+          "command": {},
+          "e_gates": {
+            "cct_K": 7.849999017604914,
+            "duv": 10.53774273781477,
+            "mired": 14.210522692932045
+          },
+          "white_point": {
+            "cct_K": 3619.3762551723694,
+            "duv": 0.01580549851907323,
+            "mired": 276.2907002472933
+          }
+        }
+      ],
+      "candidate_count": 2,
+      "cct": 3800,
+      "certification": "selection_frame_only_independent_FAST_confirmation_required",
+      "gm": 0,
+      "selected": {
+        "E": 9.093762627204853,
+        "candidate_index": 0,
+        "capture_id": "041-strip-guide11-w2-cct3800-gm0-candidate0",
+        "command": {},
+        "e_gates": {
+          "cct_K": 5.118249812956783,
+          "duv": 6.616614053360087,
+          "mired": 9.093762627204853
+        },
+        "white_point": {
+          "cct_K": 3687.6699852885727,
+          "duv": 0.01776606286130057,
+          "mired": 271.1739401815661
+        }
+      },
+      "selected_within_tolerance": false,
+      "w6_status": "fail"
+    },
+    {
+      "all_candidates": [
+        {
+          "E": 1.080094577934176,
+          "candidate_index": 0,
+          "capture_id": "044-strip-guide11-w2-cct4500-gm70-candidate0",
+          "command": {},
+          "e_gates": {
+            "cct_K": 0.8212682899119682,
+            "duv": 0.9511283482686378,
+            "mired": 1.080094577934176
+          },
+          "white_point": {
+            "cct_K": 4349.697535836819,
+            "duv": 0.002525308892496796,
+            "mired": 229.90104294863676
+          }
+        }
+      ],
+      "candidate_count": 1,
+      "cct": 4500,
+      "certification": "selection_frame_only_independent_FAST_confirmation_required",
+      "gm": 70,
+      "selected": {
+        "E": 1.080094577934176,
+        "candidate_index": 0,
+        "capture_id": "044-strip-guide11-w2-cct4500-gm70-candidate0",
+        "command": {},
+        "e_gates": {
+          "cct_K": 0.8212682899119682,
+          "duv": 0.9511283482686378,
+          "mired": 1.080094577934176
+        },
+        "white_point": {
+          "cct_K": 4349.697535836819,
+          "duv": 0.002525308892496796,
+          "mired": 229.90104294863676
+        }
+      },
+      "selected_within_tolerance": false,
+      "w6_status": "fail"
+    },
+    {
+      "all_candidates": [
+        {
+          "E": 8.734878344104327,
+          "candidate_index": 0,
+          "capture_id": "047-strip-guide11-w2-cct5600-gm0-candidate0",
+          "command": {},
+          "e_gates": {
+            "cct_K": 8.734878344104327,
+            "duv": 3.254654229516374,
+            "mired": 8.299382387890716
+          },
+          "white_point": {
+            "cct_K": 5021.482008479486,
+            "duv": 0.01983018788629456,
+            "mired": 199.14439568066916
+          }
+        },
+        {
+          "E": 11.912569028866056,
+          "candidate_index": 1,
+          "capture_id": "049-strip-guide11-w2-cct5600-gm0-candidate1",
+          "command": {},
+          "e_gates": {
+            "cct_K": 11.912569028866056,
+            "duv": 4.968506750982489,
+            "mired": 11.500587377102136
+          },
+          "white_point": {
+            "cct_K": 4942.039741360442,
+            "duv": 0.018973261625561504,
+            "mired": 202.34560066988058
+          }
+        }
+      ],
+      "candidate_count": 2,
+      "cct": 5600,
+      "certification": "selection_frame_only_independent_FAST_confirmation_required",
+      "gm": 0,
+      "selected": {
+        "E": 8.734878344104327,
+        "candidate_index": 0,
+        "capture_id": "047-strip-guide11-w2-cct5600-gm0-candidate0",
+        "command": {},
+        "e_gates": {
+          "cct_K": 8.734878344104327,
+          "duv": 3.254654229516374,
+          "mired": 8.299382387890716
+        },
+        "white_point": {
+          "cct_K": 5021.482008479486,
+          "duv": 0.01983018788629456,
+          "mired": 199.14439568066916
+        }
+      },
+      "selected_within_tolerance": false,
+      "w6_status": "fail"
+    },
+    {
+      "all_candidates": [
+        {
+          "E": 0.12167787731422815,
+          "candidate_index": 1,
+          "capture_id": "052-strip-guide11-w2-cct6500-gm0-candidate1",
+          "command": {},
+          "e_gates": {
+            "cct_K": 0.12167787731422815,
+            "duv": 0.07759952867235353,
+            "mired": 0.10670902480518407
+          },
+          "white_point": {
+            "cct_K": 5896.108497982808,
+            "duv": 0.02256285502272388,
+            "mired": 169.60339185449564
+          }
+        },
+        {
+          "E": 1.0488667346440164,
+          "candidate_index": 0,
+          "capture_id": "050-strip-guide11-w2-cct6500-gm0-candidate0",
+          "command": {},
+          "e_gates": {
+            "cct_K": 1.0488667346440164,
+            "duv": 0.3935579521562038,
+            "mired": 0.925432567775033
+          },
+          "white_point": {
+            "cct_K": 5860.444069289701,
+            "duv": 0.022327276282309603,
+            "mired": 170.63553344707586
+          }
+        }
+      ],
+      "candidate_count": 2,
+      "cct": 6500,
+      "certification": "selection_frame_only_independent_FAST_confirmation_required",
+      "gm": 0,
+      "selected": {
+        "E": 0.12167787731422815,
+        "candidate_index": 1,
+        "capture_id": "052-strip-guide11-w2-cct6500-gm0-candidate1",
+        "command": {},
+        "e_gates": {
+          "cct_K": 0.12167787731422815,
+          "duv": 0.07759952867235353,
+          "mired": 0.10670902480518407
+        },
+        "white_point": {
+          "cct_K": 5896.108497982808,
+          "duv": 0.02256285502272388,
+          "mired": 169.60339185449564
+        }
+      },
+      "selected_within_tolerance": true,
+      "w6_status": "fail"
+    },
+    {
+      "all_candidates": [
+        {
+          "E": 8.902391331996137,
+          "candidate_index": 0,
+          "capture_id": "055-strip-guide11-w2-cct8000-gm0-candidate0",
+          "command": {},
+          "e_gates": {
+            "cct_K": 8.902391331996137,
+            "duv": 2.623822045106666,
+            "mired": 8.05195433547837
+          },
+          "white_point": {
+            "cct_K": 6638.591796960209,
+            "duv": 0.020816995420966045,
+            "mired": 150.63435598765042
+          }
+        },
+        {
+          "E": 12.543794802491181,
+          "candidate_index": 1,
+          "capture_id": "057-strip-guide11-w2-cct8000-gm0-candidate1",
+          "command": {},
+          "e_gates": {
+            "cct_K": 12.543794802491181,
+            "duv": 4.013401922765593,
+            "mired": 11.613767061206573
+          },
+          "white_point": {
+            "cct_K": 6485.245439909794,
+            "duv": 0.02012220548213658,
+            "mired": 154.19616871337863
+          }
+        }
+      ],
+      "candidate_count": 2,
+      "cct": 8000,
+      "certification": "selection_frame_only_independent_FAST_confirmation_required",
+      "gm": 0,
+      "selected": {
+        "E": 8.902391331996137,
+        "candidate_index": 0,
+        "capture_id": "055-strip-guide11-w2-cct8000-gm0-candidate0",
+        "command": {},
+        "e_gates": {
+          "cct_K": 8.902391331996137,
+          "duv": 2.623822045106666,
+          "mired": 8.05195433547837
+        },
+        "white_point": {
+          "cct_K": 6638.591796960209,
+          "duv": 0.020816995420966045,
+          "mired": 150.63435598765042
+        }
+      },
+      "selected_within_tolerance": false,
+      "w6_status": "fail"
+    },
+    {
+      "all_candidates": [
+        {
+          "E": 11.28444347351775,
+          "candidate_index": 0,
+          "capture_id": "058-strip-guide11-w2-cct8000-gm70-candidate0",
+          "command": {},
+          "e_gates": {
+            "cct_K": 11.28444347351775,
+            "duv": 5.74817437213559,
+            "mired": 10.6032328365782
+          },
+          "white_point": {
+            "cct_K": 6491.2114487791305,
+            "duv": 0.0020372567318693788,
+            "mired": 154.05444852487133
+          }
+        },
+        {
+          "E": 16.569114744048647,
+          "candidate_index": 1,
+          "capture_id": "060-strip-guide11-w2-cct8000-gm70-candidate1",
+          "command": {},
+          "e_gates": {
+            "cct_K": 16.569114744048647,
+            "duv": 8.749825295923563,
+            "mired": 16.127133569026086
+          },
+          "white_point": {
+            "cct_K": 6266.5142524284765,
+            "duv": 0.0005364312699753918,
+            "mired": 159.57834925731922
+          }
+        }
+      ],
+      "candidate_count": 2,
+      "cct": 8000,
+      "certification": "selection_frame_only_independent_FAST_confirmation_required",
+      "gm": 70,
+      "selected": {
+        "E": 11.28444347351775,
+        "candidate_index": 0,
+        "capture_id": "058-strip-guide11-w2-cct8000-gm70-candidate0",
+        "command": {},
+        "e_gates": {
+          "cct_K": 11.28444347351775,
+          "duv": 5.74817437213559,
+          "mired": 10.6032328365782
+        },
+        "white_point": {
+          "cct_K": 6491.2114487791305,
+          "duv": 0.0020372567318693788,
+          "mired": 154.05444852487133
+        }
+      },
+      "selected_within_tolerance": false,
+      "w6_status": "fail"
+    },
+    {
+      "all_candidates": [
+        {
+          "E": 0.7549639954054288,
+          "candidate_index": 0,
+          "capture_id": "063-strip-guide11-w2-cct8000-gm130-candidate0",
+          "command": {},
+          "e_gates": {
+            "cct_K": 0.7549639954054288,
+            "duv": 0.7100988308109957,
+            "mired": 0.679470796300393
+          },
+          "white_point": {
+            "cct_K": 6920.929411901322,
+            "duv": -0.010305565800152986,
+            "mired": 144.48926444479937
+          }
+        },
+        {
+          "E": 1.0047612203257783,
+          "candidate_index": 1,
+          "capture_id": "065-strip-guide11-w2-cct8000-gm130-candidate1",
+          "command": {},
+          "e_gates": {
+            "cct_K": 0.11715944940817101,
+            "duv": 1.0047612203257783,
+            "mired": 0.1056533786371574
+          },
+          "white_point": {
+            "cct_K": 6907.213930422362,
+            "duv": -0.010379231397531682,
+            "mired": 144.776173153631
+          }
+        }
+      ],
+      "candidate_count": 2,
+      "cct": 8000,
+      "certification": "selection_frame_only_independent_FAST_confirmation_required",
+      "gm": 130,
+      "selected": {
+        "E": 0.7549639954054288,
+        "candidate_index": 0,
+        "capture_id": "063-strip-guide11-w2-cct8000-gm130-candidate0",
+        "command": {},
+        "e_gates": {
+          "cct_K": 0.7549639954054288,
+          "duv": 0.7100988308109957,
+          "mired": 0.679470796300393
+        },
+        "white_point": {
+          "cct_K": 6920.929411901322,
+          "duv": -0.010305565800152986,
+          "mired": 144.48926444479937
+        }
+      },
+      "selected_within_tolerance": true,
+      "w6_status": "fail"
+    },
+    {
+      "all_candidates": [
+        {
+          "E": 11.63421836302446,
+          "candidate_index": 0,
+          "capture_id": "066-strip-guide11-w2-cct10000-gm70-candidate0",
+          "command": {},
+          "e_gates": {
+            "cct_K": 11.63421836302446,
+            "duv": 4.18575357178365,
+            "mired": 10.74013429724151
+          },
+          "white_point": {
+            "cct_K": 7640.296274039619,
+            "duv": 0.003286667924006566,
+            "mired": 130.88497672502882
+          }
+        },
+        {
+          "E": 17.101917886215976,
+          "candidate_index": 1,
+          "capture_id": "068-strip-guide11-w2-cct10000-gm70-candidate1",
+          "command": {},
+          "e_gates": {
+            "cct_K": 17.101917886215976,
+            "duv": 6.809166146452084,
+            "mired": 16.479999334272506
+          },
+          "white_point": {
+            "cct_K": 7319.313143224413,
+            "duv": 0.001974961636672349,
+            "mired": 136.62484176205982
+          }
+        }
+      ],
+      "candidate_count": 2,
+      "cct": 10000,
+      "certification": "selection_frame_only_independent_FAST_confirmation_required",
+      "gm": 70,
+      "selected": {
+        "E": 11.63421836302446,
+        "candidate_index": 0,
+        "capture_id": "066-strip-guide11-w2-cct10000-gm70-candidate0",
+        "command": {},
+        "e_gates": {
+          "cct_K": 11.63421836302446,
+          "duv": 4.18575357178365,
+          "mired": 10.74013429724151
+        },
+        "white_point": {
+          "cct_K": 7640.296274039619,
+          "duv": 0.003286667924006566,
+          "mired": 130.88497672502882
+        }
+      },
+      "selected_within_tolerance": false,
+      "w6_status": "fail"
+    },
+    {
+      "all_candidates": [
+        {
+          "E": 2.646196309134746,
+          "candidate_index": 1,
+          "capture_id": "073-strip-guide11-w2-cct14000-gm0-candidate1",
+          "command": {},
+          "e_gates": {
+            "cct_K": 2.646196309134746,
+            "duv": 1.99782755708032,
+            "mired": 2.026048300940772
+          },
+          "white_point": {
+            "cct_K": 11208.697606382693,
+            "duv": 0.023177367903633582,
+            "mired": 89.21643130336203
+          }
+        },
+        {
+          "E": 2.7197689753094694,
+          "candidate_index": 0,
+          "capture_id": "071-strip-guide11-w2-cct14000-gm0-candidate0",
+          "command": {},
+          "e_gates": {
+            "cct_K": 1.0299755237831347,
+            "duv": 2.7197689753094694,
+            "mired": 0.776211350330442
+          },
+          "white_point": {
+            "cct_K": 11387.537059855578,
+            "duv": 0.02335785325819087,
+            "mired": 87.81530147772642
+          }
+        }
+      ],
+      "candidate_count": 2,
+      "cct": 14000,
+      "certification": "selection_frame_only_independent_FAST_confirmation_required",
+      "gm": 0,
+      "selected": {
+        "E": 2.646196309134746,
+        "candidate_index": 1,
+        "capture_id": "073-strip-guide11-w2-cct14000-gm0-candidate1",
+        "command": {},
+        "e_gates": {
+          "cct_K": 2.646196309134746,
+          "duv": 1.99782755708032,
+          "mired": 2.026048300940772
+        },
+        "white_point": {
+          "cct_K": 11208.697606382693,
+          "duv": 0.023177367903633582,
+          "mired": 89.21643130336203
+        }
+      },
+      "selected_within_tolerance": false,
+      "w6_status": "fail"
+    },
+    {
+      "all_candidates": [
+        {
+          "E": 0.5520611289770897,
+          "candidate_index": 1,
+          "capture_id": "076-strip-guide11-w2-cct14000-gm130-candidate1",
+          "command": {},
+          "e_gates": {
+            "cct_K": 0.5520611289770897,
+            "duv": 0.15337552561708878,
+            "mired": 0.4557533573422745
+          },
+          "white_point": {
+            "cct_K": 10564.852980724565,
+            "duv": -0.008040352633484519,
+            "mired": 94.65347050493621
+          }
+        },
+        {
+          "E": 0.6055715153714124,
+          "candidate_index": 0,
+          "capture_id": "074-strip-guide11-w2-cct14000-gm130-candidate0",
+          "command": {},
+          "e_gates": {
+            "cct_K": 0.6055715153714124,
+            "duv": 0.13992307646328722,
+            "mired": 0.4974116347862889
+          },
+          "white_point": {
+            "cct_K": 10618.316458978716,
+            "duv": -0.00804371574577297,
+            "mired": 94.17688800887193
+          }
+        }
+      ],
+      "candidate_count": 2,
+      "cct": 14000,
+      "certification": "selection_frame_only_independent_FAST_confirmation_required",
+      "gm": 130,
+      "selected": {
+        "E": 0.5520611289770897,
+        "candidate_index": 1,
+        "capture_id": "076-strip-guide11-w2-cct14000-gm130-candidate1",
+        "command": {},
+        "e_gates": {
+          "cct_K": 0.5520611289770897,
+          "duv": 0.15337552561708878,
+          "mired": 0.4557533573422745
+        },
+        "white_point": {
+          "cct_K": 10564.852980724565,
+          "duv": -0.008040352633484519,
+          "mired": 94.65347050493621
+        }
+      },
+      "selected_within_tolerance": true,
+      "w6_status": "fail"
+    },
+    {
+      "all_candidates": [
+        {
+          "E": 0.4846357385528805,
+          "candidate_index": 1,
+          "capture_id": "081-strip-guide11-w2-cct14000-gm200-candidate1",
+          "command": {},
+          "e_gates": {
+            "cct_K": 0.4846357385528805,
+            "duv": 0.38370353310850785,
+            "mired": 0.41435405913472323
+          },
+          "white_point": {
+            "cct_K": 10226.990195121156,
+            "duv": -0.02576270765790222,
+            "mired": 97.78047899929108
+          }
+        },
+        {
+          "E": 0.6447833166633651,
+          "candidate_index": 0,
+          "capture_id": "079-strip-guide11-w2-cct14000-gm200-candidate0",
+          "command": {},
+          "e_gates": {
+            "cct_K": 0.16277123630800966,
+            "duv": 0.6447833166633651,
+            "mired": 0.13837953829849425
+          },
+          "white_point": {
+            "cct_K": 10285.12998904623,
+            "duv": -0.025632167766124793,
+            "mired": 97.22774540185786
+          }
+        }
+      ],
+      "candidate_count": 2,
+      "cct": 14000,
+      "certification": "selection_frame_only_independent_FAST_confirmation_required",
+      "gm": 200,
+      "selected": {
+        "E": 0.4846357385528805,
+        "candidate_index": 1,
+        "capture_id": "081-strip-guide11-w2-cct14000-gm200-candidate1",
+        "command": {},
+        "e_gates": {
+          "cct_K": 0.4846357385528805,
+          "duv": 0.38370353310850785,
+          "mired": 0.41435405913472323
+        },
+        "white_point": {
+          "cct_K": 10226.990195121156,
+          "duv": -0.02576270765790222,
+          "mired": 97.78047899929108
+        }
+      },
+      "selected_within_tolerance": true,
+      "w6_status": "fail"
+    },
+    {
+      "all_candidates": [
+        {
+          "E": 13.4080968113093,
+          "candidate_index": 0,
+          "capture_id": "082-strip-guide11-w2-cct20000-gm0-candidate0",
+          "command": {},
+          "e_gates": {
+            "cct_K": 13.4080968113093,
+            "duv": 2.055203277635441,
+            "mired": 10.222632338206111
+          },
+          "white_point": {
+            "cct_K": 13387.548471404867,
+            "duv": 0.022106136055854694,
+            "mired": 74.69627483597537
+          }
+        },
+        {
+          "E": 18.799964034388967,
+          "candidate_index": 1,
+          "capture_id": "084-strip-guide11-w2-cct20000-gm0-candidate1",
+          "command": {},
+          "e_gates": {
+            "cct_K": 18.799964034388967,
+            "duv": 3.275141422982561,
+            "mired": 15.309666213728363
+          },
+          "white_point": {
+            "cct_K": 12533.949972118533,
+            "duv": 0.021496166983181134,
+            "mired": 79.78330871149763
+          }
+        }
+      ],
+      "candidate_count": 2,
+      "cct": 20000,
+      "certification": "selection_frame_only_independent_FAST_confirmation_required",
+      "gm": 0,
+      "selected": {
+        "E": 13.4080968113093,
+        "candidate_index": 0,
+        "capture_id": "082-strip-guide11-w2-cct20000-gm0-candidate0",
+        "command": {},
+        "e_gates": {
+          "cct_K": 13.4080968113093,
+          "duv": 2.055203277635441,
+          "mired": 10.222632338206111
+        },
+        "white_point": {
+          "cct_K": 13387.548471404867,
+          "duv": 0.022106136055854694,
+          "mired": 74.69627483597537
+        }
+      },
+      "selected_within_tolerance": false,
+      "w6_status": "fail"
+    },
+    {
+      "all_candidates": [
+        {
+          "E": 0.5962027314807757,
+          "candidate_index": 1,
+          "capture_id": "089-strip-guide11-w2-cct20000-gm70-candidate1",
+          "command": {},
+          "e_gates": {
+            "cct_K": 0.504926334880844,
+            "duv": 0.5962027314807757,
+            "mired": 0.373901520902038
+          },
+          "white_point": {
+            "cct_K": 14092.61697972676,
+            "duv": 0.007099421767097343,
+            "mired": 70.95914133184573
+          }
+        },
+        {
+          "E": 1.1723014896332615,
+          "candidate_index": 0,
+          "capture_id": "087-strip-guide11-w2-cct20000-gm70-candidate0",
+          "command": {},
+          "e_gates": {
+            "cct_K": 0.11486182303851161,
+            "duv": 1.1723014896332615,
+            "mired": 0.08450651598110426
+          },
+          "white_point": {
+            "cct_K": 14184.249627818437,
+            "duv": 0.007387471146173586,
+            "mired": 70.50073329496259
+          }
+        }
+      ],
+      "candidate_count": 2,
+      "cct": 20000,
+      "certification": "selection_frame_only_independent_FAST_confirmation_required",
+      "gm": 70,
+      "selected": {
+        "E": 0.5962027314807757,
+        "candidate_index": 1,
+        "capture_id": "089-strip-guide11-w2-cct20000-gm70-candidate1",
+        "command": {},
+        "e_gates": {
+          "cct_K": 0.504926334880844,
+          "duv": 0.5962027314807757,
+          "mired": 0.373901520902038
+        },
+        "white_point": {
+          "cct_K": 14092.61697972676,
+          "duv": 0.007099421767097343,
+          "mired": 70.95914133184573
+        }
+      },
+      "selected_within_tolerance": true,
+      "w6_status": "fail"
+    },
+    {
+      "all_candidates": [
+        {
+          "E": 8.106930602036838,
+          "candidate_index": 0,
+          "capture_id": "090-strip-guide11-w2-cct20000-gm130-candidate0",
+          "command": {},
+          "e_gates": {
+            "cct_K": 8.106930602036838,
+            "duv": 2.547452819778471,
+            "mired": 7.027299210243385
+          },
+          "white_point": {
+            "cct_K": 12305.790613479634,
+            "duv": -0.008513999424815165,
+            "mired": 81.26255609327616
+          }
+        },
+        {
+          "E": 11.569698405497713,
+          "candidate_index": 1,
+          "capture_id": "092-strip-guide11-w2-cct20000-gm130-candidate1",
+          "command": {},
+          "e_gates": {
+            "cct_K": 11.569698405497713,
+            "duv": 3.9018013490792534,
+            "mired": 10.451511699227453
+          },
+          "white_point": {
+            "cct_K": 11808.220064845822,
+            "duv": -0.009191173689465556,
+            "mired": 84.68676858226023
+          }
+        }
+      ],
+      "candidate_count": 2,
+      "cct": 20000,
+      "certification": "selection_frame_only_independent_FAST_confirmation_required",
+      "gm": 130,
+      "selected": {
+        "E": 8.106930602036838,
+        "candidate_index": 0,
+        "capture_id": "090-strip-guide11-w2-cct20000-gm130-candidate0",
+        "command": {},
+        "e_gates": {
+          "cct_K": 8.106930602036838,
+          "duv": 2.547452819778471,
+          "mired": 7.027299210243385
+        },
+        "white_point": {
+          "cct_K": 12305.790613479634,
+          "duv": -0.008513999424815165,
+          "mired": 81.26255609327616
+        }
+      },
+      "selected_within_tolerance": false,
+      "w6_status": "fail"
+    },
+    {
+      "all_candidates": [
+        {
+          "E": 0.7810657183155434,
+          "candidate_index": 0,
+          "capture_id": "095-strip-guide11-w2-cct20000-gm200-candidate0",
+          "command": {},
+          "e_gates": {
+            "cct_K": 0.18484172178763386,
+            "duv": 0.7810657183155434,
+            "mired": 0.1500026987367562
+          },
+          "white_point": {
+            "cct_K": 12916.878682140703,
+            "duv": -0.02528541746526286,
+            "mired": 77.4180840904415
+          }
+        },
+        {
+          "E": 0.961085801827341,
+          "candidate_index": 1,
+          "capture_id": "097-strip-guide11-w2-cct20000-gm200-candidate1",
+          "command": {},
+          "e_gates": {
+            "cct_K": 0.43542529231112576,
+            "duv": 0.961085801827341,
+            "mired": 0.3545075606788828
+          },
+          "white_point": {
+            "cct_K": 12874.927675616216,
+            "duv": -0.02533042248614081,
+            "mired": 77.67033922014932
+          }
+        }
+      ],
+      "candidate_count": 2,
+      "cct": 20000,
+      "certification": "selection_frame_only_independent_FAST_confirmation_required",
+      "gm": 200,
+      "selected": {
+        "E": 0.7810657183155434,
+        "candidate_index": 0,
+        "capture_id": "095-strip-guide11-w2-cct20000-gm200-candidate0",
+        "command": {},
+        "e_gates": {
+          "cct_K": 0.18484172178763386,
+          "duv": 0.7810657183155434,
+          "mired": 0.1500026987367562
+        },
+        "white_point": {
+          "cct_K": 12916.878682140703,
+          "duv": -0.02528541746526286,
+          "mired": 77.4180840904415
+        }
+      },
+      "selected_within_tolerance": true,
+      "w6_status": "fail"
+    }
+  ],
+  "nodes_improved_from_w6_fail": 9,
+  "nodes_within_tolerance": 9,
+  "note": "Selection frames cannot certify; selected commands require independent FAST confirmation before adoption.",
+  "objective": "E(u)=max(|e_K|/tau_K, |e_mired|/tau_mired, |e_Duv|/tau_Duv) vs W1 frozen targets",
+  "observation_count": 49,
+  "schema": "guide11_w2_selection_v1",
+  "sources": {
+    "frozen_targets": "D:\\rgbww-optimizer\\guide11-n1\\derived\\w1-frozen-targets-20260922.json",
+    "parent_prefix": "D:\\rgbww-optimizer\\guide11-w2\\formal-w2-20260922",
+    "suffix": "D:\\rgbww-optimizer\\guide11-w2\\formal-w2-20260923-suffix"
+  },
+  "steady_claim": false
+}
