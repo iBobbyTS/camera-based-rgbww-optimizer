@@ -56,7 +56,9 @@ def main() -> None:
             )
             step = row.get("plan_step", {})
             key = (int(step["target_cct"]), int(step["target_gm"]))
-            command = {k: int(v) for k, v in (row.get("command") or {}).items()}
+            command = {k: int(v) for k, v in (step.get("command") or {}).items()}
+            if not command:
+                raise ValueError(f"W2 strip observation lacks its command: {capture_id}")
             observations.append({
                 "capture_id": capture_id,
                 "run_root": str(root),

@@ -1002,3 +1002,174 @@ def build_guide11_w2_recovery_suffix(interrupted_root: Path) -> dict[str, Any]:
         "recovery_parent_prefix_count": len(captures),
     }
     return suffix
+
+
+W3_EXPERIMENT_ID = "GUIDE11_W3_INTERPOLATION_HOLDOUT_V2"
+W3_VARIANT = "guide11-w3-interpolation-holdout"
+W3_AUTHORIZATION_SCHEMA = "direct_guide11_w3_interpolation_holdout_v2"
+# Twenty fixed non-node holdout requests: the old GUIDE10 W7 lattice with
+# four mid-band points moved onto the N1-confirmed difficult regions
+# (3200 K and 14000 K neighbourhoods) per GUIDE11 W3 stratification.
+W3_POINTS: tuple[tuple[int, int], ...] = (
+    (1800, 35), (1800, 165), (1900, 100), (2150, 35), (2150, 165),
+    (2500, 35), (2500, 165), (3000, 100), (3200, 35), (3200, 165),
+    (4100, 100), (4750, 35), (4750, 165), (5300, 100), (6100, 35),
+    (6100, 165), (7250, 100), (9000, 35), (14000, 35), (17000, 100),
+)
+
+
+def build_guide11_w3_holdout_plan(
+    frozen_lut: Sequence[Mapping[str, Any]],
+    w6_plan: Mapping[str, Any],
+    *,
+    inputs_references: Mapping[str, Mapping[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """GUIDE11 W3 holdout: interpolated commands for twenty fixed non-nodes.
+
+    Commands come exclusively from the shared
+    ``guide11_mired_gm_bilinear_clamped_v1`` interpolation owner over the
+    frozen post-W2 LUT, so controller and validation share one model. Each
+    request records the contributing knots' nearest-node command as the
+    diagnostic baseline; node residual and interpolation increment are
+    separable in the analysis.
+    """
+    import copy
+
+    from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
+
+    templates: dict[tuple[int, int], dict[str, Mapping[str, Any]]] = {}
+    for step in w6_plan.get("captures", ()):
+        key = (int(step["target_cct"]), int(step["target_gm"]))
+        templates.setdefault(key, {})[str(step["source_id"])] = step
+
+    def nearest_template_key(cct: int, gm: int) -> tuple[int, int]:
+        rows = [(int(n["cct"]), int(n["gm"])) for n in frozen_lut]
+        return min(
+            rows,
+            key=lambda key: abs(1_000_000.0 / key[0] - 1_000_000.0 / cct) / (1_000_000.0 / cct)
+            + abs(key[1] - gm) / 200.0,
+        )
+
+    def nearest_shutter(source: str, cct: int, gm: int) -> str:
+        rows = [(int(n["cct"]), int(n["gm"])) for n in frozen_lut]
+        nearest = min(
+            rows,
+            key=lambda key: abs(1_000_000.0 / key[0] - 1_000_000.0 / cct) / (1_000_000.0 / cct)
+            + abs(key[1] - gm) / 200.0,
+        )
+        key = f"{source}-white-{nearest[0]}-gm{nearest[1]}"
+        shutters = dict(w6_plan.get("frozen_shutters", {}))
+        if key not in shutters:
+            raise ValueError(f"GUIDE11 W3 lacks a qualified {source} shutter for {key}")
+        return str(shutters[key])
+
+    captures: list[dict[str, Any]] = []
+    audit: list[dict[str, Any]] = []
+    for point_index, (cct, gm) in enumerate(W3_POINTS):
+        resolved = interpolate_white_command(frozen_lut, cct, gm)
+        strip_command = resolved["command"]
+        ray_command = {"mode": "cct", "cct": cct, "gm": gm, "intensity_percent": 100.0}
+        audit.append({
+            "cct": cct, "gm": gm,
+            "exact_node": resolved["exact_node"],
+            "clamped_to_hull": resolved["clamped_to_hull"],
+            "interpolated_command": strip_command,
+            "nearest_node_command": resolved["nearest_node_command"],
+        })
+        nearest_key = nearest_template_key(cct, gm)
+        node_templates = templates[nearest_key]
+        ray_first = point_index % 2 == 0
+        order = ("ray", "strip") if ray_first else ("strip", "ray")
+        for source_index, source in enumerate(order, start=1):
+            template = node_templates[source]
+            step = copy.deepcopy(template)
+            cache_key = f"{source}-w3-cct{cct}-gm{gm}"
+            step.update({
+                "capture_id": f"{len(captures):03d}-{source}-guide11-w3-cct{cct}-gm{gm}",
+                "state_id": f"W3_CCT{cct}_GM{gm}_{source.upper()}",
+                "role": "ray_reference" if source == "ray" else "strip_holdout",
+                "capture_role": "formal",
+                "formal_measurement": True,
+                "session_index": len(captures) + 1,
+                "source_order": source_index,
+                "target_cct": cct,
+                "target_gm": gm,
+                "requested_elapsed_s": 120,
+                "nominal_shutter": nearest_shutter(source, cct, gm),
+                "exposure_cache_key": cache_key,
+            })
+            if source == "ray":
+                step["command"] = ray_command
+                step["exact_command_hash"] = thermal.canonical_sha256(ray_command)
+            else:
+                step["command"] = dict(strip_command)
+                step["exact_command_hash"] = thermal.canonical_sha256(strip_command)
+            captures.append(step)
+    frozen = {str(step["exposure_cache_key"]): str(step["nominal_shutter"]) for step in captures}
+    return {
+        "schema": thermal.PLAN_SCHEMA_V2,
+        "status": "execute_authorized",
+        "experiment_id": thermal.TD_C,
+        "guide_experiment_id": W3_EXPERIMENT_ID,
+        "variant": W3_VARIANT,
+        "stage": "GUIDE11-W3-INTERPOLATION-HOLDOUT",
+        "phase": "formal",
+        "source": "guide11_w3_frozen_lut_interpolation",
+        "created_at": thermal.datetime.now(thermal.timezone.utc).isoformat(),
+        "inputs": {
+            "location": thermal.file_reference(thermal.LOCATION_PATH),
+            "policy": thermal.file_reference(thermal.POLICY_PATH),
+            "code_duty_curve": thermal.file_reference(thermal.CURVE_PATH),
+            **{k: dict(v) for k, v in (inputs_references or {}).items()},
+        },
+        "captures": captures,
+        "capture_ids": [step["capture_id"] for step in captures],
+        "timing_contract": thermal.timing_contract(2),
+        "timing_resolution": "guide11_w3_reset600_D120",
+        "cold_proxy": 600,
+        "cold_proxy_wait_s": 600,
+        "native_raw_ambient_policy": thermal.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+        "exposure_setup_required": [],
+        "frozen_shutters": frozen,
+        "shutter_ledger_provenance": {
+            "owner": "experiment_capture_steps",
+            "required_cache_keys": sorted(frozen),
+            "frozen_shutters_sha256": thermal.canonical_sha256(frozen),
+        },
+        "budgets": {
+            "ray_cap": 20, "strip_cap": 20, "formal_cap": 40,
+            "physical_cr3_cap": 40, "ambient_cap": 0, "retry": 0,
+        },
+        "execution_authorization": {
+            "schema": W3_AUTHORIZATION_SCHEMA,
+            "human_authorization_required": False,
+            "human_authorization_verified": False,
+            "device_use_granted_by": "operator_cli_allow_device_control",
+            "experiment_id": W3_EXPERIMENT_ID,
+            "bounded_device_scope": True,
+            "remote_v2_capability": True,
+        },
+        "camera": {
+            "backend": "remote",
+            "v2_capture_timing_capability_available": True,
+            "v2_capture_capability": "remote_v2_capture_timing_v1",
+            "resolved_capture_settings": {
+                "owner": "remote_backend.resolve_capture_settings",
+                "iso": "100", "aperture": "f/4", "image_format": "RAW",
+            },
+        },
+        "analysis_contract": {
+            "method": "guide11_w3_interpolation_holdout",
+            "holdout_count": 20,
+            "points": [{"cct": c, "gm": g} for c, g in W3_POINTS],
+            "requests_audit": audit,
+            "interpolation_model": "guide11_mired_gm_bilinear_clamped_v1",
+            "reporting": "node-residual and interpolation-increment reported separately",
+            "one_local_knot_correction_allowed": True,
+            "max_new_knots": 6,
+            "independent_reset_s": 600,
+            "dwell_s": 120,
+            "global_model_refit": False,
+            "steady_claim": False,
+        },
+    }

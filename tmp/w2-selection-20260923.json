@@ -7,7 +7,13 @@
           "E": 0.7636369294269798,
           "candidate_index": 0,
           "capture_id": "001-strip-guide11-w2-cct1800-gm70-candidate0",
-          "command": {},
+          "command": {
+            "b": 21,
+            "cw": 39,
+            "g": 1170,
+            "r": 4095,
+            "ww": 25
+          },
           "e_gates": {
             "cct_K": 0.11093823959559813,
             "duv": 0.5486911309585821,
@@ -23,7 +29,13 @@
           "E": 0.800120062764563,
           "candidate_index": 1,
           "capture_id": "003-strip-guide11-w2-cct1800-gm70-candidate1",
-          "command": {},
+          "command": {
+            "b": 19,
+            "cw": 39,
+            "g": 1170,
+            "r": 4095,
+            "ww": 25
+          },
           "e_gates": {
             "cct_K": 0.11623029368323841,
             "duv": 0.3841879963827404,
@@ -44,7 +56,13 @@
         "E": 0.7636369294269798,
         "candidate_index": 0,
         "capture_id": "001-strip-guide11-w2-cct1800-gm70-candidate0",
-        "command": {},
+        "command": {
+          "b": 21,
+          "cw": 39,
+          "g": 1170,
+          "r": 4095,
+          "ww": 25
+        },
         "e_gates": {
           "cct_K": 0.11093823959559813,
           "duv": 0.5486911309585821,
@@ -65,7 +83,13 @@
           "E": 14.176613282398534,
           "candidate_index": 0,
           "capture_id": "004-strip-guide11-w2-cct2000-gm70-candidate0",
-          "command": {},
+          "command": {
+            "b": 0,
+            "cw": 0,
+            "g": 363,
+            "r": 3013,
+            "ww": 4095
+          },
           "e_gates": {
             "cct_K": 2.662787996573952,
             "duv": 1.8793637440362174,
@@ -81,7 +105,13 @@
           "E": 20.342528615961157,
           "candidate_index": 1,
           "capture_id": "006-strip-guide11-w2-cct2000-gm70-candidate1",
-          "command": {},
+          "command": {
+            "b": 0,
+            "cw": 0,
+            "g": 424,
+            "r": 3013,
+            "ww": 4095
+          },
           "e_gates": {
             "cct_K": 3.8734855545425306,
             "duv": 2.8044051691091574,
@@ -102,7 +132,13 @@
         "E": 14.176613282398534,
         "candidate_index": 0,
         "capture_id": "004-strip-guide11-w2-cct2000-gm70-candidate0",
-        "command": {},
+        "command": {
+          "b": 0,
+          "cw": 0,
+          "g": 363,
+          "r": 3013,
+          "ww": 4095
+        },
         "e_gates": {
           "cct_K": 2.662787996573952,
           "duv": 1.8793637440362174,
@@ -123,7 +159,13 @@
           "E": 0.8583628822619858,
           "candidate_index": 0,
           "capture_id": "009-strip-guide11-w2-cct2000-gm100-candidate0",
-          "command": {},
+          "command": {
+            "b": 11,
+            "cw": 40,
+            "g": 1435,
+            "r": 4095,
+            "ww": 25
+          },
           "e_gates": {
             "cct_K": 0.15724155927053288,
             "duv": 0.8185440891656844,
@@ -139,7 +181,13 @@
           "E": 1.218912155971907,
           "candidate_index": 1,
           "capture_id": "011-strip-guide11-w2-cct2000-gm100-candidate1",
-          "command": {},
+          "command": {
+            "b": 7,
+            "cw": 40,
+            "g": 1435,
+            "r": 4095,
+            "ww": 25
+          },
           "e_gates": {
             "cct_K": 0.22311777113412973,
             "duv": 0.305010724450272,
@@ -160,7 +208,13 @@
         "E": 0.8583628822619858,
         "candidate_index": 0,
         "capture_id": "009-strip-guide11-w2-cct2000-gm100-candidate0",
-        "command": {},
+        "command": {
+          "b": 11,
+          "cw": 40,
+          "g": 1435,
+          "r": 4095,
+          "ww": 25
+        },
         "e_gates": {
           "cct_K": 0.15724155927053288,
           "duv": 0.8185440891656844,
@@ -181,7 +235,13 @@
           "E": 23.75613670900384,
           "candidate_index": 0,
           "capture_id": "012-strip-guide11-w2-cct2000-gm200-candidate0",
-          "command": {},
+          "command": {
+            "b": 0,
+            "cw": 0,
+            "g": 1604,
+            "r": 4095,
+            "ww": 0
+          },
           "e_gates": {
             "cct_K": 4.595009235197031,
             "duv": 3.0709109840366207,
@@ -197,7 +257,13 @@
           "E": 33.46514867884326,
           "candidate_index": 1,
           "capture_id": "014-strip-guide11-w2-cct2000-gm200-candidate1",
-          "command": {},
+          "command": {
+            "b": 0,
+            "cw": 0,
+            "g": 1661,
+            "r": 4095,
+            "ww": 0
+          },
           "e_gates": {
             "cct_K": 6.617999982695364,
             "duv": 4.563666797792883,
@@ -218,7 +284,13 @@
         "E": 23.75613670900384,
         "candidate_index": 0,
         "capture_id": "012-strip-guide11-w2-cct2000-gm200-candidate0",
-        "command": {},
+        "command": {
+          "b": 0,
+          "cw": 0,
+          "g": 1604,
+          "r": 4095,
+          "ww": 0
+        },
         "e_gates": {
           "cct_K": 4.595009235197031,
           "duv": 3.0709109840366207,
@@ -239,7 +311,13 @@
           "E": 0.7091757550952593,
           "candidate_index": 0,
           "capture_id": "017-strip-guide11-w2-cct2300-gm100-candidate0",
-          "command": {},
+          "command": {
+            "b": 0,
+            "cw": 0,
+            "g": 371,
+            "r": 2015,
+            "ww": 4095
+          },
           "e_gates": {
             "cct_K": 0.1695799513181919,
             "duv": 0.072438903347561,
@@ -255,7 +333,13 @@
           "E": 1.0810223558806342,
           "candidate_index": 1,
           "capture_id": "019-strip-guide11-w2-cct2300-gm100-candidate1",
-          "command": {},
+          "command": {
+            "b": 0,
+            "cw": 0,
+            "g": 367,
+            "r": 2015,
+            "ww": 4095
+          },
           "e_gates": {
             "cct_K": 0.2582622774583433,
             "duv": 0.12473332125161746,
@@ -276,7 +360,13 @@
         "E": 0.7091757550952593,
         "candidate_index": 0,
         "capture_id": "017-strip-guide11-w2-cct2300-gm100-candidate0",
-        "command": {},
+        "command": {
+          "b": 0,
+          "cw": 0,
+          "g": 371,
+          "r": 2015,
+          "ww": 4095
+        },
         "e_gates": {
           "cct_K": 0.1695799513181919,
           "duv": 0.072438903347561,
@@ -297,7 +387,13 @@
           "E": 2.4942897875795325,
           "candidate_index": 1,
           "capture_id": "022-strip-guide11-w2-cct2300-gm130-candidate1",
-          "command": {},
+          "command": {
+            "b": 0,
+            "cw": 0,
+            "g": 1270,
+            "r": 4095,
+            "ww": 4095
+          },
           "e_gates": {
             "cct_K": 0.5949421989235271,
             "duv": 1.0622366796549307,
@@ -313,7 +409,13 @@
           "E": 2.513902243818279,
           "candidate_index": 0,
           "capture_id": "020-strip-guide11-w2-cct2300-gm130-candidate0",
-          "command": {},
+          "command": {
+            "b": 0,
+            "cw": 0,
+            "g": 1236,
+            "r": 4095,
+            "ww": 4095
+          },
           "e_gates": {
             "cct_K": 0.5959703795979294,
             "duv": 2.030062240568082,
@@ -334,7 +436,13 @@
         "E": 2.4942897875795325,
         "candidate_index": 1,
         "capture_id": "022-strip-guide11-w2-cct2300-gm130-candidate1",
-        "command": {},
+        "command": {
+          "b": 0,
+          "cw": 0,
+          "g": 1270,
+          "r": 4095,
+          "ww": 4095
+        },
         "e_gates": {
           "cct_K": 0.5949421989235271,
           "duv": 1.0622366796549307,
@@ -355,7 +463,13 @@
           "E": 1.515606254927775,
           "candidate_index": 1,
           "capture_id": "027-strip-guide11-w2-cct2300-gm200-candidate1",
-          "command": {},
+          "command": {
+            "b": 0,
+            "cw": 0,
+            "g": 1266,
+            "r": 4095,
+            "ww": 4095
+          },
           "e_gates": {
             "cct_K": 0.3613584662518042,
             "duv": 1.1937439996845476,
@@ -371,7 +485,13 @@
           "E": 1.8362998843241378,
           "candidate_index": 0,
           "capture_id": "025-strip-guide11-w2-cct2300-gm200-candidate0",
-          "command": {},
+          "command": {
+            "b": 0,
+            "cw": 0,
+            "g": 1243,
+            "r": 4095,
+            "ww": 4095
+          },
           "e_gates": {
             "cct_K": 0.3969430435146205,
             "duv": 1.8362998843241378,
@@ -392,7 +512,13 @@
         "E": 1.515606254927775,
         "candidate_index": 1,
         "capture_id": "027-strip-guide11-w2-cct2300-gm200-candidate1",
-        "command": {},
+        "command": {
+          "b": 0,
+          "cw": 0,
+          "g": 1266,
+          "r": 4095,
+          "ww": 4095
+        },
         "e_gates": {
           "cct_K": 0.3613584662518042,
           "duv": 1.1937439996845476,
@@ -413,7 +539,13 @@
           "E": 1.9971507871439371,
           "candidate_index": 1,
           "capture_id": "030-strip-guide11-w2-cct2700-gm100-candidate1",
-          "command": {},
+          "command": {
+            "b": 18,
+            "cw": 1386,
+            "g": 1601,
+            "r": 3903,
+            "ww": 4095
+          },
           "e_gates": {
             "cct_K": 0.6429546260769348,
             "duv": 0.45147536548224493,
@@ -429,7 +561,13 @@
           "E": 2.1443791393344327,
           "candidate_index": 0,
           "capture_id": "028-strip-guide11-w2-cct2700-gm100-candidate0",
-          "command": {},
+          "command": {
+            "b": 19,
+            "cw": 1386,
+            "g": 1601,
+            "r": 3903,
+            "ww": 4095
+          },
           "e_gates": {
             "cct_K": 0.6902087847727671,
             "duv": 0.5974118812008474,
@@ -450,7 +588,13 @@
         "E": 1.9971507871439371,
         "candidate_index": 1,
         "capture_id": "030-strip-guide11-w2-cct2700-gm100-candidate1",
-        "command": {},
+        "command": {
+          "b": 18,
+          "cw": 1386,
+          "g": 1601,
+          "r": 3903,
+          "ww": 4095
+        },
         "e_gates": {
           "cct_K": 0.6429546260769348,
           "duv": 0.45147536548224493,
@@ -471,7 +615,13 @@
           "E": 10.214921226606293,
           "candidate_index": 0,
           "capture_id": "033-strip-guide11-w2-cct3200-gm0-candidate0",
-          "command": {},
+          "command": {
+            "b": 712,
+            "cw": 24,
+            "g": 10,
+            "r": 157,
+            "ww": 4095
+          },
           "e_gates": {
             "cct_K": 4.281288242255959,
             "duv": 8.337899510770036,
@@ -487,7 +637,13 @@
           "E": 13.797970096755876,
           "candidate_index": 1,
           "capture_id": "035-strip-guide11-w2-cct3200-gm0-candidate1",
-          "command": {},
+          "command": {
+            "b": 646,
+            "cw": 24,
+            "g": 10,
+            "r": 157,
+            "ww": 4095
+          },
           "e_gates": {
             "cct_K": 5.717790320746662,
             "duv": 12.398791836703104,
@@ -508,7 +664,13 @@
         "E": 10.214921226606293,
         "candidate_index": 0,
         "capture_id": "033-strip-guide11-w2-cct3200-gm0-candidate0",
-        "command": {},
+        "command": {
+          "b": 712,
+          "cw": 24,
+          "g": 10,
+          "r": 157,
+          "ww": 4095
+        },
         "e_gates": {
           "cct_K": 4.281288242255959,
           "duv": 8.337899510770036,
@@ -529,7 +691,13 @@
           "E": 1.171856257540469,
           "candidate_index": 1,
           "capture_id": "038-strip-guide11-w2-cct3200-gm70-candidate1",
-          "command": {},
+          "command": {
+            "b": 305,
+            "cw": 1104,
+            "g": 5,
+            "r": 166,
+            "ww": 4095
+          },
           "e_gates": {
             "cct_K": 0.5042633966611902,
             "duv": 0.7895973904071973,
@@ -545,7 +713,13 @@
           "E": 1.2700514107210412,
           "candidate_index": 0,
           "capture_id": "036-strip-guide11-w2-cct3200-gm70-candidate0",
-          "command": {},
+          "command": {
+            "b": 314,
+            "cw": 1104,
+            "g": 5,
+            "r": 166,
+            "ww": 4095
+          },
           "e_gates": {
             "cct_K": 0.3174732406811745,
             "duv": 1.2700514107210412,
@@ -566,7 +740,13 @@
         "E": 1.171856257540469,
         "candidate_index": 1,
         "capture_id": "038-strip-guide11-w2-cct3200-gm70-candidate1",
-        "command": {},
+        "command": {
+          "b": 305,
+          "cw": 1104,
+          "g": 5,
+          "r": 166,
+          "ww": 4095
+        },
         "e_gates": {
           "cct_K": 0.5042633966611902,
           "duv": 0.7895973904071973,
@@ -587,7 +767,13 @@
           "E": 9.093762627204853,
           "candidate_index": 0,
           "capture_id": "041-strip-guide11-w2-cct3800-gm0-candidate0",
-          "command": {},
+          "command": {
+            "b": 978,
+            "cw": 372,
+            "g": 80,
+            "r": 0,
+            "ww": 4095
+          },
           "e_gates": {
             "cct_K": 5.118249812956783,
             "duv": 6.616614053360087,
@@ -603,7 +789,13 @@
           "E": 14.210522692932045,
           "candidate_index": 1,
           "capture_id": "043-strip-guide11-w2-cct3800-gm0-candidate1",
-          "command": {},
+          "command": {
+            "b": 907,
+            "cw": 372,
+            "g": 80,
+            "r": 0,
+            "ww": 4095
+          },
           "e_gates": {
             "cct_K": 7.849999017604914,
             "duv": 10.53774273781477,
@@ -624,7 +816,13 @@
         "E": 9.093762627204853,
         "candidate_index": 0,
         "capture_id": "041-strip-guide11-w2-cct3800-gm0-candidate0",
-        "command": {},
+        "command": {
+          "b": 978,
+          "cw": 372,
+          "g": 80,
+          "r": 0,
+          "ww": 4095
+        },
         "e_gates": {
           "cct_K": 5.118249812956783,
           "duv": 6.616614053360087,
@@ -645,7 +843,13 @@
           "E": 1.080094577934176,
           "candidate_index": 0,
           "capture_id": "044-strip-guide11-w2-cct4500-gm70-candidate0",
-          "command": {},
+          "command": {
+            "b": 1138,
+            "cw": 45,
+            "g": 944,
+            "r": 68,
+            "ww": 4095
+          },
           "e_gates": {
             "cct_K": 0.8212682899119682,
             "duv": 0.9511283482686378,
@@ -666,7 +870,13 @@
         "E": 1.080094577934176,
         "candidate_index": 0,
         "capture_id": "044-strip-guide11-w2-cct4500-gm70-candidate0",
-        "command": {},
+        "command": {
+          "b": 1138,
+          "cw": 45,
+          "g": 944,
+          "r": 68,
+          "ww": 4095
+        },
         "e_gates": {
           "cct_K": 0.8212682899119682,
           "duv": 0.9511283482686378,
@@ -687,7 +897,13 @@
           "E": 8.734878344104327,
           "candidate_index": 0,
           "capture_id": "047-strip-guide11-w2-cct5600-gm0-candidate0",
-          "command": {},
+          "command": {
+            "b": 1544,
+            "cw": 2892,
+            "g": 91,
+            "r": 14,
+            "ww": 4095
+          },
           "e_gates": {
             "cct_K": 8.734878344104327,
             "duv": 3.254654229516374,
@@ -703,7 +919,13 @@
           "E": 11.912569028866056,
           "candidate_index": 1,
           "capture_id": "049-strip-guide11-w2-cct5600-gm0-candidate1",
-          "command": {},
+          "command": {
+            "b": 1480,
+            "cw": 2892,
+            "g": 91,
+            "r": 14,
+            "ww": 4095
+          },
           "e_gates": {
             "cct_K": 11.912569028866056,
             "duv": 4.968506750982489,
@@ -724,7 +946,13 @@
         "E": 8.734878344104327,
         "candidate_index": 0,
         "capture_id": "047-strip-guide11-w2-cct5600-gm0-candidate0",
-        "command": {},
+        "command": {
+          "b": 1544,
+          "cw": 2892,
+          "g": 91,
+          "r": 14,
+          "ww": 4095
+        },
         "e_gates": {
           "cct_K": 8.734878344104327,
           "duv": 3.254654229516374,
@@ -745,7 +973,13 @@
           "E": 0.12167787731422815,
           "candidate_index": 1,
           "capture_id": "052-strip-guide11-w2-cct6500-gm0-candidate1",
-          "command": {},
+          "command": {
+            "b": 2163,
+            "cw": 3888,
+            "g": 124,
+            "r": 0,
+            "ww": 4095
+          },
           "e_gates": {
             "cct_K": 0.12167787731422815,
             "duv": 0.07759952867235353,
@@ -761,7 +995,13 @@
           "E": 1.0488667346440164,
           "candidate_index": 0,
           "capture_id": "050-strip-guide11-w2-cct6500-gm0-candidate0",
-          "command": {},
+          "command": {
+            "b": 2146,
+            "cw": 3888,
+            "g": 124,
+            "r": 0,
+            "ww": 4095
+          },
           "e_gates": {
             "cct_K": 1.0488667346440164,
             "duv": 0.3935579521562038,
@@ -782,7 +1022,13 @@
         "E": 0.12167787731422815,
         "candidate_index": 1,
         "capture_id": "052-strip-guide11-w2-cct6500-gm0-candidate1",
-        "command": {},
+        "command": {
+          "b": 2163,
+          "cw": 3888,
+          "g": 124,
+          "r": 0,
+          "ww": 4095
+        },
         "e_gates": {
           "cct_K": 0.12167787731422815,
           "duv": 0.07759952867235353,
@@ -803,7 +1049,13 @@
           "E": 8.902391331996137,
           "candidate_index": 0,
           "capture_id": "055-strip-guide11-w2-cct8000-gm0-candidate0",
-          "command": {},
+          "command": {
+            "b": 1984,
+            "cw": 4095,
+            "g": 155,
+            "r": 0,
+            "ww": 2886
+          },
           "e_gates": {
             "cct_K": 8.902391331996137,
             "duv": 2.623822045106666,
@@ -819,7 +1071,13 @@
           "E": 12.543794802491181,
           "candidate_index": 1,
           "capture_id": "057-strip-guide11-w2-cct8000-gm0-candidate1",
-          "command": {},
+          "command": {
+            "b": 1912,
+            "cw": 4095,
+            "g": 155,
+            "r": 0,
+            "ww": 2886
+          },
           "e_gates": {
             "cct_K": 12.543794802491181,
             "duv": 4.013401922765593,
@@ -840,7 +1098,13 @@
         "E": 8.902391331996137,
         "candidate_index": 0,
         "capture_id": "055-strip-guide11-w2-cct8000-gm0-candidate0",
-        "command": {},
+        "command": {
+          "b": 1984,
+          "cw": 4095,
+          "g": 155,
+          "r": 0,
+          "ww": 2886
+        },
         "e_gates": {
           "cct_K": 8.902391331996137,
           "duv": 2.623822045106666,
@@ -861,7 +1125,13 @@
           "E": 11.28444347351775,
           "candidate_index": 0,
           "capture_id": "058-strip-guide11-w2-cct8000-gm70-candidate0",
-          "command": {},
+          "command": {
+            "b": 484,
+            "cw": 4095,
+            "g": 34,
+            "r": 0,
+            "ww": 341
+          },
           "e_gates": {
             "cct_K": 11.28444347351775,
             "duv": 5.74817437213559,
@@ -877,7 +1147,13 @@
           "E": 16.569114744048647,
           "candidate_index": 1,
           "capture_id": "060-strip-guide11-w2-cct8000-gm70-candidate1",
-          "command": {},
+          "command": {
+            "b": 415,
+            "cw": 4095,
+            "g": 34,
+            "r": 0,
+            "ww": 341
+          },
           "e_gates": {
             "cct_K": 16.569114744048647,
             "duv": 8.749825295923563,
@@ -898,7 +1174,13 @@
         "E": 11.28444347351775,
         "candidate_index": 0,
         "capture_id": "058-strip-guide11-w2-cct8000-gm70-candidate0",
-        "command": {},
+        "command": {
+          "b": 484,
+          "cw": 4095,
+          "g": 34,
+          "r": 0,
+          "ww": 341
+        },
         "e_gates": {
           "cct_K": 11.28444347351775,
           "duv": 5.74817437213559,
@@ -919,7 +1201,13 @@
           "E": 0.7549639954054288,
           "candidate_index": 0,
           "capture_id": "063-strip-guide11-w2-cct8000-gm130-candidate0",
-          "command": {},
+          "command": {
+            "b": 3032,
+            "cw": 328,
+            "g": 3868,
+            "r": 1151,
+            "ww": 4095
+          },
           "e_gates": {
             "cct_K": 0.7549639954054288,
             "duv": 0.7100988308109957,
@@ -935,7 +1223,13 @@
           "E": 1.0047612203257783,
           "candidate_index": 1,
           "capture_id": "065-strip-guide11-w2-cct8000-gm130-candidate1",
-          "command": {},
+          "command": {
+            "b": 3022,
+            "cw": 328,
+            "g": 3868,
+            "r": 1151,
+            "ww": 4095
+          },
           "e_gates": {
             "cct_K": 0.11715944940817101,
             "duv": 1.0047612203257783,
@@ -956,7 +1250,13 @@
         "E": 0.7549639954054288,
         "candidate_index": 0,
         "capture_id": "063-strip-guide11-w2-cct8000-gm130-candidate0",
-        "command": {},
+        "command": {
+          "b": 3032,
+          "cw": 328,
+          "g": 3868,
+          "r": 1151,
+          "ww": 4095
+        },
         "e_gates": {
           "cct_K": 0.7549639954054288,
           "duv": 0.7100988308109957,
@@ -977,7 +1277,13 @@
           "E": 11.63421836302446,
           "candidate_index": 0,
           "capture_id": "066-strip-guide11-w2-cct10000-gm70-candidate0",
-          "command": {},
+          "command": {
+            "b": 623,
+            "cw": 4095,
+            "g": 31,
+            "r": 1,
+            "ww": 0
+          },
           "e_gates": {
             "cct_K": 11.63421836302446,
             "duv": 4.18575357178365,
@@ -993,7 +1299,13 @@
           "E": 17.101917886215976,
           "candidate_index": 1,
           "capture_id": "068-strip-guide11-w2-cct10000-gm70-candidate1",
-          "command": {},
+          "command": {
+            "b": 554,
+            "cw": 4095,
+            "g": 31,
+            "r": 1,
+            "ww": 0
+          },
           "e_gates": {
             "cct_K": 17.101917886215976,
             "duv": 6.809166146452084,
@@ -1014,7 +1326,13 @@
         "E": 11.63421836302446,
         "candidate_index": 0,
         "capture_id": "066-strip-guide11-w2-cct10000-gm70-candidate0",
-        "command": {},
+        "command": {
+          "b": 623,
+          "cw": 4095,
+          "g": 31,
+          "r": 1,
+          "ww": 0
+        },
         "e_gates": {
           "cct_K": 11.63421836302446,
           "duv": 4.18575357178365,
@@ -1035,7 +1353,13 @@
           "E": 2.646196309134746,
           "candidate_index": 1,
           "capture_id": "073-strip-guide11-w2-cct14000-gm0-candidate1",
-          "command": {},
+          "command": {
+            "b": 1998,
+            "cw": 4095,
+            "g": 90,
+            "r": 21,
+            "ww": 1542
+          },
           "e_gates": {
             "cct_K": 2.646196309134746,
             "duv": 1.99782755708032,
@@ -1051,7 +1375,13 @@
           "E": 2.7197689753094694,
           "candidate_index": 0,
           "capture_id": "071-strip-guide11-w2-cct14000-gm0-candidate0",
-          "command": {},
+          "command": {
+            "b": 2018,
+            "cw": 4095,
+            "g": 90,
+            "r": 21,
+            "ww": 1542
+          },
           "e_gates": {
             "cct_K": 1.0299755237831347,
             "duv": 2.7197689753094694,
@@ -1072,7 +1402,13 @@
         "E": 2.646196309134746,
         "candidate_index": 1,
         "capture_id": "073-strip-guide11-w2-cct14000-gm0-candidate1",
-        "command": {},
+        "command": {
+          "b": 1998,
+          "cw": 4095,
+          "g": 90,
+          "r": 21,
+          "ww": 1542
+        },
         "e_gates": {
           "cct_K": 2.646196309134746,
           "duv": 1.99782755708032,
@@ -1093,7 +1429,13 @@
           "E": 0.5520611289770897,
           "candidate_index": 1,
           "capture_id": "076-strip-guide11-w2-cct14000-gm130-candidate1",
-          "command": {},
+          "command": {
+            "b": 4095,
+            "cw": 3704,
+            "g": 3701,
+            "r": 796,
+            "ww": 2252
+          },
           "e_gates": {
             "cct_K": 0.5520611289770897,
             "duv": 0.15337552561708878,
@@ -1109,7 +1451,13 @@
           "E": 0.6055715153714124,
           "candidate_index": 0,
           "capture_id": "074-strip-guide11-w2-cct14000-gm130-candidate0",
-          "command": {},
+          "command": {
+            "b": 4095,
+            "cw": 3629,
+            "g": 3701,
+            "r": 796,
+            "ww": 2252
+          },
           "e_gates": {
             "cct_K": 0.6055715153714124,
             "duv": 0.13992307646328722,
@@ -1130,7 +1478,13 @@
         "E": 0.5520611289770897,
         "candidate_index": 1,
         "capture_id": "076-strip-guide11-w2-cct14000-gm130-candidate1",
-        "command": {},
+        "command": {
+          "b": 4095,
+          "cw": 3704,
+          "g": 3701,
+          "r": 796,
+          "ww": 2252
+        },
         "e_gates": {
           "cct_K": 0.5520611289770897,
           "duv": 0.15337552561708878,
@@ -1151,7 +1505,13 @@
           "E": 0.4846357385528805,
           "candidate_index": 1,
           "capture_id": "081-strip-guide11-w2-cct14000-gm200-candidate1",
-          "command": {},
+          "command": {
+            "b": 1934,
+            "cw": 4095,
+            "g": 2489,
+            "r": 14,
+            "ww": 43
+          },
           "e_gates": {
             "cct_K": 0.4846357385528805,
             "duv": 0.38370353310850785,
@@ -1167,7 +1527,13 @@
           "E": 0.6447833166633651,
           "candidate_index": 0,
           "capture_id": "079-strip-guide11-w2-cct14000-gm200-candidate0",
-          "command": {},
+          "command": {
+            "b": 1950,
+            "cw": 4095,
+            "g": 2489,
+            "r": 14,
+            "ww": 43
+          },
           "e_gates": {
             "cct_K": 0.16277123630800966,
             "duv": 0.6447833166633651,
@@ -1188,7 +1554,13 @@
         "E": 0.4846357385528805,
         "candidate_index": 1,
         "capture_id": "081-strip-guide11-w2-cct14000-gm200-candidate1",
-        "command": {},
+        "command": {
+          "b": 1934,
+          "cw": 4095,
+          "g": 2489,
+          "r": 14,
+          "ww": 43
+        },
         "e_gates": {
           "cct_K": 0.4846357385528805,
           "duv": 0.38370353310850785,
@@ -1209,7 +1581,13 @@
           "E": 13.4080968113093,
           "candidate_index": 0,
           "capture_id": "082-strip-guide11-w2-cct20000-gm0-candidate0",
-          "command": {},
+          "command": {
+            "b": 1844,
+            "cw": 4095,
+            "g": 59,
+            "r": 5,
+            "ww": 1078
+          },
           "e_gates": {
             "cct_K": 13.4080968113093,
             "duv": 2.055203277635441,
@@ -1225,7 +1603,13 @@
           "E": 18.799964034388967,
           "candidate_index": 1,
           "capture_id": "084-strip-guide11-w2-cct20000-gm0-candidate1",
-          "command": {},
+          "command": {
+            "b": 1773,
+            "cw": 4095,
+            "g": 59,
+            "r": 5,
+            "ww": 1078
+          },
           "e_gates": {
             "cct_K": 18.799964034388967,
             "duv": 3.275141422982561,
@@ -1246,7 +1630,13 @@
         "E": 13.4080968113093,
         "candidate_index": 0,
         "capture_id": "082-strip-guide11-w2-cct20000-gm0-candidate0",
-        "command": {},
+        "command": {
+          "b": 1844,
+          "cw": 4095,
+          "g": 59,
+          "r": 5,
+          "ww": 1078
+        },
         "e_gates": {
           "cct_K": 13.4080968113093,
           "duv": 2.055203277635441,
@@ -1267,7 +1657,13 @@
           "E": 0.5962027314807757,
           "candidate_index": 1,
           "capture_id": "089-strip-guide11-w2-cct20000-gm70-candidate1",
-          "command": {},
+          "command": {
+            "b": 4095,
+            "cw": 0,
+            "g": 3328,
+            "r": 1427,
+            "ww": 2674
+          },
           "e_gates": {
             "cct_K": 0.504926334880844,
             "duv": 0.5962027314807757,
@@ -1283,7 +1679,13 @@
           "E": 1.1723014896332615,
           "candidate_index": 0,
           "capture_id": "087-strip-guide11-w2-cct20000-gm70-candidate0",
-          "command": {},
+          "command": {
+            "b": 4095,
+            "cw": 0,
+            "g": 3314,
+            "r": 1427,
+            "ww": 2674
+          },
           "e_gates": {
             "cct_K": 0.11486182303851161,
             "duv": 1.1723014896332615,
@@ -1304,7 +1706,13 @@
         "E": 0.5962027314807757,
         "candidate_index": 1,
         "capture_id": "089-strip-guide11-w2-cct20000-gm70-candidate1",
-        "command": {},
+        "command": {
+          "b": 4095,
+          "cw": 0,
+          "g": 3328,
+          "r": 1427,
+          "ww": 2674
+        },
         "e_gates": {
           "cct_K": 0.504926334880844,
           "duv": 0.5962027314807757,
@@ -1325,7 +1733,13 @@
           "E": 8.106930602036838,
           "candidate_index": 0,
           "capture_id": "090-strip-guide11-w2-cct20000-gm130-candidate0",
-          "command": {},
+          "command": {
+            "b": 1985,
+            "cw": 4095,
+            "g": 1532,
+            "r": 5,
+            "ww": 248
+          },
           "e_gates": {
             "cct_K": 8.106930602036838,
             "duv": 2.547452819778471,
@@ -1341,7 +1755,13 @@
           "E": 11.569698405497713,
           "candidate_index": 1,
           "capture_id": "092-strip-guide11-w2-cct20000-gm130-candidate1",
-          "command": {},
+          "command": {
+            "b": 1911,
+            "cw": 4095,
+            "g": 1532,
+            "r": 5,
+            "ww": 248
+          },
           "e_gates": {
             "cct_K": 11.569698405497713,
             "duv": 3.9018013490792534,
@@ -1362,7 +1782,13 @@
         "E": 8.106930602036838,
         "candidate_index": 0,
         "capture_id": "090-strip-guide11-w2-cct20000-gm130-candidate0",
-        "command": {},
+        "command": {
+          "b": 1985,
+          "cw": 4095,
+          "g": 1532,
+          "r": 5,
+          "ww": 248
+        },
         "e_gates": {
           "cct_K": 8.106930602036838,
           "duv": 2.547452819778471,
@@ -1383,7 +1809,13 @@
           "E": 0.7810657183155434,
           "candidate_index": 0,
           "capture_id": "095-strip-guide11-w2-cct20000-gm200-candidate0",
-          "command": {},
+          "command": {
+            "b": 3098,
+            "cw": 4095,
+            "g": 3786,
+            "r": 398,
+            "ww": 86
+          },
           "e_gates": {
             "cct_K": 0.18484172178763386,
             "duv": 0.7810657183155434,
@@ -1399,7 +1831,13 @@
           "E": 0.961085801827341,
           "candidate_index": 1,
           "capture_id": "097-strip-guide11-w2-cct20000-gm200-candidate1",
-          "command": {},
+          "command": {
+            "b": 3090,
+            "cw": 4095,
+            "g": 3786,
+            "r": 398,
+            "ww": 86
+          },
           "e_gates": {
             "cct_K": 0.43542529231112576,
             "duv": 0.961085801827341,
@@ -1420,7 +1858,13 @@
         "E": 0.7810657183155434,
         "candidate_index": 0,
         "capture_id": "095-strip-guide11-w2-cct20000-gm200-candidate0",
-        "command": {},
+        "command": {
+          "b": 3098,
+          "cw": 4095,
+          "g": 3786,
+          "r": 398,
+          "ww": 86
+        },
         "e_gates": {
           "cct_K": 0.18484172178763386,
           "duv": 0.7810657183155434,
