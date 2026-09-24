@@ -49,6 +49,8 @@ GUIDE9_CANDIDATE_BATCH_SCHEMAS = {
     "direct_guide11_n1_repeatability_v1",
     "direct_guide11_w2_bounded_correction_v1",
     "direct_guide11_w3_interpolation_holdout_v2",
+    "direct_guide11_w4_fast_v1",
+    "direct_guide11_w4_long_v1",
 }
 GUIDE9_BEST_REPEAT_SCHEMAS = {
     "direct_guide9_h120_s50_best_repeat_v1",
@@ -335,6 +337,8 @@ def validate_authorized_execution_plan(
             "direct_guide11_n1_repeatability_v1",
             "direct_guide11_w2_bounded_correction_v1",
             "direct_guide11_w3_interpolation_holdout_v2",
+            "direct_guide11_w4_fast_v1",
+            "direct_guide11_w4_long_v1",
         }
     )
     if (

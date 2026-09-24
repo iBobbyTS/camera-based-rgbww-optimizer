@@ -1173,3 +1173,137 @@ def build_guide11_w3_holdout_plan(
             "steady_claim": False,
         },
     }
+
+
+W4_EXPERIMENT_ID = "GUIDE11_W4_PROTOCOL_FAST_LONG_V1"
+W4_POINTS: tuple[tuple[int, int], ...] = ((1800, 100), (3200, 100), (5600, 100), (20000, 100))
+
+
+def build_guide11_w4_protocol_plan(
+    frozen_lut: Sequence[Mapping[str, Any]],
+    w6_plan: Mapping[str, Any],
+    *,
+    protocol: str,
+    inputs_references: Mapping[str, Mapping[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """GUIDE11 W4 FAST or true-LONG protocol pair at four fixed points.
+
+    One plan carries exactly one protocol so the timing-label contract stays
+    exact: FAST runs reset600/D120; LONG runs a true reset1800/D600. Each
+    point gets one paired Ray/strip observation under the same frozen node
+    command; source order alternates and reverses between the two protocol
+    runs. The analysis forms Delta_protocol = (strip-Ray)_LONG -
+    (strip-Ray)_FAST across the paired runs.
+    """
+    import copy
+
+    from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
+
+    if protocol not in {"fast", "long"}:
+        raise ValueError("GUIDE11 W4 protocol must be 'fast' or 'long'")
+    templates: dict[tuple[int, int], dict[str, Mapping[str, Any]]] = {}
+    for step in w6_plan.get("captures", ()):
+        key = (int(step["target_cct"]), int(step["target_gm"]))
+        templates.setdefault(key, {})[str(step["source_id"])] = step
+    lut_by_key = {(int(n["cct"]), int(n["gm"])): n for n in frozen_lut}
+    captures: list[dict[str, Any]] = []
+    for point_index, (cct, gm) in enumerate(W4_POINTS):
+        key = (cct, gm)
+        node = lut_by_key[key]
+        strip_command = {name: int(node["command"][name]) for name in CHANNELS}
+        ray_command = {"mode": "cct", "cct": cct, "gm": gm, "intensity_percent": 100.0}
+        node_templates = templates[key]
+        ray_first = point_index % 2 == 0
+        order = ("ray", "strip") if ray_first else ("strip", "ray")
+        for source_index, source in enumerate(order, start=1):
+            template = node_templates[source]
+            step = copy.deepcopy(template)
+            step.update({
+                "capture_id": f"{len(captures):03d}-{source}-guide11-w4-{protocol}-cct{cct}-gm{gm}",
+                "state_id": f"W4_{protocol.upper()}_CCT{cct}_GM{gm}_{source.upper()}",
+                "role": f"{source}_w4_{protocol}",
+                "capture_role": "formal",
+                "formal_measurement": True,
+                "session_index": len(captures) + 1,
+                "source_order": source_index,
+                "target_cct": cct,
+                "target_gm": gm,
+                "requested_elapsed_s": 120 if protocol == "fast" else 600,
+                "w4_protocol": protocol,
+            })
+            if source == "ray":
+                step["command"] = ray_command
+                step["exact_command_hash"] = thermal.canonical_sha256(ray_command)
+            else:
+                step["command"] = strip_command
+                step["exact_command_hash"] = thermal.canonical_sha256(strip_command)
+            captures.append(step)
+    frozen = {str(step["exposure_cache_key"]): str(step["nominal_shutter"]) for step in captures}
+    return {
+        "schema": thermal.PLAN_SCHEMA_V2,
+        "status": "execute_authorized",
+        "experiment_id": thermal.TD_C,
+        "guide_experiment_id": W4_EXPERIMENT_ID,
+        "variant": f"guide11-w4-protocol-{protocol}",
+        "stage": f"GUIDE11-W4-PROTOCOL-{protocol.upper()}",
+        "phase": "formal",
+        "source": "guide11_w4_protocol_validation",
+        "created_at": thermal.datetime.now(thermal.timezone.utc).isoformat(),
+        "inputs": {
+            "location": thermal.file_reference(thermal.LOCATION_PATH),
+            "policy": thermal.file_reference(thermal.POLICY_PATH),
+            "code_duty_curve": thermal.file_reference(thermal.CURVE_PATH),
+            **{k: dict(v) for k, v in (inputs_references or {}).items()},
+        },
+        "captures": captures,
+        "capture_ids": [step["capture_id"] for step in captures],
+        "timing_contract": thermal.timing_contract(2),
+        "timing_resolution": (
+            "guide11_w4fast_reset600_D120" if protocol == "fast"
+            else "guide11_w4long_reset1800_D600"
+        ),
+        "cold_proxy": 600 if protocol == "fast" else 1800,
+        "cold_proxy_wait_s": 600 if protocol == "fast" else 1800,
+        "native_raw_ambient_policy": thermal.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+        "exposure_setup_required": [],
+        "frozen_shutters": frozen,
+        "shutter_ledger_provenance": {
+            "owner": "experiment_capture_steps",
+            "required_cache_keys": sorted(frozen),
+            "frozen_shutters_sha256": thermal.canonical_sha256(frozen),
+        },
+        "budgets": {
+            "ray_cap": 4, "strip_cap": 4, "formal_cap": 8,
+            "physical_cr3_cap": 8, "ambient_cap": 0, "retry": 0,
+        },
+        "execution_authorization": {
+            "schema": f"direct_guide11_w4_{protocol}_v1",
+            "human_authorization_required": False,
+            "human_authorization_verified": False,
+            "device_use_granted_by": "operator_cli_allow_device_control",
+            "experiment_id": W4_EXPERIMENT_ID,
+            "bounded_device_scope": True,
+            "remote_v2_capability": True,
+        },
+        "camera": {
+            "backend": "remote",
+            "v2_capture_timing_capability_available": True,
+            "v2_capture_capability": "remote_v2_capture_timing_v1",
+            "resolved_capture_settings": {
+                "owner": "remote_backend.resolve_capture_settings",
+                "iso": "100", "aperture": "f/4", "image_format": "RAW",
+            },
+        },
+        "analysis_contract": {
+            "method": "guide11_w4_protocol_difference_in_differences",
+            "protocol": protocol,
+            "points": [{"cct": c, "gm": g} for c, g in W4_POINTS],
+            "primary_quantity": "Delta_protocol=(strip-Ray)_LONG-(strip-Ray)_FAST",
+            "components_reported_separately": ["Ray_LONG-FAST", "strip_LONG-FAST"],
+            "order_note": "FAST run executes first; reversed-order pairing is an optional <=8-frame append only if conclusions would change adoption",
+            "independent_reset_s": 600 if protocol == "fast" else 1800,
+            "dwell_s": 120 if protocol == "fast" else 600,
+            "steady_claim": False,
+            "thermal_causal_claim": False,
+        },
+    }
