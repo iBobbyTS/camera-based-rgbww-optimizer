@@ -1406,10 +1406,24 @@ def build_guide11_c1_batch_plan(
         })
         ray_cache = f"ray-c1-h{hue}-s{sat}"
         strip_cache = f"strip-c1-h{hue}-s{sat}"
+        # Candidate-tier qualified shutters: full-scale candidates keep the
+        # frozen GUIDE9-class 1/400; dimmer white-based candidates get slower
+        # tiers so their patches stay above the noise floor without clipping
+        # block_06 (verified per capture by the quality system).
+        label_shutter = {
+            "fullscale_dominant": "1/400",
+            "high_white_dominant": "1/100",
+            "white_biased_mix": "1/60",
+            "continuity_s100_anchor": "1/400",
+        }
         bracket = [
             ("ray", "ray_q_before", ray_command, "1/6400", ray_cache),
         ] + [
-            ("strip", f"candidate_{index}_{label}", dict(command), "1/400", strip_cache)
+            (
+                "strip", f"candidate_{index}_{label}", dict(command),
+                label_shutter.get(label, "1/100"),
+                f"{strip_cache}-{label}",
+            )
             for index, (label, command) in enumerate(candidates)
         ] + [
             ("ray", "ray_q_after", ray_command, "1/6400", ray_cache),
