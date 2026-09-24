@@ -1414,7 +1414,7 @@ def build_guide11_c1_batch_plan(
             "fullscale_dominant": "1/400",
             "high_white_dominant": "1/8",
             "white_biased_mix": "1/8",
-            "continuity_s100_anchor": "1/400",
+            "continuity_s100_anchor": "1/8",
         }
         bracket = [
             ("ray", "ray_q_before", ray_command, "1/6400", ray_cache),
