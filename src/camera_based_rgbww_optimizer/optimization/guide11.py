@@ -1412,7 +1412,7 @@ def build_guide11_c1_batch_plan(
         # block_06 (verified per capture by the quality system).
         label_shutter = {
             "fullscale_dominant": "1/400",
-            "high_white_dominant": "1/100",
+            "high_white_dominant": "1/60",
             "white_biased_mix": "1/60",
             "continuity_s100_anchor": "1/400",
         }
