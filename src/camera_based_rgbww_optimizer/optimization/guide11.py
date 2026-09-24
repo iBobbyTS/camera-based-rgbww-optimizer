@@ -1416,8 +1416,9 @@ def build_guide11_c1_batch_plan(
             "white_biased_mix": "1/8",
             "continuity_s100_anchor": "1/8",
         }
+        ray_shutter = "1/6400" if sat == 50 else "1/1600"
         bracket = [
-            ("ray", "ray_q_before", ray_command, "1/6400", ray_cache),
+            ("ray", "ray_q_before", ray_command, ray_shutter, ray_cache),
         ] + [
             (
                 "strip", f"candidate_{index}_{label}", dict(command),
@@ -1426,7 +1427,7 @@ def build_guide11_c1_batch_plan(
             )
             for index, (label, command) in enumerate(candidates)
         ] + [
-            ("ray", "ray_q_after", ray_command, "1/6400", ray_cache),
+            ("ray", "ray_q_after", ray_command, ray_shutter, ray_cache),
         ]
         for source, role, command, shutter, cache in bracket:
             captures.append({
