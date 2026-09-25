@@ -1524,3 +1524,217 @@ def build_guide11_c1_batch_plan(
             "steady_claim": False,
         },
     }
+
+
+
+C1B2_EXPERIMENT_ID = "GUIDE11_C1_BATCH2_V1"
+C1B2_AUTHORIZATION_SCHEMA = "direct_guide11_c1_batch2_v1"
+
+
+def build_guide11_c1_batch2_plan(
+    batch1_analysis: Mapping[str, Any],
+    batch1_run_root: Path,
+    *,
+    inputs_references: Mapping[str, Mapping[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """GUIDE11 C1 batch-2: measured-secant bounded search per target.
+
+    Candidates use the same two-stage secant method as W2 applied to the
+    product-layer z coordinates: batch-1 (command, z) observations at each
+    target give a local sensitivity, and the bounded command step aims the
+    best candidate's z at the paired Ray z. Half-steps bound the risk; every
+    target keeps its measured fallback outside the batch.
+    """
+    import json as _json
+    import math as _math
+
+    import numpy as np
+
+    from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
+
+    def z_of_capture(capture_id: str) -> dict[str, float]:
+        stats = _json.loads(
+            (batch1_run_root / "measurements" / f"{capture_id}.patch-statistics.json")
+            .read_text(encoding="utf-8")
+        )
+        block = next(p for p in stats["patches"] if p.get("index") == 6)
+        p = {
+            plane: float(block["planes"][plane]["statistics"]["normalized_per_second"]["trimmed_mean"])
+            for plane in ("R", "G1", "G2", "B")
+        }
+        g = 0.5 * (p["G1"] + p["G2"])
+        return {"log_R_over_G": _math.log(p["R"] / g), "log_B_over_G": _math.log(p["B"] / g)}
+
+    rows = [
+        _json.loads(line)
+        for line in (batch1_run_root / "captures.jsonl").read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    command_by_capture = {
+        str(row["capture_id"]): {
+            name: int(value)
+            for name, value in (row.get("plan_step", {}).get("command") or {}).items()
+        }
+        for row in rows
+        if row.get("source_id") == "strip"
+    }
+
+    captures: list[dict[str, Any]] = []
+    contracts = []
+    for target in batch1_analysis.get("results", ()):
+        hue, sat = int(target["hue"]), int(target["sat"])
+        ray_z = target.get("ray_z_mean")
+        best = target.get("best") or {}
+        if not ray_z or not best.get("capture_id"):
+            continue
+        best_id = best["capture_id"]
+        base_cmd = command_by_capture.get(best_id)
+        if not base_cmd:
+            continue
+        base_z = z_of_capture(best_id)
+        base_vec = np.array([base_z["log_R_over_G"], base_z["log_B_over_G"]])
+        target_vec = np.array([ray_z["log_R_over_G"], ray_z["log_B_over_G"]])
+        a_rows, b_rows = [], []
+        for cand in target.get("candidates_ranked", ()):
+            cid = cand.get("capture_id")
+            cmd = command_by_capture.get(cid)
+            if not cmd or cid == best_id:
+                continue
+            z = z_of_capture(cid)
+            dz = np.array([z["log_R_over_G"], z["log_B_over_G"]]) - base_vec
+            dc = np.array([float(cmd[n]) - float(base_cmd[n]) for n in CHANNELS])
+            if not dc.any():
+                continue
+            a_rows.append(dc)
+            b_rows.append(dz)
+        proposed: list[dict[str, int]] = []
+        method = "no_local_sensitivity"
+        if a_rows:
+            sensitivity, *_ = np.linalg.lstsq(np.asarray(a_rows), np.asarray(b_rows), rcond=None)
+            step, *_ = np.linalg.lstsq(sensitivity.T, target_vec - base_vec, rcond=None)
+            step = np.clip(step, -768.0, 768.0)
+            for scale in (1.0, 0.5):
+                command = {
+                    name: max(0, min(4095, int(round(float(base_cmd[name]) + scale * float(step[i])))))
+                    for i, name in enumerate(CHANNELS)
+                }
+                if command != base_cmd and command not in proposed:
+                    proposed.append(command)
+            method = "measured_z_secant_full_step"
+        contracts.append({
+            "hue": hue, "sat": sat, "method": method,
+            "fallback_capture": best_id,
+            "fallback_command": base_cmd,
+            "fallback_z": base_z,
+            "ray_z": ray_z,
+            "commands": proposed,
+        })
+        ray_command = {"hue": hue, "sat": sat, "intensity_percent": 100.0}
+        ray_shutter = "1/6400" if sat == 50 else "1/1600"
+        ray_cache = f"ray-c1b2-h{hue}-s{sat}"
+        def strip_shutter_of(command: Mapping[str, int]) -> str:
+            # C1 shutter-spectroscopy rule: block_06 G-plane irradiance is
+            # driven by the command's green content.
+            return "1/400" if int(command.get("g", 0)) >= 512 else "1/8"
+        bracket = [("ray", "ray_q_before", ray_command, ray_shutter, ray_cache)] + [
+            (
+                "strip", f"candidate_{i}", dict(command),
+                strip_shutter_of(command),
+                f"strip-c1b2-h{hue}-s{sat}-c{i}",
+            )
+            for i, command in enumerate(proposed)
+        ] + [("ray", "ray_q_after", ray_command, ray_shutter, ray_cache)]
+        for source, role, command, shutter, cache in bracket:
+            captures.append({
+                "capture_id": f"{len(captures):03d}-{source}-guide11-c1b2-h{hue}-s{sat}-{role}",
+                "source_id": source,
+                "state_id": f"C1B2_H{hue}_S{sat}_{role.upper()}",
+                "role": f"{source}_c1b2_h{hue}_s{sat}_{role}",
+                "capture_role": "formal",
+                "formal_measurement": True,
+                "command": dict(command),
+                "exact_command_hash": thermal.canonical_sha256(command),
+                "requested_elapsed_s": 120,
+                "nominal_shutter": shutter,
+                "exposure_cache_key": cache,
+                "timing_acceptance": "observed_elapsed_record_only",
+                "strip_zero_required": source == "ray",
+                "ray_zero_required": source == "strip",
+                "session_index": len(captures) + 1,
+                "source_order": 1 if source == "ray" else 2,
+                "target_cct": None,
+                "target_gm": None,
+                "c1_hue": hue,
+                "c1_sat": sat,
+                "steady_claim": False,
+            })
+    if not captures:
+        raise ValueError("GUIDE11 C1 batch2 has no fittable target")
+    frozen = {str(step["exposure_cache_key"]): str(step["nominal_shutter"]) for step in captures}
+    strip_count = sum(s["source_id"] == "strip" for s in captures)
+    return {
+        "schema": thermal.PLAN_SCHEMA_V2,
+        "status": "execute_authorized",
+        "experiment_id": thermal.TD_C,
+        "guide_experiment_id": C1B2_EXPERIMENT_ID,
+        "variant": "guide11-c1-batch2-measured-secants",
+        "stage": "GUIDE11-C1-BATCH2",
+        "phase": "formal",
+        "source": "guide11_c1_batch1_measured_improvement",
+        "created_at": thermal.datetime.now(thermal.timezone.utc).isoformat(),
+        "inputs": {
+            "location": thermal.file_reference(thermal.LOCATION_PATH),
+            "policy": thermal.file_reference(thermal.POLICY_PATH),
+            "code_duty_curve": thermal.file_reference(thermal.CURVE_PATH),
+            **{k: dict(v) for k, v in (inputs_references or {}).items()},
+        },
+        "captures": captures,
+        "capture_ids": [s["capture_id"] for s in captures],
+        "timing_contract": thermal.timing_contract(2),
+        "timing_resolution": "guide11_c1b2_reset600_D120",
+        "cold_proxy": 600,
+        "cold_proxy_wait_s": 600,
+        "native_raw_ambient_policy": thermal.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+        "exposure_setup_required": [],
+        "frozen_shutters": frozen,
+        "shutter_ledger_provenance": {
+            "owner": "experiment_capture_steps",
+            "required_cache_keys": sorted(frozen),
+            "frozen_shutters_sha256": thermal.canonical_sha256(frozen),
+        },
+        "budgets": {
+            "ray_cap": len(captures) - strip_count,
+            "strip_cap": strip_count,
+            "formal_cap": len(captures),
+            "physical_cr3_cap": len(captures),
+            "ambient_cap": 0, "retry": 0,
+            "per_target_command_cap": 2,
+        },
+        "execution_authorization": {
+            "schema": C1B2_AUTHORIZATION_SCHEMA,
+            "human_authorization_required": False,
+            "human_authorization_verified": False,
+            "device_use_granted_by": "operator_cli_allow_device_control",
+            "experiment_id": C1B2_EXPERIMENT_ID,
+            "bounded_device_scope": True,
+            "remote_v2_capability": True,
+        },
+        "camera": {
+            "backend": "remote",
+            "v2_capture_timing_capability_available": True,
+            "v2_capture_capability": "remote_v2_capture_timing_v1",
+            "resolved_capture_settings": {
+                "owner": "remote_backend.resolve_capture_settings",
+                "iso": "100", "aperture": "f/4", "image_format": "RAW",
+            },
+        },
+        "analysis_contract": {
+            "method": "guide11_c1_batch2_measured_z_secants",
+            "targets": contracts,
+            "product_layer": "z distance to paired Ray z per target",
+            "batch1_fallback_retained_outside_batch": True,
+            "independent_reset_s": 600,
+            "dwell_s": 120,
+            "steady_claim": False,
+        },
+    }
