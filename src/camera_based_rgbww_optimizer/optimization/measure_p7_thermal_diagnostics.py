@@ -3474,20 +3474,20 @@ def run_authorized_plan(
                     or direct_guide6_strip_exposure
                 ):
                     failure_names = set()
-                for item in exc.rejected:
-                    metrics = item.get("metrics") or {}
-                    if float(metrics.get("nonfinite_fraction", 0.0)) > 0:
-                        failure_names.add("nonfinite")
-                    if float(metrics.get("clipped_fraction", 0.0)) > 0:
-                        failure_names.add("clipping")
-                    if float(metrics.get("near_noise_floor_fraction", 0.0)) > 0:
-                        failure_names.add("near_noise")
-                output["direct_quality"] = {
-                    "status": "near_noise_only" if exc.weak_signal_only else "rejected",
-                    "feature_count": 0, "required_feature_count": len(feature_ids),
-                    "failures": sorted(failure_names),
-                    "recorded_exposure_owner": "Canon:ExposureTime",
-                }
+                    for item in exc.rejected:
+                        metrics = item.get("metrics") or {}
+                        if float(metrics.get("nonfinite_fraction", 0.0)) > 0:
+                            failure_names.add("nonfinite")
+                        if float(metrics.get("clipped_fraction", 0.0)) > 0:
+                            failure_names.add("clipping")
+                        if float(metrics.get("near_noise_floor_fraction", 0.0)) > 0:
+                            failure_names.add("near_noise")
+                    output["direct_quality"] = {
+                        "status": "near_noise_only" if exc.weak_signal_only else "rejected",
+                        "feature_count": 0, "required_feature_count": len(feature_ids),
+                        "failures": sorted(failure_names),
+                        "recorded_exposure_owner": "Canon:ExposureTime",
+                    }
                 else:
                     raise
             else:
