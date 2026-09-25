@@ -3468,13 +3468,12 @@ def run_authorized_plan(
                         "block06": block06,
                         "recorded_exposure_owner": "Canon:ExposureTime",
                     }
-                elif not (
+                elif (
                     direct_guide8_emission_exposure
                     or direct_guide9_h300_reference_diag
                     or direct_guide6_strip_exposure
                 ):
-                    raise
-                failure_names = set()
+                    failure_names = set()
                 for item in exc.rejected:
                     metrics = item.get("metrics") or {}
                     if float(metrics.get("nonfinite_fraction", 0.0)) > 0:
@@ -3489,6 +3488,8 @@ def run_authorized_plan(
                     "failures": sorted(failure_names),
                     "recorded_exposure_owner": "Canon:ExposureTime",
                 }
+                else:
+                    raise
             else:
                 output["direct_quality"] = {
                     "status": "pass", "feature_count": len(feature_ids),
