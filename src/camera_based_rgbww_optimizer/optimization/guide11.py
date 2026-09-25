@@ -1613,11 +1613,17 @@ def build_guide11_c1_batch2_plan(
             sensitivity, *_ = np.linalg.lstsq(np.asarray(a_rows), np.asarray(b_rows), rcond=None)
             step, *_ = np.linalg.lstsq(sensitivity.T, target_vec - base_vec, rcond=None)
             step = np.clip(step, -768.0, 768.0)
+            base_strongest = max(int(base_cmd[name]) for name in CHANNELS)
+            brightness_floor = max(1000, int(0.6 * base_strongest))
             for scale in (1.0, 0.5):
                 command = {
                     name: max(0, min(4095, int(round(float(base_cmd[name]) + scale * float(step[i])))))
                     for i, name in enumerate(CHANNELS)
                 }
+                strongest = max(command.values())
+                if strongest < brightness_floor:
+                    continue  # z is a ratio; secant steps may dim a command
+                    # below the measurement system's observability
                 if command != base_cmd and command not in proposed:
                     proposed.append(command)
             method = "measured_z_secant_full_step"
