@@ -1633,9 +1633,15 @@ def build_guide11_c1_batch2_plan(
         ray_shutter = "1/6400" if sat == 50 else "1/1600"
         ray_cache = f"ray-c1b2-h{hue}-s{sat}"
         def strip_shutter_of(command: Mapping[str, int]) -> str:
-            # C1 shutter-spectroscopy rule: block_06 G-plane irradiance is
-            # driven by the command's green content.
-            return "1/400" if int(command.get("g", 0)) >= 512 else "1/8"
+            # C1 shutter rule refined by batch-2 measurements: brightness is
+            # governed by the strongest channel (secant steps can dim a whole
+            # command); mid-brightness secant results need 1/2, dim ones 1s.
+            strongest = max(int(command.get(name, 0)) for name in CHANNELS)
+            if strongest >= 2500:
+                return "1/400"
+            if strongest >= 1000:
+                return "1/2"
+            return "1"
         bracket = [("ray", "ray_q_before", ray_command, ray_shutter, ray_cache)] + [
             (
                 "strip", f"candidate_{i}", dict(command),
