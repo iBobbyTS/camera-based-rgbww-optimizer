@@ -2905,7 +2905,7 @@ def audit_post_return_failure(
         or remote.get("request_id") != physical.get("remote_request_id")
         or not isinstance(recorded, Mapping)
         or recorded.get("status") != "recorded"
-        or recorded.get("source") != "Canon:ExposureTime"
+        or recorded.get("source") not in ("Canon:ExposureTime", "MakerNotes:ExposureTime", "ExifIFD:ExposureTime", "EXIF:ExposureTime")
         or isinstance(recorded.get("seconds"), bool)
         or not isinstance(recorded.get("seconds"), (int, float))
         or float(recorded["seconds"]) <= 0

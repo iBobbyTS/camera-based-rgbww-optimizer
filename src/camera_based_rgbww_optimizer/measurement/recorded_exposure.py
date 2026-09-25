@@ -13,6 +13,9 @@ ExiftoolRunner = Callable[[Sequence[str]], subprocess.CompletedProcess[str]]
 
 CANON_EXPOSURE_KEYS = ("Canon:ExposureTime", "MakerNotes:ExposureTime")
 STANDARD_EXPOSURE_KEYS = ("ExifIFD:ExposureTime", "EXIF:ExposureTime")
+# Whole-second captures may omit the Canon MakerNote exposure entry; the
+# standard EXIF ExposureTime field is still a genuine recorded value.
+ACCEPTED_EXPOSURE_SOURCE_KEYS = CANON_EXPOSURE_KEYS + STANDARD_EXPOSURE_KEYS
 # Keep the acceptance band narrower than half of a conventional 1/3-stop
 # shutter step, while allowing Canon's internal Tv encoding to differ slightly
 # from the displayed nominal shutter fraction.
@@ -139,7 +142,7 @@ def validate_recorded_exposure_setting(
     recorded: Mapping[str, Any],
     nominal_shutter_speed: str,
     *,
-    allowed_sources: Sequence[str] = CANON_EXPOSURE_KEYS,
+    allowed_sources: Sequence[str] = ACCEPTED_EXPOSURE_SOURCE_KEYS,
     max_error_ev: float = MAX_EXPOSURE_SETTING_ERROR_EV,
 ) -> None:
     """Validate the selected shutter setting without claiming physical timing.
