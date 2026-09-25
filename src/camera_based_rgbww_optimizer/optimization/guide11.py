@@ -1640,8 +1640,8 @@ def build_guide11_c1_batch2_plan(
             if strongest >= 2500:
                 return "1/400"
             if strongest >= 1000:
-                return "1/2"
-            return "1"
+                return "1"
+            return "2"
         bracket = [("ray", "ray_q_before", ray_command, ray_shutter, ray_cache)] + [
             (
                 "strip", f"candidate_{i}", dict(command),
