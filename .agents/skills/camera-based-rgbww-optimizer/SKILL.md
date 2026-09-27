@@ -88,6 +88,30 @@ adding root-level compatibility wrappers.
   suffix must validate the retained capture and physical ledgers as the exact
   frozen-plan prefix before any device access.
 - Ray120c is the CCT/G-M reference. Never infer its CCT from camera RGB.
+
+## Exposure Triage Rules (2026-09-26 lesson)
+
+A block-level `trimmed_mean` reads LOW on a saturated frame (clipped pixels
+drop out of the statistic); a 91-percent-saturated white frame once read as
+1.0-8.0 counts/s and drove five rounds of wrongly-slowered shutters.
+
+- Any anomalous block readout (near zero, near ceiling, quality failure)
+  must first be checked with a full-frame profile:
+  `python -m camera_based_rgbww_optimizer.measurement.frame_exposure <cr3...>`
+  or `--captures-jsonl <run>/captures.jsonl`. Classification
+  `saturated`/`dark`/`normal` decides the direction before any shutter
+  change.
+- Triage experiments must be two-sided: when hypothesizing underexposure,
+  also test one faster shutter in the same round (and vice versa). A chain
+  of same-direction adjustments is not a completed discrimination.
+- Observations that contradict the working hypothesis (including user
+  reports, e.g. "manual shooting looks normal") trigger a re-run of the
+  direction discrimination; they must not be absorbed into the narrative.
+- C1/batch2 strip shutters follow the exposure-amount tiers in
+  `guide11.c1_strip_shutter_for_command` (full-scale color 1/400, dimmed
+  secant 1/125, faint 1/30, white-based 1/8); extend from measured anchors,
+  not from block readouts.
+
 - Formal camera work uses `control.camera_remote.RemoteCameraBackend`; do not
   expose credentials in arguments, logs, artifacts, or source.
 - Ray OpenAPI uses a Human-classified public shared protocol default; this is a

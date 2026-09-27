@@ -616,3 +616,61 @@ class Guide11C1ProductLayerTests(unittest.TestCase):
             }],
         }
         self.assertFalse(measure._c1_block06_quality(negative)["accepted"])
+
+
+class Guide11ExposureTriageTests(unittest.TestCase):
+    def test_frame_profile_classifies_saturated_and_dark(self):
+        import numpy as np
+
+        class FakeRaw:
+            def __init__(self, array):
+                self._array = array
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return False
+
+            def postprocess(self, **kwargs):
+                return self._array
+
+        from camera_based_rgbww_optimizer.measurement import frame_exposure
+
+        white = np.full((64, 64, 3), 65500, dtype=np.uint16)
+        dark = np.full((64, 64, 3), 300, dtype=np.uint16)
+        normal = np.stack(
+            [np.full((64, 64), 40000), np.full((64, 64), 5000), np.full((64, 64), 12000)],
+            axis=-1,
+        ).astype(np.uint16)
+        with patch.object(
+            frame_exposure.rawpy if hasattr(frame_exposure, "rawpy") else __import__("rawpy"),
+            "imread",
+            side_effect=[FakeRaw(white), FakeRaw(dark), FakeRaw(normal)],
+        ):
+            sat = frame_exposure.frame_exposure_profile("fake-sat.cr3")
+            drk = frame_exposure.frame_exposure_profile("fake-dark.cr3")
+            nrm = frame_exposure.frame_exposure_profile("fake-normal.cr3")
+        self.assertEqual(sat["classification"], "saturated")
+        self.assertIsNotNone(sat["warning"])
+        self.assertEqual(drk["classification"], "dark")
+        self.assertEqual(nrm["classification"], "normal")
+        self.assertIsNone(nrm["warning"])
+
+    def test_batch2_shutter_tiers_follow_exposure_amount(self):
+        from camera_based_rgbww_optimizer.optimization import guide11
+
+        # Measured anchors: r4095 normal at 1/400; r1280 saturated 68% at
+        # 1/8 so its tier must move FASTER (1/125), never slower; white-based
+        # commands keep the verified 1/8.
+        cases = {
+            "fullscale": ({"cw": 0, "ww": 0, "r": 4095, "g": 1024, "b": 1024}, "1/400"),
+            "dimmed_secant": ({"cw": 0, "ww": 0, "r": 1280, "g": 399, "b": 399}, "1/125"),
+            "faint_color": ({"cw": 0, "ww": 0, "r": 500, "g": 100, "b": 100}, "1/30"),
+            "very_faint": ({"cw": 0, "ww": 0, "r": 200, "g": 50, "b": 50}, "1/8"),
+            "white_based": ({"cw": 2100, "ww": 2100, "r": 400, "g": 400, "b": 400}, "1/8"),
+        }
+        for label, (command, expected) in cases.items():
+            self.assertEqual(
+                guide11.c1_strip_shutter_for_command(command), expected, label
+            )

@@ -1528,6 +1528,28 @@ def build_guide11_c1_batch_plan(
 
 
 C1B2_EXPERIMENT_ID = "GUIDE11_C1_BATCH2_V1"
+
+
+def c1_strip_shutter_for_command(command: Mapping[str, int]) -> str:
+    """Exposure-amount shutter tiers for C1/batch2 strip commands.
+
+    Anchored at measured points: full-scale color r4095 is normal at 1/400
+    and r1280 saturates 68 percent at 1/8 -- color LEDs make dimmed secant
+    commands a saturation risk, not a darkness risk. White-based commands
+    were verified at 1/8. Saturated frames read LOW in block trimmed means,
+    so an over-slow shutter misleads the triage twice.
+    """
+    color = max(int(command.get(name, 0)) for name in ("r", "g", "b"))
+    white = max(int(command.get(name, 0)) for name in ("cw", "ww"))
+    if white > 3 * max(color, 1):
+        return "1/8"
+    if color >= 2500:
+        return "1/400"
+    if color >= 1000:
+        return "1/125"
+    if color >= 400:
+        return "1/30"
+    return "1/8"
 C1B2_AUTHORIZATION_SCHEMA = "direct_guide11_c1_batch2_v1"
 
 
@@ -1638,20 +1660,10 @@ def build_guide11_c1_batch2_plan(
         ray_command = {"hue": hue, "sat": sat, "intensity_percent": 100.0}
         ray_shutter = "1/6400" if sat == 50 else "1/1600"
         ray_cache = f"ray-c1b2-h{hue}-s{sat}"
-        def strip_shutter_of(command: Mapping[str, int]) -> str:
-            # C1 shutter rule refined by batch-2 measurements: brightness is
-            # governed by the strongest channel (secant steps can dim a whole
-            # command); mid-brightness secant results need 1/2, dim ones 1s.
-            strongest = max(int(command.get(name, 0)) for name in CHANNELS)
-            if strongest >= 2500:
-                return "1/400"
-            if strongest >= 1000:
-                return "1"
-            return "2"
         bracket = [("ray", "ray_q_before", ray_command, ray_shutter, ray_cache)] + [
             (
                 "strip", f"candidate_{i}", dict(command),
-                strip_shutter_of(command),
+                c1_strip_shutter_for_command(command),
                 f"strip-c1b2-h{hue}-s{sat}-c{i}",
             )
             for i, command in enumerate(proposed)
