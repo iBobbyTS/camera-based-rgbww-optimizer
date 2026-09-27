@@ -1,0 +1,556 @@
+{
+  "capture_count": 32,
+  "frames_profiled": 16,
+  "improved_target_count": 2,
+  "note": "z distances to paired Ray means; full-frame exposure profile guards every strip frame",
+  "run_root": "D:\\rgbww-optimizer\\guide11-c1\\formal-c1b2-20260926-r6",
+  "saturated_frames": 0,
+  "schema": "guide11_c1_batch2_analysis_v1",
+  "steady_claim": false,
+  "targets": [
+    {
+      "batch1_fallback": {
+        "capture_id": "001-strip-guide11-c1-h0-s50-candidate_0_fullscale_dominant",
+        "z_distance_to_ray": 0.5733359006533405
+      },
+      "batch2_candidates": [
+        {
+          "capture_id": "001-strip-guide11-c1b2-h0-s50-candidate_0",
+          "command": {
+            "b": 903,
+            "cw": 0,
+            "g": 903,
+            "r": 3835,
+            "ww": 0
+          },
+          "frame_classification": "normal",
+          "saturated_fraction": 0.0,
+          "z": {
+            "log_B_over_G": -0.12409359687535011,
+            "log_R_over_G": 0.26149534176895955
+          },
+          "z_distance_to_ray": 0.5189402811373617
+        },
+        {
+          "capture_id": "002-strip-guide11-c1b2-h0-s50-candidate_1",
+          "command": {
+            "b": 963,
+            "cw": 0,
+            "g": 963,
+            "r": 3965,
+            "ww": 0
+          },
+          "frame_classification": "normal",
+          "saturated_fraction": 0.0,
+          "z": {
+            "log_B_over_G": -0.10456482751604512,
+            "log_R_over_G": 0.25351399744720055
+          },
+          "z_distance_to_ray": 0.5399860897622151
+        }
+      ],
+      "best": {
+        "capture_id": "001-strip-guide11-c1b2-h0-s50-candidate_0",
+        "command": {
+          "b": 903,
+          "cw": 0,
+          "g": 903,
+          "r": 3835,
+          "ww": 0
+        },
+        "frame_classification": "normal",
+        "saturated_fraction": 0.0,
+        "z": {
+          "log_B_over_G": -0.12409359687535011,
+          "log_R_over_G": 0.26149534176895955
+        },
+        "z_distance_to_ray": 0.5189402811373617
+      },
+      "hue": 0,
+      "improved_vs_batch1": true,
+      "improvement": 0.05439561951597882,
+      "ray_bracket_consistent": true,
+      "ray_z_mean": {
+        "log_B_over_G": -0.5893407848937519,
+        "log_R_over_G": 0.4913737214132703
+      },
+      "sat": 50
+    },
+    {
+      "batch1_fallback": {
+        "capture_id": "008-strip-guide11-c1-h0-s100-candidate_1_high_white_dominant",
+        "z_distance_to_ray": 1.0606480712234034
+      },
+      "batch2_candidates": [
+        {
+          "capture_id": "006-strip-guide11-c1b2-h0-s100-candidate_1",
+          "command": {
+            "b": 200,
+            "cw": 0,
+            "g": 200,
+            "r": 1664,
+            "ww": 0
+          },
+          "frame_classification": "normal",
+          "saturated_fraction": 0.0,
+          "z": {
+            "log_B_over_G": -0.17747957593685312,
+            "log_R_over_G": 0.7665957150297983
+          },
+          "z_distance_to_ray": 1.57550603439812
+        },
+        {
+          "capture_id": "005-strip-guide11-c1b2-h0-s100-candidate_0",
+          "command": {
+            "b": 399,
+            "cw": 0,
+            "g": 399,
+            "r": 1280,
+            "ww": 0
+          },
+          "frame_classification": "normal",
+          "saturated_fraction": 0.0,
+          "z": {
+            "log_B_over_G": 0.019677517421405447,
+            "log_R_over_G": 0.0774783141016676
+          },
+          "z_distance_to_ray": 2.148046474782022
+        }
+      ],
+      "best": {
+        "capture_id": "006-strip-guide11-c1b2-h0-s100-candidate_1",
+        "command": {
+          "b": 200,
+          "cw": 0,
+          "g": 200,
+          "r": 1664,
+          "ww": 0
+        },
+        "frame_classification": "normal",
+        "saturated_fraction": 0.0,
+        "z": {
+          "log_B_over_G": -0.17747957593685312,
+          "log_R_over_G": 0.7665957150297983
+        },
+        "z_distance_to_ray": 1.57550603439812
+      },
+      "hue": 0,
+      "improved_vs_batch1": false,
+      "improvement": null,
+      "ray_bracket_consistent": true,
+      "ray_z_mean": {
+        "log_B_over_G": -1.5446997514239307,
+        "log_R_over_G": 1.5494930621743486
+      },
+      "sat": 100
+    },
+    {
+      "batch1_fallback": {
+        "capture_id": "013-strip-guide11-c1-h60-s50-candidate_0_fullscale_dominant",
+        "z_distance_to_ray": 0.11504436358032892
+      },
+      "batch2_candidates": [
+        {
+          "capture_id": "009-strip-guide11-c1b2-h60-s50-candidate_0",
+          "command": {
+            "b": 974,
+            "cw": 9,
+            "g": 4095,
+            "r": 4095,
+            "ww": 9
+          },
+          "frame_classification": "normal",
+          "saturated_fraction": 0.0,
+          "z": {
+            "log_B_over_G": -0.7895336204674815,
+            "log_R_over_G": -0.7469607146966951
+          },
+          "z_distance_to_ray": 0.10667636700244192
+        },
+        {
+          "capture_id": "010-strip-guide11-c1b2-h60-s50-candidate_1",
+          "command": {
+            "b": 999,
+            "cw": 4,
+            "g": 4095,
+            "r": 4095,
+            "ww": 4
+          },
+          "frame_classification": "normal",
+          "saturated_fraction": 0.0,
+          "z": {
+            "log_B_over_G": -0.7766305086519281,
+            "log_R_over_G": -0.7491049654734433
+          },
+          "z_distance_to_ray": 0.11010206674872122
+        }
+      ],
+      "best": {
+        "capture_id": "009-strip-guide11-c1b2-h60-s50-candidate_0",
+        "command": {
+          "b": 974,
+          "cw": 9,
+          "g": 4095,
+          "r": 4095,
+          "ww": 9
+        },
+        "frame_classification": "normal",
+        "saturated_fraction": 0.0,
+        "z": {
+          "log_B_over_G": -0.7895336204674815,
+          "log_R_over_G": -0.7469607146966951
+        },
+        "z_distance_to_ray": 0.10667636700244192
+      },
+      "hue": 60,
+      "improved_vs_batch1": true,
+      "improvement": 0.008367996577887005,
+      "ray_bracket_consistent": true,
+      "ray_z_mean": {
+        "log_B_over_G": -0.7939683428337873,
+        "log_R_over_G": -0.6403765671213006
+      },
+      "sat": 50
+    },
+    {
+      "batch1_fallback": {
+        "capture_id": "019-strip-guide11-c1-h60-s100-candidate_0_fullscale_dominant",
+        "z_distance_to_ray": 0.5979980469030306
+      },
+      "batch2_candidates": [
+        {
+          "capture_id": "014-strip-guide11-c1b2-h60-s100-candidate_1",
+          "command": {
+            "b": 1118,
+            "cw": 0,
+            "g": 4095,
+            "r": 4095,
+            "ww": 0
+          },
+          "frame_classification": "normal",
+          "saturated_fraction": 0.0,
+          "z": {
+            "log_B_over_G": -0.7182315489994349,
+            "log_R_over_G": -0.7557265194211407
+          },
+          "z_distance_to_ray": 0.6405094996591759
+        },
+        {
+          "capture_id": "013-strip-guide11-c1b2-h60-s100-candidate_0",
+          "command": {
+            "b": 1211,
+            "cw": 0,
+            "g": 4095,
+            "r": 4095,
+            "ww": 0
+          },
+          "frame_classification": "normal",
+          "saturated_fraction": 0.0,
+          "z": {
+            "log_B_over_G": -0.6725329027149051,
+            "log_R_over_G": -0.7606396928679335
+          },
+          "z_distance_to_ray": 0.685108059940401
+        }
+      ],
+      "best": {
+        "capture_id": "014-strip-guide11-c1b2-h60-s100-candidate_1",
+        "command": {
+          "b": 1118,
+          "cw": 0,
+          "g": 4095,
+          "r": 4095,
+          "ww": 0
+        },
+        "frame_classification": "normal",
+        "saturated_fraction": 0.0,
+        "z": {
+          "log_B_over_G": -0.7182315489994349,
+          "log_R_over_G": -0.7557265194211407
+        },
+        "z_distance_to_ray": 0.6405094996591759
+      },
+      "hue": 60,
+      "improved_vs_batch1": false,
+      "improvement": null,
+      "ray_bracket_consistent": true,
+      "ray_z_mean": {
+        "log_B_over_G": -1.3177249486791496,
+        "log_R_over_G": -0.5302047180490655
+      },
+      "sat": 100
+    },
+    {
+      "batch1_fallback": {
+        "capture_id": "025-strip-guide11-c1-h180-s50-candidate_0_fullscale_dominant",
+        "z_distance_to_ray": 0.5796590076072711
+      },
+      "batch2_candidates": [
+        {
+          "capture_id": "018-strip-guide11-c1b2-h180-s50-candidate_1",
+          "command": {
+            "b": 4095,
+            "cw": 20,
+            "g": 4095,
+            "r": 907,
+            "ww": 20
+          },
+          "frame_classification": "normal",
+          "saturated_fraction": 0.0,
+          "z": {
+            "log_B_over_G": 0.07173748985356636,
+            "log_R_over_G": -1.7185700894023772
+          },
+          "z_distance_to_ray": 0.6054948903975191
+        },
+        {
+          "capture_id": "017-strip-guide11-c1b2-h180-s50-candidate_0",
+          "command": {
+            "b": 4095,
+            "cw": 40,
+            "g": 4095,
+            "r": 789,
+            "ww": 40
+          },
+          "frame_classification": "normal",
+          "saturated_fraction": 0.0,
+          "z": {
+            "log_B_over_G": 0.07084021562851353,
+            "log_R_over_G": -1.7527700063279605
+          },
+          "z_distance_to_ray": 0.6296409186468711
+        }
+      ],
+      "best": {
+        "capture_id": "018-strip-guide11-c1b2-h180-s50-candidate_1",
+        "command": {
+          "b": 4095,
+          "cw": 20,
+          "g": 4095,
+          "r": 907,
+          "ww": 20
+        },
+        "frame_classification": "normal",
+        "saturated_fraction": 0.0,
+        "z": {
+          "log_B_over_G": 0.07173748985356636,
+          "log_R_over_G": -1.7185700894023772
+        },
+        "z_distance_to_ray": 0.6054948903975191
+      },
+      "hue": 180,
+      "improved_vs_batch1": false,
+      "improvement": null,
+      "ray_bracket_consistent": true,
+      "ray_z_mean": {
+        "log_B_over_G": -0.3544636643677165,
+        "log_R_over_G": -1.288480984171903
+      },
+      "sat": 50
+    },
+    {
+      "batch1_fallback": {
+        "capture_id": "031-strip-guide11-c1-h180-s100-candidate_0_fullscale_dominant",
+        "z_distance_to_ray": 0.5804327832561738
+      },
+      "batch2_candidates": [
+        {
+          "capture_id": "022-strip-guide11-c1b2-h180-s100-candidate_1",
+          "command": {
+            "b": 4095,
+            "cw": 0,
+            "g": 4095,
+            "r": 1122,
+            "ww": 0
+          },
+          "frame_classification": "normal",
+          "saturated_fraction": 0.0,
+          "z": {
+            "log_B_over_G": 0.07149478983610778,
+            "log_R_over_G": -1.6302335720671521
+          },
+          "z_distance_to_ray": 0.6118478882648837
+        },
+        {
+          "capture_id": "021-strip-guide11-c1b2-h180-s100-candidate_0",
+          "command": {
+            "b": 4095,
+            "cw": 0,
+            "g": 4095,
+            "r": 1221,
+            "ww": 0
+          },
+          "frame_classification": "normal",
+          "saturated_fraction": 0.0,
+          "z": {
+            "log_B_over_G": 0.06947380318667865,
+            "log_R_over_G": -1.5902923976713705
+          },
+          "z_distance_to_ray": 0.6412244490818506
+        }
+      ],
+      "best": {
+        "capture_id": "022-strip-guide11-c1b2-h180-s100-candidate_1",
+        "command": {
+          "b": 4095,
+          "cw": 0,
+          "g": 4095,
+          "r": 1122,
+          "ww": 0
+        },
+        "frame_classification": "normal",
+        "saturated_fraction": 0.0,
+        "z": {
+          "log_B_over_G": 0.07149478983610778,
+          "log_R_over_G": -1.6302335720671521
+        },
+        "z_distance_to_ray": 0.6118478882648837
+      },
+      "hue": 180,
+      "improved_vs_batch1": false,
+      "improvement": null,
+      "ray_bracket_consistent": true,
+      "ray_z_mean": {
+        "log_B_over_G": -0.33063391499236616,
+        "log_R_over_G": -2.0913738361161416
+      },
+      "sat": 100
+    },
+    {
+      "batch1_fallback": {
+        "capture_id": "037-strip-guide11-c1-h240-s50-candidate_0_fullscale_dominant",
+        "z_distance_to_ray": 0.32942480912920524
+      },
+      "batch2_candidates": [
+        {
+          "capture_id": "026-strip-guide11-c1b2-h240-s50-candidate_1",
+          "command": {
+            "b": 4038,
+            "cw": 23,
+            "g": 1741,
+            "r": 874,
+            "ww": 23
+          },
+          "frame_classification": "normal",
+          "saturated_fraction": 0.0,
+          "z": {
+            "log_B_over_G": 0.6360142972971655,
+            "log_R_over_G": -1.4560198309781904
+          },
+          "z_distance_to_ray": 0.40598033808585676
+        },
+        {
+          "capture_id": "025-strip-guide11-c1b2-h240-s50-candidate_0",
+          "command": {
+            "b": 3981,
+            "cw": 47,
+            "g": 1433,
+            "r": 725,
+            "ww": 47
+          },
+          "frame_classification": "normal",
+          "saturated_fraction": 0.0,
+          "z": {
+            "log_B_over_G": 0.7155445493936782,
+            "log_R_over_G": -1.4634018354992457
+          },
+          "z_distance_to_ray": 0.4698190339178881
+        }
+      ],
+      "best": {
+        "capture_id": "026-strip-guide11-c1b2-h240-s50-candidate_1",
+        "command": {
+          "b": 4038,
+          "cw": 23,
+          "g": 1741,
+          "r": 874,
+          "ww": 23
+        },
+        "frame_classification": "normal",
+        "saturated_fraction": 0.0,
+        "z": {
+          "log_B_over_G": 0.6360142972971655,
+          "log_R_over_G": -1.4560198309781904
+        },
+        "z_distance_to_ray": 0.40598033808585676
+      },
+      "hue": 240,
+      "improved_vs_batch1": false,
+      "improvement": null,
+      "ray_bracket_consistent": true,
+      "ray_z_mean": {
+        "log_B_over_G": 0.3515027588968618,
+        "log_R_over_G": -1.1664110959072347
+      },
+      "sat": 50
+    },
+    {
+      "batch1_fallback": {
+        "capture_id": "043-strip-guide11-c1-h240-s100-candidate_0_fullscale_dominant",
+        "z_distance_to_ray": 0.6358150139363596
+      },
+      "batch2_candidates": [
+        {
+          "capture_id": "030-strip-guide11-c1b2-h240-s100-candidate_1",
+          "command": {
+            "b": 4095,
+            "cw": 0,
+            "g": 2432,
+            "r": 1206,
+            "ww": 0
+          },
+          "frame_classification": "normal",
+          "saturated_fraction": 0.0,
+          "z": {
+            "log_B_over_G": 0.4076731176093727,
+            "log_R_over_G": -1.4082778260015043
+          },
+          "z_distance_to_ray": 0.7296406813402041
+        },
+        {
+          "capture_id": "029-strip-guide11-c1b2-h240-s100-candidate_0",
+          "command": {
+            "b": 4095,
+            "cw": 0,
+            "g": 2816,
+            "r": 1388,
+            "ww": 0
+          },
+          "frame_classification": "normal",
+          "saturated_fraction": 0.0,
+          "z": {
+            "log_B_over_G": 0.3260106477346599,
+            "log_R_over_G": -1.3728106783504328
+          },
+          "z_distance_to_ray": 0.8064207070154811
+        }
+      ],
+      "best": {
+        "capture_id": "030-strip-guide11-c1b2-h240-s100-candidate_1",
+        "command": {
+          "b": 4095,
+          "cw": 0,
+          "g": 2432,
+          "r": 1206,
+          "ww": 0
+        },
+        "frame_classification": "normal",
+        "saturated_fraction": 0.0,
+        "z": {
+          "log_B_over_G": 0.4076731176093727,
+          "log_R_over_G": -1.4082778260015043
+        },
+        "z_distance_to_ray": 0.7296406813402041
+      },
+      "hue": 240,
+      "improved_vs_batch1": false,
+      "improvement": null,
+      "ray_bracket_consistent": true,
+      "ray_z_mean": {
+        "log_B_over_G": 0.8197291487446445,
+        "log_R_over_G": -2.01042843097641
+      },
+      "sat": 100
+    }
+  ]
+}
