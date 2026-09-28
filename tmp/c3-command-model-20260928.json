@@ -318,6 +318,6 @@
       "H300/S100"
     ]
   },
-  "status": "provisional_until_c1_confirm_analysis",
+  "status": "confirmed_by_c1_best_repeat_20260928",
   "note": "commands at anchor hues exact; between anchors periodic interpolation; SAT<50 blends white->S50 hue-first; H120/H300 S100 absent by closed-route rule"
 }

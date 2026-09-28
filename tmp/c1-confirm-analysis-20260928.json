@@ -1,0 +1,522 @@
+{
+  "capture_count": 34,
+  "frames_profiled": 16,
+  "note": "z vs fresh paired Ray means; full-frame exposure guard on every confirm frame; spread quantifies command reproducibility; brackets must be single-root",
+  "run_roots": [
+    "D:\\rgbww-optimizer\\guide11-c1\\formal-c1c-20260928-r1",
+    "D:\\rgbww-optimizer\\guide11-c1\\formal-c1c-20260928-r2-suffix",
+    "D:\\rgbww-optimizer\\guide11-c1\\formal-c1c-20260928-r3-suffix"
+  ],
+  "saturated_frames": 2,
+  "schema": "guide11_c1_confirm_analysis_v1",
+  "steady_claim": false,
+  "targets": [
+    {
+      "bracket_root": "D:\\rgbww-optimizer\\guide11-c1\\formal-c1c-20260928-r1",
+      "certification": "selection frame flagged; two independent FAST confirmations complete the GUIDE11 C1 three-observation requirement",
+      "confirm_z_distance_mean": 0.5145250565403301,
+      "confirms": [
+        {
+          "capture_id": "001-strip-guide11-c1c-h0-s50-confirm_1",
+          "frame_classification": "normal",
+          "root": "D:\\rgbww-optimizer\\guide11-c1\\formal-c1c-20260928-r1",
+          "saturated_fraction": 0.0,
+          "z": {
+            "log_B_over_G": -0.1223945688115158,
+            "log_R_over_G": 0.2687823214877314
+          },
+          "z_distance_to_fresh_ray": 0.5146141168056625
+        },
+        {
+          "capture_id": "002-strip-guide11-c1c-h0-s50-confirm_2",
+          "frame_classification": "normal",
+          "root": "D:\\rgbww-optimizer\\guide11-c1\\formal-c1c-20260928-r1",
+          "saturated_fraction": 0.0,
+          "z": {
+            "log_B_over_G": -0.12243149610743273,
+            "log_R_over_G": 0.2691230861051144
+          },
+          "z_distance_to_fresh_ray": 0.5144359962749978
+        }
+      ],
+      "hue": 0,
+      "independent_fast_observations_total": 3,
+      "orphan_rows_from_failed_roots": [],
+      "ray_bracket_consistent": true,
+      "ray_z_mean": {
+        "log_B_over_G": -0.5882552867486093,
+        "log_R_over_G": 0.4874178188316163
+      },
+      "sat": 50,
+      "selected_command": {
+        "b": 903,
+        "cw": 0,
+        "g": 903,
+        "r": 3835,
+        "ww": 0
+      },
+      "selection_batch": "batch2",
+      "selection_capture_id": "001-strip-guide11-c1b2-h0-s50-candidate_0",
+      "selection_z_distance_to_fresh_ray": 0.5162238274122246,
+      "three_observation_spread": {
+        "log_B_over_G": {
+          "max": -0.1223945688115158,
+          "max_abs_deviation": 0.001120376277250562,
+          "mean": -0.12297322059809955,
+          "min": -0.12409359687535011
+        },
+        "log_R_over_G": {
+          "max": 0.2691230861051144,
+          "max_abs_deviation": 0.004971574684975555,
+          "mean": 0.2664669164539351,
+          "min": 0.26149534176895955
+        },
+        "pairwise_max": 0.00780673187835047
+      }
+    },
+    {
+      "bracket_root": "D:\\rgbww-optimizer\\guide11-c1\\formal-c1c-20260928-r3-suffix",
+      "certification": "selection frame flagged; two independent FAST confirmations complete the GUIDE11 C1 three-observation requirement",
+      "confirm_z_distance_mean": 0.8867732107209537,
+      "confirms": [
+        {
+          "capture_id": "001-suffix-strip-guide11-c1c-h0-s100-confirm_1",
+          "frame_classification": "saturated",
+          "root": "D:\\rgbww-optimizer\\guide11-c1\\formal-c1c-20260928-r3-suffix",
+          "saturated_fraction": 0.3657,
+          "z": {
+            "log_B_over_G": -2.3730158518034843,
+            "log_R_over_G": 1.8815045363450948
+          },
+          "z_distance_to_fresh_ray": 0.8865548403664575
+        },
+        {
+          "capture_id": "002-suffix-strip-guide11-c1c-h0-s100-confirm_2",
+          "frame_classification": "saturated",
+          "root": "D:\\rgbww-optimizer\\guide11-c1\\formal-c1c-20260928-r3-suffix",
+          "saturated_fraction": 0.3667,
+          "z": {
+            "log_B_over_G": -2.373595034809629,
+            "log_R_over_G": 1.8812360174382996
+          },
+          "z_distance_to_fresh_ray": 0.88699158107545
+        }
+      ],
+      "hue": 0,
+      "independent_fast_observations_total": 3,
+      "orphan_rows_from_failed_roots": [
+        "000-suffix-ray-guide11-c1c-h0-s100-ray_q_before",
+        "004-ray-guide11-c1c-h0-s100-ray_q_before"
+      ],
+      "ray_bracket_consistent": true,
+      "ray_z_mean": {
+        "log_B_over_G": -1.55087525330504,
+        "log_R_over_G": 1.5497451035058538
+      },
+      "sat": 100,
+      "selected_command": {
+        "b": 0,
+        "cw": 0,
+        "g": 0,
+        "r": 2048,
+        "ww": 0
+      },
+      "selection_batch": "batch1_fallback",
+      "selection_capture_id": "008-strip-guide11-c1-h0-s100-candidate_1_high_white_dominant",
+      "selection_z_distance_to_fresh_ray": 1.0557413374568985,
+      "three_observation_spread": {
+        "log_B_over_G": {
+          "max": -2.3730158518034843,
+          "max_abs_deviation": 0.02673988749489542,
+          "mean": -2.3866753870540043,
+          "min": -2.4134152745488997
+        },
+        "log_R_over_G": {
+          "max": 1.8815045363450948,
+          "max_abs_deviation": 0.6269375460616742,
+          "mean": 1.5679015038608604,
+          "min": 0.9409639577991862
+        },
+        "pairwise_max": 0.9414078251478661
+      }
+    },
+    {
+      "bracket_root": "D:\\rgbww-optimizer\\guide11-c1\\formal-c1c-20260928-r3-suffix",
+      "certification": "selection frame flagged; two independent FAST confirmations complete the GUIDE11 C1 three-observation requirement",
+      "confirm_z_distance_mean": 0.1027131019481916,
+      "confirms": [
+        {
+          "capture_id": "005-suffix-strip-guide11-c1c-h60-s50-confirm_1",
+          "frame_classification": "normal",
+          "root": "D:\\rgbww-optimizer\\guide11-c1\\formal-c1c-20260928-r3-suffix",
+          "saturated_fraction": 0.0,
+          "z": {
+            "log_B_over_G": -0.7907894779903657,
+            "log_R_over_G": -0.7440339873445291
+          },
+          "z_distance_to_fresh_ray": 0.10298284935220689
+        },
+        {
+          "capture_id": "006-suffix-strip-guide11-c1c-h60-s50-confirm_2",
+          "frame_classification": "normal",
+          "root": "D:\\rgbww-optimizer\\guide11-c1\\formal-c1c-20260928-r3-suffix",
+          "saturated_fraction": 0.0,
+          "z": {
+            "log_B_over_G": -0.7910297200781884,
+            "log_R_over_G": -0.7434972267114887
+          },
+          "z_distance_to_fresh_ray": 0.1024433545441763
+        }
+      ],
+      "hue": 60,
+      "independent_fast_observations_total": 3,
+      "orphan_rows_from_failed_roots": [],
+      "ray_bracket_consistent": true,
+      "ray_z_mean": {
+        "log_B_over_G": -0.7920939741320818,
+        "log_R_over_G": -0.6410594004285546
+      },
+      "sat": 50,
+      "selected_command": {
+        "b": 974,
+        "cw": 9,
+        "g": 4095,
+        "r": 4095,
+        "ww": 9
+      },
+      "selection_batch": "batch2",
+      "selection_capture_id": "009-strip-guide11-c1b2-h60-s50-candidate_0",
+      "selection_z_distance_to_fresh_ray": 0.10593226031104641,
+      "three_observation_spread": {
+        "log_B_over_G": {
+          "max": -0.7895336204674815,
+          "max_abs_deviation": 0.0009173190445304069,
+          "mean": -0.790450939512012,
+          "min": -0.7910297200781884
+        },
+        "log_R_over_G": {
+          "max": -0.7434972267114887,
+          "max_abs_deviation": 0.0021300717791241652,
+          "mean": -0.744830642917571,
+          "min": -0.7469607146966951
+        },
+        "pairwise_max": 0.0037728057290068195
+      }
+    },
+    {
+      "bracket_root": "D:\\rgbww-optimizer\\guide11-c1\\formal-c1c-20260928-r3-suffix",
+      "certification": "selection frame flagged; two independent FAST confirmations complete the GUIDE11 C1 three-observation requirement",
+      "confirm_z_distance_mean": 0.593120542166658,
+      "confirms": [
+        {
+          "capture_id": "009-suffix-strip-guide11-c1c-h60-s100-confirm_1",
+          "frame_classification": "normal",
+          "root": "D:\\rgbww-optimizer\\guide11-c1\\formal-c1c-20260928-r3-suffix",
+          "saturated_fraction": 0.0,
+          "z": {
+            "log_B_over_G": -0.7659401057497056,
+            "log_R_over_G": -0.7478132562327507
+          },
+          "z_distance_to_fresh_ray": 0.5929486178885593
+        },
+        {
+          "capture_id": "010-suffix-strip-guide11-c1c-h60-s100-confirm_2",
+          "frame_classification": "normal",
+          "root": "D:\\rgbww-optimizer\\guide11-c1\\formal-c1c-20260928-r3-suffix",
+          "saturated_fraction": 0.0,
+          "z": {
+            "log_B_over_G": -0.7660508940480532,
+            "log_R_over_G": -0.7490397664768285
+          },
+          "z_distance_to_fresh_ray": 0.5932924664447566
+        }
+      ],
+      "hue": 60,
+      "independent_fast_observations_total": 3,
+      "orphan_rows_from_failed_roots": [],
+      "ray_bracket_consistent": true,
+      "ray_z_mean": {
+        "log_B_over_G": -1.3183198257065811,
+        "log_R_over_G": -0.5322565155904861
+      },
+      "sat": 100,
+      "selected_command": {
+        "b": 1024,
+        "cw": 0,
+        "g": 4095,
+        "r": 4095,
+        "ww": 0
+      },
+      "selection_batch": "batch1_fallback",
+      "selection_capture_id": "019-strip-guide11-c1-h60-s100-candidate_0_fullscale_dominant",
+      "selection_z_distance_to_fresh_ray": 0.5977951123437018,
+      "three_observation_spread": {
+        "log_B_over_G": {
+          "max": -0.7621876858596104,
+          "max_abs_deviation": 0.0025385426928460353,
+          "mean": -0.7647262285524564,
+          "min": -0.7660508940480532
+        },
+        "log_R_over_G": {
+          "max": -0.7478132562327507,
+          "max_abs_deviation": 0.0020616625961378254,
+          "mean": -0.7494573426528586,
+          "min": -0.7515190052489964
+        },
+        "pairwise_max": 0.005273825063745278
+      }
+    },
+    {
+      "bracket_root": "D:\\rgbww-optimizer\\guide11-c1\\formal-c1c-20260928-r3-suffix",
+      "certification": "selection frame flagged; two independent FAST confirmations complete the GUIDE11 C1 three-observation requirement",
+      "confirm_z_distance_mean": 0.5741406276289549,
+      "confirms": [
+        {
+          "capture_id": "013-suffix-strip-guide11-c1c-h180-s50-confirm_1",
+          "frame_classification": "normal",
+          "root": "D:\\rgbww-optimizer\\guide11-c1\\formal-c1c-20260928-r3-suffix",
+          "saturated_fraction": 0.0,
+          "z": {
+            "log_B_over_G": 0.07187244530285836,
+            "log_R_over_G": -1.6748178092046864
+          },
+          "z_distance_to_fresh_ray": 0.5741955344816514
+        },
+        {
+          "capture_id": "014-suffix-strip-guide11-c1c-h180-s50-confirm_2",
+          "frame_classification": "normal",
+          "root": "D:\\rgbww-optimizer\\guide11-c1\\formal-c1c-20260928-r3-suffix",
+          "saturated_fraction": 0.0,
+          "z": {
+            "log_B_over_G": 0.07210441869626065,
+            "log_R_over_G": -1.674400010881968
+          },
+          "z_distance_to_fresh_ray": 0.5740857207762584
+        }
+      ],
+      "hue": 180,
+      "independent_fast_observations_total": 3,
+      "orphan_rows_from_failed_roots": [],
+      "ray_bracket_consistent": true,
+      "ray_z_mean": {
+        "log_B_over_G": -0.3524934860203394,
+        "log_R_over_G": -1.2880180313468594
+      },
+      "sat": 50,
+      "selected_command": {
+        "b": 4095,
+        "cw": 0,
+        "g": 4095,
+        "r": 1024,
+        "ww": 0
+      },
+      "selection_batch": "batch1_fallback",
+      "selection_capture_id": "025-strip-guide11-c1-h180-s50-candidate_0_fullscale_dominant",
+      "selection_z_distance_to_fresh_ray": 0.5785099153158719,
+      "three_observation_spread": {
+        "log_B_over_G": {
+          "max": 0.07563808185780113,
+          "max_abs_deviation": 0.0024330999054944097,
+          "mean": 0.07320498195230672,
+          "min": 0.07187244530285836
+        },
+        "log_R_over_G": {
+          "max": -1.674400010881968,
+          "max_abs_deviation": 0.0016541335764692633,
+          "mean": -1.6754359768315616,
+          "min": -1.677090110408031
+        },
+        "pairwise_max": 0.004441104682323037
+      }
+    },
+    {
+      "bracket_root": "D:\\rgbww-optimizer\\guide11-c1\\formal-c1c-20260928-r3-suffix",
+      "certification": "selection frame flagged; two independent FAST confirmations complete the GUIDE11 C1 three-observation requirement",
+      "confirm_z_distance_mean": 0.5782996719306844,
+      "confirms": [
+        {
+          "capture_id": "017-suffix-strip-guide11-c1c-h180-s100-confirm_1",
+          "frame_classification": "normal",
+          "root": "D:\\rgbww-optimizer\\guide11-c1\\formal-c1c-20260928-r3-suffix",
+          "saturated_fraction": 0.0,
+          "z": {
+            "log_B_over_G": 0.07221675385059555,
+            "log_R_over_G": -1.674947087877881
+          },
+          "z_distance_to_fresh_ray": 0.5781120032726434
+        },
+        {
+          "capture_id": "018-suffix-strip-guide11-c1c-h180-s100-confirm_2",
+          "frame_classification": "normal",
+          "root": "D:\\rgbww-optimizer\\guide11-c1\\formal-c1c-20260928-r3-suffix",
+          "saturated_fraction": 0.0,
+          "z": {
+            "log_B_over_G": 0.07255248654930199,
+            "log_R_over_G": -1.674749547667989
+          },
+          "z_distance_to_fresh_ray": 0.5784873405887254
+        }
+      ],
+      "hue": 180,
+      "independent_fast_observations_total": 3,
+      "orphan_rows_from_failed_roots": [],
+      "ray_bracket_consistent": true,
+      "ray_z_mean": {
+        "log_B_over_G": -0.3294129068138385,
+        "log_R_over_G": -2.0907680878315635
+      },
+      "sat": 100,
+      "selected_command": {
+        "b": 4095,
+        "cw": 0,
+        "g": 4095,
+        "r": 1024,
+        "ww": 0
+      },
+      "selection_batch": "batch1_fallback",
+      "selection_capture_id": "031-strip-guide11-c1-h180-s100-candidate_0_fullscale_dominant",
+      "selection_z_distance_to_fresh_ray": 0.5791457656244923,
+      "three_observation_spread": {
+        "log_B_over_G": {
+          "max": 0.07557150126042508,
+          "max_abs_deviation": 0.0021245873736508714,
+          "mean": 0.07344691388677421,
+          "min": 0.07221675385059555
+        },
+        "log_R_over_G": {
+          "max": -1.674749547667989,
+          "max_abs_deviation": 0.0012786816055401218,
+          "mean": -1.6754876585757053,
+          "min": -1.6767663401812454
+        },
+        "pairwise_max": 0.0038162821078970037
+      }
+    },
+    {
+      "bracket_root": "D:\\rgbww-optimizer\\guide11-c1\\formal-c1c-20260928-r3-suffix",
+      "certification": "selection frame flagged; two independent FAST confirmations complete the GUIDE11 C1 three-observation requirement",
+      "confirm_z_distance_mean": 0.32532826991131447,
+      "confirms": [
+        {
+          "capture_id": "021-suffix-strip-guide11-c1c-h240-s50-confirm_1",
+          "frame_classification": "normal",
+          "root": "D:\\rgbww-optimizer\\guide11-c1\\formal-c1c-20260928-r3-suffix",
+          "saturated_fraction": 0.0,
+          "z": {
+            "log_B_over_G": 0.5049634649120261,
+            "log_R_over_G": -1.4537672942722213
+          },
+          "z_distance_to_fresh_ray": 0.3257152335321201
+        },
+        {
+          "capture_id": "022-suffix-strip-guide11-c1c-h240-s50-confirm_2",
+          "frame_classification": "normal",
+          "root": "D:\\rgbww-optimizer\\guide11-c1\\formal-c1c-20260928-r3-suffix",
+          "saturated_fraction": 0.0,
+          "z": {
+            "log_B_over_G": 0.5049753646998412,
+            "log_R_over_G": -1.4528849236152575
+          },
+          "z_distance_to_fresh_ray": 0.3249413062905089
+        }
+      ],
+      "hue": 240,
+      "independent_fast_observations_total": 3,
+      "orphan_rows_from_failed_roots": [],
+      "ray_bracket_consistent": true,
+      "ray_z_mean": {
+        "log_B_over_G": 0.3525261640344343,
+        "log_R_over_G": -1.1659248327484946
+      },
+      "sat": 50,
+      "selected_command": {
+        "b": 4095,
+        "cw": 0,
+        "g": 2048,
+        "r": 1024,
+        "ww": 0
+      },
+      "selection_batch": "batch1_fallback",
+      "selection_capture_id": "037-strip-guide11-c1-h240-s50-candidate_0_fullscale_dominant",
+      "selection_z_distance_to_fresh_ray": 0.3293623601129617,
+      "three_observation_spread": {
+        "log_B_over_G": {
+          "max": 0.5095603782688004,
+          "max_abs_deviation": 0.0030606423085778323,
+          "mean": 0.5064997359602226,
+          "min": 0.5049634649120261
+        },
+        "log_R_over_G": {
+          "max": -1.4528849236152575,
+          "max_abs_deviation": 0.00141016767848412,
+          "mean": -1.4540311927829814,
+          "min": -1.4554413604614655
+        },
+        "pairwise_max": 0.005249544625602373
+      }
+    },
+    {
+      "bracket_root": "D:\\rgbww-optimizer\\guide11-c1\\formal-c1c-20260928-r3-suffix",
+      "certification": "selection frame flagged; two independent FAST confirmations complete the GUIDE11 C1 three-observation requirement",
+      "confirm_z_distance_mean": 0.6379751006065195,
+      "confirms": [
+        {
+          "capture_id": "025-suffix-strip-guide11-c1c-h240-s100-confirm_1",
+          "frame_classification": "normal",
+          "root": "D:\\rgbww-optimizer\\guide11-c1\\formal-c1c-20260928-r3-suffix",
+          "saturated_fraction": 0.0,
+          "z": {
+            "log_B_over_G": 0.5050031675377994,
+            "log_R_over_G": -1.4533765096720135
+          },
+          "z_distance_to_fresh_ray": 0.637600154559712
+        },
+        {
+          "capture_id": "026-suffix-strip-guide11-c1c-h240-s100-confirm_2",
+          "frame_classification": "normal",
+          "root": "D:\\rgbww-optimizer\\guide11-c1\\formal-c1c-20260928-r3-suffix",
+          "saturated_fraction": 0.0,
+          "z": {
+            "log_B_over_G": 0.5049920329590616,
+            "log_R_over_G": -1.4525196231307123
+          },
+          "z_distance_to_fresh_ray": 0.6383500466533272
+        }
+      ],
+      "hue": 240,
+      "independent_fast_observations_total": 3,
+      "orphan_rows_from_failed_roots": [],
+      "ray_bracket_consistent": true,
+      "ray_z_mean": {
+        "log_B_over_G": 0.8210120552175044,
+        "log_R_over_G": -2.007156556262719
+      },
+      "sat": 100,
+      "selected_command": {
+        "b": 4095,
+        "cw": 0,
+        "g": 2048,
+        "r": 1024,
+        "ww": 0
+      },
+      "selection_batch": "batch1_fallback",
+      "selection_capture_id": "043-strip-guide11-c1-h240-s100-candidate_0_fullscale_dominant",
+      "selection_z_distance_to_fresh_ray": 0.6335901708982808,
+      "three_observation_spread": {
+        "log_B_over_G": {
+          "max": 0.509632584945227,
+          "max_abs_deviation": 0.0030899897978643454,
+          "mean": 0.5065425951473627,
+          "min": 0.5049920329590616
+        },
+        "log_R_over_G": {
+          "max": -1.4525196231307123,
+          "max_abs_deviation": 0.0016080217903080563,
+          "mean": -1.4537520772965167,
+          "min": -1.4553600990868247
+        },
+        "pairwise_max": 0.005440866327484706
+      }
+    }
+  ]
+}
