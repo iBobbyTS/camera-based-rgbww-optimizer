@@ -53,6 +53,7 @@ GUIDE9_CANDIDATE_BATCH_SCHEMAS = {
     "direct_guide11_w4_long_v1",
     "direct_guide11_c1_hsi_main_nodes_v1",
     "direct_guide11_c1_batch2_v1",
+    "direct_guide11_c1_confirm_v1",
 }
 GUIDE9_BEST_REPEAT_SCHEMAS = {
     "direct_guide9_h120_s50_best_repeat_v1",
@@ -404,6 +405,7 @@ def validate_authorized_execution_plan(
             "direct_guide11_w4_long_v1",
             "direct_guide11_c1_hsi_main_nodes_v1",
             "direct_guide11_c1_batch2_v1",
+            "direct_guide11_c1_confirm_v1",
         }
     )
     if (
@@ -2671,7 +2673,10 @@ def validate_direct_protocol_post_capture(
             direct_quality = capture.get("direct_quality")
             product_layer_ok = (
                 str(plan.get("execution_authorization", {}).get("schema"))
-                == "direct_guide11_c1_hsi_main_nodes_v1"
+                in (
+                    "direct_guide11_c1_hsi_main_nodes_v1",
+                    "direct_guide11_c1_confirm_v1",
+                )
                 and isinstance(direct_quality, Mapping)
                 and direct_quality.get("status") == "product_layer_block06_accepted"
                 and direct_quality.get("feature_count") == len(values)
@@ -3456,7 +3461,10 @@ def run_authorized_plan(
                     report, feature_ids, statistic=feature_statistic,
                 )
             except HsiRejectedFeaturesError as exc:
-                if str(plan["execution_authorization"].get("schema")) == "direct_guide11_c1_hsi_main_nodes_v1":
+                if str(plan["execution_authorization"].get("schema")) in (
+                    "direct_guide11_c1_hsi_main_nodes_v1",
+                    "direct_guide11_c1_confirm_v1",
+                ):
                     accepted = _c1_accepted_features(report, feature_ids, feature_statistic)
                     block06 = _c1_block06_quality(report)
                     if block06 is None or not block06["accepted"] or not accepted:

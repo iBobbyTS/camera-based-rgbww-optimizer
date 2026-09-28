@@ -1762,3 +1762,191 @@ def build_guide11_c1_batch2_plan(
             "steady_claim": False,
         },
     }
+
+
+C1_CONFIRM_EXPERIMENT_ID = "GUIDE11_C1_CONFIRM_V1"
+C1_CONFIRM_AUTHORIZATION_SCHEMA = "direct_guide11_c1_confirm_v1"
+
+
+def build_guide11_c1_confirm_plan(
+    batch2_analysis_path: Path,
+    batch1_run_root: Path,
+    *,
+    inputs_references: Mapping[str, Mapping[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """GUIDE11 C1 best-repeat confirmation for the eight main nodes.
+
+    Each target's final selected command (batch-2 improvement when measured,
+    otherwise its batch-1 fallback) gets two additional independent FAST
+    observations inside a fresh Ray bracket, completing the three independent
+    FAST observations GUIDE11 C1 requires for a final command. Shutter tiers
+    follow the exposure-amount rule validated in batch-2 r6.
+    """
+    import json as _json
+
+    from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
+
+    batch2_analysis = _json.loads(
+        Path(batch2_analysis_path).read_text(encoding="utf-8")
+    )
+
+    batch1_commands: dict[str, dict[str, int]] = {}
+    for line in (Path(batch1_run_root) / "captures.jsonl").read_text(
+        encoding="utf-8"
+    ).splitlines():
+        if not line.strip():
+            continue
+        row = _json.loads(line)
+        if row.get("source_id") != "strip":
+            continue
+        command = row.get("plan_step", {}).get("command") or {}
+        batch1_commands[str(row.get("capture_id"))] = {
+            name: int(value) for name, value in command.items()
+        }
+
+    captures: list[dict[str, Any]] = []
+    contracts = []
+    for target in batch2_analysis.get("targets", ()):
+        hue, sat = int(target["hue"]), int(target["sat"])
+        improved = bool(target.get("improved_vs_batch1"))
+        if improved:
+            selected = target.get("best") or {}
+            command = {
+                name: int(value)
+                for name, value in (selected.get("command") or {}).items()
+            }
+            selected_capture = selected.get("capture_id")
+            selection_batch = "batch2"
+            if not command or not selected_capture:
+                raise ValueError(f"C1 confirm target h{hue}/s{sat} lacks its batch-2 command")
+        else:
+            selected_capture = (target.get("batch1_fallback") or {}).get("capture_id")
+            command = batch1_commands.get(str(selected_capture) or "")
+            selection_batch = "batch1_fallback"
+            if not command:
+                raise ValueError(
+                    f"C1 confirm target h{hue}/s{sat} fallback capture "
+                    f"{selected_capture!r} not found in batch-1 run root"
+                )
+        contracts.append({
+            "hue": hue, "sat": sat,
+            "selection_batch": selection_batch,
+            "selected_capture_id": selected_capture,
+            "selected_command": dict(command),
+            "selection_z_distance_to_ray": (
+                target.get("best", {}).get("z_distance_to_ray")
+                if improved
+                else (target.get("batch1_fallback") or {}).get("z_distance_to_ray")
+            ),
+            "selection_frame_is_not_independent_confirmation": True,
+            "independent_confirmations_required": 2,
+        })
+        ray_command = {"hue": hue, "sat": sat, "intensity_percent": 100.0}
+        ray_shutter = "1/6400" if sat == 50 else "1/1600"
+        ray_cache = f"ray-c1c-h{hue}-s{sat}"
+        strip_shutter = c1_strip_shutter_for_command(command)
+        bracket = [
+            ("ray", "ray_q_before", ray_command, ray_shutter, ray_cache),
+            ("strip", "confirm_1", dict(command), strip_shutter, f"strip-c1c-h{hue}-s{sat}-c1"),
+            ("strip", "confirm_2", dict(command), strip_shutter, f"strip-c1c-h{hue}-s{sat}-c2"),
+            ("ray", "ray_q_after", ray_command, ray_shutter, ray_cache),
+        ]
+        for source, role, bracket_command, shutter, cache in bracket:
+            captures.append({
+                "capture_id": f"{len(captures):03d}-{source}-guide11-c1c-h{hue}-s{sat}-{role}",
+                "source_id": source,
+                "state_id": f"C1C_H{hue}_S{sat}_{role.upper()}",
+                "role": f"{source}_c1c_h{hue}_s{sat}_{role}",
+                "capture_role": "formal",
+                "formal_measurement": True,
+                "command": dict(bracket_command),
+                "exact_command_hash": thermal.canonical_sha256(bracket_command),
+                "requested_elapsed_s": 120,
+                "nominal_shutter": shutter,
+                "exposure_cache_key": cache,
+                "timing_acceptance": "observed_elapsed_record_only",
+                "strip_zero_required": source == "ray",
+                "ray_zero_required": source == "strip",
+                "session_index": len(captures) + 1,
+                "source_order": 1 if source == "ray" else 2,
+                "target_cct": None,
+                "target_gm": None,
+                "c1_hue": hue,
+                "c1_sat": sat,
+                "steady_claim": False,
+            })
+    if not captures:
+        raise ValueError("GUIDE11 C1 confirm has no target")
+    frozen = {str(step["exposure_cache_key"]): str(step["nominal_shutter"]) for step in captures}
+    strip_count = sum(s["source_id"] == "strip" for s in captures)
+    return {
+        "schema": thermal.PLAN_SCHEMA_V2,
+        "status": "execute_authorized",
+        "experiment_id": thermal.TD_C,
+        "guide_experiment_id": C1_CONFIRM_EXPERIMENT_ID,
+        "variant": "guide11-c1-best-repeat-confirmation",
+        "stage": "GUIDE11-C1-CONFIRM",
+        "phase": "formal",
+        "source": "guide11_c1_batch2_selection_closeout",
+        "created_at": thermal.datetime.now(thermal.timezone.utc).isoformat(),
+        "inputs": {
+            "location": thermal.file_reference(thermal.LOCATION_PATH),
+            "policy": thermal.file_reference(thermal.POLICY_PATH),
+            "code_duty_curve": thermal.file_reference(thermal.CURVE_PATH),
+            "batch2_analysis": thermal.file_reference(Path(batch2_analysis_path)),
+            "batch1_run_root": {"path": str(Path(batch1_run_root))},
+            "batch1_captures": thermal.file_reference(
+                Path(batch1_run_root) / "captures.jsonl"
+            ),
+            **{k: dict(v) for k, v in (inputs_references or {}).items()},
+        },
+        "captures": captures,
+        "capture_ids": [s["capture_id"] for s in captures],
+        "timing_contract": thermal.timing_contract(2),
+        "timing_resolution": "guide11_c1confirm_reset600_D120",
+        "cold_proxy": 600,
+        "cold_proxy_wait_s": 600,
+        "native_raw_ambient_policy": thermal.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+        "exposure_setup_required": [],
+        "frozen_shutters": frozen,
+        "shutter_ledger_provenance": {
+            "owner": "experiment_capture_steps",
+            "required_cache_keys": sorted(frozen),
+            "frozen_shutters_sha256": thermal.canonical_sha256(frozen),
+        },
+        "budgets": {
+            "ray_cap": len(captures) - strip_count,
+            "strip_cap": strip_count,
+            "formal_cap": len(captures),
+            "physical_cr3_cap": len(captures),
+            "ambient_cap": 0, "retry": 0,
+            "confirmations_per_target": 2,
+        },
+        "execution_authorization": {
+            "schema": C1_CONFIRM_AUTHORIZATION_SCHEMA,
+            "human_authorization_required": False,
+            "human_authorization_verified": False,
+            "device_use_granted_by": "operator_cli_allow_device_control",
+            "experiment_id": C1_CONFIRM_EXPERIMENT_ID,
+            "bounded_device_scope": True,
+            "remote_v2_capability": True,
+        },
+        "camera": {
+            "backend": "remote",
+            "v2_capture_timing_capability_available": True,
+            "v2_capture_capability": "remote_v2_capture_timing_v1",
+            "resolved_capture_settings": {
+                "owner": "remote_backend.resolve_capture_settings",
+                "iso": "100", "aperture": "f/4", "image_format": "RAW",
+            },
+        },
+        "analysis_contract": {
+            "method": "guide11_c1_best_repeat_confirmation",
+            "targets": contracts,
+            "product_layer": "z distance to paired fresh Ray z per target; selection frame counted with selection-process flag",
+            "legacy_layer": "frozen 58-feature reported side by side",
+            "independent_reset_s": 600,
+            "dwell_s": 120,
+            "steady_claim": False,
+        },
+    }

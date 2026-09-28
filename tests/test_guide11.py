@@ -674,3 +674,149 @@ class Guide11ExposureTriageTests(unittest.TestCase):
             self.assertEqual(
                 guide11.c1_strip_shutter_for_command(command), expected, label
             )
+
+
+class Guide11C1ConfirmPlanTests(unittest.TestCase):
+    @staticmethod
+    def _batch2_analysis():
+        def target(hue, sat, improved, best_cmd=None, fallback_id=None):
+            entry = {
+                "hue": hue,
+                "sat": sat,
+                "improved_vs_batch1": improved,
+                "batch1_fallback": {"capture_id": fallback_id, "z_distance_to_ray": 0.5},
+                "best": {
+                    "capture_id": f"b2-h{hue}-s{sat}",
+                    "command": best_cmd,
+                    "z_distance_to_ray": 0.4,
+                } if best_cmd else None,
+            }
+            return entry
+
+        return {
+            "schema": "guide11_c1_batch2_analysis_v1",
+            "targets": [
+                target(0, 50, True, best_cmd={"cw": 0, "ww": 0, "r": 3835, "g": 903, "b": 903}),
+                target(0, 100, False, fallback_id="008-strip-fallback-h0-s100"),
+                target(60, 50, True, best_cmd={"cw": 9, "ww": 9, "r": 4095, "g": 4095, "b": 974}),
+                target(60, 100, False, fallback_id="019-strip-fallback-h60-s100"),
+                target(180, 50, False, fallback_id="025-strip-fallback-h180-s50"),
+                target(180, 100, False, fallback_id="031-strip-fallback-h180-s100"),
+                target(240, 50, False, fallback_id="037-strip-fallback-h240-s50"),
+                target(240, 100, False, fallback_id="043-strip-fallback-h240-s100"),
+            ],
+        }
+
+    @staticmethod
+    def _batch1_root(tmp: Path):
+        root = tmp / "batch1"
+        root.mkdir()
+        rows = []
+        fallback_commands = {
+            "008-strip-fallback-h0-s100": {"cw": 0, "ww": 0, "r": 2048, "g": 0, "b": 0},
+            "019-strip-fallback-h60-s100": {"cw": 0, "ww": 0, "r": 4095, "g": 4095, "b": 1024},
+            "025-strip-fallback-h180-s50": {"cw": 0, "ww": 0, "r": 1024, "g": 4095, "b": 4095},
+            "031-strip-fallback-h180-s100": {"cw": 0, "ww": 0, "r": 1024, "g": 4095, "b": 4095},
+            "037-strip-fallback-h240-s50": {"cw": 0, "ww": 0, "r": 1024, "g": 2048, "b": 4095},
+            "043-strip-fallback-h240-s100": {"cw": 0, "ww": 0, "r": 1024, "g": 2048, "b": 4095},
+        }
+        for capture_id, command in fallback_commands.items():
+            rows.append({
+                "capture_id": capture_id,
+                "source_id": "strip",
+                "plan_step": {"command": command},
+            })
+        rows.append({
+            "capture_id": "999-ray-ignored",
+            "source_id": "ray",
+            "plan_step": {"command": {"hue": 0, "sat": 100}},
+        })
+        (root / "captures.jsonl").write_text(
+            "\n".join(json.dumps(row) for row in rows) + "\n", encoding="utf-8"
+        )
+        return root
+
+    def test_confirm_plan_structure_and_selection(self):
+        with tempfile.TemporaryDirectory() as tmp_name:
+            tmp = Path(tmp_name)
+            analysis_path = tmp / "batch2-analysis.json"
+            analysis_path.write_text(
+                json.dumps(self._batch2_analysis()), encoding="utf-8"
+            )
+            batch1_root = self._batch1_root(tmp)
+            plan = guide11.build_guide11_c1_confirm_plan(analysis_path, batch1_root)
+
+        self.assertEqual(len(plan["captures"]), 32)
+        self.assertEqual(plan["guide_experiment_id"], "GUIDE11_C1_CONFIRM_V1")
+        self.assertEqual(plan["execution_authorization"]["schema"], "direct_guide11_c1_confirm_v1")
+        # Authorization stays with the operator CLI grant, never self-verified.
+        self.assertFalse(plan["execution_authorization"]["human_authorization_verified"])
+        self.assertEqual(
+            plan["execution_authorization"]["device_use_granted_by"],
+            "operator_cli_allow_device_control",
+        )
+        self.assertEqual(plan["timing_resolution"], "guide11_c1confirm_reset600_D120")
+        self.assertEqual(plan["cold_proxy_wait_s"], 600)
+        # Every capture is a full independent FAST cycle.
+        self.assertTrue(all(s["requested_elapsed_s"] == 120 for s in plan["captures"]))
+
+        by_target = {}
+        for step in plan["captures"]:
+            by_target.setdefault((step["c1_hue"], step["c1_sat"]), []).append(step)
+        self.assertEqual(len(by_target), 8)
+        for (hue, sat), steps in by_target.items():
+            self.assertEqual(
+                [s["role"].rsplit("_", 1)[-1] for s in steps],
+                ["before", "1", "2", "after"],
+                f"h{hue}/s{sat} bracket order",
+            )
+            sources = [s["source_id"] for s in steps]
+            self.assertEqual(sources, ["ray", "strip", "strip", "ray"])
+            for step in steps:
+                self.assertEqual(step["strip_zero_required"], step["source_id"] == "ray")
+                self.assertEqual(step["ray_zero_required"], step["source_id"] == "strip")
+            # Both strip confirms repeat one identical command.
+            self.assertEqual(steps[1]["command"], steps[2]["command"])
+            self.assertEqual(steps[1]["exact_command_hash"], steps[2]["exact_command_hash"])
+
+        # Improved targets use the batch-2 command; fallback targets resolve
+        # the command from the batch-1 run root, not from the analysis JSON.
+        self.assertEqual(
+            by_target[(0, 50)][1]["command"],
+            {"cw": 0, "ww": 0, "r": 3835, "g": 903, "b": 903},
+        )
+        self.assertEqual(
+            by_target[(0, 100)][1]["command"],
+            {"cw": 0, "ww": 0, "r": 2048, "g": 0, "b": 0},
+        )
+        self.assertEqual(
+            by_target[(240, 100)][1]["command"],
+            {"cw": 0, "ww": 0, "r": 1024, "g": 2048, "b": 4095},
+        )
+
+        # Exposure-amount shutter tiers: full-scale color keeps 1/400, the
+        # half-scale single-channel r2048 moves to 1/125 (never 1/8).
+        self.assertEqual(by_target[(0, 50)][1]["nominal_shutter"], "1/400")
+        self.assertEqual(by_target[(0, 100)][1]["nominal_shutter"], "1/125")
+        self.assertEqual(by_target[(60, 100)][1]["nominal_shutter"], "1/400")
+
+        contract = {
+            (t["hue"], t["sat"]): t for t in plan["analysis_contract"]["targets"]
+        }
+        self.assertEqual(contract[(0, 50)]["selection_batch"], "batch2")
+        self.assertEqual(contract[(0, 100)]["selection_batch"], "batch1_fallback")
+        self.assertTrue(
+            contract[(0, 50)]["selection_frame_is_not_independent_confirmation"]
+        )
+        self.assertEqual(contract[(0, 100)]["independent_confirmations_required"], 2)
+
+    def test_missing_fallback_capture_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp_name:
+            tmp = Path(tmp_name)
+            analysis = self._batch2_analysis()
+            analysis["targets"][1]["batch1_fallback"]["capture_id"] = "nonexistent"
+            analysis_path = tmp / "batch2-analysis.json"
+            analysis_path.write_text(json.dumps(analysis), encoding="utf-8")
+            batch1_root = self._batch1_root(tmp)
+            with self.assertRaises(ValueError):
+                guide11.build_guide11_c1_confirm_plan(analysis_path, batch1_root)
