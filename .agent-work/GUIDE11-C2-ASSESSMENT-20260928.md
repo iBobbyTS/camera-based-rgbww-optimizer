@@ -62,3 +62,26 @@ C2-S25 发射（12 张）→ C5 INT 批 → C6 打包。若并行会话复活：
 git log，遵守单 runner 检查，不得重复启动已在运行的批次。
 
 无新增 Human/Advisor 门。
+
+### 2026-09-28 12:15 UTC 预建收口：C5/C2-S25 发射就绪（91ca48f + dfd5b3e）
+
+本会话（89cfc063 循环监督所有者）在 C4 运行期间完成离线预建：
+
+- C4 冻结分析器 `tmp/analyze_c4_holdout_20260928.py` 定稿：运行中守卫、C1
+  锚点包络对照、G9 同源白锚（strip 白=G9 best-repeat ×2 散布 0.0003，
+  即模型白层命令；Ray 白=G9 bracket）做低 SAT 径向比、锚图反解已往返
+  自检（锚点与内点 residual=0）。
+- C5 INT 分离性 builder/CLI/注册/测试全部就绪（33 测试过，离线计划验证
+  PASS；dry-run 48 张表已核对：Ray 快门按 100/INT 缩放锚点并落在合法
+  1/3 档表，strip 命令线性缩放，白光纯命令按亮度阶梯下行不再钉 1/400）。
+- **修复发射阻塞**：C2-S25 计划原继承 C4 授权身份，runner 作用域检查
+  会在发射时拒绝（experiment_id 不匹配）。已注册
+  direct_guide11_c2_sat_reachability_s25_v1 并加 C4/C2/C5 作用域回归测试。
+- C4 完成后的既定路线不变：分析器 → C4 结果文档 → C2-S25 发射
+  （`measure_guide11_c2_s25 --execute --allow-device-control --run-name
+  formal-c2s25-20260928-r1 --command-model D:\rgbww-optimizer\guide11-c1\
+  derived\c3-command-model-20260928.json --output-dir D:\rgbww-optimizer\
+  guide11-c2`，12 张）→ C5（48 张）→ C6 打包。各批发射前做单 runner
+  进程检查；发射后 3 次 1 分钟间隔活性检查再配监控。
+- 本会话无 CronCreate/CronDelete 工具：唤醒依赖后台任务退出自动通知 +
+  89cfc063 循环心跳。并行会话若复活，读本节后按单 runner 规则继续。
