@@ -13,6 +13,7 @@ GUIDE11 corrections implemented here:
 from __future__ import annotations
 
 import copy
+import json
 import math
 from pathlib import Path
 from typing import Any, Mapping, Sequence
@@ -2531,6 +2532,70 @@ def build_guide11_c2_s25_plan(
             "product_layer_validity",
             "equivalent_menu_sat_error",
         ]
+    return plan
+
+
+def c2_s25_recovery_plan(
+    command_model: Mapping[str, Any],
+    interrupted_root: Path,
+    *,
+    model_provenance: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Recovery-suffix C2-S25 plan from an interrupted run root.
+
+    Targets whose full bracket (ray_q_before, model_point, ray_q_after) was
+    accepted in the interrupted root are skipped; partially captured targets
+    are re-bracketed whole in the new root so no bracket spans two roots.
+    Remaining captures are renumbered from 000 and budgets recomputed.
+    """
+    plan = build_guide11_c2_s25_plan(
+        command_model, model_provenance=model_provenance
+    )
+    accepted = set()
+    ledger = interrupted_root / "captures.jsonl"
+    if ledger.is_file():
+        for line in ledger.read_text(encoding="utf-8").splitlines():
+            if line.strip():
+                accepted.add(json.loads(line)["capture_id"])
+
+    def target_of(step: Mapping[str, Any]) -> tuple[int, int]:
+        return (int(step["c1_hue"]), int(step["c1_sat"]))
+
+    by_target: dict[tuple[int, int], list[dict[str, Any]]] = {}
+    for step in plan["captures"]:
+        by_target.setdefault(target_of(step), []).append(step)
+    keep: list[dict[str, Any]] = []
+    dropped_targets: list[tuple[int, int]] = []
+    orphan_rows: list[str] = []
+    for key in sorted(by_target):
+        steps = by_target[key]
+        if all(s["capture_id"] in accepted for s in steps):
+            dropped_targets.append(key)
+            continue
+        orphan_rows.extend(s["capture_id"] for s in steps if s["capture_id"] in accepted)
+        keep.extend(steps)
+    keep.sort(key=lambda s: s["capture_id"])
+    for index, step in enumerate(keep):
+        suffix = step["capture_id"].split("-", 1)[1]
+        step["capture_id"] = f"{index:03d}-{suffix}"
+    strip_count = sum(s["source_id"] == "strip" for s in keep)
+    plan["captures"] = keep
+    plan["capture_ids"] = [s["capture_id"] for s in keep]
+    plan["budgets"].update({
+        "ray_cap": len(keep) - strip_count,
+        "strip_cap": strip_count,
+        "formal_cap": len(keep),
+        "physical_cr3_cap": len(keep),
+        "target_count": len(by_target) - len(dropped_targets),
+    })
+    plan["analysis_contract"]["recovered_from"] = {
+        "interrupted_root": str(interrupted_root),
+        "accepted_capture_ids": sorted(accepted),
+        "completed_targets_dropped": [
+            {"hue": h, "sat": s} for h, s in dropped_targets
+        ],
+        "orphan_rows_retained_in_interrupted_root": sorted(orphan_rows),
+    }
     return plan
 
 

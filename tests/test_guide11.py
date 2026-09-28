@@ -1120,6 +1120,45 @@ class Guide11C2S25PlanTests(unittest.TestCase):
         self.assertTrue(first["state_id"].startswith("C4_H"))
         self.assertEqual(plan["guide_experiment_id"], "GUIDE11_C4_EXPERIENCE_HOLDOUT_V1")
 
+    def test_c2_s25_recovery_drops_complete_targets_and_renumbers(self):
+        anchors = Guide11PeriodicHueSatModelTests._anchors()
+        model = guide11.fit_periodic_hue_sat_command_model(
+            anchors, white_layer={"r": 0, "g": 0, "b": 0, "cw": 1200, "ww": 1200}
+        )
+        full = guide11.build_guide11_c2_s25_plan(model)
+        h0_ids = [s["capture_id"] for s in full["captures"] if s["c1_hue"] == 0]
+        h60_first = next(s["capture_id"] for s in full["captures"] if s["c1_hue"] == 60)
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "captures.jsonl").write_text(
+                "\n".join(json.dumps({"capture_id": cid}) for cid in h0_ids + [h60_first])
+                + "\n",
+                encoding="utf-8",
+            )
+            plan = guide11.c2_s25_recovery_plan(model, root)
+
+        hues = {(s["c1_hue"], s["c1_sat"]) for s in plan["captures"]}
+        self.assertEqual(hues, {(60, 25), (180, 25), (240, 25)})
+        self.assertEqual(len(plan["captures"]), 9)
+        self.assertEqual(plan["capture_ids"], [s["capture_id"] for s in plan["captures"]])
+        self.assertEqual(
+            [s["capture_id"].split("-")[0] for s in plan["captures"]],
+            [f"{i:03d}" for i in range(9)],
+        )
+        budgets = plan["budgets"]
+        self.assertEqual(budgets["formal_cap"], 9)
+        self.assertEqual(budgets["strip_cap"], 3)
+        self.assertEqual(budgets["ray_cap"], 6)
+        self.assertEqual(budgets["target_count"], 3)
+        recovered = plan["analysis_contract"]["recovered_from"]
+        self.assertEqual(recovered["completed_targets_dropped"], [{"hue": 0, "sat": 25}])
+        self.assertEqual(recovered["orphan_rows_retained_in_interrupted_root"], [h60_first])
+        self.assertEqual(len(recovered["accepted_capture_ids"]), 4)
+        self.assertEqual(
+            plan["execution_authorization"]["schema"],
+            "direct_guide11_c2_sat_reachability_s25_v1",
+        )
+
 
 class Guide11C5IntSeparabilityPlanTests(unittest.TestCase):
     def test_c5_plan_scales_commands_and_ladders_shutters(self):

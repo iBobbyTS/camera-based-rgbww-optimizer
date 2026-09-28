@@ -8,6 +8,7 @@ from typing import Sequence
 from camera_based_rgbww_optimizer.control import camera_remote
 from camera_based_rgbww_optimizer.optimization.guide11 import (
     build_guide11_c2_s25_plan,
+    c2_s25_recovery_plan,
 )
 from camera_based_rgbww_optimizer.optimization.measure_p7_thermal_diagnostics import (
     run_authorized_plan,
@@ -25,6 +26,15 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--run-name", required=True)
     parser.add_argument("--command-model", type=Path, required=True)
+    parser.add_argument(
+        "--resume-from",
+        type=Path,
+        default=None,
+        help=(
+            "Interrupted C2-S25 run root: completed targets are skipped and "
+            "partial targets re-bracketed whole in the new recovery root."
+        ),
+    )
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--dry-run", action="store_true")
     mode.add_argument("--execute", action="store_true")
@@ -36,10 +46,17 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
 def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(argv)
     model = json.loads(args.command_model.read_text(encoding="utf-8"))
-    plan = build_guide11_c2_s25_plan(
-        model,
-        model_provenance={"path": str(args.command_model.resolve())},
-    )
+    if args.resume_from is not None:
+        plan = c2_s25_recovery_plan(
+            model,
+            args.resume_from,
+            model_provenance={"path": str(args.command_model.resolve())},
+        )
+    else:
+        plan = build_guide11_c2_s25_plan(
+            model,
+            model_provenance={"path": str(args.command_model.resolve())},
+        )
     if args.dry_run:
         root = (args.output_dir / args.run_name).resolve()
         root.mkdir(parents=True, exist_ok=False)
