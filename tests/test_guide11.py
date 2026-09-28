@@ -1066,3 +1066,56 @@ class Guide11C4HoldoutPlanTests(unittest.TestCase):
                 continue
             key = tuple(sorted(steps[1]["command"].items()))
             self.assertNotIn(key, all_anchor_commands)
+
+
+class Guide11C2S25PlanTests(unittest.TestCase):
+    def test_c2_s25_plan_uses_c2_identity_and_compression_commands(self):
+        anchors = Guide11PeriodicHueSatModelTests._anchors()
+        model = guide11.fit_periodic_hue_sat_command_model(
+            anchors, white_layer={"r": 0, "g": 0, "b": 0, "cw": 1200, "ww": 1200}
+        )
+        plan = guide11.build_guide11_c2_s25_plan(model)
+
+        self.assertEqual(plan["guide_experiment_id"], "GUIDE11_C2_SAT_REACHABILITY_S25_V1")
+        self.assertEqual(plan["stage"], "GUIDE11-C2-SAT-REACHABILITY-S25")
+        contract = plan["analysis_contract"]
+        self.assertEqual(contract["method"], "guide11_c2_sat_reachability")
+        self.assertEqual(contract["descent_tier"], 25)
+        self.assertEqual(
+            [(t["hue"], t["sat"]) for t in contract["targets"]],
+            [(0, 25), (60, 25), (180, 25), (240, 25)],
+        )
+        for target in contract["targets"]:
+            self.assertEqual(
+                target["checks"],
+                ["bracket_consistency", "product_layer_validity", "equivalent_menu_sat_error"],
+            )
+
+        # 4 targets x (ray, strip, ray) = 12 captures with c2 identity.
+        self.assertEqual(len(plan["captures"]), 12)
+        by_target = {}
+        for step in plan["captures"]:
+            by_target.setdefault((step["c1_hue"], step["c1_sat"]), []).append(step)
+            self.assertIn("-guide11-c2-h", step["capture_id"])
+            self.assertTrue(step["state_id"].startswith("C2_H"))
+            self.assertIn("_c2_h", step["role"])
+        for (hue, _sat), steps in by_target.items():
+            self.assertEqual([s["source_id"] for s in steps], ["ray", "strip", "ray"])
+            # Strip commands come from the model's white->S50 compression path.
+            expected = guide11.interpolate_hsi_command(model, float(hue), 25.0)
+            strip = steps[1]
+            self.assertEqual(strip["command"], expected["command"])
+            # Ray side requests the same S25 menu point at the white-dominant tier.
+            self.assertEqual(steps[0]["command"], {"hue": hue, "sat": 25, "intensity_percent": 100.0})
+            self.assertEqual(steps[0]["nominal_shutter"], "1/16000")
+
+    def test_c4_default_plan_ids_unchanged_by_label_parameter(self):
+        anchors = Guide11PeriodicHueSatModelTests._anchors()
+        model = guide11.fit_periodic_hue_sat_command_model(
+            anchors, white_layer={"r": 0, "g": 0, "b": 0, "cw": 1200, "ww": 1200}
+        )
+        plan = guide11.build_guide11_c4_holdout_plan(model)
+        first = plan["captures"][0]
+        self.assertIn("-guide11-c4-h", first["capture_id"])
+        self.assertTrue(first["state_id"].startswith("C4_H"))
+        self.assertEqual(plan["guide_experiment_id"], "GUIDE11_C4_EXPERIENCE_HOLDOUT_V1")

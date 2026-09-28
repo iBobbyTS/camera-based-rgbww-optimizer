@@ -2330,6 +2330,7 @@ def build_guide11_c4_holdout_plan(
     command_model: Mapping[str, Any],
     *,
     targets: Sequence[tuple[int, int]] = C4_TARGETS,
+    label: str = "c4",
     model_provenance: Mapping[str, Any] | None = None,
     inputs_references: Mapping[str, Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
@@ -2341,6 +2342,10 @@ def build_guide11_c4_holdout_plan(
     acquires a fresh paired Ray bracket around one strip observation of the
     model's interpolated command. Targets are frozen; no result-dependent
     substitution is permitted.
+
+    ``label`` only affects capture/state identity strings so other GUIDE11
+    packages (e.g. the C2 S25 reachability tier) can reuse this bracket
+    structure without masquerading as C4 evidence; the default keeps C4 ids.
     """
     from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
 
@@ -2358,19 +2363,19 @@ def build_guide11_c4_holdout_plan(
         })
         ray_command = {"hue": hue, "sat": sat, "intensity_percent": 100.0}
         ray_shutter = _c4_ray_shutter_for_sat(sat)
-        ray_cache = f"ray-c4-h{hue}-s{sat}"
+        ray_cache = f"ray-{label}-h{hue}-s{sat}"
         strip_shutter = c1_strip_shutter_for_command(command)
         bracket = [
             ("ray", "ray_q_before", ray_command, ray_shutter, ray_cache),
-            ("strip", "model_point", dict(command), strip_shutter, f"strip-c4-h{hue}-s{sat}"),
+            ("strip", "model_point", dict(command), strip_shutter, f"strip-{label}-h{hue}-s{sat}"),
             ("ray", "ray_q_after", ray_command, ray_shutter, ray_cache),
         ]
         for source, role, bracket_command, shutter, cache in bracket:
             captures.append({
-                "capture_id": f"{len(captures):03d}-{source}-guide11-c4-h{hue}-s{sat}-{role}",
+                "capture_id": f"{len(captures):03d}-{source}-guide11-{label}-h{hue}-s{sat}-{role}",
                 "source_id": source,
-                "state_id": f"C4_H{hue}_S{sat}_{role.upper()}",
-                "role": f"{source}_c4_h{hue}_s{sat}_{role}",
+                "state_id": f"{label.upper()}_H{hue}_S{sat}_{role.upper()}",
+                "role": f"{source}_{label}_h{hue}_s{sat}_{role}",
                 "capture_role": "formal",
                 "formal_measurement": True,
                 "command": dict(bracket_command),
@@ -2462,3 +2467,48 @@ def build_guide11_c4_holdout_plan(
             "steady_claim": False,
         },
     }
+
+
+C2_S25_EXPERIMENT_ID = "GUIDE11_C2_SAT_REACHABILITY_S25_V1"
+C2_S25_TARGETS: tuple[tuple[int, int], ...] = ((0, 25), (60, 25), (180, 25), (240, 25))
+
+
+def build_guide11_c2_s25_plan(
+    command_model: Mapping[str, Any],
+    *,
+    targets: Sequence[tuple[int, int]] = C2_S25_TARGETS,
+    model_provenance: Mapping[str, Any] | None = None,
+    inputs_references: Mapping[str, Mapping[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """GUIDE11 C2 S25 descent-tier plan for the four main hues.
+
+    Built only when no main-hue node is product-layer valid at S50/S100
+    (C2 reachability assessment); S25 is the last descent tier and a still
+    invalid outcome closes the hue's downward search without further tiers.
+    Reuses the C4 bracket structure (fresh paired Ray bracket around one
+    model-command strip observation) with C2 identity and analysis contract.
+    """
+    plan = build_guide11_c4_holdout_plan(
+        command_model,
+        targets=targets,
+        label="c2",
+        model_provenance=model_provenance,
+        inputs_references=inputs_references,
+    )
+    plan["guide_experiment_id"] = C2_S25_EXPERIMENT_ID
+    plan["variant"] = "guide11-c2-sat-reachability-s25"
+    plan["stage"] = "GUIDE11-C2-SAT-REACHABILITY-S25"
+    plan["analysis_contract"]["method"] = "guide11_c2_sat_reachability"
+    plan["analysis_contract"]["descent_tier"] = 25
+    plan["analysis_contract"]["stop_rule"] = (
+        "if S25 remains outside product tolerance the hue's downward SAT "
+        "search stops per GUIDE11 C2; report boundary bracket, not hardware limit"
+    )
+    plan["analysis_contract"]["one_local_model_correction_then_new_holdout"] = False
+    for contract in plan["analysis_contract"]["targets"]:
+        contract["checks"] = [
+            "bracket_consistency",
+            "product_layer_validity",
+            "equivalent_menu_sat_error",
+        ]
+    return plan
