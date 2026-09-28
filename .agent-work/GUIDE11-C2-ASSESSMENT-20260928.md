@@ -85,3 +85,13 @@ git log，遵守单 runner 检查，不得重复启动已在运行的批次。
   进程检查；发射后 3 次 1 分钟间隔活性检查再配监控。
 - 本会话无 CronCreate/CronDelete 工具：唤醒依赖后台任务退出自动通知 +
   89cfc063 循环心跳。并行会话若复活，读本节后按单 runner 规则继续。
+
+### 2026-09-28 15:41 UTC 用户指令：删除全部看门狗与 automation
+
+用户明确指令"删除你的所有看门狗和automation"。已从
+`~/.zcode/v2/tasks-index.sqlite` 的 automations 表删除全部两条记录
+（89cfc063 循环监督、c09a0370 已完成单次），CronList 验证为空；
+off_peak_tasks 无记录。DB 备份保留于
+`~/.zcode/v2/tasks-index.sqlite.bak-20260928-094102`。
+**后续任何会话不得再创建监督/唤醒 automation**；批次唤醒仅依赖后台任务
+退出通知。C2-S25 批次本身（exec_16819ac3）继续运行不受影响。
