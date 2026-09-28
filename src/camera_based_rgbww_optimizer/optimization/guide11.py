@@ -2581,6 +2581,19 @@ def c2_s25_recovery_plan(
     strip_count = sum(s["source_id"] == "strip" for s in keep)
     plan["captures"] = keep
     plan["capture_ids"] = [s["capture_id"] for s in keep]
+    frozen = {
+        str(step["exposure_cache_key"]): str(step["nominal_shutter"]) for step in keep
+    }
+    plan["frozen_shutters"] = frozen
+    plan["shutter_ledger_provenance"] = {
+        **plan["shutter_ledger_provenance"],
+        "required_cache_keys": sorted(frozen),
+    }
+    from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
+
+    plan["shutter_ledger_provenance"]["frozen_shutters_sha256"] = (
+        thermal.canonical_sha256(frozen)
+    )
     plan["budgets"].update({
         "ray_cap": len(keep) - strip_count,
         "strip_cap": strip_count,

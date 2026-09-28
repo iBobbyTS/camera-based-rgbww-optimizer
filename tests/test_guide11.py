@@ -1150,6 +1150,16 @@ class Guide11C2S25PlanTests(unittest.TestCase):
         self.assertEqual(budgets["strip_cap"], 3)
         self.assertEqual(budgets["ray_cap"], 6)
         self.assertEqual(budgets["target_count"], 3)
+        # Shutter ledger rebuilt from kept captures only (h0 keys dropped).
+        expected_frozen = {
+            s["exposure_cache_key"]: s["nominal_shutter"] for s in plan["captures"]
+        }
+        self.assertEqual(plan["frozen_shutters"], expected_frozen)
+        self.assertNotIn("ray-c2-h0-s25", plan["frozen_shutters"])
+        self.assertEqual(
+            plan["shutter_ledger_provenance"]["required_cache_keys"],
+            sorted(expected_frozen),
+        )
         recovered = plan["analysis_contract"]["recovered_from"]
         self.assertEqual(recovered["completed_targets_dropped"], [{"hue": 0, "sat": 25}])
         self.assertEqual(recovered["orphan_rows_retained_in_interrupted_root"], [h60_first])
