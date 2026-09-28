@@ -1,0 +1,167 @@
+{
+  "anchor_map": "D:\\rgbww-optimizer\\guide11-c1\\derived\\c3-anchor-self-check-20260925.json",
+  "inversion_caveat": "equivalent hue/SAT from piecewise-linear anchor-map inversion; near-white hue is weakly determined (P6 ambiguity note)",
+  "per_hue_boundary": {
+    "h0": {
+      "boundary_status": "invalid_at_25_white_only_valid",
+      "downward_search_stopped": true,
+      "reachability_boundary_bracket": [
+        0,
+        25
+      ],
+      "s25_valid": false
+    },
+    "h180": {
+      "boundary_status": "invalid_at_25_white_only_valid",
+      "downward_search_stopped": true,
+      "reachability_boundary_bracket": [
+        0,
+        25
+      ],
+      "s25_valid": false
+    },
+    "h240": {
+      "boundary_status": "invalid_at_25_white_only_valid",
+      "downward_search_stopped": true,
+      "reachability_boundary_bracket": [
+        0,
+        25
+      ],
+      "s25_valid": false
+    },
+    "h60": {
+      "boundary_status": "invalid_at_25_white_only_valid",
+      "downward_search_stopped": true,
+      "reachability_boundary_bracket": [
+        0,
+        25
+      ],
+      "s25_valid": false
+    }
+  },
+  "run_roots": [
+    "D:\\rgbww-optimizer\\guide11-c2\\formal-c2s25-20260928-r1",
+    "D:\\rgbww-optimizer\\guide11-c2\\formal-c2s25-20260928-r2-suffix"
+  ],
+  "saturated_frames": 0,
+  "schema": "guide11_c2_s25_analysis_v1",
+  "steady_claim": false,
+  "targets": [
+    {
+      "bracket_root": "formal-c2s25-20260928-r1",
+      "equiv_hue_error_deg": -77.10000000000002,
+      "equiv_sat_error_pp": -5.0,
+      "equivalent": {
+        "equiv_hue": 282.9,
+        "equiv_sat": 20.0,
+        "residual_z": 0.006493691609435309
+      },
+      "frame_classification": "normal",
+      "hue": 0,
+      "orphan_rows": [],
+      "product_layer_valid": false,
+      "ray_bracket_consistent": true,
+      "ray_bracket_z_distance": 0.0006035199928261717,
+      "ray_z_mean": {
+        "log_B_over_G": -0.48346045362490386,
+        "log_R_over_G": -0.09532288265191616
+      },
+      "sat": 25,
+      "saturated_fraction": 0.0,
+      "status": "complete",
+      "strip_z": {
+        "log_B_over_G": -0.29015918894232906,
+        "log_R_over_G": -0.392280451409848
+      },
+      "z_distance_to_paired_ray": 0.3543291923769543
+    },
+    {
+      "bracket_root": "formal-c2s25-20260928-r2-suffix",
+      "equiv_hue_error_deg": 121.39999999999998,
+      "equiv_sat_error_pp": -7.0,
+      "equivalent": {
+        "equiv_hue": 181.4,
+        "equiv_sat": 18.0,
+        "residual_z": 0.006889447415016343
+      },
+      "frame_classification": "normal",
+      "hue": 60,
+      "orphan_rows": [],
+      "product_layer_valid": false,
+      "ray_bracket_consistent": true,
+      "ray_bracket_z_distance": 0.0007544366440128389,
+      "ray_z_mean": {
+        "log_B_over_G": -0.5656301202621996,
+        "log_R_over_G": -0.6856272915137633
+      },
+      "sat": 25,
+      "saturated_fraction": 0.0,
+      "status": "complete",
+      "strip_z": {
+        "log_B_over_G": -0.5348914816359309,
+        "log_R_over_G": -0.7106189313567771
+      },
+      "z_distance_to_paired_ray": 0.03961623362510943
+    },
+    {
+      "bracket_root": "formal-c2s25-20260928-r2-suffix",
+      "equiv_hue_error_deg": 29.599999999999994,
+      "equiv_sat_error_pp": 14.0,
+      "equivalent": {
+        "equiv_hue": 209.6,
+        "equiv_sat": 39.0,
+        "residual_z": 0.008490389025788496
+      },
+      "frame_classification": "normal",
+      "hue": 180,
+      "orphan_rows": [],
+      "product_layer_valid": false,
+      "ray_bracket_consistent": true,
+      "ray_bracket_z_distance": 0.0014523055817257924,
+      "ray_z_mean": {
+        "log_B_over_G": -0.3634902626995179,
+        "log_R_over_G": -0.9948323037156495
+      },
+      "sat": 25,
+      "saturated_fraction": 0.0,
+      "status": "complete",
+      "strip_z": {
+        "log_B_over_G": -0.1438473805774358,
+        "log_R_over_G": -1.0541449047230673
+      },
+      "z_distance_to_paired_ray": 0.22751039603754375
+    },
+    {
+      "bracket_root": "formal-c2s25-20260928-r2-suffix",
+      "equiv_hue_error_deg": 9.400000000000006,
+      "equiv_sat_error_pp": 11.0,
+      "equivalent": {
+        "equiv_hue": 249.4,
+        "equiv_sat": 36.0,
+        "residual_z": 0.002296138140695417
+      },
+      "frame_classification": "normal",
+      "hue": 240,
+      "orphan_rows": [],
+      "product_layer_valid": false,
+      "ray_bracket_consistent": true,
+      "ray_bracket_z_distance": 0.0020526458906711034,
+      "ray_z_mean": {
+        "log_B_over_G": 0.03532830199663209,
+        "log_R_over_G": -0.9234916737839123
+      },
+      "sat": 25,
+      "saturated_fraction": 0.0,
+      "status": "complete",
+      "strip_z": {
+        "log_B_over_G": 0.05564973994852264,
+        "log_R_over_G": -0.8282484712371853
+      },
+      "z_distance_to_paired_ray": 0.09738700360823002
+    }
+  ],
+  "tolerances": {
+    "hue_deg": 2.0,
+    "sat_pp": 2.0
+  }
+}
