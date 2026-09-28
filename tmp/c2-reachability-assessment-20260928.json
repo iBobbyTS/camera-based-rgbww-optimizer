@@ -1,0 +1,207 @@
+{
+  "inputs": {
+    "anchor_self_check": "D:\\rgbww-optimizer\\guide11-c1\\derived\\c3-anchor-self-check-20260925.json",
+    "c1c_confirm_analysis": "D:\\rgbww-optimizer\\guide11-c1\\derived\\c1-confirm-analysis-20260928.json"
+  },
+  "per_hue": {
+    "h0": {
+      "covered_intervals": [],
+      "s_best_tested": 0,
+      "search_upper_request": {
+        "sat": 100,
+        "status": "tested_bounded_best_outside_product_tolerance",
+        "z_distance_confirm_mean": 0.8867732107209537
+      },
+      "valid_tiers": []
+    },
+    "h180": {
+      "covered_intervals": [],
+      "s_best_tested": 0,
+      "search_upper_request": {
+        "sat": 100,
+        "status": "tested_bounded_best_outside_product_tolerance",
+        "z_distance_confirm_mean": 0.5782996719306844
+      },
+      "valid_tiers": []
+    },
+    "h240": {
+      "covered_intervals": [],
+      "s_best_tested": 0,
+      "search_upper_request": {
+        "sat": 100,
+        "status": "tested_bounded_best_outside_product_tolerance",
+        "z_distance_confirm_mean": 0.6379751006065195
+      },
+      "valid_tiers": []
+    },
+    "h60": {
+      "covered_intervals": [],
+      "s_best_tested": 0,
+      "search_upper_request": {
+        "sat": 100,
+        "status": "tested_bounded_best_outside_product_tolerance",
+        "z_distance_confirm_mean": 0.593120542166658
+      },
+      "valid_tiers": []
+    }
+  },
+  "per_node": [
+    {
+      "deg_scale_z_per_deg": 0.017459518611754744,
+      "equiv_hue_error_deg": 11.369584234624538,
+      "equiv_sat_error_pp": -16.55601163731181,
+      "hue": 0,
+      "n_valid_observations": 2,
+      "note": "",
+      "product_layer_valid": false,
+      "radial_z": -0.4746902123432501,
+      "sat": 50,
+      "tangential_z": 0.19850746755234044,
+      "z_offset": {
+        "log_B_over_G": 0.465842254289135,
+        "log_R_over_G": -0.2184651150351934
+      }
+    },
+    {
+      "deg_scale_z_per_deg": 0.034894647323865574,
+      "equiv_hue_error_deg": -11.083773587226823,
+      "equiv_sat_error_pp": 27.831726724120433,
+      "hue": 0,
+      "n_valid_observations": 2,
+      "note": "H0/S100 uses the two patch-validated 1/25 confirms; B1 selection frame exposure-invalid",
+      "product_layer_valid": false,
+      "radial_z": 0.7979849590572753,
+      "sat": 100,
+      "tangential_z": -0.38676437034385636,
+      "z_offset": {
+        "log_B_over_G": -0.8224301900015165,
+        "log_R_over_G": 0.3316251733858433
+      }
+    },
+    {
+      "deg_scale_z_per_deg": 0.014804849735806404,
+      "equiv_hue_error_deg": -6.777442698745527,
+      "equiv_sat_error_pp": -2.042928191608592,
+      "hue": 60,
+      "n_valid_observations": 2,
+      "note": "",
+      "product_layer_valid": false,
+      "radial_z": -0.021955603698404307,
+      "sat": 50,
+      "tangential_z": -0.10033902074796576,
+      "z_offset": {
+        "log_B_over_G": 0.0011843750978047796,
+        "log_R_over_G": -0.10270620659945429
+      }
+    },
+    {
+      "deg_scale_z_per_deg": 0.034894647323865574,
+      "equiv_hue_error_deg": -2.86172322041988,
+      "equiv_sat_error_pp": -54.40093373429939,
+      "hue": 60,
+      "n_valid_observations": 2,
+      "note": "",
+      "product_layer_valid": false,
+      "radial_z": -0.5846536098525138,
+      "sat": 100,
+      "tangential_z": -0.09985882251506854,
+      "z_offset": {
+        "log_B_over_G": 0.5523243258077017,
+        "log_R_over_G": -0.2161699957643035
+      }
+    },
+    {
+      "deg_scale_z_per_deg": 0.009722258534011052,
+      "equiv_hue_error_deg": -42.49999584937347,
+      "equiv_sat_error_pp": 24.818816975743804,
+      "hue": 180,
+      "n_valid_observations": 2,
+      "note": "",
+      "product_layer_valid": false,
+      "radial_z": 0.3986308007634407,
+      "sat": 50,
+      "tangential_z": -0.4131959473420055,
+      "z_offset": {
+        "log_B_over_G": 0.42448191801989893,
+        "log_R_over_G": -0.3865908786964678
+      }
+    },
+    {
+      "deg_scale_z_per_deg": 0.019225105927662876,
+      "equiv_hue_error_deg": -21.5127600784463,
+      "equiv_sat_error_pp": -25.16557469578754,
+      "hue": 180,
+      "n_valid_observations": 2,
+      "note": "",
+      "product_layer_valid": false,
+      "radial_z": -0.4042002969947492,
+      "sat": 100,
+      "tangential_z": -0.4135850913045272,
+      "z_offset": {
+        "log_B_over_G": 0.40179752701378724,
+        "log_R_over_G": 0.41591977005862857
+      }
+    },
+    {
+      "deg_scale_z_per_deg": 0.01518480804744322,
+      "equiv_hue_error_deg": 0.43794804427629797,
+      "equiv_sat_error_pp": 16.88985796147754,
+      "hue": 240,
+      "n_valid_observations": 2,
+      "note": "",
+      "product_layer_valid": false,
+      "radial_z": 0.3252602245533332,
+      "sat": 50,
+      "tangential_z": 0.006650156987088749,
+      "z_offset": {
+        "log_B_over_G": 0.15244325077149928,
+        "log_R_over_G": -0.2874012761952449
+      }
+    },
+    {
+      "deg_scale_z_per_deg": 0.019225105927662876,
+      "equiv_hue_error_deg": 0.33506179517138723,
+      "equiv_sat_error_pp": -33.12658042222484,
+      "hue": 240,
+      "n_valid_observations": 2,
+      "note": "",
+      "product_layer_valid": false,
+      "radial_z": -0.6379425458397591,
+      "sat": 100,
+      "tangential_z": 0.006441598504482801,
+      "z_offset": {
+        "log_B_over_G": -0.316014454969074,
+        "log_R_over_G": 0.5542084898613564
+      }
+    }
+  ],
+  "s25_descent_necessary": true,
+  "s25_targets_if_needed": [
+    {
+      "basis": "S50 invalid at product layer; GUIDE C2 last descent tier",
+      "hue": 0,
+      "sat": 25
+    },
+    {
+      "basis": "S50 invalid at product layer; GUIDE C2 last descent tier",
+      "hue": 60,
+      "sat": 25
+    },
+    {
+      "basis": "S50 invalid at product layer; GUIDE C2 last descent tier",
+      "hue": 180,
+      "sat": 25
+    },
+    {
+      "basis": "S50 invalid at product layer; GUIDE C2 last descent tier",
+      "hue": 240,
+      "sat": 25
+    }
+  ],
+  "schema": "guide11_c2_reachability_assessment_v1",
+  "steady_claim": false,
+  "tolerances": {
+    "hue_deg": 2.0,
+    "sat_pp": 2.0
+  }
+}
