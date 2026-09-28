@@ -4,6 +4,8 @@ Per target: fresh Ray bracket consistency, two independent FAST
 confirmations of the final selected command, three-observation summary
 (selection frame + 2 confirms) with spread, and stability verdict per
 GUIDE11 C1 semantics (selection process flagged; no pass/fail invented).
+Targets may complete in different roots (r1 failure + recovery suffix);
+each target's bracket must come intact from a single root.
 """
 from __future__ import annotations
 
@@ -13,7 +15,10 @@ from pathlib import Path
 
 from camera_based_rgbww_optimizer.measurement.frame_exposure import frame_exposure_profile
 
-RUN = Path("D:/rgbww-optimizer/guide11-c1/formal-c1c-20260928-r1")
+RUNS = [
+    Path("D:/rgbww-optimizer/guide11-c1/formal-c1c-20260928-r1"),
+    Path("D:/rgbww-optimizer/guide11-c1/formal-c1c-20260928-r2-suffix"),
+]
 B1_RUN = Path("D:/rgbww-optimizer/guide11-c1/formal-c1-20260924-r8")
 B2_RUN = Path("D:/rgbww-optimizer/guide11-c1/formal-c1b2-20260926-r6")
 B2_ANALYSIS = Path("D:/rgbww-optimizer/guide11-c1/derived/c1-batch2-analysis-20260927.json")
@@ -57,18 +62,30 @@ def spread(zs: list[dict]) -> dict[str, float]:
 
 
 def main() -> None:
-    rows = [json.loads(l) for l in RUN.joinpath("captures.jsonl").read_text(encoding="utf-8").splitlines() if l.strip()]
+    all_rows = []
+    roots_by_capture = {}
+    for run_root in RUNS:
+        captures = run_root / "captures.jsonl"
+        if not captures.is_file():
+            continue
+        for line in captures.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            row["_root"] = str(run_root)
+            all_rows.append(row)
+            roots_by_capture[row["capture_id"]] = run_root
     b2 = json.loads(B2_ANALYSIS.read_text(encoding="utf-8"))
     selection_by_target = {
         (int(t["hue"]), int(t["sat"])): t for t in b2["targets"]
     }
-    spec = json.loads(RUN.joinpath("experiment-spec.json").read_text(encoding="utf-8"))
+    spec = json.loads(RUNS[0].joinpath("experiment-spec.json").read_text(encoding="utf-8"))
     contract_by_target = {
         (int(t["hue"]), int(t["sat"])): t for t in spec["analysis_contract"]["targets"]
     }
 
     by_target: dict[tuple[int, int], dict[str, list[dict]]] = {}
-    for row in rows:
+    for row in all_rows:
         step = row.get("plan_step", {})
         key = (int(step["c1_hue"]), int(step["c1_sat"]))
         by_target.setdefault(key, {}).setdefault(str(row["source_id"]), []).append(row)
@@ -78,8 +95,16 @@ def main() -> None:
     saturated = 0
     for key in sorted(by_target):
         groups = by_target[key]
+        # A usable bracket must sit in one root; mixed-root brackets are
+        # reported as not certifiable (temporally non-local Ray references).
+        def single_root(rows: list[dict]) -> bool:
+            return len({r["_root"] for r in rows}) == 1
+
         ray_rows = sorted(groups.get("ray", []), key=lambda r: int(r["capture_id"].split("-")[0]))
-        ray_z = [z_of(RUN, r["capture_id"]) for r in ray_rows]
+        strip_rows = sorted(groups.get("strip", []), key=lambda r: int(r["capture_id"].split("-")[0]))
+        bracket_single_root = single_root(ray_rows) and single_root(strip_rows) and len({r["_root"] for r in ray_rows} | {r["_root"] for r in strip_rows}) == 1
+        run_root = Path(ray_rows[0]["_root"]) if ray_rows else Path(strip_rows[0]["_root"])
+        ray_z = [z_of(run_root, r["capture_id"]) for r in ray_rows]
         ray_mean = {
             axis: sum(z[axis] for z in ray_z) / len(ray_z) for axis in ray_z[0]
         } if ray_z else None
@@ -92,14 +117,15 @@ def main() -> None:
         selection_z = z_of(selection_root, selection_capture) if selection_capture else None
 
         confirms = []
-        for row in groups.get("strip", []):
+        for row in strip_rows:
             profile = frame_exposure_profile(str((row.get("capture") or {}).get("saved_file", "")))
             frames_guarded += 1
             if profile["classification"] == "saturated":
                 saturated += 1
-            z = z_of(RUN, row["capture_id"])
+            z = z_of(run_root, row["capture_id"])
             confirms.append({
                 "capture_id": row["capture_id"],
+                "root": row["_root"],
                 "z": z,
                 "z_distance_to_fresh_ray": dist(z, ray_mean) if ray_mean else None,
                 "frame_classification": profile["classification"],
@@ -108,13 +134,11 @@ def main() -> None:
 
         three_obs = ([selection_z] if selection_z else []) + [c["z"] for c in confirms]
         confirm_dist = [c["z_distance_to_fresh_ray"] for c in confirms]
-        # Stability semantics: confirmations repeat the same command under
-        # independent FAST cycles. Reproducibility is about the spread of the
-        # strip observations; distance to Ray is the accuracy figure.
-        strip_obs = [selection_z] + [c["z"] for c in confirms] if selection_z else [c["z"] for c in confirms]
+        strip_obs = [c["z"] for c in confirms] + ([selection_z] if selection_z else [])
         stability = spread(strip_obs) if len(strip_obs) >= 2 else None
         results.append({
             "hue": key[0], "sat": key[1],
+            "bracket_single_root": bracket_single_root,
             "selected_command": contract.get("selected_command"),
             "selection_batch": selection_batch,
             "selection_capture_id": selection_capture,
@@ -135,23 +159,23 @@ def main() -> None:
 
     artifact = {
         "schema": "guide11_c1_confirm_analysis_v1",
-        "run_root": str(RUN),
-        "capture_count": len(rows),
+        "run_roots": [str(r) for r in RUNS],
+        "capture_count": len(all_rows),
         "frames_profiled": frames_guarded,
         "saturated_frames": saturated,
         "targets": results,
-        "note": "z vs fresh paired Ray means; full-frame exposure guard on every confirm frame; spread quantifies command reproducibility",
+        "note": "z vs fresh paired Ray means; full-frame exposure guard on every confirm frame; spread quantifies command reproducibility; brackets must be single-root",
         "steady_claim": False,
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(artifact, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    print(f"{'target':>10} {'bracket':>8} {'sel->ray':>9} {'conf mean':>10} {'3obs sprd':>10} {'frame':>8}")
+    print(f"{'target':>10} {'1root':>6} {'bracket':>8} {'sel->ray':>9} {'conf mean':>10} {'3obs sprd':>10} {'frame':>8}")
     for r in results:
         sel_d = r["selection_z_distance_to_fresh_ray"]
         conf = r["confirm_z_distance_mean"]
         spr = (r["three_observation_spread"] or {}).get("pairwise_max")
         frames = "/".join(c["frame_classification"][:4] for c in r["confirms"])
-        print(f"H{r['hue']:>3}/S{r['sat']:<3} {str(r['ray_bracket_consistent']):>8} {sel_d if sel_d is not None else -1:>9.3f} {conf if conf is not None else -1:>10.3f} {spr if spr is not None else -1:>10.3f} {frames:>8}")
+        print(f"H{r['hue']:>3}/S{r['sat']:<3} {str(r['bracket_single_root']):>6} {str(r['ray_bracket_consistent']):>8} {sel_d if sel_d is not None else -1:>9.3f} {conf if conf is not None else -1:>10.3f} {spr if spr is not None else -1:>10.3f} {frames:>8}")
     print("saturated frames:", saturated, "|", "->", OUT)
 
 

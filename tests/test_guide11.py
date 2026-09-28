@@ -660,15 +660,21 @@ class Guide11ExposureTriageTests(unittest.TestCase):
     def test_batch2_shutter_tiers_follow_exposure_amount(self):
         from camera_based_rgbww_optimizer.optimization import guide11
 
-        # Measured anchors: r4095 normal at 1/400; r1280 saturated 68% at
-        # 1/8 so its tier must move FASTER (1/125), never slower; white-based
-        # commands keep the verified 1/8.
+        # Measured anchors: r4095 and the G9 white anchor (cw4095/ww4095)
+        # both pass at 1/400; mixed white+color tiers on the conservative
+        # brightness proxy max(color)+max(white). Multi-channel dimmed
+        # secants saturate at 1/8 -> 1/125. A single active color channel
+        # keeps 1/8 (r2048-only at 1/125 put block_06 B at 0.2 counts/s;
+        # the same command passed full quality at 1/8 in batch 1).
         cases = {
             "fullscale": ({"cw": 0, "ww": 0, "r": 4095, "g": 1024, "b": 1024}, "1/400"),
             "dimmed_secant": ({"cw": 0, "ww": 0, "r": 1280, "g": 399, "b": 399}, "1/125"),
+            "single_channel_red": ({"cw": 0, "ww": 0, "r": 2048, "g": 0, "b": 0}, "1/8"),
+            "single_channel_blue": ({"cw": 0, "ww": 0, "r": 0, "g": 0, "b": 1600}, "1/8"),
+            "pure_white": ({"cw": 4095, "ww": 4095, "r": 0, "g": 0, "b": 0}, "1/400"),
+            "white_color_mix_low_sat": ({"cw": 3199, "ww": 3076, "r": 242, "g": 1696, "b": 2253}, "1/400"),
             "faint_color": ({"cw": 0, "ww": 0, "r": 500, "g": 100, "b": 100}, "1/30"),
             "very_faint": ({"cw": 0, "ww": 0, "r": 200, "g": 50, "b": 50}, "1/8"),
-            "white_based": ({"cw": 2100, "ww": 2100, "r": 400, "g": 400, "b": 400}, "1/8"),
         }
         for label, (command, expected) in cases.items():
             self.assertEqual(
@@ -794,10 +800,11 @@ class Guide11C1ConfirmPlanTests(unittest.TestCase):
             {"cw": 0, "ww": 0, "r": 1024, "g": 2048, "b": 4095},
         )
 
-        # Exposure-amount shutter tiers: full-scale color keeps 1/400, the
-        # half-scale single-channel r2048 moves to 1/125 (never 1/8).
+        # Exposure-amount shutter tiers: full-scale color keeps 1/400; the
+        # single-channel r2048 keeps the batch-1-validated 1/8 (its blue
+        # plane is red crosstalk and starves at faster shutters).
         self.assertEqual(by_target[(0, 50)][1]["nominal_shutter"], "1/400")
-        self.assertEqual(by_target[(0, 100)][1]["nominal_shutter"], "1/125")
+        self.assertEqual(by_target[(0, 100)][1]["nominal_shutter"], "1/8")
         self.assertEqual(by_target[(60, 100)][1]["nominal_shutter"], "1/400")
 
         contract = {
@@ -820,6 +827,68 @@ class Guide11C1ConfirmPlanTests(unittest.TestCase):
             batch1_root = self._batch1_root(tmp)
             with self.assertRaises(ValueError):
                 guide11.build_guide11_c1_confirm_plan(analysis_path, batch1_root)
+
+    def test_recovery_suffix_skips_complete_targets_and_rebrackets_partial(self):
+        with tempfile.TemporaryDirectory() as tmp_name:
+            tmp = Path(tmp_name)
+            analysis_path = tmp / "batch2-analysis.json"
+            analysis_path.write_text(
+                json.dumps(self._batch2_analysis()), encoding="utf-8"
+            )
+            batch1_root = self._batch1_root(tmp)
+
+            failed = tmp / "failed-run"
+            (failed / "measurements").mkdir(parents=True)
+            rows = []
+            # H0/S50 complete bracket (all four roles, measurements present).
+            for capture_id, role in (
+                ("000-ray-guide11-c1c-h0-s50-ray_q_before", "ray_c1c_h0_s50_ray_q_before"),
+                ("001-strip-guide11-c1c-h0-s50-confirm_1", "strip_c1c_h0_s50_confirm_1"),
+                ("002-strip-guide11-c1c-h0-s50-confirm_2", "strip_c1c_h0_s50_confirm_2"),
+                ("003-ray-guide11-c1c-h0-s50-ray_q_after", "ray_c1c_h0_s50_ray_q_after"),
+                # H0/S100 only its q_before -> partial, must be re-bracketed.
+                ("004-ray-guide11-c1c-h0-s100-ray_q_before", "ray_c1c_h0_s100_ray_q_before"),
+            ):
+                rows.append({
+                    "capture_id": capture_id,
+                    "source_id": role.split("_")[0],
+                    "plan_step": {"c1_hue": int(role.split("_h")[1].split("_")[0]),
+                                   "c1_sat": int(role.split("_s")[1].split("_")[0]),
+                                   "role": role},
+                })
+                (failed / "measurements" / f"{capture_id}.patch-statistics.json").write_text(
+                    "{}", encoding="utf-8"
+                )
+            (failed / "captures.jsonl").write_text(
+                "\n".join(json.dumps(r) for r in rows) + "\n", encoding="utf-8"
+            )
+
+            suffix = guide11.build_guide11_c1_confirm_recovery_suffix(
+                analysis_path, batch1_root, failed
+            )
+
+        self.assertEqual(suffix["variant"], "guide11-c1-best-repeat-confirmation-recovery-suffix")
+        self.assertEqual(len(suffix["captures"]), 28)  # 7 targets x 4
+        target_keys = {(s["c1_hue"], s["c1_sat"]) for s in suffix["captures"]}
+        self.assertNotIn((0, 50), target_keys)   # complete -> kept in failed root
+        self.assertIn((0, 100), target_keys)     # partial -> re-bracketed whole
+        self.assertEqual(
+            suffix["recovery"]["completed_targets_kept_in_failed_root"],
+            [{"hue": 0, "sat": 50}],
+        )
+        # Every bracket in the suffix is complete (ray/strip/strip/ray).
+        by_target = {}
+        for step in suffix["captures"]:
+            by_target.setdefault((step["c1_hue"], step["c1_sat"]), []).append(step)
+        for steps in by_target.values():
+            self.assertEqual([s["source_id"] for s in steps], ["ray", "strip", "strip", "ray"])
+        # Renumbered ids stay unique and carry the suffix marker.
+        ids = [s["capture_id"] for s in suffix["captures"]]
+        self.assertEqual(len(ids), len(set(ids)))
+        self.assertTrue(all("-suffix-" in i for i in ids))
+        # Corrected shutter: the single-channel r2048 keeps 1/8.
+        h0s100 = next(s for s in by_target[(0, 100)] if s["source_id"] == "strip")
+        self.assertEqual(h0s100["nominal_shutter"], "1/8")
 
 
 class Guide11PeriodicHueSatModelTests(unittest.TestCase):

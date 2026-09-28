@@ -1531,23 +1531,32 @@ C1B2_EXPERIMENT_ID = "GUIDE11_C1_BATCH2_V1"
 
 
 def c1_strip_shutter_for_command(command: Mapping[str, int]) -> str:
-    """Exposure-amount shutter tiers for C1/batch2 strip commands.
+    """Exposure-amount shutter tiers for C1/batch2/C4 strip commands.
 
-    Anchored at measured points: full-scale color r4095 is normal at 1/400
-    and r1280 saturates 68 percent at 1/8 -- color LEDs make dimmed secant
-    commands a saturation risk, not a darkness risk. White-based commands
-    were verified at 1/8. Saturated frames read LOW in block trimmed means,
-    so an over-slow shutter misleads the triage twice.
+    Anchored at measured points: full-scale color r4095 normal at 1/400;
+    the G9 white anchor (cw4095/ww4095 plus color) also passed at 1/400, so
+    mixed white+color commands tier on the conservative brightness proxy
+    max(color)+max(white). Multi-channel dimmed secants saturate at 1/8 and
+    take 1/125. A SINGLE active color channel keeps 1/8: its other planes
+    are crosstalk (r2048-only at 1/125 put block_06 B at 0.2 counts/s and
+    was rejected; the same command passed full quality at 1/8 in batch 1).
+    Saturated frames read LOW in block trimmed means, so an over-slow
+    shutter misleads the triage twice.
     """
-    color = max(int(command.get(name, 0)) for name in ("r", "g", "b"))
+    channels = {name: int(command.get(name, 0)) for name in ("r", "g", "b")}
     white = max(int(command.get(name, 0)) for name in ("cw", "ww"))
-    if white > 3 * max(color, 1):
+    color = max(channels.values())
+    if color == 0:
+        return "1/400" if white > 0 else "1/8"
+    active = [value for value in channels.values() if value >= 0.05 * color]
+    if len(active) <= 1 and white == 0:
         return "1/8"
-    if color >= 2500:
+    brightness = color + white
+    if brightness >= 2500:
         return "1/400"
-    if color >= 1000:
+    if brightness >= 1000:
         return "1/125"
-    if color >= 400:
+    if brightness >= 400:
         return "1/30"
     return "1/8"
 C1B2_AUTHORIZATION_SCHEMA = "direct_guide11_c1_batch2_v1"
@@ -1766,6 +1775,139 @@ def build_guide11_c1_batch2_plan(
 
 C1_CONFIRM_EXPERIMENT_ID = "GUIDE11_C1_CONFIRM_V1"
 C1_CONFIRM_AUTHORIZATION_SCHEMA = "direct_guide11_c1_confirm_v1"
+
+
+def c1_confirm_completed_brackets(
+    completed_run_root: Path,
+) -> dict[tuple[int, int], list[str]]:
+    """Map each target to its accepted capture roles in a (failed) run root.
+
+    In this runner a captures.jsonl row is appended only after a capture's
+    post-return processing succeeded (the rejected capture never appears),
+    and its patch-statistics artifact exists. A target counts as complete
+    only when all four bracket roles (ray_q_before, confirm_1, confirm_2,
+    ray_q_after) are present. Partial targets are re-bracketed whole: a Ray
+    bracket must be temporally local, so a q_before stranded hours before
+    the resumed run cannot certify a fresh q_after.
+    """
+    import json as _json
+
+    root = Path(completed_run_root)
+    captures_path = root / "captures.jsonl"
+    if not captures_path.is_file():
+        return {}
+    roles_by_target: dict[tuple[int, int], set[str]] = {}
+    for line in captures_path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        row = _json.loads(line)
+        step = row.get("plan_step") or {}
+        if "c1_hue" not in step:
+            continue
+        capture_id = str(row.get("capture_id"))
+        if not (root / "measurements" / f"{capture_id}.patch-statistics.json").is_file():
+            continue
+        roles_by_target.setdefault(
+            (int(step["c1_hue"]), int(step["c1_sat"])), set()
+        ).add(str(step.get("role", "")).rsplit("_", 1)[-1])
+    complete: dict[tuple[int, int], list[str]] = {}
+    want = {"before", "1", "2", "after"}
+    for key, roles in roles_by_target.items():
+        if want.issubset(roles):
+            complete[key] = sorted(roles)
+    return complete
+
+
+def build_guide11_c1_confirm_recovery_suffix(
+    batch2_analysis_path: Path,
+    batch1_run_root: Path,
+    completed_run_root: Path,
+    *,
+    inputs_references: Mapping[str, Mapping[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """Recovery suffix for an interrupted C1 confirm run.
+
+    Fully completed targets (all four bracket roles accepted in the failed
+    root) keep their evidence there and are skipped. Partial or untouched
+    targets are re-bracketed completely in a fresh root; the failed root is
+    never mutated and its observations remain preserved scientific record.
+    Shutter tiers come from the corrected exposure-amount rule.
+    """
+    from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
+
+    completed = c1_confirm_completed_brackets(completed_run_root)
+    full = build_guide11_c1_confirm_plan(
+        batch2_analysis_path, batch1_run_root, inputs_references=inputs_references
+    )
+    remaining_contracts = [
+        t for t in full["analysis_contract"]["targets"]
+        if (int(t["hue"]), int(t["sat"])) not in completed
+    ]
+    keep_targets = {(int(t["hue"]), int(t["sat"])) for t in remaining_contracts}
+    captures = [
+        dict(step) for step in full["captures"]
+        if (int(step["c1_hue"]), int(step["c1_sat"])) in keep_targets
+    ]
+    for index, step in enumerate(captures):
+        _prefix, rest = step["capture_id"].split("-", 1)
+        step["capture_id"] = f"{index:03d}-suffix-{rest}"
+        step["session_index"] = index + 1
+    frozen = {
+        str(step["exposure_cache_key"]): str(step["nominal_shutter"]) for step in captures
+    }
+    strip_count = sum(s["source_id"] == "strip" for s in captures)
+    analysis_contract = dict(full["analysis_contract"])
+    analysis_contract["targets"] = remaining_contracts
+    analysis_contract["method"] = "guide11_c1_best_repeat_confirmation_recovery_suffix"
+    return {
+        "schema": full["schema"],
+        "status": full["status"],
+        "experiment_id": full["experiment_id"],
+        "guide_experiment_id": full["guide_experiment_id"],
+        "variant": "guide11-c1-best-repeat-confirmation-recovery-suffix",
+        "stage": full["stage"],
+        "phase": full["phase"],
+        "source": "guide11_c1_confirm_recovery_after_engineering_failure",
+        "created_at": thermal.datetime.now(thermal.timezone.utc).isoformat(),
+        "inputs": dict(full["inputs"]),
+        "captures": captures,
+        "capture_ids": [s["capture_id"] for s in captures],
+        "timing_contract": full["timing_contract"],
+        "timing_resolution": full["timing_resolution"],
+        "cold_proxy": full["cold_proxy"],
+        "cold_proxy_wait_s": full["cold_proxy_wait_s"],
+        "native_raw_ambient_policy": full["native_raw_ambient_policy"],
+        "exposure_setup_required": list(full["exposure_setup_required"]),
+        "frozen_shutters": frozen,
+        "shutter_ledger_provenance": {
+            "owner": "experiment_capture_steps",
+            "required_cache_keys": sorted(frozen),
+            "frozen_shutters_sha256": thermal.canonical_sha256(frozen),
+        },
+        "budgets": {
+            "ray_cap": len(captures) - strip_count,
+            "strip_cap": strip_count,
+            "formal_cap": len(captures),
+            "physical_cr3_cap": len(captures),
+            "ambient_cap": 0, "retry": 0,
+            "confirmations_per_target": 2,
+        },
+        "execution_authorization": dict(full["execution_authorization"]),
+        "camera": dict(full["camera"]),
+        "analysis_contract": analysis_contract,
+        "recovery": {
+            "completed_run_root": str(Path(completed_run_root)),
+            "completed_targets_kept_in_failed_root": [
+                {"hue": hue, "sat": sat} for (hue, sat) in sorted(completed)
+            ],
+            "reason": (
+                "captures.jsonl rows are appended only after accepted "
+                "post-processing; full brackets stay in the failed root, partial "
+                "brackets are re-acquired whole (temporal locality of Ray "
+                "references)"
+            ),
+        },
+    }
 
 
 def build_guide11_c1_confirm_plan(
