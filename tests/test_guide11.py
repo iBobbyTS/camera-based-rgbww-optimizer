@@ -1227,3 +1227,37 @@ class Guide11C5IntSeparabilityPlanTests(unittest.TestCase):
         self.assertIn(
             "direct_guide11_c5_int_separability_v1", runner.GUIDE9_CANDIDATE_BATCH_SCHEMAS
         )
+
+
+class Guide11PlanAuthorizationScopeTests(unittest.TestCase):
+    def test_c4_c2_c5_plans_pass_runner_scope_validation(self):
+        from camera_based_rgbww_optimizer.optimization import (
+            measure_p7_thermal_diagnostics as runner,
+        )
+
+        anchors = Guide11PeriodicHueSatModelTests._anchors()
+        model = guide11.fit_periodic_hue_sat_command_model(
+            anchors, white_layer={"r": 0, "g": 0, "b": 0, "cw": 1200, "ww": 1200}
+        )
+        plans = {
+            "c4": guide11.build_guide11_c4_holdout_plan(model),
+            "c2_s25": guide11.build_guide11_c2_s25_plan(model),
+            "c5": guide11.build_guide11_c5_int_plan(model),
+        }
+        # The C2 descent tier masqueraded as C4 authorization once and was
+        # rejected by the runner's bounded-scope check at launch time.
+        self.assertEqual(
+            plans["c2_s25"]["execution_authorization"]["schema"],
+            "direct_guide11_c2_sat_reachability_s25_v1",
+        )
+        self.assertIn(
+            "direct_guide11_c2_sat_reachability_s25_v1",
+            runner.GUIDE9_CANDIDATE_BATCH_SCHEMAS,
+        )
+        for label, plan in plans.items():
+            runner.validate_authorized_execution_plan(plan)
+            self.assertEqual(
+                plan["execution_authorization"]["experiment_id"],
+                plan["guide_experiment_id"],
+                label,
+            )

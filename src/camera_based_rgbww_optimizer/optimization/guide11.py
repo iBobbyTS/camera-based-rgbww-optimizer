@@ -2484,6 +2484,7 @@ def build_guide11_c4_holdout_plan(
 
 
 C2_S25_EXPERIMENT_ID = "GUIDE11_C2_SAT_REACHABILITY_S25_V1"
+C2_S25_AUTHORIZATION_SCHEMA = "direct_guide11_c2_sat_reachability_s25_v1"
 C2_S25_TARGETS: tuple[tuple[int, int], ...] = ((0, 25), (60, 25), (180, 25), (240, 25))
 
 
@@ -2510,6 +2511,11 @@ def build_guide11_c2_s25_plan(
         inputs_references=inputs_references,
     )
     plan["guide_experiment_id"] = C2_S25_EXPERIMENT_ID
+    plan["execution_authorization"] = {
+        **plan["execution_authorization"],
+        "schema": C2_S25_AUTHORIZATION_SCHEMA,
+        "experiment_id": C2_S25_EXPERIMENT_ID,
+    }
     plan["variant"] = "guide11-c2-sat-reachability-s25"
     plan["stage"] = "GUIDE11-C2-SAT-REACHABILITY-S25"
     plan["analysis_contract"]["method"] = "guide11_c2_sat_reachability"
