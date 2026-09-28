@@ -664,13 +664,14 @@ class Guide11ExposureTriageTests(unittest.TestCase):
         # both pass at 1/400; mixed white+color tiers on the conservative
         # brightness proxy max(color)+max(white). Multi-channel dimmed
         # secants saturate at 1/8 -> 1/125. A single active color channel
-        # keeps 1/8 (r2048-only at 1/125 put block_06 B at 0.2 counts/s;
-        # the same command passed full quality at 1/8 in batch 1).
+        # is an extreme-dynamic-range target: r2048 sat at the sensor cap
+        # in block_06 R at 1/8 and starved B below the near-noise floor at
+        # 1/125; the measured in-window legal shutter is 1/25.
         cases = {
             "fullscale": ({"cw": 0, "ww": 0, "r": 4095, "g": 1024, "b": 1024}, "1/400"),
             "dimmed_secant": ({"cw": 0, "ww": 0, "r": 1280, "g": 399, "b": 399}, "1/125"),
-            "single_channel_red": ({"cw": 0, "ww": 0, "r": 2048, "g": 0, "b": 0}, "1/8"),
-            "single_channel_blue": ({"cw": 0, "ww": 0, "r": 0, "g": 0, "b": 1600}, "1/8"),
+            "single_channel_red": ({"cw": 0, "ww": 0, "r": 2048, "g": 0, "b": 0}, "1/25"),
+            "single_channel_blue": ({"cw": 0, "ww": 0, "r": 0, "g": 0, "b": 1600}, "1/25"),
             "pure_white": ({"cw": 4095, "ww": 4095, "r": 0, "g": 0, "b": 0}, "1/400"),
             "white_color_mix_low_sat": ({"cw": 3199, "ww": 3076, "r": 242, "g": 1696, "b": 2253}, "1/400"),
             "faint_color": ({"cw": 0, "ww": 0, "r": 500, "g": 100, "b": 100}, "1/30"),
@@ -801,10 +802,10 @@ class Guide11C1ConfirmPlanTests(unittest.TestCase):
         )
 
         # Exposure-amount shutter tiers: full-scale color keeps 1/400; the
-        # single-channel r2048 keeps the batch-1-validated 1/8 (its blue
-        # plane is red crosstalk and starves at faster shutters).
+        # single-channel r2048 takes the measured in-window 1/25 (R sat at
+        # the cap at 1/8, B starved at 1/125).
         self.assertEqual(by_target[(0, 50)][1]["nominal_shutter"], "1/400")
-        self.assertEqual(by_target[(0, 100)][1]["nominal_shutter"], "1/8")
+        self.assertEqual(by_target[(0, 100)][1]["nominal_shutter"], "1/25")
         self.assertEqual(by_target[(60, 100)][1]["nominal_shutter"], "1/400")
 
         contract = {
@@ -873,9 +874,10 @@ class Guide11C1ConfirmPlanTests(unittest.TestCase):
         self.assertNotIn((0, 50), target_keys)   # complete -> kept in failed root
         self.assertIn((0, 100), target_keys)     # partial -> re-bracketed whole
         self.assertEqual(
-            suffix["recovery"]["completed_targets_kept_in_failed_root"],
+            suffix["recovery"]["completed_targets_kept_in_prior_roots"],
             [{"hue": 0, "sat": 50}],
         )
+        self.assertEqual(len(suffix["recovery"]["completed_run_roots"]), 1)
         # Every bracket in the suffix is complete (ray/strip/strip/ray).
         by_target = {}
         for step in suffix["captures"]:
@@ -886,9 +888,9 @@ class Guide11C1ConfirmPlanTests(unittest.TestCase):
         ids = [s["capture_id"] for s in suffix["captures"]]
         self.assertEqual(len(ids), len(set(ids)))
         self.assertTrue(all("-suffix-" in i for i in ids))
-        # Corrected shutter: the single-channel r2048 keeps 1/8.
+        # Corrected shutter: the single-channel r2048 takes 1/25.
         h0s100 = next(s for s in by_target[(0, 100)] if s["source_id"] == "strip")
-        self.assertEqual(h0s100["nominal_shutter"], "1/8")
+        self.assertEqual(h0s100["nominal_shutter"], "1/25")
 
 
 class Guide11PeriodicHueSatModelTests(unittest.TestCase):

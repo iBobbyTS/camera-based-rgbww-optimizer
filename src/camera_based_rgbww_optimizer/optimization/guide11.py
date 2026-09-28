@@ -1537,11 +1537,14 @@ def c1_strip_shutter_for_command(command: Mapping[str, int]) -> str:
     the G9 white anchor (cw4095/ww4095 plus color) also passed at 1/400, so
     mixed white+color commands tier on the conservative brightness proxy
     max(color)+max(white). Multi-channel dimmed secants saturate at 1/8 and
-    take 1/125. A SINGLE active color channel keeps 1/8: its other planes
-    are crosstalk (r2048-only at 1/125 put block_06 B at 0.2 counts/s and
-    was rejected; the same command passed full quality at 1/8 in batch 1).
-    Saturated frames read LOW in block trimmed means, so an over-slow
-    shutter misleads the triage twice.
+    take 1/125. A SINGLE active color channel is an extreme dynamic-range
+    target measured on r2048 (2026-09-28, r1/r2 confirm attempts): block_06
+    R sat exactly at the sensor cap at 1/8 (batch-1 passed with zero
+    clipped pixels; +0.6 percent ambient tipped it over) while its B plane
+    fell below the near-noise floor at 1/125. The measured in-window point
+    is 1/25 (R 0.655 of scale, B five times above the failed noise level),
+    a legal camera shutter. Saturated frames read LOW in block trimmed
+    means, so an over-slow shutter misleads the triage twice.
     """
     channels = {name: int(command.get(name, 0)) for name in ("r", "g", "b")}
     white = max(int(command.get(name, 0)) for name in ("cw", "ww"))
@@ -1550,7 +1553,7 @@ def c1_strip_shutter_for_command(command: Mapping[str, int]) -> str:
         return "1/400" if white > 0 else "1/8"
     active = [value for value in channels.values() if value >= 0.05 * color]
     if len(active) <= 1 and white == 0:
-        return "1/8"
+        return "1/25"
     brightness = color + white
     if brightness >= 2500:
         return "1/400"
@@ -1821,21 +1824,27 @@ def c1_confirm_completed_brackets(
 def build_guide11_c1_confirm_recovery_suffix(
     batch2_analysis_path: Path,
     batch1_run_root: Path,
-    completed_run_root: Path,
+    completed_run_roots: Sequence[Path] | Path,
     *,
     inputs_references: Mapping[str, Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Recovery suffix for an interrupted C1 confirm run.
 
-    Fully completed targets (all four bracket roles accepted in the failed
-    root) keep their evidence there and are skipped. Partial or untouched
-    targets are re-bracketed completely in a fresh root; the failed root is
-    never mutated and its observations remain preserved scientific record.
-    Shutter tiers come from the corrected exposure-amount rule.
+    Fully completed targets (all four bracket roles accepted in ANY prior
+    root of the failure chain) keep their evidence there and are skipped.
+    Partial or untouched targets are re-bracketed completely in a fresh
+    root; failed roots are never mutated and their observations remain
+    preserved scientific record. Shutter tiers come from the corrected
+    exposure-amount rule.
     """
     from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
 
-    completed = c1_confirm_completed_brackets(completed_run_root)
+    roots = [Path(completed_run_roots)] if isinstance(completed_run_roots, (str, Path)) \
+        else [Path(root) for root in completed_run_roots]
+    completed: dict[tuple[int, int], list[str]] = {}
+    for root in roots:
+        for key, roles in c1_confirm_completed_brackets(root).items():
+            completed.setdefault(key, roles)
     full = build_guide11_c1_confirm_plan(
         batch2_analysis_path, batch1_run_root, inputs_references=inputs_references
     )
@@ -1896,8 +1905,8 @@ def build_guide11_c1_confirm_recovery_suffix(
         "camera": dict(full["camera"]),
         "analysis_contract": analysis_contract,
         "recovery": {
-            "completed_run_root": str(Path(completed_run_root)),
-            "completed_targets_kept_in_failed_root": [
+            "completed_run_roots": [str(root) for root in roots],
+            "completed_targets_kept_in_prior_roots": [
                 {"hue": hue, "sat": sat} for (hue, sat) in sorted(completed)
             ],
             "reason": (

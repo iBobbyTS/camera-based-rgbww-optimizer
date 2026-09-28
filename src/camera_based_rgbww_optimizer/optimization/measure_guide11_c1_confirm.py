@@ -30,9 +30,11 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--resume-from",
         type=Path,
+        action="append",
         default=None,
-        help="Failed run root whose fully completed targets are kept; "
-        "partial/untouched targets are re-bracketed in this run.",
+        help="Prior (failed) run root whose fully completed targets are kept; "
+        "repeatable to chain multiple failed roots. Partial/untouched "
+        "targets are re-bracketed in this run.",
     )
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--dry-run", action="store_true")
