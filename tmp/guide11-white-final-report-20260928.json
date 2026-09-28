@@ -1,0 +1,3621 @@
+{
+  "schema": "guide11_white_final_report_v1",
+  "stage": "GUIDE11-W8-RECOMPUTE",
+  "created_from_real_inputs": {
+    "lut": "guide11-w3/frozen-lut-20260923.json (70 nodes; 9 W2-selected, 61 W6 fallback)",
+    "targets": "guide11-n1/derived/w1-frozen-targets-20260922.json",
+    "w2_selection": "guide11-w2/derived/w2-selection-20260923.json (25 nodes, 49 observations)",
+    "n1_repeatability": "guide11-n1/derived/n1-combined-analysis-20260922.json (36 observations, 6 anchors)",
+    "w3_holdout": "guide11-w3/derived/w3-holdout-analysis-20260924.json (20 non-node points, 2 within tolerance)",
+    "w4_protocol": "guide11-w4/derived/w4-protocol-analysis-20260924.json (4 anchors, FAST and true LONG)"
+  },
+  "node_count": 70,
+  "identity_counts": {
+    "w6_single_observation": 61,
+    "w2_selection_frame": 9
+  },
+  "within_tolerance_point_estimate": 45,
+  "uncertainty_scope": "FAST direct observer reset600/D120 unless a protocol_deviation block is present; conditional intervals are N1 co-located cycle CIs; prediction intervals are Student-t df=1 from n=2 cycles and are wide by construction",
+  "true_LONG_observations": 8,
+  "fast_long_method": "Delta_protocol=(strip-Ray)_LONG-(strip-Ray)_FAST at 4 anchors; both sides protocol-verified by timing labels (reset1800/D600 observed 604.6-605.9 s exposure-start elapsed; FAST reset600/D120)",
+  "fast_long_bias_field_replaced": "the GUIDE10 artifact's thermal_bias scalar is not carried over; only the measured per-anchor delta_protocol blocks above",
+  "closed_routes": [
+    "1800/GM100 active search (GUIDE10 permanent closure; repeat-only)",
+    "H120/S100 and H300/S100 color routes (GUIDE11 C1; not reopened)"
+  ],
+  "steady_claim": false,
+  "nodes": [
+    {
+      "cct": 1800,
+      "gm": 0,
+      "command": {
+        "b": 82,
+        "cw": 105,
+        "g": 12,
+        "r": 4095,
+        "ww": 4090
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 1891.8491676530577,
+        "duv": 0.004606341184586042,
+        "mired": 528.5833654701736,
+        "capture_id": "000-ray-guide10-white70-w6-cct1800-gm0"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -7.546391226515198,
+        "e_mired": 2.1169086632833114,
+        "e_duv": -1.5434213390294084e-05,
+        "E_normalized": 2.1169086632833114,
+        "within_tolerance_point_estimate": false,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 1800,
+      "gm": 70,
+      "command": {
+        "b": 21,
+        "cw": 39,
+        "g": 1170,
+        "r": 4095,
+        "ww": 25
+      },
+      "command_source": "w2_selected_E_within",
+      "ray_target": {
+        "cct_K": 1907.1427159182056,
+        "duv": -0.0026113995798770972,
+        "mired": 524.3446081163065,
+        "capture_id": "003-ray-guide10-white70-w6-cct1800-gm70"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w2_selection_frame",
+        "e_cct_K": 0.11093823959559813,
+        "e_mired": 0.7636369294269798,
+        "e_duv": 0.5486911309585821,
+        "E_normalized": 0.7636369294269798,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "selection frame only; not an independent confirmation"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 1800,
+      "gm": 100,
+      "command": {
+        "b": 0,
+        "cw": 0,
+        "g": 1197,
+        "r": 4095,
+        "ww": 0
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 1902.3004169195924,
+        "duv": -0.0051598029644903,
+        "mired": 525.6793254660095,
+        "capture_id": "004-ray-guide10-white70-w6-cct1800-gm100"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -6.174865291387505,
+        "e_mired": 1.711911438793095,
+        "e_duv": 0.00039091347695126375,
+        "E_normalized": 1.711911438793095,
+        "within_tolerance_point_estimate": false,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": true,
+        "source": "n1_colocated_repeatability",
+        "cycles_n": 2,
+        "components": {
+          "cct_K_diff": {
+            "status": "ok",
+            "conditional_ci": [
+              -14.567871797563843,
+              2.2612435806322573
+            ],
+            "prediction_interval": [
+              -20.727755549202975,
+              8.421127332271391
+            ],
+            "note": "Student-t df=1; normality not verified; n=2 cycles"
+          },
+          "mired_diff": {
+            "status": "ok",
+            "conditional_ci": [
+              -0.6732967976582258,
+              4.094157638294805
+            ],
+            "prediction_interval": [
+              -2.4183062326018465,
+              5.839167073238425
+            ],
+            "note": "Student-t df=1; normality not verified; n=2 cycles"
+          },
+          "duv_diff": {
+            "status": "ok",
+            "conditional_ci": [
+              0.0004018245134514355,
+              0.0004040508951814838
+            ],
+            "prediction_interval": [
+              0.00040100960117971633,
+              0.000404865807453203
+            ],
+            "note": "Student-t df=1; normality not verified; n=2 cycles"
+          }
+        },
+        "burst_layer_available": true,
+        "burst_layer_note": "same-dwell adjacent RAWs quantify combined short-term noise; not separable into camera vs LED share"
+      },
+      "protocol_deviation": {
+        "delta_protocol": {
+          "cct_K": 4.660264568166667,
+          "duv": -6.326846411557757e-05,
+          "mired": -1.2892746435156823
+        },
+        "fast_strip_minus_ray": {
+          "cct_K": -4.122204920764489,
+          "duv": 0.0003755411687036041,
+          "mired": 1.1413639309818109
+        },
+        "long_strip_minus_ray": {
+          "cct_K": 0.5380596474021786,
+          "duv": 0.00031227270458802654,
+          "mired": -0.14791071253387145
+        },
+        "interpretation": "difference-in-differences; not a proven physical temperature causation"
+      },
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": "1800/GM100 active search permanently closed in GUIDE10; repeat observation only"
+    },
+    {
+      "cct": 1800,
+      "gm": 130,
+      "command": {
+        "b": 0,
+        "cw": 25,
+        "g": 905,
+        "r": 4095,
+        "ww": 755
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 1866.5452063479859,
+        "duv": -0.0024678724059167393,
+        "mired": 535.7491458546367,
+        "capture_id": "007-ray-guide10-white70-w6-cct1800-gm130"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -1.7392061069742795,
+        "e_mired": 0.4996649443191927,
+        "e_duv": -4.9312977773502496e-05,
+        "E_normalized": 0.4996649443191927,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 1800,
+      "gm": 200,
+      "command": {
+        "b": 0,
+        "cw": 1,
+        "g": 900,
+        "r": 4095,
+        "ww": 788
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 1867.5175335243155,
+        "duv": -0.0024831313780100113,
+        "mired": 535.4702068648502,
+        "capture_id": "008-ray-guide10-white70-w6-cct1800-gm200"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -8.697241859061933,
+        "e_mired": 2.5054137391912263,
+        "e_duv": -0.00033691294628568607,
+        "E_normalized": 2.5054137391912263,
+        "within_tolerance_point_estimate": false,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 2000,
+      "gm": 0,
+      "command": {
+        "b": 0,
+        "cw": 30,
+        "g": 88,
+        "r": 3059,
+        "ww": 4095
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 2103.440307502428,
+        "duv": 0.006916024626315405,
+        "mired": 475.4116370373138,
+        "capture_id": "011-ray-guide10-white70-w6-cct2000-gm0"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -45.905983862005996,
+        "e_mired": 10.606986569745686,
+        "e_duv": -0.007894356443096643,
+        "E_normalized": 15.788712886193284,
+        "within_tolerance_point_estimate": false,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 2000,
+      "gm": 70,
+      "command": {
+        "b": 0,
+        "cw": 0,
+        "g": 484,
+        "r": 3013,
+        "ww": 4095
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 2133.9365454531485,
+        "duv": -0.002550424202329903,
+        "mired": 468.61749574078675,
+        "capture_id": "012-ray-guide10-white70-w6-cct2000-gm70"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": 128.4793716004533,
+        "e_mired": -26.61211889463908,
+        "e_duv": -0.0019104238656452413,
+        "E_normalized": 26.61211889463908,
+        "within_tolerance_point_estimate": false,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": {
+        "identity": "w2_no_remeasurement_of_shipped_command",
+        "w2_best_tested_E": 14.176613282398534,
+        "note": "W2 probed new candidates only; the shipped fallback command was not re-measured. Freeze kept it because a selection frame cannot certify a command change; only within-tolerance selections were adopted."
+      },
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 2000,
+      "gm": 100,
+      "command": {
+        "b": 11,
+        "cw": 40,
+        "g": 1435,
+        "r": 4095,
+        "ww": 25
+      },
+      "command_source": "w2_selected_E_within",
+      "ray_target": {
+        "cct_K": 2141.988286640099,
+        "duv": -0.006488512823079141,
+        "mired": 466.8559609952815,
+        "capture_id": "015-ray-guide10-white70-w6-cct2000-gm100"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w2_selection_frame",
+        "e_cct_K": 0.15724155927053288,
+        "e_mired": 0.8583628822619858,
+        "e_duv": 0.8185440891656844,
+        "E_normalized": 0.8583628822619858,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "selection frame only; not an independent confirmation"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 2000,
+      "gm": 130,
+      "command": {
+        "b": 0,
+        "cw": 0,
+        "g": 1463,
+        "r": 4095,
+        "ww": 0
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 2143.005960146723,
+        "duv": -0.007794645681416093,
+        "mired": 466.63425981864003,
+        "capture_id": "016-ray-guide10-white70-w6-cct2000-gm130"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -8.306711292963882,
+        "e_mired": 1.815804300207958,
+        "e_duv": 0.00015297268094116318,
+        "E_normalized": 1.815804300207958,
+        "within_tolerance_point_estimate": false,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 2000,
+      "gm": 200,
+      "command": {
+        "b": 0,
+        "cw": 0,
+        "g": 1718,
+        "r": 4095,
+        "ww": 0
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 2142.312698979217,
+        "duv": -0.007803552523483421,
+        "mired": 466.78526457714895,
+        "capture_id": "019-ray-guide10-white70-w6-cct2000-gm200"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": 213.97397591071785,
+        "e_mired": -42.388687260549204,
+        "e_duv": -0.003012746134788695,
+        "E_normalized": 42.388687260549204,
+        "within_tolerance_point_estimate": false,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": {
+        "identity": "w2_no_remeasurement_of_shipped_command",
+        "w2_best_tested_E": 23.75613670900384,
+        "note": "W2 probed new candidates only; the shipped fallback command was not re-measured. Freeze kept it because a selection frame cannot certify a command change; only within-tolerance selections were adopted."
+      },
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 2300,
+      "gm": 0,
+      "command": {
+        "b": 352,
+        "cw": 314,
+        "g": 25,
+        "r": 1924,
+        "ww": 4095
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 2424.9837840924756,
+        "duv": 0.010214019488903837,
+        "mired": 412.37389155335705,
+        "capture_id": "020-ray-guide10-white70-w6-cct2300-gm0"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -5.067486900952645,
+        "e_mired": 0.863541972987548,
+        "e_duv": -2.098064629522077e-05,
+        "E_normalized": 0.863541972987548,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 2300,
+      "gm": 70,
+      "command": {
+        "b": 152,
+        "cw": 80,
+        "g": 1701,
+        "r": 4095,
+        "ww": 45
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 2438.2512993585383,
+        "duv": -0.0019206967762760907,
+        "mired": 410.12999778287116,
+        "capture_id": "023-ray-guide10-white70-w6-cct2300-gm70"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 12.5,
+        "duv": 0.00025,
+        "mired": 0.5
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -4.257158187123423,
+        "e_mired": 0.7173346263709277,
+        "e_duv": 5.1100007432096275e-05,
+        "E_normalized": 1.4346692527418554,
+        "within_tolerance_point_estimate": false,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 2300,
+      "gm": 100,
+      "command": {
+        "b": 0,
+        "cw": 0,
+        "g": 371,
+        "r": 2015,
+        "ww": 4095
+      },
+      "command_source": "w2_selected_E_within",
+      "ray_target": {
+        "cct_K": 2447.1288547253143,
+        "duv": -0.006836496576483811,
+        "mired": 408.6421514212614,
+        "capture_id": "024-ray-guide10-white70-w6-cct2300-gm100"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w2_selection_frame",
+        "e_cct_K": 0.1695799513181919,
+        "e_mired": 0.7091757550952593,
+        "e_duv": 0.072438903347561,
+        "E_normalized": 0.7091757550952593,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "selection frame only; not an independent confirmation"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 2300,
+      "gm": 130,
+      "command": {
+        "b": 0,
+        "cw": 0,
+        "g": 1303,
+        "r": 4095,
+        "ww": 4095
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 2438.218529041246,
+        "duv": -0.008238723274366526,
+        "mired": 410.1355100411033,
+        "capture_id": "027-ray-guide10-white70-w6-cct2300-gm130"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 12.5,
+        "duv": 0.00025,
+        "mired": 0.5
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": 20.711192730865605,
+        "e_mired": -3.4545093009455172,
+        "e_duv": 2.519084448975896e-05,
+        "E_normalized": 6.9090186018910345,
+        "within_tolerance_point_estimate": false,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": {
+        "identity": "w2_no_remeasurement_of_shipped_command",
+        "w2_best_tested_E": 2.4942897875795325,
+        "note": "W2 probed new candidates only; the shipped fallback command was not re-measured. Freeze kept it because a selection frame cannot certify a command change; only within-tolerance selections were adopted."
+      },
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 2300,
+      "gm": 200,
+      "command": {
+        "b": 0,
+        "cw": 0,
+        "g": 1288,
+        "r": 4095,
+        "ww": 4095
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 2439.181830738055,
+        "duv": -0.008244476401107703,
+        "mired": 409.97353596120263,
+        "capture_id": "028-ray-guide10-white70-w6-cct2300-gm200"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 12.5,
+        "duv": 0.00025,
+        "mired": 0.5
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": 13.606378416806365,
+        "e_mired": -2.2742506060424716,
+        "e_duv": 0.0001405042682286889,
+        "E_normalized": 4.548501212084943,
+        "within_tolerance_point_estimate": false,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": {
+        "identity": "w2_no_remeasurement_of_shipped_command",
+        "w2_best_tested_E": 1.515606254927775,
+        "note": "W2 probed new candidates only; the shipped fallback command was not re-measured. Freeze kept it because a selection frame cannot certify a command change; only within-tolerance selections were adopted."
+      },
+      "interval_evidence": {
+        "applicable": true,
+        "source": "n1_colocated_repeatability",
+        "cycles_n": 2,
+        "components": {
+          "cct_K_diff": {
+            "status": "ok",
+            "conditional_ci": [
+              4.673718840199493,
+              23.615797226779613
+            ],
+            "prediction_interval": [
+              -2.2595630497649815,
+              30.549079116744085
+            ],
+            "note": "Student-t df=1; normality not verified; n=2 cycles"
+          },
+          "mired_diff": {
+            "status": "ok",
+            "conditional_ci": [
+              -3.980384206306853,
+              -0.7591062429369644
+            ],
+            "prediction_interval": [
+              -5.15945377355123,
+              0.419963324307413
+            ],
+            "note": "Student-t df=1; normality not verified; n=2 cycles"
+          },
+          "duv_diff": {
+            "status": "ok",
+            "conditional_ci": [
+              -0.00010219341002086686,
+              0.0003488998720963482
+            ],
+            "prediction_interval": [
+              -0.0002673050107522682,
+              0.0005140114728277496
+            ],
+            "note": "Student-t df=1; normality not verified; n=2 cycles"
+          }
+        },
+        "burst_layer_available": false,
+        "burst_layer_note": "no burst at this anchor"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 2700,
+      "gm": 0,
+      "command": {
+        "b": 601,
+        "cw": 195,
+        "g": 27,
+        "r": 963,
+        "ww": 4095
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 2816.9246307147273,
+        "duv": 0.014569297947851893,
+        "mired": 354.9970734383028,
+        "capture_id": "031-ray-guide10-white70-w6-cct2700-gm0"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": 0.8360158337368375,
+        "e_mired": -0.1053258993762256,
+        "e_duv": -6.214835386328214e-05,
+        "E_normalized": 0.12429670772656429,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 2700,
+      "gm": 70,
+      "command": {
+        "b": 203,
+        "cw": 317,
+        "g": 66,
+        "r": 677,
+        "ww": 4095
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 2838.9811495835165,
+        "duv": -0.0009627123704781633,
+        "mired": 352.2390418642624,
+        "capture_id": "032-ray-guide10-white70-w6-cct2700-gm70"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -1.1752473190899764,
+        "e_mired": 0.14587607605557196,
+        "e_duv": -0.00014953742779292547,
+        "E_normalized": 0.29907485558585095,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 2700,
+      "gm": 100,
+      "command": {
+        "b": 17,
+        "cw": 1386,
+        "g": 1601,
+        "r": 3903,
+        "ww": 4095
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 2840.9912851851695,
+        "duv": -0.007344478912394043,
+        "mired": 351.9898160950614,
+        "capture_id": "035-ray-guide10-white70-w6-cct2700-gm100"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 12.5,
+        "duv": 0.00025,
+        "mired": 0.5
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -9.170482245950552,
+        "e_mired": 1.1398731006936487,
+        "e_duv": 0.0001030636215800856,
+        "E_normalized": 2.2797462013872973,
+        "within_tolerance_point_estimate": false,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": {
+        "identity": "w2_no_remeasurement_of_shipped_command",
+        "w2_best_tested_E": 1.9971507871439371,
+        "note": "W2 probed new candidates only; the shipped fallback command was not re-measured. Freeze kept it because a selection frame cannot certify a command change; only within-tolerance selections were adopted."
+      },
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 2700,
+      "gm": 130,
+      "command": {
+        "b": 20,
+        "cw": 29,
+        "g": 20,
+        "r": 166,
+        "ww": 4095
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 2842.560349210892,
+        "duv": -0.010778508016690152,
+        "mired": 351.79552134314565,
+        "capture_id": "036-ray-guide10-white70-w6-cct2700-gm130"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": 1.4732128678592744,
+        "e_mired": -0.1822305108520368,
+        "e_duv": 1.3233531453207478e-05,
+        "E_normalized": 0.1822305108520368,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 2700,
+      "gm": 200,
+      "command": {
+        "b": 5,
+        "cw": 16,
+        "g": 24,
+        "r": 149,
+        "ww": 4095
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 2840.3347899403034,
+        "duv": -0.01188013391463943,
+        "mired": 352.0711725750532,
+        "capture_id": "039-ray-guide10-white70-w6-cct2700-gm200"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": 1.808644661813105,
+        "e_mired": -0.22404627405632027,
+        "e_duv": 9.568165496713285e-05,
+        "E_normalized": 0.22404627405632027,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 3200,
+      "gm": 0,
+      "command": {
+        "b": 580,
+        "cw": 24,
+        "g": 10,
+        "r": 157,
+        "ww": 4095
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 3290.9363055364884,
+        "duv": 0.018279611557555035,
+        "mired": 303.8648904622236,
+        "capture_id": "040-ray-guide10-white70-w6-cct3200-gm0"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -182.24178980023316,
+        "e_mired": 17.813548811235364,
+        "e_duv": -0.008402860502681254,
+        "E_normalized": 17.813548811235364,
+        "within_tolerance_point_estimate": false,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": {
+        "identity": "w2_no_remeasurement_of_shipped_command",
+        "w2_best_tested_E": 10.214921226606293,
+        "note": "W2 probed new candidates only; the shipped fallback command was not re-measured. Freeze kept it because a selection frame cannot certify a command change; only within-tolerance selections were adopted."
+      },
+      "interval_evidence": {
+        "applicable": true,
+        "source": "n1_colocated_repeatability",
+        "cycles_n": 2,
+        "components": {
+          "cct_K_diff": {
+            "status": "ok",
+            "conditional_ci": [
+              -201.78966797062222,
+              -157.90045218972645
+            ],
+            "prediction_interval": [
+              -217.85423589860696,
+              -141.8358842617417
+            ],
+            "note": "Student-t df=1; normality not verified; n=2 cycles"
+          },
+          "mired_diff": {
+            "status": "ok",
+            "conditional_ci": [
+              15.821359202011058,
+              19.40958605053654
+            ],
+            "prediction_interval": [
+              14.507977020909355,
+              20.722968231638244
+            ],
+            "note": "Student-t df=1; normality not verified; n=2 cycles"
+          },
+          "duv_diff": {
+            "status": "ok",
+            "conditional_ci": [
+              -0.00853552831550764,
+              -0.00824893457825619
+            ],
+            "prediction_interval": [
+              -0.008640428903907192,
+              -0.008144033989856638
+            ],
+            "note": "Student-t df=1; normality not verified; n=2 cycles"
+          }
+        },
+        "burst_layer_available": false,
+        "burst_layer_note": "no burst at this anchor"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 3200,
+      "gm": 70,
+      "command": {
+        "b": 296,
+        "cw": 1104,
+        "g": 5,
+        "r": 166,
+        "ww": 4095
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 3286.2165406563654,
+        "duv": 0.0002492317924227714,
+        "mired": 304.301310527841,
+        "capture_id": "043-ray-guide10-white70-w6-cct3200-gm70"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -17.394482677858377,
+        "e_mired": 1.6192878599514415,
+        "e_duv": 0.00014978790822048641,
+        "E_normalized": 1.6192878599514415,
+        "within_tolerance_point_estimate": false,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": {
+        "identity": "w2_no_remeasurement_of_shipped_command",
+        "w2_best_tested_E": 1.171856257540469,
+        "note": "W2 probed new candidates only; the shipped fallback command was not re-measured. Freeze kept it because a selection frame cannot certify a command change; only within-tolerance selections were adopted."
+      },
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 3200,
+      "gm": 100,
+      "command": {
+        "b": 56,
+        "cw": 2272,
+        "g": 1941,
+        "r": 4095,
+        "ww": 480
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 3287.2960994960563,
+        "duv": -0.007126402218636932,
+        "mired": 304.2013769776627,
+        "capture_id": "044-ray-guide10-white70-w6-cct3200-gm100"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -20.662969518997215,
+        "e_mired": 1.9242147893634751,
+        "e_duv": 0.00013287750660814692,
+        "E_normalized": 1.9242147893634751,
+        "within_tolerance_point_estimate": false,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": {
+        "delta_protocol": {
+          "cct_K": 17.390490111877625,
+          "duv": -0.00023509292701984555,
+          "mired": -1.6209433832255513
+        },
+        "fast_strip_minus_ray": {
+          "cct_K": -18.88317752300827,
+          "duv": 0.00013846110295238304,
+          "mired": 1.7586476067379522
+        },
+        "long_strip_minus_ray": {
+          "cct_K": -1.492687411130646,
+          "duv": -9.66318240674625e-05,
+          "mired": 0.13770422351240086
+        },
+        "interpretation": "difference-in-differences; not a proven physical temperature causation"
+      },
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 3200,
+      "gm": 130,
+      "command": {
+        "b": 6,
+        "cw": 1086,
+        "g": 221,
+        "r": 113,
+        "ww": 4095
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 3287.306313810554,
+        "duv": -0.011998486273673186,
+        "mired": 304.20043176348474,
+        "capture_id": "047-ray-guide10-white70-w6-cct3200-gm130"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -0.4663200447816962,
+        "e_mired": 0.04315840114873026,
+        "e_duv": 3.942042197557782e-06,
+        "E_normalized": 0.04315840114873026,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 3200,
+      "gm": 200,
+      "command": {
+        "b": 32,
+        "cw": 756,
+        "g": 2431,
+        "r": 4095,
+        "ww": 440
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 3283.17789374963,
+        "duv": -0.019017497769104035,
+        "mired": 304.582947486262,
+        "capture_id": "048-ray-guide10-white70-w6-cct3200-gm200"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 12.5,
+        "duv": 0.00025,
+        "mired": 0.5
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -9.902437611601727,
+        "e_mired": 0.9214359364057714,
+        "e_duv": 6.0042789943891284e-05,
+        "E_normalized": 1.8428718728115427,
+        "within_tolerance_point_estimate": false,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 3800,
+      "gm": 0,
+      "command": {
+        "b": 836,
+        "cw": 372,
+        "g": 80,
+        "r": 0,
+        "ww": 4095
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 3815.6262306124922,
+        "duv": 0.021074369887980615,
+        "mired": 262.0801775543612,
+        "capture_id": "051-ray-guide10-white70-w6-cct3800-gm0"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -261.8877369014017,
+        "e_mired": 19.31362836851696,
+        "e_duv": -0.0074461694606728565,
+        "E_normalized": 19.31362836851696,
+        "within_tolerance_point_estimate": false,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": {
+        "identity": "w2_no_remeasurement_of_shipped_command",
+        "w2_best_tested_E": 9.093762627204853,
+        "note": "W2 probed new candidates only; the shipped fallback command was not re-measured. Freeze kept it because a selection frame cannot certify a command change; only within-tolerance selections were adopted."
+      },
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 3800,
+      "gm": 70,
+      "command": {
+        "b": 382,
+        "cw": 2788,
+        "g": 20,
+        "r": 85,
+        "ww": 4095
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 3792.70900817716,
+        "duv": 0.0012712702446056646,
+        "mired": 263.66378170431193,
+        "capture_id": "052-ray-guide10-white70-w6-cct3800-gm70"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -8.499169339272157,
+        "e_mired": 0.5921772905769558,
+        "e_duv": -0.00012918151494267695,
+        "E_normalized": 0.5921772905769558,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 3800,
+      "gm": 100,
+      "command": {
+        "b": 76,
+        "cw": 3458,
+        "g": 78,
+        "r": 0,
+        "ww": 4095
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 3790.0372936894328,
+        "duv": -0.006778745685912021,
+        "mired": 263.8496464573161,
+        "capture_id": "055-ray-guide10-white70-w6-cct3800-gm100"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": 2.620766464092867,
+        "e_mired": -0.18232287067030484,
+        "e_duv": 0.00010068133738434359,
+        "E_normalized": 0.20136267476868716,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 3800,
+      "gm": 130,
+      "command": {
+        "b": 13,
+        "cw": 2735,
+        "g": 419,
+        "r": 0,
+        "ww": 4095
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 3792.9223568686775,
+        "duv": -0.012823715767074284,
+        "mired": 263.6489508384163,
+        "capture_id": "056-ray-guide10-white70-w6-cct3800-gm130"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -8.722220762016605,
+        "e_mired": 0.6076857116898395,
+        "e_duv": 0.00022057986268726737,
+        "E_normalized": 0.6076857116898395,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 3800,
+      "gm": 200,
+      "command": {
+        "b": 0,
+        "cw": 1022,
+        "g": 1115,
+        "r": 41,
+        "ww": 4095
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 3775.615732131064,
+        "duv": -0.02490738886379738,
+        "mired": 264.85746192067376,
+        "capture_id": "059-ray-guide10-white70-w6-cct3800-gm200"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -3.301561227853199,
+        "e_mired": 0.23180548797597567,
+        "e_duv": -3.095313990826229e-05,
+        "E_normalized": 0.23180548797597567,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 4500,
+      "gm": 0,
+      "command": {
+        "b": 1329,
+        "cw": 1596,
+        "g": 82,
+        "r": 0,
+        "ww": 4095
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 4437.645803954238,
+        "duv": 0.021300100141290086,
+        "mired": 225.34470847333816,
+        "capture_id": "060-ray-guide10-white70-w6-cct4500-gm0"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -6.598715210997398,
+        "e_mired": 0.3355833340833385,
+        "e_duv": -1.2291055402118e-05,
+        "E_normalized": 0.3355833340833385,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 4500,
+      "gm": 70,
+      "command": {
+        "b": 1139,
+        "cw": 45,
+        "g": 944,
+        "r": 68,
+        "ww": 4095
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 4370.229243084618,
+        "duv": 0.002049744718362477,
+        "mired": 228.82094837070258,
+        "capture_id": "063-ray-guide10-white70-w6-cct4500-gm70"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -23.2973736066524,
+        "e_mired": 1.226365464950561,
+        "e_duv": 0.0005840771463357852,
+        "E_normalized": 1.226365464950561,
+        "within_tolerance_point_estimate": false,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": {
+        "identity": "w2_no_remeasurement_of_shipped_command",
+        "w2_best_tested_E": 1.080094577934176,
+        "note": "W2 probed new candidates only; the shipped fallback command was not re-measured. Freeze kept it because a selection frame cannot certify a command change; only within-tolerance selections were adopted."
+      },
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 4500,
+      "gm": 100,
+      "command": {
+        "b": 62,
+        "cw": 4095,
+        "g": 14,
+        "r": 0,
+        "ww": 2063
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 4353.2641024242275,
+        "duv": -0.0057821154702318595,
+        "mired": 229.7126883349724,
+        "capture_id": "064-ray-guide10-white70-w6-cct4500-gm100"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -12.71763829612064,
+        "e_mired": 0.6730495587173948,
+        "e_duv": -5.197894345134683e-05,
+        "E_normalized": 0.6730495587173948,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 4500,
+      "gm": 130,
+      "command": {
+        "b": 27,
+        "cw": 4095,
+        "g": 463,
+        "r": 0,
+        "ww": 2536
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 4337.528533395824,
+        "duv": -0.013161737181089239,
+        "mired": 230.54603383026193,
+        "capture_id": "067-ray-guide10-white70-w6-cct4500-gm130"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -4.103030893921641,
+        "e_mired": 0.21828862610666988,
+        "e_duv": 0.0001885588299521384,
+        "E_normalized": 0.37711765990427676,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 4500,
+      "gm": 200,
+      "command": {
+        "b": 736,
+        "cw": 135,
+        "g": 4095,
+        "r": 3939,
+        "ww": 1436
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 4318.154822328736,
+        "duv": -0.02820728152615888,
+        "mired": 231.58039513291706,
+        "capture_id": "068-ray-guide10-white70-w6-cct4500-gm200"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -11.05312081457214,
+        "e_mired": 0.5942943220473751,
+        "e_duv": -5.325759696762217e-05,
+        "E_normalized": 0.5942943220473751,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 5000,
+      "gm": 0,
+      "command": {
+        "b": 1492,
+        "cw": 2140,
+        "g": 160,
+        "r": 0,
+        "ww": 4095
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 4813.762228461319,
+        "duv": 0.02049985132094693,
+        "mired": 207.73772208513134,
+        "capture_id": "071-ray-guide10-white70-w6-cct5000-gm0"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": 4.460097140366088,
+        "e_mired": -0.1922971497796766,
+        "e_duv": 0.00037168786296658263,
+        "E_normalized": 0.7433757259331653,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 5000,
+      "gm": 70,
+      "command": {
+        "b": 491,
+        "cw": 4095,
+        "g": 30,
+        "r": 0,
+        "ww": 2128
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 4764.097604780286,
+        "duv": 0.002260050626189243,
+        "mired": 209.90334014076495,
+        "capture_id": "072-ray-guide10-white70-w6-cct5000-gm70"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -11.647300584141703,
+        "e_mired": 0.5144309019025854,
+        "e_duv": -0.00018650940529724115,
+        "E_normalized": 0.5144309019025854,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 5000,
+      "gm": 100,
+      "command": {
+        "b": 104,
+        "cw": 4095,
+        "g": 4,
+        "r": 0,
+        "ww": 1302
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 4740.496469168582,
+        "duv": -0.005109076306589708,
+        "mired": 210.9483693330092,
+        "capture_id": "075-ray-guide10-white70-w6-cct5000-gm100"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -20.726320452276013,
+        "e_mired": 0.9263551749167505,
+        "e_duv": -6.660577600558007e-05,
+        "E_normalized": 0.9263551749167505,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 5000,
+      "gm": 130,
+      "command": {
+        "b": 21,
+        "cw": 4095,
+        "g": 674,
+        "r": 788,
+        "ww": 487
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 4734.010024484494,
+        "duv": -0.013047361809210182,
+        "mired": 211.2374065175103,
+        "capture_id": "076-ray-guide10-white70-w6-cct5000-gm130"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": 19.184419554264423,
+        "e_mired": -0.8525775833279852,
+        "e_duv": -0.00042256765634484175,
+        "E_normalized": 0.8525775833279852,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 5000,
+      "gm": 200,
+      "command": {
+        "b": 60,
+        "cw": 4095,
+        "g": 2071,
+        "r": 8,
+        "ww": 3351
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 4694.483096920721,
+        "duv": -0.03044843543432322,
+        "mired": 213.01599757722752,
+        "capture_id": "079-ray-guide10-white70-w6-cct5000-gm200"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": 0.42213145805908425,
+        "e_mired": -0.019152836803527862,
+        "e_duv": 0.00010831040583323195,
+        "E_normalized": 0.2166208116664639,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 5600,
+      "gm": 0,
+      "command": {
+        "b": 1415,
+        "cw": 2892,
+        "g": 91,
+        "r": 14,
+        "ww": 4095
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 5239.853967082094,
+        "duv": 0.021457515001052748,
+        "mired": 190.84501329277845,
+        "capture_id": "080-ray-guide10-white70-w6-cct5600-gm0"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -384.76764934845596,
+        "e_mired": 15.124548226119856,
+        "e_duv": -0.003486867090562413,
+        "E_normalized": 15.390705973938239,
+        "within_tolerance_point_estimate": false,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": {
+        "identity": "w2_no_remeasurement_of_shipped_command",
+        "w2_best_tested_E": 8.734878344104327,
+        "note": "W2 probed new candidates only; the shipped fallback command was not re-measured. Freeze kept it because a selection frame cannot certify a command change; only within-tolerance selections were adopted."
+      },
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 5600,
+      "gm": 70,
+      "command": {
+        "b": 1605,
+        "cw": 50,
+        "g": 3348,
+        "r": 4095,
+        "ww": 54
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 5233.439798414349,
+        "duv": 0.0030372721571292746,
+        "mired": 191.07891530594935,
+        "capture_id": "083-ray-guide10-white70-w6-cct5600-gm70"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -14.06209774990657,
+        "e_mired": 0.5148066568618503,
+        "e_duv": -0.00027253892992035265,
+        "E_normalized": 0.5624839099962629,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": true,
+        "basis": "W3 holdout within-tolerance points 6100/35 and 7250/100; 5300/100 near miss (E=1.67)"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 5600,
+      "gm": 100,
+      "command": {
+        "b": 116,
+        "cw": 4095,
+        "g": 17,
+        "r": 142,
+        "ww": 428
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 5215.107772548158,
+        "duv": -0.00426486038465343,
+        "mired": 191.750591476538,
+        "capture_id": "084-ray-guide10-white70-w6-cct5600-gm100"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.10729224769198,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -13.300869131105173,
+        "e_mired": 0.4903006917396624,
+        "e_duv": 9.277575269020944e-05,
+        "E_normalized": 0.5297611944724097,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": true,
+        "source": "n1_colocated_repeatability",
+        "cycles_n": 2,
+        "components": {
+          "cct_K_diff": {
+            "status": "ok",
+            "conditional_ci": [
+              -12.053524590121643,
+              -9.552211316240854
+            ],
+            "prediction_interval": [
+              -12.969068791185235,
+              -8.636667115177262
+            ],
+            "note": "Student-t df=1; normality not verified; n=2 cycles"
+          },
+          "mired_diff": {
+            "status": "ok",
+            "conditional_ci": [
+              0.34710654043909484,
+              0.4508352912526924
+            ],
+            "prediction_interval": [
+              0.3091391825384924,
+              0.48880264915329485
+            ],
+            "note": "Student-t df=1; normality not verified; n=2 cycles"
+          },
+          "duv_diff": {
+            "status": "ok",
+            "conditional_ci": [
+              -0.00024939839058392606,
+              0.0005487289989117877
+            ],
+            "prediction_interval": [
+              -0.0005415332905955146,
+              0.0008408638989233762
+            ],
+            "note": "Student-t df=1; normality not verified; n=2 cycles"
+          }
+        },
+        "burst_layer_available": true,
+        "burst_layer_note": "same-dwell adjacent RAWs quantify combined short-term noise; not separable into camera vs LED share"
+      },
+      "protocol_deviation": {
+        "delta_protocol": {
+          "cct_K": -0.5985164596895629,
+          "duv": 0.0001762809119602287,
+          "mired": 0.021430720276185866
+        },
+        "fast_strip_minus_ray": {
+          "cct_K": -11.931117982767319,
+          "duv": 0.00012401306036107472,
+          "mired": 0.4397319443166907
+        },
+        "long_strip_minus_ray": {
+          "cct_K": -12.529634442456882,
+          "duv": 0.0003002939723213034,
+          "mired": 0.4611626645928766
+        },
+        "interpretation": "difference-in-differences; not a proven physical temperature causation"
+      },
+      "interpolation_applicability": {
+        "continuous_supported": true,
+        "basis": "W3 holdout within-tolerance points 6100/35 and 7250/100; 5300/100 near miss (E=1.67)"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 5600,
+      "gm": 130,
+      "command": {
+        "b": 56,
+        "cw": 4095,
+        "g": 238,
+        "r": 27,
+        "ww": 614
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 5185.967037655878,
+        "duv": -0.012314723025450417,
+        "mired": 192.82806711629476,
+        "capture_id": "087-ray-guide10-white70-w6-cct5600-gm130"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.145697514035863,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -21.659896820549875,
+        "e_mired": 0.808750510754777,
+        "e_duv": 0.00023953243556484004,
+        "E_normalized": 0.861375859964104,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": true,
+        "basis": "W3 holdout within-tolerance points 6100/35 and 7250/100; 5300/100 near miss (E=1.67)"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 5600,
+      "gm": 200,
+      "command": {
+        "b": 46,
+        "cw": 4095,
+        "g": 1525,
+        "r": 4,
+        "ww": 1476
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 5150.4037242736385,
+        "duv": -0.03067599566807034,
+        "mired": 194.15953652080546,
+        "capture_id": "088-ray-guide10-white70-w6-cct5600-gm200"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 25.04547256327925,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": 0.9712370851693777,
+        "e_mired": -0.036606720287835515,
+        "e_duv": 0.0002961745589415178,
+        "E_normalized": 0.5923491178830356,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 6500,
+      "gm": 0,
+      "command": {
+        "b": 2163,
+        "cw": 3888,
+        "g": 124,
+        "r": 0,
+        "ww": 4095
+      },
+      "command_source": "w2_selected_E_within",
+      "ray_target": {
+        "cct_K": 5892.401187783206,
+        "duv": 0.022524055258387705,
+        "mired": 169.71010087930082,
+        "capture_id": "091-ray-guide10-white70-w6-cct6500-gm0"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 30.46823532290966,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w2_selection_frame",
+        "e_cct_K": 0.12167787731422815,
+        "e_mired": 0.10670902480518407,
+        "e_duv": 0.07759952867235353,
+        "E_normalized": 0.12167787731422815,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "selection frame only; not an independent confirmation"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 6500,
+      "gm": 70,
+      "command": {
+        "b": 544,
+        "cw": 4095,
+        "g": 8,
+        "r": 51,
+        "ww": 805
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 5891.928852199583,
+        "duv": 0.003898985861456371,
+        "mired": 169.72370595185964,
+        "capture_id": "092-ray-guide10-white70-w6-cct6500-gm70"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 31.142022586862357,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -26.837077855831012,
+        "e_mired": 0.7766098956089991,
+        "e_duv": 0.0004161587322969091,
+        "E_normalized": 0.8617641253382354,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": true,
+        "basis": "W3 holdout within-tolerance points 6100/35 and 7250/100; 5300/100 near miss (E=1.67)"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 6500,
+      "gm": 100,
+      "command": {
+        "b": 201,
+        "cw": 4095,
+        "g": 1,
+        "r": 94,
+        "ww": 0
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 5881.656785196763,
+        "duv": -0.003262201992817829,
+        "mired": 170.02012128909803,
+        "capture_id": "095-ray-guide10-white70-w6-cct6500-gm100"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 31.49890660599039,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -2.197546498730844,
+        "e_mired": 0.06354787185077271,
+        "e_duv": 4.058710386247192e-05,
+        "E_normalized": 0.08117420772494384,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": true,
+        "basis": "W3 holdout within-tolerance points 6100/35 and 7250/100; 5300/100 near miss (E=1.67)"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 6500,
+      "gm": 130,
+      "command": {
+        "b": 0,
+        "cw": 4095,
+        "g": 165,
+        "r": 3,
+        "ww": 0
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 5863.152657478997,
+        "duv": -0.011514455066089701,
+        "mired": 170.55670531184396,
+        "capture_id": "096-ray-guide10-white70-w6-cct6500-gm130"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 31.735685088702773,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -298.03539638740403,
+        "e_mired": 9.134027710347738,
+        "e_duv": -0.00303070740581461,
+        "E_normalized": 9.391175755443145,
+        "within_tolerance_point_estimate": false,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": true,
+        "basis": "W3 holdout within-tolerance points 6100/35 and 7250/100; 5300/100 near miss (E=1.67)"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 6500,
+      "gm": 200,
+      "command": {
+        "b": 41,
+        "cw": 4095,
+        "g": 956,
+        "r": 3,
+        "ww": 67
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 5822.880176551872,
+        "duv": -0.029743263784859145,
+        "mired": 171.73631771213414,
+        "capture_id": "099-ray-guide10-white70-w6-cct6500-gm200"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 31.838775045923484,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -8.616693038402445,
+        "e_mired": 0.2545118805618358,
+        "e_duv": -6.479071624282753e-05,
+        "E_normalized": 0.2706351932815862,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 8000,
+      "gm": 0,
+      "command": {
+        "b": 1839,
+        "cw": 4095,
+        "g": 155,
+        "r": 0,
+        "ww": 2886
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 7013.488259508262,
+        "duv": 0.022128906443519378,
+        "mired": 142.58240165217205,
+        "capture_id": "100-ray-guide10-white70-w6-cct8000-gm0"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 42.11188303985643,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -673.9911200965671,
+        "e_mired": 15.15881630392596,
+        "e_duv": -0.002741338496133394,
+        "E_normalized": 16.004772796758434,
+        "within_tolerance_point_estimate": false,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": {
+        "identity": "w2_no_remeasurement_of_shipped_command",
+        "w2_best_tested_E": 8.902391331996137,
+        "note": "W2 probed new candidates only; the shipped fallback command was not re-measured. Freeze kept it because a selection frame cannot certify a command change; only within-tolerance selections were adopted."
+      },
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 8000,
+      "gm": 70,
+      "command": {
+        "b": 345,
+        "cw": 4095,
+        "g": 34,
+        "r": 0,
+        "ww": 341
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 6971.010982387992,
+        "duv": 0.004911343917937174,
+        "mired": 143.45121568829313,
+        "capture_id": "103-ray-guide10-white70-w6-cct8000-gm70"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 42.51867048072433,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -908.2438760022578,
+        "e_mired": 21.489970811635175,
+        "e_duv": -0.005910320427798854,
+        "E_normalized": 21.489970811635175,
+        "within_tolerance_point_estimate": false,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": {
+        "identity": "w2_no_remeasurement_of_shipped_command",
+        "w2_best_tested_E": 11.28444347351775,
+        "note": "W2 probed new candidates only; the shipped fallback command was not re-measured. Freeze kept it because a selection frame cannot certify a command change; only within-tolerance selections were adopted."
+      },
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 8000,
+      "gm": 100,
+      "command": {
+        "b": 516,
+        "cw": 4095,
+        "g": 177,
+        "r": 0,
+        "ww": 87
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 6937.8836697207635,
+        "duv": -0.0020782045690444554,
+        "mired": 144.1361728742056,
+        "capture_id": "104-ray-guide10-white70-w6-cct8000-gm100"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 42.71107997429818,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -4.671655610063681,
+        "e_mired": 0.09712014564829019,
+        "e_duv": -0.00011632625079644604,
+        "E_normalized": 0.23265250159289208,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 8000,
+      "gm": 130,
+      "command": {
+        "b": 3032,
+        "cw": 328,
+        "g": 3868,
+        "r": 1151,
+        "ww": 4095
+      },
+      "command_source": "w2_selected_E_within",
+      "ray_target": {
+        "cct_K": 6904.6945092791175,
+        "duv": -0.010128041092450238,
+        "mired": 144.82899984294957,
+        "capture_id": "107-ray-guide10-white70-w6-cct8000-gm130"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 21.50420777812874,
+        "duv": 0.00025,
+        "mired": 0.5
+      },
+      "error_evidence": {
+        "identity": "w2_selection_frame",
+        "e_cct_K": 0.7549639954054288,
+        "e_mired": 0.679470796300393,
+        "e_duv": 0.7100988308109957,
+        "E_normalized": 0.7549639954054288,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "selection frame only; not an independent confirmation"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 8000,
+      "gm": 200,
+      "command": {
+        "b": 553,
+        "cw": 4095,
+        "g": 1542,
+        "r": 17,
+        "ww": 71
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 6862.333208724158,
+        "duv": -0.028613765320506215,
+        "mired": 145.72303174213243,
+        "capture_id": "108-ray-guide10-white70-w6-cct8000-gm200"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 43.27602457550201,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -35.81241890167712,
+        "e_mired": 0.764473502249075,
+        "e_duv": 0.0002023904151339656,
+        "E_normalized": 0.8275348591503958,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 10000,
+      "gm": 0,
+      "command": {
+        "b": 1891,
+        "cw": 4095,
+        "g": 83,
+        "r": 32,
+        "ww": 2014
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 8499.702122303172,
+        "duv": 0.022372038118293046,
+        "mired": 117.65118184271488,
+        "capture_id": "111-ray-guide10-white70-w6-cct10000-gm0"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 59.15023386664378,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -47.800844606934334,
+        "e_mired": 0.6653918066845534,
+        "e_duv": -4.7239585705925735e-05,
+        "E_normalized": 0.8081260458699617,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 10000,
+      "gm": 70,
+      "command": {
+        "b": 485,
+        "cw": 4095,
+        "g": 31,
+        "r": 1,
+        "ww": 0
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 8323.286957582444,
+        "duv": 0.005379544709898391,
+        "mired": 120.14484242778731,
+        "capture_id": "112-ray-guide10-white70-w6-cct10000-gm70"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 58.705334748872076,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -1302.3269040846117,
+        "e_mired": 22.285821239327746,
+        "e_duv": -0.004838747949157158,
+        "E_normalized": 22.285821239327746,
+        "within_tolerance_point_estimate": false,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": {
+        "identity": "w2_no_remeasurement_of_shipped_command",
+        "w2_best_tested_E": 11.63421836302446,
+        "note": "W2 probed new candidates only; the shipped fallback command was not re-measured. Freeze kept it because a selection frame cannot certify a command change; only within-tolerance selections were adopted."
+      },
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 10000,
+      "gm": 100,
+      "command": {
+        "b": 4095,
+        "cw": 3853,
+        "g": 3735,
+        "r": 1613,
+        "ww": 2974
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 8266.903693831675,
+        "duv": -0.0012114482834688397,
+        "mired": 120.96427357030262,
+        "capture_id": "115-ray-guide10-white70-w6-cct10000-gm100"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 59.01035920269156,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -30.400199090978276,
+        "e_mired": 0.4464683347467684,
+        "e_duv": 2.882354564185275e-05,
+        "E_normalized": 0.515167158812883,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 10000,
+      "gm": 130,
+      "command": {
+        "b": 1030,
+        "cw": 4095,
+        "g": 810,
+        "r": 1,
+        "ww": 189
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 8215.309330863442,
+        "duv": -0.009017258884440993,
+        "mired": 121.72396190161454,
+        "capture_id": "116-ray-guide10-white70-w6-cct10000-gm130"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 59.36630640583336,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -3.7963379495176923,
+        "e_mired": 0.05627529254736885,
+        "e_duv": -3.870380969515225e-05,
+        "E_normalized": 0.0774076193903045,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 10000,
+      "gm": 200,
+      "command": {
+        "b": 1109,
+        "cw": 4095,
+        "g": 1889,
+        "r": 0,
+        "ww": 0
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 8167.525938501444,
+        "duv": -0.027173711547228942,
+        "mired": 122.43609723796939,
+        "capture_id": "119-ray-guide10-white70-w6-cct10000-gm200"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 59.03887294587735,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -35.12238068537408,
+        "e_mired": 0.5287793683935433,
+        "e_duv": -5.0798794647990975e-05,
+        "E_normalized": 0.5949026282661559,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 14000,
+      "gm": 0,
+      "command": {
+        "b": 1979,
+        "cw": 4095,
+        "g": 90,
+        "r": 21,
+        "ww": 1542
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 11337.430517469713,
+        "duv": 0.022677911014363502,
+        "mired": 88.20340715289164,
+        "capture_id": "120-ray-guide10-white70-w6-cct14000-gm0"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 48.64828457459104,
+        "duv": 0.00025,
+        "mired": 0.5
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -281.9388515638275,
+        "e_mired": 2.2493768769591185,
+        "e_duv": 0.0003346376623547566,
+        "E_normalized": 5.795453098280138,
+        "within_tolerance_point_estimate": false,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": {
+        "identity": "w2_no_remeasurement_of_shipped_command",
+        "w2_best_tested_E": 2.646196309134746,
+        "note": "W2 probed new candidates only; the shipped fallback command was not re-measured. Freeze kept it because a selection frame cannot certify a command change; only within-tolerance selections were adopted."
+      },
+      "interval_evidence": {
+        "applicable": true,
+        "source": "n1_colocated_repeatability",
+        "cycles_n": 2,
+        "components": {
+          "cct_K_diff": {
+            "status": "ok",
+            "conditional_ci": [
+              -337.951037634356,
+              -137.29897774796973
+            ],
+            "prediction_interval": [
+              -411.3947888744499,
+              -63.85522650787587
+            ],
+            "note": "Student-t df=1; normality not verified; n=2 cycles"
+          },
+          "mired_diff": {
+            "status": "ok",
+            "conditional_ci": [
+              1.1466864435365436,
+              2.6725592604715676
+            ],
+            "prediction_interval": [
+              0.5881782295942026,
+              3.2310674744139085
+            ],
+            "note": "Student-t df=1; normality not verified; n=2 cycles"
+          },
+          "duv_diff": {
+            "status": "ok",
+            "conditional_ci": [
+              0.00021042734712848455,
+              0.0006081259585095577
+            ],
+            "prediction_interval": [
+              6.485955231321671e-05,
+              0.0007536937533248256
+            ],
+            "note": "Student-t df=1; normality not verified; n=2 cycles"
+          }
+        },
+        "burst_layer_available": false,
+        "burst_layer_note": "no burst at this anchor"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 14000,
+      "gm": 70,
+      "command": {
+        "b": 1148,
+        "cw": 4095,
+        "g": 255,
+        "r": 18,
+        "ww": 4
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 10879.340942051978,
+        "duv": 0.006401913025390268,
+        "mired": 91.91733261476293,
+        "capture_id": "123-ray-guide10-white70-w6-cct14000-gm70"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 95.62790886999122,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": 20.447937347731568,
+        "e_mired": -0.1724363544352201,
+        "e_duv": -1.9535053225402596e-05,
+        "E_normalized": 0.2138281343737329,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 14000,
+      "gm": 100,
+      "command": {
+        "b": 1357,
+        "cw": 4095,
+        "g": 691,
+        "r": 75,
+        "ww": 69
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 10716.996315776536,
+        "duv": -1.4383215154961312e-05,
+        "mired": 93.30972695473412,
+        "capture_id": "124-ray-guide10-white70-w6-cct14000-gm100"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 95.66326750581919,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": 32.36378102623166,
+        "e_mired": -0.2809335200965819,
+        "e_duv": -1.1158682178204422e-05,
+        "E_normalized": 0.3383093832150671,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 14000,
+      "gm": 130,
+      "command": {
+        "b": 4095,
+        "cw": 3704,
+        "g": 3701,
+        "r": 796,
+        "ww": 2252
+      },
+      "command_source": "w2_selected_E_within",
+      "ray_target": {
+        "cct_K": 10590.349072518555,
+        "duv": -0.008078696514888791,
+        "mired": 94.42559382626507,
+        "capture_id": "127-ray-guide10-white70-w6-cct14000-gm130"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 46.1834576928669,
+        "duv": 0.00025,
+        "mired": 0.5
+      },
+      "error_evidence": {
+        "identity": "w2_selection_frame",
+        "e_cct_K": 0.5520611289770897,
+        "e_mired": 0.4557533573422745,
+        "e_duv": 0.15337552561708878,
+        "E_normalized": 0.5520611289770897,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "selection frame only; not an independent confirmation"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 14000,
+      "gm": 200,
+      "command": {
+        "b": 1934,
+        "cw": 4095,
+        "g": 2489,
+        "r": 14,
+        "ww": 43
+      },
+      "command_source": "w2_selected_E_within",
+      "ray_target": {
+        "cct_K": 10270.512466369848,
+        "duv": -0.025954559424456475,
+        "mired": 97.36612494015635,
+        "capture_id": "128-ray-guide10-white70-w6-cct14000-gm200"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 89.80408951813851,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w2_selection_frame",
+        "e_cct_K": 0.4846357385528805,
+        "e_mired": 0.41435405913472323,
+        "e_duv": 0.38370353310850785,
+        "E_normalized": 0.4846357385528805,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "selection frame only; not an independent confirmation"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 20000,
+      "gm": 0,
+      "command": {
+        "b": 1701,
+        "cw": 4095,
+        "g": 59,
+        "r": 5,
+        "ww": 1078
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 15510.214116328221,
+        "duv": 0.023133737694672415,
+        "mired": 64.47364249776926,
+        "capture_id": "131-ray-guide10-white70-w6-cct20000-gm0"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 158.3122254258303,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -3764.1816484499304,
+        "e_mired": 20.66148740542876,
+        "e_duv": -0.002298421982855344,
+        "E_normalized": 23.776948611043686,
+        "within_tolerance_point_estimate": false,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": {
+        "identity": "w2_no_remeasurement_of_shipped_command",
+        "w2_best_tested_E": 13.4080968113093,
+        "note": "W2 probed new candidates only; the shipped fallback command was not re-measured. Freeze kept it because a selection frame cannot certify a command change; only within-tolerance selections were adopted."
+      },
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 20000,
+      "gm": 70,
+      "command": {
+        "b": 4095,
+        "cw": 0,
+        "g": 3328,
+        "r": 1427,
+        "ww": 2674
+      },
+      "command_source": "w2_selected_E_within",
+      "ray_target": {
+        "cct_K": 14167.267869010735,
+        "duv": 0.006801320401356955,
+        "mired": 70.58523981094369,
+        "capture_id": "132-ray-guide10-white70-w6-cct20000-gm70"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 147.84510952789233,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w2_selection_frame",
+        "e_cct_K": 0.504926334880844,
+        "e_mired": 0.373901520902038,
+        "e_duv": 0.5962027314807757,
+        "E_normalized": 0.5962027314807757,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "selection frame only; not an independent confirmation"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 20000,
+      "gm": 100,
+      "command": {
+        "b": 3581,
+        "cw": 0,
+        "g": 4095,
+        "r": 3214,
+        "ww": 181
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 13881.718840186026,
+        "duv": 0.0007198391360060493,
+        "mired": 72.0371887309165,
+        "capture_id": "135-ray-guide10-white70-w6-cct20000-gm100"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 146.9615456911066,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -13.724925679405715,
+        "e_mired": 0.07129402187369749,
+        "e_duv": -0.00023814235530229924,
+        "E_normalized": 0.4762847106045985,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": true,
+        "source": "n1_colocated_repeatability",
+        "cycles_n": 2,
+        "components": {
+          "cct_K_diff": {
+            "status": "ok",
+            "conditional_ci": [
+              -369.53838090029444,
+              345.34009404179255
+            ],
+            "prediction_interval": [
+              -631.2020633477756,
+              607.0037764892737
+            ],
+            "note": "Student-t df=1; normality not verified; n=2 cycles"
+          },
+          "mired_diff": {
+            "status": "ok",
+            "conditional_ci": [
+              -1.8135288999642347,
+              1.94004679642668
+            ],
+            "prediction_interval": [
+              -3.1874329598711744,
+              3.3139508563336197
+            ],
+            "note": "Student-t df=1; normality not verified; n=2 cycles"
+          },
+          "duv_diff": {
+            "status": "ok",
+            "conditional_ci": [
+              -0.000612514367504221,
+              0.00040003524424238676
+            ],
+            "prediction_interval": [
+              -0.0009831332479955496,
+              0.0007706541247337155
+            ],
+            "note": "Student-t df=1; normality not verified; n=2 cycles"
+          }
+        },
+        "burst_layer_available": true,
+        "burst_layer_note": "same-dwell adjacent RAWs quantify combined short-term noise; not separable into camera vs LED share"
+      },
+      "protocol_deviation": {
+        "delta_protocol": {
+          "cct_K": 522.2042136863747,
+          "duv": -0.000257637388267782,
+          "mired": -2.6577482227696123
+        },
+        "fast_strip_minus_ray": {
+          "cct_K": 29.498708196035295,
+          "duv": -0.0001999806388963444,
+          "mired": -0.1534070605176936
+        },
+        "long_strip_minus_ray": {
+          "cct_K": 551.70292188241,
+          "duv": -0.0004576180271641264,
+          "mired": -2.811155283287306
+        },
+        "interpretation": "difference-in-differences; not a proven physical temperature causation"
+      },
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 20000,
+      "gm": 130,
+      "command": {
+        "b": 1837,
+        "cw": 4095,
+        "g": 1532,
+        "r": 5,
+        "ww": 248
+      },
+      "command_source": "w8_fallback",
+      "ray_target": {
+        "cct_K": 13470.688214572074,
+        "duv": -0.00724027301492593,
+        "mired": 74.23525688303278,
+        "capture_id": "136-ray-guide10-white70-w6-cct20000-gm130"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 143.6915718508511,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "error_evidence": {
+        "identity": "w6_single_observation",
+        "e_cct_K": -2116.5466957133594,
+        "e_mired": 13.838332682417445,
+        "e_duv": -0.002640451334707558,
+        "E_normalized": 14.729790122348245,
+        "within_tolerance_point_estimate": false,
+        "repeat_count": 1,
+        "certification": "W6 single FAST observation; E recomputed against W1 tolerances"
+      },
+      "w2_probe_evidence": {
+        "identity": "w2_no_remeasurement_of_shipped_command",
+        "w2_best_tested_E": 8.106930602036838,
+        "note": "W2 probed new candidates only; the shipped fallback command was not re-measured. Freeze kept it because a selection frame cannot certify a command change; only within-tolerance selections were adopted."
+      },
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    },
+    {
+      "cct": 20000,
+      "gm": 200,
+      "command": {
+        "b": 3098,
+        "cw": 4095,
+        "g": 3786,
+        "r": 398,
+        "ww": 86
+      },
+      "command_source": "w2_selected_E_within",
+      "ray_target": {
+        "cct_K": 12904.377136676485,
+        "duv": -0.025090151035683975,
+        "mired": 77.49308543980987,
+        "capture_id": "139-ray-guide10-white70-w6-cct20000-gm200"
+      },
+      "threshold_source": "guide11_w1_frozen_targets_v1",
+      "tolerances": {
+        "cct_K": 67.63378604848273,
+        "duv": 0.00025,
+        "mired": 0.5
+      },
+      "error_evidence": {
+        "identity": "w2_selection_frame",
+        "e_cct_K": 0.18484172178763386,
+        "e_mired": 0.1500026987367562,
+        "e_duv": 0.7810657183155434,
+        "E_normalized": 0.7810657183155434,
+        "within_tolerance_point_estimate": true,
+        "repeat_count": 1,
+        "certification": "selection frame only; not an independent confirmation"
+      },
+      "w2_probe_evidence": null,
+      "interval_evidence": {
+        "applicable": false,
+        "source": null,
+        "reason": "no co-located N1 repeatability point; pooled transfer to other active-face/load groups not validated (GUIDE11 3.2)"
+      },
+      "protocol_deviation": null,
+      "interpolation_applicability": {
+        "continuous_supported": false,
+        "basis": "W3 holdout failed outside 5300-7250 or at |GM offset|>65; nearest-node commands only, no continuity claim"
+      },
+      "route_note": null
+    }
+  ]
+}
