@@ -1950,3 +1950,364 @@ def build_guide11_c1_confirm_plan(
             "steady_claim": False,
         },
     }
+
+
+def fit_periodic_hue_sat_command_model(
+    anchors: Sequence[Mapping[str, Any]],
+    *,
+    white_layer: Mapping[str, int] | None = None,
+) -> dict[str, Any]:
+    """Fit per-channel circular-harmonic hue models for each SAT layer.
+
+    GUIDE11 C3: the runtime command model must be periodic in hue (0/360
+    continuous) with SAT handled by layer interpolation. Each SAT layer with
+    at least three distinct measured hues is fitted with circular harmonics
+    of the highest order the anchor count supports (n>=5 -> order 2,
+    n==3..4 -> order 1); sparser layers are anchor-only and refuse
+    interpolation. SAT0 keeps exactly one white command; hue is not
+    applicable there.
+    """
+    import numpy as np
+
+    layers: dict[int, dict[int, dict[str, int]]] = {}
+    sources: dict[int, list[str]] = {}
+    for anchor in anchors:
+        sat = int(anchor["sat"])
+        hue = int(anchor["hue"]) % 360
+        layers.setdefault(sat, {})[hue] = {
+            name: int(value) for name, value in anchor["command"].items()
+        }
+        sources.setdefault(sat, []).append(str(anchor.get("source", "")))
+
+    fitted: dict[str, Any] = {}
+    for sat in sorted(layers):
+        hues = sorted(layers[sat])
+        n = len(hues)
+        entry: dict[str, Any] = {
+            "anchor_hues": hues,
+            "anchor_commands": {str(h): layers[sat][h] for h in hues},
+            "sources": sorted(set(sources[sat])),
+            "anchor_only": n < 3,
+        }
+        if n >= 3:
+            order = 2 if n >= 5 else 1
+            theta = np.array([2.0 * math.pi * h / 360.0 for h in hues])
+            design = [np.ones(n)]
+            for k in range(1, order + 1):
+                design.append(np.cos(k * theta))
+                design.append(np.sin(k * theta))
+            matrix = np.stack(design, axis=1)
+            coefficients: dict[str, list[float]] = {}
+            residuals: dict[str, float] = {}
+            for channel in CHANNELS:
+                values = np.array([layers[sat][h].get(channel, 0) for h in hues], dtype=float)
+                solution, *_ = np.linalg.lstsq(matrix, values, rcond=None)
+                coefficients[channel] = [float(v) for v in solution]
+                residuals[channel] = float(np.max(np.abs(matrix @ solution - values)))
+            entry.update({
+                "anchor_only": False,
+                "harmonic_order": order,
+                "coefficients": coefficients,
+                "max_anchor_residual": residuals,
+            })
+        fitted[str(sat)] = entry
+
+    return {
+        "schema": "guide11_periodic_hue_sat_command_model_v1",
+        "channels": list(CHANNELS),
+        "white_layer_sat0": (
+            {name: int(value) for name, value in (white_layer or {}).items()}
+            if white_layer else None
+        ),
+        "sat0_hue": "not_applicable",
+        "layers": fitted,
+        "steady_claim": False,
+    }
+
+
+def interpolate_hsi_command(
+    model: Mapping[str, Any], hue: float, sat: float
+) -> dict[str, Any]:
+    """Interpolate the periodic hue x SAT command model.
+
+    SAT0 returns the single white command (hue not applicable). Between SAT
+    layers the command blends linearly in SAT at the periodic hue prediction
+    of each layer. Layers marked anchor-only refuse non-anchor hues rather
+    than copying a nearest hue.
+    """
+    import numpy as np
+
+    hue = float(hue) % 360.0
+    sat = max(0.0, min(100.0, float(sat)))
+    layers = model.get("layers") or {}
+
+    def predict(layer: Mapping[str, Any], at_hue: float) -> dict[str, float]:
+        if layer.get("anchor_only"):
+            raise ValueError(
+                "SAT layer is anchor-only; periodic interpolation not supported"
+            )
+        theta = 2.0 * math.pi * at_hue / 360.0
+        basis = [1.0]
+        for k in range(1, int(layer["harmonic_order"]) + 1):
+            basis.extend((math.cos(k * theta), math.sin(k * theta)))
+        vec = np.asarray(basis)
+        return {
+            channel: float(np.dot(vec, np.asarray(layer["coefficients"][channel])))
+            for channel in model.get("channels") or CHANNELS
+        }
+
+    if sat == 0.0:
+        white = model.get("white_layer_sat0")
+        if not white:
+            raise ValueError("model has no SAT0 white layer")
+        return {
+            "command": {k: int(v) for k, v in white.items()},
+            "sat_layer": "sat0_white",
+            "hue_applicable": False,
+            "exact_anchor": False,
+            "clipped": [],
+            "note": "SAT0: single white target; hue not applicable",
+        }
+
+    sats = sorted(float(key) for key in layers)
+    lower = None
+    upper = None
+    for value in sats:
+        if value <= sat:
+            lower = value
+        if value >= sat and upper is None:
+            upper = value
+    if lower is None and upper is not None and model.get("white_layer_sat0"):
+        # Saturation compression below the lowest fitted layer: blend the
+        # SAT0 white command toward the lowest periodic layer, hue first.
+        lowest = upper
+        weight = sat / lowest
+        layer_cmd = predict(layers[str(int(lowest))], hue)
+        white = {k: float(v) for k, v in model["white_layer_sat0"].items()}
+        raw = {
+            channel: white.get(channel, 0.0)
+            + weight * (layer_cmd.get(channel, 0.0) - white.get(channel, 0.0))
+            for channel in layer_cmd
+        }
+        used = f"sat0..s{int(lowest)}"
+        exact_sat = False
+        upper = None  # skip the bracketing path below
+    if upper is not None and lower is None:
+        raise ValueError(f"SAT {sat} outside fitted layer range {sats}")
+
+    if lower is not None and upper is not None:
+        if lower == upper:
+            raw = predict(layers[str(int(lower))], hue)
+            used = f"s{int(lower)}"
+            exact_sat = True
+        else:
+            low_cmd = predict(layers[str(int(lower))], hue)
+            high_cmd = predict(layers[str(int(upper))], hue)
+            weight = (sat - lower) / (upper - lower)
+            raw = {
+                channel: low_cmd[channel] + weight * (high_cmd[channel] - low_cmd[channel])
+                for channel in low_cmd
+            }
+            used = f"s{int(lower)}..s{int(upper)}"
+            exact_sat = False
+
+    command: dict[str, int] = {}
+    clipped: list[str] = []
+    for channel, value in raw.items():
+        bound = int(round(value))
+        if bound < 0:
+            bound, _ = 0, clipped.append(channel)
+        elif bound > 4095:
+            bound, _ = 4095, clipped.append(channel)
+        command[channel] = bound
+
+    exact_anchor = False
+    if exact_sat and lower is not None:
+        anchor_layer = layers.get(str(int(lower)))
+        if (
+            anchor_layer is not None
+            and int(round(hue)) in [int(h) for h in anchor_layer.get("anchor_hues", [])]
+            and float(hue).is_integer()
+        ):
+            exact_anchor = True
+
+    return {
+        "command": command,
+        "sat_layer": used,
+        "hue_applicable": True,
+        "exact_anchor": exact_anchor,
+        "clipped": clipped,
+        "requested_sat": sat,
+        "equivalent_sat_note": (
+            "requested SAT; measured equivalent SAT requires the C3 anchor-map "
+            "inversion against paired Ray references (ambiguity flagged)"
+        ),
+    }
+
+
+C4_EXPERIMENT_ID = "GUIDE11_C4_EXPERIENCE_HOLDOUT_V1"
+C4_AUTHORIZATION_SCHEMA = "direct_guide11_c4_holdout_v1"
+C4_TARGETS: tuple[tuple[int, int], ...] = (
+    # Six non-main hues, one per 60-degree sector, mid SAT between the
+    # fitted layers (exercises periodic interpolation + layer blending).
+    (30, 75), (90, 75), (150, 75), (210, 75), (270, 75), (330, 75),
+    # 0/360 continuity point.
+    (350, 75),
+    # High-curvature sector (b-dominant -> r+b+ww switch between H240/H300).
+    (280, 50),
+    # Fixed low-SAT holdout points (white-blend saturation compression).
+    (90, 20), (210, 10),
+)
+
+
+def _c4_ray_shutter_for_sat(sat: int) -> str:
+    """Ray shutter tiers anchored at measured points.
+
+    G9 H0/S0 white used 1/16000; C1 S50 used 1/6400; C1 S100 used 1/1600.
+    Low SAT is white-dominant and brightest; mid SAT interpolates the tier.
+    """
+    if sat <= 25:
+        return "1/16000"
+    if sat <= 60:
+        return "1/6400"
+    if sat < 100:
+        return "1/3200"
+    return "1/1600"
+
+
+def build_guide11_c4_holdout_plan(
+    command_model: Mapping[str, Any],
+    *,
+    targets: Sequence[tuple[int, int]] = C4_TARGETS,
+    model_provenance: Mapping[str, Any] | None = None,
+    inputs_references: Mapping[str, Mapping[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """GUIDE11 C4 experience-holdout plan for the periodic command model.
+
+    Ten fixed (hue, SAT) targets chosen before capture: six non-main hues
+    covering the six 60-degree sectors, one 0/360 continuity point, one
+    high-curvature sector point, and two fixed low-SAT points. Each target
+    acquires a fresh paired Ray bracket around one strip observation of the
+    model's interpolated command. Targets are frozen; no result-dependent
+    substitution is permitted.
+    """
+    from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
+
+    captures: list[dict[str, Any]] = []
+    contracts = []
+    for hue, sat in targets:
+        resolved = interpolate_hsi_command(command_model, float(hue), float(sat))
+        command = resolved["command"]
+        contracts.append({
+            "hue": hue, "sat": sat,
+            "model_command": dict(command),
+            "sat_layer_used": resolved["sat_layer"],
+            "clipped_channels": list(resolved["clipped"]),
+            "checks": ["hue_continuity", "sat_monotonicity", "equivalent_menu_sat_error"],
+        })
+        ray_command = {"hue": hue, "sat": sat, "intensity_percent": 100.0}
+        ray_shutter = _c4_ray_shutter_for_sat(sat)
+        ray_cache = f"ray-c4-h{hue}-s{sat}"
+        strip_shutter = c1_strip_shutter_for_command(command)
+        bracket = [
+            ("ray", "ray_q_before", ray_command, ray_shutter, ray_cache),
+            ("strip", "model_point", dict(command), strip_shutter, f"strip-c4-h{hue}-s{sat}"),
+            ("ray", "ray_q_after", ray_command, ray_shutter, ray_cache),
+        ]
+        for source, role, bracket_command, shutter, cache in bracket:
+            captures.append({
+                "capture_id": f"{len(captures):03d}-{source}-guide11-c4-h{hue}-s{sat}-{role}",
+                "source_id": source,
+                "state_id": f"C4_H{hue}_S{sat}_{role.upper()}",
+                "role": f"{source}_c4_h{hue}_s{sat}_{role}",
+                "capture_role": "formal",
+                "formal_measurement": True,
+                "command": dict(bracket_command),
+                "exact_command_hash": thermal.canonical_sha256(bracket_command),
+                "requested_elapsed_s": 120,
+                "nominal_shutter": shutter,
+                "exposure_cache_key": cache,
+                "timing_acceptance": "observed_elapsed_record_only",
+                "strip_zero_required": source == "ray",
+                "ray_zero_required": source == "strip",
+                "session_index": len(captures) + 1,
+                "source_order": 1 if source == "ray" else 2,
+                "target_cct": None,
+                "target_gm": None,
+                "c1_hue": hue,
+                "c1_sat": sat,
+                "steady_claim": False,
+            })
+    frozen = {str(step["exposure_cache_key"]): str(step["nominal_shutter"]) for step in captures}
+    strip_count = sum(s["source_id"] == "strip" for s in captures)
+    return {
+        "schema": thermal.PLAN_SCHEMA_V2,
+        "status": "execute_authorized",
+        "experiment_id": thermal.TD_C,
+        "guide_experiment_id": C4_EXPERIMENT_ID,
+        "variant": "guide11-c4-experience-holdout",
+        "stage": "GUIDE11-C4-EXPERIENCE-HOLDOUT",
+        "phase": "formal",
+        "source": "guide11_c3_periodic_command_model",
+        "created_at": thermal.datetime.now(thermal.timezone.utc).isoformat(),
+        "inputs": {
+            "location": thermal.file_reference(thermal.LOCATION_PATH),
+            "policy": thermal.file_reference(thermal.POLICY_PATH),
+            "code_duty_curve": thermal.file_reference(thermal.CURVE_PATH),
+            **{k: dict(v) for k, v in (inputs_references or {}).items()},
+        },
+        "captures": captures,
+        "capture_ids": [s["capture_id"] for s in captures],
+        "timing_contract": thermal.timing_contract(2),
+        "timing_resolution": "guide11_c4holdout_reset600_D120",
+        "cold_proxy": 600,
+        "cold_proxy_wait_s": 600,
+        "native_raw_ambient_policy": thermal.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+        "exposure_setup_required": [],
+        "frozen_shutters": frozen,
+        "shutter_ledger_provenance": {
+            "owner": "experiment_capture_steps",
+            "required_cache_keys": sorted(frozen),
+            "frozen_shutters_sha256": thermal.canonical_sha256(frozen),
+        },
+        "budgets": {
+            "ray_cap": len(captures) - strip_count,
+            "strip_cap": strip_count,
+            "formal_cap": len(captures),
+            "physical_cr3_cap": len(captures),
+            "ambient_cap": 0, "retry": 0,
+            "target_count": len(contracts),
+            "local_model_corrections_allowed": 1,
+        },
+        "execution_authorization": {
+            "schema": C4_AUTHORIZATION_SCHEMA,
+            "human_authorization_required": False,
+            "human_authorization_verified": False,
+            "device_use_granted_by": "operator_cli_allow_device_control",
+            "experiment_id": C4_EXPERIMENT_ID,
+            "bounded_device_scope": True,
+            "remote_v2_capability": True,
+        },
+        "camera": {
+            "backend": "remote",
+            "v2_capture_timing_capability_available": True,
+            "v2_capture_capability": "remote_v2_capture_timing_v1",
+            "resolved_capture_settings": {
+                "owner": "remote_backend.resolve_capture_settings",
+                "iso": "100", "aperture": "f/4", "image_format": "RAW",
+            },
+        },
+        "analysis_contract": {
+            "method": "guide11_c4_experience_holdout",
+            "targets": contracts,
+            "targets_frozen_before_capture": True,
+            "model_provenance": dict(model_provenance or {}),
+            "product_layer": "z + equivalent hue/SAT via local anchor-map inversion (ambiguity flagged)",
+            "legacy_layer": "frozen 58-feature reported side by side",
+            "one_local_model_correction_then_new_holdout": True,
+            "failure_ranges_reported_separately": True,
+            "independent_reset_s": 600,
+            "dwell_s": 120,
+            "steady_claim": False,
+        },
+    }

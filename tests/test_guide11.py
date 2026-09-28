@@ -820,3 +820,178 @@ class Guide11C1ConfirmPlanTests(unittest.TestCase):
             batch1_root = self._batch1_root(tmp)
             with self.assertRaises(ValueError):
                 guide11.build_guide11_c1_confirm_plan(analysis_path, batch1_root)
+
+
+class Guide11PeriodicHueSatModelTests(unittest.TestCase):
+    @staticmethod
+    def _anchors():
+        def command_for(hue, sat):
+            # Smooth-ish periodic ground truth per channel, kept inside the
+            # 12-bit command range at both SAT extremes.
+            import math as _m
+            t = 2 * _m.pi * hue / 360
+            scale = 0.5 + sat / 100.0
+            return {
+                "r": int(2000 + 1100 * _m.cos(t) * scale),
+                "g": int(1500 + 900 * _m.sin(t) * scale),
+                "b": int(1000 + 550 * _m.cos(2 * t) * scale),
+                "cw": int(300 * (1 - sat / 100.0)),
+                "ww": int(250 * (1 - sat / 100.0)),
+            }
+
+        rows = []
+        for sat in (50, 100):
+            order_hues = (0, 60, 120, 180, 240, 300) if sat == 50 else (0, 90, 180, 270)
+            for hue in order_hues:
+                rows.append({
+                    "hue": hue, "sat": sat,
+                    "command": command_for(hue, sat),
+                    "source": f"test-h{hue}-s{sat}",
+                })
+        return rows
+
+    def test_fit_and_periodic_interpolation(self):
+        model = guide11.fit_periodic_hue_sat_command_model(
+            self._anchors(), white_layer={"r": 0, "g": 0, "b": 0, "cw": 1200, "ww": 1200}
+        )
+        # SAT layers with enough anchors are periodic-fitted, not anchor-only.
+        self.assertFalse(model["layers"]["50"]["anchor_only"])
+        self.assertEqual(model["layers"]["50"]["harmonic_order"], 2)
+        self.assertEqual(model["layers"]["100"]["harmonic_order"], 1)
+        # Anchor hues reproduce their commands up to fit residual; the S50
+        # layer carries order-2 harmonics (6 anchors), the S100 layer only
+        # supports order 1 (4 anchors).
+        anchor = model["layers"]["50"]["anchor_commands"]["180"]
+        out = guide11.interpolate_hsi_command(model, 180, 50)
+        for channel, value in anchor.items():
+            self.assertLessEqual(abs(out["command"][channel] - value), 8, channel)
+        self.assertTrue(out["hue_applicable"])
+        # 0/360 periodicity: same command.
+        at_zero = guide11.interpolate_hsi_command(model, 0.0, 70)
+        at_three_sixty = guide11.interpolate_hsi_command(model, 360.0, 70)
+        self.assertEqual(at_zero["command"], at_three_sixty["command"])
+        # Between-layer SAT interpolation is bounded by the layer commands.
+        mid = guide11.interpolate_hsi_command(model, 45.0, 75)["command"]
+        low = guide11.interpolate_hsi_command(model, 45.0, 50)["command"]
+        high = guide11.interpolate_hsi_command(model, 45.0, 100)["command"]
+        for channel in mid:
+            self.assertTrue(
+                min(low[channel], high[channel]) - 8 <= mid[channel]
+                <= max(low[channel], high[channel]) + 8,
+                channel,
+            )
+
+    def test_sat0_returns_white_and_hue_not_applicable(self):
+        model = guide11.fit_periodic_hue_sat_command_model(
+            self._anchors(), white_layer={"r": 0, "g": 0, "b": 0, "cw": 999, "ww": 888}
+        )
+        out = guide11.interpolate_hsi_command(model, 123.0, 0.0)
+        self.assertEqual(out["command"], {"r": 0, "g": 0, "b": 0, "cw": 999, "ww": 888})
+        self.assertFalse(out["hue_applicable"])
+        no_white = guide11.fit_periodic_hue_sat_command_model(self._anchors())
+        with self.assertRaises(ValueError):
+            # No fitted layer covers SAT 5 and no white layer was provided.
+            guide11.interpolate_hsi_command(no_white, 123.0, 5.0)
+
+    def test_low_sat_blends_white_toward_s50_hue_first(self):
+        model = guide11.fit_periodic_hue_sat_command_model(
+            self._anchors(), white_layer={"r": 0, "g": 0, "b": 0, "cw": 1000, "ww": 1000}
+        )
+        white = guide11.interpolate_hsi_command(model, 45.0, 0.0)["command"]
+        s50 = guide11.interpolate_hsi_command(model, 45.0, 50)["command"]
+        s25 = guide11.interpolate_hsi_command(model, 45.0, 25)["command"]
+        for channel in s25:
+            low, high = min(white[channel], s50[channel]), max(white[channel], s50[channel])
+            self.assertTrue(low <= s25[channel] <= high, channel)
+            # halfway in SAT between the white and S50 endpoints
+            self.assertLessEqual(abs(s25[channel] - (white[channel] + s50[channel]) / 2), 2, channel)
+        # Hue continuity: neighbouring hues at fixed low SAT stay close.
+        a = guide11.interpolate_hsi_command(model, 44.0, 20)["command"]
+        b = guide11.interpolate_hsi_command(model, 46.0, 20)["command"]
+        self.assertLess(max(abs(a[c] - b[c]) for c in a), 40)
+
+    def test_anchor_only_layer_refuses_interpolation(self):
+        sparse = [
+            {"hue": 0, "sat": 25, "command": {"r": 100, "g": 0, "b": 0, "cw": 0, "ww": 0}, "source": "x"},
+            {"hue": 120, "sat": 25, "command": {"r": 0, "g": 100, "b": 0, "cw": 0, "ww": 0}, "source": "x"},
+        ]
+        model = guide11.fit_periodic_hue_sat_command_model(sparse)
+        self.assertTrue(model["layers"]["25"]["anchor_only"])
+        with self.assertRaises(ValueError):
+            guide11.interpolate_hsi_command(model, 60.0, 25.0)
+
+    def test_clipping_reported(self):
+        model = guide11.fit_periodic_hue_sat_command_model(
+            self._anchors(), white_layer={"r": 1, "g": 1, "b": 1, "cw": 1, "ww": 1}
+        )
+        # Ground truth peaks above 4095 nowhere; force clipping by scaling an
+        # anchor up before fitting.
+        big = self._anchors()
+        big[0]["command"]["r"] = 4095
+        big[1]["command"]["r"] = 4095
+        model_big = guide11.fit_periodic_hue_sat_command_model(big)
+        clipped_seen = False
+        for hue in range(0, 360, 5):
+            out = guide11.interpolate_hsi_command(model_big, hue, 50)
+            self.assertLessEqual(max(out["command"].values()), 4095)
+            clipped_seen = clipped_seen or bool(out["clipped"])
+        self.assertTrue(clipped_seen)
+
+
+class Guide11C4HoldoutPlanTests(unittest.TestCase):
+    def test_c4_plan_targets_frozen_with_model_commands(self):
+        anchors = Guide11PeriodicHueSatModelTests._anchors()
+        model = guide11.fit_periodic_hue_sat_command_model(
+            anchors, white_layer={"r": 0, "g": 0, "b": 0, "cw": 1000, "ww": 1000}
+        )
+        plan = guide11.build_guide11_c4_holdout_plan(model)
+
+        self.assertEqual(plan["guide_experiment_id"], "GUIDE11_C4_EXPERIENCE_HOLDOUT_V1")
+        self.assertEqual(plan["execution_authorization"]["schema"], "direct_guide11_c4_holdout_v1")
+        self.assertFalse(plan["execution_authorization"]["human_authorization_verified"])
+        self.assertEqual(plan["timing_resolution"], "guide11_c4holdout_reset600_D120")
+        self.assertEqual(plan["cold_proxy_wait_s"], 600)
+
+        contract = plan["analysis_contract"]
+        self.assertEqual(len(contract["targets"]), 10)
+        hues = [t["hue"] for t in contract["targets"]]
+        sats = {t["sat"] for t in contract["targets"]}
+        # Six 60-degree sectors covered by non-main hues, plus 350, plus
+        # low-SAT 20/10 holdouts.
+        self.assertEqual(sorted(set(hues) & {30, 90, 150, 210, 270, 330}), [30, 90, 150, 210, 270, 330])
+        self.assertIn(350, hues)
+        self.assertIn(280, hues)
+        self.assertEqual({20, 10} <= sats, True)
+        self.assertTrue(contract["targets_frozen_before_capture"])
+
+        # 10 targets x (ray, strip, ray) = 30 captures; every strip command
+        # comes from the model and differs from a nearest-anchor copy at
+        # non-anchor hues.
+        self.assertEqual(len(plan["captures"]), 30)
+        by_target = {}
+        for step in plan["captures"]:
+            by_target.setdefault((step["c1_hue"], step["c1_sat"]), []).append(step)
+        for (hue, sat), steps in by_target.items():
+            self.assertEqual([s["source_id"] for s in steps], ["ray", "strip", "ray"])
+            strip = steps[1]
+            expected = guide11.interpolate_hsi_command(model, float(hue), float(sat))
+            self.assertEqual(strip["command"], expected["command"])
+        # Ray shutter tiers: white-dominant fastest, S100 slowest.
+        def ray_shutter(sat):
+            return by_target[(90, sat)][0]["nominal_shutter"]
+        self.assertEqual(ray_shutter(20), "1/16000")
+        self.assertEqual(ray_shutter(75), "1/3200")
+        self.assertEqual(guide11._c4_ray_shutter_for_sat(50), "1/6400")
+        self.assertEqual(guide11._c4_ray_shutter_for_sat(100), "1/1600")
+        # Non-anchor hue commands are model interpolations, not anchor copies.
+        anchor_hues = set(model["layers"]["50"]["anchor_hues"]) | set(model["layers"]["100"]["anchor_hues"])
+        all_anchor_commands = {
+            tuple(sorted((k, anchor_cmd.get(k, 0)) for k in ("r", "g", "b", "cw", "ww")))
+            for layer in model["layers"].values()
+            for anchor_cmd in layer["anchor_commands"].values()
+        }
+        for (hue, _sat), steps in by_target.items():
+            if hue in anchor_hues:
+                continue
+            key = tuple(sorted(steps[1]["command"].items()))
+            self.assertNotIn(key, all_anchor_commands)
