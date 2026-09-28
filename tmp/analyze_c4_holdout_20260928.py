@@ -17,6 +17,8 @@ from camera_based_rgbww_optimizer.measurement.frame_exposure import frame_exposu
 
 RUN = Path("D:/rgbww-optimizer/guide11-c4/formal-c4-20260928-r1")
 ANCHORS = Path("D:/rgbww-optimizer/guide11-c1/derived/c3-anchor-self-check-20260925.json")
+C1_CONFIRM = Path("D:/rgbww-optimizer/guide11-c1/derived/c1-confirm-analysis-20260928.json")
+G9_WHITE = Path("D:/rgbww-optimizer/guide9-h0-s0-best-repeat-20260821/20260821-031503-high-white")
 OUT = Path("D:/rgbww-optimizer/guide11-c4/derived/c4-holdout-analysis-20260928.json")
 
 HUE_TOL_DEG = 2.0
@@ -100,15 +102,39 @@ class AnchorMap:
 
 
 def main() -> None:
+    run_state = json.loads((RUN / "run.json").read_text(encoding="utf-8"))
+    if str(run_state.get("status")) == "running":
+        raise SystemExit("C4 run still running; analyzer must run after completion")
     spec = json.loads((RUN / "experiment-spec.json").read_text(encoding="utf-8"))
     anchors = json.loads(ANCHORS.read_text(encoding="utf-8"))
     amap = AnchorMap(anchors["grid"])
+    confirm = json.loads(C1_CONFIRM.read_text(encoding="utf-8"))
+    envelope = [float(t["confirm_z_distance_mean"]) for t in confirm["targets"]]
 
+    # Strip-side white anchor: G9 H0/S0 best-repeat pair (the model's frozen
+    # white command, spread 0.0003 across its two repeats).
+    white_rows = [
+        json.loads(l) for l in (G9_WHITE / "captures.jsonl").read_text(encoding="utf-8").splitlines()
+        if l.strip()
+    ]
+    white_strip_ids = [r["capture_id"] for r in white_rows if r.get("source_id") == "strip"]
+    white_strip_zs = [z_of(G9_WHITE, cid) for cid in white_strip_ids]
+    z_white_strip = {
+        axis: sum(z[axis] for z in white_strip_zs) / len(white_strip_zs) for axis in white_strip_zs[0]
+    }
+    white_ray_ids = [r["capture_id"] for r in white_rows if r.get("source_id") == "ray"]
+    white_ray_zs = [z_of(G9_WHITE, cid) for cid in white_ray_ids]
+    z_white_ray_g9 = {
+        axis: sum(z[axis] for z in white_ray_zs) / len(white_ray_zs) for axis in white_ray_zs[0]
+    }
+
+    capture_lines = [
+        json.loads(l) for l in (RUN / "captures.jsonl").read_text(encoding="utf-8").splitlines()
+        if l.strip()
+    ]
+    row_by_capture = {r["capture_id"]: r for r in capture_lines}
     rows = {}
-    for line in (RUN / "captures.jsonl").read_text(encoding="utf-8").splitlines():
-        if not line.strip():
-            continue
-        row = json.loads(line)
+    for row in capture_lines:
         step = row.get("plan_step", {})
         rows.setdefault((int(step["c1_hue"]), int(step["c1_sat"])), {})[
             str(step["role"]).rsplit("_", 1)[-1]
@@ -126,11 +152,8 @@ def main() -> None:
         ray_mean = {
             axis: (z_before[axis] + z_after[axis]) / 2 for axis in z_before
         }
-        strip_row = next(
-            r for r in (RUN / "captures.jsonl").read_text(encoding="utf-8").splitlines()
-            if json.loads(r)["capture_id"] == have["point"]
-        )
-        profile = frame_exposure_profile(str((json.loads(strip_row).get("capture") or {}).get("saved_file", "")))
+        strip_row = row_by_capture[have["point"]]
+        profile = frame_exposure_profile(str((strip_row.get("capture") or {}).get("saved_file", "")))
         if profile["classification"] == "saturated":
             saturated += 1
         zs = z_of(RUN, have["point"])
@@ -153,6 +176,7 @@ def main() -> None:
                 and abs(inv["equiv_sat"] - key[1]) <= SAT_TOL_PP
                 and key[1] >= 25
             ),
+            "within_c1_anchor_envelope": dist(zs, ray_mean) <= max(envelope),
         })
 
     done = [t for t in targets if t.get("status") == "complete"]
@@ -176,15 +200,53 @@ def main() -> None:
         if t_lo and t_hi:
             d_lo = math.hypot(t_lo["strip_z"]["log_R_over_G"] - white[0], t_lo["strip_z"]["log_B_over_G"] - white[1])
             d_hi = math.hypot(t_hi["strip_z"]["log_R_over_G"] - white[0], t_hi["strip_z"]["log_B_over_G"] - white[1])
-            sat_mono[f"h{hue}"] = {"d_white_s{lo}": d_lo, "d_white_s{hi}": d_hi, "monotone": d_hi > d_lo}
+            # Strip radial depth uses the G9 strip white anchor; the paired
+            # ratio divides by the Ray radial depth to the G9 Ray white
+            # bracket (same-source pairing; 1.0 = exact menu-SAT depth).
+            r_lo = dist(t_lo["strip_z"], z_white_strip)
+            r_hi = dist(t_hi["strip_z"], z_white_strip)
+            d_ray_lo = dist(t_lo["ray_z_mean"], z_white_ray_g9)
+            d_ray_hi = dist(t_hi["ray_z_mean"], z_white_ray_g9)
+            sat_mono[f"h{hue}"] = {
+                f"d_strip_white_s{lo}": d_lo,
+                f"d_strip_white_s{hi}": d_hi,
+                f"r_strip_g9white_s{lo}": r_lo,
+                f"r_strip_g9white_s{hi}": r_hi,
+                f"radial_ratio_s{lo}": r_lo / d_ray_lo if d_ray_lo > 0 else None,
+                f"radial_ratio_s{hi}": r_hi / d_ray_hi if d_ray_hi > 0 else None,
+                "monotone": d_hi > d_lo,
+            }
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
+    product_errors = [t["z_distance_to_paired_ray"] for t in done]
     out = {
         "schema": "guide11_c4_holdout_analysis_v1",
         "run_root": str(RUN),
         "anchor_map": str(ANCHORS),
         "tolerances": {"hue_deg": HUE_TOL_DEG, "sat_pp": SAT_TOL_PP},
+        "c1_anchor_envelope": {
+            "confirm_distance_min": min(envelope),
+            "confirm_distance_max": max(envelope),
+            "per_target": {
+                f"h{t['hue']}/s{t['sat']}": t["confirm_z_distance_mean"] for t in confirm["targets"]
+            },
+        },
+        "white_anchors": {
+            "n1_ray_white_z": {"log_R_over_G": white[0], "log_B_over_G": white[1]},
+            "g9_strip_white_z": z_white_strip,
+            "g9_ray_white_z": z_white_ray_g9,
+            "g9_strip_source": str(G9_WHITE),
+        },
         "targets": targets,
+        "cohort": {
+            "product_error_min": min(product_errors) if product_errors else None,
+            "product_error_median": sorted(product_errors)[len(product_errors) // 2] if product_errors else None,
+            "product_error_max": max(product_errors) if product_errors else None,
+            "outside_c1_envelope": [
+                f"h{t['hue']}/s{t['sat']}" for t in done if not t["within_c1_anchor_envelope"]
+            ],
+            "product_layer_valid_count": sum(1 for t in done if t["product_layer_valid"]),
+        },
         "hue_rotation_monotone_across_s75_sectors": hue_monotone,
         "sector_cross_products": turns,
         "low_sat_monotonicity": sat_mono,
@@ -202,7 +264,8 @@ def main() -> None:
             f"H{t['hue']:>3}/S{t['sat']:>3}  zdist={t['z_distance_to_paired_ray']:.3f}  "
             f"bracket={'ok' if t['ray_bracket_consistent'] else 'FAIL'}  "
             f"equivHue={t['equiv_hue_error_deg']:+7.2f}deg equivSAT={t['equiv_sat_error_pp']:+6.2f}pp  "
-            f"resid={t['equivalent']['residual_z']:.3f}  frame={t['frame_classification']}"
+            f"resid={t['equivalent']['residual_z']:.3f}  frame={t['frame_classification']}  "
+            f"env={'ok' if t['within_c1_anchor_envelope'] else 'OUT'}"
         )
 
 

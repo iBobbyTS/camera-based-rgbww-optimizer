@@ -1119,3 +1119,111 @@ class Guide11C2S25PlanTests(unittest.TestCase):
         self.assertIn("-guide11-c4-h", first["capture_id"])
         self.assertTrue(first["state_id"].startswith("C4_H"))
         self.assertEqual(plan["guide_experiment_id"], "GUIDE11_C4_EXPERIENCE_HOLDOUT_V1")
+
+
+class Guide11C5IntSeparabilityPlanTests(unittest.TestCase):
+    def test_c5_plan_scales_commands_and_ladders_shutters(self):
+        anchors = Guide11PeriodicHueSatModelTests._anchors()
+        model = guide11.fit_periodic_hue_sat_command_model(
+            anchors, white_layer={"r": 0, "g": 0, "b": 0, "cw": 1000, "ww": 1000}
+        )
+        plan = guide11.build_guide11_c5_int_plan(model)
+
+        self.assertEqual(plan["guide_experiment_id"], "GUIDE11_C5_INT_SEPARABILITY_V1")
+        self.assertEqual(plan["execution_authorization"]["schema"], "direct_guide11_c5_int_separability_v1")
+        self.assertFalse(plan["execution_authorization"]["human_authorization_verified"])
+        self.assertEqual(plan["timing_resolution"], "guide11_c5int_reset600_D120")
+        self.assertEqual(plan["cold_proxy_wait_s"], 600)
+        self.assertEqual(plan["budgets"]["local_model_corrections_allowed"], 0)
+        self.assertEqual(plan["budgets"]["ray_cap"], 32)
+        self.assertEqual(plan["budgets"]["strip_cap"], 16)
+        self.assertEqual(plan["budgets"]["retry"], 0)
+
+        # 4 stratified targets x 4 INT levels x (ray, strip, ray) = 48
+        # captures; ids and state ids unique, every cache key frozen.
+        self.assertEqual(len(plan["captures"]), 48)
+        self.assertEqual(len({s["capture_id"] for s in plan["captures"]}), 48)
+        self.assertEqual(len({s["state_id"] for s in plan["captures"]}), 48)
+        for step in plan["captures"]:
+            self.assertEqual(
+                plan["frozen_shutters"][step["exposure_cache_key"]], step["nominal_shutter"]
+            )
+
+        by_level = {}
+        for step in plan["captures"]:
+            by_level.setdefault(
+                (step["c1_hue"], step["c1_sat"], step["c5_intensity_percent"]), []
+            ).append(step)
+            self.assertIn("-guide11-c5-h", step["capture_id"])
+            self.assertTrue(step["state_id"].startswith("C5_H"))
+            self.assertIn("_c5_h", step["role"])
+        self.assertEqual(len(by_level), 16)
+        for (hue, sat, intensity), steps in by_level.items():
+            self.assertEqual([s["source_id"] for s in steps], ["ray", "strip", "ray"])
+            base = guide11.interpolate_hsi_command(model, float(hue), float(sat))["command"]
+            strip = steps[1]
+            if intensity == 100:
+                self.assertEqual(strip["command"], dict(base))
+            else:
+                expected = {
+                    name: int(round(v * intensity / 100.0)) for name, v in base.items()
+                }
+                self.assertEqual(strip["command"], expected)
+            self.assertEqual(
+                steps[0]["command"],
+                {"hue": hue, "sat": sat, "intensity_percent": float(intensity)},
+            )
+
+        # SAT0 keeps the white-layer command; hue is not applicable there.
+        self.assertEqual(
+            by_level[(0, 0, 100)][1]["command"],
+            {"r": 0, "g": 0, "b": 0, "cw": 1000, "ww": 1000},
+        )
+        contract = plan["analysis_contract"]
+        self.assertEqual(contract["method"], "guide11_c5_int_separability")
+        self.assertEqual(len(contract["targets"]), 16)
+        self.assertEqual(
+            {(t["hue"], t["sat"]) for t in contract["targets"]},
+            {(0, 0), (90, 50), (0, 100), (180, 100)},
+        )
+        self.assertEqual({t["intensity_percent"] for t in contract["targets"]}, {100, 50, 20, 5})
+        self.assertIn("lowest", contract["low_int_unobservable_rule"])
+
+    def test_c5_ray_shutter_ladder_scales_with_int(self):
+        # INT100 anchors: white 1/16000 (G9), S50 1/6400, S100 1/1600 (C1).
+        # Each descent multiplies exposure by 100/INT, snapped to the legal
+        # fractional-stop table (1/1280 does not exist -> 1/1250).
+        expected = {
+            (0, 100): {100: "1/1600", 50: "1/800", 20: "1/320", 5: "1/80"},
+            (180, 100): {100: "1/1600", 50: "1/800", 20: "1/320", 5: "1/80"},
+            (90, 50): {100: "1/6400", 50: "1/3200", 20: "1/1250", 5: "1/320"},
+            (0, 0): {100: "1/16000", 50: "1/8000", 20: "1/3200", 5: "1/800"},
+        }
+        for (hue, sat), ladder in expected.items():
+            for intensity, shutter in ladder.items():
+                self.assertEqual(
+                    guide11._c5_ray_shutter_for(sat, intensity), shutter,
+                    f"h{hue}/s{sat}/i{intensity}",
+                )
+
+    def test_c5_dimmed_white_strip_shutters_descend_ladder(self):
+        # Pure-white strip commands descend the exposure-amount ladder with
+        # brightness instead of pinning the full-scale 1/400: an INT-scaled
+        # white must not be starved twenty stops below its anchor.
+        cases = {
+            "int100": ({"cw": 4095, "ww": 4095, "r": 0, "g": 0, "b": 0}, "1/400"),
+            "int50": ({"cw": 2048, "ww": 2048, "r": 0, "g": 0, "b": 0}, "1/125"),
+            "int20": ({"cw": 819, "ww": 819, "r": 0, "g": 0, "b": 0}, "1/30"),
+            "int5": ({"cw": 205, "ww": 205, "r": 0, "g": 0, "b": 0}, "1/8"),
+        }
+        for label, (command, expected) in cases.items():
+            self.assertEqual(guide11.c1_strip_shutter_for_command(command), expected, label)
+
+    def test_c5_schema_registered_in_runner_whitelist(self):
+        from camera_based_rgbww_optimizer.optimization import (
+            measure_p7_thermal_diagnostics as runner,
+        )
+
+        self.assertIn(
+            "direct_guide11_c5_int_separability_v1", runner.GUIDE9_CANDIDATE_BATCH_SCHEMAS
+        )

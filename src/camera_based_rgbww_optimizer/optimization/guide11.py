@@ -1544,13 +1544,27 @@ def c1_strip_shutter_for_command(command: Mapping[str, int]) -> str:
     fell below the near-noise floor at 1/125. The measured in-window point
     is 1/25 (R 0.655 of scale, B five times above the failed noise level),
     a legal camera shutter. Saturated frames read LOW in block trimmed
-    means, so an over-slow shutter misleads the triage twice.
+    means, so an over-slow shutter misleads the triage twice. A pure-white
+    command (no active color channel) descends the same ladder on white
+    brightness so INT-scaled whites stay inside the measured window.
     """
     channels = {name: int(command.get(name, 0)) for name in ("r", "g", "b")}
     white = max(int(command.get(name, 0)) for name in ("cw", "ww"))
     color = max(channels.values())
     if color == 0:
-        return "1/400" if white > 0 else "1/8"
+        if white == 0:
+            return "1/8"
+        # Pure-white commands tier on the same exposure-amount ladder
+        # (full-scale cw/ww white is the verified 1/400 anchor); an
+        # INT-scaled white descends with brightness instead of pinning
+        # the full-scale shutter and starving the frame.
+        if white >= 2500:
+            return "1/400"
+        if white >= 1000:
+            return "1/125"
+        if white >= 400:
+            return "1/30"
+        return "1/8"
     active = [value for value in channels.values() if value >= 0.05 * color]
     if len(active) <= 1 and white == 0:
         return "1/25"
@@ -2512,3 +2526,211 @@ def build_guide11_c2_s25_plan(
             "equivalent_menu_sat_error",
         ]
     return plan
+
+
+C5_EXPERIMENT_ID = "GUIDE11_C5_INT_SEPARABILITY_V1"
+C5_AUTHORIZATION_SCHEMA = "direct_guide11_c5_int_separability_v1"
+C5_INT_LEVELS: tuple[int, ...] = (100, 50, 20, 5)
+# Four stratified representatives per GUIDE11 C5: SAT0 white, one mid-SAT
+# target (in the high-curvature sector), and two extreme hues.
+C5_TARGETS: tuple[tuple[int, int], ...] = (
+    (0, 0),
+    (90, 50),
+    (0, 100),
+    (180, 100),
+)
+# Legal fractional-stop shutter table from the camera's own choices,
+# fast to slow. Whole-second tiers physically fail on this bridge
+# (2026-09-25 human-gate evidence) and are excluded; the ladder never
+# needs anything slower than 1/60.
+_C5_RAY_SHUTTER_TABLE: tuple[str, ...] = (
+    "1/16000", "1/8000", "1/6400", "1/5000", "1/4000", "1/3200", "1/2500",
+    "1/2000", "1/1600", "1/1250", "1/1000", "1/800", "1/640",
+    "1/500", "1/400", "1/320", "1/250", "1/200", "1/160",
+    "1/125", "1/100", "1/80", "1/60",
+)
+
+
+def _c5_ray_shutter_for(sat: int, intensity_percent: int) -> str:
+    """Ray shutter for an INT-descent level, scaled from measured anchors.
+
+    INT100 anchors: SAT0 white 1/16000 (G9), S50 1/6400 (C1), S100 1/1600
+    (C1). Dimming by INT/100 multiplies the required exposure by 100/INT;
+    the chosen tier is the closest legal entry that is never faster than
+    the scaled requirement.
+    """
+    base = "1/16000" if sat == 0 else ("1/6400" if sat <= 60 else "1/1600")
+    target_s = (1.0 / float(base.split("/")[1])) * (100.0 / float(intensity_percent))
+    best: str | None = None
+    for entry in _C5_RAY_SHUTTER_TABLE:
+        entry_s = 1.0 / float(entry.split("/")[1])
+        if entry_s >= target_s and (best is None or entry_s < 1.0 / float(best.split("/")[1])):
+            best = entry
+    assert best is not None  # the table floor 1/60 covers every level used here
+    return best
+
+
+def _c5_scale_command(command: Mapping[str, int], intensity_percent: int) -> dict[str, int]:
+    """Scale every PWM channel linearly by INT/100 (product dimming semantics)."""
+    return {
+        name: int(round(int(value) * intensity_percent / 100.0))
+        for name, value in command.items()
+    }
+
+
+def build_guide11_c5_int_plan(
+    command_model: Mapping[str, Any],
+    *,
+    targets: Sequence[tuple[int, int]] = C5_TARGETS,
+    int_levels: Sequence[int] = C5_INT_LEVELS,
+    model_provenance: Mapping[str, Any] | None = None,
+    inputs_references: Mapping[str, Mapping[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """GUIDE11 C5 INT-separability plan.
+
+    Four stratified representatives (SAT0 white, mid SAT, two extreme
+    hues) at INT100/50/20/5. Every level measures a fresh paired Ray
+    bracket around one strip observation: the strip command is the model
+    command scaled linearly per channel by INT/100 (the product's dimming
+    semantics), never assumed chromaticity-stable. A level whose single
+    exposure is unobservable is reported as a run limitation, not gated
+    away. No local model correction is allowed inside this batch.
+    """
+    from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
+
+    captures: list[dict[str, Any]] = []
+    contracts = []
+    for hue, sat in targets:
+        resolved = interpolate_hsi_command(command_model, float(hue), float(sat))
+        base_command = resolved["command"]
+        for intensity in int_levels:
+            command = _c5_scale_command(base_command, intensity) if intensity != 100 else dict(base_command)
+            ray_command = {
+                "hue": hue, "sat": sat, "intensity_percent": float(intensity),
+            }
+            ray_shutter = _c5_ray_shutter_for(sat, intensity)
+            ray_cache = f"ray-c5-h{hue}-s{sat}-i{intensity}"
+            strip_shutter = c1_strip_shutter_for_command(command)
+            contracts.append({
+                "hue": hue, "sat": sat, "intensity_percent": intensity,
+                "model_command_int100": dict(base_command),
+                "strip_command": dict(command),
+                "ray_command": ray_command,
+                "sat_layer_used": resolved["sat_layer"],
+                "ray_shutter": ray_shutter,
+                "strip_shutter": strip_shutter,
+                "checks": [
+                    "bracket_consistency",
+                    "strip_ray_match_at_int",
+                    "int_chromaticity_drift",
+                ],
+            })
+            bracket = [
+                ("ray", "ray_q_before", ray_command, ray_shutter, ray_cache),
+                ("strip", "model_point", dict(command), strip_shutter, f"strip-c5-h{hue}-s{sat}-i{intensity}"),
+                ("ray", "ray_q_after", ray_command, ray_shutter, ray_cache),
+            ]
+            for source, role, bracket_command, shutter, cache in bracket:
+                captures.append({
+                    "capture_id": f"{len(captures):03d}-{source}-guide11-c5-h{hue}-s{sat}-i{intensity}-{role}",
+                    "source_id": source,
+                    "state_id": f"C5_H{hue}_S{sat}_I{intensity}_{role.upper()}",
+                    "role": f"{source}_c5_h{hue}_s{sat}_i{intensity}_{role}",
+                    "capture_role": "formal",
+                    "formal_measurement": True,
+                    "command": dict(bracket_command),
+                    "exact_command_hash": thermal.canonical_sha256(bracket_command),
+                    "requested_elapsed_s": 120,
+                    "nominal_shutter": shutter,
+                    "exposure_cache_key": cache,
+                    "timing_acceptance": "observed_elapsed_record_only",
+                    "strip_zero_required": source == "ray",
+                    "ray_zero_required": source == "strip",
+                    "session_index": len(captures) + 1,
+                    "source_order": 1 if source == "ray" else 2,
+                    "target_cct": None,
+                    "target_gm": None,
+                    "c1_hue": hue,
+                    "c1_sat": sat,
+                    "c5_intensity_percent": intensity,
+                    "steady_claim": False,
+                })
+    frozen = {str(step["exposure_cache_key"]): str(step["nominal_shutter"]) for step in captures}
+    strip_count = sum(s["source_id"] == "strip" for s in captures)
+    return {
+        "schema": thermal.PLAN_SCHEMA_V2,
+        "status": "execute_authorized",
+        "experiment_id": thermal.TD_C,
+        "guide_experiment_id": C5_EXPERIMENT_ID,
+        "variant": "guide11-c5-int-separability",
+        "stage": "GUIDE11-C5-INT-SEPARABILITY",
+        "phase": "formal",
+        "source": "guide11_c3_periodic_command_model",
+        "created_at": thermal.datetime.now(thermal.timezone.utc).isoformat(),
+        "inputs": {
+            "location": thermal.file_reference(thermal.LOCATION_PATH),
+            "policy": thermal.file_reference(thermal.POLICY_PATH),
+            "code_duty_curve": thermal.file_reference(thermal.CURVE_PATH),
+            **{k: dict(v) for k, v in (inputs_references or {}).items()},
+        },
+        "captures": captures,
+        "capture_ids": [s["capture_id"] for s in captures],
+        "timing_contract": thermal.timing_contract(2),
+        "timing_resolution": "guide11_c5int_reset600_D120",
+        "cold_proxy": 600,
+        "cold_proxy_wait_s": 600,
+        "native_raw_ambient_policy": thermal.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+        "exposure_setup_required": [],
+        "frozen_shutters": frozen,
+        "shutter_ledger_provenance": {
+            "owner": "experiment_capture_steps",
+            "required_cache_keys": sorted(frozen),
+            "frozen_shutters_sha256": thermal.canonical_sha256(frozen),
+        },
+        "budgets": {
+            "ray_cap": len(captures) - strip_count,
+            "strip_cap": strip_count,
+            "formal_cap": len(captures),
+            "physical_cr3_cap": len(captures),
+            "ambient_cap": 0, "retry": 0,
+            "target_count": len(contracts),
+            "local_model_corrections_allowed": 0,
+        },
+        "execution_authorization": {
+            "schema": C5_AUTHORIZATION_SCHEMA,
+            "human_authorization_required": False,
+            "human_authorization_verified": False,
+            "device_use_granted_by": "operator_cli_allow_device_control",
+            "experiment_id": C5_EXPERIMENT_ID,
+            "bounded_device_scope": True,
+            "remote_v2_capability": True,
+        },
+        "camera": {
+            "backend": "remote",
+            "v2_capture_timing_capability_available": True,
+            "v2_capture_capability": "remote_v2_capture_timing_v1",
+            "resolved_capture_settings": {
+                "owner": "remote_backend.resolve_capture_settings",
+                "iso": "100", "aperture": "f/4", "image_format": "RAW",
+            },
+        },
+        "analysis_contract": {
+            "method": "guide11_c5_int_separability",
+            "targets": contracts,
+            "targets_frozen_before_capture": True,
+            "model_provenance": dict(model_provenance or {}),
+            "product_layer": "z + per-intensity strip-vs-ray match; no required-feature gate may hide an unobservable level",
+            "low_int_unobservable_rule": (
+                "if a level's single exposure is unobservable, report the lowest "
+                "verifiable INT and the run limitation; do not gate it away"
+            ),
+            "separability_rule": (
+                "separable: keep the 2D color model plus a 1D intensity strategy; "
+                "not separable: limited intensity correction for the detected "
+                "groups with independent validation, no fine 3D LUT by default"
+            ),
+            "independent_reset_s": 600,
+            "dwell_s": 120,
+            "steady_claim": False,
+        },
+    }

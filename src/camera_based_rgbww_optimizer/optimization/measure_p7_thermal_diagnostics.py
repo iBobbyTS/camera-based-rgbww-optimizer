@@ -55,6 +55,7 @@ GUIDE9_CANDIDATE_BATCH_SCHEMAS = {
     "direct_guide11_c1_batch2_v1",
     "direct_guide11_c1_confirm_v1",
     "direct_guide11_c4_holdout_v1",
+    "direct_guide11_c5_int_separability_v1",
 }
 GUIDE9_BEST_REPEAT_SCHEMAS = {
     "direct_guide9_h120_s50_best_repeat_v1",
@@ -408,6 +409,7 @@ def validate_authorized_execution_plan(
             "direct_guide11_c1_batch2_v1",
             "direct_guide11_c1_confirm_v1",
             "direct_guide11_c4_holdout_v1",
+            "direct_guide11_c5_int_separability_v1",
         }
     )
     if (
@@ -2679,6 +2681,7 @@ def validate_direct_protocol_post_capture(
                     "direct_guide11_c1_hsi_main_nodes_v1",
                     "direct_guide11_c1_confirm_v1",
                     "direct_guide11_c4_holdout_v1",
+                    "direct_guide11_c5_int_separability_v1",
                 )
                 and isinstance(direct_quality, Mapping)
                 and direct_quality.get("status") == "product_layer_block06_accepted"
@@ -3468,6 +3471,7 @@ def run_authorized_plan(
                     "direct_guide11_c1_hsi_main_nodes_v1",
                     "direct_guide11_c1_confirm_v1",
                     "direct_guide11_c4_holdout_v1",
+                    "direct_guide11_c5_int_separability_v1",
                 ):
                     accepted = _c1_accepted_features(report, feature_ids, feature_statistic)
                     block06 = _c1_block06_quality(report)
