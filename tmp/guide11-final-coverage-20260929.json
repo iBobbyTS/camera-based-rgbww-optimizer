@@ -1,0 +1,454 @@
+{
+  "date": "2026-09-29",
+  "int_separability": {
+    "note": "Ray itself drifts with INT (0.007-0.077 z); offsets are paired differences; INT100 trivially meets its own baseline",
+    "per_point_lowest_separable": {
+      "h0_s0": 100,
+      "h0_s100": 100,
+      "h180_s100": 100,
+      "h90_s50": 50
+    },
+    "verdict": "not_separable_below_int100_except_h90_s50_to_int50"
+  },
+  "interval_status": "conditional/prediction intervals exist only at the six N1 co-located white anchors; color points report n and spread instead; pooled transfer unverified",
+  "main_hues": [
+    {
+      "best_tested_command_at_s100": {
+        "b": 0,
+        "cw": 0,
+        "g": 0,
+        "r": 2048,
+        "ww": 0
+      },
+      "bounded_best_by_tier": {
+        "100": {
+          "equiv_hue_error_deg_upper_bound": -11.083773587226823,
+          "equiv_sat_error_pp": 27.831726724120433,
+          "n_observations": 2,
+          "source": "c1c_confirm",
+          "z_distance": 0.887
+        },
+        "25": {
+          "equiv_sat_error_pp": -5.0,
+          "n_observations": 1,
+          "source": "c2_s25",
+          "z_distance": 0.3543291923769543
+        },
+        "50": {
+          "equiv_hue_error_deg_upper_bound": 11.369584234624538,
+          "equiv_sat_error_pp": -16.55601163731181,
+          "n_observations": 3,
+          "source": "c1c_confirm",
+          "z_distance": 0.5145250565403301
+        }
+      },
+      "covered_intervals": [],
+      "hue": 0,
+      "int_applicable_levels": [
+        100
+      ],
+      "int_note": "INT100 baseline only",
+      "inversion_ambiguous": true,
+      "legacy_58feature": "preserved side-by-side in C1 batch artifacts; not a product pass criterion",
+      "product_layer_valid": false,
+      "reachability_boundary_bracket": [
+        0,
+        25
+      ],
+      "repeatability_within_session": "three_observation_spread<=0.008_z (7/8 nodes; h0/s100 two valid confirms 0.0008)",
+      "s_best_tested_product_layer": 0,
+      "search_upper_request": {
+        "sat": 100,
+        "status": "tested_bounded_best_outside_product_tolerance"
+      },
+      "session_or_selection_caveats": "h0/s100 B1 selection frame exposure-invalid (patch clipped at 1/8); confirm values from two healthy 1/25 FAST observations",
+      "stop_reason": "product_tolerance_unmet_all_tested_tiers; downward search stopped at S25 per GUIDE11 C2",
+      "tested_sat_tiers": [
+        25,
+        50,
+        100
+      ]
+    },
+    {
+      "best_tested_command_at_s100": {
+        "b": 1024,
+        "cw": 0,
+        "g": 4095,
+        "r": 4095,
+        "ww": 0
+      },
+      "bounded_best_by_tier": {
+        "100": {
+          "equiv_hue_error_deg_upper_bound": -2.86172322041988,
+          "equiv_sat_error_pp": -54.40093373429939,
+          "n_observations": 3,
+          "source": "c1c_confirm",
+          "z_distance": 0.593120542166658
+        },
+        "25": {
+          "equiv_sat_error_pp": -7.0,
+          "n_observations": 1,
+          "source": "c2_s25",
+          "z_distance": 0.03961623362510943
+        },
+        "50": {
+          "equiv_hue_error_deg_upper_bound": -6.777442698745527,
+          "equiv_sat_error_pp": -2.042928191608592,
+          "n_observations": 3,
+          "source": "c1c_confirm",
+          "z_distance": 0.1027131019481916
+        }
+      },
+      "covered_intervals": [],
+      "hue": 60,
+      "int_applicable_levels": [
+        100
+      ],
+      "int_note": "INT100 baseline only",
+      "inversion_ambiguous": true,
+      "legacy_58feature": "preserved side-by-side in C1 batch artifacts; not a product pass criterion",
+      "product_layer_valid": false,
+      "reachability_boundary_bracket": [
+        0,
+        25
+      ],
+      "repeatability_within_session": "three_observation_spread<=0.008_z (7/8 nodes; h0/s100 two valid confirms 0.0008)",
+      "s_best_tested_product_layer": 0,
+      "search_upper_request": {
+        "sat": 100,
+        "status": "tested_bounded_best_outside_product_tolerance"
+      },
+      "session_or_selection_caveats": "selection process flagged per GUIDE11 C1",
+      "stop_reason": "product_tolerance_unmet_all_tested_tiers; downward search stopped at S25 per GUIDE11 C2",
+      "tested_sat_tiers": [
+        25,
+        50,
+        100
+      ]
+    },
+    {
+      "best_tested_command_at_s100": {
+        "b": 4095,
+        "cw": 0,
+        "g": 4095,
+        "r": 1024,
+        "ww": 0
+      },
+      "bounded_best_by_tier": {
+        "100": {
+          "equiv_hue_error_deg_upper_bound": -21.5127600784463,
+          "equiv_sat_error_pp": -25.16557469578754,
+          "n_observations": 3,
+          "source": "c1c_confirm",
+          "z_distance": 0.5782996719306844
+        },
+        "25": {
+          "equiv_sat_error_pp": 14.0,
+          "n_observations": 1,
+          "source": "c2_s25",
+          "z_distance": 0.22751039603754375
+        },
+        "50": {
+          "equiv_hue_error_deg_upper_bound": -42.49999584937347,
+          "equiv_sat_error_pp": 24.818816975743804,
+          "n_observations": 3,
+          "source": "c1c_confirm",
+          "z_distance": 0.5741406276289549
+        }
+      },
+      "covered_intervals": [],
+      "hue": 180,
+      "int_applicable_levels": [
+        100
+      ],
+      "int_note": "INT100 baseline only",
+      "inversion_ambiguous": true,
+      "legacy_58feature": "preserved side-by-side in C1 batch artifacts; not a product pass criterion",
+      "product_layer_valid": false,
+      "reachability_boundary_bracket": [
+        0,
+        25
+      ],
+      "repeatability_within_session": "three_observation_spread<=0.008_z (7/8 nodes; h0/s100 two valid confirms 0.0008)",
+      "s_best_tested_product_layer": 0,
+      "search_upper_request": {
+        "sat": 100,
+        "status": "tested_bounded_best_outside_product_tolerance"
+      },
+      "session_or_selection_caveats": "selection process flagged per GUIDE11 C1",
+      "stop_reason": "product_tolerance_unmet_all_tested_tiers; downward search stopped at S25 per GUIDE11 C2",
+      "tested_sat_tiers": [
+        25,
+        50,
+        100
+      ]
+    },
+    {
+      "best_tested_command_at_s100": {
+        "b": 4095,
+        "cw": 0,
+        "g": 2048,
+        "r": 1024,
+        "ww": 0
+      },
+      "bounded_best_by_tier": {
+        "100": {
+          "equiv_hue_error_deg_upper_bound": 0.33506179517138723,
+          "equiv_sat_error_pp": -33.12658042222484,
+          "n_observations": 3,
+          "source": "c1c_confirm",
+          "z_distance": 0.6379751006065195
+        },
+        "25": {
+          "equiv_sat_error_pp": 11.0,
+          "n_observations": 1,
+          "source": "c2_s25",
+          "z_distance": 0.09738700360823002
+        },
+        "50": {
+          "equiv_hue_error_deg_upper_bound": 0.43794804427629797,
+          "equiv_sat_error_pp": 16.88985796147754,
+          "n_observations": 3,
+          "source": "c1c_confirm",
+          "z_distance": 0.32532826991131447
+        }
+      },
+      "covered_intervals": [],
+      "hue": 240,
+      "int_applicable_levels": [
+        100
+      ],
+      "int_note": "INT100 baseline only",
+      "inversion_ambiguous": true,
+      "legacy_58feature": "preserved side-by-side in C1 batch artifacts; not a product pass criterion",
+      "product_layer_valid": false,
+      "reachability_boundary_bracket": [
+        0,
+        25
+      ],
+      "repeatability_within_session": "three_observation_spread<=0.008_z (7/8 nodes; h0/s100 two valid confirms 0.0008)",
+      "s_best_tested_product_layer": 0,
+      "search_upper_request": {
+        "sat": 100,
+        "status": "tested_bounded_best_outside_product_tolerance"
+      },
+      "session_or_selection_caveats": "selection process flagged per GUIDE11 C1",
+      "stop_reason": "product_tolerance_unmet_all_tested_tiers; downward search stopped at S25 per GUIDE11 C2",
+      "tested_sat_tiers": [
+        25,
+        50,
+        100
+      ]
+    }
+  ],
+  "non_main_hue_holdouts": [
+    {
+      "bracket_consistent": true,
+      "equiv_hue_error_deg_caveat": "sparse S100 anchors",
+      "equiv_sat_error_pp": -24.0,
+      "hue": 30,
+      "model_interpolated_command": {
+        "b": 602,
+        "cw": 0,
+        "g": 2334,
+        "r": 3919,
+        "ww": 0
+      },
+      "product_layer_valid": false,
+      "sat": 75,
+      "stop_reason": "holdout evidence only; bounded best, no per-point search budget spent",
+      "z_distance": 0.35878447038523076
+    },
+    {
+      "bracket_consistent": true,
+      "equiv_hue_error_deg_caveat": "sparse S100 anchors",
+      "equiv_sat_error_pp": -46.0,
+      "hue": 90,
+      "model_interpolated_command": {
+        "b": 1150,
+        "cw": 664,
+        "g": 4095,
+        "r": 2710,
+        "ww": 691
+      },
+      "product_layer_valid": false,
+      "sat": 75,
+      "stop_reason": "holdout evidence only; bounded best, no per-point search budget spent",
+      "z_distance": 0.389412984237881
+    },
+    {
+      "bracket_consistent": true,
+      "equiv_hue_error_deg_caveat": "sparse S100 anchors",
+      "equiv_sat_error_pp": -21.0,
+      "hue": 150,
+      "model_interpolated_command": {
+        "b": 3078,
+        "cw": 660,
+        "g": 4095,
+        "r": 1205,
+        "ww": 688
+      },
+      "product_layer_valid": false,
+      "sat": 75,
+      "stop_reason": "holdout evidence only; bounded best, no per-point search budget spent",
+      "z_distance": 0.5720133460104326
+    },
+    {
+      "bracket_consistent": true,
+      "equiv_hue_error_deg_caveat": "sparse S100 anchors",
+      "equiv_sat_error_pp": -3.0,
+      "hue": 210,
+      "model_interpolated_command": {
+        "b": 4095,
+        "cw": 0,
+        "g": 3256,
+        "r": 1039,
+        "ww": 0
+      },
+      "product_layer_valid": false,
+      "sat": 75,
+      "stop_reason": "holdout evidence only; bounded best, no per-point search budget spent",
+      "z_distance": 0.31268656681329554
+    },
+    {
+      "bracket_consistent": true,
+      "equiv_hue_error_deg_caveat": "sparse S100 anchors",
+      "equiv_sat_error_pp": -25.0,
+      "hue": 270,
+      "model_interpolated_command": {
+        "b": 3140,
+        "cw": 107,
+        "g": 501,
+        "r": 1066,
+        "ww": 1317
+      },
+      "product_layer_valid": false,
+      "sat": 75,
+      "stop_reason": "holdout evidence only; bounded best, no per-point search budget spent",
+      "z_distance": 0.45638490348298094
+    },
+    {
+      "bracket_consistent": true,
+      "equiv_hue_error_deg_caveat": "sparse S100 anchors",
+      "equiv_sat_error_pp": -25.0,
+      "hue": 330,
+      "model_interpolated_command": {
+        "b": 1177,
+        "cw": 106,
+        "g": 0,
+        "r": 2441,
+        "ww": 1316
+      },
+      "product_layer_valid": false,
+      "sat": 75,
+      "stop_reason": "holdout evidence only; bounded best, no per-point search budget spent",
+      "z_distance": 0.301205075708053
+    },
+    {
+      "bracket_consistent": true,
+      "equiv_hue_error_deg_caveat": "sparse S100 anchors",
+      "equiv_sat_error_pp": -25.0,
+      "hue": 350,
+      "model_interpolated_command": {
+        "b": 837,
+        "cw": 0,
+        "g": 370,
+        "r": 3126,
+        "ww": 560
+      },
+      "product_layer_valid": false,
+      "sat": 75,
+      "stop_reason": "holdout evidence only; bounded best, no per-point search budget spent",
+      "z_distance": 0.571457567608754
+    },
+    {
+      "bracket_consistent": true,
+      "equiv_hue_error_deg_caveat": "sparse S100 anchors",
+      "equiv_sat_error_pp": 0.0,
+      "hue": 280,
+      "model_interpolated_command": {
+        "b": 2990,
+        "cw": 371,
+        "g": 385,
+        "r": 1650,
+        "ww": 3219
+      },
+      "product_layer_valid": false,
+      "sat": 50,
+      "stop_reason": "holdout evidence only; bounded best, no per-point search budget spent",
+      "z_distance": 0.08130406981968696
+    },
+    {
+      "bracket_consistent": true,
+      "equiv_hue_error_deg_caveat": "near-white inversion weakly determined",
+      "equiv_sat_error_pp": 1.0,
+      "hue": 90,
+      "model_interpolated_command": {
+        "b": 1233,
+        "cw": 2988,
+        "g": 2508,
+        "r": 758,
+        "ww": 3010
+      },
+      "product_layer_valid": false,
+      "sat": 20,
+      "stop_reason": "holdout evidence only; bounded best, no per-point search budget spent",
+      "z_distance": 0.026813148987778576
+    },
+    {
+      "bracket_consistent": true,
+      "equiv_hue_error_deg_caveat": "near-white inversion weakly determined",
+      "equiv_sat_error_pp": 12.0,
+      "hue": 210,
+      "model_interpolated_command": {
+        "b": 2253,
+        "cw": 3199,
+        "g": 1696,
+        "r": 242,
+        "ww": 3076
+      },
+      "product_layer_valid": false,
+      "sat": 10,
+      "stop_reason": "holdout evidence only; bounded best, no per-point search budget spent",
+      "z_distance": 0.10925746897246141
+    }
+  ],
+  "sat0_white_command": "single white command; hue not_applicable (P6 self-check)",
+  "schema": "guide11_final_coverage_v1",
+  "scope_statement": "stable best approximations and empirically bounded reachable sets under the tested protocol, scales, neighborhoods and budgets; no hardware-limit claims",
+  "steady_claim": false,
+  "untested": {
+    "hues_without_dedicated_evidence": [
+      20,
+      40,
+      80,
+      100,
+      110,
+      130,
+      140,
+      160,
+      170,
+      190,
+      200,
+      220,
+      230,
+      250,
+      260,
+      290,
+      310,
+      320,
+      340
+    ],
+    "statement": "untested hues remain untested; not 0%"
+  },
+  "white_line": {
+    "basis": "guide11-white-final-report-20260928.json (recomputed from real inputs)",
+    "closed_permanently": [
+      "1800/GM100 (GUIDE10)"
+    ],
+    "continuous_interpolation_supported_band": "5300-7250K |GM|<=65 with holdout support",
+    "node_count": 70,
+    "nodes_within_tolerance": 45,
+    "true_long_observations": 8
+  }
+}

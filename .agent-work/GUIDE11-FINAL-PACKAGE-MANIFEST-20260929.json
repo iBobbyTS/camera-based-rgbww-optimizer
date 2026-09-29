@@ -1,0 +1,281 @@
+{
+  "schema": "guide11_final_package_manifest_v1",
+  "zip": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\.agent-work\\GUIDE11-FINAL-PACKAGE-20260929.zip",
+  "zip_sha256": "281dc95a57a99734fabcc579f190894a0ba43a54cbb41c2daaf25fe31b5fecf4",
+  "zip_byte_count": 131895,
+  "file_count": 45,
+  "excludes": "raw CR3/RAW/DNG, NPY/NPZ, TIFF/JPEG/PNG derivatives, decoded arrays, firmware, build output, credentials",
+  "raw_payload_root": "D:/rgbww-optimizer (per-experiment run roots, retained)",
+  "files": [
+    {
+      "path": "results/GUIDE11-C1-RESULT-20260925.md",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\.agent-work\\GUIDE11-C1-RESULT-20260925.md",
+      "byte_count": 2192,
+      "sha256": "de802ad93fc9eb727d75584b2dc00f7181ea1ac3e27bfb26a70be9372c4f040d"
+    },
+    {
+      "path": "results/GUIDE11-C1B2-RESULT-20260927.md",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\.agent-work\\GUIDE11-C1B2-RESULT-20260927.md",
+      "byte_count": 1701,
+      "sha256": "934157cb76b3b4f8f52d7e34d2f2053704119a02ed72525f1878c65f7a762a07"
+    },
+    {
+      "path": "results/GUIDE11-C1C-RESULT-20260928.md",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\.agent-work\\GUIDE11-C1C-RESULT-20260928.md",
+      "byte_count": 3820,
+      "sha256": "902836b520ed8f1eb2db68657682bc438d9fba1216e24afaf73dda3debc0b308"
+    },
+    {
+      "path": "results/GUIDE11-C2-ASSESSMENT-20260928.md",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\.agent-work\\GUIDE11-C2-ASSESSMENT-20260928.md",
+      "byte_count": 6064,
+      "sha256": "cf54e254013de70dfabf7c2c2e996787684f99a9dbd35c0590d9276cc4fa79c7"
+    },
+    {
+      "path": "results/GUIDE11-C2S25-RESULT-20260928.md",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\.agent-work\\GUIDE11-C2S25-RESULT-20260928.md",
+      "byte_count": 2349,
+      "sha256": "a4aefdee8d851dc74158f1f53e4b27f35ecb13dd31b9d7890ff490c0a8c21c86"
+    },
+    {
+      "path": "results/GUIDE11-C4-RESULT-20260928.md",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\.agent-work\\GUIDE11-C4-RESULT-20260928.md",
+      "byte_count": 3795,
+      "sha256": "5c9e4466417879c1a5235c69e3a1b66f1ce5347dfaa7d29546807674eb7d00ed"
+    },
+    {
+      "path": "results/GUIDE11-C5-RESULT-20260928.md",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\.agent-work\\GUIDE11-C5-RESULT-20260928.md",
+      "byte_count": 2294,
+      "sha256": "4d05d0d15c0740fedb86a9773d07d708916e15c33ffcc6ec27f2e6562930666f"
+    },
+    {
+      "path": "results/GUIDE11-FINAL-PACKAGE-MANIFEST-20260929.md",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\.agent-work\\GUIDE11-FINAL-PACKAGE-MANIFEST-20260929.md",
+      "byte_count": 843,
+      "sha256": "b22863af69114bb8ff7cc1975d18b96bf3614616f646ec290bab3bad6f23d748"
+    },
+    {
+      "path": "results/GUIDE11-FINAL-REPORT-20260929.md",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\.agent-work\\GUIDE11-FINAL-REPORT-20260929.md",
+      "byte_count": 4111,
+      "sha256": "c5745c81c686611c06a685d2ac0863fdfbe09f0987d940492145a53db09f2f08"
+    },
+    {
+      "path": "results/GUIDE11-HUMAN-GATE-20260925-whole-second-shutter.md",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\.agent-work\\GUIDE11-HUMAN-GATE-20260925-whole-second-shutter.md",
+      "byte_count": 2380,
+      "sha256": "79787d0760af3ebacaeb636858b6495db2bc264772bf711cc6ab24e0455bbdb9"
+    },
+    {
+      "path": "results/GUIDE11-N1-RESULT-20260922.md",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\.agent-work\\GUIDE11-N1-RESULT-20260922.md",
+      "byte_count": 3041,
+      "sha256": "7554d3eb561fb953475d6a3682ab6531bc1e4343a4c694d8f5c37b9f593d96e6"
+    },
+    {
+      "path": "results/GUIDE11-PAUSE-20260928.md",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\.agent-work\\GUIDE11-PAUSE-20260928.md",
+      "byte_count": 2124,
+      "sha256": "e56fe7fc5d42097cb9caa9af501e6a1d7ffdcb9766c39215f61fdb1c5cc483a3"
+    },
+    {
+      "path": "results/GUIDE11-W2-PAUSE-20260923.md",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\.agent-work\\GUIDE11-W2-PAUSE-20260923.md",
+      "byte_count": 1761,
+      "sha256": "00cee297dbbef915a7f714148f285775f82b0c206c5fe9b5b759e857a638ab17"
+    },
+    {
+      "path": "results/GUIDE11-W2-RESULT-20260923.md",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\.agent-work\\GUIDE11-W2-RESULT-20260923.md",
+      "byte_count": 1926,
+      "sha256": "d266420ad74dfe68ada62b210809ac6477f44e847b559b17971ba269bfef619f"
+    },
+    {
+      "path": "results/GUIDE11-W3-RESULT-20260924.md",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\.agent-work\\GUIDE11-W3-RESULT-20260924.md",
+      "byte_count": 2356,
+      "sha256": "89d23aec0fe8485438d44119d8c6748cfdcadf8587e2beff6f502be3152a7a65"
+    },
+    {
+      "path": "results/GUIDE11-W4-RESULT-20260924.md",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\.agent-work\\GUIDE11-W4-RESULT-20260924.md",
+      "byte_count": 2065,
+      "sha256": "7971135e5ec8d83fc90d41a5238e05b56021459dec376fd068b2ef4675c2f6f7"
+    },
+    {
+      "path": "results/GUIDE11-W8P6-RESULT-20260928.md",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\.agent-work\\GUIDE11-W8P6-RESULT-20260928.md",
+      "byte_count": 3111,
+      "sha256": "d4604d8a69a9d6cbac3ce5de7d1bc1fd78b74d53276ae40c1e80c2a5c3ec853a"
+    },
+    {
+      "path": "derived/c1-batch1-analysis-20260925.json",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\tmp\\c1-batch1-analysis-20260925.json",
+      "byte_count": 22117,
+      "sha256": "fa90e851465442a41dfb046d93180c1eb4d764d07e090ef67b489788e98a2264"
+    },
+    {
+      "path": "derived/c1-batch2-analysis-20260927.json",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\tmp\\c1-batch2-analysis-20260927.json",
+      "byte_count": 16415,
+      "sha256": "598589fe4ed2b50ecdf449fc89e7aa11369cd46a7c11f27db7cc09e42a6ca518"
+    },
+    {
+      "path": "derived/c1-confirm-analysis-20260928.json",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\tmp\\c1-confirm-analysis-20260928.json",
+      "byte_count": 19626,
+      "sha256": "7e6c72c2cbf5bf4e4ab62833e1eae1e8f1cf8d43b37b33838c43e6525bbda1a5"
+    },
+    {
+      "path": "derived/c2-reachability-assessment-20260928.json",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\tmp\\c2-reachability-assessment-20260928.json",
+      "byte_count": 6242,
+      "sha256": "f70c528e938ad6255a2843eda13eeebe3e5dd9b092c3b93f39fc1a925108962b"
+    },
+    {
+      "path": "derived/c2-s25-analysis-20260928.json",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\tmp\\c2-s25-analysis-20260928.json",
+      "byte_count": 5071,
+      "sha256": "e3bf9429853968cf75635453e7467adff30272ab50c8b0f12cce00c83658923e"
+    },
+    {
+      "path": "derived/c3-anchor-self-check-20260925.json",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\tmp\\c3-anchor-self-check-20260925.json",
+      "byte_count": 8269,
+      "sha256": "a7099f878200497ada80466e9ebf1b8135234970adc20e373d5d267ea1c3a50c"
+    },
+    {
+      "path": "derived/c3-command-model-20260928.json",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\tmp\\c3-command-model-20260928.json",
+      "byte_count": 6778,
+      "sha256": "8b22c06a7cf1f9efbcc56c440ab316c8cace1a97c24baaf113c69b4cc33b62d5"
+    },
+    {
+      "path": "derived/c5-int-analysis-20260928.json",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\tmp\\c5-int-analysis-20260928.json",
+      "byte_count": 15764,
+      "sha256": "03e5df7c23a008c5378e8c6b864e11f39289a66ca0d7efdc0e5cc08a958f705a"
+    },
+    {
+      "path": "derived/guide11-final-coverage-20260929.json",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\tmp\\guide11-final-coverage-20260929.json",
+      "byte_count": 14279,
+      "sha256": "6a78eb2381d417133bcac10e8ad313a295190710cf59f622379ee62d076c9c07"
+    },
+    {
+      "path": "derived/guide11-white-final-report-20260928.json",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\tmp\\guide11-white-final-report-20260928.json",
+      "byte_count": 126110,
+      "sha256": "9ecb7d8c91eb6df8f72d28e495f3a03621c0a1980f71141dacdd220630df80dc"
+    },
+    {
+      "path": "derived/n1-combined-analysis-20260922.json",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\tmp\\n1-combined-analysis-20260922.json",
+      "byte_count": 28875,
+      "sha256": "8dc041ee69c68ee72ddad0a86c0e357b60646fc9e120770198a7c81a77c13e1e"
+    },
+    {
+      "path": "derived/w1-frozen-targets-20260922.json",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\tmp\\w1-frozen-targets-20260922.json",
+      "byte_count": 109553,
+      "sha256": "c8e21bbf4b6e0ba80f3ebab0f85cb7125f784955f2d24bd76549bde90737afec"
+    },
+    {
+      "path": "derived/w2-selection-20260923.json",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\tmp\\w2-selection-20260923.json",
+      "byte_count": 54440,
+      "sha256": "1caa8667a912934d97a1266114c06cfa25738a461d72e94d9f2e2bc75b82de38"
+    },
+    {
+      "path": "derived/w3-holdout-analysis-20260924.json",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\tmp\\w3-holdout-analysis-20260924.json",
+      "byte_count": 21872,
+      "sha256": "cbee55a635b3e7669e4c77d8d2f20cf99ba70886beddcd1f2ca4ec6ad4b787b1"
+    },
+    {
+      "path": "derived/w4-protocol-analysis-20260924.json",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\tmp\\w4-protocol-analysis-20260924.json",
+      "byte_count": 6781,
+      "sha256": "e522835b13596bc094f535ac46c82a3dd3983c2432c2f6426bf202907e7764d9"
+    },
+    {
+      "path": "scripts/analyze_c1_batch1_20260925.py",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\tmp\\analyze_c1_batch1_20260925.py",
+      "byte_count": 4441,
+      "sha256": "3f8d484a4a6e1fe895288760e5419c3e10355485ecba86dfec27c73acfca5211"
+    },
+    {
+      "path": "scripts/analyze_c1_batch2_20260927.py",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\tmp\\analyze_c1_batch2_20260927.py",
+      "byte_count": 5776,
+      "sha256": "1aeb9e4698e6366568434d4a9b03b389f52cb8b3600ded46548383fb03519162"
+    },
+    {
+      "path": "scripts/analyze_c1_confirm_20260928.py",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\tmp\\analyze_c1_confirm_20260928.py",
+      "byte_count": 9264,
+      "sha256": "1d7846b3bd8ab91ee26989bd890d34ff199e44d46153c42c0e9b4e5db739b08b"
+    },
+    {
+      "path": "scripts/analyze_c2_s25_20260928.py",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\tmp\\analyze_c2_s25_20260928.py",
+      "byte_count": 9113,
+      "sha256": "578f12fdc37067f06e9f2cafd44c14c5ba2ae588e7d5d93d29931a0be5f5517f"
+    },
+    {
+      "path": "scripts/analyze_c4_holdout_20260928.py",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\tmp\\analyze_c4_holdout_20260928.py",
+      "byte_count": 12435,
+      "sha256": "8e8b2547d7e2b20d82b6cd2db4e27015e3b70370c8590442e59a8741e13c30de"
+    },
+    {
+      "path": "scripts/analyze_c5_int_20260928.py",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\tmp\\analyze_c5_int_20260928.py",
+      "byte_count": 6506,
+      "sha256": "c01f6bf75727b310d92384ea1d8c2960ac44240d504fdb6a4bbbc3d589038d24"
+    },
+    {
+      "path": "scripts/analyze_w2_selection_20260923.py",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\tmp\\analyze_w2_selection_20260923.py",
+      "byte_count": 6088,
+      "sha256": "59a8c0ffdce59ab2a6e52c780a0e1d0a888a04960f958010314b7ca975066fb2"
+    },
+    {
+      "path": "scripts/analyze_w3_holdout_20260924.py",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\tmp\\analyze_w3_holdout_20260924.py",
+      "byte_count": 7199,
+      "sha256": "23dd8df6480032e93110d1a21a5d4422ad4d09a7e109db42623a818659e19a72"
+    },
+    {
+      "path": "scripts/analyze_w4_protocol_20260924.py",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\tmp\\analyze_w4_protocol_20260924.py",
+      "byte_count": 4285,
+      "sha256": "9db28894de35b12bf80189ab48b23171d8b049c99b96e51cc88418a13128e29b"
+    },
+    {
+      "path": "scripts/build_final_coverage_20260929.py",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\tmp\\build_final_coverage_20260929.py",
+      "byte_count": 7512,
+      "sha256": "693e0ce8a9f7112edf60492c682919099bfc1e177738fbc4fc69a642a7371622"
+    },
+    {
+      "path": "scripts/fit_c3_model_20260928.py",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\tmp\\fit_c3_model_20260928.py",
+      "byte_count": 3888,
+      "sha256": "9cfecf6889a07b41f0f959da4b563365ff62d3bcc509983e7d9c67f2be99ef20"
+    },
+    {
+      "path": "scripts/recompute_w8_guide11_20260928.py",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\tmp\\recompute_w8_guide11_20260928.py",
+      "byte_count": 11420,
+      "sha256": "046a582b5727449dc054f3cdeb0a6b8c6430f55c2127c71a7259f0ab6ea2ce13"
+    },
+    {
+      "path": "scripts/assess_c2_reachability_20260928.py",
+      "source": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\tmp\\assess_c2_reachability_20260928.py",
+      "byte_count": 6246,
+      "sha256": "9708550d8a060ceeb121a441030034c67a361249afb92751eb3b34e3456b2da5"
+    }
+  ]
+}
