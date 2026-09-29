@@ -1,0 +1,464 @@
+{
+  "color_points": [
+    {
+      "hue": 0,
+      "lowest_separable_int": 100,
+      "sat": 0,
+      "separable_int_levels": [
+        100
+      ],
+      "tiers": [
+        {
+          "frame_classification": "normal",
+          "int_percent": 100,
+          "observable": true,
+          "offset_drift_from_int100": {
+            "log_B_over_G": 0.0,
+            "log_R_over_G": 0.0
+          },
+          "offset_strip_minus_ray": {
+            "log_B_over_G": -0.010629338265551125,
+            "log_R_over_G": 0.07932693798523038
+          },
+          "ray_bracket_consistent": true,
+          "ray_z_mean": {
+            "log_B_over_G": -0.373754078455406,
+            "log_R_over_G": -0.736334281993168
+          },
+          "separable": true,
+          "status": "complete",
+          "strip_z": {
+            "log_B_over_G": -0.3843834167209571,
+            "log_R_over_G": -0.6570073440079376
+          },
+          "z_distance_to_paired_ray": 0.08003590395613769
+        },
+        {
+          "frame_classification": "normal",
+          "int_percent": 50,
+          "observable": true,
+          "offset_drift_from_int100": {
+            "log_B_over_G": -0.014932943362332696,
+            "log_R_over_G": -0.013707324915917307
+          },
+          "offset_strip_minus_ray": {
+            "log_B_over_G": -0.02556228162788382,
+            "log_R_over_G": 0.06561961306931308
+          },
+          "ray_bracket_consistent": true,
+          "ray_own_drift_from_int100": 0.006554578214556863,
+          "ray_z_mean": {
+            "log_B_over_G": -0.36723218712278327,
+            "log_R_over_G": -0.7356805014365557
+          },
+          "separable": false,
+          "status": "complete",
+          "strip_z": {
+            "log_B_over_G": -0.3927944687506671,
+            "log_R_over_G": -0.6700608883672426
+          },
+          "z_distance_to_paired_ray": 0.07042275102116936
+        },
+        {
+          "frame_classification": "normal",
+          "int_percent": 20,
+          "observable": true,
+          "offset_drift_from_int100": {
+            "log_B_over_G": -0.029937329804388624,
+            "log_R_over_G": -0.00753492744413542
+          },
+          "offset_strip_minus_ray": {
+            "log_B_over_G": -0.04056666806993975,
+            "log_R_over_G": 0.07179201054109496
+          },
+          "ray_bracket_consistent": true,
+          "ray_own_drift_from_int100": 0.021003407179132065,
+          "ray_z_mean": {
+            "log_B_over_G": -0.353481781341197,
+            "log_R_over_G": -0.7418276491614584
+          },
+          "separable": false,
+          "status": "complete",
+          "strip_z": {
+            "log_B_over_G": -0.39404844941113676,
+            "log_R_over_G": -0.6700356386203634
+          },
+          "z_distance_to_paired_ray": 0.08246058049655823
+        },
+        {
+          "frame_classification": "normal",
+          "int_percent": 5,
+          "observable": true,
+          "offset_drift_from_int100": {
+            "log_B_over_G": 0.09746863257324223,
+            "log_R_over_G": -0.03663652975476295
+          },
+          "offset_strip_minus_ray": {
+            "log_B_over_G": 0.0868392943076911,
+            "log_R_over_G": 0.042690408230467436
+          },
+          "ray_bracket_consistent": true,
+          "ray_own_drift_from_int100": 0.04400934995687681,
+          "ray_z_mean": {
+            "log_B_over_G": -0.4026237373277539,
+            "log_R_over_G": -0.7031173333039654
+          },
+          "separable": false,
+          "status": "complete",
+          "strip_z": {
+            "log_B_over_G": -0.3157844430200628,
+            "log_R_over_G": -0.660426925073498
+          },
+          "z_distance_to_paired_ray": 0.09676535532276909
+        }
+      ]
+    },
+    {
+      "hue": 90,
+      "lowest_separable_int": 50,
+      "sat": 50,
+      "separable_int_levels": [
+        100,
+        50
+      ],
+      "tiers": [
+        {
+          "frame_classification": "normal",
+          "int_percent": 100,
+          "observable": true,
+          "offset_drift_from_int100": {
+            "log_B_over_G": 0.0,
+            "log_R_over_G": 0.0
+          },
+          "offset_strip_minus_ray": {
+            "log_B_over_G": -0.10319835910434538,
+            "log_R_over_G": -0.05566299921662077
+          },
+          "ray_bracket_consistent": true,
+          "ray_z_mean": {
+            "log_B_over_G": -0.7973295739725383,
+            "log_R_over_G": -0.8811516686311123
+          },
+          "separable": true,
+          "status": "complete",
+          "strip_z": {
+            "log_B_over_G": -0.9005279330768837,
+            "log_R_over_G": -0.936814667847733
+          },
+          "z_distance_to_paired_ray": 0.11725302044561134
+        },
+        {
+          "frame_classification": "normal",
+          "int_percent": 50,
+          "observable": true,
+          "offset_drift_from_int100": {
+            "log_B_over_G": -0.0007967674127966617,
+            "log_R_over_G": 0.009287847223854562
+          },
+          "offset_strip_minus_ray": {
+            "log_B_over_G": -0.10399512651714204,
+            "log_R_over_G": -0.046375151992766206
+          },
+          "ray_bracket_consistent": true,
+          "ray_own_drift_from_int100": 0.01590464529306569,
+          "ray_z_mean": {
+            "log_B_over_G": -0.7945170235145986,
+            "log_R_over_G": -0.896805655401893
+          },
+          "separable": true,
+          "status": "complete",
+          "strip_z": {
+            "log_B_over_G": -0.8985121500317407,
+            "log_R_over_G": -0.9431808073946593
+          },
+          "z_distance_to_paired_ray": 0.11386676890852988
+        },
+        {
+          "frame_classification": "normal",
+          "int_percent": 20,
+          "observable": true,
+          "offset_drift_from_int100": {
+            "log_B_over_G": 0.07183757896805809,
+            "log_R_over_G": 0.062130453941371955
+          },
+          "offset_strip_minus_ray": {
+            "log_B_over_G": -0.03136078013628729,
+            "log_R_over_G": 0.006467454724751187
+          },
+          "ray_bracket_consistent": true,
+          "ray_own_drift_from_int100": 0.031541604658986366,
+          "ray_z_mean": {
+            "log_B_over_G": -0.7997190755985792,
+            "log_R_over_G": -0.9126026321528065
+          },
+          "separable": false,
+          "status": "complete",
+          "strip_z": {
+            "log_B_over_G": -0.8310798557348665,
+            "log_R_over_G": -0.9061351774280553
+          },
+          "z_distance_to_paired_ray": 0.032020719875937485
+        },
+        {
+          "frame_classification": "normal",
+          "int_percent": 5,
+          "observable": true,
+          "offset_drift_from_int100": {
+            "log_B_over_G": 0.12523161789885628,
+            "log_R_over_G": 0.04232458594950317
+          },
+          "offset_strip_minus_ray": {
+            "log_B_over_G": 0.0220332587945109,
+            "log_R_over_G": -0.0133384132671176
+          },
+          "ray_bracket_consistent": true,
+          "ray_own_drift_from_int100": 0.07693784364283941,
+          "ray_z_mean": {
+            "log_B_over_G": -0.8719708267177047,
+            "log_R_over_G": -0.8624938238187496
+          },
+          "separable": false,
+          "status": "complete",
+          "strip_z": {
+            "log_B_over_G": -0.8499375679231937,
+            "log_R_over_G": -0.8758322370858672
+          },
+          "z_distance_to_paired_ray": 0.025756120856804326
+        }
+      ]
+    },
+    {
+      "hue": 0,
+      "lowest_separable_int": 100,
+      "sat": 100,
+      "separable_int_levels": [
+        100
+      ],
+      "tiers": [
+        {
+          "frame_classification": "normal",
+          "int_percent": 100,
+          "observable": true,
+          "offset_drift_from_int100": {
+            "log_B_over_G": 0.0,
+            "log_R_over_G": 0.0
+          },
+          "offset_strip_minus_ray": {
+            "log_B_over_G": 1.1324914257246577,
+            "log_R_over_G": -1.064217407218236
+          },
+          "ray_bracket_consistent": true,
+          "ray_z_mean": {
+            "log_B_over_G": -1.5530519550052828,
+            "log_R_over_G": 1.5499700154853395
+          },
+          "separable": true,
+          "status": "complete",
+          "strip_z": {
+            "log_B_over_G": -0.42056052928062504,
+            "log_R_over_G": 0.4857526082671036
+          },
+          "z_distance_to_paired_ray": 1.5540577592760743
+        },
+        {
+          "frame_classification": "normal",
+          "int_percent": 50,
+          "observable": true,
+          "offset_drift_from_int100": {
+            "log_B_over_G": -0.10258784376812846,
+            "log_R_over_G": -0.007644477685180062
+          },
+          "offset_strip_minus_ray": {
+            "log_B_over_G": 1.0299035819565292,
+            "log_R_over_G": -1.071861884903416
+          },
+          "ray_bracket_consistent": true,
+          "ray_own_drift_from_int100": 0.033156726308632256,
+          "ray_z_mean": {
+            "log_B_over_G": -1.5257052775587563,
+            "log_R_over_G": 1.5687190883195141
+          },
+          "separable": false,
+          "status": "complete",
+          "strip_z": {
+            "log_B_over_G": -0.49580169560222703,
+            "log_R_over_G": 0.4968572034160981
+          },
+          "z_distance_to_paired_ray": 1.486468731065539
+        },
+        {
+          "frame_classification": "normal",
+          "int_percent": 20,
+          "observable": true,
+          "offset_drift_from_int100": {
+            "log_B_over_G": -0.0938644394091881,
+            "log_R_over_G": -0.07881053868003884
+          },
+          "offset_strip_minus_ray": {
+            "log_B_over_G": 1.0386269863154696,
+            "log_R_over_G": -1.1430279458982748
+          },
+          "ray_bracket_consistent": true,
+          "ray_own_drift_from_int100": 0.035874403381504216,
+          "ray_z_mean": {
+            "log_B_over_G": -1.5659466519142107,
+            "log_R_over_G": 1.583446867332635
+          },
+          "separable": false,
+          "status": "complete",
+          "strip_z": {
+            "log_B_over_G": -0.5273196655987412,
+            "log_R_over_G": 0.44041892143436023
+          },
+          "z_distance_to_paired_ray": 1.5444283414283695
+        },
+        {
+          "frame_classification": "normal",
+          "int_percent": 5,
+          "observable": true,
+          "offset_drift_from_int100": {
+            "log_B_over_G": -0.14521796929811703,
+            "log_R_over_G": -0.08177069629041478
+          },
+          "offset_strip_minus_ray": {
+            "log_B_over_G": 0.9872734564265406,
+            "log_R_over_G": -1.1459881035086508
+          },
+          "ray_bracket_consistent": true,
+          "ray_own_drift_from_int100": 0.06362121691108322,
+          "ray_z_mean": {
+            "log_B_over_G": -1.583951897911636,
+            "log_R_over_G": 1.605583438052479
+          },
+          "separable": false,
+          "status": "complete",
+          "strip_z": {
+            "log_B_over_G": -0.5966784414850954,
+            "log_R_over_G": 0.4595953345438282
+          },
+          "z_distance_to_paired_ray": 1.5126128424510228
+        }
+      ]
+    },
+    {
+      "hue": 180,
+      "lowest_separable_int": 100,
+      "sat": 100,
+      "separable_int_levels": [
+        100
+      ],
+      "tiers": [
+        {
+          "frame_classification": "normal",
+          "int_percent": 100,
+          "observable": true,
+          "offset_drift_from_int100": {
+            "log_B_over_G": 0.0,
+            "log_R_over_G": 0.0
+          },
+          "offset_strip_minus_ray": {
+            "log_B_over_G": 0.3915157557443701,
+            "log_R_over_G": 0.6213873680056996
+          },
+          "ray_bracket_consistent": true,
+          "ray_z_mean": {
+            "log_B_over_G": -0.32928314341150255,
+            "log_R_over_G": -2.0923143445030963
+          },
+          "separable": true,
+          "status": "complete",
+          "strip_z": {
+            "log_B_over_G": 0.06223261233286753,
+            "log_R_over_G": -1.4709269764973967
+          },
+          "z_distance_to_paired_ray": 0.7344432232059439
+        },
+        {
+          "frame_classification": "normal",
+          "int_percent": 50,
+          "observable": true,
+          "offset_drift_from_int100": {
+            "log_B_over_G": -0.004413073966693604,
+            "log_R_over_G": 0.047243141914845355
+          },
+          "offset_strip_minus_ray": {
+            "log_B_over_G": 0.3871026817776765,
+            "log_R_over_G": 0.668630509920545
+          },
+          "ray_bracket_consistent": true,
+          "ray_own_drift_from_int100": 0.05972192944919278,
+          "ray_z_mean": {
+            "log_B_over_G": -0.3372904928823404,
+            "log_R_over_G": -2.151497038017216
+          },
+          "separable": false,
+          "status": "complete",
+          "strip_z": {
+            "log_B_over_G": 0.04981218889533608,
+            "log_R_over_G": -1.482866528096671
+          },
+          "z_distance_to_paired_ray": 0.772602902554784
+        },
+        {
+          "frame_classification": "saturated",
+          "int_percent": 20,
+          "observable": false,
+          "offset_drift_from_int100": {
+            "log_B_over_G": 0.03154537562135212,
+            "log_R_over_G": 0.04999451892276707
+          },
+          "offset_strip_minus_ray": {
+            "log_B_over_G": 0.4230611313657222,
+            "log_R_over_G": 0.6713818869284667
+          },
+          "ray_bracket_consistent": true,
+          "ray_own_drift_from_int100": 0.01325693569881711,
+          "ray_z_mean": {
+            "log_B_over_G": -0.33890934874170353,
+            "log_R_over_G": -2.101429305559699
+          },
+          "separable": false,
+          "status": "complete",
+          "strip_z": {
+            "log_B_over_G": 0.08415178262401868,
+            "log_R_over_G": -1.4300474186312322
+          },
+          "z_distance_to_paired_ray": 0.7935580375549562
+        },
+        {
+          "frame_classification": "normal",
+          "int_percent": 5,
+          "observable": true,
+          "offset_drift_from_int100": {
+            "log_B_over_G": 0.11856224866091097,
+            "log_R_over_G": -0.008126033939758415
+          },
+          "offset_strip_minus_ray": {
+            "log_B_over_G": 0.5100780044052811,
+            "log_R_over_G": 0.6132613340659412
+          },
+          "ray_bracket_consistent": true,
+          "ray_own_drift_from_int100": 0.06571993845824578,
+          "ray_z_mean": {
+            "log_B_over_G": -0.36345679164069333,
+            "log_R_over_G": -2.0361781522768405
+          },
+          "separable": false,
+          "status": "complete",
+          "strip_z": {
+            "log_B_over_G": 0.1466212127645877,
+            "log_R_over_G": -1.4229168182108993
+          },
+          "z_distance_to_paired_ray": 0.7976647381189743
+        }
+      ]
+    }
+  ],
+  "drift_tolerance": 0.01,
+  "int_separable": true,
+  "overall_lowest_separable_int": 50,
+  "rule": "tier separable iff strip-Ray offset drift from the INT100 baseline stays within 0.01 on both log ratios and the strip frame is observable",
+  "run_root": "D:\\rgbww-optimizer\\guide11-c5\\formal-c5-20260928-r1",
+  "schema": "guide11_c5_int_separability_v1",
+  "steady_claim": false
+}
