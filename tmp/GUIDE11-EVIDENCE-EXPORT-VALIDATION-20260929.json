@@ -1,0 +1,30 @@
+{
+  "assertions": {
+    "all_w2_confirmations_not_acquired": true,
+    "c4_derived_present": true,
+    "frozen_lut_present": true,
+    "lut_matched_w2_commands_9": true,
+    "manifest_matches_zip": true,
+    "observation_rows_equal_unique_raw": true,
+    "prior_machine_manifest_present": true,
+    "replay_zero_diff": true
+  },
+  "hash_mismatch_members": [],
+  "manifest_file_count": 1729,
+  "manifest_members_missing_from_zip": [],
+  "offline_checks_reference": "replay/OFFLINE-CHECKS-20260929.json inside the archive",
+  "overall": "pass",
+  "schema": "guide11_evidence_export_validation_v1",
+  "size_mismatch_members": [],
+  "spot_decompress": {
+    "block06_R_trimmed_mean_per_second": 803.8496142586497,
+    "member": "runs/guide11-w2/formal-w2-20260922/measurements/000-ray-guide11-w2-cct1800-gm70-candidate0.patch-statistics.json",
+    "parsed_ok": true
+  },
+  "zip_byte_count": 19570627,
+  "zip_crc_testzip": "ok",
+  "zip_member_count": 1730,
+  "zip_members_missing_from_manifest": [],
+  "zip_path": "C:\\Users\\iBobb\\Projects\\WLED-RGBWW\\.agent-work\\guide11\\GUIDE11-COMPLETE-PROCESSED-EVIDENCE-20260929.zip",
+  "zip_sha256": "5c348c023027e96b149edf41b4654d26b2dfc26e868add29f3b5e8243f9d5e65"
+}
