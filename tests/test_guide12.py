@@ -947,6 +947,41 @@ class W12FaceStepSolverTests(unittest.TestCase):
                 self.assertTrue(0 <= result["command"][short[c]] <= 4095)
             self.assertEqual(result["command"]["ww"], 4095)
 
+    def test_unmodeled_zero_slope_channel_cannot_move(self):
+        # Green was never probed (zero sensitivity column); the box
+        # enumeration must pin it instead of tie-breaking it to a bound
+        # (2026-09-30 1800/70 defect: a -768 green step entered an
+        # unmeasured physical direction with a fabricated prediction).
+        sens = {
+            "cct_K": dict(self.SENS_N["cct_K"]),
+            "mired": dict(self.SENS_N["mired"]),
+            "duv": dict(self.SENS_N["duv"]),
+        }
+        for output in sens:
+            sens[output]["green"] = 0.0
+        base_error = {"cct_K": -0.5, "mired": 2.5, "duv": -0.4}
+        result = guide12.solve_guide12_w12_face_step(
+            self.BASE, base_error, sens, face_channels=["warm_white"],
+        )
+        self.assertEqual(result["command"]["g"], self.BASE["g"])
+        self.assertEqual(result["unmodeled_locked_channels"], ["g"])
+        self.assertNotIn("g", result["active_bound_channels"])
+
+    def test_all_directions_unmodeled_is_rejected(self):
+        sens = {
+            "cct_K": {c: 0.0 for c in
+                      ("cold_white", "warm_white", "red", "green", "blue")},
+            "mired": {c: 0.0 for c in
+                      ("cold_white", "warm_white", "red", "green", "blue")},
+            "duv": {c: 0.0 for c in
+                    ("cold_white", "warm_white", "red", "green", "blue")},
+        }
+        base_error = {"cct_K": 0.0, "mired": 3.0, "duv": 0.0}
+        with self.assertRaises(ValueError):
+            guide12.solve_guide12_w12_face_step(
+                self.BASE, base_error, sens, face_channels=["warm_white"],
+            )
+
     def test_half_scale_stays_inside_box(self):
         base_error = {"cct_K": -0.5, "mired": 2.5, "duv": -0.4}
         result = guide12.solve_guide12_w12_face_step(

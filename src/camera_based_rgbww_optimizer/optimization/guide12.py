@@ -746,6 +746,24 @@ def solve_guide12_w12_face_step(
     if np.any(lower > upper):
         raise ValueError("GUIDE12 W12 face leaves an infeasible step box")
     matrix = sensitivity[np.ix_(list(solve_rows), list(range(len(_LONG_CHANNELS))))]
+    # Channels whose measured sensitivity column is zero in the solve
+    # subspace are UNMODELED directions: pin them so the box enumeration
+    # cannot move them (tie-breaking would otherwise inject arbitrary moves
+    # with real physical effect into unmeasured axes, e.g. a -768 green step
+    # on a face whose green axis was never probed).
+    unmodeled = [
+        i for i in range(len(_LONG_CHANNELS))
+        if _LONG_CHANNELS[i] not in locked
+        and float(np.linalg.norm(matrix[:, i])) <= 1e-12
+    ]
+    for i in unmodeled:
+        lower[i] = 0.0
+        upper[i] = 0.0
+    if all(
+        float(np.linalg.norm(matrix[:, i])) <= 1e-12
+        for i in range(len(_LONG_CHANNELS)) if i not in locked
+    ):
+        raise ValueError("GUIDE12 W12 step lacks any modeled free direction")
     delta = np.asarray(
         solve_box_constrained_least_squares(
             matrix, -base_error[list(solve_rows)], lower, upper,
@@ -771,7 +789,7 @@ def solve_guide12_w12_face_step(
     at_bound = [
         _SHORT_BY_LONG[_LONG_CHANNELS[i]]
         for i in range(len(_LONG_CHANNELS))
-        if _LONG_CHANNELS[i] not in locked and (
+        if i not in locked and i not in unmodeled and (
             abs(delta[i] - lower[i]) <= 1e-9 or abs(delta[i] - upper[i]) <= 1e-9
         )
     ]
@@ -780,6 +798,9 @@ def solve_guide12_w12_face_step(
         "delta": final_delta,
         "scale": scale,
         "active_bound_channels": at_bound,
+        "unmodeled_locked_channels": [
+            _SHORT_BY_LONG[_LONG_CHANNELS[i]] for i in unmodeled
+        ],
         "predicted_error_normalized": predicted_error,
         "predicted_E": max(abs(v) for v in predicted_error.values()),
         "solved_subspace": ["mired", "duv"],
