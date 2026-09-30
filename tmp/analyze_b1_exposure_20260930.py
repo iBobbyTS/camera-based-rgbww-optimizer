@@ -17,6 +17,10 @@ import math
 from pathlib import Path
 
 ROOT = Path("D:/rgbww-optimizer/guide12-batch1/formal-b1-20260929-r1")
+FOLLOWUP_ROOTS = (
+    Path("D:/rgbww-optimizer/guide12-batch1/formal-b1-white-reverse-20260930-r1"),
+    Path("D:/rgbww-optimizer/guide12-batch1/formal-b1-white-corrected-20260930-r1"),
+)
 OUT = Path("D:/rgbww-optimizer/guide12-batch1/derived/b1-exposure-qualification-20260930.json")
 PLANES = ("R", "G1", "G2", "B")
 Z_TOL = 0.01
@@ -24,16 +28,22 @@ P99_MARGIN_DN = 2.0
 
 
 def load_rows(name: str) -> list[dict]:
+    return load_rows_from(ROOT, name)
+
+
+def load_rows_from(root: Path, name: str) -> list[dict]:
     return [
         json.loads(line)
-        for line in (ROOT / name).read_text(encoding="utf-8").splitlines()
+        for line in (root / name).read_text(encoding="utf-8").splitlines()
         if line.strip()
     ]
 
 
-def frame_of(capture_id: str) -> dict:
+def frame_of(root_or_id, capture_id: str | None = None) -> dict:
+    root = Path(root_or_id) if capture_id is not None else ROOT
+    cid = capture_id if capture_id is not None else str(root_or_id)
     stats = json.loads(
-        (ROOT / "measurements" / f"{capture_id}.patch-statistics.json").read_text(
+        (root / "measurements" / f"{cid}.patch-statistics.json").read_text(
             encoding="utf-8"
         )
     )
@@ -55,7 +65,7 @@ def frame_of(capture_id: str) -> dict:
             "normalized_per_second": nps["trimmed_mean"],
         }
     return {
-        "capture_id": capture_id,
+        "capture_id": cid,
         "shutter": stats["exposure_metadata"].get("shutter") or stats.get("exposure_seconds"),
         "planes": planes,
     }
@@ -112,14 +122,25 @@ def main() -> None:
 
     classes = spec["analysis_contract"]["classes"]
     ladder_frames: dict[str, list[dict]] = {}
-    for row in captures:
+    all_steps = [(ROOT, row) for row in captures]
+    for followup in FOLLOWUP_ROOTS:
+        for row in load_rows_from(followup, "captures.jsonl"):
+            all_steps.append((followup, row))
+    followup_frames = []
+    for followup, row in all_steps:
         step = row.get("plan_step", {})
-        if step.get("ladder_class"):
+        if not step.get("ladder_class"):
+            continue
+        if followup == ROOT:
             ladder_frames.setdefault(step["ladder_class"], []).append(frame_of(str(row["capture_id"])))
+        else:
+            followup_frames.append((step["ladder_class"], frame_of(followup, str(row["capture_id"]))))
 
     classes_out = []
     for klass in classes:
-        frames = ladder_frames[klass["label"]]
+        frames = ladder_frames[klass["label"]] + [
+            f for label, f in followup_frames if label == klass["label"]
+        ]
         stops = []
         for frame in frames:
             entry = {
@@ -199,22 +220,26 @@ def main() -> None:
                 )
                 for plane in PLANES
             }
-        # Pair with the on-class sharing this shutter: 1/400 -> red/blue
-        # classes' selected-or-middle stop, 1/8 -> white class.
-        on_frames = [
+        # Pair with the qualified stop of the class family for this shutter:
+        # 1/8-family -> the white class, 1/400-family -> red/blue classes.
+        white_family = shutter == "1/8"
+        candidates = [
             stop for klass in classes_out
-            if (klass["label"] == "high_white_load") == (shutter == "1/8")
+            if (klass["label"] == "high_white_load") == white_family
             for stop in klass["stops"]
-            if (shutter == "1/8") or stop["shutter"] in (None, "1/400")
+            if stop["status"] == "main_layer_valid"
         ]
-        if start and on_frames:
-            on = on_frames[len(on_frames) // 2]
+        selected_ids = {klass["selected_capture_id"] for klass in classes_out}
+        on = next((f for f in candidates if f["capture_id"] in selected_ids), None)
+        if start and on is not None:
             ratios = {}
             z_on = z_of(on["planes"])
             z_corrected = {}
             g_corr = 0.5 * (
-                on["planes"]["G1"]["normalized_per_second"]
-                - start["planes"]["G1"]["normalized_per_second"]
+                (on["planes"]["G1"]["normalized_per_second"]
+                 - start["planes"]["G1"]["normalized_per_second"])
+                + (on["planes"]["G2"]["normalized_per_second"]
+                   - start["planes"]["G2"]["normalized_per_second"])
             ) if all(
                 on["planes"][p]["normalized_per_second"]
                 > start["planes"][p]["normalized_per_second"]
@@ -247,6 +272,14 @@ def main() -> None:
         "run_root": str(ROOT),
         "recovery_note": "engineering failure recovered without recapture; see recovery-note-20260930.md",
         "z_tolerance_adjacent_stop": Z_TOL,
+        "white_anchor_correction": (
+            "formal-b1 anchored the white class on the C1 color tier (1/8); the "
+            "W2 white line runs this command at 1/80 (recorded 0.0125 s, block "
+            "max ~12042). The railed 1/10..1/20 stops are retained as the "
+            "erroneous-anchor arm; qualification is evaluated on the corrected "
+            "1/100 + 1/80 arm (formal-b1-white-corrected-20260930-r1). No "
+            "fixture brightness change occurred."
+        ),
         "p99_margin_dn": P99_MARGIN_DN,
         "classes": classes_out,
         "all_off": all_off_out,
