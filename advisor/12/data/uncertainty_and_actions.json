@@ -1,0 +1,74 @@
+[
+  {
+    "id": "U1",
+    "question": "九条W2采用命令下一独立操作的误差",
+    "status": "not_acquired",
+    "known": "0/9有独立确认；选择帧同候选新Ray比较7/9点通过",
+    "next": "W12-1冻结实际命令，W12-2至少三次独立确认；合法N2可预登记复用",
+    "cannot_replace_with": "选择帧、不同命令留出、历史Ray"
+  },
+  {
+    "id": "U2",
+    "question": "当前环境光对弱CFA色比的影响",
+    "status": "not_acquired",
+    "known": "GUIDE11没有ambient/all-off照片",
+    "next": "G12 all-off按实际曝光前后成对，逐CFA计算z敏感性及区间；必要时遮光重做受影响目标",
+    "cannot_replace_with": "Ray单通道变化百分比"
+  },
+  {
+    "id": "U3",
+    "question": "历史温度与照度的数值",
+    "status": "historically_not_recorded_irrecoverable",
+    "known": "无记录，不能追溯",
+    "next": "不补造；未来有既有传感器则记录，无则只估计组合会话影响"
+  },
+  {
+    "id": "U4",
+    "question": "纯相机噪声和LED/PWM噪声各占多少",
+    "status": "structurally_not_identifiable_with_current_design",
+    "known": "burst包含两者，N1没有独立稳定照明参考",
+    "next": "不制造比例；N2报告源内短时组合分量和区间，不因此要求租仪器"
+  },
+  {
+    "id": "U5",
+    "question": "cycle/session/order可迁移预测分布",
+    "status": "design_underidentified_in_N1",
+    "known": "每点两个循环位于两个会话，不能完全分开",
+    "next": "N2三会话每会话两循环、源顺序平衡及风险留出转移检查"
+  },
+  {
+    "id": "U6",
+    "question": "可否用旧C3报告每Hue覆盖",
+    "status": "falsified_measurement_mapping",
+    "known": "SAT0混CCT；Ray自身反解H60/S25→H174.1/S16",
+    "next": "C12-1真实HSI S0与独立Ray标签自反解验证；失败区域不用百分比"
+  },
+  {
+    "id": "U7",
+    "question": "彩光是否已经在满幅面搜索到头",
+    "status": "not_established_invalid_search_inputs",
+    "known": "主B1 24/32候选有原生白块平台；后续差分使用它们",
+    "next": "原生曝光资格后有效满幅face方向与有界信赖域搜索；预算终止不写物理极限"
+  },
+  {
+    "id": "U8",
+    "question": "FAST/LONG变化中温度的因果份额",
+    "status": "protocol_period_confounded",
+    "known": "四点全FAST先LONG后，单对照",
+    "next": "W12-4同命令平衡/反顺序复验；仍不可测温则只报告协议关联及组合影响"
+  },
+  {
+    "id": "U9",
+    "question": "连续白光/Hue-SAT运行域精度",
+    "status": "not_validated",
+    "known": "白插值满幅1/11点通过；C4产品层10/10 false",
+    "next": "真正运行时满幅函数冻结、新非节点/周期/固定低SAT留出；不以端点证明全区间"
+  },
+  {
+    "id": "U10",
+    "question": "无条件光谱/人眼/所有相机等价与物理全局色域",
+    "status": "outside_project_estimand",
+    "known": "项目是指定相机观察者、Ray100和strip满幅的相对复制",
+    "next": "不外推，不借此否定已量化的相机观察者结果"
+  }
+]

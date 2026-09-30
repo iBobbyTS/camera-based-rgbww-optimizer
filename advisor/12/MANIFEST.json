@@ -1,0 +1,77 @@
+{
+  "schema": "guide12_package_manifest_v1",
+  "date": "2026-09-29",
+  "self_hash_excluded": true,
+  "files": [
+    {
+      "path": "12.GUIDE.md",
+      "byte_count": 26588,
+      "sha256": "95ef86ef21d78ba7b78d781d062d61ffb35ded4d8af85284b5baa3bcefe19655"
+    },
+    {
+      "path": "12.RESEARCH.md",
+      "byte_count": 19206,
+      "sha256": "0bda5698af431deba1b07b48ff2fec8af299b2e2214ad572f664ec64d1a7790b"
+    },
+    {
+      "path": "CODEX_GUIDE12_IMPLEMENTATION_PROMPT.md",
+      "byte_count": 5663,
+      "sha256": "39b045a69fd5a56e8be6470baa70dc00924b3d6123e88def8dd83a0d41800805"
+    },
+    {
+      "path": "GUIDE12_DATA_PACKAGE_REQUIREMENTS.md",
+      "byte_count": 10818,
+      "sha256": "25c3237510b5e597458b4baa446a05d6b1b1a7327b03ea1d3da938d9cc29c78a"
+    },
+    {
+      "path": "README.md",
+      "byte_count": 2350,
+      "sha256": "838bc1256966da1da4c17d0cafcb6a02570e130ac730e1baaae84cc58777ba59"
+    },
+    {
+      "path": "REVIEW_TABLES.md",
+      "byte_count": 17512,
+      "sha256": "8c6491ba9408d033fe278807dea62ae35508d966f34662ed8e97eb49d7c5a1ba"
+    },
+    {
+      "path": "data/color_results.json",
+      "byte_count": 161089,
+      "sha256": "47eb0e4f4bcad974b7f27714b7c72a40190162bdeddd573b793e5ffe47b5ff51"
+    },
+    {
+      "path": "data/delivery_validation.json",
+      "byte_count": 1170,
+      "sha256": "cb13b15105dae8a3278d96c80c9826e76b9f10e96e608d3630eaf6a93b9a27c6"
+    },
+    {
+      "path": "data/hue_coverage_status.json",
+      "byte_count": 16912,
+      "sha256": "f9dbe5fabf3b36d791c115e4d3c6d167c9daef56fd647d822a574d2972bcd723"
+    },
+    {
+      "path": "data/review_recomputed.json",
+      "byte_count": 681607,
+      "sha256": "404d684aa8978e514e961e5f7289f1c149cacd917cd3da87153ae75b017600ae"
+    },
+    {
+      "path": "data/uncertainty_and_actions.json",
+      "byte_count": 3135,
+      "sha256": "e46365a43576267c4910c71ebba79b1a5fbbce116b04b741359a7e10e1fdb537"
+    },
+    {
+      "path": "data/uncertainty_results.json",
+      "byte_count": 18254,
+      "sha256": "c930f4f76ef6dc9c6ee37cde1db66b560a31f1e41377933453a4bd2dcd9f5ce9"
+    },
+    {
+      "path": "data/white_results.json",
+      "byte_count": 151153,
+      "sha256": "a1dd2079803ac96fc6a4428fbd822562376b37644679ac0b847f53c1a6123b2e"
+    },
+    {
+      "path": "reproduce_review.py",
+      "byte_count": 19797,
+      "sha256": "a6610fc5b1b6b2ead3f6372960d71fa7cc772f488be8bf71450ee6c693a47aa6"
+    }
+  ]
+}

@@ -1,0 +1,5236 @@
+{
+  "C1_two_independent_confirmations": [
+    {
+      "hue": 0,
+      "sat": 50,
+      "command": {
+        "b": 903,
+        "cw": 0,
+        "g": 903,
+        "r": 3835,
+        "ww": 0
+      },
+      "fullscale_actual": false,
+      "actual_pwm": {
+        "cw": 0,
+        "ww": 0,
+        "r": 3842,
+        "g": 829,
+        "b": 864
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "n_ray": 2,
+      "n_strip": 2,
+      "delta_z": [
+        -0.2184651150351934,
+        0.465842254289135
+      ],
+      "z_distance": 0.5145250357062554,
+      "ratio_percent": [
+        -19.624848220099363,
+        59.33556345059172
+      ],
+      "CI95_delta_z_conditional_t_df1": [
+        [
+          -0.22895580838379087,
+          0.4587524481061525
+        ],
+        [
+          -0.2079744216865959,
+          0.4729320604721175
+        ]
+      ],
+      "CI95_ratio_percent_conditional": [
+        [
+          -20.463631886498362,
+          58.20990026971129
+        ],
+        [
+          -18.777218813623143,
+          60.469235723157496
+        ]
+      ],
+      "CI_axis_order": [
+        "R/G",
+        "B/G"
+      ],
+      "CI_array_order": [
+        "lower",
+        "upper"
+      ],
+      "strip_repeat_distance_z": 0.0003427596091197151,
+      "PI95": null,
+      "interval_status": "source-independent normal repeat errors, conservative df1 marginal intervals; selection excluded; not simultaneous and not an across-session guarantee",
+      "coverage_Ray_sat": null,
+      "coverage_status": "map_unqualified; not 0 percent"
+    },
+    {
+      "hue": 0,
+      "sat": 100,
+      "command": {
+        "b": 0,
+        "cw": 0,
+        "g": 0,
+        "r": 2048,
+        "ww": 0
+      },
+      "fullscale_actual": false,
+      "actual_pwm": {
+        "cw": 0,
+        "ww": 0,
+        "r": 1997,
+        "g": 0,
+        "b": 0
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "n_ray": 2,
+      "n_strip": 2,
+      "delta_z": [
+        0.3316251733858433,
+        -0.8224301900015165
+      ],
+      "z_distance": 0.8867731801588956,
+      "ratio_percent": [
+        39.323053074675244,
+        -56.063737859423014
+      ],
+      "CI95_delta_z_conditional_t_df1": [
+        [
+          0.32835085436450145,
+          -0.8559534020181604
+        ],
+        [
+          0.33489949240718514,
+          -0.7889069779848726
+        ]
+      ],
+      "CI95_ratio_percent_conditional": [
+        [
+          38.86761099012744,
+          -57.51220815458241
+        ],
+        [
+          39.779988866005354,
+          -54.56588711626124
+        ]
+      ],
+      "CI_axis_order": [
+        "R/G",
+        "B/G"
+      ],
+      "CI_array_order": [
+        "lower",
+        "upper"
+      ],
+      "strip_repeat_distance_z": 0.00063840062493169,
+      "PI95": null,
+      "interval_status": "source-independent normal repeat errors, conservative df1 marginal intervals; selection excluded; not simultaneous and not an across-session guarantee",
+      "coverage_Ray_sat": null,
+      "coverage_status": "map_unqualified; not 0 percent"
+    },
+    {
+      "hue": 60,
+      "sat": 50,
+      "command": {
+        "b": 974,
+        "cw": 9,
+        "g": 4095,
+        "r": 4095,
+        "ww": 9
+      },
+      "fullscale_actual": true,
+      "actual_pwm": {
+        "cw": 28,
+        "ww": 28,
+        "r": 4095,
+        "g": 4095,
+        "b": 936
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "n_ray": 2,
+      "n_strip": 2,
+      "delta_z": [
+        -0.10270620659945429,
+        0.0011843750978047796
+      ],
+      "z_distance": 0.10271303528969479,
+      "ratio_percent": [
+        -9.760794863005993,
+        0.11850767469688533
+      ],
+      "CI95_delta_z_conditional_t_df1": [
+        [
+          -0.10626176758310402,
+          -0.0007955826497786302
+        ],
+        [
+          -0.09915064561580456,
+          0.0031643328453881893
+        ]
+      ],
+      "CI95_ratio_percent_conditional": [
+        [
+          -10.08107613277674,
+          -0.07952662578131978
+        ],
+        [
+          -9.439372786746976,
+          0.31693446314919177
+        ]
+      ],
+      "CI_axis_order": [
+        "R/G",
+        "B/G"
+      ],
+      "CI_array_order": [
+        "lower",
+        "upper"
+      ],
+      "strip_repeat_distance_z": 0.0005880716265416681,
+      "PI95": null,
+      "interval_status": "source-independent normal repeat errors, conservative df1 marginal intervals; selection excluded; not simultaneous and not an across-session guarantee",
+      "coverage_Ray_sat": null,
+      "coverage_status": "map_unqualified; not 0 percent"
+    },
+    {
+      "hue": 60,
+      "sat": 100,
+      "command": {
+        "b": 1024,
+        "cw": 0,
+        "g": 4095,
+        "r": 4095,
+        "ww": 0
+      },
+      "fullscale_actual": true,
+      "actual_pwm": {
+        "cw": 0,
+        "ww": 0,
+        "r": 4095,
+        "g": 4095,
+        "b": 987
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "n_ray": 2,
+      "n_strip": 2,
+      "delta_z": [
+        -0.2161699957643035,
+        0.5523243258077017
+      ],
+      "z_distance": 0.593120247460556,
+      "ratio_percent": [
+        -19.440165807335337,
+        73.728634815911
+      ],
+      "CI95_delta_z_conditional_t_df1": [
+        [
+          -0.2242660911043591,
+          0.5452783063508544
+        ],
+        [
+          -0.20807390042424792,
+          0.5593703452645491
+        ]
+      ],
+      "CI95_ratio_percent_conditional": [
+        [
+          -20.089752798243538,
+          72.50884186374591
+        ],
+        [
+          -18.78529835148637,
+          74.95705280335005
+        ]
+      ],
+      "CI_axis_order": [
+        "R/G",
+        "B/G"
+      ],
+      "CI_array_order": [
+        "lower",
+        "upper"
+      ],
+      "strip_repeat_distance_z": 0.0012315037254829251,
+      "PI95": null,
+      "interval_status": "source-independent normal repeat errors, conservative df1 marginal intervals; selection excluded; not simultaneous and not an across-session guarantee",
+      "coverage_Ray_sat": null,
+      "coverage_status": "map_unqualified; not 0 percent"
+    },
+    {
+      "hue": 180,
+      "sat": 50,
+      "command": {
+        "b": 4095,
+        "cw": 0,
+        "g": 4095,
+        "r": 1024,
+        "ww": 0
+      },
+      "fullscale_actual": true,
+      "actual_pwm": {
+        "cw": 0,
+        "ww": 0,
+        "r": 942,
+        "g": 4095,
+        "b": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "n_ray": 2,
+      "n_strip": 2,
+      "delta_z": [
+        -0.3865908786964678,
+        0.42448191801989893
+      ],
+      "z_distance": 0.5741405805350805,
+      "ratio_percent": [
+        -32.063101759842276,
+        52.879817167244035
+      ],
+      "CI95_delta_z_conditional_t_df1": [
+        [
+          -0.3922365410363076,
+          0.42040747754239666
+        ],
+        [
+          -0.380945216356628,
+          0.4285563584974012
+        ]
+      ],
+      "CI95_ratio_percent_conditional": [
+        [
+          -32.445569888883384,
+          52.25818471417896
+        ],
+        [
+          -31.678468238102404,
+          53.503987591633475
+        ]
+      ],
+      "CI_axis_order": [
+        "R/G",
+        "B/G"
+      ],
+      "CI_array_order": [
+        "lower",
+        "upper"
+      ],
+      "strip_repeat_distance_z": 0.00047787769744231764,
+      "PI95": null,
+      "interval_status": "source-independent normal repeat errors, conservative df1 marginal intervals; selection excluded; not simultaneous and not an across-session guarantee",
+      "coverage_Ray_sat": null,
+      "coverage_status": "map_unqualified; not 0 percent"
+    },
+    {
+      "hue": 180,
+      "sat": 100,
+      "command": {
+        "b": 4095,
+        "cw": 0,
+        "g": 4095,
+        "r": 1024,
+        "ww": 0
+      },
+      "fullscale_actual": true,
+      "actual_pwm": {
+        "cw": 0,
+        "ww": 0,
+        "r": 942,
+        "g": 4095,
+        "b": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "n_ray": 2,
+      "n_strip": 2,
+      "delta_z": [
+        0.41591977005862857,
+        0.40179752701378724
+      ],
+      "z_distance": 0.578299669583182,
+      "ratio_percent": [
+        51.57642543148132,
+        49.450870439975034
+      ],
+      "CI95_delta_z_conditional_t_df1": [
+        [
+          0.40292949801838435,
+          0.3990659888278733
+        ],
+        [
+          0.4289100420988728,
+          0.40452906519970117
+        ]
+      ],
+      "CI95_ratio_percent_conditional": [
+        [
+          49.620140278124644,
+          49.04319672209538
+        ],
+        [
+          53.55828903700446,
+          49.85965925645633
+        ]
+      ],
+      "CI_axis_order": [
+        "R/G",
+        "B/G"
+      ],
+      "CI_array_order": [
+        "lower",
+        "upper"
+      ],
+      "strip_repeat_distance_z": 0.0003895363648041884,
+      "PI95": null,
+      "interval_status": "source-independent normal repeat errors, conservative df1 marginal intervals; selection excluded; not simultaneous and not an across-session guarantee",
+      "coverage_Ray_sat": null,
+      "coverage_status": "map_unqualified; not 0 percent"
+    },
+    {
+      "hue": 240,
+      "sat": 50,
+      "command": {
+        "b": 4095,
+        "cw": 0,
+        "g": 2048,
+        "r": 1024,
+        "ww": 0
+      },
+      "fullscale_actual": true,
+      "actual_pwm": {
+        "cw": 0,
+        "ww": 0,
+        "r": 942,
+        "g": 1968,
+        "b": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "n_ray": 2,
+      "n_strip": 2,
+      "delta_z": [
+        -0.2874012761952449,
+        0.15244325077149928
+      ],
+      "z_distance": 0.3253282008440671,
+      "ratio_percent": [
+        -24.978937323737867,
+        16.46763657339649
+      ],
+      "CI95_delta_z_conditional_t_df1": [
+        [
+          -0.30112183841544093,
+          0.14947677505044502
+        ],
+        [
+          -0.2736807139750489,
+          0.15540972649255355
+        ]
+      ],
+      "CI95_ratio_percent_conditional": [
+        [
+          -26.001239166357088,
+          16.122650107190395
+        ],
+        [
+          -23.942512257355858,
+          16.81364795301746
+        ]
+      ],
+      "CI_axis_order": [
+        "R/G",
+        "B/G"
+      ],
+      "CI_array_order": [
+        "lower",
+        "upper"
+      ],
+      "strip_repeat_distance_z": 0.000882450894509625,
+      "PI95": null,
+      "interval_status": "source-independent normal repeat errors, conservative df1 marginal intervals; selection excluded; not simultaneous and not an across-session guarantee",
+      "coverage_Ray_sat": null,
+      "coverage_status": "map_unqualified; not 0 percent"
+    },
+    {
+      "hue": 240,
+      "sat": 100,
+      "command": {
+        "b": 4095,
+        "cw": 0,
+        "g": 2048,
+        "r": 1024,
+        "ww": 0
+      },
+      "fullscale_actual": true,
+      "actual_pwm": {
+        "cw": 0,
+        "ww": 0,
+        "r": 942,
+        "g": 1968,
+        "b": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "n_ray": 2,
+      "n_strip": 2,
+      "delta_z": [
+        0.5542084898613564,
+        -0.316014454969074
+      ],
+      "z_distance": 0.6379750668982339,
+      "ratio_percent": [
+        74.05627663325959,
+        -27.09510882880148
+      ],
+      "CI95_delta_z_conditional_t_df1": [
+        [
+          0.5479389302496205,
+          -0.33018418343780975
+        ],
+        [
+          0.5604780494730923,
+          -0.3018447265003382
+        ]
+      ],
+      "CI95_ratio_percent_conditional": [
+        [
+          72.96843414113748,
+          -28.120866821935042
+        ],
+        [
+          75.15096084360353,
+          -26.054712658856978
+        ]
+      ],
+      "CI_axis_order": [
+        "R/G",
+        "B/G"
+      ],
+      "CI_array_order": [
+        "lower",
+        "upper"
+      ],
+      "strip_repeat_distance_z": 0.0008569588808728504,
+      "PI95": null,
+      "interval_status": "source-independent normal repeat errors, conservative df1 marginal intervals; selection excluded; not simultaneous and not an across-session guarantee",
+      "coverage_Ray_sat": null,
+      "coverage_status": "map_unqualified; not 0 percent"
+    }
+  ],
+  "Ray_self_inverse_diagnostic": [
+    {
+      "cohort": "C2S25",
+      "hue": 0,
+      "sat": 25,
+      "Ray_self_hue": 336.5,
+      "Ray_self_sat": 23,
+      "hue_error": -23.5,
+      "sat_error_pp": -2,
+      "residual_z": 0.0038402161001824223
+    },
+    {
+      "cohort": "C2S25",
+      "hue": 60,
+      "sat": 25,
+      "Ray_self_hue": 174.1,
+      "Ray_self_sat": 16,
+      "hue_error": 114.10000000000002,
+      "sat_error_pp": -9,
+      "residual_z": 0.003399222525935654
+    },
+    {
+      "cohort": "C2S25",
+      "hue": 180,
+      "sat": 25,
+      "Ray_self_hue": 190.2,
+      "Ray_self_sat": 34,
+      "hue_error": 10.199999999999989,
+      "sat_error_pp": 9,
+      "residual_z": 0.005507767967917339
+    },
+    {
+      "cohort": "C2S25",
+      "hue": 240,
+      "sat": 25,
+      "Ray_self_hue": 240.0,
+      "Ray_self_sat": 34,
+      "hue_error": 0.0,
+      "sat_error_pp": 9,
+      "residual_z": 0.0031591380094419313
+    },
+    {
+      "cohort": "C4",
+      "hue": 30,
+      "sat": 75,
+      "Ray_self_hue": 44.6,
+      "Ray_self_sat": 76,
+      "hue_error": 14.599999999999994,
+      "sat_error_pp": 1,
+      "residual_z": 0.003662251204230151
+    },
+    {
+      "cohort": "C4",
+      "hue": 90,
+      "sat": 75,
+      "Ray_self_hue": 92.2,
+      "Ray_self_sat": 98,
+      "hue_error": 2.1999999999999886,
+      "sat_error_pp": 23,
+      "residual_z": 0.0007449642154805588
+    },
+    {
+      "cohort": "C4",
+      "hue": 150,
+      "sat": 75,
+      "Ray_self_hue": 147.7,
+      "Ray_self_sat": 100,
+      "hue_error": -2.3000000000000114,
+      "sat_error_pp": 25,
+      "residual_z": 0.002171276683605074
+    },
+    {
+      "cohort": "C4",
+      "hue": 210,
+      "sat": 75,
+      "Ray_self_hue": 198.8,
+      "Ray_self_sat": 72,
+      "hue_error": -11.199999999999989,
+      "sat_error_pp": -3,
+      "residual_z": 0.0037284614140333217
+    },
+    {
+      "cohort": "C4",
+      "hue": 270,
+      "sat": 75,
+      "Ray_self_hue": 291.5,
+      "Ray_self_sat": 50,
+      "hue_error": 21.5,
+      "sat_error_pp": -25,
+      "residual_z": 0.504337105290191
+    },
+    {
+      "cohort": "C4",
+      "hue": 330,
+      "sat": 75,
+      "Ray_self_hue": 322.0,
+      "Ray_self_sat": 50,
+      "hue_error": -8.0,
+      "sat_error_pp": -25,
+      "residual_z": 0.549093506912668
+    },
+    {
+      "cohort": "C4",
+      "hue": 350,
+      "sat": 75,
+      "Ray_self_hue": 348.1,
+      "Ray_self_sat": 59,
+      "hue_error": -1.8999999999999773,
+      "sat_error_pp": -16,
+      "residual_z": 0.45220325637307596
+    },
+    {
+      "cohort": "C4",
+      "hue": 280,
+      "sat": 50,
+      "Ray_self_hue": 289.7,
+      "Ray_self_sat": 50,
+      "hue_error": 9.699999999999989,
+      "sat_error_pp": 0,
+      "residual_z": 0.09035127374498772
+    },
+    {
+      "cohort": "C4",
+      "hue": 90,
+      "sat": 20,
+      "Ray_self_hue": 174.5,
+      "Ray_self_sat": 22,
+      "hue_error": 84.5,
+      "sat_error_pp": 2,
+      "residual_z": 0.00687146050495491
+    },
+    {
+      "cohort": "C4",
+      "hue": 210,
+      "sat": 10,
+      "Ray_self_hue": 208.0,
+      "Ray_self_sat": 26,
+      "hue_error": -2.0,
+      "sat_error_pp": 16,
+      "residual_z": 0.002752182493985083
+    },
+    {
+      "cohort": "C1confirm_calibration_not_holdout",
+      "hue": 0,
+      "sat": 50,
+      "Ray_self_hue": 0.0,
+      "Ray_self_sat": 50,
+      "hue_error": 0.0,
+      "sat_error_pp": 0,
+      "residual_z": 0.0009838181515337842
+    },
+    {
+      "cohort": "C1confirm_calibration_not_holdout",
+      "hue": 0,
+      "sat": 100,
+      "Ray_self_hue": 0.0,
+      "Ray_self_sat": 100,
+      "hue_error": 0.0,
+      "sat_error_pp": 0,
+      "residual_z": 0.001813164550248591
+    },
+    {
+      "cohort": "C1confirm_calibration_not_holdout",
+      "hue": 60,
+      "sat": 50,
+      "Ray_self_hue": 60.0,
+      "Ray_self_sat": 50,
+      "hue_error": 0.0,
+      "sat_error_pp": 0,
+      "residual_z": 0.00027457424523677146
+    },
+    {
+      "cohort": "C1confirm_calibration_not_holdout",
+      "hue": 60,
+      "sat": 100,
+      "Ray_self_hue": 60.0,
+      "Ray_self_sat": 100,
+      "hue_error": 0.0,
+      "sat_error_pp": 0,
+      "residual_z": 0.0009137772771888199
+    },
+    {
+      "cohort": "C1confirm_calibration_not_holdout",
+      "hue": 180,
+      "sat": 50,
+      "Ray_self_hue": 180.1,
+      "Ray_self_sat": 50,
+      "hue_error": 0.09999999999999432,
+      "sat_error_pp": 0,
+      "residual_z": 0.0006302875529342334
+    },
+    {
+      "cohort": "C1confirm_calibration_not_holdout",
+      "hue": 180,
+      "sat": 100,
+      "Ray_self_hue": 179.9,
+      "Ray_self_sat": 100,
+      "hue_error": -0.09999999999999432,
+      "sat_error_pp": 0,
+      "residual_z": 0.0014189207491120948
+    },
+    {
+      "cohort": "C1confirm_calibration_not_holdout",
+      "hue": 240,
+      "sat": 50,
+      "Ray_self_hue": 240.1,
+      "Ray_self_sat": 50,
+      "hue_error": 0.09999999999999432,
+      "sat_error_pp": 0,
+      "residual_z": 0.000697799829789348
+    },
+    {
+      "cohort": "C1confirm_calibration_not_holdout",
+      "hue": 240,
+      "sat": 100,
+      "Ray_self_hue": 240.1,
+      "Ray_self_sat": 100,
+      "hue_error": 0.09999999999999432,
+      "sat_error_pp": 0,
+      "residual_z": 0.0030526802026961397
+    }
+  ],
+  "SAT0": {
+    "legacy_C3_zero": [
+      -0.39766194702865204,
+      -0.644454388417024
+    ],
+    "true_historical_HSI_zero": [
+      -0.7357738590343046,
+      -0.37889585284552757
+    ],
+    "distance": 0.4299313908695152,
+    "ratio_difference_percent": [
+      40.22974285420029,
+      -23.32224421906009
+    ],
+    "historical_strip_minus_true_HSI_Ray_z": [
+      0.07770439512610494,
+      -0.002614839859237217
+    ],
+    "CI95_marginal_conditional": [
+      [
+        0.0766731523342134,
+        -0.01647284778354384
+      ],
+      [
+        0.07873563791799648,
+        0.011243168065069404
+      ]
+    ],
+    "strip_ratio_error_percent": [
+      8.080312077370849,
+      -0.2611424143324486
+    ],
+    "SAT0_point_pass": false,
+    "current_epoch_validation": false
+  },
+  "near_white_rail_planes": [
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r6",
+      "capture_id": "002-strip-guide11-c1-h0-s50-candidate_1_high_white_dominant",
+      "plane": "R",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30074,
+        "valid_pixel_count": 30074
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 144.0,
+        "color_code": "R",
+        "color_index": 0,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r6",
+      "capture_id": "003-strip-guide11-c1-h0-s50-candidate_2_white_biased_mix",
+      "plane": "B",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30072,
+        "valid_pixel_count": 30072
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 511.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 139.0,
+        "color_code": "B",
+        "color_index": 2,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r6",
+      "capture_id": "003-strip-guide11-c1-h0-s50-candidate_2_white_biased_mix",
+      "plane": "G1",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30069,
+        "valid_pixel_count": 30069
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 139.0,
+        "color_code": "G",
+        "color_index": 1,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r6",
+      "capture_id": "003-strip-guide11-c1-h0-s50-candidate_2_white_biased_mix",
+      "plane": "G2",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30075,
+        "valid_pixel_count": 30075
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 139.0,
+        "color_code": "G",
+        "color_index": 3,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r6",
+      "capture_id": "003-strip-guide11-c1-h0-s50-candidate_2_white_biased_mix",
+      "plane": "R",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30074,
+        "valid_pixel_count": 30074
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 139.0,
+        "color_code": "R",
+        "color_index": 0,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r7",
+      "capture_id": "002-strip-guide11-c1-h0-s50-candidate_1_high_white_dominant",
+      "plane": "R",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30074,
+        "valid_pixel_count": 30074
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 144.0,
+        "color_code": "R",
+        "color_index": 0,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r7",
+      "capture_id": "003-strip-guide11-c1-h0-s50-candidate_2_white_biased_mix",
+      "plane": "B",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30072,
+        "valid_pixel_count": 30072
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 139.0,
+        "color_code": "B",
+        "color_index": 2,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r7",
+      "capture_id": "003-strip-guide11-c1-h0-s50-candidate_2_white_biased_mix",
+      "plane": "G1",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30069,
+        "valid_pixel_count": 30069
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 139.0,
+        "color_code": "G",
+        "color_index": 1,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r7",
+      "capture_id": "003-strip-guide11-c1-h0-s50-candidate_2_white_biased_mix",
+      "plane": "G2",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30075,
+        "valid_pixel_count": 30075
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 139.0,
+        "color_code": "G",
+        "color_index": 3,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r7",
+      "capture_id": "003-strip-guide11-c1-h0-s50-candidate_2_white_biased_mix",
+      "plane": "R",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30074,
+        "valid_pixel_count": 30074
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 139.0,
+        "color_code": "R",
+        "color_index": 0,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r7",
+      "capture_id": "004-strip-guide11-c1-h0-s50-candidate_3_continuity_s100_anchor",
+      "plane": "R",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30074,
+        "valid_pixel_count": 30074
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 144.0,
+        "color_code": "R",
+        "color_index": 0,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "002-strip-guide11-c1-h0-s50-candidate_1_high_white_dominant",
+      "plane": "R",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30074,
+        "valid_pixel_count": 30074
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 144.0,
+        "color_code": "R",
+        "color_index": 0,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "003-strip-guide11-c1-h0-s50-candidate_2_white_biased_mix",
+      "plane": "B",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30072,
+        "valid_pixel_count": 30072
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 139.0,
+        "color_code": "B",
+        "color_index": 2,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "003-strip-guide11-c1-h0-s50-candidate_2_white_biased_mix",
+      "plane": "G1",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30069,
+        "valid_pixel_count": 30069
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 139.0,
+        "color_code": "G",
+        "color_index": 1,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "003-strip-guide11-c1-h0-s50-candidate_2_white_biased_mix",
+      "plane": "G2",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30075,
+        "valid_pixel_count": 30075
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 139.0,
+        "color_code": "G",
+        "color_index": 3,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "003-strip-guide11-c1-h0-s50-candidate_2_white_biased_mix",
+      "plane": "R",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30074,
+        "valid_pixel_count": 30074
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 139.0,
+        "color_code": "R",
+        "color_index": 0,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "004-strip-guide11-c1-h0-s50-candidate_3_continuity_s100_anchor",
+      "plane": "R",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30074,
+        "valid_pixel_count": 30074
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 144.0,
+        "color_code": "R",
+        "color_index": 0,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "008-strip-guide11-c1-h0-s100-candidate_1_high_white_dominant",
+      "plane": "R",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30074,
+        "valid_pixel_count": 30074
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 144.0,
+        "color_code": "R",
+        "color_index": 0,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "009-strip-guide11-c1-h0-s100-candidate_2_white_biased_mix",
+      "plane": "B",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30072,
+        "valid_pixel_count": 30072
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "B",
+        "color_index": 2,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "009-strip-guide11-c1-h0-s100-candidate_2_white_biased_mix",
+      "plane": "G1",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30069,
+        "valid_pixel_count": 30069
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "G",
+        "color_index": 1,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "009-strip-guide11-c1-h0-s100-candidate_2_white_biased_mix",
+      "plane": "G2",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30075,
+        "valid_pixel_count": 30075
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "G",
+        "color_index": 3,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "009-strip-guide11-c1-h0-s100-candidate_2_white_biased_mix",
+      "plane": "R",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30074,
+        "valid_pixel_count": 30074
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "R",
+        "color_index": 0,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "010-strip-guide11-c1-h0-s100-candidate_3_continuity_s100_anchor",
+      "plane": "R",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30074,
+        "valid_pixel_count": 30074
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 144.0,
+        "color_code": "R",
+        "color_index": 0,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "014-strip-guide11-c1-h60-s50-candidate_1_high_white_dominant",
+      "plane": "B",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30072,
+        "valid_pixel_count": 30072
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 136.0,
+        "color_code": "B",
+        "color_index": 2,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "014-strip-guide11-c1-h60-s50-candidate_1_high_white_dominant",
+      "plane": "G1",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30069,
+        "valid_pixel_count": 30069
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 136.0,
+        "color_code": "G",
+        "color_index": 1,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "014-strip-guide11-c1-h60-s50-candidate_1_high_white_dominant",
+      "plane": "G2",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30075,
+        "valid_pixel_count": 30075
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 136.0,
+        "color_code": "G",
+        "color_index": 3,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "014-strip-guide11-c1-h60-s50-candidate_1_high_white_dominant",
+      "plane": "R",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30074,
+        "valid_pixel_count": 30074
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 136.0,
+        "color_code": "R",
+        "color_index": 0,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "015-strip-guide11-c1-h60-s50-candidate_2_white_biased_mix",
+      "plane": "B",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30072,
+        "valid_pixel_count": 30072
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "B",
+        "color_index": 2,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "015-strip-guide11-c1-h60-s50-candidate_2_white_biased_mix",
+      "plane": "G1",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30069,
+        "valid_pixel_count": 30069
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "G",
+        "color_index": 1,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "015-strip-guide11-c1-h60-s50-candidate_2_white_biased_mix",
+      "plane": "G2",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30075,
+        "valid_pixel_count": 30075
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "G",
+        "color_index": 3,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "015-strip-guide11-c1-h60-s50-candidate_2_white_biased_mix",
+      "plane": "R",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30074,
+        "valid_pixel_count": 30074
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "R",
+        "color_index": 0,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "016-strip-guide11-c1-h60-s50-candidate_3_continuity_s100_anchor",
+      "plane": "B",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30072,
+        "valid_pixel_count": 30072
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "B",
+        "color_index": 2,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "016-strip-guide11-c1-h60-s50-candidate_3_continuity_s100_anchor",
+      "plane": "G1",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30069,
+        "valid_pixel_count": 30069
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "G",
+        "color_index": 1,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "016-strip-guide11-c1-h60-s50-candidate_3_continuity_s100_anchor",
+      "plane": "G2",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30075,
+        "valid_pixel_count": 30075
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "G",
+        "color_index": 3,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "016-strip-guide11-c1-h60-s50-candidate_3_continuity_s100_anchor",
+      "plane": "R",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30074,
+        "valid_pixel_count": 30074
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "R",
+        "color_index": 0,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "020-strip-guide11-c1-h60-s100-candidate_1_high_white_dominant",
+      "plane": "B",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30072,
+        "valid_pixel_count": 30072
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 136.0,
+        "color_code": "B",
+        "color_index": 2,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "020-strip-guide11-c1-h60-s100-candidate_1_high_white_dominant",
+      "plane": "G1",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30069,
+        "valid_pixel_count": 30069
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 136.0,
+        "color_code": "G",
+        "color_index": 1,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "020-strip-guide11-c1-h60-s100-candidate_1_high_white_dominant",
+      "plane": "G2",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30075,
+        "valid_pixel_count": 30075
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 136.0,
+        "color_code": "G",
+        "color_index": 3,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "020-strip-guide11-c1-h60-s100-candidate_1_high_white_dominant",
+      "plane": "R",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30074,
+        "valid_pixel_count": 30074
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 136.0,
+        "color_code": "R",
+        "color_index": 0,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "021-strip-guide11-c1-h60-s100-candidate_2_white_biased_mix",
+      "plane": "B",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30072,
+        "valid_pixel_count": 30072
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 142.0,
+        "color_code": "B",
+        "color_index": 2,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "021-strip-guide11-c1-h60-s100-candidate_2_white_biased_mix",
+      "plane": "G1",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30069,
+        "valid_pixel_count": 30069
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 142.0,
+        "color_code": "G",
+        "color_index": 1,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "021-strip-guide11-c1-h60-s100-candidate_2_white_biased_mix",
+      "plane": "G2",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30075,
+        "valid_pixel_count": 30075
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 142.0,
+        "color_code": "G",
+        "color_index": 3,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "021-strip-guide11-c1-h60-s100-candidate_2_white_biased_mix",
+      "plane": "R",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30074,
+        "valid_pixel_count": 30074
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 142.0,
+        "color_code": "R",
+        "color_index": 0,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "022-strip-guide11-c1-h60-s100-candidate_3_continuity_s100_anchor",
+      "plane": "B",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30072,
+        "valid_pixel_count": 30072
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "B",
+        "color_index": 2,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "022-strip-guide11-c1-h60-s100-candidate_3_continuity_s100_anchor",
+      "plane": "G1",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30069,
+        "valid_pixel_count": 30069
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "G",
+        "color_index": 1,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "022-strip-guide11-c1-h60-s100-candidate_3_continuity_s100_anchor",
+      "plane": "G2",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30075,
+        "valid_pixel_count": 30075
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "G",
+        "color_index": 3,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "022-strip-guide11-c1-h60-s100-candidate_3_continuity_s100_anchor",
+      "plane": "R",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30074,
+        "valid_pixel_count": 30074
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "R",
+        "color_index": 0,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "026-strip-guide11-c1-h180-s50-candidate_1_high_white_dominant",
+      "plane": "B",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30072,
+        "valid_pixel_count": 30072
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 144.0,
+        "color_code": "B",
+        "color_index": 2,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "026-strip-guide11-c1-h180-s50-candidate_1_high_white_dominant",
+      "plane": "G1",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30069,
+        "valid_pixel_count": 30069
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 144.0,
+        "color_code": "G",
+        "color_index": 1,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "026-strip-guide11-c1-h180-s50-candidate_1_high_white_dominant",
+      "plane": "G2",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30075,
+        "valid_pixel_count": 30075
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 144.0,
+        "color_code": "G",
+        "color_index": 3,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "026-strip-guide11-c1-h180-s50-candidate_1_high_white_dominant",
+      "plane": "R",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30074,
+        "valid_pixel_count": 30074
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 144.0,
+        "color_code": "R",
+        "color_index": 0,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "027-strip-guide11-c1-h180-s50-candidate_2_white_biased_mix",
+      "plane": "B",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30072,
+        "valid_pixel_count": 30072
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "B",
+        "color_index": 2,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "027-strip-guide11-c1-h180-s50-candidate_2_white_biased_mix",
+      "plane": "G1",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30069,
+        "valid_pixel_count": 30069
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "G",
+        "color_index": 1,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "027-strip-guide11-c1-h180-s50-candidate_2_white_biased_mix",
+      "plane": "G2",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30075,
+        "valid_pixel_count": 30075
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "G",
+        "color_index": 3,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "027-strip-guide11-c1-h180-s50-candidate_2_white_biased_mix",
+      "plane": "R",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30074,
+        "valid_pixel_count": 30074
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "R",
+        "color_index": 0,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "028-strip-guide11-c1-h180-s50-candidate_3_continuity_s100_anchor",
+      "plane": "B",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30072,
+        "valid_pixel_count": 30072
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "B",
+        "color_index": 2,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "028-strip-guide11-c1-h180-s50-candidate_3_continuity_s100_anchor",
+      "plane": "G1",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30069,
+        "valid_pixel_count": 30069
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "G",
+        "color_index": 1,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "028-strip-guide11-c1-h180-s50-candidate_3_continuity_s100_anchor",
+      "plane": "G2",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30075,
+        "valid_pixel_count": 30075
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "G",
+        "color_index": 3,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "028-strip-guide11-c1-h180-s50-candidate_3_continuity_s100_anchor",
+      "plane": "R",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30074,
+        "valid_pixel_count": 30074
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "R",
+        "color_index": 0,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "032-strip-guide11-c1-h180-s100-candidate_1_high_white_dominant",
+      "plane": "B",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30072,
+        "valid_pixel_count": 30072
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 144.0,
+        "color_code": "B",
+        "color_index": 2,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "032-strip-guide11-c1-h180-s100-candidate_1_high_white_dominant",
+      "plane": "G1",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30069,
+        "valid_pixel_count": 30069
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 144.0,
+        "color_code": "G",
+        "color_index": 1,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "032-strip-guide11-c1-h180-s100-candidate_1_high_white_dominant",
+      "plane": "G2",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30075,
+        "valid_pixel_count": 30075
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 144.0,
+        "color_code": "G",
+        "color_index": 3,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "032-strip-guide11-c1-h180-s100-candidate_1_high_white_dominant",
+      "plane": "R",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30074,
+        "valid_pixel_count": 30074
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 144.0,
+        "color_code": "R",
+        "color_index": 0,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "033-strip-guide11-c1-h180-s100-candidate_2_white_biased_mix",
+      "plane": "B",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30072,
+        "valid_pixel_count": 30072
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 142.0,
+        "color_code": "B",
+        "color_index": 2,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "033-strip-guide11-c1-h180-s100-candidate_2_white_biased_mix",
+      "plane": "G1",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30069,
+        "valid_pixel_count": 30069
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 142.0,
+        "color_code": "G",
+        "color_index": 1,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "033-strip-guide11-c1-h180-s100-candidate_2_white_biased_mix",
+      "plane": "G2",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30075,
+        "valid_pixel_count": 30075
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 142.0,
+        "color_code": "G",
+        "color_index": 3,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "033-strip-guide11-c1-h180-s100-candidate_2_white_biased_mix",
+      "plane": "R",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30074,
+        "valid_pixel_count": 30074
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 142.0,
+        "color_code": "R",
+        "color_index": 0,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "034-strip-guide11-c1-h180-s100-candidate_3_continuity_s100_anchor",
+      "plane": "B",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30072,
+        "valid_pixel_count": 30072
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "B",
+        "color_index": 2,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "034-strip-guide11-c1-h180-s100-candidate_3_continuity_s100_anchor",
+      "plane": "G1",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30069,
+        "valid_pixel_count": 30069
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "G",
+        "color_index": 1,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "034-strip-guide11-c1-h180-s100-candidate_3_continuity_s100_anchor",
+      "plane": "G2",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30075,
+        "valid_pixel_count": 30075
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "G",
+        "color_index": 3,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "034-strip-guide11-c1-h180-s100-candidate_3_continuity_s100_anchor",
+      "plane": "R",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30074,
+        "valid_pixel_count": 30074
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "R",
+        "color_index": 0,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "038-strip-guide11-c1-h240-s50-candidate_1_high_white_dominant",
+      "plane": "B",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30072,
+        "valid_pixel_count": 30072
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 144.0,
+        "color_code": "B",
+        "color_index": 2,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "038-strip-guide11-c1-h240-s50-candidate_1_high_white_dominant",
+      "plane": "G1",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30069,
+        "valid_pixel_count": 30069
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 144.0,
+        "color_code": "G",
+        "color_index": 1,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "038-strip-guide11-c1-h240-s50-candidate_1_high_white_dominant",
+      "plane": "G2",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30075,
+        "valid_pixel_count": 30075
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 144.0,
+        "color_code": "G",
+        "color_index": 3,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "039-strip-guide11-c1-h240-s50-candidate_2_white_biased_mix",
+      "plane": "B",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30072,
+        "valid_pixel_count": 30072
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 139.0,
+        "color_code": "B",
+        "color_index": 2,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "039-strip-guide11-c1-h240-s50-candidate_2_white_biased_mix",
+      "plane": "G1",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30069,
+        "valid_pixel_count": 30069
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 139.0,
+        "color_code": "G",
+        "color_index": 1,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "039-strip-guide11-c1-h240-s50-candidate_2_white_biased_mix",
+      "plane": "G2",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30075,
+        "valid_pixel_count": 30075
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 139.0,
+        "color_code": "G",
+        "color_index": 3,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "039-strip-guide11-c1-h240-s50-candidate_2_white_biased_mix",
+      "plane": "R",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30074,
+        "valid_pixel_count": 30074
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 139.0,
+        "color_code": "R",
+        "color_index": 0,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "040-strip-guide11-c1-h240-s50-candidate_3_continuity_s100_anchor",
+      "plane": "B",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30072,
+        "valid_pixel_count": 30072
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 144.0,
+        "color_code": "B",
+        "color_index": 2,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "040-strip-guide11-c1-h240-s50-candidate_3_continuity_s100_anchor",
+      "plane": "G1",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30069,
+        "valid_pixel_count": 30069
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 144.0,
+        "color_code": "G",
+        "color_index": 1,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "040-strip-guide11-c1-h240-s50-candidate_3_continuity_s100_anchor",
+      "plane": "G2",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30075,
+        "valid_pixel_count": 30075
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 144.0,
+        "color_code": "G",
+        "color_index": 3,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "044-strip-guide11-c1-h240-s100-candidate_1_high_white_dominant",
+      "plane": "B",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30072,
+        "valid_pixel_count": 30072
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 144.0,
+        "color_code": "B",
+        "color_index": 2,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "044-strip-guide11-c1-h240-s100-candidate_1_high_white_dominant",
+      "plane": "G1",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30069,
+        "valid_pixel_count": 30069
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 144.0,
+        "color_code": "G",
+        "color_index": 1,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "044-strip-guide11-c1-h240-s100-candidate_1_high_white_dominant",
+      "plane": "G2",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30075,
+        "valid_pixel_count": 30075
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 144.0,
+        "color_code": "G",
+        "color_index": 3,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "045-strip-guide11-c1-h240-s100-candidate_2_white_biased_mix",
+      "plane": "B",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30072,
+        "valid_pixel_count": 30072
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "B",
+        "color_index": 2,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "045-strip-guide11-c1-h240-s100-candidate_2_white_biased_mix",
+      "plane": "G1",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30069,
+        "valid_pixel_count": 30069
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "G",
+        "color_index": 1,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "045-strip-guide11-c1-h240-s100-candidate_2_white_biased_mix",
+      "plane": "G2",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30075,
+        "valid_pixel_count": 30075
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "G",
+        "color_index": 3,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "045-strip-guide11-c1-h240-s100-candidate_2_white_biased_mix",
+      "plane": "R",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30074,
+        "valid_pixel_count": 30074
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 141.0,
+        "color_code": "R",
+        "color_index": 0,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "046-strip-guide11-c1-h240-s100-candidate_3_continuity_s100_anchor",
+      "plane": "B",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30072,
+        "valid_pixel_count": 30072
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 144.0,
+        "color_code": "B",
+        "color_index": 2,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "046-strip-guide11-c1-h240-s100-candidate_3_continuity_s100_anchor",
+      "plane": "G1",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30069,
+        "valid_pixel_count": 30069
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 144.0,
+        "color_code": "G",
+        "color_index": 1,
+        "column_offset": 1,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 0
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    },
+    {
+      "alias": "guide11-c1/formal-c1-20260924-r8",
+      "capture_id": "046-strip-guide11-c1-h240-s100-candidate_3_continuity_s100_anchor",
+      "plane": "G2",
+      "raw_code_statistics": {
+        "mad": 0.0,
+        "maximum": 16382.0,
+        "mean": 16382.0,
+        "median": 16382.0,
+        "minimum": 16382.0,
+        "trimmed_mean": 16382.0,
+        "variance": 0.0
+      },
+      "metrics": {
+        "below_black_fraction": 0.0,
+        "clipped_fraction": 0.0,
+        "near_noise_floor_fraction": 0.0,
+        "nonfinite_fraction": 0.0,
+        "selected_pixel_count": 30075,
+        "valid_pixel_count": 30075
+      },
+      "legacy_quality": {
+        "accepted": true,
+        "failures": [],
+        "pending_thresholds": [],
+        "status": "accepted",
+        "thresholds": {
+          "maximum_clipped_fraction": 0.0,
+          "maximum_near_noise_floor_fraction": 0.05,
+          "maximum_nonfinite_fraction": 0.0,
+          "minimum_valid_pixels_per_plane": 29000
+        },
+        "warnings": []
+      },
+      "cfa": {
+        "black_level": 512.0,
+        "black_level_source": "optical_black_margin_fallback",
+        "camera_white_level": 144.0,
+        "color_code": "G",
+        "color_index": 3,
+        "column_offset": 0,
+        "effective_white_level": 16383.0,
+        "effective_white_level_source": "global_white_level_fallback",
+        "global_white_level": 16383.0,
+        "observed_max": 16383.0,
+        "row_offset": 1
+      },
+      "status": "near_white_zero_variance_rail_diagnostic_not_valid_for_color_fit"
+    }
+  ],
+  "C1_B1_rail_frame_count": 24,
+  "C1_B1_strip_frame_count": 32
+}

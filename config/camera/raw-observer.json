@@ -8,6 +8,7 @@
   "quality_thresholds": {
     "maximum_clipped_fraction": 0.0,
     "maximum_near_noise_floor_fraction": 0.05,
+    "maximum_near_white_rail_fraction": 0.05,
     "maximum_nonfinite_fraction": 0.0,
     "minimum_valid_pixels_per_plane": 29000
   },
@@ -18,7 +19,8 @@
     "clipping_margin_normalized": 0.0,
     "combine_green": false,
     "noise_floor_margin_normalized": 0.005,
-    "trim_fraction": 0.1
+    "trim_fraction": 0.1,
+    "white_rail_margin_dn": 2.0
   },
   "validation": {
     "exposure_envelope": {
@@ -30,7 +32,8 @@
       "P1 passed conditionally only inside the 1.0x..1.25x per-source auto-exposure envelope using identity RAW response.",
       "The 0.05 near-noise threshold lies above the 0.0351 reliable maximum and below the 0.9979 failed-feature cluster in the boundary run.",
       "G1/G2 vary by patch and source beyond repeatability for a minority of features, so downstream models keep R/G1/G2/B separate.",
-      "The frozen polynomial response candidate is not installed because it increased the boundary maximum from 2.903 to 3.182 repeatability sigma."
+      "The frozen polynomial response candidate is not installed because it increased the boundary maximum from 2.903 to 3.182 repeatability sigma.",
+      "GUIDE12 2026-09-29 native rail gate: pixels within white_rail_margin_dn (2 DN) of the effective white level are at the protective ceiling; a plane fails on a large-area plateau there (white_rail_plateau is unconditional) or when near_white_rail_fraction exceeds 0.05. This closes the GUIDE11 C1 gap where whole-block 16382/white-16383 plateaus passed with clipped_fraction=0. Rendered-RGB frame profiles remain a separate auxiliary domain and cannot override this gate."
     ],
     "provenance": {
       "boundary_run": "/Volumes/4T/temp/rgbww-optimizer/raw-observer-validation/p1-d2-boundary-1x-1.25x-20260716-000647",
@@ -40,5 +43,5 @@
     "raw_response_model": "identity",
     "status": "validated_conditional_exposure_envelope"
   },
-  "version": 2
+  "version": 3
 }

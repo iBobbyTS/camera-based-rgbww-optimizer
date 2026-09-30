@@ -1,9 +1,23 @@
-# PLAN - GUIDE9 white70 local-probe recovery on Windows
+# PLAN - GUIDE12 满幅光色复制（活动阶段）
+
+## Active route（2026-09-29 起）
+
+- 活动 GUIDE：`advisor/12/12.GUIDE.md`（不可变）；执行状态：`.agent-work/guide12/GUIDE12-STATUS-20260929.md`。
+- 数据根：`D:/rgbww-optimizer`（guide9/guide10/guide11 分组）；运行时：PowerShell +
+  `D:/rgbww-optimizer/.venv-windows/Scripts/python.exe`。
+- 阶段约束：Ray 100%（API 1000）、灯带 actual max PWM=4095、禁止低档新实验、
+  历史不可覆盖。曝光/all-off/N2 先行解决可观测性，白光与彩光两线并行推进。
+- 离线确定性修正已完成并测试（见状态文档表格）；下一批：原生曝光资格化 +
+  all-off 环境诊断，随后 N2。
+
+---
+
+# 以下为 GUIDE9 时代记录（历史保留）
 
 ## Active route
 
 - Data root: `D:\rgbww-optimizer`.
-- Runtime: PowerShell plus `D:\rgbww-optimizer\.venv-windows\Scripts\python.exe`.
+- Runtime: PowerShell plus `D:\rgbww-optimizer\.venv-windows/Scripts/python.exe`.
 - Retain the migrated zsh launchers for macOS provenance; they are frozen and are
   not the active execution path.
 - Parent root `20260829-19-node-probes-rerun7` is a failed `KeyboardInterrupt`

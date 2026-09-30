@@ -10,6 +10,7 @@ Git 中的历史以 rename 形式保留。
 | `guide6/` | GUIDE6 solver/measurement/LCB handoff、坐标系评审 |
 | `guide7/` | GUIDE7 F2 漂移与 scale 稳定性 handoff、f2 局部括界探针派生数据 |
 | `guide9/` | GUIDE9 H300 参考诊断 handoff、`EXECUTION_RESULT.md`（GUIDE9 时代执行结果） |
+| `guide12/` | GUIDE12 活动阶段状态（`GUIDE12-STATUS-20260929.md`：离线确定性修正 W2割线/新鲜配对/W8单位/原生削顶门、批次计划与预算索引）。Advisor 输入在 `advisor/12/`（不可变） |
 | `guide11/` | GUIDE11 全部批次结果（N1/W2–W4/W8+P6/C1–C5）、暂停记录、最终报告与最终包 manifest/ZIP；2026-09-29 审阅补齐包 `GUIDE11-COMPLETE-PROCESSED-EVIDENCE-20260929.zip`（1730 成员，外部校验 pass，说明见 `GUIDE11-COMPLETE-EVIDENCE-EXPORT-20260929.md`，未入 Git） |
 | `archived/` `debug/` `evidence/` `plans/` | 原有归档结构，本次未改动 |
 | `PLAN.md` `PLAN-FULL.md` | 留在顶层（AGENTS.md 引用的既定路径） |

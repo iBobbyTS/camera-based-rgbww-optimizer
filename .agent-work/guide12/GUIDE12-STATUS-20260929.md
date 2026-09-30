@@ -1,0 +1,51 @@
+# GUIDE12 执行状态 — 2026-09-29
+
+依据：`advisor/12/12.GUIDE.md`（不可变科学指导）、`CODEX_GUIDE12_IMPLEMENTATION_PROMPT.md`、
+`GUIDE12_DATA_PACKAGE_REQUIREMENTS.md`。GUIDE11 证据包
+（SHA-256 `5c348c023027e96b149edf41b4654d26b2dfc26e868add29f3b5e8243f9d5e65`）是审阅基线。
+
+## 阶段边界（GUIDE12 §0）
+
+- 研究对象：Ray CCT brightness=100%、HSI intensity=100%（API 1000↔100%），灯带实际五通道
+  PWM `max(actual)=4095`（用户定义满幅，非全局光通量最大）。隔离/reset/all-off 真实关灯不受该约束。
+- 停止低档实验：不再新增 Ray/strip INT50/20/5 或 strip max3072/2048；旧数据保留为历史诊断。
+- 撤回的 GUIDE11 采用依据：45/70 独立认证、中带连续域、(0,25) 四主 Hue 边界、产品层 SAT0、
+  C4 低/中 SAT 通过、有界搜索=硬件极限。
+
+## 已完成（离线确定性修正，2026-09-29，本仓库）
+
+| # | 修正 | 位置 | 证据 |
+|---|---|---|---|
+| 1 | W2 割线代数：A=u−u0、B=r(u)−r(u0)，唯一基点=最低E观测，基点不再被同命令帧覆盖；记录命令差秩/敏感度秩/奇异值/基点误差/active face | `optimization/guide11.py` `build_guide11_w2_candidate_rows` | `tests/test_guide12.py` 截距无关回归例（r(u)=a·u+b，b≠0 仍精确抵消） |
+| 2 | W2 49组同候选新鲜配对 + 9采用命令 E 历史/新鲜对照 + 25节点命令差秩诊断 | `tmp/guide12_offline_corrections_20260929.py` Part A → `D:/rgbww-optimizer/guide11/guide11-w2/derived/w2-fresh-pairing-audit-20260929.json` | 49对全配对；1800/70→1.115872、2000/100→1.11843 越界，7/9 容差内（与 Advisor 复算一致）；命令差最大秩1 |
+| 3 | W8 有符号单位重建（error_signed/tolerance/abs_normalized_error 分离；旧 artifact 只读） | 同上 Part C → `guide11-w8/derived/guide11-white-final-report-signed-20260929.json` | 70节点：61 W6 + 9 W2（fresh Ray 同块）；恒等式回放测试 |
+| 4a | 原生 RAW 削顶门：near_white_rail_fraction（≥wl−2DN）、white_rail_plateau 无条件硬失败、p1/p99 分位数；raw-observer v3 | `measurement/raw_mosaic_patches.py`、`config/camera/raw-observer.json` | 平台（16382/16383, var=0）在旧 clipped_fraction=0 下也拒绝；分域不倒置 |
+| 4b | 全量 raw-rail 审计（guide11+guide9 组 1071 帧，只读） | 同上 Part B → `guide11/derived/raw-rail-audit-20260929.json` | 38 平台帧（C1 r6/r7/r8=29 与 Advisor 一致；另发现 diag 5、c1b2 各 rerun 4）+1 触顶帧；37 个旧门漏检 |
+| 4c | `frame_exposure_profile` 标域改名 `rendered_rgb_exposure_profile`（渲染RGB域，辅助诊断，不能推翻原生判定；旧名保留为别名） | `measurement/frame_exposure.py` | 域字段+别名恒等测试 |
+| 5 | 满幅证据：actual payload 驱动，无读回=unknown 不默认 true | `optimization/guide12.py` `fullscale_evidence` | 单元测试（4095/unknown/3133 三态） |
+
+全量测试：602 项，新增 14 项全过；138 错误/3 失败与 HEAD 基线完全一致（均为本机不存在的
+Mac 路径数据依赖，非本次改动引入）。
+
+## 关键数值结论（供 W12-1 队列）
+
+- 9 个 W2 采用命令独立 FAST 确认全部 `not_acquired`；按同候选新鲜 Ray：7 个 E<1，
+  1800/70（1.1159）与 2000/100（1.1184）越界。
+- 25 个受审节点已有命令差全部秩≤1：五通道方向未搜索，旧导数不能当当前导数真值。
+- C1 主 r8 的 24/32 strip 候选为上限平台帧，已从 GUIDE12 导数/选择/方差输入中排除
+  （测量统计与失败身份保留于 rail 审计）。
+- 历史统计不含近上限像素分数：部分污染不可复算，只有保守触顶标记。
+
+## 待办（按 GUIDE12 科学顺序）
+
+1. **批次1（观测性）**：原生曝光资格化（满幅R/满幅B/高白负载 3类×≤6=≤18张）+ all-off 环境诊断
+   （≤6曝光类×2=≤12张）。资格化帧不作独立模型验收帧。
+2. **N2 重复性**：4白光状态+2极端彩光满幅，3会话×2循环×2源=72 主观测+12 burst；风险转移≤24。
+3. **W12-1**：有界求解开放队列（3200/0 大残差、1800/70 与 2000/100 翻转节点、冷端），
+   满幅 face 上求解，≤30节点×8(可扩12)命令，每≤4候选一个本地 Ray before/after 块。
+4. **C12-1**：Ray HSI 真映射（真 HSI S0 作 SAT0；Ray 自反解留出≥10；映射预算 Hue0.5°/SAT0.5pp）。
+5. W12-2/3/4、C12-2..5 按 GUIDE12 §4/§5。
+6. 阶段结束交付 `GUIDE12-COMPLETE-PROCESSED-EVIDENCE-<日期>.zip`（合同：
+   `GUIDE12_DATA_PACKAGE_REQUIREMENTS.md`）。
+
+预算不机械相加；每个 batch 先列问题、unique-command/physical 预算、fullscale、参考与停止分支。

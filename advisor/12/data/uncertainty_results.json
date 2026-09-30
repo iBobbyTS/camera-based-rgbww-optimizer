@@ -1,0 +1,626 @@
+{
+  "N1": [
+    {
+      "cct": 1800,
+      "gm": 100,
+      "axes": {
+        "cct_K": {
+          "n_independent_cycles": 2,
+          "mean": -6.153314108465793,
+          "sample_sd": 0.936563954454059,
+          "CI95_mean_conditional": [
+            -14.568007384243602,
+            2.2613791673120165
+          ],
+          "PI95_one_new_cycle_conditional": [
+            -20.727990392221148,
+            8.421362175289563
+          ],
+          "assumptions": "iid approximately normal cycle differences; small n; no established transfer to different sessions/environment/commands",
+          "unconditional_operational_coverage_established": false
+        },
+        "mired": {
+          "n_independent_cycles": 2,
+          "mean": 1.7104304203182892,
+          "sample_sd": 0.26531554861170115,
+          "CI95_mean_conditional": [
+            -0.6733352074797372,
+            4.0941960481163155
+          ],
+          "PI95_one_new_cycle_conditional": [
+            -2.418372760364214,
+            5.839233601000792
+          ],
+          "assumptions": "iid approximately normal cycle differences; small n; no established transfer to different sessions/environment/commands",
+          "unconditional_operational_coverage_established": false
+        },
+        "duv": {
+          "n_independent_cycles": 2,
+          "mean": 0.00040293770431645967,
+          "sample_sd": 1.239012764699332e-07,
+          "CI95_mean_conditional": [
+            0.0004018244955142059,
+            0.00040405091311871344
+          ],
+          "PI95_one_new_cycle_conditional": [
+            0.0004010095701115233,
+            0.00040486583852139606
+          ],
+          "assumptions": "iid approximately normal cycle differences; small n; no established transfer to different sessions/environment/commands",
+          "unconditional_operational_coverage_established": false
+        }
+      }
+    },
+    {
+      "cct": 2300,
+      "gm": 200,
+      "axes": {
+        "cct_K": {
+          "n_independent_cycles": 2,
+          "mean": 14.144758033489552,
+          "sample_sd": 1.054153319448917,
+          "CI95_mean_conditional": [
+            4.67356623006768,
+            23.615949836911426
+          ],
+          "PI95_one_new_cycle_conditional": [
+            -2.2598273782670333,
+            30.549343445246137
+          ],
+          "assumptions": "iid approximately normal cycle differences; small n; no established transfer to different sessions/environment/commands",
+          "unconditional_operational_coverage_established": false
+        },
+        "mired": {
+          "n_independent_cycles": 2,
+          "mean": -2.3697452246219086,
+          "sample_sd": 0.17926865197431444,
+          "CI95_mean_conditional": [
+            -3.9804101590900984,
+            -0.7590802901537186
+          ],
+          "PI95_one_new_cycle_conditional": [
+            -5.15949872509041,
+            0.4200082758465924
+          ],
+          "assumptions": "iid approximately normal cycle differences; small n; no established transfer to different sessions/environment/commands",
+          "unconditional_operational_coverage_established": false
+        },
+        "duv": {
+          "n_independent_cycles": 2,
+          "mean": 0.00012335323103774068,
+          "sample_sd": 2.510397597456156e-05,
+          "CI95_mean_conditional": [
+            -0.00010219704433194079,
+            0.00034890350640742214
+          ],
+          "PI95_one_new_cycle_conditional": [
+            -0.00026731130556369875,
+            0.0005140177676391802
+          ],
+          "assumptions": "iid approximately normal cycle differences; small n; no established transfer to different sessions/environment/commands",
+          "unconditional_operational_coverage_established": false
+        }
+      }
+    },
+    {
+      "cct": 3200,
+      "gm": 0,
+      "axes": {
+        "cct_K": {
+          "n_independent_cycles": 2,
+          "mean": -179.84506008017433,
+          "sample_sd": 2.4424966236133363,
+          "CI95_mean_conditional": [
+            -201.79002157168273,
+            -157.90009858866594
+          ],
+          "PI95_one_new_cycle_conditional": [
+            -217.85484835360936,
+            -141.8352718067393
+          ],
+          "assumptions": "iid approximately normal cycle differences; small n; no established transfer to different sessions/environment/commands",
+          "unconditional_operational_coverage_established": false
+        },
+        "mired": {
+          "n_independent_cycles": 2,
+          "mean": 17.6154726262738,
+          "sample_sd": 0.19968987384133513,
+          "CI95_mean_conditional": [
+            15.821330292840631,
+            19.409614959706968
+          ],
+          "PI95_one_new_cycle_conditional": [
+            14.507926948757369,
+            20.72301830379023
+          ],
+          "assumptions": "iid approximately normal cycle differences; small n; no established transfer to different sessions/environment/commands",
+          "unconditional_operational_coverage_established": false
+        },
+        "duv": {
+          "n_independent_cycles": 2,
+          "mean": -0.008392231446881915,
+          "sample_sd": 1.594934480214824e-05,
+          "CI95_mean_conditional": [
+            -0.00853553062449967,
+            -0.00824893226926416
+          ],
+          "PI95_one_new_cycle_conditional": [
+            -0.008640432903198703,
+            -0.008144029990565127
+          ],
+          "assumptions": "iid approximately normal cycle differences; small n; no established transfer to different sessions/environment/commands",
+          "unconditional_operational_coverage_established": false
+        }
+      }
+    },
+    {
+      "cct": 5600,
+      "gm": 100,
+      "axes": {
+        "cct_K": {
+          "n_independent_cycles": 2,
+          "mean": -10.802867953181249,
+          "sample_sd": 0.13920160379608296,
+          "CI95_mean_conditional": [
+            -12.053544742384803,
+            -9.552191163977694
+          ],
+          "PI95_one_new_cycle_conditional": [
+            -12.969103695928915,
+            -8.636632210433582
+          ],
+          "assumptions": "iid approximately normal cycle differences; small n; no established transfer to different sessions/environment/commands",
+          "unconditional_operational_coverage_established": false
+        },
+        "mired": {
+          "n_independent_cycles": 2,
+          "mean": 0.3989709158458936,
+          "sample_sd": 0.005772650960515068,
+          "CI95_mean_conditional": [
+            0.3471057047304671,
+            0.45083612696132014
+          ],
+          "PI95_one_new_cycle_conditional": [
+            0.30913773504868886,
+            0.4888040966430984
+          ],
+          "assumptions": "iid approximately normal cycle differences; small n; no established transfer to different sessions/environment/commands",
+          "unconditional_operational_coverage_established": false
+        },
+        "duv": {
+          "n_independent_cycles": 2,
+          "mean": 0.0001496653041639308,
+          "sample_sd": 4.441691243216875e-05,
+          "CI95_mean_conditional": [
+            -0.0002494048208353288,
+            0.0005487354291631904
+          ],
+          "PI95_one_new_cycle_conditional": [
+            -0.0005415444281176495,
+            0.0008408750364455111
+          ],
+          "assumptions": "iid approximately normal cycle differences; small n; no established transfer to different sessions/environment/commands",
+          "unconditional_operational_coverage_established": false
+        }
+      }
+    },
+    {
+      "cct": 14000,
+      "gm": 0,
+      "axes": {
+        "cct_K": {
+          "n_independent_cycles": 2,
+          "mean": -237.62500769116286,
+          "sample_sd": 11.16656951083842,
+          "CI95_mean_conditional": [
+            -337.95265422239254,
+            -137.29736115993316
+          ],
+          "PI95_one_new_cycle_conditional": [
+            -411.3975888870641,
+            -63.8524264952616
+          ],
+          "assumptions": "iid approximately normal cycle differences; small n; no established transfer to different sessions/environment/commands",
+          "unconditional_operational_coverage_established": false
+        },
+        "mired": {
+          "n_independent_cycles": 2,
+          "mean": 1.9096228520040555,
+          "sample_sd": 0.08491696962718204,
+          "CI95_mean_conditional": [
+            1.146674150078193,
+            2.672571553929918
+          ],
+          "PI95_one_new_cycle_conditional": [
+            0.5881569366997383,
+            3.2310887673083726
+          ],
+          "assumptions": "iid approximately normal cycle differences; small n; no established transfer to different sessions/environment/commands",
+          "unconditional_operational_coverage_established": false
+        },
+        "duv": {
+          "n_independent_cycles": 2,
+          "mean": 0.00040927665281902115,
+          "sample_sd": 2.2132487405637522e-05,
+          "CI95_mean_conditional": [
+            0.00021042414300081355,
+            0.0006081291626372288
+          ],
+          "PI95_one_new_cycle_conditional": [
+            6.48540026012966e-05,
+            0.0007536993030367457
+          ],
+          "assumptions": "iid approximately normal cycle differences; small n; no established transfer to different sessions/environment/commands",
+          "unconditional_operational_coverage_established": false
+        }
+      }
+    },
+    {
+      "cct": 20000,
+      "gm": 100,
+      "axes": {
+        "cct_K": {
+          "n_independent_cycles": 2,
+          "mean": -12.099143429250944,
+          "sample_sd": 39.78399318084741,
+          "CI95_mean_conditional": [
+            -369.5441404424136,
+            345.3458535839117
+          ],
+          "PI95_one_new_cycle_conditional": [
+            -631.2120391673542,
+            607.0137523088523
+          ],
+          "assumptions": "iid approximately normal cycle differences; small n; no established transfer to different sessions/environment/commands",
+          "unconditional_operational_coverage_established": false
+        },
+        "mired": {
+          "n_independent_cycles": 2,
+          "mean": 0.06325894823122269,
+          "sample_sd": 0.20889176992090613,
+          "CI95_mean_conditional": [
+            -1.8135591412962628,
+            1.9400770377587082
+          ],
+          "PI95_one_new_cycle_conditional": [
+            -3.187485339394736,
+            3.3140032358571814
+          ],
+          "assumptions": "iid approximately normal cycle differences; small n; no established transfer to different sessions/environment/commands",
+          "unconditional_operational_coverage_established": false
+        },
+        "duv": {
+          "n_independent_cycles": 2,
+          "mean": -0.00010623956163091712,
+          "sample_sd": 5.634981085737701e-05,
+          "CI95_mean_conditional": [
+            -0.0006125225252853559,
+            0.0004000434020235216
+          ],
+          "PI95_one_new_cycle_conditional": [
+            -0.0009831473776869522,
+            0.0007706682544251179
+          ],
+          "assumptions": "iid approximately normal cycle differences; small n; no established transfer to different sessions/environment/commands",
+          "unconditional_operational_coverage_established": false
+        }
+      }
+    }
+  ],
+  "N1_bursts": [
+    {
+      "cct": 1800,
+      "gm": 100,
+      "source": "ray",
+      "n": 3,
+      "statistics": {
+        "cct_K": {
+          "mean": 1898.561610942366,
+          "sd": 0.1709384128893528,
+          "sd_CI95_normal": [
+            0.08900049776721722,
+            1.0743025744478596
+          ]
+        },
+        "mired": {
+          "mean": 526.7145399133028,
+          "sd": 0.04742556459104144,
+          "sd_CI95_normal": [
+            0.024692512257184447,
+            0.2980570912857267
+          ]
+        },
+        "duv": {
+          "mean": -0.005130582286500679,
+          "sd": 8.959212690578583e-06,
+          "sd_CI95_normal": [
+            4.6646881504626934e-06,
+            5.6306274849671376e-05
+          ]
+        }
+      }
+    },
+    {
+      "cct": 1800,
+      "gm": 100,
+      "source": "strip",
+      "n": 3,
+      "statistics": {
+        "cct_K": {
+          "mean": 1892.2714104145064,
+          "sd": 0.7366181457937604,
+          "sd_CI95_normal": [
+            0.3835263270078761,
+            4.629449618930774
+          ]
+        },
+        "mired": {
+          "mean": 528.4654703963705,
+          "sd": 0.2057150817445212,
+          "sd_CI95_normal": [
+            0.10710725789490794,
+            1.292864711830119
+          ]
+        },
+        "duv": {
+          "mean": -0.00473893976904929,
+          "sd": 3.5978407623344954e-06,
+          "sd_CI95_normal": [
+            1.8732455351754303e-06,
+            2.2611474671473023e-05
+          ]
+        }
+      }
+    },
+    {
+      "cct": 5600,
+      "gm": 100,
+      "source": "ray",
+      "n": 3,
+      "statistics": {
+        "cct_K": {
+          "mean": 5209.049370068705,
+          "sd": 2.5709303749612613,
+          "sd_CI95_normal": [
+            1.338576152830671,
+            16.157615329767214
+          ]
+        },
+        "mired": {
+          "mean": 191.97363883384102,
+          "sd": 0.09477340530209108,
+          "sd_CI95_normal": [
+            0.04934455693373126,
+            0.5956257086061235
+          ]
+        },
+        "duv": {
+          "mean": -0.004336572156814209,
+          "sd": 1.9765755093698554e-05,
+          "sd_CI95_normal": [
+            1.029120378707841e-05,
+            0.0001242225268396
+          ]
+        }
+      }
+    },
+    {
+      "cct": 5600,
+      "gm": 100,
+      "source": "strip",
+      "n": 3,
+      "statistics": {
+        "cct_K": {
+          "mean": 5198.4831066759025,
+          "sd": 2.8359879566894457,
+          "sd_CI95_normal": [
+            1.4765805739086477,
+            17.823431910220844
+          ]
+        },
+        "mired": {
+          "mean": 192.36384498175198,
+          "sd": 0.10497551269767573,
+          "sd_CI95_normal": [
+            0.05465636848699155,
+            0.6597432469324245
+          ]
+        },
+        "duv": {
+          "mean": -0.004134243832734508,
+          "sd": 2.2361273795280026e-06,
+          "sd_CI95_normal": [
+            1.1642582055428184e-06,
+            1.4053467327880575e-05
+          ]
+        }
+      }
+    },
+    {
+      "cct": 20000,
+      "gm": 100,
+      "source": "ray",
+      "n": 3,
+      "statistics": {
+        "cct_K": {
+          "mean": 13760.465143497146,
+          "sd": 10.289928947792616,
+          "sd_CI95_normal": [
+            5.357536570411689,
+            64.66947348256157
+          ]
+        },
+        "mired": {
+          "mean": 72.67198909272786,
+          "sd": 0.05434718579689576,
+          "sd_CI95_normal": [
+            0.028296311556970332,
+            0.34155764423408835
+          ]
+        },
+        "duv": {
+          "mean": 0.0005533445705153231,
+          "sd": 1.2422404149310281e-05,
+          "sd_CI95_normal": [
+            6.467827412612089e-06,
+            7.80715143709343e-05
+          ]
+        }
+      }
+    },
+    {
+      "cct": 20000,
+      "gm": 100,
+      "source": "strip",
+      "n": 3,
+      "statistics": {
+        "cct_K": {
+          "mean": 13817.799946467923,
+          "sd": 29.77662833163571,
+          "sd_CI95_normal": [
+            15.503447695284349,
+            187.13820922018058
+          ]
+        },
+        "mired": {
+          "mean": 72.37064517493607,
+          "sd": 0.15601294226152976,
+          "sd_CI95_normal": [
+            0.08122942810047076,
+            0.9804999513318068
+          ]
+        },
+        "duv": {
+          "mean": 0.00046398113246930275,
+          "sd": 3.887032543499952e-05,
+          "sd_CI95_normal": [
+            2.0238156267005807e-05,
+            0.0002442896829250197
+          ]
+        }
+      }
+    }
+  ],
+  "N1_primitive_replay": [
+    {
+      "cct": 1800,
+      "gm": 100,
+      "cycle_id": "1",
+      "recomputed_minus_frozen": {
+        "cct_K": 0.0,
+        "mired": 0.0,
+        "duv": 0.0
+      }
+    },
+    {
+      "cct": 1800,
+      "gm": 100,
+      "cycle_id": "2",
+      "recomputed_minus_frozen": {
+        "cct_K": -3.5305347410030663e-06,
+        "mired": 9.762878789842944e-07,
+        "duv": 9.540979117872439e-18
+      }
+    },
+    {
+      "cct": 2300,
+      "gm": 200,
+      "cycle_id": "1",
+      "recomputed_minus_frozen": {
+        "cct_K": 6.5215976974286605e-06,
+        "mired": -1.0867751143450732e-06,
+        "duv": 2.6020852139652106e-17
+      }
+    },
+    {
+      "cct": 2300,
+      "gm": 200,
+      "cycle_id": "2",
+      "recomputed_minus_frozen": {
+        "cct_K": 0.0,
+        "mired": 0.0,
+        "duv": 0.0
+      }
+    },
+    {
+      "cct": 3200,
+      "gm": 0,
+      "cycle_id": "1",
+      "recomputed_minus_frozen": {
+        "cct_K": 0.0,
+        "mired": 0.0,
+        "duv": 0.0
+      }
+    },
+    {
+      "cct": 3200,
+      "gm": 0,
+      "cycle_id": "2",
+      "recomputed_minus_frozen": {
+        "cct_K": 0.0,
+        "mired": 0.0,
+        "duv": 0.0
+      }
+    },
+    {
+      "cct": 5600,
+      "gm": 100,
+      "cycle_id": "1",
+      "recomputed_minus_frozen": {
+        "cct_K": 0.0,
+        "mired": 0.0,
+        "duv": 0.0
+      }
+    },
+    {
+      "cct": 5600,
+      "gm": 100,
+      "cycle_id": "2",
+      "recomputed_minus_frozen": {
+        "cct_K": 0.0,
+        "mired": 0.0,
+        "duv": 0.0
+      }
+    },
+    {
+      "cct": 14000,
+      "gm": 0,
+      "cycle_id": "1",
+      "recomputed_minus_frozen": {
+        "cct_K": 8.920920299715362e-05,
+        "mired": -7.035812501499095e-07,
+        "duv": 2.42861286636753e-17
+      }
+    },
+    {
+      "cct": 14000,
+      "gm": 0,
+      "cycle_id": "2",
+      "recomputed_minus_frozen": {
+        "cct_K": 0.0012676650330831762,
+        "mired": -1.039583176520864e-05,
+        "duv": -2.42861286636753e-17
+      }
+    },
+    {
+      "cct": 20000,
+      "gm": 100,
+      "cycle_id": "1",
+      "recomputed_minus_frozen": {
+        "cct_K": 0.0,
+        "mired": 0.0,
+        "duv": 0.0
+      }
+    },
+    {
+      "cct": 20000,
+      "gm": 100,
+      "cycle_id": "2",
+      "recomputed_minus_frozen": {
+        "cct_K": 0.0,
+        "mired": 0.0,
+        "duv": 0.0
+      }
+    }
+  ]
+}

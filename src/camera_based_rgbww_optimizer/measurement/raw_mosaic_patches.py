@@ -535,6 +535,10 @@ def summarize_plane(
     trim_fraction = float(statistics_config["trim_fraction"])
     noise_margin = float(statistics_config["noise_floor_margin_normalized"]) * sensor_range
     clipping_margin = float(statistics_config["clipping_margin_normalized"]) * sensor_range
+    # GUIDE12 protective ceiling: pixels within 2 DN of the effective white
+    # level sit at the forward guard start; a large-area plateau there is not
+    # a quantitative chroma observation even when clipped_fraction is 0.
+    white_rail_margin_dn = float(statistics_config.get("white_rail_margin_dn", 2.0))
     if valid_count:
         normalized = (finite - black_level) / sensor_range
         raw_stats = _distribution_statistics(finite, trim_fraction)
@@ -543,6 +547,14 @@ def summarize_plane(
         clipped_fraction = float(np.mean(finite >= white_level - clipping_margin))
         near_noise_fraction = float(np.mean(finite <= black_level + noise_margin))
         below_black_fraction = float(np.mean(finite < black_level))
+        at_white_fraction = float(np.mean(finite >= white_level))
+        near_white_rail_fraction = float(
+            np.mean(finite >= white_level - white_rail_margin_dn)
+        )
+        white_rail_plateau = bool(
+            float(raw_stats["minimum"]) >= white_level - white_rail_margin_dn
+            and float(raw_stats["variance"]) == 0.0
+        )
     else:
         raw_stats = _empty_statistics()
         normalized_stats = _empty_statistics()
@@ -550,6 +562,9 @@ def summarize_plane(
         clipped_fraction = None
         near_noise_fraction = None
         below_black_fraction = None
+        at_white_fraction = None
+        near_white_rail_fraction = None
+        white_rail_plateau = None
 
     metrics = {
         "selected_pixel_count": selected_count,
@@ -558,6 +573,10 @@ def summarize_plane(
         "clipped_fraction": clipped_fraction,
         "near_noise_floor_fraction": near_noise_fraction,
         "below_black_fraction": below_black_fraction,
+        "at_effective_white_fraction": at_white_fraction,
+        "near_white_rail_fraction": near_white_rail_fraction,
+        "white_rail_plateau": white_rail_plateau,
+        "white_rail_margin_dn": white_rail_margin_dn,
     }
     return {
         "label": str(descriptor["label"]),
@@ -615,6 +634,24 @@ def evaluate_plane_quality(
         elif metric is not None and float(metric) > float(threshold):
             failures.append(failure_name)
 
+    # GUIDE12 native rail gate: a large-area plateau at the protective
+    # ceiling (white_rail_margin_dn) is a hard failure even when the old
+    # clipped_fraction stayed 0 because the plateau parked just below the
+    # effective white level. The threshold form covers partial near-rail
+    # contamination; the plateau boolean is unconditional when measured.
+    rail_threshold = quality_config.get("maximum_near_white_rail_fraction")
+    rail_metric = metrics.get("near_white_rail_fraction")
+    if rail_threshold is None and "maximum_near_white_rail_fraction" in quality_config:
+        pending_thresholds.append("maximum_near_white_rail_fraction")
+    elif (
+        rail_threshold is not None
+        and rail_metric is not None
+        and float(rail_metric) > float(rail_threshold)
+    ):
+        failures.append("near_white_rail_fraction_exceeded")
+    if metrics.get("white_rail_plateau"):
+        failures.append("white_rail_plateau")
+
     if float(metrics["nonfinite_fraction"]) > 0:
         warnings.append("nonfinite_pixels_present")
     if metrics["clipped_fraction"] is not None and float(metrics["clipped_fraction"]) > 0:
@@ -624,6 +661,11 @@ def evaluate_plane_quality(
         and float(metrics["near_noise_floor_fraction"]) > 0
     ):
         warnings.append("near_noise_floor_pixels_present")
+    if (
+        metrics.get("near_white_rail_fraction") is not None
+        and float(metrics["near_white_rail_fraction"]) > 0
+    ):
+        warnings.append("near_white_rail_pixels_present")
 
     if failures:
         status = "rejected"
@@ -1011,6 +1053,8 @@ def _distribution_statistics(values: np.ndarray, trim_fraction: float) -> dict[s
         "maximum": float(np.max(ordered)),
         "mean": float(np.mean(ordered)),
         "median": median,
+        "percentile_01": float(np.percentile(ordered, 1)),
+        "percentile_99": float(np.percentile(ordered, 99)),
         "trimmed_mean": float(np.mean(trimmed)),
         "mad": float(np.median(np.abs(ordered - median))),
         "variance": float(np.var(ordered)),
@@ -1018,7 +1062,20 @@ def _distribution_statistics(values: np.ndarray, trim_fraction: float) -> dict[s
 
 
 def _empty_statistics() -> dict[str, None]:
-    return {key: None for key in ("minimum", "maximum", "mean", "median", "trimmed_mean", "mad", "variance")}
+    return {
+        key: None
+        for key in (
+            "minimum",
+            "maximum",
+            "mean",
+            "median",
+            "percentile_01",
+            "percentile_99",
+            "trimmed_mean",
+            "mad",
+            "variance",
+        )
+    }
 
 
 def _scale_statistics(statistics: Mapping[str, float | None], exposure_seconds: float) -> dict[str, float | None]:

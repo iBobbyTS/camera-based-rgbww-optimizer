@@ -1,0 +1,5547 @@
+{
+  "white70": [
+    {
+      "cct": 1800,
+      "gm": 0,
+      "command": {
+        "b": 82,
+        "cw": 105,
+        "g": 12,
+        "r": 4095,
+        "ww": 4090
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -7.546391226515198,
+        "mired": 2.1169086632833114,
+        "duv": -1.5434213390294084e-05
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 2.1169086632833114,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 1800,
+      "gm": 70,
+      "command": {
+        "b": 21,
+        "cw": 39,
+        "g": 1170,
+        "r": 4095,
+        "ww": 25
+      },
+      "actual_pwm": {
+        "cw": 59,
+        "ww": 45,
+        "r": 4095,
+        "g": 1042,
+        "b": 38
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -4.055464823177772,
+        "mired": 1.1158721580810607,
+        "duv": 0.0002761450194252923
+      },
+      "scope": "W2_selection_frame_vs_same_candidate_fresh_Ray",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 1.1158721580810607,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 1800,
+      "gm": 100,
+      "command": {
+        "b": 0,
+        "cw": 0,
+        "g": 1197,
+        "r": 4095,
+        "ww": 0
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -6.174865291387505,
+        "mired": 1.711911438793095,
+        "duv": 0.00039091347695126375
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 1.711911438793095,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 1800,
+      "gm": 130,
+      "command": {
+        "b": 0,
+        "cw": 25,
+        "g": 905,
+        "r": 4095,
+        "ww": 755
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -1.7392061069742795,
+        "mired": 0.4996649443191927,
+        "duv": -4.9312977773502496e-05
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.4996649443191927,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 1800,
+      "gm": 200,
+      "command": {
+        "b": 0,
+        "cw": 1,
+        "g": 900,
+        "r": 4095,
+        "ww": 788
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -8.697241859061933,
+        "mired": 2.5054137391912263,
+        "duv": -0.00033691294628568607
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 2.5054137391912263,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 2000,
+      "gm": 0,
+      "command": {
+        "b": 0,
+        "cw": 30,
+        "g": 88,
+        "r": 3059,
+        "ww": 4095
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -45.905983862005996,
+        "mired": 10.606986569745686,
+        "duv": -0.007894356443096643
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 15.788712886193284,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 2000,
+      "gm": 70,
+      "command": {
+        "b": 0,
+        "cw": 0,
+        "g": 484,
+        "r": 3013,
+        "ww": 4095
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": 128.4793716004533,
+        "mired": -26.61211889463908,
+        "duv": -0.0019104238656452413
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 26.61211889463908,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 2000,
+      "gm": 100,
+      "command": {
+        "b": 11,
+        "cw": 40,
+        "g": 1435,
+        "r": 4095,
+        "ww": 25
+      },
+      "actual_pwm": {
+        "cw": 60,
+        "ww": 45,
+        "r": 4095,
+        "g": 1270,
+        "b": 29
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -5.124910229807028,
+        "mired": 1.1184275316778098,
+        "duv": 0.00040345312893288153
+      },
+      "scope": "W2_selection_frame_vs_same_candidate_fresh_Ray",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 1.1184275316778098,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 2000,
+      "gm": 130,
+      "command": {
+        "b": 0,
+        "cw": 0,
+        "g": 1463,
+        "r": 4095,
+        "ww": 0
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -8.306711292963882,
+        "mired": 1.815804300207958,
+        "duv": 0.00015297268094116318
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 1.815804300207958,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 2000,
+      "gm": 200,
+      "command": {
+        "b": 0,
+        "cw": 0,
+        "g": 1718,
+        "r": 4095,
+        "ww": 0
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": 213.97397591071785,
+        "mired": -42.388687260549204,
+        "duv": -0.003012746134788695
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 42.388687260549204,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 2300,
+      "gm": 0,
+      "command": {
+        "b": 352,
+        "cw": 314,
+        "g": 25,
+        "r": 1924,
+        "ww": 4095
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -5.067486900952645,
+        "mired": 0.863541972987548,
+        "duv": -2.098064629522077e-05
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.863541972987548,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 2300,
+      "gm": 70,
+      "command": {
+        "b": 152,
+        "cw": 80,
+        "g": 1701,
+        "r": 4095,
+        "ww": 45
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -4.257158187123423,
+        "mired": 0.7173346263709277,
+        "duv": 5.1100007432096275e-05
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 12.5,
+        "duv": 0.00025,
+        "mired": 0.5
+      },
+      "E": 1.4346692527418554,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 2300,
+      "gm": 100,
+      "command": {
+        "b": 0,
+        "cw": 0,
+        "g": 371,
+        "r": 2015,
+        "ww": 4095
+      },
+      "actual_pwm": {
+        "cw": 0,
+        "ww": 4095,
+        "r": 1965,
+        "g": 312,
+        "b": 0
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -4.660621768789952,
+        "mired": 0.7794863123920095,
+        "duv": 5.336313271787126e-05
+      },
+      "scope": "W2_selection_frame_vs_same_candidate_fresh_Ray",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.7794863123920095,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 2300,
+      "gm": 130,
+      "command": {
+        "b": 0,
+        "cw": 0,
+        "g": 1303,
+        "r": 4095,
+        "ww": 4095
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": 20.711192730865605,
+        "mired": -3.4545093009455172,
+        "duv": 2.519084448975896e-05
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 12.5,
+        "duv": 0.00025,
+        "mired": 0.5
+      },
+      "E": 6.9090186018910345,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 2300,
+      "gm": 200,
+      "command": {
+        "b": 0,
+        "cw": 0,
+        "g": 1288,
+        "r": 4095,
+        "ww": 4095
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": 13.606378416806365,
+        "mired": -2.2742506060424716,
+        "duv": 0.0001405042682286889
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 12.5,
+        "duv": 0.00025,
+        "mired": 0.5
+      },
+      "E": 4.548501212084943,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 2700,
+      "gm": 0,
+      "command": {
+        "b": 601,
+        "cw": 195,
+        "g": 27,
+        "r": 963,
+        "ww": 4095
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": 0.8360158337368375,
+        "mired": -0.1053258993762256,
+        "duv": -6.214835386328214e-05
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.12429670772656429,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 2700,
+      "gm": 70,
+      "command": {
+        "b": 203,
+        "cw": 317,
+        "g": 66,
+        "r": 677,
+        "ww": 4095
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -1.1752473190899764,
+        "mired": 0.14587607605557196,
+        "duv": -0.00014953742779292547
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.29907485558585095,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 2700,
+      "gm": 100,
+      "command": {
+        "b": 17,
+        "cw": 1386,
+        "g": 1601,
+        "r": 3903,
+        "ww": 4095
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -9.170482245950552,
+        "mired": 1.1398731006936487,
+        "duv": 0.0001030636215800856
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 12.5,
+        "duv": 0.00025,
+        "mired": 0.5
+      },
+      "E": 2.2797462013872973,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 2700,
+      "gm": 130,
+      "command": {
+        "b": 20,
+        "cw": 29,
+        "g": 20,
+        "r": 166,
+        "ww": 4095
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": 1.4732128678592744,
+        "mired": -0.1822305108520368,
+        "duv": 1.3233531453207478e-05
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.1822305108520368,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 2700,
+      "gm": 200,
+      "command": {
+        "b": 5,
+        "cw": 16,
+        "g": 24,
+        "r": 149,
+        "ww": 4095
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": 1.808644661813105,
+        "mired": -0.22404627405632027,
+        "duv": 9.568165496713285e-05
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.22404627405632027,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 3200,
+      "gm": 0,
+      "command": {
+        "b": 580,
+        "cw": 24,
+        "g": 10,
+        "r": 157,
+        "ww": 4095
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -182.24178980023316,
+        "mired": 17.813548811235364,
+        "duv": -0.008402860502681254
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 17.813548811235364,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 3200,
+      "gm": 70,
+      "command": {
+        "b": 296,
+        "cw": 1104,
+        "g": 5,
+        "r": 166,
+        "ww": 4095
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -17.394482677858377,
+        "mired": 1.6192878599514415,
+        "duv": 0.00014978790822048641
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 1.6192878599514415,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 3200,
+      "gm": 100,
+      "command": {
+        "b": 56,
+        "cw": 2272,
+        "g": 1941,
+        "r": 4095,
+        "ww": 480
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -20.662969518997215,
+        "mired": 1.9242147893634751,
+        "duv": 0.00013287750660814692
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 1.9242147893634751,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 3200,
+      "gm": 130,
+      "command": {
+        "b": 6,
+        "cw": 1086,
+        "g": 221,
+        "r": 113,
+        "ww": 4095
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -0.4663200447816962,
+        "mired": 0.04315840114873026,
+        "duv": 3.942042197557782e-06
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.04315840114873026,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 3200,
+      "gm": 200,
+      "command": {
+        "b": 32,
+        "cw": 756,
+        "g": 2431,
+        "r": 4095,
+        "ww": 440
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -9.902437611601727,
+        "mired": 0.9214359364057714,
+        "duv": 6.0042789943891284e-05
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 12.5,
+        "duv": 0.00025,
+        "mired": 0.5
+      },
+      "E": 1.8428718728115427,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 3800,
+      "gm": 0,
+      "command": {
+        "b": 836,
+        "cw": 372,
+        "g": 80,
+        "r": 0,
+        "ww": 4095
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -261.8877369014017,
+        "mired": 19.31362836851696,
+        "duv": -0.0074461694606728565
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 19.31362836851696,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 3800,
+      "gm": 70,
+      "command": {
+        "b": 382,
+        "cw": 2788,
+        "g": 20,
+        "r": 85,
+        "ww": 4095
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -8.499169339272157,
+        "mired": 0.5921772905769558,
+        "duv": -0.00012918151494267695
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.5921772905769558,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 3800,
+      "gm": 100,
+      "command": {
+        "b": 76,
+        "cw": 3458,
+        "g": 78,
+        "r": 0,
+        "ww": 4095
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": 2.620766464092867,
+        "mired": -0.18232287067030484,
+        "duv": 0.00010068133738434359
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.20136267476868716,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 3800,
+      "gm": 130,
+      "command": {
+        "b": 13,
+        "cw": 2735,
+        "g": 419,
+        "r": 0,
+        "ww": 4095
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -8.722220762016605,
+        "mired": 0.6076857116898395,
+        "duv": 0.00022057986268726737
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.6076857116898395,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 3800,
+      "gm": 200,
+      "command": {
+        "b": 0,
+        "cw": 1022,
+        "g": 1115,
+        "r": 41,
+        "ww": 4095
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -3.301561227853199,
+        "mired": 0.23180548797597567,
+        "duv": -3.095313990826229e-05
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.23180548797597567,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 4500,
+      "gm": 0,
+      "command": {
+        "b": 1329,
+        "cw": 1596,
+        "g": 82,
+        "r": 0,
+        "ww": 4095
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -6.598715210997398,
+        "mired": 0.3355833340833385,
+        "duv": -1.2291055402118e-05
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.3355833340833385,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 4500,
+      "gm": 70,
+      "command": {
+        "b": 1139,
+        "cw": 45,
+        "g": 944,
+        "r": 68,
+        "ww": 4095
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -23.2973736066524,
+        "mired": 1.226365464950561,
+        "duv": 0.0005840771463357852
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 1.226365464950561,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 4500,
+      "gm": 100,
+      "command": {
+        "b": 62,
+        "cw": 4095,
+        "g": 14,
+        "r": 0,
+        "ww": 2063
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -12.71763829612064,
+        "mired": 0.6730495587173948,
+        "duv": -5.197894345134683e-05
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.6730495587173948,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 4500,
+      "gm": 130,
+      "command": {
+        "b": 27,
+        "cw": 4095,
+        "g": 463,
+        "r": 0,
+        "ww": 2536
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -4.103030893921641,
+        "mired": 0.21828862610666988,
+        "duv": 0.0001885588299521384
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.37711765990427676,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 4500,
+      "gm": 200,
+      "command": {
+        "b": 736,
+        "cw": 135,
+        "g": 4095,
+        "r": 3939,
+        "ww": 1436
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -11.05312081457214,
+        "mired": 0.5942943220473751,
+        "duv": -5.325759696762217e-05
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.5942943220473751,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 5000,
+      "gm": 0,
+      "command": {
+        "b": 1492,
+        "cw": 2140,
+        "g": 160,
+        "r": 0,
+        "ww": 4095
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": 4.460097140366088,
+        "mired": -0.1922971497796766,
+        "duv": 0.00037168786296658263
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.7433757259331653,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 5000,
+      "gm": 70,
+      "command": {
+        "b": 491,
+        "cw": 4095,
+        "g": 30,
+        "r": 0,
+        "ww": 2128
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -11.647300584141703,
+        "mired": 0.5144309019025854,
+        "duv": -0.00018650940529724115
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.5144309019025854,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 5000,
+      "gm": 100,
+      "command": {
+        "b": 104,
+        "cw": 4095,
+        "g": 4,
+        "r": 0,
+        "ww": 1302
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -20.726320452276013,
+        "mired": 0.9263551749167505,
+        "duv": -6.660577600558007e-05
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.9263551749167505,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 5000,
+      "gm": 130,
+      "command": {
+        "b": 21,
+        "cw": 4095,
+        "g": 674,
+        "r": 788,
+        "ww": 487
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": 19.184419554264423,
+        "mired": -0.8525775833279852,
+        "duv": -0.00042256765634484175
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.8525775833279852,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 5000,
+      "gm": 200,
+      "command": {
+        "b": 60,
+        "cw": 4095,
+        "g": 2071,
+        "r": 8,
+        "ww": 3351
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": 0.42213145805908425,
+        "mired": -0.019152836803527862,
+        "duv": 0.00010831040583323195
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.2166208116664639,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 5600,
+      "gm": 0,
+      "command": {
+        "b": 1415,
+        "cw": 2892,
+        "g": 91,
+        "r": 14,
+        "ww": 4095
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -384.76764934845596,
+        "mired": 15.124548226119856,
+        "duv": -0.003486867090562413
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 15.390705973938239,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 5600,
+      "gm": 70,
+      "command": {
+        "b": 1605,
+        "cw": 50,
+        "g": 3348,
+        "r": 4095,
+        "ww": 54
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -14.06209774990657,
+        "mired": 0.5148066568618503,
+        "duv": -0.00027253892992035265
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.0,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.5624839099962629,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 5600,
+      "gm": 100,
+      "command": {
+        "b": 116,
+        "cw": 4095,
+        "g": 17,
+        "r": 142,
+        "ww": 428
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -13.300869131105173,
+        "mired": 0.4903006917396624,
+        "duv": 9.277575269020944e-05
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.10729224769198,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.5297611944724097,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 5600,
+      "gm": 130,
+      "command": {
+        "b": 56,
+        "cw": 4095,
+        "g": 238,
+        "r": 27,
+        "ww": 614
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -21.659896820549875,
+        "mired": 0.808750510754777,
+        "duv": 0.00023953243556484004
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.145697514035863,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.861375859964104,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 5600,
+      "gm": 200,
+      "command": {
+        "b": 46,
+        "cw": 4095,
+        "g": 1525,
+        "r": 4,
+        "ww": 1476
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": 0.9712370851693777,
+        "mired": -0.036606720287835515,
+        "duv": 0.0002961745589415178
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 25.04547256327925,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.5923491178830356,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 6500,
+      "gm": 0,
+      "command": {
+        "b": 2163,
+        "cw": 3888,
+        "g": 124,
+        "r": 0,
+        "ww": 4095
+      },
+      "actual_pwm": {
+        "cw": 3913,
+        "ww": 4095,
+        "r": 0,
+        "g": 115,
+        "b": 2133
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -0.4369370618096582,
+        "mired": 0.012567698922396175,
+        "duv": 5.414663839161879e-05
+      },
+      "scope": "W2_selection_frame_vs_same_candidate_fresh_Ray",
+      "tolerances": {
+        "cct_K": 30.46823532290966,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.10829327678323758,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 6500,
+      "gm": 70,
+      "command": {
+        "b": 544,
+        "cw": 4095,
+        "g": 8,
+        "r": 51,
+        "ww": 805
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -26.837077855831012,
+        "mired": 0.7766098956089991,
+        "duv": 0.0004161587322969091
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 31.142022586862357,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.8617641253382354,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 6500,
+      "gm": 100,
+      "command": {
+        "b": 201,
+        "cw": 4095,
+        "g": 1,
+        "r": 94,
+        "ww": 0
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -2.197546498730844,
+        "mired": 0.06354787185077271,
+        "duv": 4.058710386247192e-05
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 31.49890660599039,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.08117420772494384,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 6500,
+      "gm": 130,
+      "command": {
+        "b": 0,
+        "cw": 4095,
+        "g": 165,
+        "r": 3,
+        "ww": 0
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -298.03539638740403,
+        "mired": 9.134027710347738,
+        "duv": -0.00303070740581461
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 31.735685088702773,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 9.391175755443145,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 6500,
+      "gm": 200,
+      "command": {
+        "b": 41,
+        "cw": 4095,
+        "g": 956,
+        "r": 3,
+        "ww": 67
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -8.616693038402445,
+        "mired": 0.2545118805618358,
+        "duv": -6.479071624282753e-05
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 31.838775045923484,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.2706351932815862,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 8000,
+      "gm": 0,
+      "command": {
+        "b": 1839,
+        "cw": 4095,
+        "g": 155,
+        "r": 0,
+        "ww": 2886
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -673.9911200965671,
+        "mired": 15.15881630392596,
+        "duv": -0.002741338496133394
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 42.11188303985643,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 16.004772796758434,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 8000,
+      "gm": 70,
+      "command": {
+        "b": 345,
+        "cw": 4095,
+        "g": 34,
+        "r": 0,
+        "ww": 341
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -908.2438760022578,
+        "mired": 21.489970811635175,
+        "duv": -0.005910320427798854
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 42.51867048072433,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 21.489970811635175,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 8000,
+      "gm": 100,
+      "command": {
+        "b": 516,
+        "cw": 4095,
+        "g": 177,
+        "r": 0,
+        "ww": 87
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -4.671655610063681,
+        "mired": 0.09712014564829019,
+        "duv": -0.00011632625079644604
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 42.71107997429818,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.23265250159289208,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 8000,
+      "gm": 130,
+      "command": {
+        "b": 3032,
+        "cw": 328,
+        "g": 3868,
+        "r": 1151,
+        "ww": 4095
+      },
+      "actual_pwm": {
+        "cw": 320,
+        "ww": 4095,
+        "r": 1087,
+        "g": 3804,
+        "b": 3141
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": 16.148838219916797,
+        "mired": -0.3379301824410845,
+        "duv": -0.00016067459195736634
+      },
+      "scope": "W2_selection_frame_vs_same_candidate_fresh_Ray",
+      "tolerances": {
+        "cct_K": 21.50420777812874,
+        "duv": 0.00025,
+        "mired": 0.5
+      },
+      "E": 0.750961783225573,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 8000,
+      "gm": 200,
+      "command": {
+        "b": 553,
+        "cw": 4095,
+        "g": 1542,
+        "r": 17,
+        "ww": 71
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -35.81241890167712,
+        "mired": 0.764473502249075,
+        "duv": 0.0002023904151339656
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 43.27602457550201,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.8275348591503958,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 10000,
+      "gm": 0,
+      "command": {
+        "b": 1891,
+        "cw": 4095,
+        "g": 83,
+        "r": 32,
+        "ww": 2014
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -47.800844606934334,
+        "mired": 0.6653918066845534,
+        "duv": -4.7239585705925735e-05
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 59.15023386664378,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.8081260458699617,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 10000,
+      "gm": 70,
+      "command": {
+        "b": 485,
+        "cw": 4095,
+        "g": 31,
+        "r": 1,
+        "ww": 0
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -1302.3269040846117,
+        "mired": 22.285821239327746,
+        "duv": -0.004838747949157158
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 58.705334748872076,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 22.285821239327746,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 10000,
+      "gm": 100,
+      "command": {
+        "b": 4095,
+        "cw": 3853,
+        "g": 3735,
+        "r": 1613,
+        "ww": 2974
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -30.400199090978276,
+        "mired": 0.4464683347467684,
+        "duv": 2.882354564185275e-05
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 59.01035920269156,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.515167158812883,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 10000,
+      "gm": 130,
+      "command": {
+        "b": 1030,
+        "cw": 4095,
+        "g": 810,
+        "r": 1,
+        "ww": 189
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -3.7963379495176923,
+        "mired": 0.05627529254736885,
+        "duv": -3.870380969515225e-05
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 59.36630640583336,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.0774076193903045,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 10000,
+      "gm": 200,
+      "command": {
+        "b": 1109,
+        "cw": 4095,
+        "g": 1889,
+        "r": 0,
+        "ww": 0
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -35.12238068537408,
+        "mired": 0.5287793683935433,
+        "duv": -5.0798794647990975e-05
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 59.03887294587735,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.5949026282661559,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 14000,
+      "gm": 0,
+      "command": {
+        "b": 1979,
+        "cw": 4095,
+        "g": 90,
+        "r": 21,
+        "ww": 1542
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -281.9388515638275,
+        "mired": 2.2493768769591185,
+        "duv": 0.0003346376623547566
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 48.64828457459104,
+        "duv": 0.00025,
+        "mired": 0.5
+      },
+      "E": 5.795453098280138,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 14000,
+      "gm": 70,
+      "command": {
+        "b": 1148,
+        "cw": 4095,
+        "g": 255,
+        "r": 18,
+        "ww": 4
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": 20.447937347731568,
+        "mired": -0.1724363544352201,
+        "duv": -1.9535053225402596e-05
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 95.62790886999122,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.2138281343737329,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 14000,
+      "gm": 100,
+      "command": {
+        "b": 1357,
+        "cw": 4095,
+        "g": 691,
+        "r": 75,
+        "ww": 69
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": 32.36378102623166,
+        "mired": -0.2809335200965819,
+        "duv": -1.1158682178204422e-05
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 95.66326750581919,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.3383093832150671,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 14000,
+      "gm": 130,
+      "command": {
+        "b": 4095,
+        "cw": 3704,
+        "g": 3701,
+        "r": 796,
+        "ww": 2252
+      },
+      "actual_pwm": {
+        "cw": 3751,
+        "ww": 2256,
+        "r": 700,
+        "g": 3591,
+        "b": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -6.4718079500180465,
+        "mired": 0.057947238281002456,
+        "duv": 7.686255516722688e-05
+      },
+      "scope": "W2_selection_frame_vs_same_candidate_fresh_Ray",
+      "tolerances": {
+        "cct_K": 46.1834576928669,
+        "duv": 0.00025,
+        "mired": 0.5
+      },
+      "E": 0.30745022066890754,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 14000,
+      "gm": 200,
+      "command": {
+        "b": 1934,
+        "cw": 4095,
+        "g": 2489,
+        "r": 14,
+        "ww": 43
+      },
+      "actual_pwm": {
+        "cw": 4095,
+        "ww": 65,
+        "r": 30,
+        "g": 2379,
+        "b": 1913
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -41.29017571722943,
+        "mired": 0.39318883140954597,
+        "duv": 0.0002463143125647216
+      },
+      "scope": "W2_selection_frame_vs_same_candidate_fresh_Ray",
+      "tolerances": {
+        "cct_K": 89.80408951813851,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.49262862512944317,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 20000,
+      "gm": 0,
+      "command": {
+        "b": 1701,
+        "cw": 4095,
+        "g": 59,
+        "r": 5,
+        "ww": 1078
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -3764.1816484499304,
+        "mired": 20.66148740542876,
+        "duv": -0.002298421982855344
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 158.3122254258303,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 23.776948611043686,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 20000,
+      "gm": 70,
+      "command": {
+        "b": 4095,
+        "cw": 0,
+        "g": 3328,
+        "r": 1427,
+        "ww": 2674
+      },
+      "actual_pwm": {
+        "cw": 0,
+        "ww": 2754,
+        "r": 1382,
+        "g": 3113,
+        "b": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -72.49518918988542,
+        "mired": 0.3631595933911598,
+        "duv": 0.00029990823894558444
+      },
+      "scope": "W2_selection_frame_vs_same_candidate_fresh_Ray",
+      "tolerances": {
+        "cct_K": 147.84510952789233,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.5998164778911689,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 20000,
+      "gm": 100,
+      "command": {
+        "b": 3581,
+        "cw": 0,
+        "g": 4095,
+        "r": 3214,
+        "ww": 181
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -13.724925679405715,
+        "mired": 0.07129402187369749,
+        "duv": -0.00023814235530229924
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 146.9615456911066,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 0.4762847106045985,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 20000,
+      "gm": 130,
+      "command": {
+        "b": 1837,
+        "cw": 4095,
+        "g": 1532,
+        "r": 5,
+        "ww": 248
+      },
+      "actual_pwm": null,
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": -2116.5466957133594,
+        "mired": 13.838332682417445,
+        "duv": -0.002640451334707558
+      },
+      "scope": "W6_single_historical_pair",
+      "tolerances": {
+        "cct_K": 143.6915718508511,
+        "duv": 0.0005,
+        "mired": 1.0
+      },
+      "E": 14.729790122348245,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    },
+    {
+      "cct": 20000,
+      "gm": 200,
+      "command": {
+        "b": 3098,
+        "cw": 4095,
+        "g": 3786,
+        "r": 398,
+        "ww": 86
+      },
+      "actual_pwm": {
+        "cw": 4095,
+        "ww": 108,
+        "r": 342,
+        "g": 3700,
+        "b": 3200
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "historical_readback_note": "W6 rows retain historical evidence without a new readback claim in this replay",
+      "errors": {
+        "cct_K": 34.9496086718118,
+        "mired": -0.2100408818936046,
+        "duv": -0.0001448889673557087
+      },
+      "scope": "W2_selection_frame_vs_same_candidate_fresh_Ray",
+      "tolerances": {
+        "cct_K": 67.63378604848273,
+        "duv": 0.00025,
+        "mired": 0.5
+      },
+      "E": 0.5795558694228348,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "no validated current-epoch node-level prediction model; N1 anchors reported separately"
+    }
+  ],
+  "white70_empirical_distribution": {
+    "n": 70,
+    "interpretation": "empirical distribution over this designed grid, NOT a noise or population distribution",
+    "absolute_error_quantiles": {
+      "cct_K": {
+        "median": 13.009253713612907,
+        "p95": 802.8301358446963,
+        "maximum": 3764.1816484499304
+      },
+      "mired": {
+        "median": 0.6692206827009741,
+        "p95": 21.117153278842284,
+        "maximum": 42.388687260549204
+      },
+      "duv": {
+        "median": 0.00014721319757431708,
+        "p95": 0.005428112812410088,
+        "maximum": 0.008402860502681254
+      }
+    }
+  },
+  "W2_adopted": [
+    {
+      "cct": 1800,
+      "gm": 70,
+      "candidate": "0",
+      "command": {
+        "b": 21,
+        "cw": 39,
+        "g": 1170,
+        "r": 4095,
+        "ww": 25
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 59,
+        "ww": 45,
+        "r": 4095,
+        "g": 1042,
+        "b": 38
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "001-strip-guide11-w2-cct1800-gm70-candidate0"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "000-ray-guide11-w2-cct1800-gm70-candidate0"
+      ],
+      "e_paired": {
+        "cct_K": -4.055464823177772,
+        "mired": 1.1158721580810607,
+        "duv": 0.0002761450194252923
+      },
+      "E_paired": 1.1158721580810607,
+      "e_historical": {
+        "cct_K": -2.7734559898899533,
+        "mired": 0.7636369294269798,
+        "duv": 0.00027434556547929105
+      },
+      "E_historical": 0.7636369294269798,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 2000,
+      "gm": 100,
+      "candidate": "0",
+      "command": {
+        "b": 11,
+        "cw": 40,
+        "g": 1435,
+        "r": 4095,
+        "ww": 25
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 60,
+        "ww": 45,
+        "r": 4095,
+        "g": 1270,
+        "b": 29
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "009-strip-guide11-w2-cct2000-gm100-candidate0"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "008-ray-guide11-w2-cct2000-gm100-candidate0"
+      ],
+      "e_paired": {
+        "cct_K": -5.124910229807028,
+        "mired": 1.1184275316778098,
+        "duv": 0.00040345312893288153
+      },
+      "E_paired": 1.1184275316778098,
+      "e_historical": {
+        "cct_K": -3.931042426931981,
+        "mired": 0.858363635915623,
+        "duv": 0.0004092720445828483
+      },
+      "E_historical": 0.858363635915623,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 2300,
+      "gm": 100,
+      "candidate": "0",
+      "command": {
+        "b": 0,
+        "cw": 0,
+        "g": 371,
+        "r": 2015,
+        "ww": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 0,
+        "ww": 4095,
+        "r": 1965,
+        "g": 312,
+        "b": 0
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "017-strip-guide11-w2-cct2300-gm100-candidate0"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "016-ray-guide11-w2-cct2300-gm100-candidate0"
+      ],
+      "e_paired": {
+        "cct_K": -4.660621768789952,
+        "mired": 0.7794863123920095,
+        "duv": 5.336313271787126e-05
+      },
+      "E_paired": 0.7794863123920095,
+      "e_historical": {
+        "cct_K": -4.239498782954797,
+        "mired": 0.7091757550952593,
+        "duv": 3.62194516737805e-05
+      },
+      "E_historical": 0.7091757550952593,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 6500,
+      "gm": 0,
+      "candidate": "1",
+      "command": {
+        "b": 2163,
+        "cw": 3888,
+        "g": 124,
+        "r": 0,
+        "ww": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 3913,
+        "ww": 4095,
+        "r": 0,
+        "g": 115,
+        "b": 2133
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "052-strip-guide11-w2-cct6500-gm0-candidate1"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "053-ray-guide11-w2-cct6500-gm0-candidate1"
+      ],
+      "e_paired": {
+        "cct_K": -0.4369370618096582,
+        "mired": 0.012567698922396175,
+        "duv": 5.414663839161879e-05
+      },
+      "E_paired": 0.10829327678323758,
+      "e_historical": {
+        "cct_K": 3.707310199602034,
+        "mired": -0.10670902480518407,
+        "duv": 3.879976433617677e-05
+      },
+      "E_historical": 0.12167787731422815,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 8000,
+      "gm": 130,
+      "candidate": "0",
+      "command": {
+        "b": 3032,
+        "cw": 328,
+        "g": 3868,
+        "r": 1151,
+        "ww": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 320,
+        "ww": 4095,
+        "r": 1087,
+        "g": 3804,
+        "b": 3141
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "063-strip-guide11-w2-cct8000-gm130-candidate0"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "062-ray-guide11-w2-cct8000-gm130-candidate0"
+      ],
+      "e_paired": {
+        "cct_K": 16.148838219916797,
+        "mired": -0.3379301824410845,
+        "duv": -0.00016067459195736634
+      },
+      "E_paired": 0.750961783225573,
+      "e_historical": {
+        "cct_K": 16.2348982583444,
+        "mired": -0.33973530704523114,
+        "duv": -0.00017752470770277147
+      },
+      "E_historical": 0.7549637924749039,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 14000,
+      "gm": 130,
+      "candidate": "1",
+      "command": {
+        "b": 4095,
+        "cw": 3704,
+        "g": 3701,
+        "r": 796,
+        "ww": 2252
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 3751,
+        "ww": 2256,
+        "r": 700,
+        "g": 3591,
+        "b": 4095
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "076-strip-guide11-w2-cct14000-gm130-candidate1"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "077-ray-guide11-w2-cct14000-gm130-candidate1"
+      ],
+      "e_paired": {
+        "cct_K": -6.4718079500180465,
+        "mired": 0.057947238281002456,
+        "duv": 7.686255516722688e-05
+      },
+      "E_paired": 0.30745022066890754,
+      "e_historical": {
+        "cct_K": -25.496036281834677,
+        "mired": 0.2278761813222303,
+        "duv": 3.834388140416291e-05
+      },
+      "E_historical": 0.5520599269849077,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 14000,
+      "gm": 200,
+      "candidate": "1",
+      "command": {
+        "b": 1934,
+        "cw": 4095,
+        "g": 2489,
+        "r": 14,
+        "ww": 43
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 4095,
+        "ww": 65,
+        "r": 30,
+        "g": 2379,
+        "b": 1913
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "081-strip-guide11-w2-cct14000-gm200-candidate1"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "080-ray-guide11-w2-cct14000-gm200-candidate1"
+      ],
+      "e_paired": {
+        "cct_K": -41.29017571722943,
+        "mired": 0.39318883140954597,
+        "duv": 0.0002463143125647216
+      },
+      "E_paired": 0.49262862512944317,
+      "e_historical": {
+        "cct_K": -43.52227124869205,
+        "mired": 0.41435405913472323,
+        "duv": 0.00019185176655425393
+      },
+      "E_historical": 0.4846357385528805,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 20000,
+      "gm": 70,
+      "candidate": "1",
+      "command": {
+        "b": 4095,
+        "cw": 0,
+        "g": 3328,
+        "r": 1427,
+        "ww": 2674
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 0,
+        "ww": 2754,
+        "r": 1382,
+        "g": 3113,
+        "b": 4095
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "089-strip-guide11-w2-cct20000-gm70-candidate1"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "088-ray-guide11-w2-cct20000-gm70-candidate1"
+      ],
+      "e_paired": {
+        "cct_K": -72.49518918988542,
+        "mired": 0.3631595933911598,
+        "duv": 0.00029990823894558444
+      },
+      "E_paired": 0.5998164778911689,
+      "e_historical": {
+        "cct_K": -74.65088928397563,
+        "mired": 0.373901520902038,
+        "duv": 0.0002981013657403879
+      },
+      "E_historical": 0.5962027314807757,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 20000,
+      "gm": 200,
+      "candidate": "0",
+      "command": {
+        "b": 3098,
+        "cw": 4095,
+        "g": 3786,
+        "r": 398,
+        "ww": 86
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 4095,
+        "ww": 108,
+        "r": 342,
+        "g": 3700,
+        "b": 3200
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "095-strip-guide11-w2-cct20000-gm200-candidate0"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "094-ray-guide11-w2-cct20000-gm200-candidate0"
+      ],
+      "e_paired": {
+        "cct_K": 34.9496086718118,
+        "mired": -0.2100408818936046,
+        "duv": -0.0001448889673557087
+      },
+      "E_paired": 0.5795558694228348,
+      "e_historical": {
+        "cct_K": 12.501545464217998,
+        "mired": -0.0750013493683781,
+        "duv": -0.00019526642957888585
+      },
+      "E_historical": 0.7810657183155434,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    }
+  ],
+  "W2_all_paired": [
+    {
+      "cct": 1800,
+      "gm": 70,
+      "candidate": "0",
+      "command": {
+        "b": 21,
+        "cw": 39,
+        "g": 1170,
+        "r": 4095,
+        "ww": 25
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 59,
+        "ww": 45,
+        "r": 4095,
+        "g": 1042,
+        "b": 38
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "001-strip-guide11-w2-cct1800-gm70-candidate0"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "000-ray-guide11-w2-cct1800-gm70-candidate0"
+      ],
+      "e_paired": {
+        "cct_K": -4.055464823177772,
+        "mired": 1.1158721580810607,
+        "duv": 0.0002761450194252923
+      },
+      "E_paired": 1.1158721580810607,
+      "e_historical": {
+        "cct_K": -2.7734559898899533,
+        "mired": 0.7636369294269798,
+        "duv": 0.00027434556547929105
+      },
+      "E_historical": 0.7636369294269798,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 1800,
+      "gm": 70,
+      "candidate": "1",
+      "command": {
+        "b": 19,
+        "cw": 39,
+        "g": 1170,
+        "r": 4095,
+        "ww": 25
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 59,
+        "ww": 45,
+        "r": 4095,
+        "g": 1042,
+        "b": 37
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "003-strip-guide11-w2-cct1800-gm70-candidate1"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "002-ray-guide11-w2-cct1800-gm70-candidate1"
+      ],
+      "e_paired": {
+        "cct_K": -4.312658019441642,
+        "mired": 1.1866443490591791,
+        "duv": 0.00019938604005491616
+      },
+      "E_paired": 1.1866443490591791,
+      "e_historical": {
+        "cct_K": -2.9057548517851046,
+        "mired": 0.8001193759982925,
+        "duv": 0.00019209399819137196
+      },
+      "E_historical": 0.8001193759982925,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 2000,
+      "gm": 70,
+      "candidate": "0",
+      "command": {
+        "b": 0,
+        "cw": 0,
+        "g": 363,
+        "r": 3013,
+        "ww": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 0,
+        "ww": 4095,
+        "r": 3041,
+        "g": 306,
+        "b": 0
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "004-strip-guide11-w2-cct2000-gm70-candidate0"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "005-ray-guide11-w2-cct2000-gm70-candidate0"
+      ],
+      "e_paired": {
+        "cct_K": 67.09325848711251,
+        "mired": -14.291616194985522,
+        "duv": -0.0009363772047638716
+      },
+      "E_paired": 14.291616194985522,
+      "e_historical": {
+        "cct_K": 66.5696999143488,
+        "mired": -14.176613282398534,
+        "duv": -0.0009396818720181087
+      },
+      "E_historical": 14.176613282398534,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 2000,
+      "gm": 70,
+      "candidate": "1",
+      "command": {
+        "b": 0,
+        "cw": 0,
+        "g": 424,
+        "r": 3013,
+        "ww": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 0,
+        "ww": 4095,
+        "r": 3041,
+        "g": 352,
+        "b": 0
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "006-strip-guide11-w2-cct2000-gm70-candidate1"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "007-ray-guide11-w2-cct2000-gm70-candidate1"
+      ],
+      "e_paired": {
+        "cct_K": 96.87204942682729,
+        "mired": -20.350195183371852,
+        "duv": -0.001407879360653026
+      },
+      "E_paired": 20.350195183371852,
+      "e_historical": {
+        "cct_K": 96.83713886356327,
+        "mired": -20.342528615961157,
+        "duv": -0.0014022025845545787
+      },
+      "E_historical": 20.342528615961157,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 2000,
+      "gm": 100,
+      "candidate": "0",
+      "command": {
+        "b": 11,
+        "cw": 40,
+        "g": 1435,
+        "r": 4095,
+        "ww": 25
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 60,
+        "ww": 45,
+        "r": 4095,
+        "g": 1270,
+        "b": 29
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "009-strip-guide11-w2-cct2000-gm100-candidate0"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "008-ray-guide11-w2-cct2000-gm100-candidate0"
+      ],
+      "e_paired": {
+        "cct_K": -5.124910229807028,
+        "mired": 1.1184275316778098,
+        "duv": 0.00040345312893288153
+      },
+      "E_paired": 1.1184275316778098,
+      "e_historical": {
+        "cct_K": -3.931042426931981,
+        "mired": 0.858363635915623,
+        "duv": 0.0004092720445828483
+      },
+      "E_historical": 0.858363635915623,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 2000,
+      "gm": 100,
+      "candidate": "1",
+      "command": {
+        "b": 7,
+        "cw": 40,
+        "g": 1435,
+        "r": 4095,
+        "ww": 25
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 60,
+        "ww": 45,
+        "r": 4095,
+        "g": 1270,
+        "b": 25
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "011-strip-guide11-w2-cct2000-gm100-candidate1"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "010-ray-guide11-w2-cct2000-gm100-candidate1"
+      ],
+      "e_paired": {
+        "cct_K": -6.364662710529956,
+        "mired": 1.3903180146444356,
+        "duv": 0.0001529828428583329
+      },
+      "E_paired": 1.3903180146444356,
+      "e_historical": {
+        "cct_K": -5.577944278353243,
+        "mired": 1.218912155971907,
+        "duv": 0.000152505362225136
+      },
+      "E_historical": 1.218912155971907,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 2000,
+      "gm": 200,
+      "candidate": "0",
+      "command": {
+        "b": 0,
+        "cw": 0,
+        "g": 1604,
+        "r": 4095,
+        "ww": 0
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 0,
+        "ww": 0,
+        "r": 4095,
+        "g": 1415,
+        "b": 0
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "012-strip-guide11-w2-cct2000-gm200-candidate0"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "013-ray-guide11-w2-cct2000-gm200-candidate0"
+      ],
+      "e_paired": {
+        "cct_K": 114.51539488743538,
+        "mired": -23.677745839167244,
+        "duv": -0.0015361728422017265
+      },
+      "E_paired": 23.677745839167244,
+      "e_historical": {
+        "cct_K": 114.87522708466076,
+        "mired": -23.756135964088912,
+        "duv": -0.0015354554920182792
+      },
+      "E_historical": 23.756135964088912,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 2000,
+      "gm": 200,
+      "candidate": "1",
+      "command": {
+        "b": 0,
+        "cw": 0,
+        "g": 1661,
+        "r": 4095,
+        "ww": 0
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 0,
+        "ww": 0,
+        "r": 4095,
+        "g": 1464,
+        "b": 0
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "014-strip-guide11-w2-cct2000-gm200-candidate1"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "015-ray-guide11-w2-cct2000-gm200-candidate1"
+      ],
+      "e_paired": {
+        "cct_K": 164.613093569209,
+        "mired": -33.28286770934068,
+        "duv": -0.0022867817765810684
+      },
+      "E_paired": 33.28286770934068,
+      "e_historical": {
+        "cct_K": 165.4499995673841,
+        "mired": -33.46514867884326,
+        "duv": -0.0022818333988964415
+      },
+      "E_historical": 33.46514867884326,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 2300,
+      "gm": 100,
+      "candidate": "0",
+      "command": {
+        "b": 0,
+        "cw": 0,
+        "g": 371,
+        "r": 2015,
+        "ww": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 0,
+        "ww": 4095,
+        "r": 1965,
+        "g": 312,
+        "b": 0
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "017-strip-guide11-w2-cct2300-gm100-candidate0"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "016-ray-guide11-w2-cct2300-gm100-candidate0"
+      ],
+      "e_paired": {
+        "cct_K": -4.660621768789952,
+        "mired": 0.7794863123920095,
+        "duv": 5.336313271787126e-05
+      },
+      "E_paired": 0.7794863123920095,
+      "e_historical": {
+        "cct_K": -4.239498782954797,
+        "mired": 0.7091757550952593,
+        "duv": 3.62194516737805e-05
+      },
+      "E_historical": 0.7091757550952593,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 2300,
+      "gm": 100,
+      "candidate": "1",
+      "command": {
+        "b": 0,
+        "cw": 0,
+        "g": 367,
+        "r": 2015,
+        "ww": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 0,
+        "ww": 4095,
+        "r": 1965,
+        "g": 309,
+        "b": 0
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "019-strip-guide11-w2-cct2300-gm100-candidate1"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "018-ray-guide11-w2-cct2300-gm100-candidate1"
+      ],
+      "e_paired": {
+        "cct_K": -6.262462181860883,
+        "mired": 1.048608210887494,
+        "duv": 7.345069663092056e-05
+      },
+      "E_paired": 1.048608210887494,
+      "e_historical": {
+        "cct_K": -6.456556936458583,
+        "mired": 1.0810223558806342,
+        "duv": 6.236666062580873e-05
+      },
+      "E_historical": 1.0810223558806342,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 2300,
+      "gm": 130,
+      "candidate": "0",
+      "command": {
+        "b": 0,
+        "cw": 0,
+        "g": 1236,
+        "r": 4095,
+        "ww": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 0,
+        "ww": 4095,
+        "r": 4095,
+        "g": 1099,
+        "b": 0
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "020-strip-guide11-w2-cct2300-gm130-candidate0"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "021-ray-guide11-w2-cct2300-gm130-candidate0"
+      ],
+      "e_paired": {
+        "cct_K": -7.821233693650356,
+        "mired": 1.3194495163646138,
+        "duv": 0.0005023941200149049
+      },
+      "E_paired": 2.6388990327292277,
+      "e_historical": {
+        "cct_K": -7.449627105369018,
+        "mired": 1.2569506751724475,
+        "duv": 0.0005075155601420014
+      },
+      "E_historical": 2.513901350344895,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 2300,
+      "gm": 130,
+      "candidate": "1",
+      "command": {
+        "b": 0,
+        "cw": 0,
+        "g": 1270,
+        "r": 4095,
+        "ww": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 0,
+        "ww": 4095,
+        "r": 4095,
+        "g": 1128,
+        "b": 0
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "022-strip-guide11-w2-cct2300-gm130-candidate1"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "023-ray-guide11-w2-cct2300-gm130-candidate1"
+      ],
+      "e_paired": {
+        "cct_K": 6.784432697867942,
+        "mired": -1.137442586259965,
+        "duv": 0.00026524267321997516
+      },
+      "E_paired": 2.27488517251993,
+      "e_historical": {
+        "cct_K": 7.436777486544088,
+        "mired": -1.2471448937897662,
+        "duv": 0.00026555916991373267
+      },
+      "E_historical": 2.4942897875795325,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 2300,
+      "gm": 200,
+      "candidate": "0",
+      "command": {
+        "b": 0,
+        "cw": 0,
+        "g": 1243,
+        "r": 4095,
+        "ww": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 0,
+        "ww": 4095,
+        "r": 4095,
+        "g": 1105,
+        "b": 0
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "025-strip-guide11-w2-cct2300-gm200-candidate0"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "024-ray-guide11-w2-cct2300-gm200-candidate0"
+      ],
+      "e_paired": {
+        "cct_K": -5.1320607504299005,
+        "mired": 0.8642859687178657,
+        "duv": 0.0004489462316216589
+      },
+      "E_paired": 1.7957849264866355,
+      "e_historical": {
+        "cct_K": -4.961788043932756,
+        "mired": 0.8356688193273385,
+        "duv": 0.00045907497108103445
+      },
+      "E_historical": 1.8362998843241378,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 2300,
+      "gm": 200,
+      "candidate": "1",
+      "command": {
+        "b": 0,
+        "cw": 0,
+        "g": 1266,
+        "r": 4095,
+        "ww": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 0,
+        "ww": 4095,
+        "r": 4095,
+        "g": 1124,
+        "b": 0
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "027-strip-guide11-w2-cct2300-gm200-candidate1"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "026-ray-guide11-w2-cct2300-gm200-candidate1"
+      ],
+      "e_paired": {
+        "cct_K": 4.878197500371698,
+        "mired": -0.8185248039602016,
+        "duv": 0.0002995275224004848
+      },
+      "E_paired": 1.637049607920403,
+      "e_historical": {
+        "cct_K": 4.5169808281475525,
+        "mired": -0.7578031274638874,
+        "duv": 0.0002984359999211369
+      },
+      "E_historical": 1.515606254927775,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 2700,
+      "gm": 100,
+      "candidate": "0",
+      "command": {
+        "b": 19,
+        "cw": 1386,
+        "g": 1601,
+        "r": 3903,
+        "ww": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 1360,
+        "ww": 4095,
+        "r": 3909,
+        "g": 1413,
+        "b": 37
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "028-strip-guide11-w2-cct2700-gm100-candidate0"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "029-ray-guide11-w2-cct2700-gm100-candidate0"
+      ],
+      "e_paired": {
+        "cct_K": -8.660167047523373,
+        "mired": 1.0762232620273835,
+        "duv": 0.0001393427245432897
+      },
+      "E_paired": 2.152446524054767,
+      "e_historical": {
+        "cct_K": -8.627609809659589,
+        "mired": 1.0721895696672163,
+        "duv": 0.00014935297030021187
+      },
+      "E_historical": 2.1443791393344327,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 2700,
+      "gm": 100,
+      "candidate": "1",
+      "command": {
+        "b": 18,
+        "cw": 1386,
+        "g": 1601,
+        "r": 3903,
+        "ww": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 1360,
+        "ww": 4095,
+        "r": 3909,
+        "g": 1413,
+        "b": 36
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "030-strip-guide11-w2-cct2700-gm100-candidate1"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "031-ray-guide11-w2-cct2700-gm100-candidate1"
+      ],
+      "e_paired": {
+        "cct_K": -8.676702689418562,
+        "mired": 1.0778230060237206,
+        "duv": 0.00010437082874624123
+      },
+      "E_paired": 2.155646012047441,
+      "e_historical": {
+        "cct_K": -8.036932825961685,
+        "mired": 0.9985753935719686,
+        "duv": 0.00011286884137056124
+      },
+      "E_historical": 1.9971507871439371,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 3200,
+      "gm": 0,
+      "candidate": "0",
+      "command": {
+        "b": 712,
+        "cw": 24,
+        "g": 10,
+        "r": 157,
+        "ww": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 43,
+        "ww": 4095,
+        "r": 146,
+        "g": 25,
+        "b": 679
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "033-strip-guide11-w2-cct3200-gm0-candidate0"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "032-ray-guide11-w2-cct3200-gm0-candidate0"
+      ],
+      "e_paired": {
+        "cct_K": -107.82150916477622,
+        "mired": 10.287783163196195,
+        "duv": -0.00419153248547449
+      },
+      "E_paired": 10.287783163196195,
+      "e_historical": {
+        "cct_K": -107.03220605639899,
+        "mired": 10.214921226606293,
+        "duv": -0.004168949755385018
+      },
+      "E_historical": 10.214921226606293,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 3200,
+      "gm": 0,
+      "candidate": "1",
+      "command": {
+        "b": 646,
+        "cw": 24,
+        "g": 10,
+        "r": 157,
+        "ww": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 43,
+        "ww": 4095,
+        "r": 146,
+        "g": 25,
+        "b": 617
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "035-strip-guide11-w2-cct3200-gm0-candidate1"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "034-ray-guide11-w2-cct3200-gm0-candidate1"
+      ],
+      "e_paired": {
+        "cct_K": -141.89666179418418,
+        "mired": 13.701164390258839,
+        "duv": -0.00622582152314274
+      },
+      "E_paired": 13.701164390258839,
+      "e_historical": {
+        "cct_K": -142.94474702818252,
+        "mired": 13.79796898770951,
+        "duv": -0.006199395918351568
+      },
+      "E_historical": 13.79796898770951,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 3200,
+      "gm": 70,
+      "candidate": "0",
+      "command": {
+        "b": 314,
+        "cw": 1104,
+        "g": 5,
+        "r": 166,
+        "ww": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 1110,
+        "ww": 4095,
+        "r": 154,
+        "g": 20,
+        "b": 305
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "036-strip-guide11-w2-cct3200-gm70-candidate0"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "037-ray-guide11-w2-cct3200-gm70-candidate0"
+      ],
+      "e_paired": {
+        "cct_K": -8.079596725674946,
+        "mired": 0.7499436541214664,
+        "duv": 0.0006234768977629319
+      },
+      "E_paired": 1.2469537955258638,
+      "e_historical": {
+        "cct_K": -7.936831131866256,
+        "mired": 0.7367242361437434,
+        "duv": 0.0006350257053605313
+      },
+      "E_historical": 1.2700514107210625,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 3200,
+      "gm": 70,
+      "candidate": "1",
+      "command": {
+        "b": 305,
+        "cw": 1104,
+        "g": 5,
+        "r": 166,
+        "ww": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 1110,
+        "ww": 4095,
+        "r": 154,
+        "g": 20,
+        "b": 297
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "038-strip-guide11-w2-cct3200-gm70-candidate1"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "039-ray-guide11-w2-cct3200-gm70-candidate1"
+      ],
+      "e_paired": {
+        "cct_K": -13.070188005859563,
+        "mired": 1.2147795179363357,
+        "duv": 0.00038180117972576376
+      },
+      "E_paired": 1.2147795179363357,
+      "e_historical": {
+        "cct_K": -12.606584916529755,
+        "mired": 1.171856257540469,
+        "duv": 0.00039479869520359865
+      },
+      "E_historical": 1.171856257540469,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 3800,
+      "gm": 0,
+      "candidate": "0",
+      "command": {
+        "b": 978,
+        "cw": 372,
+        "g": 80,
+        "r": 0,
+        "ww": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 365,
+        "ww": 4095,
+        "r": 0,
+        "g": 79,
+        "b": 940
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "041-strip-guide11-w2-cct3800-gm0-candidate0"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "040-ray-guide11-w2-cct3800-gm0-candidate0"
+      ],
+      "e_paired": {
+        "cct_K": -131.51318750247037,
+        "mired": 9.337847256675275,
+        "duv": -0.00327710213515953
+      },
+      "E_paired": 9.337847256675275,
+      "e_historical": {
+        "cct_K": -127.95623858518184,
+        "mired": 9.093762131669678,
+        "duv": -0.003308307026680085
+      },
+      "E_historical": 9.093762131669678,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 3800,
+      "gm": 0,
+      "candidate": "1",
+      "command": {
+        "b": 907,
+        "cw": 372,
+        "g": 80,
+        "r": 0,
+        "ww": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 365,
+        "ww": 4095,
+        "r": 0,
+        "g": 79,
+        "b": 868
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "043-strip-guide11-w2-cct3800-gm0-candidate1"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "042-ray-guide11-w2-cct3800-gm0-candidate1"
+      ],
+      "e_paired": {
+        "cct_K": -198.00179361524624,
+        "mired": 14.330792892139868,
+        "duv": -0.005271129642324013
+      },
+      "E_paired": 14.330792892139868,
+      "e_historical": {
+        "cct_K": -196.24997544012285,
+        "mired": 14.210522692932045,
+        "duv": -0.005268871368907385
+      },
+      "E_historical": 14.210522692932045,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 4500,
+      "gm": 70,
+      "candidate": "0",
+      "command": {
+        "b": 1138,
+        "cw": 45,
+        "g": 944,
+        "r": 68,
+        "ww": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 65,
+        "ww": 4095,
+        "r": 70,
+        "g": 861,
+        "b": 1116
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "044-strip-guide11-w2-cct4500-gm70-candidate0"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "045-ray-guide11-w2-cct4500-gm70-candidate0"
+      ],
+      "e_paired": {
+        "cct_K": -20.715996445967903,
+        "mired": 1.089743374046492,
+        "duv": 0.00047696867074988915
+      },
+      "E_paired": 1.089743374046492,
+      "e_historical": {
+        "cct_K": -20.531707247799204,
+        "mired": 1.080094577934176,
+        "duv": 0.0004755641741343189
+      },
+      "E_historical": 1.080094577934176,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 5600,
+      "gm": 0,
+      "candidate": "0",
+      "command": {
+        "b": 1544,
+        "cw": 2892,
+        "g": 91,
+        "r": 14,
+        "ww": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 3020,
+        "ww": 4095,
+        "r": 30,
+        "g": 89,
+        "b": 1578
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "047-strip-guide11-w2-cct5600-gm0-candidate0"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "046-ray-guide11-w2-cct5600-gm0-candidate0"
+      ],
+      "e_paired": {
+        "cct_K": -218.56566713972006,
+        "mired": 8.306437365460198,
+        "duv": -0.0016460521108726221
+      },
+      "E_paired": 8.742626685588803,
+      "e_historical": {
+        "cct_K": -218.3719651108977,
+        "mired": 8.299382645999657,
+        "duv": -0.0016273271147582077
+      },
+      "E_historical": 8.734878604435908,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 5600,
+      "gm": 0,
+      "candidate": "1",
+      "command": {
+        "b": 1480,
+        "cw": 2892,
+        "g": 91,
+        "r": 14,
+        "ww": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 3020,
+        "ww": 4095,
+        "r": 30,
+        "g": 89,
+        "b": 1519
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "049-strip-guide11-w2-cct5600-gm0-candidate1"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "048-ray-guide11-w2-cct5600-gm0-candidate1"
+      ],
+      "e_paired": {
+        "cct_K": -295.35561482972935,
+        "mired": 11.410998259527503,
+        "duv": -0.0025225078784832204
+      },
+      "E_paired": 11.814224593189174,
+      "e_historical": {
+        "cct_K": -297.8142257216514,
+        "mired": 11.500587377102136,
+        "duv": -0.0024842533754912445
+      },
+      "E_historical": 11.912569028866056,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 6500,
+      "gm": 0,
+      "candidate": "0",
+      "command": {
+        "b": 2146,
+        "cw": 3888,
+        "g": 124,
+        "r": 0,
+        "ww": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 3913,
+        "ww": 4095,
+        "r": 0,
+        "g": 115,
+        "b": 2113
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "050-strip-guide11-w2-cct6500-gm0-candidate0"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "051-ray-guide11-w2-cct6500-gm0-candidate0"
+      ],
+      "e_paired": {
+        "cct_K": -33.658777971829295,
+        "mired": 0.9744287909392426,
+        "duv": -0.00019696967960802433
+      },
+      "E_paired": 1.1047170147895176,
+      "e_historical": {
+        "cct_K": -31.95710658678945,
+        "mired": 0.9254322210933026,
+        "duv": -0.0001967789760781262
+      },
+      "E_historical": 1.0488663438528807,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 6500,
+      "gm": 0,
+      "candidate": "1",
+      "command": {
+        "b": 2163,
+        "cw": 3888,
+        "g": 124,
+        "r": 0,
+        "ww": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 3913,
+        "ww": 4095,
+        "r": 0,
+        "g": 115,
+        "b": 2133
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "052-strip-guide11-w2-cct6500-gm0-candidate1"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "053-ray-guide11-w2-cct6500-gm0-candidate1"
+      ],
+      "e_paired": {
+        "cct_K": -0.4369370618096582,
+        "mired": 0.012567698922396175,
+        "duv": 5.414663839161879e-05
+      },
+      "E_paired": 0.10829327678323758,
+      "e_historical": {
+        "cct_K": 3.707310199602034,
+        "mired": -0.10670902480518407,
+        "duv": 3.879976433617677e-05
+      },
+      "E_historical": 0.12167787731422815,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 8000,
+      "gm": 0,
+      "candidate": "0",
+      "command": {
+        "b": 1984,
+        "cw": 4095,
+        "g": 155,
+        "r": 0,
+        "ww": 2886
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 4095,
+        "ww": 3004,
+        "r": 0,
+        "g": 138,
+        "b": 1956
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "055-strip-guide11-w2-cct8000-gm0-candidate0"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "054-ray-guide11-w2-cct8000-gm0-candidate0"
+      ],
+      "e_paired": {
+        "cct_K": -376.3481142787523,
+        "mired": 8.081459932496244,
+        "duv": -0.0013093381597514414
+      },
+      "E_paired": 8.936862640945332,
+      "e_historical": {
+        "cct_K": -374.896462548053,
+        "mired": 8.05195433547837,
+        "duv": -0.0013119110225533331
+      },
+      "E_historical": 8.902391331996137,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 8000,
+      "gm": 0,
+      "candidate": "1",
+      "command": {
+        "b": 1912,
+        "cw": 4095,
+        "g": 155,
+        "r": 0,
+        "ww": 2886
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 4095,
+        "ww": 3004,
+        "r": 0,
+        "g": 138,
+        "b": 1894
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "057-strip-guide11-w2-cct8000-gm0-candidate1"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "056-ray-guide11-w2-cct8000-gm0-candidate1"
+      ],
+      "e_paired": {
+        "cct_K": -526.1169213468975,
+        "mired": 11.57053499548823,
+        "duv": -0.0020438471205800855
+      },
+      "E_paired": 12.493312655930362,
+      "e_historical": {
+        "cct_K": -528.2428195984676,
+        "mired": 11.613767061206573,
+        "duv": -0.0020067009613827964
+      },
+      "E_historical": 12.543794802491181,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 8000,
+      "gm": 70,
+      "candidate": "0",
+      "command": {
+        "b": 484,
+        "cw": 4095,
+        "g": 34,
+        "r": 0,
+        "ww": 341
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 4095,
+        "ww": 343,
+        "r": 0,
+        "g": 42,
+        "b": 464
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "058-strip-guide11-w2-cct8000-gm70-candidate0"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "059-ray-guide11-w2-cct8000-gm70-candidate0"
+      ],
+      "e_paired": {
+        "cct_K": -480.9112418749237,
+        "mired": 10.626106200879605,
+        "duv": -0.0028763342348070934
+      },
+      "E_paired": 11.310589828836319,
+      "e_historical": {
+        "cct_K": -479.79953360886157,
+        "mired": 10.6032328365782,
+        "duv": -0.002874087186067795
+      },
+      "E_historical": 11.28444347351775,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 8000,
+      "gm": 70,
+      "candidate": "1",
+      "command": {
+        "b": 415,
+        "cw": 4095,
+        "g": 34,
+        "r": 0,
+        "ww": 341
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 4095,
+        "ww": 343,
+        "r": 0,
+        "g": 42,
+        "b": 397
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "060-strip-guide11-w2-cct8000-gm70-candidate1"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "061-ray-guide11-w2-cct8000-gm70-candidate1"
+      ],
+      "e_paired": {
+        "cct_K": -704.5321095899626,
+        "mired": 16.127861616256695,
+        "duv": -0.004347485327226279
+      },
+      "E_paired": 16.569946840397076,
+      "e_historical": {
+        "cct_K": -704.4967299595155,
+        "mired": 16.127133569026086,
+        "duv": -0.004374912647961781
+      },
+      "E_historical": 16.569114744048647,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 8000,
+      "gm": 130,
+      "candidate": "0",
+      "command": {
+        "b": 3032,
+        "cw": 328,
+        "g": 3868,
+        "r": 1151,
+        "ww": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 320,
+        "ww": 4095,
+        "r": 1087,
+        "g": 3804,
+        "b": 3141
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "063-strip-guide11-w2-cct8000-gm130-candidate0"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "062-ray-guide11-w2-cct8000-gm130-candidate0"
+      ],
+      "e_paired": {
+        "cct_K": 16.148838219916797,
+        "mired": -0.3379301824410845,
+        "duv": -0.00016067459195736634
+      },
+      "E_paired": 0.750961783225573,
+      "e_historical": {
+        "cct_K": 16.2348982583444,
+        "mired": -0.33973530704523114,
+        "duv": -0.00017752470770277147
+      },
+      "E_historical": 0.7549637924749039,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 8000,
+      "gm": 130,
+      "candidate": "1",
+      "command": {
+        "b": 3022,
+        "cw": 328,
+        "g": 3868,
+        "r": 1151,
+        "ww": 4095
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 320,
+        "ww": 4095,
+        "r": 1087,
+        "g": 3804,
+        "b": 3132
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "065-strip-guide11-w2-cct8000-gm130-candidate1"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "064-ray-guide11-w2-cct8000-gm130-candidate1"
+      ],
+      "e_paired": {
+        "cct_K": 0.8636510092237586,
+        "mired": -0.018104510051927036,
+        "duv": -0.00024628390016672233
+      },
+      "E_paired": 0.9851356006668893,
+      "e_historical": {
+        "cct_K": 2.5194211432444718,
+        "mired": -0.0528266893185787,
+        "duv": -0.0002511903050814446
+      },
+      "E_historical": 1.0047612203257783,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 10000,
+      "gm": 70,
+      "candidate": "0",
+      "command": {
+        "b": 623,
+        "cw": 4095,
+        "g": 31,
+        "r": 1,
+        "ww": 0
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 4095,
+        "ww": 0,
+        "r": 5,
+        "g": 40,
+        "b": 595
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "066-strip-guide11-w2-cct10000-gm70-candidate0"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "067-ray-guide11-w2-cct10000-gm70-candidate0"
+      ],
+      "e_paired": {
+        "cct_K": -679.1179016743727,
+        "mired": 10.684205440591967,
+        "duv": -0.0021191292231976643
+      },
+      "E_paired": 11.56824851743854,
+      "e_historical": {
+        "cct_K": -682.990658652735,
+        "mired": 10.740133870852432,
+        "duv": -0.002092876785891825
+      },
+      "E_historical": 11.634217939041008,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 10000,
+      "gm": 70,
+      "candidate": "1",
+      "command": {
+        "b": 554,
+        "cw": 4095,
+        "g": 31,
+        "r": 1,
+        "ww": 0
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 4095,
+        "ww": 0,
+        "r": 5,
+        "g": 40,
+        "b": 531
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "068-strip-guide11-w2-cct10000-gm70-candidate1"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "069-ray-guide11-w2-cct10000-gm70-candidate1"
+      ],
+      "e_paired": {
+        "cct_K": -1001.1981442261485,
+        "mired": 16.439919771958884,
+        "duv": -0.0034361524037989787
+      },
+      "E_paired": 17.054636491028354,
+      "e_historical": {
+        "cct_K": -1003.9738143580316,
+        "mired": 16.479999334272506,
+        "duv": -0.003404583073226042
+      },
+      "E_historical": 17.101917886215976,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 14000,
+      "gm": 0,
+      "candidate": "0",
+      "command": {
+        "b": 2018,
+        "cw": 4095,
+        "g": 90,
+        "r": 21,
+        "ww": 1542
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 4095,
+        "ww": 1500,
+        "r": 35,
+        "g": 88,
+        "b": 1985
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260922",
+        "071-strip-guide11-w2-cct14000-gm0-candidate0"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "070-ray-guide11-w2-cct14000-gm0-candidate0"
+      ],
+      "e_paired": {
+        "cct_K": 59.27958647107698,
+        "mired": -0.45952828791638467,
+        "duv": 0.0007030087754375525
+      },
+      "E_paired": 2.81203510175021,
+      "e_historical": {
+        "cct_K": 50.106537599076546,
+        "mired": -0.3881056382517585,
+        "duv": 0.0006799422438273917
+      },
+      "E_historical": 2.7197689753095666,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 14000,
+      "gm": 0,
+      "candidate": "1",
+      "command": {
+        "b": 1998,
+        "cw": 4095,
+        "g": 90,
+        "r": 21,
+        "ww": 1542
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 4095,
+        "ww": 1500,
+        "r": 35,
+        "g": 88,
+        "b": 1968
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "073-strip-guide11-w2-cct14000-gm0-candidate1"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260922",
+        "072-ray-guide11-w2-cct14000-gm0-candidate1"
+      ],
+      "e_paired": {
+        "cct_K": -123.32462562019464,
+        "mired": 0.9709284761856054,
+        "duv": 0.00046417860806451106
+      },
+      "E_paired": 2.5350251647846798,
+      "e_historical": {
+        "cct_K": -128.73295623999365,
+        "mired": 1.0130245098687283,
+        "duv": 0.0004994568892700869
+      },
+      "E_historical": 2.6461972372861586,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 14000,
+      "gm": 130,
+      "candidate": "0",
+      "command": {
+        "b": 4095,
+        "cw": 3629,
+        "g": 3701,
+        "r": 796,
+        "ww": 2252
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 3685,
+        "ww": 2256,
+        "r": 700,
+        "g": 3591,
+        "b": 4095
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "074-strip-guide11-w2-cct14000-gm130-candidate0"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "075-ray-guide11-w2-cct14000-gm130-candidate0"
+      ],
+      "e_paired": {
+        "cct_K": 33.838136615586336,
+        "mired": -0.3010795908327282,
+        "duv": 3.598283829386352e-05
+      },
+      "E_paired": 0.7326895452614126,
+      "e_historical": {
+        "cct_K": 27.967386460160924,
+        "mired": -0.24870581739314446,
+        "duv": 3.4980769115821805e-05
+      },
+      "E_historical": 0.6055715153714124,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 14000,
+      "gm": 130,
+      "candidate": "1",
+      "command": {
+        "b": 4095,
+        "cw": 3704,
+        "g": 3701,
+        "r": 796,
+        "ww": 2252
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 3751,
+        "ww": 2256,
+        "r": 700,
+        "g": 3591,
+        "b": 4095
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "076-strip-guide11-w2-cct14000-gm130-candidate1"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "077-ray-guide11-w2-cct14000-gm130-candidate1"
+      ],
+      "e_paired": {
+        "cct_K": -6.4718079500180465,
+        "mired": 0.057947238281002456,
+        "duv": 7.686255516722688e-05
+      },
+      "E_paired": 0.30745022066890754,
+      "e_historical": {
+        "cct_K": -25.496036281834677,
+        "mired": 0.2278761813222303,
+        "duv": 3.834388140416291e-05
+      },
+      "E_historical": 0.5520599269849077,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 14000,
+      "gm": 200,
+      "candidate": "0",
+      "command": {
+        "b": 1950,
+        "cw": 4095,
+        "g": 2489,
+        "r": 14,
+        "ww": 43
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 4095,
+        "ww": 65,
+        "r": 30,
+        "g": 2379,
+        "b": 1927
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "079-strip-guide11-w2-cct14000-gm200-candidate0"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "078-ray-guide11-w2-cct14000-gm200-candidate0"
+      ],
+      "e_paired": {
+        "cct_K": 21.5113364082481,
+        "mired": -0.20377790788147365,
+        "duv": 0.00038782108428633486
+      },
+      "E_paired": 0.7756421685726697,
+      "e_historical": {
+        "cct_K": 14.617530602610714,
+        "mired": -0.13837961322698789,
+        "duv": 0.0003223916583316999
+      },
+      "E_historical": 0.6447833166633998,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 14000,
+      "gm": 200,
+      "candidate": "1",
+      "command": {
+        "b": 1934,
+        "cw": 4095,
+        "g": 2489,
+        "r": 14,
+        "ww": 43
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 4095,
+        "ww": 65,
+        "r": 30,
+        "g": 2379,
+        "b": 1913
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "081-strip-guide11-w2-cct14000-gm200-candidate1"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "080-ray-guide11-w2-cct14000-gm200-candidate1"
+      ],
+      "e_paired": {
+        "cct_K": -41.29017571722943,
+        "mired": 0.39318883140954597,
+        "duv": 0.0002463143125647216
+      },
+      "E_paired": 0.49262862512944317,
+      "e_historical": {
+        "cct_K": -43.52227124869205,
+        "mired": 0.41435405913472323,
+        "duv": 0.00019185176655425393
+      },
+      "E_historical": 0.4846357385528805,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 20000,
+      "gm": 0,
+      "candidate": "0",
+      "command": {
+        "b": 1844,
+        "cw": 4095,
+        "g": 59,
+        "r": 5,
+        "ww": 1078
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 4095,
+        "ww": 1056,
+        "r": 20,
+        "g": 61,
+        "b": 1836
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "082-strip-guide11-w2-cct20000-gm0-candidate0"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "083-ray-guide11-w2-cct20000-gm0-candidate0"
+      ],
+      "e_paired": {
+        "cct_K": -2091.9259024214552,
+        "mired": 10.094598070331216,
+        "duv": -0.0009940444447205862
+      },
+      "E_paired": 13.213925183570414,
+      "e_historical": {
+        "cct_K": -2122.665644923354,
+        "mired": 10.222632338206111,
+        "duv": -0.0010276016388177205
+      },
+      "E_historical": 13.4080968113093,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 20000,
+      "gm": 0,
+      "candidate": "1",
+      "command": {
+        "b": 1773,
+        "cw": 4095,
+        "g": 59,
+        "r": 5,
+        "ww": 1078
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 4095,
+        "ww": 1056,
+        "r": 20,
+        "g": 61,
+        "b": 1775
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "084-strip-guide11-w2-cct20000-gm0-candidate1"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "085-ray-guide11-w2-cct20000-gm0-candidate1"
+      ],
+      "e_paired": {
+        "cct_K": -2940.38817560435,
+        "mired": 15.160189385584275,
+        "duv": -0.0015762863191564266
+      },
+      "E_paired": 18.57334875872824,
+      "e_historical": {
+        "cct_K": -2976.264126208347,
+        "mired": 15.309666099143058,
+        "duv": -0.0016375707114912874
+      },
+      "E_historical": 18.79996392068113,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 20000,
+      "gm": 70,
+      "candidate": "0",
+      "command": {
+        "b": 4095,
+        "cw": 0,
+        "g": 3314,
+        "r": 1427,
+        "ww": 2674
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 0,
+        "ww": 2754,
+        "r": 1382,
+        "g": 3095,
+        "b": 4095
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "087-strip-guide11-w2-cct20000-gm70-candidate0"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "086-ray-guide11-w2-cct20000-gm70-candidate0"
+      ],
+      "e_paired": {
+        "cct_K": 39.88065777423799,
+        "mired": -0.19877985531371678,
+        "duv": 0.0006272173729812928
+      },
+      "E_paired": 1.2544347459625855,
+      "e_historical": {
+        "cct_K": 16.981758807702136,
+        "mired": -0.08450651598110426,
+        "duv": 0.0005861507448166308
+      },
+      "E_historical": 1.1723014896332615,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 20000,
+      "gm": 70,
+      "candidate": "1",
+      "command": {
+        "b": 4095,
+        "cw": 0,
+        "g": 3328,
+        "r": 1427,
+        "ww": 2674
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 0,
+        "ww": 2754,
+        "r": 1382,
+        "g": 3113,
+        "b": 4095
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "089-strip-guide11-w2-cct20000-gm70-candidate1"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "088-ray-guide11-w2-cct20000-gm70-candidate1"
+      ],
+      "e_paired": {
+        "cct_K": -72.49518918988542,
+        "mired": 0.3631595933911598,
+        "duv": 0.00029990823894558444
+      },
+      "E_paired": 0.5998164778911689,
+      "e_historical": {
+        "cct_K": -74.65088928397563,
+        "mired": 0.373901520902038,
+        "duv": 0.0002981013657403879
+      },
+      "E_historical": 0.5962027314807757,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 20000,
+      "gm": 130,
+      "candidate": "0",
+      "command": {
+        "b": 1985,
+        "cw": 4095,
+        "g": 1532,
+        "r": 5,
+        "ww": 248
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 4095,
+        "ww": 259,
+        "r": 20,
+        "g": 1353,
+        "b": 1957
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "090-strip-guide11-w2-cct20000-gm130-candidate0"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "091-ray-guide11-w2-cct20000-gm130-candidate0"
+      ],
+      "e_paired": {
+        "cct_K": -1163.1493880094931,
+        "mired": 7.017663655209759,
+        "duv": -0.0012435406516046387
+      },
+      "E_paired": 8.094764174594863,
+      "e_historical": {
+        "cct_K": -1164.8974877941891,
+        "mired": 7.0272984620667245,
+        "duv": -0.0012737264098893102
+      },
+      "E_historical": 8.106929813554611,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 20000,
+      "gm": 130,
+      "candidate": "1",
+      "command": {
+        "b": 1911,
+        "cw": 4095,
+        "g": 1532,
+        "r": 5,
+        "ww": 248
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 4095,
+        "ww": 259,
+        "r": 20,
+        "g": 1353,
+        "b": 1893
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "092-strip-guide11-w2-cct20000-gm130-candidate1"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "093-ray-guide11-w2-cct20000-gm130-candidate1"
+      ],
+      "e_paired": {
+        "cct_K": -1657.9461015756697,
+        "mired": 10.426582896036763,
+        "duv": -0.0019220953059057673
+      },
+      "E_paired": 11.538227887830358,
+      "e_historical": {
+        "cct_K": -1662.4681497262518,
+        "mired": 10.451511699227453,
+        "duv": -0.0019509006745396266
+      },
+      "E_historical": 11.569698405497713,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 20000,
+      "gm": 200,
+      "candidate": "0",
+      "command": {
+        "b": 3098,
+        "cw": 4095,
+        "g": 3786,
+        "r": 398,
+        "ww": 86
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 4095,
+        "ww": 108,
+        "r": 342,
+        "g": 3700,
+        "b": 3200
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "095-strip-guide11-w2-cct20000-gm200-candidate0"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "094-ray-guide11-w2-cct20000-gm200-candidate0"
+      ],
+      "e_paired": {
+        "cct_K": 34.9496086718118,
+        "mired": -0.2100408818936046,
+        "duv": -0.0001448889673557087
+      },
+      "E_paired": 0.5795558694228348,
+      "e_historical": {
+        "cct_K": 12.501545464217998,
+        "mired": -0.0750013493683781,
+        "duv": -0.00019526642957888585
+      },
+      "E_historical": 0.7810657183155434,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    },
+    {
+      "cct": 20000,
+      "gm": 200,
+      "candidate": "1",
+      "command": {
+        "b": 3090,
+        "cw": 4095,
+        "g": 3786,
+        "r": 398,
+        "ww": 86
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "actual_pwm": {
+        "cw": 4095,
+        "ww": 108,
+        "r": 342,
+        "g": 3700,
+        "b": 3193
+      },
+      "fullscale": true,
+      "strip_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "097-strip-guide11-w2-cct20000-gm200-candidate1"
+      ],
+      "ray_key": [
+        "guide11-w2/formal-w2-20260923-suffix",
+        "096-ray-guide11-w2-cct20000-gm200-candidate1"
+      ],
+      "e_paired": {
+        "cct_K": -10.594320219068322,
+        "mired": 0.06385961278773777,
+        "duv": -0.00020396133032551597
+      },
+      "E_paired": 0.8158453213020639,
+      "e_historical": {
+        "cct_K": -29.44946106026873,
+        "mired": 0.1772537803394414,
+        "duv": -0.00024027145045683526
+      },
+      "E_historical": 0.961085801827341,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "single selection observation, no independent confirmation"
+    }
+  ],
+  "W2_secant_diagnostics": [
+    {
+      "cct": 1800,
+      "gm": 70,
+      "rank_command_deltas": 1,
+      "wrong_sensitivity_norm": 0.14026770276893633,
+      "corrected_sensitivity_norm": 0.1414933170976289,
+      "relative_difference": 0.016893621819405145
+    },
+    {
+      "cct": 2000,
+      "gm": 70,
+      "rank_command_deltas": 1,
+      "wrong_sensitivity_norm": 0.23309842972704858,
+      "corrected_sensitivity_norm": 0.12338698522629542,
+      "relative_difference": 0.8896108775714375
+    },
+    {
+      "cct": 2000,
+      "gm": 100,
+      "rank_command_deltas": 1,
+      "wrong_sensitivity_norm": 0.12808205923343816,
+      "corrected_sensitivity_norm": 0.13084272356436746,
+      "relative_difference": 0.02662754098569317
+    },
+    {
+      "cct": 2000,
+      "gm": 200,
+      "rank_command_deltas": 1,
+      "wrong_sensitivity_norm": 0.39089018827311933,
+      "corrected_sensitivity_norm": 0.21742726343946514,
+      "relative_difference": 0.7991821454457141
+    },
+    {
+      "cct": 2300,
+      "gm": 100,
+      "rank_command_deltas": 1,
+      "wrong_sensitivity_norm": 0.11715397531877426,
+      "corrected_sensitivity_norm": 0.11466316076644748,
+      "relative_difference": 0.02202311667848061
+    },
+    {
+      "cct": 2300,
+      "gm": 130,
+      "rank_command_deltas": 1,
+      "wrong_sensitivity_norm": 0.1355144514725415,
+      "corrected_sensitivity_norm": 0.15682038772356735,
+      "relative_difference": 0.1375499809289854
+    },
+    {
+      "cct": 2300,
+      "gm": 200,
+      "rank_command_deltas": 1,
+      "wrong_sensitivity_norm": 0.14447914588109956,
+      "corrected_sensitivity_norm": 0.15964141673183335,
+      "relative_difference": 0.09707927232504301
+    },
+    {
+      "cct": 2700,
+      "gm": 100,
+      "rank_command_deltas": 1,
+      "wrong_sensitivity_norm": 0.18355336027457075,
+      "corrected_sensitivity_norm": 0.15770128556593277,
+      "relative_difference": 0.1929876155400594
+    },
+    {
+      "cct": 3200,
+      "gm": 0,
+      "rank_command_deltas": 1,
+      "wrong_sensitivity_norm": 0.19394576653538764,
+      "corrected_sensitivity_norm": 0.09416015765228461,
+      "relative_difference": 1.0635554168762567
+    },
+    {
+      "cct": 3200,
+      "gm": 70,
+      "rank_command_deltas": 1,
+      "wrong_sensitivity_norm": 0.07720948168664439,
+      "corrected_sensitivity_norm": 0.08055160408261722,
+      "relative_difference": 0.056532100389503306
+    },
+    {
+      "cct": 3800,
+      "gm": 0,
+      "rank_command_deltas": 1,
+      "wrong_sensitivity_norm": 0.18683962129416382,
+      "corrected_sensitivity_norm": 0.08365749479588995,
+      "relative_difference": 1.238851861235743
+    },
+    {
+      "cct": 4500,
+      "gm": 70,
+      "rank_command_deltas": 1,
+      "wrong_sensitivity_norm": 0.07495208806708611,
+      "corrected_sensitivity_norm": 0.07512061217131245,
+      "relative_difference": 0.0024312369527883034
+    },
+    {
+      "cct": 5600,
+      "gm": 0,
+      "rank_command_deltas": 1,
+      "wrong_sensitivity_norm": 0.1721847086274694,
+      "corrected_sensitivity_norm": 0.08548468636690439,
+      "relative_difference": 1.0180749021500681
+    },
+    {
+      "cct": 6500,
+      "gm": 0,
+      "rank_command_deltas": 1,
+      "wrong_sensitivity_norm": 0.06467950239129248,
+      "corrected_sensitivity_norm": 0.07005587247767493,
+      "relative_difference": 0.07752903079261513
+    },
+    {
+      "cct": 8000,
+      "gm": 0,
+      "rank_command_deltas": 1,
+      "wrong_sensitivity_norm": 0.15425012130463217,
+      "corrected_sensitivity_norm": 0.06676073799147138,
+      "relative_difference": 1.3135646886455121
+    },
+    {
+      "cct": 8000,
+      "gm": 70,
+      "rank_command_deltas": 1,
+      "wrong_sensitivity_norm": 0.23385608497069596,
+      "corrected_sensitivity_norm": 0.10713127641084978,
+      "relative_difference": 1.189130947917498
+    },
+    {
+      "cct": 8000,
+      "gm": 130,
+      "rank_command_deltas": 1,
+      "wrong_sensitivity_norm": 0.11104845459494712,
+      "corrected_sensitivity_norm": 0.10593039308406746,
+      "relative_difference": 0.057226851641741266
+    },
+    {
+      "cct": 10000,
+      "gm": 70,
+      "rank_command_deltas": 1,
+      "wrong_sensitivity_norm": 0.23818518986875062,
+      "corrected_sensitivity_norm": 0.10988866570366972,
+      "relative_difference": 1.1768764007247716
+    },
+    {
+      "cct": 14000,
+      "gm": 0,
+      "rank_command_deltas": 1,
+      "wrong_sensitivity_norm": 0.2004088484032426,
+      "corrected_sensitivity_norm": 0.1822495868481959,
+      "relative_difference": 0.10615253769153846
+    },
+    {
+      "cct": 14000,
+      "gm": 130,
+      "rank_command_deltas": 1,
+      "wrong_sensitivity_norm": 0.030031218679097766,
+      "corrected_sensitivity_norm": 0.014480670071814724,
+      "relative_difference": 1.0787658842922623
+    },
+    {
+      "cct": 14000,
+      "gm": 200,
+      "rank_command_deltas": 1,
+      "wrong_sensitivity_norm": 0.0557566345291941,
+      "corrected_sensitivity_norm": 0.05155655237620917,
+      "relative_difference": 0.08737791538962024
+    },
+    {
+      "cct": 20000,
+      "gm": 0,
+      "rank_command_deltas": 1,
+      "wrong_sensitivity_norm": 0.2188312268940334,
+      "corrected_sensitivity_norm": 0.0973155167880042,
+      "relative_difference": 1.2656276752681
+    },
+    {
+      "cct": 20000,
+      "gm": 70,
+      "rank_command_deltas": 1,
+      "wrong_sensitivity_norm": 0.06450344704702812,
+      "corrected_sensitivity_norm": 0.06899141248685248,
+      "relative_difference": 0.07238241847052833
+    },
+    {
+      "cct": 20000,
+      "gm": 130,
+      "rank_command_deltas": 1,
+      "wrong_sensitivity_norm": 0.14117858678398296,
+      "corrected_sensitivity_norm": 0.059816769198020925,
+      "relative_difference": 1.3672869984988687
+    },
+    {
+      "cct": 20000,
+      "gm": 200,
+      "rank_command_deltas": 1,
+      "wrong_sensitivity_norm": 0.11214772748547716,
+      "corrected_sensitivity_norm": 0.10785492389315013,
+      "relative_difference": 0.04230757267298673
+    }
+  ],
+  "W3": [
+    {
+      "cct": 1800,
+      "gm": 35,
+      "command": {
+        "b": 52,
+        "cw": 72,
+        "g": 591,
+        "r": 4095,
+        "ww": 2058
+      },
+      "E": 9.748521061529232,
+      "errors": {
+        "cct_K": -34.53354226442866,
+        "mired": 9.748521061529232,
+        "duv": 0.0009841056605124643
+      },
+      "actual_pwm": {
+        "cw": 92,
+        "ww": 2029,
+        "r": 4095,
+        "g": 512,
+        "b": 68
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "fullscale_actual": true,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "one pair, no validated transfer model; two isolated passing samples do not establish an interval"
+    },
+    {
+      "cct": 1800,
+      "gm": 165,
+      "command": {
+        "b": 0,
+        "cw": 13,
+        "g": 902,
+        "r": 4095,
+        "ww": 772
+      },
+      "E": 1.106479666852465,
+      "errors": {
+        "cct_K": -3.848192894635986,
+        "mired": 1.106479666852465,
+        "duv": -0.00019549824379007418
+      },
+      "actual_pwm": {
+        "cw": 32,
+        "ww": 749,
+        "r": 4095,
+        "g": 828,
+        "b": 0
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "fullscale_actual": true,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "one pair, no validated transfer model; two isolated passing samples do not establish an interval"
+    },
+    {
+      "cct": 1900,
+      "gm": 100,
+      "command": {
+        "b": 6,
+        "cw": 21,
+        "g": 1322,
+        "r": 4095,
+        "ww": 13
+      },
+      "E": 1.4896988327181542,
+      "errors": {
+        "cct_K": -1.5312346974358206,
+        "mired": 0.37260475009617267,
+        "duv": 0.0007448494163590771
+      },
+      "actual_pwm": {
+        "cw": 40,
+        "ww": 32,
+        "r": 4095,
+        "g": 1173,
+        "b": 24
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "fullscale_actual": true,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "one pair, no validated transfer model; two isolated passing samples do not establish an interval"
+    },
+    {
+      "cct": 2150,
+      "gm": 35,
+      "command": {
+        "b": 135,
+        "cw": 112,
+        "g": 595,
+        "r": 3022,
+        "ww": 3012
+      },
+      "E": 6.536250534266379,
+      "errors": {
+        "cct_K": 26.20006760607521,
+        "mired": -5.051308373510551,
+        "duv": -0.0032681252671331895
+      },
+      "actual_pwm": {
+        "cw": 130,
+        "ww": 3133,
+        "r": 3051,
+        "g": 516,
+        "b": 144
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "fullscale_actual": false,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "one pair, no validated transfer model; two isolated passing samples do not establish an interval"
+    },
+    {
+      "cct": 2150,
+      "gm": 165,
+      "command": {
+        "b": 0,
+        "cw": 0,
+        "g": 1433,
+        "r": 4095,
+        "ww": 2190
+      },
+      "E": 28.501973511422307,
+      "errors": {
+        "cct_K": 77.95826157824968,
+        "mired": -14.250986755711153,
+        "duv": 0.0002129160782602807
+      },
+      "actual_pwm": {
+        "cw": 0,
+        "ww": 2183,
+        "r": 4095,
+        "g": 1268,
+        "b": 0
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "fullscale_actual": true,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "one pair, no validated transfer model; two isolated passing samples do not establish an interval"
+    },
+    {
+      "cct": 2500,
+      "gm": 35,
+      "command": {
+        "b": 333,
+        "cw": 229,
+        "g": 422,
+        "r": 1827,
+        "ww": 3164
+      },
+      "E": 2.8237337761584627,
+      "errors": {
+        "cct_K": -19.48405054241175,
+        "mired": 2.8237337761584627,
+        "duv": 0.00047235069660670013
+      },
+      "actual_pwm": {
+        "cw": 228,
+        "ww": 3268,
+        "r": 1783,
+        "g": 351,
+        "b": 322
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "fullscale_actual": false,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "one pair, no validated transfer model; two isolated passing samples do not establish an interval"
+    },
+    {
+      "cct": 2500,
+      "gm": 165,
+      "command": {
+        "b": 7,
+        "cw": 12,
+        "g": 608,
+        "r": 1969,
+        "ww": 4095
+      },
+      "E": 6.283029865441904,
+      "errors": {
+        "cct_K": -43.561305546111726,
+        "mired": 6.283029865441904,
+        "duv": 0.0003672183103315303
+      },
+      "actual_pwm": {
+        "cw": 31,
+        "ww": 4095,
+        "r": 1920,
+        "g": 530,
+        "b": 25
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "fullscale_actual": true,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "one pair, no validated transfer model; two isolated passing samples do not establish an interval"
+    },
+    {
+      "cct": 3000,
+      "gm": 100,
+      "command": {
+        "b": 42,
+        "cw": 1953,
+        "g": 1819,
+        "r": 4026,
+        "ww": 1781
+      },
+      "E": 6.942008362784065,
+      "errors": {
+        "cct_K": -65.92496942660364,
+        "mired": 6.942008362784065,
+        "duv": 0.0011010109259032442
+      },
+      "actual_pwm": {
+        "cw": 1862,
+        "ww": 1744,
+        "r": 4028,
+        "g": 1642,
+        "b": 58
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "fullscale_actual": false,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "one pair, no validated transfer model; two isolated passing samples do not establish an interval"
+    },
+    {
+      "cct": 3200,
+      "gm": 35,
+      "command": {
+        "b": 438,
+        "cw": 564,
+        "g": 8,
+        "r": 162,
+        "ww": 4095
+      },
+      "E": 11.092337005577804,
+      "errors": {
+        "cct_K": -109.55330158900779,
+        "mired": 10.476903961258301,
+        "duv": -0.005546168502788902
+      },
+      "actual_pwm": {
+        "cw": 518,
+        "ww": 4095,
+        "r": 150,
+        "g": 24,
+        "b": 419
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "fullscale_actual": true,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "one pair, no validated transfer model; two isolated passing samples do not establish an interval"
+    },
+    {
+      "cct": 3200,
+      "gm": 165,
+      "command": {
+        "b": 19,
+        "cw": 921,
+        "g": 1326,
+        "r": 2104,
+        "ww": 2268
+      },
+      "E": 13.812355328164642,
+      "errors": {
+        "cct_K": -142.52748410985942,
+        "mired": 13.812355328164642,
+        "duv": 0.0032323331424986487
+      },
+      "actual_pwm": {
+        "cw": 919,
+        "ww": 2275,
+        "r": 2051,
+        "g": 1176,
+        "b": 37
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "fullscale_actual": false,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "one pair, no validated transfer model; two isolated passing samples do not establish an interval"
+    },
+    {
+      "cct": 4100,
+      "gm": 100,
+      "command": {
+        "b": 69,
+        "cw": 3758,
+        "g": 48,
+        "r": 0,
+        "ww": 3139
+      },
+      "E": 3.471753554168714,
+      "errors": {
+        "cct_K": -55.62532353722963,
+        "mired": 3.471753554168714,
+        "duv": 0.0001941921039742365
+      },
+      "actual_pwm": {
+        "cw": 3799,
+        "ww": 3246,
+        "r": 0,
+        "g": 53,
+        "b": 85
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "fullscale_actual": false,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "one pair, no validated transfer model; two isolated passing samples do not establish an interval"
+    },
+    {
+      "cct": 4750,
+      "gm": 35,
+      "command": {
+        "b": 1106,
+        "cw": 2029,
+        "g": 293,
+        "r": 16,
+        "ww": 3577
+      },
+      "E": 4.050495417995961,
+      "errors": {
+        "cct_K": -84.55171682982291,
+        "mired": 4.050495417995961,
+        "duv": -0.001210827386705816
+      },
+      "actual_pwm": {
+        "cw": 1929,
+        "ww": 3635,
+        "r": 32,
+        "g": 253,
+        "b": 1078
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "fullscale_actual": false,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "one pair, no validated transfer model; two isolated passing samples do not establish an interval"
+    },
+    {
+      "cct": 4750,
+      "gm": 165,
+      "command": {
+        "b": 202,
+        "cw": 3157,
+        "g": 1802,
+        "r": 1142,
+        "ww": 1951
+      },
+      "E": 2.3985557072895176,
+      "errors": {
+        "cct_K": -48.563675862437776,
+        "mired": 2.3985557072895176,
+        "duv": 0.0007244012483030408
+      },
+      "actual_pwm": {
+        "cw": 3271,
+        "ww": 1919,
+        "r": 1077,
+        "g": 1618,
+        "b": 203
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "fullscale_actual": false,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "one pair, no validated transfer model; two isolated passing samples do not establish an interval"
+    },
+    {
+      "cct": 5300,
+      "gm": 100,
+      "command": {
+        "b": 110,
+        "cw": 4095,
+        "g": 11,
+        "r": 75,
+        "ww": 840
+      },
+      "E": 1.6681413632153692,
+      "errors": {
+        "cct_K": -40.976293350853666,
+        "mired": 1.6681413632153692,
+        "duv": 5.414948501270261e-05
+      },
+      "actual_pwm": {
+        "cw": 4095,
+        "ww": 816,
+        "r": 76,
+        "g": 26,
+        "b": 122
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "fullscale_actual": true,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "one pair, no validated transfer model; two isolated passing samples do not establish an interval"
+    },
+    {
+      "cct": 6100,
+      "gm": 35,
+      "command": {
+        "b": 1417,
+        "cw": 2963,
+        "g": 741,
+        "r": 853,
+        "ww": 2297
+      },
+      "E": 0.41321197715425,
+      "errors": {
+        "cct_K": -12.58983975818046,
+        "mired": 0.40316244010944047,
+        "duv": 4.9963826752661214e-05
+      },
+      "actual_pwm": {
+        "cw": 3100,
+        "ww": 2309,
+        "r": 747,
+        "g": 675,
+        "b": 1445
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "fullscale_actual": false,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "one pair, no validated transfer model; two isolated passing samples do not establish an interval"
+    },
+    {
+      "cct": 6100,
+      "gm": 165,
+      "command": {
+        "b": 33,
+        "cw": 4095,
+        "g": 691,
+        "r": 8,
+        "ww": 446
+      },
+      "E": 6.15063787145266,
+      "errors": {
+        "cct_K": -103.42180719568114,
+        "mired": 3.4300433748773855,
+        "duv": -0.0030753189357263302
+      },
+      "actual_pwm": {
+        "cw": 4095,
+        "ww": 442,
+        "r": 24,
+        "g": 621,
+        "b": 49
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "fullscale_actual": true,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "one pair, no validated transfer model; two isolated passing samples do not establish an interval"
+    },
+    {
+      "cct": 7250,
+      "gm": 100,
+      "command": {
+        "b": 375,
+        "cw": 4095,
+        "g": 98,
+        "r": 42,
+        "ww": 48
+      },
+      "E": 0.36606011762059865,
+      "errors": {
+        "cct_K": 5.645616958412575,
+        "mired": -0.13696290272702072,
+        "duv": -0.00018303005881029934
+      },
+      "actual_pwm": {
+        "cw": 4095,
+        "ww": 70,
+        "r": 49,
+        "g": 96,
+        "b": 360
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "fullscale_actual": true,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "one pair, no validated transfer model; two isolated passing samples do not establish an interval"
+    },
+    {
+      "cct": 9000,
+      "gm": 35,
+      "command": {
+        "b": 1145,
+        "cw": 4095,
+        "g": 74,
+        "r": 9,
+        "ww": 1277
+      },
+      "E": 11.805404785365255,
+      "errors": {
+        "cct_K": -643.7203741000576,
+        "mired": 11.805404785365255,
+        "duv": -0.0019474169855387899
+      },
+      "actual_pwm": {
+        "cw": 4095,
+        "ww": 1246,
+        "r": 25,
+        "g": 74,
+        "b": 1124
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "fullscale_actual": true,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "one pair, no validated transfer model; two isolated passing samples do not establish an interval"
+    },
+    {
+      "cct": 14000,
+      "gm": 35,
+      "command": {
+        "b": 1564,
+        "cw": 4095,
+        "g": 172,
+        "r": 20,
+        "ww": 773
+      },
+      "E": 14.804830615991795,
+      "errors": {
+        "cct_K": 720.2296128853868,
+        "mired": -5.509162079543685,
+        "duv": 0.0012112320277158292
+      },
+      "actual_pwm": {
+        "cw": 4095,
+        "ww": 750,
+        "r": 34,
+        "g": 151,
+        "b": 1596
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "fullscale_actual": true,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "one pair, no validated transfer model; two isolated passing samples do not establish an interval"
+    },
+    {
+      "cct": 17000,
+      "gm": 100,
+      "command": {
+        "b": 2665,
+        "cw": 1686,
+        "g": 2693,
+        "r": 1921,
+        "ww": 135
+      },
+      "E": 7.602257389454219,
+      "errors": {
+        "cct_K": 1117.239496695829,
+        "mired": -6.709479544271332,
+        "duv": 0.002524017286519781
+      },
+      "actual_pwm": {
+        "cw": 1626,
+        "ww": 157,
+        "r": 1874,
+        "g": 2554,
+        "b": 2728
+      },
+      "command_coordinate": "plan_command_before_control_mapping",
+      "fullscale_actual": false,
+      "CI95": null,
+      "PI95": null,
+      "interval_status": "one pair, no validated transfer model; two isolated passing samples do not establish an interval"
+    }
+  ],
+  "W4": [
+    {
+      "cct": 1800,
+      "gm": 100,
+      "delta_LONG_minus_FAST_error": {
+        "cct_K": 4.660264568166667,
+        "mired": -1.2892746435156823,
+        "duv": -6.326846411557757e-05
+      },
+      "FAST_error": {
+        "cct_K": -4.122204920764489,
+        "duv": 0.0003755411687036041,
+        "mired": 1.1413639309818109
+      },
+      "LONG_error": {
+        "cct_K": 0.5380596474021786,
+        "duv": 0.00031227270458802654,
+        "mired": -0.14791071253387145
+      },
+      "FAST_E": 1.1413639309818109,
+      "LONG_E": 0.6245454091760531,
+      "CI95": null,
+      "PI95": null,
+      "interpretation": "one pair per point; all FAST before all LONG; protocol confounded with period/session"
+    },
+    {
+      "cct": 3200,
+      "gm": 100,
+      "delta_LONG_minus_FAST_error": {
+        "cct_K": 17.390490111877625,
+        "mired": -1.6209433832255513,
+        "duv": -0.00023509292701984555
+      },
+      "FAST_error": {
+        "cct_K": -18.88317752300827,
+        "duv": 0.00013846110295238304,
+        "mired": 1.7586476067379522
+      },
+      "LONG_error": {
+        "cct_K": -1.492687411130646,
+        "duv": -9.66318240674625e-05,
+        "mired": 0.13770422351240086
+      },
+      "FAST_E": 1.7586476067379522,
+      "LONG_E": 0.193263648134925,
+      "CI95": null,
+      "PI95": null,
+      "interpretation": "one pair per point; all FAST before all LONG; protocol confounded with period/session"
+    },
+    {
+      "cct": 5600,
+      "gm": 100,
+      "delta_LONG_minus_FAST_error": {
+        "cct_K": -0.5985164596895629,
+        "mired": 0.021430720276185866,
+        "duv": 0.0001762809119602287
+      },
+      "FAST_error": {
+        "cct_K": -11.931117982767319,
+        "duv": 0.00012401306036107472,
+        "mired": 0.4397319443166907
+      },
+      "LONG_error": {
+        "cct_K": -12.529634442456882,
+        "duv": 0.0003002939723213034,
+        "mired": 0.4611626645928766
+      },
+      "FAST_E": 0.4752052855824826,
+      "LONG_E": 0.6005879446426068,
+      "CI95": null,
+      "PI95": null,
+      "interpretation": "one pair per point; all FAST before all LONG; protocol confounded with period/session"
+    },
+    {
+      "cct": 20000,
+      "gm": 100,
+      "delta_LONG_minus_FAST_error": {
+        "cct_K": 522.2042136863747,
+        "mired": -2.6577482227696123,
+        "duv": -0.000257637388267782
+      },
+      "FAST_error": {
+        "cct_K": 29.498708196035295,
+        "duv": -0.0001999806388963444,
+        "mired": -0.1534070605176936
+      },
+      "LONG_error": {
+        "cct_K": 551.70292188241,
+        "duv": -0.0004576180271641264,
+        "mired": -2.811155283287306
+      },
+      "FAST_E": 0.3999612777926888,
+      "LONG_E": 3.754063141401733,
+      "CI95": null,
+      "PI95": null,
+      "interpretation": "one pair per point; all FAST before all LONG; protocol confounded with period/session"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "schema": "guide12_delivery_validation_v1",
+  "input_zip": "GUIDE11-COMPLETE-PROCESSED-EVIDENCE-20260929.zip",
+  "input_sha256": "5c348c023027e96b149edf41b4654d26b2dfc26e868add29f3b5e8243f9d5e65",
+  "input_crc_pass": true,
+  "input_manifest_verified_members": 1729,
+  "independent_raw_rehash_or_decode": false,
+  "replay_from_directory_and_zip_exact_equal": true,
+  "audit_assertions": {
+    "W2_adopted_pair_pass": 7,
+    "W2_adopted_confirmation_count": 0,
+    "white_hybrid_count_not_certification": 43,
+    "W3_point_pass": 2,
+    "W3_fullscale_count": 11,
+    "W3_fullscale_point_pass": 1,
+    "C1_batch1_rail_frames": 24,
+    "C1_batch1_strip_frames": 32,
+    "W2_rank1_count": 25,
+    "true_historical_HSI_S0_point_pass": false,
+    "Ray_H60_S25_self_inverse": [
+      174.1,
+      16
+    ]
+  },
+  "N1_frozen_vs_primitive_max_numeric_difference": {
+    "cct_K": 0.0012676650330831762,
+    "mired": 1.039583176520864e-05,
+    "duv": 2.6020852139652106e-17
+  },
+  "no_device_access": true,
+  "no_new_photographs": true,
+  "no_historical_artifact_modification": true,
+  "actual_PWM_vs_plan_coordinates_separated": true,
+  "markdown_code_fences_balanced": true
+}

@@ -1,0 +1,608 @@
+[
+  {
+    "hue": 0,
+    "s_best_tested": null,
+    "s_best_tested_CI95": null,
+    "covered_intervals": null,
+    "status": "current_fullscale_Ray_equivalent_coverage_not_established",
+    "reason": [
+      "legacy_Ray_inverse_unqualified",
+      "valid_direct_measurements_do_not_prove_exhausted_fullscale_search"
+    ],
+    "direct_comparisons": [
+      {
+        "hue": 0,
+        "sat": 50,
+        "command": {
+          "b": 903,
+          "cw": 0,
+          "g": 903,
+          "r": 3835,
+          "ww": 0
+        },
+        "fullscale_actual": false,
+        "actual_pwm": {
+          "cw": 0,
+          "ww": 0,
+          "r": 3842,
+          "g": 829,
+          "b": 864
+        },
+        "command_coordinate": "plan_command_before_control_mapping",
+        "n_ray": 2,
+        "n_strip": 2,
+        "delta_z": [
+          -0.2184651150351934,
+          0.465842254289135
+        ],
+        "z_distance": 0.5145250357062554,
+        "ratio_percent": [
+          -19.624848220099363,
+          59.33556345059172
+        ],
+        "CI95_delta_z_conditional_t_df1": [
+          [
+            -0.22895580838379087,
+            0.4587524481061525
+          ],
+          [
+            -0.2079744216865959,
+            0.4729320604721175
+          ]
+        ],
+        "CI95_ratio_percent_conditional": [
+          [
+            -20.463631886498362,
+            58.20990026971129
+          ],
+          [
+            -18.777218813623143,
+            60.469235723157496
+          ]
+        ],
+        "CI_axis_order": [
+          "R/G",
+          "B/G"
+        ],
+        "CI_array_order": [
+          "lower",
+          "upper"
+        ],
+        "strip_repeat_distance_z": 0.0003427596091197151,
+        "PI95": null,
+        "interval_status": "source-independent normal repeat errors, conservative df1 marginal intervals; selection excluded; not simultaneous and not an across-session guarantee",
+        "coverage_Ray_sat": null,
+        "coverage_status": "map_unqualified; not 0 percent"
+      },
+      {
+        "hue": 0,
+        "sat": 100,
+        "command": {
+          "b": 0,
+          "cw": 0,
+          "g": 0,
+          "r": 2048,
+          "ww": 0
+        },
+        "fullscale_actual": false,
+        "actual_pwm": {
+          "cw": 0,
+          "ww": 0,
+          "r": 1997,
+          "g": 0,
+          "b": 0
+        },
+        "command_coordinate": "plan_command_before_control_mapping",
+        "n_ray": 2,
+        "n_strip": 2,
+        "delta_z": [
+          0.3316251733858433,
+          -0.8224301900015165
+        ],
+        "z_distance": 0.8867731801588956,
+        "ratio_percent": [
+          39.323053074675244,
+          -56.063737859423014
+        ],
+        "CI95_delta_z_conditional_t_df1": [
+          [
+            0.32835085436450145,
+            -0.8559534020181604
+          ],
+          [
+            0.33489949240718514,
+            -0.7889069779848726
+          ]
+        ],
+        "CI95_ratio_percent_conditional": [
+          [
+            38.86761099012744,
+            -57.51220815458241
+          ],
+          [
+            39.779988866005354,
+            -54.56588711626124
+          ]
+        ],
+        "CI_axis_order": [
+          "R/G",
+          "B/G"
+        ],
+        "CI_array_order": [
+          "lower",
+          "upper"
+        ],
+        "strip_repeat_distance_z": 0.00063840062493169,
+        "PI95": null,
+        "interval_status": "source-independent normal repeat errors, conservative df1 marginal intervals; selection excluded; not simultaneous and not an across-session guarantee",
+        "coverage_Ray_sat": null,
+        "coverage_status": "map_unqualified; not 0 percent"
+      }
+    ],
+    "next_experiment": "C12-1 current HSI mapping + C12-2 fullscale main requests + C12-3 finite boundary classification",
+    "physical_gamut_percent": null,
+    "note": "null is not 0%; direct sensor ratio percentages are not SAT coverage"
+  },
+  {
+    "hue": 60,
+    "s_best_tested": null,
+    "s_best_tested_CI95": null,
+    "covered_intervals": null,
+    "status": "current_fullscale_Ray_equivalent_coverage_not_established",
+    "reason": [
+      "legacy_Ray_inverse_unqualified",
+      "valid_direct_measurements_do_not_prove_exhausted_fullscale_search"
+    ],
+    "direct_comparisons": [
+      {
+        "hue": 60,
+        "sat": 50,
+        "command": {
+          "b": 974,
+          "cw": 9,
+          "g": 4095,
+          "r": 4095,
+          "ww": 9
+        },
+        "fullscale_actual": true,
+        "actual_pwm": {
+          "cw": 28,
+          "ww": 28,
+          "r": 4095,
+          "g": 4095,
+          "b": 936
+        },
+        "command_coordinate": "plan_command_before_control_mapping",
+        "n_ray": 2,
+        "n_strip": 2,
+        "delta_z": [
+          -0.10270620659945429,
+          0.0011843750978047796
+        ],
+        "z_distance": 0.10271303528969479,
+        "ratio_percent": [
+          -9.760794863005993,
+          0.11850767469688533
+        ],
+        "CI95_delta_z_conditional_t_df1": [
+          [
+            -0.10626176758310402,
+            -0.0007955826497786302
+          ],
+          [
+            -0.09915064561580456,
+            0.0031643328453881893
+          ]
+        ],
+        "CI95_ratio_percent_conditional": [
+          [
+            -10.08107613277674,
+            -0.07952662578131978
+          ],
+          [
+            -9.439372786746976,
+            0.31693446314919177
+          ]
+        ],
+        "CI_axis_order": [
+          "R/G",
+          "B/G"
+        ],
+        "CI_array_order": [
+          "lower",
+          "upper"
+        ],
+        "strip_repeat_distance_z": 0.0005880716265416681,
+        "PI95": null,
+        "interval_status": "source-independent normal repeat errors, conservative df1 marginal intervals; selection excluded; not simultaneous and not an across-session guarantee",
+        "coverage_Ray_sat": null,
+        "coverage_status": "map_unqualified; not 0 percent"
+      },
+      {
+        "hue": 60,
+        "sat": 100,
+        "command": {
+          "b": 1024,
+          "cw": 0,
+          "g": 4095,
+          "r": 4095,
+          "ww": 0
+        },
+        "fullscale_actual": true,
+        "actual_pwm": {
+          "cw": 0,
+          "ww": 0,
+          "r": 4095,
+          "g": 4095,
+          "b": 987
+        },
+        "command_coordinate": "plan_command_before_control_mapping",
+        "n_ray": 2,
+        "n_strip": 2,
+        "delta_z": [
+          -0.2161699957643035,
+          0.5523243258077017
+        ],
+        "z_distance": 0.593120247460556,
+        "ratio_percent": [
+          -19.440165807335337,
+          73.728634815911
+        ],
+        "CI95_delta_z_conditional_t_df1": [
+          [
+            -0.2242660911043591,
+            0.5452783063508544
+          ],
+          [
+            -0.20807390042424792,
+            0.5593703452645491
+          ]
+        ],
+        "CI95_ratio_percent_conditional": [
+          [
+            -20.089752798243538,
+            72.50884186374591
+          ],
+          [
+            -18.78529835148637,
+            74.95705280335005
+          ]
+        ],
+        "CI_axis_order": [
+          "R/G",
+          "B/G"
+        ],
+        "CI_array_order": [
+          "lower",
+          "upper"
+        ],
+        "strip_repeat_distance_z": 0.0012315037254829251,
+        "PI95": null,
+        "interval_status": "source-independent normal repeat errors, conservative df1 marginal intervals; selection excluded; not simultaneous and not an across-session guarantee",
+        "coverage_Ray_sat": null,
+        "coverage_status": "map_unqualified; not 0 percent"
+      }
+    ],
+    "next_experiment": "C12-1 current HSI mapping + C12-2 fullscale main requests + C12-3 finite boundary classification",
+    "physical_gamut_percent": null,
+    "note": "null is not 0%; direct sensor ratio percentages are not SAT coverage"
+  },
+  {
+    "hue": 120,
+    "s_best_tested": null,
+    "s_best_tested_CI95": null,
+    "covered_intervals": null,
+    "status": "current_fullscale_Ray_equivalent_coverage_not_established",
+    "reason": [
+      "legacy_Ray_inverse_unqualified",
+      "valid_direct_measurements_do_not_prove_exhausted_fullscale_search"
+    ],
+    "direct_comparisons": [],
+    "next_experiment": "C12-1 current HSI mapping + C12-2 fullscale main requests + C12-3 finite boundary classification",
+    "physical_gamut_percent": null,
+    "note": "null is not 0%; direct sensor ratio percentages are not SAT coverage"
+  },
+  {
+    "hue": 180,
+    "s_best_tested": null,
+    "s_best_tested_CI95": null,
+    "covered_intervals": null,
+    "status": "current_fullscale_Ray_equivalent_coverage_not_established",
+    "reason": [
+      "legacy_Ray_inverse_unqualified",
+      "valid_direct_measurements_do_not_prove_exhausted_fullscale_search"
+    ],
+    "direct_comparisons": [
+      {
+        "hue": 180,
+        "sat": 50,
+        "command": {
+          "b": 4095,
+          "cw": 0,
+          "g": 4095,
+          "r": 1024,
+          "ww": 0
+        },
+        "fullscale_actual": true,
+        "actual_pwm": {
+          "cw": 0,
+          "ww": 0,
+          "r": 942,
+          "g": 4095,
+          "b": 4095
+        },
+        "command_coordinate": "plan_command_before_control_mapping",
+        "n_ray": 2,
+        "n_strip": 2,
+        "delta_z": [
+          -0.3865908786964678,
+          0.42448191801989893
+        ],
+        "z_distance": 0.5741405805350805,
+        "ratio_percent": [
+          -32.063101759842276,
+          52.879817167244035
+        ],
+        "CI95_delta_z_conditional_t_df1": [
+          [
+            -0.3922365410363076,
+            0.42040747754239666
+          ],
+          [
+            -0.380945216356628,
+            0.4285563584974012
+          ]
+        ],
+        "CI95_ratio_percent_conditional": [
+          [
+            -32.445569888883384,
+            52.25818471417896
+          ],
+          [
+            -31.678468238102404,
+            53.503987591633475
+          ]
+        ],
+        "CI_axis_order": [
+          "R/G",
+          "B/G"
+        ],
+        "CI_array_order": [
+          "lower",
+          "upper"
+        ],
+        "strip_repeat_distance_z": 0.00047787769744231764,
+        "PI95": null,
+        "interval_status": "source-independent normal repeat errors, conservative df1 marginal intervals; selection excluded; not simultaneous and not an across-session guarantee",
+        "coverage_Ray_sat": null,
+        "coverage_status": "map_unqualified; not 0 percent"
+      },
+      {
+        "hue": 180,
+        "sat": 100,
+        "command": {
+          "b": 4095,
+          "cw": 0,
+          "g": 4095,
+          "r": 1024,
+          "ww": 0
+        },
+        "fullscale_actual": true,
+        "actual_pwm": {
+          "cw": 0,
+          "ww": 0,
+          "r": 942,
+          "g": 4095,
+          "b": 4095
+        },
+        "command_coordinate": "plan_command_before_control_mapping",
+        "n_ray": 2,
+        "n_strip": 2,
+        "delta_z": [
+          0.41591977005862857,
+          0.40179752701378724
+        ],
+        "z_distance": 0.578299669583182,
+        "ratio_percent": [
+          51.57642543148132,
+          49.450870439975034
+        ],
+        "CI95_delta_z_conditional_t_df1": [
+          [
+            0.40292949801838435,
+            0.3990659888278733
+          ],
+          [
+            0.4289100420988728,
+            0.40452906519970117
+          ]
+        ],
+        "CI95_ratio_percent_conditional": [
+          [
+            49.620140278124644,
+            49.04319672209538
+          ],
+          [
+            53.55828903700446,
+            49.85965925645633
+          ]
+        ],
+        "CI_axis_order": [
+          "R/G",
+          "B/G"
+        ],
+        "CI_array_order": [
+          "lower",
+          "upper"
+        ],
+        "strip_repeat_distance_z": 0.0003895363648041884,
+        "PI95": null,
+        "interval_status": "source-independent normal repeat errors, conservative df1 marginal intervals; selection excluded; not simultaneous and not an across-session guarantee",
+        "coverage_Ray_sat": null,
+        "coverage_status": "map_unqualified; not 0 percent"
+      }
+    ],
+    "next_experiment": "C12-1 current HSI mapping + C12-2 fullscale main requests + C12-3 finite boundary classification",
+    "physical_gamut_percent": null,
+    "note": "null is not 0%; direct sensor ratio percentages are not SAT coverage"
+  },
+  {
+    "hue": 240,
+    "s_best_tested": null,
+    "s_best_tested_CI95": null,
+    "covered_intervals": null,
+    "status": "current_fullscale_Ray_equivalent_coverage_not_established",
+    "reason": [
+      "legacy_Ray_inverse_unqualified",
+      "valid_direct_measurements_do_not_prove_exhausted_fullscale_search"
+    ],
+    "direct_comparisons": [
+      {
+        "hue": 240,
+        "sat": 50,
+        "command": {
+          "b": 4095,
+          "cw": 0,
+          "g": 2048,
+          "r": 1024,
+          "ww": 0
+        },
+        "fullscale_actual": true,
+        "actual_pwm": {
+          "cw": 0,
+          "ww": 0,
+          "r": 942,
+          "g": 1968,
+          "b": 4095
+        },
+        "command_coordinate": "plan_command_before_control_mapping",
+        "n_ray": 2,
+        "n_strip": 2,
+        "delta_z": [
+          -0.2874012761952449,
+          0.15244325077149928
+        ],
+        "z_distance": 0.3253282008440671,
+        "ratio_percent": [
+          -24.978937323737867,
+          16.46763657339649
+        ],
+        "CI95_delta_z_conditional_t_df1": [
+          [
+            -0.30112183841544093,
+            0.14947677505044502
+          ],
+          [
+            -0.2736807139750489,
+            0.15540972649255355
+          ]
+        ],
+        "CI95_ratio_percent_conditional": [
+          [
+            -26.001239166357088,
+            16.122650107190395
+          ],
+          [
+            -23.942512257355858,
+            16.81364795301746
+          ]
+        ],
+        "CI_axis_order": [
+          "R/G",
+          "B/G"
+        ],
+        "CI_array_order": [
+          "lower",
+          "upper"
+        ],
+        "strip_repeat_distance_z": 0.000882450894509625,
+        "PI95": null,
+        "interval_status": "source-independent normal repeat errors, conservative df1 marginal intervals; selection excluded; not simultaneous and not an across-session guarantee",
+        "coverage_Ray_sat": null,
+        "coverage_status": "map_unqualified; not 0 percent"
+      },
+      {
+        "hue": 240,
+        "sat": 100,
+        "command": {
+          "b": 4095,
+          "cw": 0,
+          "g": 2048,
+          "r": 1024,
+          "ww": 0
+        },
+        "fullscale_actual": true,
+        "actual_pwm": {
+          "cw": 0,
+          "ww": 0,
+          "r": 942,
+          "g": 1968,
+          "b": 4095
+        },
+        "command_coordinate": "plan_command_before_control_mapping",
+        "n_ray": 2,
+        "n_strip": 2,
+        "delta_z": [
+          0.5542084898613564,
+          -0.316014454969074
+        ],
+        "z_distance": 0.6379750668982339,
+        "ratio_percent": [
+          74.05627663325959,
+          -27.09510882880148
+        ],
+        "CI95_delta_z_conditional_t_df1": [
+          [
+            0.5479389302496205,
+            -0.33018418343780975
+          ],
+          [
+            0.5604780494730923,
+            -0.3018447265003382
+          ]
+        ],
+        "CI95_ratio_percent_conditional": [
+          [
+            72.96843414113748,
+            -28.120866821935042
+          ],
+          [
+            75.15096084360353,
+            -26.054712658856978
+          ]
+        ],
+        "CI_axis_order": [
+          "R/G",
+          "B/G"
+        ],
+        "CI_array_order": [
+          "lower",
+          "upper"
+        ],
+        "strip_repeat_distance_z": 0.0008569588808728504,
+        "PI95": null,
+        "interval_status": "source-independent normal repeat errors, conservative df1 marginal intervals; selection excluded; not simultaneous and not an across-session guarantee",
+        "coverage_Ray_sat": null,
+        "coverage_status": "map_unqualified; not 0 percent"
+      }
+    ],
+    "next_experiment": "C12-1 current HSI mapping + C12-2 fullscale main requests + C12-3 finite boundary classification",
+    "physical_gamut_percent": null,
+    "note": "null is not 0%; direct sensor ratio percentages are not SAT coverage"
+  },
+  {
+    "hue": 300,
+    "s_best_tested": null,
+    "s_best_tested_CI95": null,
+    "covered_intervals": null,
+    "status": "current_fullscale_Ray_equivalent_coverage_not_established",
+    "reason": [
+      "legacy_Ray_inverse_unqualified",
+      "valid_direct_measurements_do_not_prove_exhausted_fullscale_search"
+    ],
+    "direct_comparisons": [],
+    "next_experiment": "C12-1 current HSI mapping + C12-2 fullscale main requests + C12-3 finite boundary classification",
+    "physical_gamut_percent": null,
+    "note": "null is not 0%; direct sensor ratio percentages are not SAT coverage"
+  }
+]

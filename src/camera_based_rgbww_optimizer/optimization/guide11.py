@@ -710,8 +710,14 @@ def build_guide11_w2_candidate_rows(
             candidates_out.append(row)
             continue
         # Measured local response: least squares over paired observations of
-        # E-component error differences vs command differences, using the two
-        # E-dominant axes of the best observation.
+        # response DIFFERENCES vs command DIFFERENCES, using the two
+        # E-dominant axes of the best observation. GUIDE12 secant fix
+        # (2026-09-29): A = u - u0 and B = r(u) - r(u0) against one frozen,
+        # deterministic base observation (the best-E observation, not the
+        # last same-command frame seen in the loop). Regressing the absolute
+        # residual r(u) against u - u0 absorbs any nonzero intercept b of
+        # r(u) = a*u + b into the slope; the differenced form is independent
+        # of b by construction.
         import numpy as np
 
         names = list(CHANNELS)
@@ -722,8 +728,16 @@ def build_guide11_w2_candidate_rows(
             target["duv"] / tolerances["duv"],
         ])
         a_rows, b_rows = [], []
-        base_residual = None
+        best_wp = best["strip_white_point"]
+        base_residual = np.array([
+            best_wp["cct_K"] / tolerances["cct_K"],
+            best_wp["mired"] / tolerances["mired"],
+            best_wp["duv"] / tolerances["duv"],
+        ]) - target_vec
+        base_repeats = 0
         for obs in observations:
+            if obs is best:
+                continue
             cmd = np.array([float(obs["command"][n]) for n in names])
             wp = obs["strip_white_point"]
             err_vec = np.array([
@@ -731,19 +745,33 @@ def build_guide11_w2_candidate_rows(
                 wp["mired"] / tolerances["mired"],
                 wp["duv"] / tolerances["duv"],
             ])
-            residual = err_vec - target_vec
             if np.allclose(cmd, base_cmd):
-                base_residual = residual
+                base_repeats += 1
                 continue
             a_rows.append(cmd - base_cmd)
-            b_rows.append(residual)
-        if len(a_rows) >= 1 and base_residual is not None:
-            sensitivity, *_ = np.linalg.lstsq(
-                np.asarray(a_rows), np.asarray(b_rows), rcond=None
-            )
+            b_rows.append((err_vec - target_vec) - base_residual)
+        secant_diagnostics = {
+            "base_capture_id": best.get("capture_id"),
+            "base_error_eu": eu_of(best),
+            "base_repeats_same_command": base_repeats,
+            "base_command_active_face": [
+                name for i, name in enumerate(names) if float(base_cmd[i]) >= 4095.0
+            ],
+        }
+        if len(a_rows) >= 1:
+            a_matrix = np.asarray(a_rows)
+            b_matrix = np.asarray(b_rows)
+            sensitivity, *_ = np.linalg.lstsq(a_matrix, b_matrix, rcond=None)
+            secant_diagnostics.update({
+                "command_delta_rank": int(np.linalg.matrix_rank(a_matrix)),
+                "sensitivity_rank": int(np.linalg.matrix_rank(sensitivity)),
+                "command_delta_singular_values": [
+                    float(v) for v in np.linalg.svd(a_matrix, compute_uv=False)
+                ],
+            })
             # Two-stage secant: measured sensitivity maps command deltas to
             # normalized error deltas; solve for the bounded command step that
-            # cancels the best observation's residual as the smooth surrogate
+            # cancels the base observation's residual as the smooth surrogate
             # for the max-form E(u).
             step, *_ = np.linalg.lstsq(sensitivity.T, -base_residual, rcond=None)
             max_step = 768.0
@@ -759,11 +787,13 @@ def build_guide11_w2_candidate_rows(
             row.update({
                 "method": "measured_secant_full_tolerance_step",
                 "commands": list(proposed.values())[: W2_PER_NODE_COMMAND_CAP - 1],
+                "secant_diagnostics": secant_diagnostics,
             })
         else:
             row.update({
                 "method": "single_measured_command_no_direction",
                 "commands": [],
+                "secant_diagnostics": secant_diagnostics,
             })
         candidates_out.append(row)
     return candidates_out
