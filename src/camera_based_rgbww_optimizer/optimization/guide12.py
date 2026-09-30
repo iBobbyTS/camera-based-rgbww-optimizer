@@ -335,3 +335,73 @@ def build_guide12_batch1_plan() -> dict[str, Any]:
             "shell_trap": "EXIT_INT_TERM_HUP_required",
         },
     }
+
+
+def build_guide12_batch1_white_followup_plan() -> dict[str, Any]:
+    """One-stop reverse recheck for the railed white-load class.
+
+    formal-b1 found the 2300/100 white command pins every block plane at
+    16382 through 1/10..1/6 (about 2x the W2-era block signal at the same
+    readback command). The frozen ladder rule allows one reverse-direction
+    stop: 1/20 is predicted to land near 9600 DN. No ambient frames, so the
+    plan runs under the legacy unsubtracted_no_ambient policy.
+    """
+    from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
+
+    klass = BATCH1_CLASSES[2]
+    command = dict(klass["command"])
+    shutter = "1/20"
+    slug = shutter.replace("/", "over")
+    captures = [{
+        "capture_id": f"000-strip-{klass['label']}-reverse-{slug}",
+        "source_id": "strip", "state_id": klass["state_id"],
+        "command": command, "exact_command_hash": thermal.canonical_sha256(command),
+        "requested_elapsed_s": 120,
+        "timing_acceptance": "diagnostic_not_formal",
+        "timing_status": "diagnostic_not_timed",
+        "formal_measurement": False, "capture_role": "diagnostic",
+        "nominal_shutter": shutter,
+        "exposure_cache_key": f"guide12-b1-{klass['label']}-reverse-{slug}",
+        "ray_zero_required": True,
+        "ladder_class": klass["label"], "ladder_index": 3,
+    }]
+    frozen = {
+        str(step["exposure_cache_key"]): str(step["nominal_shutter"])
+        for step in captures
+    }
+    plan = build_guide12_batch1_plan()
+    plan.update({
+        "guide_experiment_id": None,
+        "variant": f"{BATCH1_VARIANT}-white-reverse-recheck",
+        "stage": "GUIDE12-BATCH1-WHITE-REVERSE-RECHECK",
+        "captures": captures,
+        "capture_ids": [str(step["capture_id"]) for step in captures],
+        "timing_resolution": "guide12_batch1_reverse_D120",
+        "native_raw_ambient_policy": "unsubtracted_no_ambient",
+        "frozen_shutters": frozen,
+        "shutter_ledger_provenance": {
+            "owner": "experiment_capture_steps",
+            "required_cache_keys": sorted(frozen),
+            "frozen_shutters_sha256": thermal.canonical_sha256(frozen),
+        },
+        "budgets": {
+            "formal_cap": 0, "diagnostic_cap": 1, "ambient_cap": 0,
+            "physical_cr3_cap": 1, "setup_physical_cr3_cap": 0, "retry": 0,
+        },
+        "execution_authorization": {
+            "schema": BATCH1_AUTHORIZATION_SCHEMA,
+            "human_authorization_required": False,
+            "human_authorization_verified": False,
+            "device_use_granted_by": "operator_cli_allow_device_control",
+            "experiment_id": thermal.TD_C,
+            "bounded_device_scope": True,
+            "remote_v2_capability": True,
+        },
+        "analysis_contract": {
+            **dict(plan["analysis_contract"]),
+            "method": "guide12_white_reverse_recheck",
+            "reverse_recheck_of": "formal-b1-20260929-r1 high_white_load",
+            "predicted_code_dn": 9600,
+        },
+    })
+    return plan

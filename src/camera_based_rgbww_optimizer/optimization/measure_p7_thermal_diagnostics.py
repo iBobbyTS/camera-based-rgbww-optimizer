@@ -2612,8 +2612,14 @@ def validate_direct_guide12_batch1_post_capture(
         row for row in commands
         if row.get("event") == "guide12_batch1_class_command_readback_verified"
     ]
-    if len(class_events) != 3:
-        raise ValueError("GUIDE12 batch-1 expects exactly three class command events")
+    expected_states = len({
+        str(step["state_id"]) for step in plan["captures"]
+        if step.get("capture_role") != "ambient"
+    })
+    if len(class_events) != expected_states:
+        raise ValueError(
+            f"GUIDE12 batch-1 expects {expected_states} class command events"
+        )
     for event in class_events:
         snapshot = (event.get("readback") or {}).get("device_snapshot") or {}
         channels = ["cold_white", "warm_white", "red", "green", "blue"]
