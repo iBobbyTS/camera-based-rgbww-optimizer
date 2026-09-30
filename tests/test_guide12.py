@@ -702,5 +702,450 @@ class Batch1ValidatorOrderingTests(unittest.TestCase):
             self.assertEqual(written["capture_count"], 13)
 
 
+class W12OpenQueueTests(unittest.TestCase):
+    def _pairing(self, *rows):
+        nodes = []
+        for cct, gm, e, command in rows:
+            nodes.append({
+                "cct": cct, "gm": gm,
+                "pairs": [{
+                    "E_vs_fresh_ray": e, "command": command,
+                    "strip_capture_id": f"strip-{cct}-{gm}", "ray_capture_id": f"ray-{cct}-{gm}",
+                    "fresh_ray_white_point": {"cct_K": 3000.0, "mired": 333.0, "duv": 0.0},
+                    "signed_vs_fresh_ray": {},
+                }],
+            })
+        return {"schema": "guide12_w2_fresh_pairing_audit_v1", "nodes": nodes}
+
+    def test_queue_order_and_exclusions(self):
+        warm = {"cw": 24, "ww": 4095, "r": 157, "g": 10, "b": 712}
+        queue = guide12.build_guide12_w12_open_queue(self._pairing(
+            (6500, 0, 0.108, {"cw": 3888, "ww": 4095, "r": 0, "g": 124, "b": 2163}),
+            (1800, 100, 5.0, dict(warm)),
+            (2000, 200, 23.6, dict(warm)),
+            (1800, 70, 1.116, dict(warm)),
+            (2000, 100, 1.118, dict(warm)),
+            (3200, 0, 10.288, dict(warm)),
+        ))
+        keys = [(n["cct"], n["gm"]) for n in queue["nodes"]]
+        self.assertEqual(keys, [
+            (3200, 0), (1800, 70), (2000, 100), (2000, 200),
+        ])
+        self.assertEqual(queue["open_node_count"], 4)
+        self.assertEqual(queue["unchanged_qualified_nodes"], [
+            {"cct": 6500, "gm": 0, "E_vs_fresh_ray": 0.108},
+        ])
+        self.assertEqual(queue["nodes"][0]["face_channels"], ["warm_white"])
+
+    def test_cold_end_orders_by_descending_e(self):
+        warm = {"cw": 24, "ww": 4095, "r": 157, "g": 10, "b": 712}
+        queue = guide12.build_guide12_w12_open_queue(self._pairing(
+            (2300, 200, 1.64, dict(warm)),
+            (2000, 70, 14.29, dict(warm)),
+            (2700, 100, 2.15, dict(warm)),
+        ))
+        keys = [(n["cct"], n["gm"]) for n in queue["nodes"]]
+        self.assertEqual(keys, [(2000, 70), (2700, 100), (2300, 200)])
+
+    def test_stage_node_budget_is_enforced(self):
+        rows = []
+        warm = {"cw": 24, "ww": 4095, "r": 157, "g": 10, "b": 712}
+        for index, cct in enumerate(range(1800, 20000, 200)):
+            rows.append((cct, 70, 1.5 + (index % 7), dict(warm)))
+        with self.assertRaises(ValueError):
+            guide12.build_guide12_w12_open_queue(self._pairing(*rows[:31]))
+        queue = guide12.build_guide12_w12_open_queue(self._pairing(*rows[:30]))
+        self.assertEqual(queue["open_node_count"], 30)
+
+
+class W12ProbeDesignTests(unittest.TestCase):
+    BASE = {"cw": 24, "ww": 4095, "r": 157, "g": 10, "b": 712}
+
+    def test_probe_channels_rank(self):
+        self.assertEqual(
+            guide12.guide12_w12_probe_channels(self.BASE),
+            ["cold_white", "blue", "red"],
+        )
+        self.assertEqual(
+            guide12.guide12_w12_probe_channels(
+                {"cw": 4095, "ww": 100, "r": 10, "g": 5, "b": 2000}
+            ),
+            ["warm_white", "blue", "red"],
+        )
+
+    def test_probe_candidates_structure(self):
+        candidates = guide12.guide12_w12_probe_candidates(self.BASE)
+        self.assertEqual([c["tag"] for c in candidates], [
+            "u0_repeat", "probe_cw", "probe_b", "probe_r",
+        ])
+        self.assertEqual(len(candidates), guide12.W12_CANDIDATES_PER_BLOCK)
+        by_tag = {c["tag"]: c for c in candidates}
+        self.assertEqual(by_tag["u0_repeat"]["command"], self.BASE)
+        self.assertFalse(by_tag["u0_repeat"]["new_unique_command"])
+        self.assertTrue(all(by_tag[t]["new_unique_command"] for t in ("probe_cw", "probe_b", "probe_r")))
+        self.assertEqual(by_tag["probe_cw"]["command"]["cw"], 24 + 768)
+        self.assertEqual(by_tag["probe_b"]["command"]["b"], 712 + 768)
+        self.assertEqual(by_tag["probe_r"]["command"]["r"], 157 + 768)
+        for candidate in candidates[1:]:
+            changed = [
+                key for key, value in candidate["command"].items()
+                if value != self.BASE[key]
+            ]
+            self.assertEqual(len(changed), 1)
+            self.assertEqual(candidate["command"]["ww"], 4095)
+
+    def test_probe_step_respects_headroom_and_cap(self):
+        base = {"cw": 3900, "ww": 4095, "r": 0, "g": 0, "b": 4095 - 300}
+        candidates = guide12.guide12_w12_probe_candidates(base)
+        by_tag = {c["tag"]: c for c in candidates}
+        # Headroom-limited probes stop exactly at the 4095 rail.
+        self.assertEqual(by_tag["probe_cw"]["command"]["cw"], 4095)
+        self.assertEqual(by_tag["probe_cw"]["probe_step_codes"], 195)
+        self.assertEqual(by_tag["probe_b"]["command"]["b"], 4095)
+        self.assertEqual(by_tag["probe_b"]["probe_step_codes"], 300)
+        # Full-headroom probes take the whole 768-code single-step cap.
+        self.assertEqual(by_tag["probe_r"]["command"]["r"], 768)
+        self.assertEqual(by_tag["probe_r"]["probe_step_codes"], 768)
+
+
+class W12FaceStepSolverTests(unittest.TestCase):
+    """The constrained step must be a real box solve, not clip-after-lstsq.
+
+    Slopes and errors are in tolerance-normalized units per code throughout.
+    """
+
+    SENS_N = {
+        "cct_K": {"cold_white": -0.02, "warm_white": 0.0, "red": 0.004, "green": 0.001, "blue": -0.006},
+        "mired": {"cold_white": -0.10, "warm_white": 0.0, "red": 0.02, "green": 0.005, "blue": -0.03},
+        "duv": {"cold_white": 0.04, "warm_white": 0.0, "red": 0.20, "green": 0.02, "blue": -0.08},
+    }
+    BASE = {"cw": 500, "ww": 4095, "r": 500, "g": 500, "b": 500}
+
+    def test_interior_solve_cancels_measured_error(self):
+        base_error = {"cct_K": -0.5, "mired": 2.5, "duv": -0.4}
+        result = guide12.solve_guide12_w12_face_step(
+            self.BASE, base_error, self.SENS_N, face_channels=["warm_white"],
+        )
+        # Four free channels span the 2-D solve subspace; the integer-code
+        # inward rounding leaves only quantization-level residuals.
+        self.assertLess(abs(result["predicted_error_normalized"]["mired"]), 0.5)
+        self.assertLess(abs(result["predicted_error_normalized"]["duv"]), 1.0)
+        self.assertEqual(result["command"]["ww"], 4095)
+        for short in ("cw", "r", "g", "b"):
+            delta = result["command"][short] - self.BASE[short]
+            self.assertLessEqual(abs(delta), 768 + 1e-9)
+            self.assertGreaterEqual(result["command"][short], 0)
+            self.assertLessEqual(result["command"][short], 4095)
+
+    def test_single_channel_cap_pinned_analytic(self):
+        # Only cold_white carries slope; cancelling +4.0 needs 4000 codes up,
+        # so the 768-code cap pins and the residual is exact.
+        sens = {
+            "cct_K": dict(self.SENS_N["cct_K"]),
+            "mired": {"cold_white": -0.001, "warm_white": 0.0, "red": 0.0, "green": 0.0, "blue": 0.0},
+            "duv": {"cold_white": 0.0, "warm_white": 0.0, "red": 0.0, "green": 0.0, "blue": 0.0},
+        }
+        base_error = {"cct_K": 0.0, "mired": 4.0, "duv": 0.0}
+        result = guide12.solve_guide12_w12_face_step(
+            self.BASE, base_error, sens, face_channels=["warm_white"],
+        )
+        self.assertEqual(result["command"]["cw"], 500 + 768)
+        self.assertIn("cw", result["active_bound_channels"])
+        self.assertAlmostEqual(
+            result["predicted_error_normalized"]["mired"], 4.0 - 0.768, places=9,
+        )
+
+    def test_two_channel_cap_analytic(self):
+        sens = {
+            "cct_K": dict(self.SENS_N["cct_K"]),
+            "mired": {"cold_white": 0.01, "warm_white": 0.0, "red": 0.01, "green": 0.0, "blue": 0.0},
+            "duv": {"cold_white": 0.001, "warm_white": 0.0, "red": -0.002, "green": 0.0, "blue": 0.0},
+        }
+        base_error = {"cct_K": 0.0, "mired": -30.0, "duv": 0.0}
+        result = guide12.solve_guide12_w12_face_step(
+            self.BASE, base_error, sens, face_channels=["warm_white"],
+        )
+        self.assertEqual(result["command"]["cw"], 500 + 768)
+        self.assertEqual(result["command"]["r"], 500 + 768)
+        self.assertAlmostEqual(
+            result["predicted_error_normalized"]["mired"], -30.0 + 15.36, places=9,
+        )
+        self.assertAlmostEqual(
+            result["predicted_error_normalized"]["duv"], 0.768 - 1.536, places=9,
+        )
+
+    def test_never_worse_than_clipped_unconstrained(self):
+        import numpy as np
+
+        rng = np.random.default_rng(20260930)
+        channels = ["cold_white", "warm_white", "red", "green", "blue"]
+        for _ in range(20):
+            base = {
+                "cw": int(rng.integers(20, 2000)), "ww": 4095,
+                "r": int(rng.integers(0, 2000)), "g": int(rng.integers(0, 500)),
+                "b": int(rng.integers(0, 2000)),
+            }
+            sens = {
+                "cct_K": {c: 0.0 for c in channels},
+                "mired": {c: float(rng.normal(0, 0.05)) for c in channels},
+                "duv": {c: float(rng.normal(0, 0.08)) for c in channels},
+            }
+            sens["mired"]["warm_white"] = 0.0
+            sens["duv"]["warm_white"] = 0.0
+            base_error = {
+                "cct_K": 0.0,
+                "mired": float(rng.normal(0, 3.0)),
+                "duv": float(rng.normal(0, 0.5)),
+            }
+            result = guide12.solve_guide12_w12_face_step(
+                base, base_error, sens, face_channels=["warm_white"],
+            )
+            short = {"cold_white": "cw", "warm_white": "ww", "red": "r", "green": "g", "blue": "b"}
+            ours = np.array([
+                base_error["mired"], base_error["duv"]
+            ]) + np.array([
+                sum(
+                    sens[o][c] * (result["command"][short[c]] - base[short[c]])
+                    for c in channels
+                )
+                for o in ("mired", "duv")
+            ])
+            lower = np.array([
+                max(-float(base[short[c]]), -768.0) for c in channels
+            ])
+            upper = np.array([
+                min(float(4095 - base[short[c]]), 768.0) for c in channels
+            ])
+            matrix = np.array([
+                [sens["mired"][c] for c in channels],
+                [sens["duv"][c] for c in channels],
+            ]).T
+            unconstrained = np.linalg.lstsq(
+                matrix.T, -np.array([base_error["mired"], base_error["duv"]]), rcond=None,
+            )[0]
+            clipped = np.clip(unconstrained, lower, upper)
+            # Compare like for like: both owners end on integer codes.
+            clipped_codes = np.clip(
+                np.rint(np.array([
+                    base[short[c]] + clipped[i] for i, c in enumerate(channels)
+                ])), 0, 4095,
+            )
+            theirs = np.array([base_error["mired"], base_error["duv"]]) + matrix.T @ (
+                clipped_codes - np.array([base[short[c]] for c in channels])
+            )
+            # Integer quantization: each code can shift by half a step, so the
+            # comparison carries the aggregate half-step slack per channel.
+            quantization_slack = float(
+                0.5 * np.sum(np.linalg.norm(matrix, axis=1))
+            )
+            self.assertLessEqual(
+                float(ours @ ours),
+                float(theirs @ theirs) + quantization_slack**2
+                + 2.0 * quantization_slack * float(np.linalg.norm(theirs)) + 1e-9,
+            )
+            for c in channels:
+                self.assertTrue(0 <= result["command"][short[c]] <= 4095)
+            self.assertEqual(result["command"]["ww"], 4095)
+
+    def test_half_scale_stays_inside_box(self):
+        base_error = {"cct_K": -0.5, "mired": 2.5, "duv": -0.4}
+        result = guide12.solve_guide12_w12_face_step(
+            self.BASE, base_error, self.SENS_N, face_channels=["warm_white"], scale=0.5,
+        )
+        for short in ("cw", "r", "g", "b"):
+            self.assertLessEqual(abs(result["command"][short] - self.BASE[short]), 768 + 1e-9)
+        self.assertEqual(result["scale"], 0.5)
+
+    def test_face_channel_cannot_move(self):
+        base_error = {"cct_K": 0.0, "mired": 3.0, "duv": 0.0}
+        result = guide12.solve_guide12_w12_face_step(
+            self.BASE, base_error, self.SENS_N, face_channels=["warm_white"],
+        )
+        self.assertEqual(result["command"]["ww"], 4095)
+        self.assertEqual(result["face_channels"], ["ww"])
+
+
+class W12BlockPlanTests(unittest.TestCase):
+    NODE = {
+        "cct": 3200, "gm": 0,
+        "E_vs_fresh_ray": 10.288,
+        "base_command": {"cw": 24, "ww": 4095, "r": 157, "g": 10, "b": 712},
+        "base_capture_id": "033-strip-guide11-w2-cct3200-gm0-candidate0",
+        "face_channels": ["warm_white"],
+    }
+
+    def test_probe_block_structure(self):
+        candidates = guide12.guide12_w12_probe_candidates(self.NODE["base_command"])
+        plan = guide12.build_guide12_w12_block_plan(
+            self.NODE, candidates, block_index=1,
+            predicted_raw_max={c["tag"]: 9000.0 for c in candidates},
+        )
+        self.assertEqual(len(plan["captures"]), 6)
+        roles = [c["role"] for c in plan["captures"]]
+        self.assertEqual(roles, [
+            "ray_reference", "strip_candidate", "strip_candidate",
+            "strip_candidate", "strip_candidate", "ray_reference",
+        ])
+        ids = [c["capture_id"] for c in plan["captures"]]
+        self.assertEqual(len(set(ids)), 6)
+        states = [c["state_id"] for c in plan["captures"]]
+        self.assertEqual(len(set(states)), 6)
+        self.assertEqual(plan["budgets"], {
+            "formal_cap": 6, "diagnostic_cap": 0, "ambient_cap": 0,
+            "physical_cr3_cap": 6, "setup_physical_cr3_cap": 0, "retry": 0,
+        })
+        self.assertEqual(
+            plan["frozen_shutters"],
+            {
+                "ray-white-3200-gm0": "1/2500",
+                "guide12-w12-strip-white-3200-gm0": "1/100",
+            },
+        )
+        self.assertEqual(
+            plan["execution_authorization"]["schema"],
+            guide12.W12_AUTHORIZATION_SCHEMA,
+        )
+        self.assertEqual(plan["timing_resolution"], "guide12_w12_reset600_D120")
+        self.assertEqual(plan["cold_proxy_wait_s"], 600)
+        self.assertTrue(all(c["requested_elapsed_s"] == 120 for c in plan["captures"]))
+        self.assertTrue(all(
+            isinstance(c["session_index"], int) and c["session_index"] >= 1
+            for c in plan["captures"]
+        ))
+        ray_commands = [
+            c["command"] for c in plan["captures"] if c["source_id"] == "ray"
+        ]
+        self.assertEqual(ray_commands[0], ray_commands[1])
+        self.assertEqual(ray_commands[0]["intensity_percent"], 100.0)
+        self.assertEqual(
+            plan["analysis_contract"]["new_unique_commands_in_block"], 3,
+        )
+
+    def test_block_rejects_oversized_and_ceiling_breach(self):
+        candidates = guide12.guide12_w12_probe_candidates(self.NODE["base_command"])
+        with self.assertRaises(ValueError):
+            guide12.build_guide12_w12_block_plan(
+                self.NODE, candidates + [dict(candidates[1], tag="probe_x")],
+                block_index=1,
+            )
+        with self.assertRaises(ValueError):
+            guide12.build_guide12_w12_block_plan(
+                self.NODE, candidates, block_index=1,
+                predicted_raw_max={c["tag"]: 20000.0 for c in candidates},
+            )
+
+    def test_unknown_ray_shutter_is_rejected(self):
+        node = dict(self.NODE, cct=3300, gm=0)
+        with self.assertRaises(ValueError):
+            guide12.build_guide12_w12_block_plan(
+                node, guide12.guide12_w12_probe_candidates(node["base_command"]),
+                block_index=1,
+            )
+
+
+class W12ValidatorTests(unittest.TestCase):
+    def _synthetic_root(self, tmp: Path, plan):
+        root = tmp / "run"
+        root.mkdir()
+        feature_ids = ("f1", "f2")
+        with open(root / "captures.jsonl", "w", encoding="utf-8") as fh:
+            for step in plan["captures"]:
+                capture = {
+                    "saved_file": "fake.cr3",
+                    "feature_values": {name: 1.0 for name in feature_ids},
+                    "direct_quality": {
+                        "status": "pass", "feature_count": len(feature_ids),
+                    },
+                }
+                if step["source_id"] == "strip":
+                    capture["ray_zero_before_capture"] = {"data": {"intensity": 0}}
+                else:
+                    capture["strip_zero_before_capture"] = {
+                        "requested_payload": {
+                            "cold_white": 0, "warm_white": 0, "red": 0,
+                            "green": 0, "blue": 0,
+                        },
+                        "device_snapshot": {
+                            "cold_white": 0, "warm_white": 0, "red": 0,
+                            "green": 0, "blue": 0,
+                        },
+                    }
+                fh.write(json.dumps({
+                    "capture_id": step["capture_id"],
+                    "plan_step": step,
+                    "formal_measurement": step["formal_measurement"],
+                    "source_id": step["source_id"],
+                    "capture": capture,
+                }) + chr(10))
+        with open(root / "physical-returns.jsonl", "w", encoding="utf-8") as fh:
+            for step in plan["captures"]:
+                fh.write(json.dumps({
+                    "capture_id": step["capture_id"], "cr3_byte_count": 1000,
+                }) + chr(10))
+        with open(root / "commands.jsonl", "w", encoding="utf-8") as fh:
+            for step in plan["captures"]:
+                if step["source_id"] != "strip":
+                    continue
+                snapshot = {
+                    "cold_white": step["command"]["cw"],
+                    "warm_white": step["command"]["ww"],
+                    "red": step["command"]["r"],
+                    "green": step["command"]["g"],
+                    "blue": step["command"]["b"],
+                }
+                fh.write(json.dumps({
+                    "event": "command_readback_verified",
+                    "source_id": "strip",
+                    "state_id": step["state_id"],
+                    "readback": {"device_snapshot": snapshot},
+                }) + chr(10))
+        (root / "run.json").write_text(json.dumps({"status": "running"}), encoding="utf-8")
+        return root
+
+    def test_validator_passes_and_overwrites_quality_schema(self):
+        import tempfile
+
+        from camera_based_rgbww_optimizer.optimization.measure_p7_thermal_diagnostics import (
+            validate_direct_guide12_w12_post_capture,
+        )
+
+        candidates = guide12.guide12_w12_probe_candidates(W12BlockPlanTests.NODE["base_command"])
+        plan = guide12.build_guide12_w12_block_plan(
+            W12BlockPlanTests.NODE, candidates, block_index=1,
+        )
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = self._synthetic_root(Path(tmp_dir), plan)
+            quality = validate_direct_guide12_w12_post_capture(root, plan, None)
+            self.assertEqual(quality["status"], "pass")
+            self.assertEqual(quality["schema"], "guide12_w12_fullscale_bounded_quality_v1")
+            self.assertEqual(quality["strip_candidate_states"], 4)
+
+    def test_validator_rejects_non_fullscale_readback(self):
+        import tempfile
+
+        from camera_based_rgbww_optimizer.optimization.measure_p7_thermal_diagnostics import (
+            validate_direct_guide12_w12_post_capture,
+        )
+
+        candidates = guide12.guide12_w12_probe_candidates(W12BlockPlanTests.NODE["base_command"])
+        plan = guide12.build_guide12_w12_block_plan(
+            W12BlockPlanTests.NODE, candidates, block_index=1,
+        )
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = self._synthetic_root(Path(tmp_dir), plan)
+            commands_path = root / "commands.jsonl"
+            rows = [
+                json.loads(line)
+                for line in commands_path.read_text(encoding="utf-8").splitlines()
+                if line.strip()
+            ]
+            rows[0]["readback"]["device_snapshot"]["warm_white"] = 3000
+            commands_path.write_text(
+                chr(10).join(json.dumps(r) for r in rows) + chr(10), encoding="utf-8",
+            )
+            with self.assertRaises(ValueError):
+                validate_direct_guide12_w12_post_capture(root, plan, None)
+
+
 if __name__ == "__main__":
     unittest.main()

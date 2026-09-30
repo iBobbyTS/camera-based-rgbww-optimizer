@@ -57,6 +57,7 @@ GUIDE9_CANDIDATE_BATCH_SCHEMAS = {
     "direct_guide11_c4_holdout_v1",
     "direct_guide11_c5_int_separability_v1",
     "direct_guide11_c2_sat_reachability_s25_v1",
+    "direct_guide12_w12_fullscale_bounded_v1",
 }
 GUIDE9_BEST_REPEAT_SCHEMAS = {
     "direct_guide9_h120_s50_best_repeat_v1",
@@ -477,9 +478,10 @@ def validate_authorized_execution_plan(
     if any(step.get("formal_measurement") and step.get("requested_elapsed_s") is None for step in plan.get("captures", [])):
         raise PermissionError("thermal diagnostic execution rejects unresolved deferred timing")
     timing_resolution = str(plan.get("timing_resolution", ""))
-    if timing_resolution.startswith(("guide10_", "guide11_")):
+    if timing_resolution.startswith(("guide10_", "guide11_", "guide12_w12_")):
         label_match = re.fullmatch(
-            r"(?:guide10|guide11)_[a-z0-9_]*?reset(\d+)_D(\d+)", timing_resolution
+            r"(?:guide10|guide11|guide12_w12)_[a-z0-9_]*?reset(\d+)_D(\d+)",
+            timing_resolution,
         )
         if label_match is None:
             raise PermissionError(
@@ -2652,6 +2654,91 @@ def _load_jsonl_file(path: Path) -> list[dict[str, Any]]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
+def validate_direct_guide12_w12_post_capture(
+    run_root: str | Path,
+    plan: Mapping[str, Any],
+    runtime_evidence: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    """Validate one GUIDE12 W12-1 fullscale-face local block.
+
+    Wraps the generic direct-protocol validator (order, budgets, formal
+    feature quality, physical CR3 rows) and adds the W12-1 contract: verified
+    Ray-zero isolation on every strip frame, verified strip-zero on every Ray
+    frame, and an actual-fullscale readback (device_snapshot max == 4095) for
+    every distinct strip candidate state in commands.jsonl. White-point
+    reference compatibility and the measured tolerance gate belong to the
+    block analysis, not this structural validator.
+    """
+    root = Path(run_root).resolve()
+    quality = validate_direct_protocol_post_capture(run_root, plan, runtime_evidence)
+    captures = _load_jsonl_file(root / "captures.jsonl")
+    plan_by_id = {str(step["capture_id"]): step for step in plan["captures"]}
+    strip_states: dict[str, str] = {}
+    for row in captures:
+        step = plan_by_id.get(str(row.get("capture_id")))
+        if step is None or row.get("plan_step") != step:
+            raise ValueError("GUIDE12 W12 capture set differs from its frozen plan")
+        capture = row.get("capture")
+        if not isinstance(capture, Mapping):
+            raise ValueError(
+                f"GUIDE12 W12 capture lacks its payload: {row.get('capture_id')}"
+            )
+        if str(step["source_id"]) == "strip":
+            ray_zero = capture.get("ray_zero_before_capture")
+            ray_data = (
+                ray_zero.get("data")
+                or ((ray_zero.get("response") or {}).get("data"))
+                if isinstance(ray_zero, Mapping) else None
+            )
+            if not isinstance(ray_data, Mapping) or int(ray_data.get("intensity", -1)) != 0:
+                raise ValueError(
+                    "GUIDE12 W12 strip frame lacks verified Ray-zero evidence: "
+                    f"{step['capture_id']}"
+                )
+            strip_states[str(step["state_id"])] = str(step["capture_id"])
+        elif str(step["source_id"]) == "ray":
+            strip_zero = capture.get("strip_zero_before_capture")
+            observed = strip_zero.get("device_snapshot") if isinstance(strip_zero, Mapping) else None
+            if (
+                not isinstance(observed, Mapping)
+                or any(int(observed.get(key, -1)) != 0 for key in esphome.PAYLOAD_CHANNELS)
+            ):
+                raise ValueError(
+                    "GUIDE12 W12 Ray frame lacks verified strip-zero evidence: "
+                    f"{step['capture_id']}"
+                )
+    commands = _load_jsonl_file(root / "commands.jsonl")
+    verified = [
+        row for row in commands
+        if row.get("event") == "command_readback_verified"
+    ]
+    strip_events = [row for row in verified if str(row.get("source_id")) == "strip"]
+    if sorted(str(row.get("state_id")) for row in strip_events) != sorted(strip_states):
+        raise ValueError(
+            "GUIDE12 W12 strip command events do not cover every candidate state"
+        )
+    fullscale_by_state: dict[str, list[int]] = {}
+    for event in strip_events:
+        snapshot = (event.get("readback") or {}).get("device_snapshot") or {}
+        channels = ["cold_white", "warm_white", "red", "green", "blue"]
+        values = [int(snapshot.get(name, -1)) for name in channels]
+        if max(values) != 4095:
+            raise ValueError(
+                "GUIDE12 W12 strip command readback is not actual-fullscale: "
+                f"{event.get('state_id')}"
+            )
+        fullscale_by_state[str(event.get("state_id"))] = values
+    quality = {
+        **dict(quality),
+        "schema": "guide12_w12_fullscale_bounded_quality_v1",
+        "strip_candidate_states": len(strip_states),
+        "fullscale_readback_states": len(fullscale_by_state),
+        "guide_experiment_id": plan.get("guide_experiment_id"),
+    }
+    _write_json(root / "quality.json", quality)
+    return quality
+
+
 def _load_json_file(path: Path) -> dict[str, Any]:
     value = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(value, dict):
@@ -3777,6 +3864,10 @@ def run_authorized_plan(
             )
         if schema == "direct_guide12_batch1_exposure_all_off_v1":
             return validate_direct_guide12_batch1_post_capture(
+                run_root, frozen_plan, runtime_evidence,
+            )
+        if schema == "direct_guide12_w12_fullscale_bounded_v1":
+            return validate_direct_guide12_w12_post_capture(
                 run_root, frozen_plan, runtime_evidence,
             )
         if schema == "direct_guide8_ray_emission_exposure_v1":
