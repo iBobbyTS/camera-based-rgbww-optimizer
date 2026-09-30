@@ -975,6 +975,8 @@ def build_guide12_w12_block_plan(
                     "command": {k: int(v) for k, v in c["command"].items()},
                     "role": str(c.get("role", "candidate")),
                     "new_unique_command": bool(c.get("new_unique_command", True)),
+                    **({"solver_evidence": dict(c["solver_evidence"])}
+                       if isinstance(c.get("solver_evidence"), Mapping) else {}),
                 }
                 for c in candidates
             ],
