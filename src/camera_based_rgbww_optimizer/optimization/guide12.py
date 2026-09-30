@@ -405,3 +405,77 @@ def build_guide12_batch1_white_followup_plan() -> dict[str, Any]:
         },
     })
     return plan
+
+
+def build_guide12_batch1_white_corrected_arm_plan() -> dict[str, Any]:
+    """Corrected white-load ladder arm at the W2-era white-line anchor.
+
+    formal-b1 anchored the white class on the C1 color tier (1/8); the W2
+    white line actually ran this command at 1/80 (recorded 0.0125 s, block
+    max ~12042). The railed 1/10..1/20 stops were an anchor error, not a
+    brightness change. Two stops at the correct anchor complete the class
+    within its 6-frame cap (4 used + 2).
+    """
+    from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
+
+    klass = BATCH1_CLASSES[2]
+    command = dict(klass["command"])
+    captures = []
+    for index, shutter in enumerate(("1/100", "1/80")):
+        slug = shutter.replace("/", "over")
+        captures.append({
+            "capture_id": f"{index:03d}-strip-{klass['label']}-corrected-{slug}",
+            "source_id": "strip", "state_id": klass["state_id"],
+            "command": command, "exact_command_hash": thermal.canonical_sha256(command),
+            "requested_elapsed_s": 120 + 15 * index,
+            "timing_acceptance": "diagnostic_not_formal",
+            "timing_status": "diagnostic_not_timed",
+            "formal_measurement": False, "capture_role": "diagnostic",
+            "nominal_shutter": shutter,
+            "exposure_cache_key": f"guide12-b1-{klass['label']}-corrected-{slug}",
+            "ray_zero_required": True,
+            "ladder_class": klass["label"], "ladder_index": 4 + index,
+        })
+    frozen = {
+        str(step["exposure_cache_key"]): str(step["nominal_shutter"])
+        for step in captures
+    }
+    plan = build_guide12_batch1_plan()
+    plan.update({
+        "guide_experiment_id": None,
+        "variant": f"{BATCH1_VARIANT}-white-corrected-arm",
+        "stage": "GUIDE12-BATCH1-WHITE-CORRECTED-ARM",
+        "captures": captures,
+        "capture_ids": [str(step["capture_id"]) for step in captures],
+        "timing_resolution": "guide12_batch1_corrected_D120",
+        "native_raw_ambient_policy": "unsubtracted_no_ambient",
+        "frozen_shutters": frozen,
+        "shutter_ledger_provenance": {
+            "owner": "experiment_capture_steps",
+            "required_cache_keys": sorted(frozen),
+            "frozen_shutters_sha256": thermal.canonical_sha256(frozen),
+        },
+        "budgets": {
+            "formal_cap": 0, "diagnostic_cap": 2, "ambient_cap": 0,
+            "physical_cr3_cap": 2, "setup_physical_cr3_cap": 0, "retry": 0,
+        },
+        "execution_authorization": {
+            "schema": BATCH1_AUTHORIZATION_SCHEMA,
+            "human_authorization_required": False,
+            "human_authorization_verified": False,
+            "device_use_granted_by": "operator_cli_allow_device_control",
+            "experiment_id": thermal.TD_C,
+            "bounded_device_scope": True,
+            "remote_v2_capability": True,
+        },
+        "analysis_contract": {
+            **dict(plan["analysis_contract"]),
+            "method": "guide12_white_corrected_arm",
+            "corrects": "formal-b1 white anchor error (C1 color tier 1/8 vs white-line 1/80)",
+            "w2_anchor_evidence": (
+                "guide11-w2 formal-w2-20260922 capture 017: recorded 0.0125 s, "
+                "block max 12042 at the same readback command"
+            ),
+        },
+    })
+    return plan
