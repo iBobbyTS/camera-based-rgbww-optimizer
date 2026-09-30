@@ -15,8 +15,8 @@
     },
     {
       "path": "CODEX_GUIDE12_IMPLEMENTATION_PROMPT.md",
-      "byte_count": 5663,
-      "sha256": "39b045a69fd5a56e8be6470baa70dc00924b3d6123e88def8dd83a0d41800805"
+      "byte_count": 5915,
+      "sha256": "a3f0c6755dab58b6dd2902cbcd8c81032ebc370888809ae1ffeae205cd011689"
     },
     {
       "path": "GUIDE12_DATA_PACKAGE_REQUIREMENTS.md",
@@ -72,6 +72,13 @@
       "path": "reproduce_review.py",
       "byte_count": 19797,
       "sha256": "a6610fc5b1b6b2ead3f6372960d71fa7cc772f488be8bf71450ee6c693a47aa6"
+    }
+  ],
+  "human_edits": [
+    {
+      "date": "2026-09-29",
+      "file": "CODEX_GUIDE12_IMPLEMENTATION_PROMPT.md",
+      "change": "Human removed the no-generic-runtime/watchdog prohibition; monitoring automations for data re-collection follow AGENTS.md handoff rules"
     }
   ]
 }
