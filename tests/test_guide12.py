@@ -523,5 +523,130 @@ class RealInputReplayTests(unittest.TestCase):
                 )
 
 
+class Batch1PlanTests(unittest.TestCase):
+    """GUIDE12 batch-1 frozen plan and runner validation."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.plan = guide12.build_guide12_batch1_plan()
+
+    def test_structure_counts_and_order(self):
+        plan = self.plan
+        captures = plan["captures"]
+        self.assertEqual(len(captures), 13)
+        self.assertEqual(
+            [c["capture_role"] for c in captures[:2]], ["ambient", "ambient"]
+        )
+        self.assertEqual(
+            [c["capture_role"] for c in captures[-2:]], ["ambient", "ambient"]
+        )
+        self.assertTrue(all(
+            c["capture_role"] == "diagnostic" for c in captures[2:-2]
+        ))
+        self.assertEqual(plan["budgets"], {
+            "formal_cap": 0, "diagnostic_cap": 9, "ambient_cap": 4,
+            "physical_cr3_cap": 13, "setup_physical_cr3_cap": 0, "retry": 0,
+        })
+        self.assertEqual(len(plan["frozen_shutters"]), 9)
+        for step in captures:
+            if step["capture_role"] != "ambient":
+                self.assertEqual(
+                    plan["frozen_shutters"][step["exposure_cache_key"]],
+                    step["nominal_shutter"],
+                )
+
+    def test_classes_are_actual_fullscale_commands(self):
+        by_state = {}
+        for step in self.plan["captures"]:
+            if step["capture_role"] == "diagnostic":
+                by_state[step["state_id"]] = step["command"]
+        self.assertEqual(
+            by_state["B1_R4095"],
+            {"cw": 0, "ww": 0, "r": 4095, "g": 0, "b": 0},
+        )
+        self.assertEqual(
+            by_state["B1_B4095"],
+            {"cw": 0, "ww": 0, "r": 0, "g": 0, "b": 4095},
+        )
+        self.assertEqual(
+            by_state["B1_WHITE2300"],
+            {"cw": 0, "ww": 4095, "r": 1965, "g": 312, "b": 0},
+        )
+        for state, command in by_state.items():
+            self.assertEqual(max(command.values()), 4095, msg=state)
+
+    def test_ambient_steps_bracket_batch_with_gates(self):
+        ambient = [
+            c for c in self.plan["captures"] if c["capture_role"] == "ambient"
+        ]
+        self.assertEqual(len(ambient), 4)
+        self.assertTrue(all(not c["formal_measurement"] for c in ambient))
+        self.assertEqual(
+            [c["ambient_position"] for c in ambient],
+            ["start", "start", "end", "end"],
+        )
+        self.assertEqual(
+            [c["ambient_shutter_speed"] for c in ambient],
+            ["1/400", "1/8", "1/400", "1/8"],
+        )
+        self.assertTrue(all(c.get("isolation_gate_before") for c in ambient))
+
+    def test_runner_validation_accepts_plan(self):
+        from camera_based_rgbww_optimizer.optimization.measure_p7_thermal_diagnostics import (
+            validate_authorized_execution_plan,
+        )
+
+        validate_authorized_execution_plan(self.plan)
+
+    def test_runner_validation_rejects_ambient_under_legacy_policy(self):
+        import copy
+
+        from camera_based_rgbww_optimizer.optimization.measure_p7_thermal_diagnostics import (
+            validate_authorized_execution_plan,
+        )
+
+        bad = copy.deepcopy(self.plan)
+        bad["guide_experiment_id"] = None
+        bad["native_raw_ambient_policy"] = "unsubtracted_no_ambient"
+        bad["execution_authorization"]["schema"] = (
+            "direct_guide11_w2_bounded_correction_v1"
+        )
+        bad["execution_authorization"]["experiment_id"] = (
+            "GUIDE11_W2_BOUNDED_CORRECTION_V1"
+        )
+        with self.assertRaises(PermissionError):
+            validate_authorized_execution_plan(bad)
+
+    def test_policy_resolution_guide12_vs_default(self):
+        from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
+        from camera_based_rgbww_optimizer.optimization.measure_raw_observer_validation import (
+            AMBIENT_POLICY_UNSUBTRACTED_WITH_ALL_OFF_DIAGNOSTIC,
+        )
+
+        self.assertEqual(
+            thermal.expected_native_raw_ambient_policy(
+                thermal.TD_C,
+                plan_schema=thermal.PLAN_SCHEMA_V2,
+                guide_experiment_id=thermal.GUIDE12_BATCH1_EXPERIMENT_ID,
+            ),
+            AMBIENT_POLICY_UNSUBTRACTED_WITH_ALL_OFF_DIAGNOSTIC,
+        )
+        self.assertEqual(
+            thermal.expected_native_raw_ambient_policy(
+                thermal.TD_C, plan_schema=thermal.PLAN_SCHEMA_V2
+            ),
+            thermal.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+        )
+
+    def test_ambient_shutter_helper(self):
+        from camera_based_rgbww_optimizer.optimization.measure_raw_observer_validation import (
+            ambient_shutter_for_step,
+        )
+
+        self.assertEqual(ambient_shutter_for_step({}, "30"), "30")
+        self.assertEqual(ambient_shutter_for_step({"ambient_shutter_speed": "1/400"}, "30"), "1/400")
+        self.assertEqual(ambient_shutter_for_step({"ambient_shutter_speed": 8}, "30"), "8")
+
+
 if __name__ == "__main__":
     unittest.main()

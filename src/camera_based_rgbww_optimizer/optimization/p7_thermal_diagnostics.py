@@ -17,12 +17,14 @@ from camera_based_rgbww_optimizer.measurement.hsi_policy_v2 import (
 )
 from camera_based_rgbww_optimizer.optimization.measure_raw_observer_validation import (
     AMBIENT_POLICY_REQUIRE_PRECEDING, AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+    AMBIENT_POLICY_UNSUBTRACTED_WITH_ALL_OFF_DIAGNOSTIC,
 )
 from camera_based_rgbww_optimizer.paths import PROJECT_ROOT, PROJECT_TMP_DIR
 
 TD_A = "p7_td_a_cold_settling_v1"
 TD_B = "p7_td_b_command_switch_history_v1"
 TD_C = "p7_td_c_balanced_source_comparison_v1"
+GUIDE12_BATCH1_EXPERIMENT_ID = "GUIDE12_BATCH1_EXPOSURE_ALL_OFF_V1"
 TD_C_FAST_ENDPOINT_HOLDOUT_EXPERIMENT_ID = (
     "GUIDE5_TD_C_FAST_ENDPOINT_HOLDOUT_B_C_V1"
 )
@@ -270,7 +272,12 @@ def expected_native_raw_ambient_policy(
     *,
     plan_schema: str,
     phase: str = "formal",
+    guide_experiment_id: str | None = None,
 ) -> str:
+    if guide_experiment_id == GUIDE12_BATCH1_EXPERIMENT_ID:
+        # GUIDE12 batch 1: measurement frames stay unsubtracted while
+        # diagnostic all-off frames record the ambient+dark term per class.
+        return AMBIENT_POLICY_UNSUBTRACTED_WITH_ALL_OFF_DIAGNOSTIC
     if (
         experiment_id in {TD_B, TD_C}
         and plan_schema == PLAN_SCHEMA_V2

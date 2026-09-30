@@ -287,6 +287,10 @@ def validate_authorized_execution_plan(
     expected_ambient_policy = thermal.expected_native_raw_ambient_policy(
         str(plan.get("experiment_id")),
         plan_schema=str(plan.get("schema")),
+        guide_experiment_id=(
+            None if plan.get("guide_experiment_id") is None
+            else str(plan["guide_experiment_id"])
+        ),
     )
     if plan.get("native_raw_ambient_policy") != expected_ambient_policy:
         raise PermissionError("thermal diagnostic native RAW ambient policy differs")
@@ -297,6 +301,15 @@ def validate_authorized_execution_plan(
     if expected_ambient_policy == raw_validation.AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT:
         if ambient_steps or plan.get("budgets", {}).get("ambient_cap") != 0:
             raise PermissionError("TD-B unsubtracted_no_ambient plan contains ambient evidence")
+    if expected_ambient_policy == (
+        raw_validation.AMBIENT_POLICY_UNSUBTRACTED_WITH_ALL_OFF_DIAGNOSTIC
+    ):
+        if not ambient_steps or plan.get("budgets", {}).get("ambient_cap") != len(ambient_steps):
+            raise PermissionError(
+                "GUIDE12 all-off diagnostic policy requires ambient steps matching ambient_cap"
+            )
+        if any(bool(step.get("formal_measurement")) for step in ambient_steps):
+            raise PermissionError("GUIDE12 all-off diagnostic frames must stay non-formal")
     for step in plan.get("captures", []):
         if "timing_tolerance_s" in step or "actual_elapsed_s" in step:
             raise PermissionError("thermal diagnostic v2 plan contains legacy timing fields")
@@ -374,6 +387,10 @@ def validate_authorized_execution_plan(
         isinstance(authorization, Mapping)
         and authorization.get("schema") == "direct_guide6_strip_exposure_qualification_v1"
     )
+    direct_guide12_batch1 = (
+        isinstance(authorization, Mapping)
+        and authorization.get("schema") == "direct_guide12_batch1_exposure_all_off_v1"
+    )
     direct_guide10_white_microbracket = (
         isinstance(authorization, Mapping)
         and authorization.get("schema") == "direct_guide10_white_mired_microbracket_v1"
@@ -421,6 +438,7 @@ def validate_authorized_execution_plan(
         or direct_f2_scale3072 or direct_guide8_emission_exposure
         or direct_guide9_h300_reference_diag
         or direct_guide6_strip_exposure or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_best or direct_guide9_s25
+        or direct_guide12_batch1
         or direct_guide10_white_microbracket or direct_guide10_white_confirmation
         or direct_guide10_white70_w5
         or direct_guide10_white70_w6
@@ -1347,11 +1365,16 @@ def execute_plan(
         and plan["execution_authorization"].get("schema")
         == "direct_guide6_strip_exposure_qualification_v1"
     )
+    direct_guide12_batch1 = (
+        isinstance(plan.get("execution_authorization"), Mapping)
+        and plan["execution_authorization"].get("schema")
+        == "direct_guide12_batch1_exposure_all_off_v1"
+    )
     if (
         direct_ray_continuous or direct_guide6_target_local or direct_guide7_f2
         or direct_f2_short or direct_f2_scale3072
         or direct_guide8_emission_exposure or direct_guide9_h300_reference_diag
-        or direct_guide6_strip_exposure
+        or direct_guide6_strip_exposure or direct_guide12_batch1
         or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_best or direct_guide9_s25
     ) and source_isolation_check_fn is None:
         raise PermissionError("direct adaptive execution requires its source-isolation check")
@@ -2074,13 +2097,77 @@ def execute_plan(
                 **dict(plan["budgets"]), "formal_cap": expected_formal_count,
             }
             _write_json(root / "adaptive-execution-plan.json", runtime_plan)
+        elif direct_guide12_batch1:
+            # GUIDE12 batch 1: diagnostic exposure ladder + all-off frames.
+            # One command application per class; ladder frames share the class
+            # state at frozen per-frame shutters and spacings. Ambient all-off
+            # frames bracket the batch at the batch's exposure classes.
+            chronology_index = 0
+            active_state = None
+            class_owner_start = None
+            for step in plan["captures"]:
+                if step["capture_role"] == "ambient":
+                    record_gate(str(step["isolation_gate_before"]))
+                    if set_capture_context_fn is not None:
+                        set_capture_context_fn(monotonic_fn())
+                    ensure_physical_capacity()
+                    retain_capture(
+                        step,
+                        dict(capture_fn(step)),
+                        owner_start=None,
+                        chronology_group_index=chronology_index,
+                    )
+                    chronology_index += 1
+                    continue
+                if str(step["state_id"]) != active_state:
+                    record_source_isolation_gate(
+                        f"guide12-batch1-before-{str(step['state_id'])}"
+                    )
+                    applied = dict(apply_command_fn(step))
+                    readback = dict(readback_fn(step))
+                    _append_jsonl(root / "commands.jsonl", {
+                        "at": _utc_now(),
+                        "event": "guide12_batch1_class_command_readback_verified",
+                        "capture_id": step["capture_id"],
+                        "source_id": step["source_id"],
+                        "state_id": step["state_id"],
+                        "exact_command_hash": step["exact_command_hash"],
+                        "dwell_s": float(plan["state_dwell_s"]),
+                        "applied": applied,
+                        "readback": readback,
+                    })
+                    sleep_fn(float(plan["state_dwell_s"]))
+                    active_state = str(step["state_id"])
+                    class_owner_start = monotonic_fn()
+                remaining = (
+                    class_owner_start
+                    + float(step["requested_elapsed_s"])
+                    - monotonic_fn()
+                )
+                if remaining > 0:
+                    sleep_fn(remaining)
+                owner_start = monotonic_fn()
+                if set_capture_context_fn is not None:
+                    set_capture_context_fn(owner_start)
+                ensure_physical_capacity()
+                retain_capture(
+                    step,
+                    dict(capture_fn(step)),
+                    owner_start=owner_start,
+                    chronology_group_index=chronology_index,
+                )
+                chronology_index += 1
+                previous_state = str(step["state_id"])
+                previous_dwell = monotonic_fn() - owner_start
+            runtime_plan = copy.deepcopy(dict(plan))
         else:
             runtime_plan = plan
         for chronology_group_index, item in ([] if (
             direct_guide6_target_local or direct_guide7_f2 or direct_f2_short
             or direct_f2_scale3072 or direct_guide8_emission_exposure
             or direct_guide9_h300_reference_diag
-            or direct_guide6_strip_exposure or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_best or direct_guide9_s25
+            or direct_guide6_strip_exposure or direct_guide12_batch1
+            or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_best or direct_guide9_s25
         ) else enumerate(
             _ledger_groups(str(plan["experiment_id"]), plan["captures"])
         )):
@@ -2470,6 +2557,84 @@ def validate_direct_guide6_strip_exposure_post_capture(
         "capture_count": len(captures),
         "formal_capture_count": 0,
         "classification": evidence.get("classification"),
+    }
+    _write_json(root / "quality.json", quality)
+    return quality
+
+
+def validate_direct_guide12_batch1_post_capture(
+    run_root: str | Path,
+    plan: Mapping[str, Any],
+    runtime_evidence: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    """Validate the GUIDE12 batch-1 ladder + all-off evidence contract.
+
+    Checks the exact capture prefix, per-class fullscale readback evidence,
+    Ray-zero isolation on every strip frame, and per-frame bounded quality
+    outcomes (rail/quality rejections are recorded ladder outcomes, not run
+    failures).
+    """
+    root = Path(run_root).resolve()
+    captures = _load_jsonl_file(root / "captures.jsonl")
+    physical = _load_jsonl_file(root / "physical-returns.jsonl")
+    capture_ids = [str(row.get("capture_id")) for row in captures]
+    if capture_ids != [str(step["capture_id"]) for step in plan["captures"]]:
+        raise ValueError("GUIDE12 batch-1 captures are not the exact frozen plan")
+    if [str(row.get("capture_id")) for row in physical] != capture_ids:
+        raise ValueError("GUIDE12 batch-1 physical returns do not match captures")
+    plan_by_id = {str(step["capture_id"]): step for step in plan["captures"]}
+    ambient_ids = [
+        str(step["capture_id"]) for step in plan["captures"]
+        if step.get("capture_role") == "ambient"
+    ]
+    ladder_ids = [cid for cid in capture_ids if cid not in set(ambient_ids)]
+    for row in captures:
+        step = plan_by_id[str(row.get("capture_id"))]
+        if row.get("plan_step") != step:
+            raise ValueError(f"GUIDE12 batch-1 plan step drifted: {step['capture_id']}")
+        capture = row.get("capture")
+        if not isinstance(capture, Mapping):
+            raise ValueError(f"GUIDE12 batch-1 capture lacks its payload: {step['capture_id']}")
+        if step.get("capture_role") != "ambient":
+            ray_zero = capture.get("ray_zero_before_capture")
+            ray_data = (
+                ray_zero.get("data")
+                or ((ray_zero.get("response") or {}).get("data"))
+                if isinstance(ray_zero, Mapping) else None
+            )
+            if not isinstance(ray_data, Mapping) or int(ray_data.get("intensity", -1)) != 0:
+                raise ValueError(
+                    f"GUIDE12 batch-1 strip frame lacks verified Ray-zero evidence: "
+                    f"{step['capture_id']}"
+                )
+    commands = _load_jsonl_file(root / "commands.jsonl")
+    class_events = [
+        row for row in commands
+        if row.get("event") == "guide12_batch1_class_command_readback_verified"
+    ]
+    if len(class_events) != 3:
+        raise ValueError("GUIDE12 batch-1 expects exactly three class command events")
+    for event in class_events:
+        snapshot = (event.get("readback") or {}).get("device_snapshot") or {}
+        channels = ["cold_white", "warm_white", "red", "green", "blue"]
+        values = [int(snapshot.get(name, -1)) for name in channels]
+        if max(values) != 4095:
+            raise ValueError(
+                "GUIDE12 batch-1 class command readback is not actual-fullscale: "
+                f"{event.get('state_id')}"
+            )
+    run = _load_json_file(root / "run.json")
+    if run.get("status") != "complete" or run.get("cleanup") != "pass":
+        raise ValueError("GUIDE12 batch-1 run did not complete with passing cleanup")
+    quality = {
+        "schema": "guide12_batch1_exposure_all_off_quality_v1",
+        "status": "pass",
+        "capture_count": len(captures),
+        "ambient_capture_count": len(ambient_ids),
+        "ladder_capture_count": len(ladder_ids),
+        "class_command_events": len(class_events),
+        "formal_capture_count": 0,
+        "note": "qualification frames are diagnostics; not independent model acceptance",
     }
     _write_json(root / "quality.json", quality)
     return quality
@@ -3146,6 +3311,11 @@ def run_authorized_plan(
         and plan["execution_authorization"].get("schema")
         == "direct_guide6_strip_exposure_qualification_v1"
     )
+    direct_guide12_batch1 = (
+        isinstance(plan.get("execution_authorization"), Mapping)
+        and plan["execution_authorization"].get("schema")
+        == "direct_guide12_batch1_exposure_all_off_v1"
+    )
     direct_guide9_best = (
         isinstance(plan.get("execution_authorization"), Mapping)
         and plan["execution_authorization"].get("schema") in GUIDE9_BEST_REPEAT_SCHEMAS
@@ -3327,7 +3497,8 @@ def run_authorized_plan(
         elif (
             direct_strip_history or direct_td_c_fast_endpoint
             or direct_guide6_target_local or direct_guide7_f2 or direct_f2_short
-            or direct_f2_scale3072 or direct_guide6_strip_exposure or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_best or direct_guide9_s25
+            or direct_f2_scale3072 or direct_guide6_strip_exposure or direct_guide12_batch1
+            or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_best or direct_guide9_s25
         ):
             ray_zero_evidence = ray120c.set_cct(5600, intensity=0, gm=100)
             ray_readback = ray120c.get_cct()
@@ -3359,6 +3530,8 @@ def run_authorized_plan(
                 "native_raw_ambient_policy": plan["native_raw_ambient_policy"],
             },
         }
+        if source == "ambient" and step.get("ambient_shutter_speed") is not None:
+            raw_step["ambient_shutter_speed"] = str(step["ambient_shutter_speed"])
         captured_result = raw_capture(raw_step)
         if not isinstance(captured_result, Mapping):
             raise RuntimeError("timed RAW capture adapter returned malformed result")
@@ -3383,6 +3556,7 @@ def run_authorized_plan(
             direct_guide8_emission_exposure or direct_guide9_h300_reference_diag
             or direct_f2_short
             or direct_f2_scale3072 or direct_guide6_strip_exposure
+            or direct_guide12_batch1
             or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_s25
         ):
             from camera_based_rgbww_optimizer.measurement.recorded_exposure import (
@@ -3494,6 +3668,7 @@ def run_authorized_plan(
                     direct_guide8_emission_exposure
                     or direct_guide9_h300_reference_diag
                     or direct_guide6_strip_exposure
+                    or direct_guide12_batch1
                 ):
                     failure_names = set()
                     for item in exc.rejected:
@@ -3504,6 +3679,10 @@ def run_authorized_plan(
                             failure_names.add("clipping")
                         if float(metrics.get("near_noise_floor_fraction", 0.0)) > 0:
                             failure_names.add("near_noise")
+                        if float(metrics.get("near_white_rail_fraction", 0.0) or 0.0) > 0:
+                            failure_names.add("near_white_rail")
+                        if metrics.get("white_rail_plateau"):
+                            failure_names.add("white_rail_plateau")
                     output["direct_quality"] = {
                         "status": "near_noise_only" if exc.weak_signal_only else "rejected",
                         "feature_count": 0, "required_feature_count": len(feature_ids),
@@ -3541,7 +3720,8 @@ def run_authorized_plan(
         if (
             direct_strip_history or direct_guide6_target_local or direct_guide7_f2
             or direct_f2_short or direct_f2_scale3072
-            or direct_guide6_strip_exposure or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_s25
+            or direct_guide6_strip_exposure or direct_guide12_batch1
+            or direct_guide9_scale_age or direct_guide9_s50 or direct_guide9_s25
         ):
             ray_set = ray120c.set_cct(5600, intensity=0, gm=100)
             ray_readback = ray120c.get_cct()
@@ -3587,6 +3767,10 @@ def run_authorized_plan(
             return validate_direct_guide6_strip_exposure_post_capture(
                 run_root, frozen_plan, runtime_evidence,
             )
+        if schema == "direct_guide12_batch1_exposure_all_off_v1":
+            return validate_direct_guide12_batch1_post_capture(
+                run_root, frozen_plan, runtime_evidence,
+            )
         if schema == "direct_guide8_ray_emission_exposure_v1":
             return validate_direct_guide8_post_capture(run_root, frozen_plan, runtime_evidence)
         if schema == "direct_guide9_h300_reference_emission_path_diag_v1":
@@ -3620,7 +3804,7 @@ def run_authorized_plan(
                 or direct_f2_scale3072 or direct_guide8_emission_exposure
                 or direct_guide9_h300_reference_diag or direct_guide9_scale_age
                 or direct_guide9_s50 or direct_guide9_best or direct_guide9_s25
-                or direct_guide6_strip_exposure
+                or direct_guide6_strip_exposure or direct_guide12_batch1
             )
             else None
         ),

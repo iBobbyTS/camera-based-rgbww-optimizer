@@ -159,3 +159,179 @@ def secant_sensitivity_fit(
         ],
         "algebra": "A=u-u0, B=r(u)-r(u0), single frozen base observation",
     }
+
+# ---------------------------------------------------------------------------
+# GUIDE12 batch 1: native exposure qualification + all-off environment frames
+# ---------------------------------------------------------------------------
+
+BATCH1_AUTHORIZATION_SCHEMA = "direct_guide12_batch1_exposure_all_off_v1"
+BATCH1_VARIANT = "guide12-batch1-exposure-all-off"
+BATCH1_STATE_DWELL_S = 120
+
+# Frozen qualification ladders: fastest stop first so the very first frame of
+# each class is the safest predicted exposure, then adjacent stops. The white
+# class uses the W2-adopted 2300/100 command (actual readback 0/4095/1965/312/0).
+BATCH1_CLASSES: tuple[dict[str, Any], ...] = (
+    {
+        "state_id": "B1_R4095",
+        "label": "fullscale_red",
+        "command": {"cw": 0, "ww": 0, "r": 4095, "g": 0, "b": 0},
+        "ladder": ("1/500", "1/400", "1/320"),
+    },
+    {
+        "state_id": "B1_B4095",
+        "label": "fullscale_blue",
+        "command": {"cw": 0, "ww": 0, "r": 0, "g": 0, "b": 4095},
+        "ladder": ("1/500", "1/400", "1/320"),
+    },
+    {
+        "state_id": "B1_WHITE2300",
+        "label": "high_white_load",
+        "command": {"cw": 0, "ww": 4095, "r": 1965, "g": 312, "b": 0},
+        "ladder": ("1/10", "1/8", "1/6"),
+    },
+)
+BATCH1_ALL_OFF_SHUTTERS = ("1/400", "1/8")
+
+
+def build_guide12_batch1_plan() -> dict[str, Any]:
+    """Assemble the frozen GUIDE12 batch-1 execution plan.
+
+    13 physical CR3 frames: 2 start all-off + 3 classes x 3-stop ladders +
+    2 end all-off. Ladder frames are diagnostics at frozen shutters sharing
+    one command application per class; all-off frames record the ambient+dark
+    term per exposure class without any subtraction.
+    """
+    from camera_based_rgbww_optimizer.optimization import p7_thermal_diagnostics as thermal
+    from camera_based_rgbww_optimizer.optimization.measure_raw_observer_validation import (
+        AMBIENT_POLICY_UNSUBTRACTED_WITH_ALL_OFF_DIAGNOSTIC,
+    )
+
+    captures: list[dict[str, Any]] = []
+    off_hash = thermal.canonical_sha256({"strip": "off", "ray": "off"})
+
+    def add_ambient(position: str, shutter: str) -> None:
+        slug = shutter.replace("/", "over")
+        captures.append({
+            "capture_id": f"{len(captures):03d}-ambient-alloff-{position}-{slug}",
+            "source_id": "ambient", "state_id": "ambient",
+            "command": None, "exact_command_hash": off_hash,
+            "requested_elapsed_s": None, "timing_acceptance": None,
+            "timing_status": "diagnostic_not_timed", "formal_measurement": False,
+            "capture_role": "ambient", "ambient_position": position,
+            "ambient_shutter_speed": shutter, "nominal_shutter": shutter,
+            "isolation_gate_before": f"guide12_batch1_alloff_{position}_{slug}",
+            "all_off_diagnostic": True,
+        })
+
+    for shutter in BATCH1_ALL_OFF_SHUTTERS:
+        add_ambient("start", shutter)
+    for klass in BATCH1_CLASSES:
+        command = dict(klass["command"])
+        command_hash = thermal.canonical_sha256(command)
+        for index, shutter in enumerate(klass["ladder"]):
+            slug = shutter.replace("/", "over")
+            captures.append({
+                "capture_id": f"{len(captures):03d}-strip-{klass['label']}-{slug}",
+                "source_id": "strip", "state_id": klass["state_id"],
+                "command": command, "exact_command_hash": command_hash,
+                "requested_elapsed_s": 120 + 15 * index,
+                "timing_acceptance": "diagnostic_not_formal",
+                "timing_status": "diagnostic_not_timed",
+                "formal_measurement": False, "capture_role": "diagnostic",
+                "nominal_shutter": shutter,
+                "exposure_cache_key": f"guide12-b1-{klass['label']}-{slug}",
+                "ray_zero_required": True,
+                "ladder_class": klass["label"], "ladder_index": index,
+            })
+    for shutter in BATCH1_ALL_OFF_SHUTTERS:
+        add_ambient("end", shutter)
+
+    frozen = {
+        str(step["exposure_cache_key"]): str(step["nominal_shutter"])
+        for step in captures
+        if step.get("exposure_cache_key") is not None
+    }
+    ambient_count = sum(1 for step in captures if step["capture_role"] == "ambient")
+    ladder_count = len(captures) - ambient_count
+    return {
+        "schema": thermal.PLAN_SCHEMA_V2,
+        "status": "execute_authorized",
+        "experiment_id": thermal.TD_C,
+        "guide_experiment_id": thermal.GUIDE12_BATCH1_EXPERIMENT_ID,
+        "variant": BATCH1_VARIANT,
+        "stage": "GUIDE12-BATCH1-EXPOSURE-ALL-OFF",
+        "phase": "diagnostic",
+        "source": "guide12_batch1_frozen_ladder",
+        "created_at": thermal.datetime.now(thermal.timezone.utc).isoformat(),
+        "inputs": {
+            "location": thermal.file_reference(thermal.LOCATION_PATH),
+            "policy": thermal.file_reference(thermal.POLICY_PATH),
+            "observer": thermal.file_reference(thermal.OBSERVER_PATH),
+            "code_duty_curve": thermal.file_reference(thermal.CURVE_PATH),
+        },
+        "captures": captures,
+        "capture_ids": [str(step["capture_id"]) for step in captures],
+        "timing_contract": thermal.timing_contract(2),
+        "timing_resolution": "guide12_batch1_apply_D120",
+        "state_dwell_s": BATCH1_STATE_DWELL_S,
+        "cold_proxy": 600,
+        "cold_proxy_wait_s": 600,
+        "native_raw_ambient_policy": AMBIENT_POLICY_UNSUBTRACTED_WITH_ALL_OFF_DIAGNOSTIC,
+        "exposure_setup_required": [],
+        "frozen_shutters": frozen,
+        "shutter_ledger_provenance": {
+            "owner": "experiment_capture_steps",
+            "required_cache_keys": sorted(frozen),
+            "frozen_shutters_sha256": thermal.canonical_sha256(frozen),
+        },
+        "budgets": {
+            "formal_cap": 0,
+            "diagnostic_cap": ladder_count,
+            "ambient_cap": ambient_count,
+            "physical_cr3_cap": len(captures),
+            "setup_physical_cr3_cap": 0,
+            "retry": 0,
+        },
+        "execution_authorization": {
+            "schema": BATCH1_AUTHORIZATION_SCHEMA,
+            "human_authorization_required": False,
+            "human_authorization_verified": False,
+            "device_use_granted_by": "operator_cli_allow_device_control",
+            "experiment_id": thermal.GUIDE12_BATCH1_EXPERIMENT_ID,
+            "bounded_device_scope": True,
+            "remote_v2_capability": True,
+        },
+        "camera": {
+            "backend": "remote",
+            "v2_capture_timing_capability_available": True,
+            "v2_capture_capability": "remote_v2_capture_timing_v1",
+            "resolved_capture_settings": {
+                "owner": "remote_backend.resolve_capture_settings",
+                "iso": "100", "aperture": "f/4", "image_format": "RAW",
+            },
+        },
+        "analysis_contract": {
+            "method": "guide12_native_exposure_qualification_with_all_off",
+            "classes": [
+                {"label": k["label"], "state_id": k["state_id"],
+                 "command": dict(k["command"]), "ladder": list(k["ladder"])}
+                for k in BATCH1_CLASSES
+            ],
+            "all_off_shutters": list(BATCH1_ALL_OFF_SHUTTERS),
+            "rail_rule": (
+                "plane disqualified by near_white_rail_fraction > 0.05 or "
+                "white_rail_plateau at effective_white_level - 2 DN; "
+                "qualification requires adjacent-stop exposure-normalized "
+                "consistency of the main planes"
+            ),
+            "selected_member": "faster",
+            "qualification_frames_not_model_acceptance": True,
+            "no_ambient_subtraction": True,
+            "steady_claim": False,
+        },
+        "cleanup": {
+            "python_finally": "required",
+            "shell_trap": "EXIT_INT_TERM_HUP_required",
+        },
+    }

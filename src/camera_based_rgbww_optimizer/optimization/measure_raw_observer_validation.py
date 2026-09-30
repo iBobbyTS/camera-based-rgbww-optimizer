@@ -48,9 +48,17 @@ PhysicalReturnObserver = Callable[
 
 AMBIENT_POLICY_REQUIRE_PRECEDING = "require_preceding_ambient"
 AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT = "unsubtracted_no_ambient"
+# GUIDE12 (2026-09-29): measurement frames stay unsubtracted while dedicated
+# all-off diagnostic frames measure the ambient+dark term per exposure class.
+# Ambient frames are diagnostic-only evidence; they are never subtracted from
+# measurement frames under this policy.
+AMBIENT_POLICY_UNSUBTRACTED_WITH_ALL_OFF_DIAGNOSTIC = (
+    "unsubtracted_with_all_off_diagnostic"
+)
 AMBIENT_POLICIES = frozenset((
     AMBIENT_POLICY_REQUIRE_PRECEDING,
     AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+    AMBIENT_POLICY_UNSUBTRACTED_WITH_ALL_OFF_DIAGNOSTIC,
 ))
 TD_B_FORMAL_AMBIENT_POLICY_OWNER = {
     "experiment_id": "p7_td_b_command_switch_history_v1",
@@ -76,7 +84,10 @@ def validate_native_raw_ambient_policy(
     """Validate the shared RAW owner's sole no-ambient exception."""
     if ambient_policy not in AMBIENT_POLICIES:
         raise ValueError(f"unknown native RAW ambient policy: {ambient_policy}")
-    if ambient_policy == AMBIENT_POLICY_REQUIRE_PRECEDING:
+    if ambient_policy in (
+        AMBIENT_POLICY_REQUIRE_PRECEDING,
+        AMBIENT_POLICY_UNSUBTRACTED_WITH_ALL_OFF_DIAGNOSTIC,
+    ):
         return ambient_policy
     if dict(policy_owner or {}) not in UNSUBTRACTED_FORMAL_AMBIENT_POLICY_OWNERS:
         raise PermissionError(
@@ -400,6 +411,14 @@ def execute_raw_observer_validation_plan(
     return root
 
 
+def ambient_shutter_for_step(
+    step: Mapping[str, Any], default_shutter: str = "30"
+) -> str:
+    """GUIDE12 all-off diagnostics carry their exposure class on the step."""
+    step_shutter = step.get("ambient_shutter_speed")
+    return default_shutter if step_shutter is None else str(step_shutter)
+
+
 def build_native_raw_capture_step_fn(
     *,
     camera_dir: str | Path,
@@ -506,7 +525,7 @@ def build_native_raw_capture_step_fn(
                 settings=camera_gphoto2.CaptureSettings(
                     iso=iso,
                     aperture=aperture,
-                    shutter_speed=ambient_shutter_speed,
+                    shutter_speed=ambient_shutter_for_step(step, ambient_shutter_speed),
                     image_format=image_format,
                 ),
                 timeout=120.0,
