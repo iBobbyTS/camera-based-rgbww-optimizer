@@ -2623,9 +2623,11 @@ def validate_direct_guide12_batch1_post_capture(
                 "GUIDE12 batch-1 class command readback is not actual-fullscale: "
                 f"{event.get('state_id')}"
             )
-    run = _load_json_file(root / "run.json")
-    if run.get("status") != "complete" or run.get("cleanup") != "pass":
-        raise ValueError("GUIDE12 batch-1 run did not complete with passing cleanup")
+    # The post-capture validator runs inside execute_plan's try block, before
+    # the finally block writes the terminal run state, so run.json cannot be
+    # consulted here; run-level completion and cleanup remain execute_plan's
+    # own responsibility (2026-09-30 batch-1 recovery: the premature status
+    # check rejected a fully captured, cleanly cleaned-up run).
     quality = {
         "schema": "guide12_batch1_exposure_all_off_quality_v1",
         "status": "pass",

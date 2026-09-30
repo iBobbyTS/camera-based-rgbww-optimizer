@@ -648,5 +648,59 @@ class Batch1PlanTests(unittest.TestCase):
         self.assertEqual(ambient_shutter_for_step({"ambient_shutter_speed": 8}, "30"), "8")
 
 
+class Batch1ValidatorOrderingTests(unittest.TestCase):
+    """2026-09-30 recovery regression: the post-capture validator runs before
+    execute_plan writes the terminal run state, so it must not consult
+    run.json's status/cleanup; a fully captured root with run.json still
+    "running" must validate."""
+
+    def _synthetic_root(self, tmp: Path, plan):
+        import json
+
+        root = tmp / "run"
+        root.mkdir()
+        with open(root / "captures.jsonl", "w", encoding="utf-8") as fh:
+            for step in plan["captures"]:
+                capture = {"saved_file": "fake.cr3"}
+                if step["capture_role"] != "ambient":
+                    capture["ray_zero_before_capture"] = {"data": {"intensity": 0}}
+                fh.write(json.dumps({
+                    "capture_id": step["capture_id"],
+                    "plan_step": step,
+                    "capture": capture,
+                }) + chr(10))
+        with open(root / "physical-returns.jsonl", "w", encoding="utf-8") as fh:
+            for step in plan["captures"]:
+                fh.write(json.dumps({"capture_id": step["capture_id"]}) + chr(10))
+        with open(root / "commands.jsonl", "w", encoding="utf-8") as fh:
+            for state in ("B1_R4095", "B1_B4095", "B1_WHITE2300"):
+                fh.write(json.dumps({
+                    "event": "guide12_batch1_class_command_readback_verified",
+                    "state_id": state,
+                    "readback": {"device_snapshot": {
+                        "cold_white": 0, "warm_white": 4095, "red": 4095,
+                        "green": 312, "blue": 4095,
+                    }},
+                }) + chr(10))
+        (root / "run.json").write_text(json.dumps({"status": "running"}), encoding="utf-8")
+        return root
+
+    def test_validator_passes_while_run_state_pending(self):
+        import json
+        import tempfile
+
+        from camera_based_rgbww_optimizer.optimization.measure_p7_thermal_diagnostics import (
+            validate_direct_guide12_batch1_post_capture,
+        )
+
+        plan = guide12.build_guide12_batch1_plan()
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = self._synthetic_root(Path(tmp_dir), plan)
+            quality = validate_direct_guide12_batch1_post_capture(root, plan, None)
+            self.assertEqual(quality["status"], "pass")
+            written = json.loads((root / "quality.json").read_text(encoding="utf-8"))
+            self.assertEqual(written["capture_count"], 13)
+
+
 if __name__ == "__main__":
     unittest.main()
