@@ -823,13 +823,18 @@ def build_guide12_w12_block_plan(
     inputs_references: Mapping[str, Mapping[str, Any]] | None = None,
     predicted_raw_max: Mapping[str, float] | None = None,
     command_budget: Mapping[str, Any] | None = None,
+    strip_shutter: str | None = None,
 ) -> dict[str, Any]:
     """One W12-1 local block: Ray before, strip candidates, Ray after.
 
     Every observation is its own FAST state (unique state_id -> independent
-    off600 reset, exact command, 120 s dwell). Strip candidates use the
-    batch-1 white-line anchor 1/100; Ray references reuse the frozen W2
-    per-(cct, gm) shutter table.
+    off600 reset, exact command, 120 s dwell). Strip candidates default to
+    the batch-1 white-line anchor 1/100; ``strip_shutter`` overrides it for
+    a whole block when the offline exposure pre-check trips the ceiling for
+    a brighter node (the override is frozen before the block runs - the
+    white point is chromaticity from same-shutter plane ratios, so a faster
+    stop changes exposure, not the measurand). Ray references reuse the
+    frozen W2 per-(cct, gm) shutter table.
     """
     import copy
 
@@ -839,6 +844,7 @@ def build_guide12_w12_block_plan(
     )
 
     cct, gm = int(node["cct"]), int(node["gm"])
+    resolved_strip_shutter = str(strip_shutter or W12_STRIP_SHUTTER)
     if not 1 <= len(candidates) <= W12_CANDIDATES_PER_BLOCK:
         raise ValueError(
             "GUIDE12 W12 block needs 1..4 strip candidates, got "
@@ -901,7 +907,7 @@ def build_guide12_w12_block_plan(
             "timing_acceptance": "observed_elapsed_record_only",
             "formal_measurement": True, "capture_role": "formal",
             "session_index": len(captures) + 1,
-            "nominal_shutter": W12_STRIP_SHUTTER,
+            "nominal_shutter": resolved_strip_shutter,
             "exposure_cache_key": strip_cache_key,
             "ray_zero_required": True,
             "candidate_tag": str(candidate["tag"]),
@@ -1004,7 +1010,12 @@ def build_guide12_w12_block_plan(
             "new_unique_commands_in_block": new_unique,
             "command_budget": dict(command_budget or {}),
             "predicted_raw_max_at_strip_shutter": ceiling_check,
-            "strip_shutter": W12_STRIP_SHUTTER,
+            "strip_shutter": resolved_strip_shutter,
+            "strip_shutter_default": W12_STRIP_SHUTTER,
+            "strip_shutter_override_reason": (
+                None if resolved_strip_shutter == W12_STRIP_SHUTTER else
+                "offline exposure pre-check exceeded the raw-max ceiling at the default anchor"
+            ),
             "strip_shutter_secondary": W12_STRIP_SHUTTER_SECONDARY,
             "ray_shutter_key": ray_key,
             "reference_rule": (

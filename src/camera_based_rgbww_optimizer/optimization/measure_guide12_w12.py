@@ -27,6 +27,16 @@ def _reference(path: Path) -> dict[str, Any]:
     return {"path": str(path.resolve()), "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
 
 
+def _shutter_seconds(shutter: str | None) -> float:
+    if shutter is None:
+        return 0.01
+    numerator, _, denominator = shutter.partition("/")
+    value = float(numerator) / float(denominator) if denominator else float(numerator)
+    if value <= 0:
+        raise ValueError(f"invalid strip shutter: {shutter}")
+    return value
+
+
 def _duty_sum(command: Mapping[str, int]) -> float:
     curve = json.loads(thermal.CURVE_PATH.read_text(encoding="utf-8"))
     return float(sum(thermal.strip_duty(dict(command), curve).values()))
@@ -82,6 +92,11 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--gm", type=int, required=True)
     parser.add_argument("--block-index", type=int, default=1)
     parser.add_argument(
+        "--strip-shutter", default=None,
+        help="node-level strip shutter override (e.g. 1/125) when the offline"
+             " exposure pre-check trips the raw-max ceiling at the 1/100 anchor",
+    )
+    parser.add_argument(
         "--candidates-json", type=Path,
         help="step-block candidates (list of {tag, command, role, new_unique_command});"
              " default builds the frozen probe block for the node",
@@ -115,8 +130,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         candidates = json.loads(args.candidates_json.read_text(encoding="utf-8"))
     else:
         candidates = guide12_w12_probe_candidates(node["base_command"])
+    shutter_seconds = _shutter_seconds(args.strip_shutter)
     predictions = predicted_raw_max_at_block_shutter(
         args.w2_root, str(node["base_capture_id"]), node["base_command"], candidates,
+        shutter_seconds=shutter_seconds,
     )
     block = build_guide12_w12_block_plan(
         node, candidates,
@@ -126,6 +143,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "w2_root": {"path": str(args.w2_root.resolve())},
         },
         predicted_raw_max=predictions,
+        strip_shutter=args.strip_shutter,
         command_budget={
             "unique_command_cap": queue["unique_command_cap"],
             "unique_command_expanded_cap": queue["unique_command_expanded_cap"],
