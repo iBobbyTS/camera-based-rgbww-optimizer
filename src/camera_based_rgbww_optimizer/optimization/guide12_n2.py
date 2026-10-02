@@ -23,6 +23,7 @@ from camera_based_rgbww_optimizer.optimization.guide12 import (
 )
 from camera_based_rgbww_optimizer.optimization.measure_raw_observer_validation import (
     AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+    AMBIENT_POLICY_UNSUBTRACTED_WITH_ALL_OFF_DIAGNOSTIC,
 )
 
 N2_EXPERIMENT_ID = "GUIDE12_N2_REPEATABILITY_V1"
@@ -280,7 +281,10 @@ def build_guide12_n2_session_plan(
         "timing_resolution": "guide12_n2_reset600_D120",
         "cold_proxy": 600,
         "cold_proxy_wait_s": 600,
-        "native_raw_ambient_policy": AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+        "native_raw_ambient_policy": (
+            AMBIENT_POLICY_UNSUBTRACTED_WITH_ALL_OFF_DIAGNOSTIC
+            if session_index == 1 else AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT
+        ),
         "exposure_setup_required": [],
         "frozen_shutters": frozen,
         "shutter_ledger_provenance": {

@@ -140,6 +140,33 @@ class Guide12N2SessionPlanTests(unittest.TestCase):
             "direct_guide12_n2_repeatability_v1",
         )
 
+    def test_ambient_policy_matches_ambient_frames(self):
+        from camera_based_rgbww_optimizer.optimization.measure_raw_observer_validation import (
+            AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+            AMBIENT_POLICY_UNSUBTRACTED_WITH_ALL_OFF_DIAGNOSTIC,
+        )
+        plan1 = build_guide12_n2_session_plan(1, hsi_ray_shutters=HSI_SHUTTERS)
+        self.assertEqual(
+            plan1["native_raw_ambient_policy"],
+            AMBIENT_POLICY_UNSUBTRACTED_WITH_ALL_OFF_DIAGNOSTIC,
+        )
+        self.assertEqual(
+            plan1["budgets"]["ambient_cap"],
+            sum(
+                1 for c in plan1["captures"]
+                if c.get("capture_role") == "ambient"
+            ),
+        )
+        for later in (2, 3):
+            plan = build_guide12_n2_session_plan(
+                later, hsi_ray_shutters=HSI_SHUTTERS
+            )
+            self.assertEqual(
+                plan["native_raw_ambient_policy"],
+                AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+            )
+            self.assertEqual(plan["budgets"]["ambient_cap"], 0)
+
     def test_predicted_raw_max_ceiling_is_fail_closed(self):
         with self.assertRaisesRegex(ValueError, "pre-check ceiling"):
             build_guide12_n2_session_plan(
