@@ -159,6 +159,20 @@ class Guide12N2LadderPlanTests(unittest.TestCase):
         self.assertEqual(h0, ["1/1000", "1/2000", "1/4000"])
         self.assertEqual(plan["budgets"]["formal_cap"], 6)
 
+    def test_ladder_can_narrow_to_one_hue_and_stops_for_retries(self):
+        plan = build_guide12_n2_hsi_ladder_plan(
+            hues=(240,), stops=("1/1000", "1/2000")
+        )
+        steps = plan["captures"]
+        self.assertEqual(len(steps), 2)
+        self.assertTrue(all("h240" in c["capture_id"] for c in steps))
+        self.assertEqual(
+            [c["nominal_shutter"] for c in steps], ["1/1000", "1/2000"]
+        )
+        self.assertEqual(
+            plan["analysis_contract"]["hues"], [240],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

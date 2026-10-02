@@ -343,20 +343,25 @@ def build_guide12_n2_session_plan(
 
 def build_guide12_n2_hsi_ladder_plan(
     *,
+    hues: Sequence[int] = (0, 240),
+    stops: Sequence[str] = N2_HSI_LADDER_STOPS,
     inputs_references: Mapping[str, Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Ray HSI shutter ladder for the two color states (qualification budget).
 
     Three stops per hue bracketing the white-anchor order of magnitude; the
-    ladder frames are diagnostics - the selected stop is frozen into the
-    session plan and the selection evidence is archived beside it.
+    ladder frames are real FAST observations (formal timing identity); the
+    selected stop is frozen into the session plan and the selection evidence
+    is archived beside it. ``hues``/``stops`` narrow a retry to the states a
+    prior ladder attempt could not cover (fail-closed observer gates stop
+    the run at the first rejected frame).
     """
     captures: list[dict[str, Any]] = []
     frozen: dict[str, str] = {}
     for state in N2_STATES:
-        if state["ray_mode"] != "hsi":
+        if state["ray_mode"] != "hsi" or int(state["ray_hue"]) not in set(int(h) for h in hues):
             continue
-        for stop in N2_HSI_LADDER_STOPS:
+        for stop in stops:
             cache_key = f"n2-ladder-ray-hsi-h{state['ray_hue']}-s100-{stop.replace('/', '')}"
             frozen[cache_key] = stop
             command = _ray_command(state)
@@ -438,7 +443,8 @@ def build_guide12_n2_hsi_ladder_plan(
         "analysis_contract": {
             "method": "guide12_n2_hsi_shutter_ladder",
             "design": "guide12_n2_design_frozen_20261002",
-            "stops": list(N2_HSI_LADDER_STOPS),
+            "stops": [str(s) for s in stops],
+            "hues": [int(h) for h in hues],
             "note": "diagnostics; selected stop frozen into the session plan",
         },
     }

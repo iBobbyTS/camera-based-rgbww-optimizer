@@ -8,6 +8,7 @@ from typing import Any, Mapping, Sequence
 
 from camera_based_rgbww_optimizer.control import camera_remote
 from camera_based_rgbww_optimizer.optimization.guide12_n2 import (
+    N2_HSI_LADDER_STOPS,
     build_guide12_n2_hsi_ladder_plan,
     build_guide12_n2_session_plan,
 )
@@ -40,6 +41,16 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         help="JSON mapping N2 strip state keys to predicted raw maxima (DN); "
              "any value over the ceiling aborts the build (fail-closed)",
     )
+    parser.add_argument(
+        "--ladder-hue", type=int, action="append", default=None,
+        help="restrict an hsi-ladder run to these Ray hues (repeatable); "
+             "default both 0 and 240",
+    )
+    parser.add_argument(
+        "--ladder-stop", action="append", default=None,
+        help="restrict an hsi-ladder run to these stops (repeatable); "
+             "default 1/1000 1/2000 1/4000",
+    )
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--run-name", required=True)
     mode = parser.add_mutually_exclusive_group(required=True)
@@ -64,7 +75,13 @@ def main(argv: Sequence[str] | None = None) -> int:
             raise SystemExit(
                 "GUIDE12 N2 ladder derives the HSI shutters; do not pass them"
             )
-        plan = build_guide12_n2_hsi_ladder_plan()
+        plan = build_guide12_n2_hsi_ladder_plan(
+            hues=tuple(args.ladder_hue) if args.ladder_hue else (0, 240),
+            stops=(
+                tuple(args.ladder_stop) if args.ladder_stop
+                else N2_HSI_LADDER_STOPS
+            ),
+        )
     else:
         if not args.hsi_ray_shutter_h0 or not args.hsi_ray_shutter_h240:
             raise SystemExit(
