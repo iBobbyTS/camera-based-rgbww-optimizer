@@ -150,14 +150,14 @@ class Guide12N2SessionPlanTests(unittest.TestCase):
 
 
 class Guide12N2LadderPlanTests(unittest.TestCase):
-    def test_ladder_plan_is_diagnostic_only_with_three_stops_per_hue(self):
+    def test_ladder_plan_is_formal_with_three_stops_per_hue(self):
         plan = build_guide12_n2_hsi_ladder_plan()
         steps = plan["captures"]
         self.assertEqual(len(steps), 6)
-        self.assertTrue(all(c["capture_role"] == "diagnostic" for c in steps))
+        self.assertTrue(all(c["capture_role"] == "formal" for c in steps))
         h0 = [c["nominal_shutter"] for c in steps if "h0" in c["capture_id"]]
         self.assertEqual(h0, ["1/1000", "1/2000", "1/4000"])
-        self.assertEqual(plan["budgets"]["formal_cap"], 0)
+        self.assertEqual(plan["budgets"]["formal_cap"], 6)
 
 
 if __name__ == "__main__":
