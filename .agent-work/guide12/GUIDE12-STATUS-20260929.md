@@ -44,19 +44,19 @@ Mac 路径数据依赖，非本次改动引入）。
    z 敏感性 ≤0.0032，不改判定。工程记录：事后校验器时序 bug 一次（恢复未重拍）；分析脚本
    g_corr 漏项一次修正。派生：`guide12-batch1/derived/b1-exposure-qualification-20260930.json`。
 2. **N2 重复性**：4白光状态+2极端彩光满幅，3会话×2循环×2源=72 主观测+12 burst；风险转移≤24。
-3. **W12-1（进行中，2026-09-30）**：开放队列已从新鲜配对审计冻结——18 开放节点/7 通过/1800/100 关闭，
-   次序：3200/0 → 1800/70 → 2000/100 → 冷端（E 降序）→ 其余（E 降序）。实现：
+3. **W12-1（已完成，2026-10-02）**：开放队列 18 节点全部处理——**17 qualified + 20000/0
+   reference/operating_limited**（修正链至 E=0.0748 但认证被 20000K Ray 间歇漂移阻断，留 W12-2 复测）。
+   结果与方法库沉淀 → `guide12/GUIDE12-W12-RESULT-20260930.md`。实现：
    `optimization/guide12.py`（`build_guide12_w12_open_queue`/`guide12_w12_probe_candidates`/
    `solve_guide12_w12_face_step`/`build_guide12_w12_block_plan`）+ 执行 CLI
    `optimization/measure_guide12_w12.py` + 运行器 W12 路由与事后校验器
    （`direct_guide12_w12_fullscale_bounded_v1`）。face 步为共享
    `bounded_least_squares` 盒约束枚举解（(mired,duv) 子空间求解、K/mired 不当独立秩、
    face 通道锁定、单步≤768 码、就近取整后夹回盒内）；探针设计 = u0 复测 + 3 个
-   单轴 +768 码探针（对面白/蓝/红优先，绿最后）。strip 快门冻结 1/100（批次1白线），
-   Ray 快门沿用 W2 冻结表；离线曝光预检（duty 比例缩放 W2 实测 raw max，上限 15000 DN）。
+   单轴 +768 码探针（对面白/蓝/红优先，绿最后）。strip 快门冻结 1/100（批次1白线）+
+   节点级 1/125 覆盖（预检超限时，白点为同快门比值导出量）；Ray 快门沿用 W2 冻结表；
+   离线曝光预检（duty 比例缩放 W2 实测 raw max，上限 15000 DN）。
    块结构：Ray before + ≤4 strip 候选 + Ray after，各观测独立 FAST off600→命令120→capture。
-   首块：3200/0 block1（u0 {ww4095,cw24,r157,g10,b712}，E=10.288，ww face；
-   预测 raw max ≤10383 DN @1/100）。
 4. **C12-1**：Ray HSI 真映射（真 HSI S0 作 SAT0；Ray 自反解留出≥10；映射预算 Hue0.5°/SAT0.5pp）。
 5. W12-2/3/4、C12-2..5 按 GUIDE12 §4/§5。
 6. 阶段结束交付 `GUIDE12-COMPLETE-PROCESSED-EVIDENCE-<日期>.zip`（合同：
