@@ -58,6 +58,7 @@ GUIDE9_CANDIDATE_BATCH_SCHEMAS = {
     "direct_guide11_c5_int_separability_v1",
     "direct_guide11_c2_sat_reachability_s25_v1",
     "direct_guide12_w12_fullscale_bounded_v1",
+    "direct_guide12_n2_repeatability_v1",
 }
 GUIDE9_BEST_REPEAT_SCHEMAS = {
     "direct_guide9_h120_s50_best_repeat_v1",
@@ -2739,6 +2740,97 @@ def validate_direct_guide12_w12_post_capture(
     return quality
 
 
+def validate_direct_guide12_n2_post_capture(
+    run_root: str | Path,
+    plan: Mapping[str, Any],
+    runtime_evidence: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    """Validate one GUIDE12 N2 repeatability run (ladder or session).
+
+    Wraps the generic direct-protocol validator and adds the N2 structural
+    contract: verified Ray-zero isolation on every strip frame, verified
+    strip-zero on every Ray frame, actual-fullscale readback for every
+    distinct strip state, and all-off diagnostics present when the plan
+    carries them. Per-plane measurement statuses (e.g. the near-noise B
+    plane of the pure-red state) are recorded by the measurement layer and
+    are NOT failures here - the N2 analysis owns per-plane acceptance.
+    """
+    root = Path(run_root).resolve()
+    quality = validate_direct_protocol_post_capture(run_root, plan, runtime_evidence)
+    captures = _load_jsonl_file(root / "captures.jsonl")
+    plan_by_id = {str(step["capture_id"]): step for step in plan["captures"]}
+    strip_states: dict[str, str] = {}
+    ambient_frames = 0
+    for row in captures:
+        step = plan_by_id.get(str(row.get("capture_id")))
+        if step is None or row.get("plan_step") != step:
+            raise ValueError("GUIDE12 N2 capture set differs from its frozen plan")
+        role = str(step.get("capture_role"))
+        if role == "ambient":
+            ambient_frames += 1
+            continue
+        capture = row.get("capture")
+        if not isinstance(capture, Mapping):
+            raise ValueError(
+                f"GUIDE12 N2 capture lacks its payload: {row.get('capture_id')}"
+            )
+        if str(step["source_id"]) == "strip":
+            ray_zero = capture.get("ray_zero_before_capture")
+            ray_data = (
+                ray_zero.get("data")
+                or ((ray_zero.get("response") or {}).get("data"))
+                if isinstance(ray_zero, Mapping) else None
+            )
+            if not isinstance(ray_data, Mapping) or int(ray_data.get("intensity", -1)) != 0:
+                raise ValueError(
+                    "GUIDE12 N2 strip frame lacks verified Ray-zero evidence: "
+                    f"{step['capture_id']}"
+                )
+            strip_states[str(step["state_id"])] = str(step["capture_id"])
+        elif str(step["source_id"]) == "ray":
+            strip_zero = capture.get("strip_zero_before_capture")
+            observed = strip_zero.get("device_snapshot") if isinstance(strip_zero, Mapping) else None
+            if (
+                not isinstance(observed, Mapping)
+                or any(int(observed.get(key, -1)) != 0 for key in esphome.PAYLOAD_CHANNELS)
+            ):
+                raise ValueError(
+                    "GUIDE12 N2 Ray frame lacks verified strip-zero evidence: "
+                    f"{step['capture_id']}"
+                )
+    commands = _load_jsonl_file(root / "commands.jsonl")
+    verified = [
+        row for row in commands
+        if row.get("event") == "command_readback_verified"
+    ]
+    strip_events = [row for row in verified if str(row.get("source_id")) == "strip"]
+    if sorted(str(row.get("state_id")) for row in strip_events) != sorted(strip_states):
+        raise ValueError(
+            "GUIDE12 N2 strip command events do not cover every strip state"
+        )
+    fullscale_by_state: dict[str, list[int]] = {}
+    for event in strip_events:
+        snapshot = (event.get("readback") or {}).get("device_snapshot") or {}
+        channels = ["cold_white", "warm_white", "red", "green", "blue"]
+        values = [int(snapshot.get(name, -1)) for name in channels]
+        if max(values) != 4095:
+            raise ValueError(
+                "GUIDE12 N2 strip command readback is not actual-fullscale: "
+                f"{event.get('state_id')}"
+            )
+        fullscale_by_state[str(event.get("state_id"))] = values
+    quality = {
+        **dict(quality),
+        "schema": "guide12_n2_repeatability_quality_v1",
+        "strip_states": len(strip_states),
+        "fullscale_readback_states": len(fullscale_by_state),
+        "all_off_diagnostic_frames": ambient_frames,
+        "guide_experiment_id": plan.get("guide_experiment_id"),
+    }
+    _write_json(root / "quality.json", quality)
+    return quality
+
+
 def _load_json_file(path: Path) -> dict[str, Any]:
     value = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(value, dict):
@@ -3868,6 +3960,10 @@ def run_authorized_plan(
             )
         if schema == "direct_guide12_w12_fullscale_bounded_v1":
             return validate_direct_guide12_w12_post_capture(
+                run_root, frozen_plan, runtime_evidence,
+            )
+        if schema == "direct_guide12_n2_repeatability_v1":
+            return validate_direct_guide12_n2_post_capture(
                 run_root, frozen_plan, runtime_evidence,
             )
         if schema == "direct_guide8_ray_emission_exposure_v1":
