@@ -3856,7 +3856,13 @@ def run_authorized_plan(
                     or direct_guide9_h300_reference_diag
                     or direct_guide6_strip_exposure
                     or direct_guide12_batch1
+                    or str(plan["execution_authorization"].get("schema"))
+                    == "direct_guide12_n2_repeatability_v1"
                 ):
+                    # N2 color states reuse the batch-1 tolerance semantics:
+                    # near-noise dark planes of pure-channel commands are
+                    # structural and recorded, not run-fatal; the per-plane
+                    # N2 analysis owns acceptance.
                     failure_names = set()
                     for item in exc.rejected:
                         metrics = item.get("metrics") or {}
