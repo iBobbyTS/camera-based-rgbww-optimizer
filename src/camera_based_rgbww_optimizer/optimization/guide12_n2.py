@@ -23,7 +23,6 @@ from camera_based_rgbww_optimizer.optimization.guide12 import (
 )
 from camera_based_rgbww_optimizer.optimization.measure_raw_observer_validation import (
     AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
-    AMBIENT_POLICY_UNSUBTRACTED_WITH_ALL_OFF_DIAGNOSTIC,
 )
 
 N2_EXPERIMENT_ID = "GUIDE12_N2_REPEATABILITY_V1"
@@ -152,26 +151,6 @@ def build_guide12_n2_session_plan(
 
     captures: list[dict[str, Any]] = []
     frozen: dict[str, str] = {}
-    off_hash = thermal.canonical_sha256({"strip": "off", "ray": "off"})
-
-    def add_ambient(position: str, shutter: str, slug: str) -> None:
-        captures.append({
-            "capture_id": (
-                f"{len(captures):03d}-ambient-alloff-{position}-{slug}"
-                f"-s{session_index}"
-            ),
-            "source_id": "ambient", "state_id": "ambient",
-            "command": None, "exact_command_hash": off_hash,
-            "requested_elapsed_s": None, "timing_acceptance": None,
-            "timing_status": "diagnostic_not_timed", "formal_measurement": False,
-            "capture_role": "ambient", "ambient_position": position,
-            "ambient_shutter_speed": shutter, "nominal_shutter": shutter,
-            "isolation_gate_before": f"guide12_n2_alloff_{position}_{slug}_s{session_index}",
-            "all_off_diagnostic": True,
-        })
-
-    add_ambient("start", "1/125", "1over125")
-    add_ambient("start", "1/2500", "1over2500")
     for state in N2_STATES:
         strip_command = {k: int(v) for k, v in state["strip_command"].items()}
         ray = _ray_command(state)
@@ -239,12 +218,7 @@ def build_guide12_n2_session_plan(
                     )
                     captures.append(step)
 
-    add_ambient("end", "1/125", "1over125")
-    add_ambient("end", "1/2500", "1over2500")
-
-    main_frames = sum(
-        1 for step in captures if step.get("capture_role") == "formal"
-    )
+    main_frames = len(captures)
     if session_index == 1:
         expected_main = 6 * 2 * 2 + len(N2_BURST_STATE_KEYS) * 2 * N2_BURST_EXTRA_CAPTURES
     else:
@@ -278,9 +252,7 @@ def build_guide12_n2_session_plan(
         "timing_resolution": "guide12_n2_reset600_D120",
         "cold_proxy": 600,
         "cold_proxy_wait_s": 600,
-        "native_raw_ambient_policy": (
-            AMBIENT_POLICY_UNSUBTRACTED_WITH_ALL_OFF_DIAGNOSTIC
-        ),
+        "native_raw_ambient_policy": AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
         "exposure_setup_required": [],
         "frozen_shutters": frozen,
         "shutter_ledger_provenance": {
@@ -291,7 +263,7 @@ def build_guide12_n2_session_plan(
         "budgets": {
             "formal_cap": main_frames,
             "diagnostic_cap": len(captures) - main_frames,
-            "ambient_cap": len(captures) - main_frames,
+            "ambient_cap": 0,
             "physical_cr3_cap": len(captures),
             "setup_physical_cr3_cap": 0,
             "retry": 0,
