@@ -47,6 +47,12 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
              "default both 0 and 240",
     )
     parser.add_argument(
+        "--strip-shutter-override", action="append", default=None,
+        metavar="KEY=SHUTTER",
+        help="per-state strip shutter override (e.g. white_20000_100=1/160); "
+             "repeatable; default uses the design-frozen table",
+    )
+    parser.add_argument(
         "--ladder-stop", action="append", default=None,
         help="restrict an hsi-ladder run to these stops (repeatable); "
              "default 1/1000 1/2000 1/4000",
@@ -87,12 +93,19 @@ def main(argv: Sequence[str] | None = None) -> int:
             raise SystemExit(
                 "GUIDE12 N2 session needs both ladder-frozen Ray HSI shutters"
             )
+        overrides = {}
+        for item in args.strip_shutter_override or []:
+            key, _, shutter = item.partition("=")
+            if not key or not shutter:
+                raise SystemExit(f"bad --strip-shutter-override: {item}")
+            overrides[key] = shutter
         plan = build_guide12_n2_session_plan(
             args.session,
             hsi_ray_shutters={
                 "ray-hsi-h0-s100": args.hsi_ray_shutter_h0,
                 "ray-hsi-h240-s100": args.hsi_ray_shutter_h240,
             },
+            strip_shutter_overrides=overrides or None,
             predicted_raw_max=predicted or None,
         )
     if args.dry_run:
