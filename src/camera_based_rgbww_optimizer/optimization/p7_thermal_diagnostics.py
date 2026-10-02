@@ -278,6 +278,12 @@ def expected_native_raw_ambient_policy(
         # GUIDE12 batch 1: measurement frames stay unsubtracted while
         # diagnostic all-off frames record the ambient+dark term per class.
         return AMBIENT_POLICY_UNSUBTRACTED_WITH_ALL_OFF_DIAGNOSTIC
+    if guide_experiment_id == "GUIDE12_N2_REPEATABILITY_V1":
+        # GUIDE12 N2: every session carries the same per-class all-off
+        # diagnostics (2 classes x start/end = 4 frames, 3 sessions = 12,
+        # exactly the guide12 all-off cap); measurement frames stay
+        # unsubtracted.
+        return AMBIENT_POLICY_UNSUBTRACTED_WITH_ALL_OFF_DIAGNOSTIC
     if (
         experiment_id in {TD_B, TD_C}
         and plan_schema == PLAN_SCHEMA_V2

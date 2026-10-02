@@ -37,7 +37,7 @@ class Guide12N2SessionPlanTests(unittest.TestCase):
             if session_index == 1:
                 expected_main += len(N2_BURST_STATE_KEYS) * 2 * 2
             self.assertEqual(len(formal), expected_main, session_index)
-            self.assertEqual(len(ambient), 4 if session_index == 1 else 0)
+            self.assertEqual(len(ambient), 4)
             self.assertEqual(plan["budgets"]["formal_cap"], len(formal))
             self.assertEqual(
                 plan["budgets"]["physical_cr3_cap"], len(plan["captures"])
@@ -142,30 +142,22 @@ class Guide12N2SessionPlanTests(unittest.TestCase):
 
     def test_ambient_policy_matches_ambient_frames(self):
         from camera_based_rgbww_optimizer.optimization.measure_raw_observer_validation import (
-            AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
             AMBIENT_POLICY_UNSUBTRACTED_WITH_ALL_OFF_DIAGNOSTIC,
         )
-        plan1 = build_guide12_n2_session_plan(1, hsi_ray_shutters=HSI_SHUTTERS)
-        self.assertEqual(
-            plan1["native_raw_ambient_policy"],
-            AMBIENT_POLICY_UNSUBTRACTED_WITH_ALL_OFF_DIAGNOSTIC,
-        )
-        self.assertEqual(
-            plan1["budgets"]["ambient_cap"],
-            sum(
-                1 for c in plan1["captures"]
-                if c.get("capture_role") == "ambient"
-            ),
-        )
-        for later in (2, 3):
+        for session in (1, 2, 3):
             plan = build_guide12_n2_session_plan(
-                later, hsi_ray_shutters=HSI_SHUTTERS
+                session, hsi_ray_shutters=HSI_SHUTTERS
             )
             self.assertEqual(
                 plan["native_raw_ambient_policy"],
-                AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
+                AMBIENT_POLICY_UNSUBTRACTED_WITH_ALL_OFF_DIAGNOSTIC,
             )
-            self.assertEqual(plan["budgets"]["ambient_cap"], 0)
+            ambient_count = sum(
+                1 for c in plan["captures"]
+                if c.get("capture_role") == "ambient"
+            )
+            self.assertEqual(ambient_count, 4)
+            self.assertEqual(plan["budgets"]["ambient_cap"], ambient_count)
 
     def test_predicted_raw_max_ceiling_is_fail_closed(self):
         with self.assertRaisesRegex(ValueError, "pre-check ceiling"):

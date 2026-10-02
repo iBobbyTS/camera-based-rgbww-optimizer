@@ -170,10 +170,8 @@ def build_guide12_n2_session_plan(
             "all_off_diagnostic": True,
         })
 
-    if session_index == 1:
-        add_ambient("start", "1/125", "1over125")
-        add_ambient("start", "1/2500", "1over2500")
-
+    add_ambient("start", "1/125", "1over125")
+    add_ambient("start", "1/2500", "1over2500")
     for state in N2_STATES:
         strip_command = {k: int(v) for k, v in state["strip_command"].items()}
         ray = _ray_command(state)
@@ -241,9 +239,8 @@ def build_guide12_n2_session_plan(
                     )
                     captures.append(step)
 
-    if session_index == 1:
-        add_ambient("end", "1/125", "1over125")
-        add_ambient("end", "1/2500", "1over2500")
+    add_ambient("end", "1/125", "1over125")
+    add_ambient("end", "1/2500", "1over2500")
 
     main_frames = sum(
         1 for step in captures if step.get("capture_role") == "formal"
@@ -283,7 +280,6 @@ def build_guide12_n2_session_plan(
         "cold_proxy_wait_s": 600,
         "native_raw_ambient_policy": (
             AMBIENT_POLICY_UNSUBTRACTED_WITH_ALL_OFF_DIAGNOSTIC
-            if session_index == 1 else AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT
         ),
         "exposure_setup_required": [],
         "frozen_shutters": frozen,
