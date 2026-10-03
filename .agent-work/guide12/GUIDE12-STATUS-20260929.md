@@ -43,7 +43,13 @@ Mac 路径数据依赖，非本次改动引入）。
    为锚定错误臂，无亮度变化）、纯R 四平面主层结构性不可满足（R:B ~46dB）；all-off 环境项
    z 敏感性 ≤0.0032，不改判定。工程记录：事后校验器时序 bug 一次（恢复未重拍）；分析脚本
    g_corr 漏项一次修正。派生：`guide12-batch1/derived/b1-exposure-qualification-20260930.json`。
-2. **N2 重复性**：4白光状态+2极端彩光满幅，3会话×2循环×2源=72 主观测+12 burst；风险转移≤24。
+2. **N2 重复性（进行中，2026-10-03）**：设计冻结（`guide12/GUIDE12-N2-DESIGN-20261002.md`）+
+   完整实现（`optimization/guide12_n2.py`、`measure_guide12_n2.py`、运行器 N2 路由与自包含校验器，
+   13 项行为测试）。Ray HSI 快门实测定档：H0/S100 @1/1000、H240/S100 @1/2000（阶梯 r2-r4 证据）；
+   strip 20000/100 @1/160。**会话 1 完成**：formal-n2-session1-r5（36 帧 = 24 主 + 12 burst，
+   30 pass + 6 彩态 near_noise_only 记录、12 满幅态验证；r1-r4 工程失败根保留——formal 时序身份、
+   ambient 集成回退、彩态特征容忍、校验器自包含四次修复链）。all-off 诊断剥离（batch1 A/on 证据
+   ≤0.0032；分析需要时按 batch1 schema 补专用运行）。会话 2/3 待跨时间会话（需明确分隔）。
 3. **W12-1（已完成，2026-10-02）**：开放队列 18 节点全部处理——**17 qualified + 20000/0
    reference/operating_limited**（修正链至 E=0.0748 但认证被 20000K Ray 间歇漂移阻断，留 W12-2 复测）。
    结果与方法库沉淀 → `guide12/GUIDE12-W12-RESULT-20260930.md`。实现：

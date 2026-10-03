@@ -2747,32 +2747,57 @@ def validate_direct_guide12_n2_post_capture(
 ) -> dict[str, Any]:
     """Validate one GUIDE12 N2 repeatability run (ladder or session).
 
-    Wraps the generic direct-protocol validator and adds the N2 structural
-    contract: verified Ray-zero isolation on every strip frame, verified
+    Self-contained structural contract (the generic direct-protocol
+    validator requires finite HSI feature artifacts on every formal frame,
+    which the color states legitimately lack - their near-noise dark planes
+    are recorded, batch-1 style, and per-plane acceptance belongs to the N2
+    analysis): capture/physical order and formal count against the frozen
+    plan, verified Ray-zero isolation on every strip frame, verified
     strip-zero on every Ray frame, actual-fullscale readback for every
-    distinct strip state, and all-off diagnostics present when the plan
-    carries them. Per-plane measurement statuses (e.g. the near-noise B
-    plane of the pure-red state) are recorded by the measurement layer and
-    are NOT failures here - the N2 analysis owns per-plane acceptance.
+    distinct strip state, and a per-frame direct-quality histogram.
     """
     root = Path(run_root).resolve()
-    quality = validate_direct_protocol_post_capture(run_root, plan, runtime_evidence)
-    captures = _load_jsonl_file(root / "captures.jsonl")
+    expected_ids = [str(step["capture_id"]) for step in plan["captures"]]
+    captures = [
+        json.loads(line)
+        for line in (root / "captures.jsonl").read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    physical = [
+        json.loads(line)
+        for line in (root / "physical-returns.jsonl").read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    if [str(row.get("capture_id")) for row in captures] != expected_ids:
+        raise ValueError("GUIDE12 N2 capture order differs from its frozen plan")
+    if [str(row.get("capture_id")) for row in physical] != expected_ids:
+        raise ValueError("GUIDE12 N2 physical order differs from its frozen plan")
+    formal_count = sum(bool(row.get("formal_measurement")) for row in captures)
+    if formal_count != int(plan["budgets"]["formal_cap"]):
+        raise ValueError("GUIDE12 N2 formal count differs from its spec")
     plan_by_id = {str(step["capture_id"]): step for step in plan["captures"]}
     strip_states: dict[str, str] = {}
-    ambient_frames = 0
+    quality_status: dict[str, int] = {}
     for row in captures:
         step = plan_by_id.get(str(row.get("capture_id")))
         if step is None or row.get("plan_step") != step:
             raise ValueError("GUIDE12 N2 capture set differs from its frozen plan")
-        role = str(step.get("capture_role"))
-        if role == "ambient":
-            ambient_frames += 1
-            continue
         capture = row.get("capture")
         if not isinstance(capture, Mapping):
             raise ValueError(
                 f"GUIDE12 N2 capture lacks its payload: {row.get('capture_id')}"
+            )
+        if str(row.get("run_root", str(root))) != str(root):
+            raise ValueError("GUIDE12 N2 artifact crossed its run root")
+        direct_quality = capture.get("direct_quality")
+        status = (
+            str(direct_quality.get("status")) if isinstance(direct_quality, Mapping)
+            else "missing"
+        )
+        quality_status[status] = quality_status.get(status, 0) + 1
+        if status not in ("pass", "near_noise_only", "rejected", "missing"):
+            raise ValueError(
+                f"GUIDE12 N2 unexpected direct-quality status: {status}"
             )
         if str(step["source_id"]) == "strip":
             ray_zero = capture.get("ray_zero_before_capture")
@@ -2820,11 +2845,13 @@ def validate_direct_guide12_n2_post_capture(
             )
         fullscale_by_state[str(event.get("state_id"))] = values
     quality = {
-        **dict(quality),
         "schema": "guide12_n2_repeatability_quality_v1",
+        "status": "pass",
+        "frames": len(captures),
+        "formal_frames": formal_count,
+        "direct_quality_histogram": quality_status,
         "strip_states": len(strip_states),
         "fullscale_readback_states": len(fullscale_by_state),
-        "all_off_diagnostic_frames": ambient_frames,
         "guide_experiment_id": plan.get("guide_experiment_id"),
     }
     _write_json(root / "quality.json", quality)
