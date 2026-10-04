@@ -3,7 +3,11 @@
 依据：`advisor/12/12.GUIDE.md` §2-§3.3（不可变）、GUIDE12-STATUS 待办 2。
 状态：设计冻结；**会话 1 已完成**（2026-10-03，formal-n2-session1-r5，36/36 帧，
 30 pass + 6 彩态 near_noise_only 记录、12 满幅态全验证；r1-r4 失败根保留为工程证据）；
-**会话 2 已启动**（2026-10-03，formal-n2-session2）；会话 3 待会话 2 后再分隔。
+**会话 2 已完成**（2026-10-04，formal-n2-session2-r2，24/24 帧，20 pass +
+4 strip 彩态 near_noise_only 记录——Ray 帧全实拍出光。首次尝试 formal-n2-session2
+因 Ray120c 断电重启后 API-物理解耦整段黑帧作废，根保留为设备失败证据，见
+`GUIDE12-N2-SESSION2-RAY-FAILURE-20261003.md`；恢复后重跑，会话分隔证据沿用）；
+会话 3 待跨时间会话执行。
 
 ### 会话分隔证据（§3.2 "明确分隔"的物理记录）
 
