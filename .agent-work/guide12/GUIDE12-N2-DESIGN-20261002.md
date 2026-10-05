@@ -7,7 +7,9 @@
 4 strip 彩态 near_noise_only 记录——Ray 帧全实拍出光。首次尝试 formal-n2-session2
 因 Ray120c 断电重启后 API-物理解耦整段黑帧作废，根保留为设备失败证据，见
 `GUIDE12-N2-SESSION2-RAY-FAILURE-20261003.md`；恢复后重跑，会话分隔证据沿用）；
-会话 3 待跨时间会话执行。
+**会话 3 已完成**（2026-10-05，formal-n2-session3，24/24 帧，20 pass + 4 strip
+彩态 near_noise_only 记录，模式与前两会话逐位一致；Ray 帧出光抽检正常；分隔
+证据与出光预检见上节）。**三会话齐备，进入 §3.3 统计输出。**
 
 ### 会话 3 分隔证据（2026-10-04）
 
