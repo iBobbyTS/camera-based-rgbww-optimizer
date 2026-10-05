@@ -59,6 +59,7 @@ GUIDE9_CANDIDATE_BATCH_SCHEMAS = {
     "direct_guide11_c2_sat_reachability_s25_v1",
     "direct_guide12_w12_fullscale_bounded_v1",
     "direct_guide12_n2_repeatability_v1",
+    "direct_guide12_c12_ray_grid_v1",
 }
 GUIDE9_BEST_REPEAT_SCHEMAS = {
     "direct_guide9_h120_s50_best_repeat_v1",
@@ -2858,6 +2859,106 @@ def validate_direct_guide12_n2_post_capture(
     return quality
 
 
+def validate_direct_guide12_c12_post_capture(
+    run_root: str | Path,
+    plan: Mapping[str, Any],
+    runtime_evidence: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    """Validate one GUIDE12 C12-1 Ray HSI mapping grid run.
+
+    Self-contained structural contract mirroring the N2 validator: capture
+    and physical order against the frozen plan, formal count, verified
+    strip-zero isolation on every Ray frame, command hue/sat agreement
+    with the frozen target, and a per-frame direct-quality histogram
+    (near-noise dark planes of saturated HSI colors are recorded
+    batch-1 style; per-plane acceptance belongs to the mapping analysis).
+    """
+    root = Path(run_root).resolve()
+    expected_ids = [str(step["capture_id"]) for step in plan["captures"]]
+    captures = [
+        json.loads(line)
+        for line in (root / "captures.jsonl").read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    physical = [
+        json.loads(line)
+        for line in (root / "physical-returns.jsonl").read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    if [str(row.get("capture_id")) for row in captures] != expected_ids:
+        raise ValueError("GUIDE12 C12-1 capture order differs from its frozen plan")
+    if [str(row.get("capture_id")) for row in physical] != expected_ids:
+        raise ValueError("GUIDE12 C12-1 physical order differs from its frozen plan")
+    formal_count = sum(bool(row.get("formal_measurement")) for row in captures)
+    if formal_count != int(plan["budgets"]["formal_cap"]):
+        raise ValueError("GUIDE12 C12-1 formal count differs from its spec")
+    plan_by_id = {str(step["capture_id"]): step for step in plan["captures"]}
+    quality_status: dict[str, int] = {}
+    for row in captures:
+        step = plan_by_id.get(str(row.get("capture_id")))
+        if step is None or row.get("plan_step") != step:
+            raise ValueError("GUIDE12 C12-1 capture set differs from its frozen plan")
+        capture = row.get("capture")
+        if not isinstance(capture, Mapping):
+            raise ValueError(
+                f"GUIDE12 C12-1 capture lacks its payload: {row.get('capture_id')}"
+            )
+        if str(row.get("run_root", str(root))) != str(root):
+            raise ValueError("GUIDE12 C12-1 artifact crossed its run root")
+        direct_quality = capture.get("direct_quality")
+        status = (
+            str(direct_quality.get("status")) if isinstance(direct_quality, Mapping)
+            else "missing"
+        )
+        quality_status[status] = quality_status.get(status, 0) + 1
+        if status not in ("pass", "near_noise_only", "rejected", "missing"):
+            raise ValueError(
+                f"GUIDE12 C12-1 unexpected direct-quality status: {status}"
+            )
+        strip_zero = capture.get("strip_zero_before_capture")
+        observed = strip_zero.get("device_snapshot") if isinstance(strip_zero, Mapping) else None
+        if (
+            not isinstance(observed, Mapping)
+            or any(int(observed.get(key, -1)) != 0 for key in esphome.PAYLOAD_CHANNELS)
+        ):
+            raise ValueError(
+                "GUIDE12 C12-1 Ray frame lacks verified strip-zero evidence: "
+                f"{step['capture_id']}"
+            )
+        command = step.get("command") or {}
+        if str(step.get("source_id")) != "ray" or str(command.get("mode")) != "hsi":
+            raise ValueError(
+                f"GUIDE12 C12-1 step is not a Ray HSI command: {step['capture_id']}"
+            )
+        if (
+            int(command.get("hue", -1)) != int(step["c12_hue"])
+            or int(command.get("sat", -1)) != int(step["c12_sat"])
+        ):
+            raise ValueError(
+                "GUIDE12 C12-1 command hue/sat differs from its frozen target: "
+                f"{step['capture_id']}"
+            )
+        physical_row = next(
+            (r for r in physical if str(r.get("capture_id")) == str(row.get("capture_id"))),
+            None,
+        )
+        if physical_row is None or physical_row.get("cr3_byte_count", 0) <= 0:
+            raise ValueError(
+                "GUIDE12 C12-1 physical CR3 evidence is incomplete: "
+                f"{row.get('capture_id')}"
+            )
+    quality = {
+        "schema": "guide12_c12_ray_grid_quality_v1",
+        "status": "pass",
+        "frames": len(captures),
+        "formal_frames": formal_count,
+        "direct_quality_histogram": quality_status,
+        "guide_experiment_id": plan.get("guide_experiment_id"),
+    }
+    _write_json(root / "quality.json", quality)
+    return quality
+
+
 def _load_json_file(path: Path) -> dict[str, Any]:
     value = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(value, dict):
@@ -3885,6 +3986,8 @@ def run_authorized_plan(
                     or direct_guide12_batch1
                     or str(plan["execution_authorization"].get("schema"))
                     == "direct_guide12_n2_repeatability_v1"
+                    or str(plan["execution_authorization"].get("schema"))
+                    == "direct_guide12_c12_ray_grid_v1"
                 ):
                     # N2 color states reuse the batch-1 tolerance semantics:
                     # near-noise dark planes of pure-channel commands are
@@ -3997,6 +4100,10 @@ def run_authorized_plan(
             )
         if schema == "direct_guide12_n2_repeatability_v1":
             return validate_direct_guide12_n2_post_capture(
+                run_root, frozen_plan, runtime_evidence,
+            )
+        if schema == "direct_guide12_c12_ray_grid_v1":
+            return validate_direct_guide12_c12_post_capture(
                 run_root, frozen_plan, runtime_evidence,
             )
         if schema == "direct_guide8_ray_emission_exposure_v1":
