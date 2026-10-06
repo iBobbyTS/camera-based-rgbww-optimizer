@@ -1076,6 +1076,8 @@ def build_guide12_w122_verification_plan(
     batch_name: str,
     *,
     include_s0_reference: bool = False,
+    node_filter: Sequence[str] | None = None,
+    ray_shutter_overrides: Mapping[str, str] | None = None,
     inputs_references: Mapping[str, Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """One W12-2 verification batch over frozen-LUT nodes.
@@ -1096,13 +1098,22 @@ def build_guide12_w122_verification_plan(
     batch = W122_BATCHES.get(batch_name)
     if batch is None:
         raise ValueError(f"unknown W12-2 batch: {batch_name}")
+    allowed = set(batch) if node_filter is None else {
+        tuple(int(x) for x in key.split("/")) for key in node_filter
+    }
     selected = [
         n for n in lut_nodes
-        if (int(n["cct"]), int(n["gm"])) in set(batch)
+        if (int(n["cct"]), int(n["gm"])) in allowed
     ]
-    if len(selected) != len(batch):
+    if node_filter is None and len(selected) != len(batch):
         missing = set(batch) - {(int(n["cct"]), int(n["gm"])) for n in selected}
         raise ValueError(f"W12-2 batch {batch_name} lacks LUT nodes: {sorted(missing)}")
+    if not selected:
+        raise ValueError(f"W12-2 batch {batch_name} retry filter selected no nodes")
+    overrides = {
+        tuple(int(x) for x in key.split("/")): str(value)
+        for key, value in (ray_shutter_overrides or {}).items()
+    }
     captures: list[dict[str, Any]] = []
     frozen: dict[str, str] = {}
     if include_s0_reference:
@@ -1129,7 +1140,7 @@ def build_guide12_w122_verification_plan(
         repeats = 2 if node["verification_class"] == "needs_two_pairs" else 1
         cold = cct >= W122_COLD_CCT
         ray_key = f"ray-white-{cct}-gm{gm}"
-        ray_shutter = W12_RAY_SHUTTERS.get(ray_key)
+        ray_shutter = overrides.get((cct, gm)) or W12_RAY_SHUTTERS.get(ray_key)
         if ray_shutter is None:
             # documented transfer: prefer same-CCT nearest gm; when the CCT
             # itself lacks an anchor (e.g. 5000K), fall back to the joint
@@ -1226,7 +1237,8 @@ def build_guide12_w122_verification_plan(
             ),
             "ray_rule": (
                 "W2 frozen per-(cct,gm) table; missing gm variants use the "
-                "documented same-CCT nearest-gm transfer"
+                "documented same-CCT nearest-gm transfer; explicit "
+                "overrides are retry-only evidence-backed corrections"
             ),
         },
         "budgets": {

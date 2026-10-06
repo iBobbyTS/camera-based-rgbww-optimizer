@@ -35,6 +35,15 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         "--include-s0-reference", action="store_true",
         help="prepend the S0 session reference frame (session B rides warm)",
     )
+    parser.add_argument(
+        "--node", action="append", default=None, metavar="CCT/GM",
+        help="restrict a retry run to these LUT nodes (repeatable)",
+    )
+    parser.add_argument(
+        "--ray-shutter-override", action="append", default=None,
+        metavar="CCT/GM=SHUTTER",
+        help="retry-only Ray shutter correction (e.g. 1800/0=1/800)",
+    )
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--run-name", required=True)
     mode = parser.add_mutually_exclusive_group(required=True)
@@ -50,9 +59,17 @@ def main(argv: Sequence[str] | None = None) -> int:
     lut: dict[str, Any] = json.loads(args.lut.read_text(encoding="utf-8"))
     if lut.get("schema") != "guide12_w12_2_frozen_lut_v1":
         raise SystemExit("W12-2 verification requires the frozen LUT schema")
+    ray_overrides = {}
+    for item in args.ray_shutter_override or []:
+        key, _, shutter = item.partition("=")
+        if not key or not shutter:
+            raise SystemExit(f"bad --ray-shutter-override: {item}")
+        ray_overrides[key] = shutter
     plan = build_guide12_w122_verification_plan(
         lut["nodes"], args.batch,
         include_s0_reference=args.include_s0_reference,
+        node_filter=tuple(args.node) if args.node else None,
+        ray_shutter_overrides=ray_overrides or None,
     )
     if args.dry_run:
         root = (args.output_dir / args.run_name).resolve()
