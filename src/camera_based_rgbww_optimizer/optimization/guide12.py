@@ -1078,6 +1078,7 @@ def build_guide12_w122_verification_plan(
     include_s0_reference: bool = False,
     node_filter: Sequence[str] | None = None,
     ray_shutter_overrides: Mapping[str, str] | None = None,
+    strip_shutter_overrides: Mapping[str, str] | None = None,
     inputs_references: Mapping[str, Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """One W12-2 verification batch over frozen-LUT nodes.
@@ -1113,6 +1114,10 @@ def build_guide12_w122_verification_plan(
     overrides = {
         tuple(int(x) for x in key.split("/")): str(value)
         for key, value in (ray_shutter_overrides or {}).items()
+    }
+    strip_overrides = {
+        tuple(int(x) for x in key.split("/")): str(value)
+        for key, value in (strip_shutter_overrides or {}).items()
     }
     captures: list[dict[str, Any]] = []
     frozen: dict[str, str] = {}
@@ -1158,7 +1163,7 @@ def build_guide12_w122_verification_plan(
             ]
             pool = same_cct or [_anchor_distance(k) for k in W12_RAY_SHUTTERS]
             ray_shutter = W12_RAY_SHUTTERS[min(pool)[1]]
-        strip_shutter = W122_STRIP_SHUTTER_OVERRIDES.get((cct, gm), W12_STRIP_SHUTTER)
+        strip_shutter = strip_overrides.get((cct, gm)) or W122_STRIP_SHUTTER_OVERRIDES.get((cct, gm), W12_STRIP_SHUTTER)
         frozen[f"w122-{ray_key}"] = ray_shutter
         frozen[f"w122-strip-white-{cct}-gm{gm}"] = strip_shutter
         ray_command = {"cct": cct, "gm": gm, "intensity_percent": 100.0, "mode": "cct"}
