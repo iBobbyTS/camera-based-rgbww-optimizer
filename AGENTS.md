@@ -8,6 +8,11 @@ This project is used only for the Human-owned and Human-maintained local photogr
 
 - Reply in Chinese by default unless the user explicitly asks for another language.
 - Write implementation plans in Chinese by default.
+- When reporting times to the user (schedules, run windows, milestones, log
+  excerpts), always use the workstation's local time; do not use UTC. Run
+  artifacts that natively record UTC keep their stored timestamps, but any
+  time the agent states to the user must be converted to local time and
+  labeled as 本机时间.
 
 ## Project Scope
 
