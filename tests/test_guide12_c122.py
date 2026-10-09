@@ -65,10 +65,8 @@ class Guide12C122RequestTests(unittest.TestCase):
     def test_z_face_step_respects_face_and_box(self):
         base = guide12_c122.c122_initial_command(0, 100)  # r fullscale
         sensitivity = {
-            "z_r": {"cold_white": 0.0, "warm_white": 0.0,
-                    "red": 0.0, "green": -0.5, "blue": -0.9},
-            "z_b": {"cold_white": 0.0, "warm_white": 0.0,
-                    "red": 0.0, "green": -0.4, "blue": 0.7},
+            "z_r": {"cw": 0.0, "ww": 0.0, "r": 0.0, "g": -0.5, "b": -0.9},
+            "z_b": {"cw": 0.0, "ww": 0.0, "r": 0.0, "g": -0.4, "b": 0.7},
         }
         step = guide12_c122.solve_guide12_c122_face_step(
             base, {"z_r": 0.04, "z_b": 0.03}, sensitivity,

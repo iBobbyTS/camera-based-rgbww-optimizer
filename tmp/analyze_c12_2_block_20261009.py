@@ -89,14 +89,13 @@ def main(argv: list[str]) -> int:
                 "run": root.name,
                 "tag": str(step.get("c122_tag") or ""),
                 "source": str(step["source_id"]),
-                "role": str(step["role"]),
+                "role": str(step.get("candidate_role") or step["role"]),
                 "block": int(step["c122_block"]),
                 "command": step.get("command"),
                 "new_unique": step.get("c122_new_unique"),
                 "face": tuple(step.get("c122_face_channels") or ()),
                 "probe_channel": (
-                    row.get("candidate_probe_channel")
-                    or step.get("candidate_probe_channel")
+                    step.get("candidate_probe_channel")
                     or (step.get("probe_channel"))),
                 "quality": quality,
                 "z": z_of(root, str(row["capture_id"])),
@@ -144,16 +143,22 @@ def main(argv: list[str]) -> int:
                 confirmations[cmd_key] = confirmations.get(cmd_key, 0) + 1
             if best is None or worst < best[0]:
                 best = (worst, dict(r["command"]), dz, r["face"], block["root"], r["tag"])
-        # probe secants vs same-block base
+        # probe secants vs same-block base; the probed channel comes from
+        # the plan step metadata or falls back to the probe_<ch> tag, with
+        # the step size read from the command difference itself
         probes = [
             r for r in block_rows
             if r["quality"] == "pass" and r["role"] == "single_axis_probe"
-            and r.get("probe_channel") and base_z is not None
+            and base_z is not None and base_cmd is not None
         ]
         for r in probes:
-            ch = str(r["probe_channel"])
-            base_val = int(base_cmd[ch])
-            step_codes = int(r["command"][ch]) - base_val
+            ch = r.get("probe_channel")
+            if not ch and r["tag"].startswith("probe_"):
+                ch = r["tag"].removeprefix("probe_")
+                r["probe_channel"] = ch
+            if not ch or ch not in base_cmd:
+                continue
+            step_codes = int(r["command"][ch]) - int(base_cmd[ch])
             if step_codes == 0:
                 continue
             for i, name in enumerate(("z_r", "z_b")):

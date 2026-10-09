@@ -187,29 +187,32 @@ def solve_guide12_c122_face_step(
     z_scale = C122_Z_SCALE.get(sat)
     if z_scale is None:
         raise ValueError(f"C12-2 request sat {sat} has no frozen z scale")
-    long_base = _long_command(base_command)
+    base = {ch: int(base_command[ch]) for ch in CHANNELS}
     locked = {str(c) for c in face_channels}
+    unknown = locked - set(CHANNELS)
+    if unknown:
+        raise ValueError(f"C12-2 face names unknown channels: {sorted(unknown)}")
     outputs = ("z_r", "z_b")
     sensitivity = np.array([
-        [float(sensitivity_z[o][c]) / z_scale for c in _LONG_CHANNELS]
+        [float(sensitivity_z[o][ch]) / z_scale for ch in CHANNELS]
         for o in outputs
     ])
     base_error = np.array([
         float(base_error_z[o]) / z_scale for o in outputs
     ])
     lower = np.array([
-        max(-float(long_base[c]), -C122_MAX_STEP_CODES) if c not in locked else 0.0
-        for c in _LONG_CHANNELS
+        max(-float(base[ch]), -C122_MAX_STEP_CODES) if ch not in locked else 0.0
+        for ch in CHANNELS
     ])
     upper = np.array([
-        min(float(FULLSCALE - long_base[c]), C122_MAX_STEP_CODES) if c not in locked else 0.0
-        for c in _LONG_CHANNELS
+        min(float(FULLSCALE - base[ch]), C122_MAX_STEP_CODES) if ch not in locked else 0.0
+        for ch in CHANNELS
     ])
     if np.any(lower > upper):
         raise ValueError("C12-2 face leaves an infeasible step box")
     unmodeled = [
-        i for i in range(len(_LONG_CHANNELS))
-        if _LONG_CHANNELS[i] not in locked
+        i for i in range(len(CHANNELS))
+        if CHANNELS[i] not in locked
         and float(np.linalg.norm(sensitivity[:, i])) <= 1e-12
     ]
     for i in unmodeled:
@@ -217,7 +220,7 @@ def solve_guide12_c122_face_step(
         upper[i] = 0.0
     if all(
         float(np.linalg.norm(sensitivity[:, i])) <= 1e-12
-        for i in range(len(_LONG_CHANNELS)) if i not in locked
+        for i in range(len(CHANNELS)) if CHANNELS[i] not in locked
     ):
         raise ValueError("C12-2 step lacks any modeled free direction")
     delta = np.asarray(
@@ -226,14 +229,14 @@ def solve_guide12_c122_face_step(
     ) * scale
     codes: dict[str, int] = {}
     final_delta: dict[str, float] = {}
-    for i, channel in enumerate(_LONG_CHANNELS):
-        box_low = int(float(long_base[channel]) + lower[i])
-        box_high = int(float(long_base[channel]) + upper[i])
-        code = min(box_high, max(box_low, int(round(float(long_base[channel]) + delta[i]))))
-        codes[_SHORT_BY_LONG[channel]] = int(code)
-        final_delta[_SHORT_BY_LONG[channel]] = float(code - long_base[channel])
+    for i, channel in enumerate(CHANNELS):
+        box_low = int(float(base[channel]) + lower[i])
+        box_high = int(float(base[channel]) + upper[i])
+        code = min(box_high, max(box_low, int(round(float(base[channel]) + delta[i]))))
+        codes[channel] = int(code)
+        final_delta[channel] = float(code - base[channel])
     predicted = base_error + sensitivity @ (
-        np.array([final_delta[_SHORT_BY_LONG[c]] for c in _LONG_CHANNELS])
+        np.array([final_delta[ch] for ch in CHANNELS])
     )
     return {
         "command": codes,
@@ -244,9 +247,7 @@ def solve_guide12_c122_face_step(
             name: float(predicted[index]) for index, name in enumerate(outputs)
         },
         "predicted_E": max(abs(float(v)) for v in predicted),
-        "unmodeled_locked_channels": [
-            _SHORT_BY_LONG[_LONG_CHANNELS[i]] for i in unmodeled
-        ],
+        "unmodeled_locked_channels": [CHANNELS[i] for i in unmodeled],
         "method": "box_constrained_least_squares_active_set_enumeration",
         "surrogate": True,
         "final_selection_requires_measured_gate": True,
@@ -346,6 +347,8 @@ def build_guide12_c122_block_plan(
             "ray_zero_required": True,
             "candidate_tag": str(candidate["tag"]),
             "candidate_role": str(candidate.get("role", "candidate")),
+            "candidate_probe_channel": candidate.get("probe_channel"),
+            "candidate_probe_step_codes": candidate.get("probe_step_codes"),
             "c122_request": request, "c122_block": block_index,
             "c122_tag": str(candidate["tag"]),
             "c122_new_unique": bool(candidate.get("new_unique_command", True)),
