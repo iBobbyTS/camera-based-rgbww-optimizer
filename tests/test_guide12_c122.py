@@ -114,6 +114,19 @@ class Guide12C122BlockPlanTests(unittest.TestCase):
             plan["execution_authorization"]["schema"],
             guide12_c122.C122_SCHEMA)
 
+    def test_c12_3_s25_requests_accepted_with_transferred_shutters(self):
+        self.assertEqual(len(guide12_c122.C123_S25_REQUESTS), 6)
+        candidates = [{
+            "tag": "u0", "command": {"cw": 1575, "ww": 1575,
+                                    "r": 4095, "g": 1024, "b": 1024},
+            "role": "base_repeat", "new_unique_command": False,
+            "face_channels": [], "strip_shutter": "1/400"}]
+        plan = guide12_c122.build_guide12_c122_block_plan(
+            0, 25, candidates, block_index=1)
+        ray = [s for s in plan["captures"] if s["source_id"] == "ray"]
+        self.assertEqual(ray[0]["nominal_shutter"], "1/4000")
+        self.assertEqual(ray[0]["command"]["sat"], 25)
+
     def test_block_rejects_bad_requests_tags_and_candidates(self):
         candidates = guide12_c122.c122_probe_candidates(
             guide12_c122.c122_initial_command(0, 100))
@@ -122,7 +135,7 @@ class Guide12C122BlockPlanTests(unittest.TestCase):
                 90, 50, candidates, block_index=1)
         with self.assertRaises(ValueError):
             guide12_c122.build_guide12_c122_block_plan(
-                0, 25, candidates, block_index=1)
+                0, 35, candidates, block_index=1)
         with self.assertRaises(ValueError):
             guide12_c122.build_guide12_c122_block_plan(
                 0, 100, candidates + candidates, block_index=1)

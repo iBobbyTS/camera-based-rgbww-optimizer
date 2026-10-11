@@ -49,6 +49,22 @@ C122_RAY_SHUTTERS: dict[str, str] = {
     "0/0": "1/6400",
 }
 
+# C12-3 low-SAT coverage requests (six hues at S25, GUIDE C12-3): the
+# same bounded-solving machinery and per-request budgets, riding the same
+# block schema. Ray shutters transferred from the exact P6 (hue,20)
+# anchors with the C12-1 rule (0.59 factor, 9000 DN, next faster stop)
+# because the P6 grid has no sat-25 row; the sat 20->25 brightness
+# change is small and the quality system verifies per frame.
+C123_S25_REQUESTS: tuple[tuple[int, int], ...] = tuple(
+    (hue, 25) for hue in C122_HUES
+)
+C123_RAY_SHUTTERS: dict[str, str] = {
+    "0/25": "1/4000", "60/25": "1/6400", "120/25": "1/6400",
+    "180/25": "1/6400", "240/25": "1/5000", "300/25": "1/5000",
+}
+_ALL_REQUESTS = C122_REQUESTS + C123_S25_REQUESTS
+_ALL_RAY_SHUTTERS = {**C122_RAY_SHUTTERS, **C123_RAY_SHUTTERS}
+
 # Initial strip shutter tiers (frozen anchors, structural dominance rule):
 # white-dominant commands (cw+ww > r+g+b) take the W12-2 white-node tier
 # 1/100 (predicted ~10900 DN for the S0 seed vs the 3200/100 anchor
@@ -69,7 +85,7 @@ def c122_initial_strip_shutter(command: Mapping[str, int]) -> str:
 # S0 gates at |dz| <= 0.01 per log ratio; S50/S100 steps are weighted at
 # 0.02 per z component. The product gate stays Hue +/-2deg, SAT +/-2pp
 # evaluated by the offline analyzer against the Ray reference.
-C122_Z_SCALE = {0: 0.01, 50: 0.02, 100: 0.02}
+C122_Z_SCALE = {0: 0.01, 25: 0.02, 50: 0.02, 100: 0.02}
 
 C122_UNIQUE_COMMAND_CAP = 8
 C122_UNIQUE_COMMAND_CAP_EXPANDED = 12
@@ -277,14 +293,15 @@ def build_guide12_c122_block_plan(
         AMBIENT_POLICY_UNSUBTRACTED_NO_AMBIENT,
     )
 
-    if (hue, sat) not in C122_REQUESTS:
-        raise ValueError(f"C12-2 request {hue}/{sat} is not one of the 13 frozen requests")
+    if (hue, sat) not in _ALL_REQUESTS:
+        raise ValueError(
+            f"C12-2/C12-3 request {hue}/{sat} is not in the frozen request sets")
     if not 1 <= len(candidates) <= C122_CANDIDATES_PER_BLOCK:
         raise ValueError(
             f"C12-2 block needs 1..4 strip candidates, got {len(candidates)}"
         )
     request = f"{hue}/{sat}"
-    resolved_ray_shutter = str(ray_shutter or C122_RAY_SHUTTERS[request])
+    resolved_ray_shutter = str(ray_shutter or _ALL_RAY_SHUTTERS[request])
     ray_command = {"mode": "hsi", "hue": hue, "sat": sat, "intensity_percent": 100.0}
     ray_cache = f"c122-ray-h{hue}-s{sat}"
     tags = [str(c["tag"]) for c in candidates]
