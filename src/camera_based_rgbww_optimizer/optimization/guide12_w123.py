@@ -10,9 +10,16 @@ cover face-switch requests.
 
 Interpolation: bilinear in (mired, gm) over the 14-CCT x 5-gm grid.
 Requests outside the convex grid raise (no extrapolation).
+
+GUIDE13 correction (2026-10-13): the mired weight was inverted before -
+the T0 (lower cct, higher mired) corner must carry weight a=(m-m1)/(m0-m1),
+not (1-a). The corrected function reproduces all 70 node commands exactly
+(node identity). Photos captured with the pre-correction function remain
+evaluations of that old function only.
 """
 from __future__ import annotations
 
+import math
 from datetime import datetime, timezone
 from typing import Any, Mapping
 
@@ -65,16 +72,21 @@ def interpolate_fullscale_command(
     j = j_raw[0] if j_raw else (0 if gm <= gms[0] else len(gms) - 2)
     ty = (gm - gms[j]) / (gms[j + 1] - gms[j]) if gms[j + 1] != gms[j] else 0.0
     cct_lo, cct_hi = ccts[i + 1], ccts[i]  # mired-increasing bracket
+    # GUIDE13 corrected weight: m0 = mireds[i] belongs to the LOWER cct T0
+    # and m1 = mireds[i + 1] to the higher cct T1, so a = (m - m1)/(m0 - m1)
+    # is exactly the T0 weight. The pre-GUIDE13 code multiplied T0 by
+    # (1 - a), which mirrored every request onto the wrong menu side and
+    # broke node identity (70/70 nodes returned a neighbor mix).
     tx = (target - mireds[i + 1]) / (mireds[i] - mireds[i + 1]) \
         if mireds[i] != mireds[i + 1] else 0.0
     corners = (
         (i, j), (i, j + 1), (i + 1, j), (i + 1, j + 1),
     )
     weights = {
-        (i, j): (1 - tx) * (1 - ty),
-        (i, j + 1): (1 - tx) * ty,
-        (i + 1, j): tx * (1 - ty),
-        (i + 1, j + 1): tx * ty,
+        (i, j): tx * (1 - ty),
+        (i, j + 1): tx * ty,
+        (i + 1, j): (1 - tx) * (1 - ty),
+        (i + 1, j + 1): (1 - tx) * ty,
     }
     raw = {ch: 0.0 for ch in CHANNELS}
     used_nodes = []
@@ -89,7 +101,8 @@ def interpolate_fullscale_command(
     projected = {ch: raw[ch] * (FULLSCALE / peak) for ch in CHANNELS}
     command = {}
     for ch in CHANNELS:
-        v = int(round(projected[ch]))
+        # round-half-up (Python round() is banker's rounding at .5)
+        v = int(math.floor(projected[ch] + 0.5))
         command[ch] = max(0, min(FULLSCALE, v))
     winner = max(command, key=lambda ch: command[ch])
     if command[winner] != FULLSCALE:

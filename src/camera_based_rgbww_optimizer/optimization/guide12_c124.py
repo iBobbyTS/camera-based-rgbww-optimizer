@@ -12,24 +12,32 @@ SAT monotonicity, and bounded prediction intervals. The legacy
 "within_c1_anchor_envelope" comparison is reported as one comparison,
 never as the product gate.
 
-Model (frozen 2026-10-12 from the adopted commands):
+Model (GUIDE13-corrected semantics, 2026-10-13):
 - anchors: per hue in {0,60,120,180,240,300}, the S25 and S50 adopted
-  commands (plus H60/S100); S0 carries the white anchor.
-- hue direction: periodic linear blend (shortest arc on the 0/360 ring)
-  of the anchor commands at the SAME anchor SAT as the request's
-  compressed SAT; at non-anchor SAT the two bracketing anchor-SAT layers
-  are blended after each is hue-interpolated (order frozen: hue first,
-  then SAT).
-- SAT compression: SAT levels are used as-is between anchors (monotone
-  by construction, linear); requests outside [25, 100] clamp to the
-  nearest anchor layer (compression recorded, never claimed as the
-  original request being reproduced).
+  commands, plus every adopted high-SAT command (H60/S100 today); SAT 0
+  is served by the single validated white S0 command and does not
+  change with hue.
+- SAT ladder: a SAT layer participates for a request hue only when the
+  layer is actually measured there (an anchor at exactly that hue, or
+  two bracketing anchor hues for interpolation). Requests between two
+  available layers are linearly blended (hue first, then SAT - frozen
+  order) and reported as interpolated; requests beyond the top available
+  layer are served at that top layer and reported as gamut_compressed
+  with requested/realized SAT. Nothing is silently clamped and nothing
+  is labelled as-requested unless it truly is.
 - winner projection: the final command is projected to true fullscale
-  (max channel 4095) with integerization - the same frozen order as
-  W12-3.
+  (max channel 4095) with round-half-up integerization - the same
+  frozen order as W12-3.
+
+GUIDE12-era behavior that this module no longer produces: S<=25 served
+by the colored S25 layer (so S0 was never white), S>=50 served by the
+S50 layer even where an adopted S100 command existed, and interior SAT
+values labelled with a blanket "as-requested" note. The GUIDE12 C12-4
+holdout (2/10) remains an evaluation of that old function only.
 """
 from __future__ import annotations
 
+import math
 from datetime import datetime, timezone
 from typing import Any, Mapping
 
@@ -40,8 +48,12 @@ FULLSCALE = 4095
 C124_HUE_ANCHORS = (0, 60, 120, 180, 240, 300)
 C124_SAT_ANCHORS = (25, 50)
 
-# Adopted (validated) commands from C12-2/C12-3, keyed "hue/sat".
+# Adopted (validated) commands from C12-2/C12-3, keyed "hue/sat". The
+# S0 white command ("0/0") is part of the anchor set: GUIDE13 requires
+# the runtime to emit the validated fullscale S0 command for SAT 0
+# instead of the old colored S25 clamp.
 C124_ADOPTED: dict[str, dict[str, int]] = {
+    "0/0": {"cw": 4095, "ww": 2240, "r": 658, "g": 1681, "b": 1425},
     "0/25": {"cw": 1575, "ww": 2343, "r": 4095, "g": 1024, "b": 1024},
     "0/50": {"cw": 282, "ww": 1818, "r": 4095, "g": 180, "b": 480},
     "60/25": {"cw": 1575, "ww": 1575, "r": 4095, "g": 4095, "b": 1792},
@@ -66,22 +78,63 @@ C124_HOLDOUTS: tuple[tuple[int, int], ...] = (
 )
 
 
-def _sat_layers(sat: int) -> tuple[int, int, float]:
-    """Bracketing anchor SAT layers and the blend weight (order: SAT
-    between the two layers after hue interpolation of each)."""
-    if sat <= C124_SAT_ANCHORS[0]:
-        return C124_SAT_ANCHORS[0], C124_SAT_ANCHORS[0], 0.0
-    if sat >= max(C124_SAT_ANCHORS):
-        top = 100 if False else C124_SAT_ANCHORS[-1]
-        return top, top, 0.0
-    lo, hi = C124_SAT_ANCHORS
-    return lo, hi, (sat - lo) / (hi - lo)
+def _layer_hues(sat_anchor: int) -> list[int]:
+    """Hues that actually have an adopted command at this SAT layer."""
+    if sat_anchor == 0:
+        return list(C124_HUE_ANCHORS)  # S0 white anchor is hue-independent
+    return [h for h in C124_HUE_ANCHORS if f"{h}/{sat_anchor}" in C124_ADOPTED]
+
+
+def _layer_available_for_hue(sat_anchor: int, hue_n: int) -> bool:
+    """A SAT layer can serve a hue only where it is measured: an anchor
+    at exactly that hue, or two bracketing anchor hues on the ring. The
+    S0 white layer is measured for every hue by definition."""
+    if sat_anchor == 0:
+        return True
+    hues = _layer_hues(sat_anchor)
+    if not hues:
+        return False
+    if hue_n in hues:
+        return True
+    if len(hues) < 2:
+        return False
+    ring = sorted(hues)
+    spans = list(zip(ring, ring[1:])) + [(ring[-1], ring[0] + 360)]
+    target = hue_n if hue_n >= ring[0] else hue_n + 360
+    return any(lo < target < hi for lo, hi in spans)
+
+
+def _sat_layers(sat: int, hue_n: int) -> tuple[int, int | None, float]:
+    """(lo, hi, w): the bracketing available SAT layers for this hue
+    and the blend weight; hi is None when serving at the single layer
+    lo (either exactly the request or an explicit compression)."""
+    ladder = [0] + [
+        s for s in sorted({int(k.split("/")[1]) for k in C124_ADOPTED
+                           if int(k.split("/")[1]) > 0})
+        if _layer_available_for_hue(s, hue_n)
+    ]
+    if sat <= ladder[0]:
+        return ladder[0], None, 0.0
+    if sat >= ladder[-1]:
+        return ladder[-1], None, 0.0
+    for lo, hi in zip(ladder, ladder[1:]):
+        if lo <= sat <= hi:
+            if sat == lo:
+                return lo, None, 0.0
+            if sat == hi:
+                return hi, None, 0.0
+            return lo, hi, (sat - lo) / (hi - lo)
+    raise ValueError(f"C12-4 SAT ladder failed for sat={sat} hue={hue_n}")
 
 
 def _hue_blend(hue: int, sat_anchor: int) -> dict[str, float]:
     """Periodic linear blend of anchor commands at one SAT layer,
     shortest arc on the 0/360 ring; only hues with an adopted command
-    at this SAT layer participate."""
+    at this SAT layer participate. Layer 0 is the hue-independent white
+    S0 command."""
+    if sat_anchor == 0:
+        base = C124_ADOPTED["0/0"]
+        return {ch: float(base[ch]) for ch in CHANNELS}
     layer = {
         h: C124_ADOPTED[f"{h}/{sat_anchor}"]
         for h in C124_HUE_ANCHORS
@@ -91,6 +144,10 @@ def _hue_blend(hue: int, sat_anchor: int) -> dict[str, float]:
     if not hues:
         raise ValueError(f"C12-4 model has no anchors at SAT {sat_anchor}")
     if len(hues) == 1:
+        if hue % 360 != hues[0]:
+            raise ValueError(
+                f"C12-4 SAT {sat_anchor} layer only measured at hue "
+                f"{hues[0]}; cannot serve hue {hue}")
         return {ch: float(layer[hues[0]][ch]) for ch in CHANNELS}
     ring = hues + [hues[0] + 360]
     target = hue if hue >= hues[0] else hue + 360
@@ -107,12 +164,16 @@ def _hue_blend(hue: int, sat_anchor: int) -> dict[str, float]:
 
 
 def c124_model_command(hue: int, sat: int) -> dict[str, Any]:
-    """Frozen runtime output function: periodic hue interpolation first,
-    then SAT-layer blend, then true-fullscale projection + rounding."""
+    """Frozen runtime output function (GUIDE13-corrected semantics):
+    periodic hue interpolation first, then SAT-ladder blend, then
+    true-fullscale projection with round-half-up integerization. The
+    returned record states the requested and realized SAT and whether
+    the request was gamut-compressed; only exact serves are
+    as-requested."""
     hue_n = hue % 360
-    lo, hi, w = _sat_layers(sat)
+    lo, hi, w = _sat_layers(sat, hue_n)
     base = _hue_blend(hue_n, lo)
-    if w > 0.0:
+    if hi is not None and w > 0.0:
         top = _hue_blend(hue_n, hi)
         raw = {ch: (1 - w) * base[ch] + w * top[ch] for ch in CHANNELS}
     else:
@@ -120,23 +181,27 @@ def c124_model_command(hue: int, sat: int) -> dict[str, Any]:
     peak = max(raw.values())
     if peak <= 0:
         raise ValueError("C12-4 model produced a zero command")
-    projected = {ch: int(round(v * FULLSCALE / peak)) for ch, v in raw.items()}
+    projected = {
+        ch: max(0, min(FULLSCALE, int(math.floor(v * FULLSCALE / peak + 0.5))))
+        for ch, v in raw.items()
+    }
     winner = max(projected, key=lambda ch: projected[ch])
-    projected[winner] = FULLSCALE
-    sat_note = (
-        "as-requested" if lo == hi or sat in C124_SAT_ANCHORS
-        else f"compressed-to-anchor-blend({lo},{hi},w={w:.3f})"
-    )
+    if projected[winner] != FULLSCALE:
+        projected[winner] = FULLSCALE
+    if hi is None and sat == lo:
+        realized, status, compressed = lo, "as-requested", False
+    elif hi is None:
+        realized, status, compressed = lo, "gamut_compressed", True
+    else:
+        realized, status, compressed = sat, "interpolated", False
     return {
         "request": {"hue": hue, "sat": sat},
         "command": projected,
         "winning_channel": winner,
-        "compressed_sat_note": (
-            f"request SAT {sat} served by anchor blend; the served color "
-            "is recorded as the model output, NOT claimed as the original "
-            "request being reproduced" if sat not in C124_SAT_ANCHORS
-            else "anchor SAT"),
-        "sat_note": sat_note,
+        "realized_sat": realized,
+        "sat_status": status,
+        "gamut_compressed": compressed,
+        "served_layers": [lo, hi] if hi is not None else [lo],
     }
 
 # Ray HSI shutters for the holdout targets: exact P6 (hue, sat) anchors

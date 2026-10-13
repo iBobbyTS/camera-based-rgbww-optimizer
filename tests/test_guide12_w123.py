@@ -85,5 +85,81 @@ class Guide12W123InterpolationTests(unittest.TestCase):
             self.assertEqual(max(command.values()), 4095)
 
 
+class Guide13MiredWeightCorrectionTests(unittest.TestCase):
+    """GUIDE13 §W13-C: the T0 (lower cct / higher mired) corner must carry
+    weight a=(m-m1)/(m0-m1). Expected values below are written out
+    independently (advisor audit numbers and hand arithmetic), never by
+    calling the function under test."""
+
+    def test_all_70_nodes_reproduce_their_frozen_command_exactly(self):
+        for node in LUT:
+            result = guide12_w123.interpolate_fullscale_command(
+                LUT, int(node["cct"]), int(node["gm"]))
+            self.assertEqual(
+                result["command"], {k: int(v) for k, v in node["command"].items()},
+                (node["cct"], node["gm"]),
+            )
+
+    def test_warm_node_identity_after_correction(self):
+        # 1800/100 must be its own command, not the 2000-node mix the
+        # pre-GUIDE13 function returned (advisor interpolation_audit).
+        result = guide12_w123.interpolate_fullscale_command(LUT, 1800, 100)
+        self.assertEqual(
+            result["command"],
+            {"cw": 0, "ww": 0, "r": 4095, "g": 1197, "b": 0},
+        )
+
+    def test_two_sided_bracket_matches_independent_bilinear_arithmetic(self):
+        # request 2100/100 sits between T0=2000 (m0=500) and T1=2300
+        # (m1=1e6/2300); a=(m-m1)/(m0-m1) weights the LOWER cct node.
+        cmd2000 = {"cw": 79.0, "ww": 51.0, "r": 4095.0, "g": 1435.0, "b": 1.0}
+        cmd2300 = {"cw": 0.0, "ww": 4095.0, "r": 2015.0, "g": 371.0, "b": 0.0}
+        a = (1e6 / 2100 - 1e6 / 2300) / (1e6 / 2000 - 1e6 / 2300)
+        raw = {ch: a * cmd2000[ch] + (1 - a) * cmd2300[ch] for ch in cmd2000}
+        peak = max(raw.values())
+        expected = {
+            ch: max(0, min(4095, int(raw[ch] * 4095 / peak + 0.5)))
+            for ch in raw
+        }
+        result = guide12_w123.interpolate_fullscale_command(LUT, 2100, 100)
+        self.assertEqual(result["command"], expected)
+        self.assertEqual(expected["r"], 4095)  # winner projected, not clipped
+
+    def test_constant_grid_returns_the_constant_command(self):
+        const = {"cw": 1000, "ww": 2000, "r": 4095, "g": 500, "b": 300}
+        nodes = [
+            {"cct": c, "gm": g, "command": dict(const)}
+            for c in (3000, 4000) for g in (0, 70, 100, 130, 200)
+        ]
+        for cct, gm in ((3200, 40), (3000, 100), (4000, 0), (3500, 170)):
+            result = guide12_w123.interpolate_fullscale_command(nodes, cct, gm)
+            self.assertEqual(result["command"], const, (cct, gm))
+
+    def test_weight_moves_continuously_toward_the_nearer_node(self):
+        near = guide12_w123.interpolate_fullscale_command(LUT, 2001, 100)["command"]
+        far = guide12_w123.interpolate_fullscale_command(LUT, 2299, 100)["command"]
+        node2000 = {k: int(v) for k, v in next(
+            n for n in LUT if n["cct"] == 2000 and n["gm"] == 100)["command"].items()}
+        node2300 = {k: int(v) for k, v in next(
+            n for n in LUT if n["cct"] == 2300 and n["gm"] == 100)["command"].items()}
+        d_near = sum(abs(near[ch] - node2000[ch]) for ch in node2000)
+        d_far = sum(abs(far[ch] - node2000[ch]) for ch in node2000)
+        self.assertLess(d_near, d_far)
+        self.assertLess(
+            sum(abs(far[ch] - node2300[ch]) for ch in node2300),
+            sum(abs(near[ch] - node2300[ch]) for ch in node2300),
+        )
+
+    def test_advisor_corrected_candidates_are_reproduced(self):
+        # Frozen advisor counterfactuals (independent expected values).
+        for request, expected in (
+            ((1850, 50), {"cw": 72, "ww": 2095, "r": 4095, "g": 728, "b": 26}),
+            ((2100, 170), {"cw": 0, "ww": 1495, "r": 4095, "g": 1398, "b": 0}),
+            ((2400, 50), {"cw": 279, "ww": 3045, "r": 4095, "g": 1350, "b": 362}),
+        ):
+            result = guide12_w123.interpolate_fullscale_command(LUT, *request)
+            self.assertEqual(result["command"], expected, request)
+
+
 if __name__ == "__main__":
     unittest.main()

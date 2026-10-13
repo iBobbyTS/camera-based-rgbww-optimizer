@@ -30,14 +30,74 @@ class Guide12C124ModelTests(unittest.TestCase):
         out25 = guide12_c124.c124_model_command(45, 25)
         out50 = guide12_c124.c124_model_command(45, 50)
         self.assertNotEqual(out25["command"], out50["command"])
-        interior = guide12_c124.c124_model_command(75, 35)
-        self.assertIn("compressed", interior["sat_note"])
-        self.assertIn(
-            "NOT claimed as the original request being reproduced",
-            interior["compressed_sat_note"])
-        clamped = guide12_c124.c124_model_command(45, 10)
-        floor = guide12_c124.c124_model_command(45, 25)
-        self.assertEqual(clamped["command"], floor["command"])  # clamp to 25
+
+
+class Guide13RuntimeSemanticTests(unittest.TestCase):
+    """GUIDE13 C13-D: S0 must serve the validated white command, the
+    full anchor set (including H60/S100) must be read, and clamping is
+    reported as requested/realized + gamut_compressed - never
+    as-requested."""
+
+    def test_s0_serves_validated_white_command_for_every_hue(self):
+        for hue in (0, 60, 137, 240, 359):
+            out = guide12_c124.c124_model_command(hue, 0)
+            self.assertEqual(
+                out["command"], guide12_c124.C124_ADOPTED["0/0"], hue)
+            self.assertEqual(out["sat_status"], "as-requested")
+            self.assertEqual(out["realized_sat"], 0)
+            self.assertFalse(out["gamut_compressed"])
+
+    def test_h60_s100_anchor_is_actually_served(self):
+        out = guide12_c124.c124_model_command(60, 100)
+        self.assertEqual(out["command"], guide12_c124.C124_ADOPTED["60/100"])
+        self.assertEqual(out["sat_status"], "as-requested")
+        self.assertEqual(out["realized_sat"], 100)
+        # interpolation between the S50 and S100 anchors is available
+        mid = guide12_c124.c124_model_command(60, 75)
+        self.assertEqual(mid["sat_status"], "interpolated")
+        self.assertEqual(mid["realized_sat"], 75)
+        self.assertEqual(mid["served_layers"], [50, 100])
+
+    def test_sat_beyond_top_layer_is_explicit_compression(self):
+        out = guide12_c124.c124_model_command(30, 80)  # no S100 at hue 30
+        self.assertTrue(out["gamut_compressed"])
+        self.assertEqual(out["sat_status"], "gamut_compressed")
+        self.assertEqual(out["realized_sat"], 50)
+        self.assertEqual(out["request"]["sat"], 80)
+        self.assertEqual(
+            out["command"], guide12_c124.c124_model_command(30, 50)["command"])
+
+    def test_low_interior_sat_interpolates_s0_to_s25(self):
+        out = guide12_c124.c124_model_command(45, 10)
+        self.assertEqual(out["sat_status"], "interpolated")
+        self.assertEqual(out["realized_sat"], 10)
+        self.assertEqual(out["served_layers"], [0, 25])
+        self.assertFalse(out["gamut_compressed"])
+        # the serve moves continuously from the white S0 command toward
+        # the hue-45 S25 serve as SAT grows (each command is projected
+        # to fullscale, so per-channel ranges do not apply)
+        white = guide12_c124.c124_model_command(45, 0)["command"]
+        s25 = guide12_c124.c124_model_command(45, 25)["command"]
+        near = guide12_c124.c124_model_command(45, 5)["command"]
+        far = guide12_c124.c124_model_command(45, 20)["command"]
+
+        def l1(a, b):
+            return sum(abs(a[ch] - b[ch]) for ch in ("cw", "ww", "r", "g", "b"))
+
+        self.assertNotEqual(out["command"], white)
+        self.assertNotEqual(out["command"], s25)
+        self.assertLess(l1(near, white), l1(far, white))
+        self.assertLess(l1(far, s25), l1(near, s25))
+
+    def test_anchor_identity_and_periodicity(self):
+        for key, command in guide12_c124.C124_ADOPTED.items():
+            hue, sat = (int(x) for x in key.split("/"))
+            out = guide12_c124.c124_model_command(hue, sat)
+            self.assertEqual(out["command"], command, key)
+            self.assertEqual(out["sat_status"], "as-requested", key)
+        a = guide12_c124.c124_model_command(0, 50)
+        b = guide12_c124.c124_model_command(360, 50)
+        self.assertEqual(a["command"], b["command"])
 
 
 class Guide12C124PlanTests(unittest.TestCase):
