@@ -1,0 +1,53 @@
+{
+ "schema": "guide13_w13a_node_state_v1",
+ "node": "20000/70",
+ "status": "qualified",
+ "history": [
+  {
+   "block": 1,
+   "best_tag": "u0_repeat",
+   "E": 7.084,
+   "eK": -177.1,
+   "command": {
+    "b": 4095,
+    "cw": 0,
+    "g": 3328,
+    "r": 1427,
+    "ww": 2674
+   },
+   "note": "reference compatible (drift -4.5K); W12-2 session had shown -568K - large session-to-session shift, consistent with N2 burst observations"
+  },
+  {
+   "block": 2,
+   "best_tag": "solver_half_step",
+   "E": 0.464,
+   "eK": -11.59,
+   "emired": 0.0571,
+   "eduv": -0.0001672,
+   "command": {
+    "b": 4095,
+    "cw": 0,
+    "g": 3328,
+    "r": 1461,
+    "ww": 2631
+   },
+   "overshoot_record": {
+    "solver_full_step_E": 4.457,
+    "eK": 111.43
+   }
+  }
+ ],
+ "best_command": {
+  "b": 4095,
+  "cw": 0,
+  "g": 3328,
+  "r": 1461,
+  "ww": 2631
+ },
+ "best_E": 0.464,
+ "unique_commands_used": 5,
+ "cap": 8,
+ "strip_shutter": "1/160 (CLI override; 1/125 pre-check ceiling trip)",
+ "w13_b_confirmation_queue": true,
+ "note": "large W12-2-vs-today baseline shift (-568K vs -177K) recorded; W13-B confirmations will characterize cross-session spread"
+}
