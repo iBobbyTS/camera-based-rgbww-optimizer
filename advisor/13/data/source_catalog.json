@@ -1,0 +1,62 @@
+[
+  {
+    "package": "base",
+    "member": "source/guide12_w123.py",
+    "sha256": "8e38dc72bbaa6b32ea7749218e75179e7dd2c88f1c7fe5ca33802bfd1c6e42be",
+    "byte_count": 13889
+  },
+  {
+    "package": "base",
+    "member": "source/guide12_c124.py",
+    "sha256": "569434da201c85235a2d622a7c3c8e54da442a45c150df280a579e6091f12ada",
+    "byte_count": 13161
+  },
+  {
+    "package": "base",
+    "member": "source/analyze_c12_2_block_20261009.py",
+    "sha256": "d71fedda536ad81910e86227639eefe656f0c137015279e419bd529c367061dc",
+    "byte_count": 9725
+  },
+  {
+    "package": "base",
+    "member": "source/analyze_c12_4_20261012.py",
+    "sha256": "21c40ce3407f3a09bb7b7e42917aff0dd32a6feed384639b497665012b6bed21",
+    "byte_count": 7460
+  },
+  {
+    "package": "base",
+    "member": "results/GUIDE12-C122-RESULT-20261009.md",
+    "sha256": "0319681b4c87dd55b353394ffad304fe41034b5f9e200496e85e6379aa59da71",
+    "byte_count": 28440
+  },
+  {
+    "package": "base",
+    "member": "results/GUIDE12-W12-2-RESULT-20261007.md",
+    "sha256": "cfb688c21f2d6000c0ee4458c85e055f7da5315947040c3b587bce1a835c9fd5",
+    "byte_count": 4054
+  },
+  {
+    "package": "base",
+    "member": "results/c12-1-mapping-20261005.json",
+    "sha256": "b8b044b5ace0a349232307724d5ae0371ee2631b0f4603a8b1e8319bbff23376",
+    "byte_count": 31360
+  },
+  {
+    "package": "base",
+    "member": "results/n2-repeatability-analysis-20261005.json",
+    "sha256": "ad1be1da85260e7a2c748fe2cc9ee4f556e9cc54d2d2b0b1213dd00cac855a08",
+    "byte_count": 101535
+  },
+  {
+    "package": "completion",
+    "member": "OBSERVATIONS_COMPLETE.jsonl",
+    "sha256": "ab8c76b2ac00a1190d28e5d081d83b9c0e58b56efdc7640928793f71838594e1",
+    "byte_count": 19077938
+  },
+  {
+    "package": "completion",
+    "member": "MISSING_OR_UNIDENTIFIABLE.json",
+    "sha256": "1ddbc23b25e8e0a34dbb228104c4cb62966f642e0456c56dbdf318027a578cd6",
+    "byte_count": 1922
+  }
+]

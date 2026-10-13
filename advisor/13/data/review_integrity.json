@@ -1,0 +1,634 @@
+{
+  "source_package_hashes": {
+    "base": "3ed20b169cb2cc60470702a05c0e0bfb96f38aa24010b7948e664d271f53d500",
+    "completion": "85a61c4ee3a46c28f5922804dcd3f69590c82069477f1f9ad8924627cb52b4bc"
+  },
+  "source_member_counts": {
+    "base": 1115,
+    "completion": 4999
+  },
+  "raw_physical_rows": 1068,
+  "primitive_rows_recomputed": 1068,
+  "matrix": {
+    "schema": "guide12_rgb_xyz_matrix_v1",
+    "matrix_id": "mtx_d7f573d010a0e041",
+    "matrix_3x3": [
+      [
+        0.9538999795913696,
+        -0.27950000762939453,
+        -0.12240000069141388
+      ],
+      [
+        -0.41749998927116394,
+        1.1998000144958496,
+        0.24580000340938568
+      ],
+      [
+        -0.04650000110268593,
+        0.17550000548362732,
+        0.6047999858856201
+      ]
+    ],
+    "source": "rawpy.imread(raw).rgb_xyz_matrix[:3], offline re-read of every retained RAW on 20261012 (tmp/scan_guide12_completion_raw_20261012.py)",
+    "frames_referencing": 1076
+  },
+  "white_recompute_max_abs_deviation": {
+    "cct_K": 0.0012066134768247139,
+    "mired": 9.280086899821072e-06,
+    "duv": 1.3530843112619095e-16
+  },
+  "original_replay_local": {
+    "schema": "guide12_completion_validation_v1",
+    "checks": {
+      "manifest_integrity": {
+        "pass": true,
+        "detail": {
+          "base": {
+            "manifest_members": 1115,
+            "verified": 1115,
+            "bad": [],
+            "label": "base"
+          },
+          "completion": {
+            "manifest_members": 4999,
+            "verified": 4999,
+            "bad": [],
+            "label": "completion"
+          }
+        }
+      },
+      "stats_correspondence_and_dedupe": {
+        "pass": true,
+        "detail": {
+          "base_stats_members": 1051,
+          "completion_stats_members": 17,
+          "raw_rows": 1076,
+          "physical_rows": 1068,
+          "diagnostic_rows": 8,
+          "raw_with_stats": 1068,
+          "unique_recorded_stats_sha": 1068,
+          "unreadable_raw": [],
+          "acquisition==recompute==stats_source for all physical rows": true
+        }
+      },
+      "adopted_colour_traceability": {
+        "pass": true,
+        "detail": {
+          "adopted_entries": 13,
+          "identity": {
+            "0/25": {
+              "command": {
+                "b": 1024,
+                "cw": 1575,
+                "g": 1024,
+                "r": 4095,
+                "ww": 2343
+              },
+              "frames": 4,
+              "distinct_runs": 2,
+              "runs": [
+                "guide12-c122/formal-c122-h0s25-b1",
+                "guide12-c122/formal-c122-h0s25-b2"
+              ],
+              "tags": [
+                "probe_ww",
+                "pww_confirm1",
+                "pww_confirm2",
+                "pww_confirm3"
+              ],
+              "roles": [
+                "confirmation",
+                "single_axis_probe"
+              ],
+              "max_channel_at_fullscale": true
+            },
+            "0/50": {
+              "command": {
+                "b": 480,
+                "cw": 282,
+                "g": 180,
+                "r": 4095,
+                "ww": 1818
+              },
+              "frames": 4,
+              "distinct_runs": 3,
+              "runs": [
+                "guide12-c122/formal-c122-h0s50-b5",
+                "guide12-c122/formal-c122-h0s50-b6",
+                "guide12-c122/formal-c122-h0s50-b7"
+              ],
+              "tags": [
+                "refine3",
+                "refine3_confirm1",
+                "refine3_confirm2",
+                "refine3_confirm3"
+              ],
+              "roles": [
+                "confirmation",
+                "face_step"
+              ],
+              "max_channel_at_fullscale": true
+            },
+            "120/25": {
+              "command": {
+                "b": 1300,
+                "cw": 3343,
+                "g": 4095,
+                "r": 1759,
+                "ww": 1018
+              },
+              "frames": 4,
+              "distinct_runs": 2,
+              "runs": [
+                "guide12-c122/formal-c122-h120s25-b4",
+                "guide12-c122/formal-c122-h120s25-b5"
+              ],
+              "tags": [
+                "refine2",
+                "refine2_confirm1",
+                "refine2_confirm2",
+                "refine2_confirm3"
+              ],
+              "roles": [
+                "confirmation",
+                "face_step"
+              ],
+              "max_channel_at_fullscale": true
+            },
+            "120/50": {
+              "command": {
+                "b": 1024,
+                "cw": 282,
+                "g": 4095,
+                "r": 368,
+                "ww": 1818
+              },
+              "frames": 4,
+              "distinct_runs": 2,
+              "runs": [
+                "guide12-c122/formal-c122-h120s50-b2",
+                "guide12-c122/formal-c122-h120s50-b3"
+              ],
+              "tags": [
+                "step1",
+                "step1_confirm1",
+                "step1_confirm2",
+                "step1_confirm3"
+              ],
+              "roles": [
+                "confirmation",
+                "face_step"
+              ],
+              "max_channel_at_fullscale": true
+            },
+            "180/25": {
+              "command": {
+                "b": 2657,
+                "cw": 1575,
+                "g": 4095,
+                "r": 1507,
+                "ww": 2193
+              },
+              "frames": 4,
+              "distinct_runs": 2,
+              "runs": [
+                "guide12-c122/formal-c122-h180s25-b3",
+                "guide12-c122/formal-c122-h180s25-b4"
+              ],
+              "tags": [
+                "refine1",
+                "refine1_confirm1",
+                "refine1_confirm2",
+                "refine1_confirm3"
+              ],
+              "roles": [
+                "confirmation",
+                "face_step"
+              ],
+              "max_channel_at_fullscale": true
+            },
+            "180/50": {
+              "command": {
+                "b": 2388,
+                "cw": 1050,
+                "g": 4095,
+                "r": 920,
+                "ww": 1050
+              },
+              "frames": 4,
+              "distinct_runs": 2,
+              "runs": [
+                "guide12-c122/formal-c122-h180s50-b5",
+                "guide12-c122/formal-c122-h180s50-b6"
+              ],
+              "tags": [
+                "refine2",
+                "refine2_confirm1",
+                "refine2_confirm2",
+                "refine2_confirm3"
+              ],
+              "roles": [
+                "confirmation",
+                "face_step"
+              ],
+              "max_channel_at_fullscale": true
+            },
+            "240/25": {
+              "command": {
+                "b": 4095,
+                "cw": 3111,
+                "g": 2048,
+                "r": 542,
+                "ww": 2343
+              },
+              "frames": 4,
+              "distinct_runs": 2,
+              "runs": [
+                "guide12-c122/formal-c122-h240s25-b2",
+                "guide12-c122/formal-c122-h240s25-b3"
+              ],
+              "tags": [
+                "step1",
+                "step1_confirm1",
+                "step1_confirm2",
+                "step1_confirm3"
+              ],
+              "roles": [
+                "confirmation",
+                "face_step"
+              ],
+              "max_channel_at_fullscale": true
+            },
+            "240/50": {
+              "command": {
+                "b": 4095,
+                "cw": 796,
+                "g": 2048,
+                "r": 1031,
+                "ww": 547
+              },
+              "frames": 4,
+              "distinct_runs": 2,
+              "runs": [
+                "guide12-c122/formal-c122-h240s50-b3",
+                "guide12-c122/formal-c122-h240s50-b4"
+              ],
+              "tags": [
+                "refine1",
+                "refine1_confirm1",
+                "refine1_confirm2",
+                "refine1_confirm3"
+              ],
+              "roles": [
+                "confirmation",
+                "face_step"
+              ],
+              "max_channel_at_fullscale": true
+            },
+            "300/25": {
+              "command": {
+                "b": 4095,
+                "cw": 3111,
+                "g": 1804,
+                "r": 4095,
+                "ww": 4095
+              },
+              "frames": 4,
+              "distinct_runs": 2,
+              "runs": [
+                "guide12-c122/formal-c122-h300s25-b3",
+                "guide12-c122/formal-c122-h300s25-b4"
+              ],
+              "tags": [
+                "refine1",
+                "refine1_confirm1",
+                "refine1_confirm2",
+                "refine1_confirm3"
+              ],
+              "roles": [
+                "confirmation",
+                "face_step"
+              ],
+              "max_channel_at_fullscale": true
+            },
+            "300/50": {
+              "command": {
+                "b": 4095,
+                "cw": 1818,
+                "g": 528,
+                "r": 4095,
+                "ww": 2586
+              },
+              "frames": 4,
+              "distinct_runs": 2,
+              "runs": [
+                "guide12-c122/formal-c122-h300s50-b2",
+                "guide12-c122/formal-c122-h300s50-b3"
+              ],
+              "tags": [
+                "step1",
+                "step1_confirm1",
+                "step1_confirm2",
+                "step1_confirm3"
+              ],
+              "roles": [
+                "confirmation",
+                "face_step"
+              ],
+              "max_channel_at_fullscale": true
+            },
+            "60/100": {
+              "command": {
+                "b": 80,
+                "cw": 0,
+                "g": 3390,
+                "r": 4095,
+                "ww": 0
+              },
+              "frames": 4,
+              "distinct_runs": 2,
+              "runs": [
+                "guide12-c122/formal-c122-h60s100-b6",
+                "guide12-c122/formal-c122-h60s100-b7"
+              ],
+              "tags": [
+                "fin2",
+                "fin2_confirm1",
+                "fin2_confirm2",
+                "fin2_confirm3"
+              ],
+              "roles": [
+                "confirmation",
+                "face_step"
+              ],
+              "max_channel_at_fullscale": true
+            },
+            "60/25": {
+              "command": {
+                "b": 1792,
+                "cw": 1575,
+                "g": 4095,
+                "r": 4095,
+                "ww": 1575
+              },
+              "frames": 4,
+              "distinct_runs": 2,
+              "runs": [
+                "guide12-c122/formal-c122-h60s25-b1",
+                "guide12-c122/formal-c122-h60s25-b2"
+              ],
+              "tags": [
+                "pb_confirm1",
+                "pb_confirm2",
+                "pb_confirm3",
+                "probe_b"
+              ],
+              "roles": [
+                "confirmation",
+                "single_axis_probe"
+              ],
+              "max_channel_at_fullscale": true
+            },
+            "60/50": {
+              "command": {
+                "b": 1024,
+                "cw": 1050,
+                "g": 4095,
+                "r": 4095,
+                "ww": 1818
+              },
+              "frames": 4,
+              "distinct_runs": 2,
+              "runs": [
+                "guide12-c122/formal-c122-h60s50-b1",
+                "guide12-c122/formal-c122-h60s50-b2"
+              ],
+              "tags": [
+                "probe_ww",
+                "pww_confirm1",
+                "pww_confirm2",
+                "pww_confirm3"
+              ],
+              "roles": [
+                "confirmation",
+                "single_axis_probe"
+              ],
+              "max_channel_at_fullscale": true
+            }
+          }
+        }
+      },
+      "reference_and_isolation_trace": {
+        "pass": true,
+        "detail": {
+          "formal_ray_frames_not_100pct": [],
+          "ray_frames_total": 499,
+          "strip_frames": 562,
+          "strip_frames_with_fullscale_channel": 553,
+          "strip_frames_missing_ray_zero_flag": 0,
+          "ray_frames_missing_strip_zero_flag": 0
+        }
+      },
+      "w12_2_node_recompute": {
+        "pass": true,
+        "detail": {
+          "node": "3200/100",
+          "pairs": [
+            {
+              "repeat": 1,
+              "E_original": 3.2971968098207185,
+              "E_recomputed": 3.2971977153641205,
+              "signed_original": {
+                "cct_K": -35.26531492408185,
+                "mired": 3.2971968098207185,
+                "duv": 8.42010971078555e-05
+              },
+              "signed_recomputed": {
+                "cct_K": -35.26532471436394,
+                "duv": 8.420109710784683e-05,
+                "mired": 3.2971977153641205
+              }
+            }
+          ],
+          "max_white_point_deviation_vs_original": 9.790282092581037e-06
+        }
+      },
+      "n2_pairing_ci_recompute": {
+        "pass": false,
+        "detail": {
+          "state": "white_1800_100",
+          "paired_rows": 6,
+          "max_paired_difference_deviation": 3.9725871374685084e-06,
+          "original_ci_cct": {
+            "mean": -13.205008990620021,
+            "half_width": 2.8537530123561448,
+            "low": -16.058762002976167,
+            "high": -10.351255978263875,
+            "n": 3,
+            "df": 2,
+            "t": 4.303
+          }
+        }
+      },
+      "w12_4_did_recompute": {
+        "pass": true,
+        "detail": {
+          "point": "3200/100",
+          "recomputed_Delta_protocol": {
+            "cct_K": 18.03020756714841,
+            "duv": -0.00020557445641005388,
+            "mired": -1.6995996692581343
+          },
+          "original": {
+            "cct_K": 18.03020756714841,
+            "mired": -1.6995996692581343,
+            "duv": -0.00020557445641005388
+          },
+          "max_deviation": 0.0
+        }
+      },
+      "adopted_colour_dz_recompute": {
+        "pass": true,
+        "detail": {
+          "S0": {
+            "n": 4,
+            "mean_dz": [
+              -0.00018508474966233424,
+              0.0021692172625168427
+            ],
+            "expected": [
+              -0.00019,
+              0.00217
+            ]
+          },
+          "H0/S50": {
+            "n": 4,
+            "mean_dz": [
+              -0.031322561476048616,
+              0.03987005248153411
+            ],
+            "expected": [
+              -0.0313,
+              0.0399
+            ]
+          },
+          "H60/S100": {
+            "n": 4,
+            "mean_dz": [
+              0.007597531251675893,
+              0.0008353830469762236
+            ],
+            "expected": [
+              0.0076,
+              0.0008
+            ]
+          },
+          "H120/S50": {
+            "n": 4,
+            "mean_dz": [
+              0.0005300651053589678,
+              0.0023133681100896697
+            ],
+            "expected": [
+              0.0005,
+              0.0023
+            ]
+          },
+          "H240/S50": {
+            "n": 4,
+            "mean_dz": [
+              0.002063428114498278,
+              -0.001428096890281061
+            ],
+            "expected": [
+              0.0021,
+              -0.0014
+            ]
+          },
+          "H300/S25": {
+            "n": 4,
+            "mean_dz": [
+              0.004063741529314352,
+              0.04250963968065241
+            ],
+            "expected": [
+              0.0041,
+              0.0425
+            ]
+          }
+        }
+      },
+      "runtime_model_vs_executed_commands": {
+        "pass": true,
+        "detail": {
+          "w123_vector_mismatches": [],
+          "w123_runs": 1,
+          "w123_distinct_strip_cmds": 20,
+          "c124_holdout_cmds_all_executed": true,
+          "c124_exec_cmds": 10,
+          "adopted_commands_observed_in_runs": "13/13"
+        }
+      },
+      "batch1_exposure_and_ambient_recompute": {
+        "pass": true,
+        "detail": {
+          "classes": {
+            "fullscale_red": {
+              "selected": null,
+              "original_selected": null
+            },
+            "fullscale_blue": {
+              "selected": "007-strip-fullscale_blue-1over320",
+              "original_selected": "007-strip-fullscale_blue-1over320"
+            },
+            "high_white_load": {
+              "selected": "000-strip-high_white_load-corrected-1over100",
+              "original_selected": "000-strip-high_white_load-corrected-1over100"
+            }
+          },
+          "ambient_1over8": {
+            "A_over_on": {
+              "B": 1.5885977084464896e-05,
+              "G1": 4.696101403017448e-06,
+              "G2": 5.176477212102183e-06,
+              "R": 5.447098348213651e-06
+            },
+            "max_ratio_dev_vs_original": 0.0
+          }
+        }
+      }
+    },
+    "replay_discrepancy": [],
+    "overall": "FAIL: ['n2_pairing_ci_recompute']"
+  },
+  "already_acquired_input_sufficiency": true,
+  "historical_unidentifiables": [
+    {
+      "item": "ambient_temperature_c in thermal-covariates.jsonl",
+      "status": "not_recorded",
+      "evidence": "1065 rows retained; ambient_temperature_c non-null in 0, source_surface_temperature_c non-null in 0",
+      "note": "temperature covariates were not recorded by the harness; not reconstructed from wait times"
+    },
+    {
+      "item": "per-frame ISO/aperture in formal-run ledgers",
+      "status": "not_recorded",
+      "evidence": "bridge sidecars record exposure timing and receipt identity only; ISO/aperture appear only in the standalone diagnostic capture receipts (iso=100, aperture=implicit auto, e.g. runs/guide12-n2/diag-ray-emission-20261003/a-capture.json)"
+    },
+    {
+      "item": "guide12-w123/diag-ray-precheck and guide12-c122/diag-ray-precheck sidecar JSONs",
+      "status": "not_recorded",
+      "evidence": "each directory retains only the CR3 payload; identity provided by offline hash in RAW_INDEX_COMPLETE (kind cr3, no receipt)"
+    },
+    {
+      "item": "three zero-capture stub run roots deleted after orphan-process incidents during C12-2/3 (S0 block 5, H240/S50 block 4, H0/S25 write+launch)",
+      "status": "deleted_zero_capture_no_data",
+      "evidence": "GUIDE12-C122-RESULT-20261009.md §methodology note records the third incident and the solo-background-command discipline; the stub roots had zero captures and no physical returns when deleted"
+    },
+    {
+      "item": "in-session C12-2/3 two-point interpolation arithmetic (exact keystroke-level generator)",
+      "status": "original_generator_not_retained",
+      "evidence": "retained evidence: derived/c122-*-candidates.json (measured dz per candidate), derived/c122-next-*.json (best command/dz, budget ledger), result-doc gate tables, and the frozen formulas in the base package (source/analyze_c12_2_block_20261009.py, source/analyze_c12_4_20261012.py hue_basis); the ad-hoc arithmetic executed in the operator session was not captured as a script and is not re-implemented here"
+    }
+  ],
+  "run_note": "Input acquisition files were not modified. Nonlinear CCT minimization differs from the frozen evaluation by at most 0.0013 K and 1e-5 mired; Duv agrees to numerical precision. This is far below physical tolerances, but not bitwise replay. The local source replay has 9/10 strict tests passing because N2 uses a 1e-6 numerical equality threshold; this is disclosed rather than silently replacing PASS."
+}

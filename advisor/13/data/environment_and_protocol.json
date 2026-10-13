@@ -1,0 +1,1805 @@
+{
+  "batch1_original": {
+    "all_off": [
+      {
+        "A_over_on_ratio": {
+          "B": 0.00010550301590233969,
+          "G1": 0.0002071741065484328,
+          "G2": 0.0002356229504263063,
+          "R": 0.003423166872640528
+        },
+        "drift_ratio_end_over_start": {
+          "B": 0.9950424148947885,
+          "G1": 0.9764509990485252,
+          "G2": 1.0943120033458802,
+          "R": 1.1507024265644958
+        },
+        "end": {
+          "capture_id": "011-ambient-alloff-end-1over400",
+          "plane_status": {
+            "B": "rejected",
+            "G1": "rejected",
+            "G2": "rejected",
+            "R": "rejected"
+          },
+          "planes_nps": {
+            "B": 0.009612730037290188,
+            "G1": 0.004369120580687991,
+            "G2": 0.005568771512334029,
+            "R": 0.007670814710074961
+          }
+        },
+        "paired_on_capture": "007-strip-fullscale_blue-1over320",
+        "shutter": "1/400",
+        "start": {
+          "capture_id": "000-ambient-alloff-start-1over400",
+          "plane_status": {
+            "B": "rejected",
+            "G1": "rejected",
+            "G2": "rejected",
+            "R": "rejected"
+          },
+          "planes_nps": {
+            "B": 0.009660623399964912,
+            "G1": 0.004474490358395205,
+            "G2": 0.0050888334362662584,
+            "R": 0.0066662019067577055
+          }
+        },
+        "z_on_minus_z_on_minus_A": {
+          "log_B_over_G": -0.00011591433689717157,
+          "log_R_over_G": 0.0032076163951191283
+        }
+      },
+      {
+        "A_over_on_ratio": {
+          "B": 1.5885977084464896e-05,
+          "G1": 4.696101403017448e-06,
+          "G2": 5.176477212102183e-06,
+          "R": 5.447098348213651e-06
+        },
+        "drift_ratio_end_over_start": {
+          "B": 1.2898429513985687,
+          "G1": 1.0412407785974576,
+          "G2": 1.027372997343209,
+          "R": 1.135238237714115
+        },
+        "end": {
+          "capture_id": "012-ambient-alloff-end-1over8",
+          "plane_status": {
+            "B": "rejected",
+            "G1": "rejected",
+            "G2": "rejected",
+            "R": "rejected"
+          },
+          "planes_nps": {
+            "B": 0.0002908142216262813,
+            "G1": 0.00024546327260105237,
+            "G2": 0.00026733556002807654,
+            "R": 0.00031796257576083737
+          }
+        },
+        "paired_on_capture": "000-strip-high_white_load-corrected-1over100",
+        "shutter": "1/8",
+        "start": {
+          "capture_id": "001-ambient-alloff-start-1over8",
+          "plane_status": {
+            "B": "rejected",
+            "G1": "rejected",
+            "G2": "rejected",
+            "R": "rejected"
+          },
+          "planes_nps": {
+            "B": 0.00022546482989340154,
+            "G1": 0.00023574112505629036,
+            "G2": 0.0002602127569241234,
+            "R": 0.0002800844485304496
+          }
+        },
+        "z_on_minus_z_on_minus_A": {
+          "log_B_over_G": 1.0949636858326173e-05,
+          "log_R_over_G": 5.106467739698917e-07
+        }
+      }
+    ],
+    "classes": [
+      {
+        "command": {
+          "b": 0,
+          "cw": 0,
+          "g": 0,
+          "r": 4095,
+          "ww": 0
+        },
+        "label": "fullscale_red",
+        "selected_capture_id": null,
+        "selection_reason": "stop 002-strip-fullscale_red-1over500 not main-layer valid: plane_rejected_B",
+        "state_id": "B1_R4095",
+        "stops": [
+          {
+            "capture_id": "002-strip-fullscale_red-1over500",
+            "consistency_with_next_stop": {
+              "consistent": true,
+              "dz": {
+                "log_B_over_G": 0.005198356250575298,
+                "log_R_over_G": 0.0011077198784119613
+              }
+            },
+            "p99_values": {
+              "B": {
+                "margin_dn": 15844.0,
+                "p99": 539.0,
+                "white_level": 16383.0
+              },
+              "G1": {
+                "margin_dn": 15710.0,
+                "p99": 673.0,
+                "white_level": 16383.0
+              },
+              "G2": {
+                "margin_dn": 15710.0,
+                "p99": 673.0,
+                "white_level": 16383.0
+              },
+              "R": {
+                "margin_dn": 14812.0,
+                "p99": 1571.0,
+                "white_level": 16383.0
+              }
+            },
+            "planes": {
+              "B": {
+                "effective_white_level": 16383.0,
+                "failures": [
+                  "near_noise_floor_fraction_exceeded"
+                ],
+                "near_noise_fraction": 1.0,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 0.44799268757277655,
+                "quality": "rejected",
+                "raw_code_max": 544.0,
+                "raw_code_min": 511.0,
+                "raw_code_p99": 539.0,
+                "white_rail_plateau": false
+              },
+              "G1": {
+                "effective_white_level": 16383.0,
+                "failures": [],
+                "near_noise_fraction": 3.325684259536399e-05,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 4.507614035257824,
+                "quality": "accepted",
+                "raw_code_max": 683.0,
+                "raw_code_min": 588.0,
+                "raw_code_p99": 673.0,
+                "white_rail_plateau": false
+              },
+              "G2": {
+                "effective_white_level": 16383.0,
+                "failures": [],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 4.546960186523798,
+                "quality": "accepted",
+                "raw_code_max": 688.0,
+                "raw_code_min": 597.0,
+                "raw_code_p99": 673.0,
+                "white_rail_plateau": false
+              },
+              "R": {
+                "effective_white_level": 16383.0,
+                "failures": [],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 31.275818141622192,
+                "quality": "accepted",
+                "raw_code_max": 1609.0,
+                "raw_code_min": 920.0,
+                "raw_code_p99": 1571.0,
+                "white_rail_plateau": false
+              }
+            },
+            "rejected_planes": {
+              "B": [
+                "near_noise_floor_fraction_exceeded"
+              ]
+            },
+            "shutter": 0.001953125,
+            "status": "plane_rejected_B",
+            "z": {
+              "log_B_over_G": -2.3131012574141443,
+              "log_R_over_G": 1.9327223272834595
+            }
+          },
+          {
+            "capture_id": "003-strip-fullscale_red-1over400",
+            "consistency_with_next_stop": {
+              "consistent": true,
+              "dz": {
+                "log_B_over_G": -0.0008630234079891608,
+                "log_R_over_G": 0.0018668394223315676
+              }
+            },
+            "consistency_with_previous_stop": {
+              "consistent": true,
+              "dz": {
+                "log_B_over_G": 0.005198356250575298,
+                "log_R_over_G": 0.0011077198784119613
+              }
+            },
+            "p99_values": {
+              "B": {
+                "margin_dn": 15844.0,
+                "p99": 539.0,
+                "white_level": 16383.0
+              },
+              "G1": {
+                "margin_dn": 15672.0,
+                "p99": 711.0,
+                "white_level": 16383.0
+              },
+              "G2": {
+                "margin_dn": 15668.0,
+                "p99": 715.0,
+                "white_level": 16383.0
+              },
+              "R": {
+                "margin_dn": 14537.0,
+                "p99": 1846.0,
+                "white_level": 16383.0
+              }
+            },
+            "planes": {
+              "B": {
+                "effective_white_level": 16383.0,
+                "failures": [
+                  "near_noise_floor_fraction_exceeded"
+                ],
+                "near_noise_fraction": 1.0,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 0.45102882505899816,
+                "quality": "rejected",
+                "raw_code_max": 550.0,
+                "raw_code_min": 512.0,
+                "raw_code_p99": 539.0,
+                "white_rail_plateau": false
+              },
+              "G1": {
+                "effective_white_level": 16383.0,
+                "failures": [],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 4.514834211162804,
+                "quality": "accepted",
+                "raw_code_max": 726.0,
+                "raw_code_min": 611.0,
+                "raw_code_p99": 711.0,
+                "white_rail_plateau": false
+              },
+              "G2": {
+                "effective_white_level": 16383.0,
+                "failures": [],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 4.55383975863875,
+                "quality": "accepted",
+                "raw_code_max": 735.0,
+                "raw_code_min": 625.0,
+                "raw_code_p99": 715.0,
+                "white_rail_plateau": false
+              },
+              "R": {
+                "effective_white_level": 16383.0,
+                "failures": [],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 31.359238744540423,
+                "quality": "accepted",
+                "raw_code_max": 1909.0,
+                "raw_code_min": 1035.0,
+                "raw_code_p99": 1846.0,
+                "white_rail_plateau": false
+              }
+            },
+            "rejected_planes": {
+              "B": [
+                "near_noise_floor_fraction_exceeded"
+              ]
+            },
+            "shutter": 0.00246078330057593,
+            "status": "plane_rejected_B",
+            "z": {
+              "log_B_over_G": -2.307902901163569,
+              "log_R_over_G": 1.9338300471618715
+            }
+          },
+          {
+            "capture_id": "004-strip-fullscale_red-1over320",
+            "consistency_with_previous_stop": {
+              "consistent": true,
+              "dz": {
+                "log_B_over_G": -0.0008630234079891608,
+                "log_R_over_G": 0.0018668394223315676
+              }
+            },
+            "p99_values": {
+              "B": {
+                "margin_dn": 15839.0,
+                "p99": 544.0,
+                "white_level": 16383.0
+              },
+              "G1": {
+                "margin_dn": 15620.0,
+                "p99": 763.0,
+                "white_level": 16383.0
+              },
+              "G2": {
+                "margin_dn": 15620.0,
+                "p99": 763.0,
+                "white_level": 16383.0
+              },
+              "R": {
+                "margin_dn": 14196.0,
+                "p99": 2187.0,
+                "white_level": 16383.0
+              }
+            },
+            "planes": {
+              "B": {
+                "effective_white_level": 16383.0,
+                "failures": [
+                  "near_noise_floor_fraction_exceeded"
+                ],
+                "near_noise_fraction": 1.0,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 0.4486571504885094,
+                "quality": "rejected",
+                "raw_code_max": 555.0,
+                "raw_code_min": 517.0,
+                "raw_code_p99": 544.0,
+                "white_rail_plateau": false
+              },
+              "G1": {
+                "effective_white_level": 16383.0,
+                "failures": [],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 4.495239474774303,
+                "quality": "accepted",
+                "raw_code_max": 778.0,
+                "raw_code_min": 650.0,
+                "raw_code_p99": 763.0,
+                "white_rail_plateau": false
+              },
+              "G2": {
+                "effective_white_level": 16383.0,
+                "failures": [],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 4.53353677338706,
+                "quality": "accepted",
+                "raw_code_max": 783.0,
+                "raw_code_min": 655.0,
+                "raw_code_p99": 763.0,
+                "white_rail_plateau": false
+              },
+              "R": {
+                "effective_white_level": 16383.0,
+                "failures": [],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 31.279613003149905,
+                "quality": "accepted",
+                "raw_code_max": 2261.0,
+                "raw_code_min": 1154.0,
+                "raw_code_p99": 2187.0,
+                "white_rail_plateau": false
+              }
+            },
+            "rejected_planes": {
+              "B": [
+                "near_noise_floor_fraction_exceeded"
+              ]
+            },
+            "shutter": 0.00310039267962539,
+            "status": "plane_rejected_B",
+            "z": {
+              "log_B_over_G": -2.308765924571558,
+              "log_R_over_G": 1.935696886584203
+            }
+          }
+        ],
+        "verdict": "measurement_window_unqualified"
+      },
+      {
+        "command": {
+          "b": 4095,
+          "cw": 0,
+          "g": 0,
+          "r": 0,
+          "ww": 0
+        },
+        "label": "fullscale_blue",
+        "selected_capture_id": "007-strip-fullscale_blue-1over320",
+        "selection_reason": "fastest clean stop consistent with an adjacent stop",
+        "state_id": "B1_B4095",
+        "stops": [
+          {
+            "capture_id": "005-strip-fullscale_blue-1over500",
+            "consistency_with_next_stop": {
+              "consistent": true,
+              "dz": {
+                "log_B_over_G": -0.0007553459459832546,
+                "log_R_over_G": -0.0005404499655363715
+              }
+            },
+            "p99_values": {
+              "B": {
+                "margin_dn": 12804.0,
+                "p99": 3579.0,
+                "white_level": 16383.0
+              },
+              "G1": {
+                "margin_dn": 15141.0,
+                "p99": 1242.0,
+                "white_level": 16383.0
+              },
+              "G2": {
+                "margin_dn": 15140.0,
+                "p99": 1243.0,
+                "white_level": 16383.0
+              },
+              "R": {
+                "margin_dn": 15796.0,
+                "p99": 587.0,
+                "white_level": 16383.0
+              }
+            },
+            "planes": {
+              "B": {
+                "effective_white_level": 16383.0,
+                "failures": [],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 91.84413822267955,
+                "quality": "accepted",
+                "raw_code_max": 3702.0,
+                "raw_code_min": 2303.0,
+                "raw_code_p99": 3579.0,
+                "white_rail_plateau": false
+              },
+              "G1": {
+                "effective_white_level": 16383.0,
+                "failures": [],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 21.622627399530845,
+                "quality": "accepted",
+                "raw_code_max": 1279.0,
+                "raw_code_min": 991.0,
+                "raw_code_p99": 1242.0,
+                "white_rail_plateau": false
+              },
+              "G2": {
+                "effective_white_level": 16383.0,
+                "failures": [],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 21.633563953374747,
+                "quality": "accepted",
+                "raw_code_max": 1281.0,
+                "raw_code_min": 948.0,
+                "raw_code_p99": 1243.0,
+                "white_rail_plateau": false
+              },
+              "R": {
+                "effective_white_level": 16383.0,
+                "failures": [
+                  "near_noise_floor_fraction_exceeded"
+                ],
+                "near_noise_fraction": 0.9991022145374743,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 1.95050365810423,
+                "quality": "rejected",
+                "raw_code_max": 593.0,
+                "raw_code_min": 541.0,
+                "raw_code_p99": 587.0,
+                "white_rail_plateau": false
+              }
+            },
+            "rejected_planes": {
+              "R": [
+                "near_noise_floor_fraction_exceeded"
+              ]
+            },
+            "shutter": 0.001953125,
+            "status": "plane_rejected_R",
+            "z": {
+              "log_B_over_G": 1.446099795360069,
+              "log_R_over_G": -2.4059055698081018
+            }
+          },
+          {
+            "capture_id": "006-strip-fullscale_blue-1over400",
+            "consistency_with_next_stop": {
+              "consistent": true,
+              "dz": {
+                "log_B_over_G": -0.0008501493510089109,
+                "log_R_over_G": 0.00035055951748219627
+              }
+            },
+            "consistency_with_previous_stop": {
+              "consistent": true,
+              "dz": {
+                "log_B_over_G": -0.0007553459459832546,
+                "log_R_over_G": -0.0005404499655363715
+              }
+            },
+            "p99_values": {
+              "B": {
+                "margin_dn": 12006.0,
+                "p99": 4377.0,
+                "white_level": 16383.0
+              },
+              "G1": {
+                "margin_dn": 14951.0,
+                "p99": 1432.0,
+                "white_level": 16383.0
+              },
+              "G2": {
+                "margin_dn": 14951.0,
+                "p99": 1432.0,
+                "white_level": 16383.0
+              },
+              "R": {
+                "margin_dn": 15781.0,
+                "p99": 602.0,
+                "white_level": 16383.0
+              }
+            },
+            "planes": {
+              "B": {
+                "effective_white_level": 16383.0,
+                "failures": [],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 91.97139639868108,
+                "quality": "accepted",
+                "raw_code_max": 4520.0,
+                "raw_code_min": 2802.0,
+                "raw_code_p99": 4377.0,
+                "white_rail_plateau": false
+              },
+              "G1": {
+                "effective_white_level": 16383.0,
+                "failures": [],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 21.670242049146633,
+                "quality": "accepted",
+                "raw_code_max": 1469.0,
+                "raw_code_min": 1124.0,
+                "raw_code_p99": 1432.0,
+                "white_rail_plateau": false
+              },
+              "G2": {
+                "effective_white_level": 16383.0,
+                "failures": [],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 21.67861560307351,
+                "quality": "accepted",
+                "raw_code_max": 1489.0,
+                "raw_code_min": 1085.0,
+                "raw_code_p99": 1432.0,
+                "white_rail_plateau": false
+              },
+              "R": {
+                "effective_white_level": 16383.0,
+                "failures": [
+                  "near_noise_floor_fraction_exceeded"
+                ],
+                "near_noise_fraction": 0.7044955775753142,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 1.9536260346966787,
+                "quality": "rejected",
+                "raw_code_max": 612.0,
+                "raw_code_min": 554.0,
+                "raw_code_p99": 602.0,
+                "white_rail_plateau": false
+              }
+            },
+            "rejected_planes": {
+              "R": [
+                "near_noise_floor_fraction_exceeded"
+              ]
+            },
+            "shutter": 0.00246078330057593,
+            "status": "plane_rejected_R",
+            "z": {
+              "log_B_over_G": 1.4453444494140857,
+              "log_R_over_G": -2.406446019773638
+            }
+          },
+          {
+            "capture_id": "007-strip-fullscale_blue-1over320",
+            "consistency_with_previous_stop": {
+              "consistent": true,
+              "dz": {
+                "log_B_over_G": -0.0008501493510089109,
+                "log_R_over_G": 0.00035055951748219627
+              }
+            },
+            "p99_values": {
+              "B": {
+                "margin_dn": 11027.71,
+                "p99": 5355.290000000001,
+                "white_level": 16383.0
+              },
+              "G1": {
+                "margin_dn": 14719.0,
+                "p99": 1664.0,
+                "white_level": 16383.0
+              },
+              "G2": {
+                "margin_dn": 14718.0,
+                "p99": 1665.0,
+                "white_level": 16383.0
+              },
+              "R": {
+                "margin_dn": 15758.0,
+                "p99": 625.0,
+                "white_level": 16383.0
+              }
+            },
+            "planes": {
+              "B": {
+                "effective_white_level": 16383.0,
+                "failures": [],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 91.56727243614912,
+                "quality": "accepted",
+                "raw_code_max": 5497.0,
+                "raw_code_min": 3286.0,
+                "raw_code_p99": 5355.290000000001,
+                "white_rail_plateau": false
+              },
+              "G1": {
+                "effective_white_level": 16383.0,
+                "failures": [],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 21.59772972086725,
+                "quality": "accepted",
+                "raw_code_max": 1722.0,
+                "raw_code_min": 1289.0,
+                "raw_code_p99": 1664.0,
+                "white_rail_plateau": false
+              },
+              "G2": {
+                "effective_white_level": 16383.0,
+                "failures": [],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 21.597358945973507,
+                "quality": "accepted",
+                "raw_code_max": 1712.0,
+                "raw_code_min": 1194.0,
+                "raw_code_p99": 1665.0,
+                "white_rail_plateau": false
+              },
+              "R": {
+                "effective_white_level": 16383.0,
+                "failures": [],
+                "near_noise_fraction": 0.004522178626055729,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 1.947378598465928,
+                "quality": "accepted",
+                "raw_code_max": 635.0,
+                "raw_code_min": 574.0,
+                "raw_code_p99": 625.0,
+                "white_rail_plateau": false
+              }
+            },
+            "rejected_planes": {},
+            "shutter": 0.00310039267962539,
+            "status": "main_layer_valid",
+            "z": {
+              "log_B_over_G": 1.4444943000630768,
+              "log_R_over_G": -2.406095460256156
+            }
+          }
+        ],
+        "verdict": "qualified"
+      },
+      {
+        "command": {
+          "b": 0,
+          "cw": 0,
+          "g": 312,
+          "r": 1965,
+          "ww": 4095
+        },
+        "label": "high_white_load",
+        "selected_capture_id": "000-strip-high_white_load-corrected-1over100",
+        "selection_reason": "fastest clean stop consistent with an adjacent stop",
+        "state_id": "B1_WHITE2300",
+        "stops": [
+          {
+            "capture_id": "008-strip-high_white_load-1over10",
+            "consistency_with_next_stop": {
+              "consistent": true,
+              "dz": {
+                "log_B_over_G": -3.970008092159963e-09,
+                "log_R_over_G": 2.2204460492503128e-16
+              }
+            },
+            "p99_values": {
+              "B": {
+                "margin_dn": 1.0,
+                "p99": 16382.0,
+                "white_level": 16383.0
+              },
+              "G1": {
+                "margin_dn": 1.0,
+                "p99": 16382.0,
+                "white_level": 16383.0
+              },
+              "G2": {
+                "margin_dn": 1.0,
+                "p99": 16382.0,
+                "white_level": 16383.0
+              },
+              "R": {
+                "margin_dn": 1.0,
+                "p99": 16382.0,
+                "white_level": 16383.0
+              }
+            },
+            "planes": {
+              "B": {
+                "effective_white_level": 16383.0,
+                "failures": [
+                  "near_white_rail_fraction_exceeded",
+                  "white_rail_plateau"
+                ],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 1.0,
+                "normalized_per_second": 10.07873335830722,
+                "quality": "rejected",
+                "raw_code_max": 16382.0,
+                "raw_code_min": 16382.0,
+                "raw_code_p99": 16382.0,
+                "white_rail_plateau": true
+              },
+              "G1": {
+                "effective_white_level": 16383.0,
+                "failures": [
+                  "near_white_rail_fraction_exceeded",
+                  "white_rail_plateau"
+                ],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 1.0,
+                "normalized_per_second": 10.078733318294567,
+                "quality": "rejected",
+                "raw_code_max": 16382.0,
+                "raw_code_min": 16382.0,
+                "raw_code_p99": 16382.0,
+                "white_rail_plateau": true
+              },
+              "G2": {
+                "effective_white_level": 16383.0,
+                "failures": [
+                  "near_white_rail_fraction_exceeded",
+                  "white_rail_plateau"
+                ],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 1.0,
+                "normalized_per_second": 10.078733318294567,
+                "quality": "rejected",
+                "raw_code_max": 16382.0,
+                "raw_code_min": 16382.0,
+                "raw_code_p99": 16382.0,
+                "white_rail_plateau": true
+              },
+              "R": {
+                "effective_white_level": 16383.0,
+                "failures": [
+                  "near_white_rail_fraction_exceeded",
+                  "white_rail_plateau"
+                ],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 1.0,
+                "normalized_per_second": 10.078733318294567,
+                "quality": "rejected",
+                "raw_code_max": 16382.0,
+                "raw_code_min": 16382.0,
+                "raw_code_p99": 16382.0,
+                "white_rail_plateau": true
+              }
+            },
+            "rejected_planes": {
+              "B": [
+                "near_white_rail_fraction_exceeded",
+                "white_rail_plateau"
+              ],
+              "G1": [
+                "near_white_rail_fraction_exceeded",
+                "white_rail_plateau"
+              ],
+              "G2": [
+                "near_white_rail_fraction_exceeded",
+                "white_rail_plateau"
+              ],
+              "R": [
+                "near_white_rail_fraction_exceeded",
+                "white_rail_plateau"
+              ]
+            },
+            "shutter": 0.0992125657480125,
+            "status": "rail_or_ceiling",
+            "z": {
+              "log_B_over_G": 3.970008092159963e-09,
+              "log_R_over_G": 0.0
+            }
+          },
+          {
+            "capture_id": "009-strip-high_white_load-1over8",
+            "consistency_with_next_stop": {
+              "consistent": true,
+              "dz": {
+                "log_B_over_G": -1.1102230246251565e-16,
+                "log_R_over_G": -2.2204460492503128e-16
+              }
+            },
+            "consistency_with_previous_stop": {
+              "consistent": true,
+              "dz": {
+                "log_B_over_G": -3.970008092159963e-09,
+                "log_R_over_G": 2.2204460492503128e-16
+              }
+            },
+            "p99_values": {
+              "B": {
+                "margin_dn": 1.0,
+                "p99": 16382.0,
+                "white_level": 16383.0
+              },
+              "G1": {
+                "margin_dn": 1.0,
+                "p99": 16382.0,
+                "white_level": 16383.0
+              },
+              "G2": {
+                "margin_dn": 1.0,
+                "p99": 16382.0,
+                "white_level": 16383.0
+              },
+              "R": {
+                "margin_dn": 1.0,
+                "p99": 16382.0,
+                "white_level": 16383.0
+              }
+            },
+            "planes": {
+              "B": {
+                "effective_white_level": 16383.0,
+                "failures": [
+                  "near_white_rail_fraction_exceeded",
+                  "white_rail_plateau"
+                ],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 1.0,
+                "normalized_per_second": 7.999495935983871,
+                "quality": "rejected",
+                "raw_code_max": 16382.0,
+                "raw_code_min": 16382.0,
+                "raw_code_p99": 16382.0,
+                "white_rail_plateau": true
+              },
+              "G1": {
+                "effective_white_level": 16383.0,
+                "failures": [
+                  "near_white_rail_fraction_exceeded",
+                  "white_rail_plateau"
+                ],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 1.0,
+                "normalized_per_second": 7.999495935983872,
+                "quality": "rejected",
+                "raw_code_max": 16382.0,
+                "raw_code_min": 16382.0,
+                "raw_code_p99": 16382.0,
+                "white_rail_plateau": true
+              },
+              "G2": {
+                "effective_white_level": 16383.0,
+                "failures": [
+                  "near_white_rail_fraction_exceeded",
+                  "white_rail_plateau"
+                ],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 1.0,
+                "normalized_per_second": 7.999495935983871,
+                "quality": "rejected",
+                "raw_code_max": 16382.0,
+                "raw_code_min": 16382.0,
+                "raw_code_p99": 16382.0,
+                "white_rail_plateau": true
+              },
+              "R": {
+                "effective_white_level": 16383.0,
+                "failures": [
+                  "near_white_rail_fraction_exceeded",
+                  "white_rail_plateau"
+                ],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 1.0,
+                "normalized_per_second": 7.999495935983872,
+                "quality": "rejected",
+                "raw_code_max": 16382.0,
+                "raw_code_min": 16382.0,
+                "raw_code_p99": 16382.0,
+                "white_rail_plateau": true
+              }
+            },
+            "rejected_planes": {
+              "B": [
+                "near_white_rail_fraction_exceeded",
+                "white_rail_plateau"
+              ],
+              "G1": [
+                "near_white_rail_fraction_exceeded",
+                "white_rail_plateau"
+              ],
+              "G2": [
+                "near_white_rail_fraction_exceeded",
+                "white_rail_plateau"
+              ],
+              "R": [
+                "near_white_rail_fraction_exceeded",
+                "white_rail_plateau"
+              ]
+            },
+            "shutter": 0.125,
+            "status": "rail_or_ceiling",
+            "z": {
+              "log_B_over_G": 0.0,
+              "log_R_over_G": 2.2204460492503128e-16
+            }
+          },
+          {
+            "capture_id": "010-strip-high_white_load-1over6",
+            "consistency_with_next_stop": {
+              "consistent": false,
+              "dz": {
+                "log_B_over_G": -0.05897903509565388,
+                "log_R_over_G": 2.2204460492503128e-16
+              }
+            },
+            "consistency_with_previous_stop": {
+              "consistent": true,
+              "dz": {
+                "log_B_over_G": -1.1102230246251565e-16,
+                "log_R_over_G": -2.2204460492503128e-16
+              }
+            },
+            "p99_values": {
+              "B": {
+                "margin_dn": 1.0,
+                "p99": 16382.0,
+                "white_level": 16383.0
+              },
+              "G1": {
+                "margin_dn": 1.0,
+                "p99": 16382.0,
+                "white_level": 16383.0
+              },
+              "G2": {
+                "margin_dn": 1.0,
+                "p99": 16382.0,
+                "white_level": 16383.0
+              },
+              "R": {
+                "margin_dn": 1.0,
+                "p99": 16382.0,
+                "white_level": 16383.0
+              }
+            },
+            "planes": {
+              "B": {
+                "effective_white_level": 16383.0,
+                "failures": [
+                  "near_white_rail_fraction_exceeded",
+                  "white_rail_plateau"
+                ],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 1.0,
+                "normalized_per_second": 6.349204131998072,
+                "quality": "rejected",
+                "raw_code_max": 16382.0,
+                "raw_code_min": 16382.0,
+                "raw_code_p99": 16382.0,
+                "white_rail_plateau": true
+              },
+              "G1": {
+                "effective_white_level": 16383.0,
+                "failures": [
+                  "near_white_rail_fraction_exceeded",
+                  "white_rail_plateau"
+                ],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 1.0,
+                "normalized_per_second": 6.349204131998073,
+                "quality": "rejected",
+                "raw_code_max": 16382.0,
+                "raw_code_min": 16382.0,
+                "raw_code_p99": 16382.0,
+                "white_rail_plateau": true
+              },
+              "G2": {
+                "effective_white_level": 16383.0,
+                "failures": [
+                  "near_white_rail_fraction_exceeded",
+                  "white_rail_plateau"
+                ],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 1.0,
+                "normalized_per_second": 6.349204131998072,
+                "quality": "rejected",
+                "raw_code_max": 16382.0,
+                "raw_code_min": 16382.0,
+                "raw_code_p99": 16382.0,
+                "white_rail_plateau": true
+              },
+              "R": {
+                "effective_white_level": 16383.0,
+                "failures": [
+                  "near_white_rail_fraction_exceeded",
+                  "white_rail_plateau"
+                ],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 1.0,
+                "normalized_per_second": 6.349204131998073,
+                "quality": "rejected",
+                "raw_code_max": 16382.0,
+                "raw_code_min": 16382.0,
+                "raw_code_p99": 16382.0,
+                "white_rail_plateau": true
+              }
+            },
+            "rejected_planes": {
+              "B": [
+                "near_white_rail_fraction_exceeded",
+                "white_rail_plateau"
+              ],
+              "G1": [
+                "near_white_rail_fraction_exceeded",
+                "white_rail_plateau"
+              ],
+              "G2": [
+                "near_white_rail_fraction_exceeded",
+                "white_rail_plateau"
+              ],
+              "R": [
+                "near_white_rail_fraction_exceeded",
+                "white_rail_plateau"
+              ]
+            },
+            "shutter": 0.157490131236859,
+            "status": "rail_or_ceiling",
+            "z": {
+              "log_B_over_G": -1.1102230246251565e-16,
+              "log_R_over_G": 0.0
+            }
+          },
+          {
+            "capture_id": "000-strip-high_white_load-reverse-1over20",
+            "consistency_with_next_stop": {
+              "consistent": false,
+              "dz": {
+                "log_B_over_G": -1.204982015395262,
+                "log_R_over_G": 0.02331964930718778
+              }
+            },
+            "consistency_with_previous_stop": {
+              "consistent": false,
+              "dz": {
+                "log_B_over_G": -0.05897903509565388,
+                "log_R_over_G": 2.2204460492503128e-16
+              }
+            },
+            "p99_values": {
+              "B": {
+                "margin_dn": 0.0,
+                "p99": 16383.0,
+                "white_level": 16383.0
+              },
+              "G1": {
+                "margin_dn": 1.0,
+                "p99": 16382.0,
+                "white_level": 16383.0
+              },
+              "G2": {
+                "margin_dn": 1.0,
+                "p99": 16382.0,
+                "white_level": 16383.0
+              },
+              "R": {
+                "margin_dn": 1.0,
+                "p99": 16382.0,
+                "white_level": 16383.0
+              }
+            },
+            "planes": {
+              "B": {
+                "effective_white_level": 16383.0,
+                "failures": [
+                  "clipped_fraction_exceeded",
+                  "near_white_rail_fraction_exceeded"
+                ],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 0.05955706304868316,
+                "normalized_per_second": 19.00297863882427,
+                "quality": "rejected",
+                "raw_code_max": 16383.0,
+                "raw_code_min": 11437.0,
+                "raw_code_p99": 16383.0,
+                "white_rail_plateau": false
+              },
+              "G1": {
+                "effective_white_level": 16383.0,
+                "failures": [
+                  "near_white_rail_fraction_exceeded",
+                  "white_rail_plateau"
+                ],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 1.0,
+                "normalized_per_second": 20.157466636589117,
+                "quality": "rejected",
+                "raw_code_max": 16382.0,
+                "raw_code_min": 16382.0,
+                "raw_code_p99": 16382.0,
+                "white_rail_plateau": true
+              },
+              "G2": {
+                "effective_white_level": 16383.0,
+                "failures": [
+                  "near_white_rail_fraction_exceeded",
+                  "white_rail_plateau"
+                ],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 1.0,
+                "normalized_per_second": 20.157466636589113,
+                "quality": "rejected",
+                "raw_code_max": 16382.0,
+                "raw_code_min": 16382.0,
+                "raw_code_p99": 16382.0,
+                "white_rail_plateau": true
+              },
+              "R": {
+                "effective_white_level": 16383.0,
+                "failures": [
+                  "near_white_rail_fraction_exceeded",
+                  "white_rail_plateau"
+                ],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 1.0,
+                "normalized_per_second": 20.157466636589117,
+                "quality": "rejected",
+                "raw_code_max": 16382.0,
+                "raw_code_min": 16382.0,
+                "raw_code_p99": 16382.0,
+                "white_rail_plateau": true
+              }
+            },
+            "rejected_planes": {
+              "B": [
+                "clipped_fraction_exceeded",
+                "near_white_rail_fraction_exceeded"
+              ],
+              "G1": [
+                "near_white_rail_fraction_exceeded",
+                "white_rail_plateau"
+              ],
+              "G2": [
+                "near_white_rail_fraction_exceeded",
+                "white_rail_plateau"
+              ],
+              "R": [
+                "near_white_rail_fraction_exceeded",
+                "white_rail_plateau"
+              ]
+            },
+            "shutter": 0.0496062828740063,
+            "status": "rail_or_ceiling",
+            "z": {
+              "log_B_over_G": -0.05897903509565399,
+              "log_R_over_G": 2.2204460492503128e-16
+            }
+          },
+          {
+            "capture_id": "000-strip-high_white_load-corrected-1over100",
+            "consistency_with_next_stop": {
+              "consistent": true,
+              "dz": {
+                "log_B_over_G": 0.0029019755239283462,
+                "log_R_over_G": -0.0006226486565221942
+              }
+            },
+            "consistency_with_previous_stop": {
+              "consistent": false,
+              "dz": {
+                "log_B_over_G": -1.204982015395262,
+                "log_R_over_G": 0.02331964930718778
+              }
+            },
+            "p99_values": {
+              "B": {
+                "margin_dn": 13492.0,
+                "p99": 2891.0,
+                "white_level": 16383.0
+              },
+              "G1": {
+                "margin_dn": 7550.68,
+                "p99": 8832.32,
+                "white_level": 16383.0
+              },
+              "G2": {
+                "margin_dn": 7545.0,
+                "p99": 8838.0,
+                "white_level": 16383.0
+              },
+              "R": {
+                "margin_dn": 7257.0,
+                "p99": 9126.0,
+                "white_level": 16383.0
+              }
+            },
+            "planes": {
+              "B": {
+                "effective_white_level": 16383.0,
+                "failures": [],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 14.192695148344795,
+                "quality": "accepted",
+                "raw_code_max": 2985.0,
+                "raw_code_min": 2233.0,
+                "raw_code_p99": 2891.0,
+                "white_rail_plateau": false
+              },
+              "G1": {
+                "effective_white_level": 16383.0,
+                "failures": [],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 50.199325956806746,
+                "quality": "accepted",
+                "raw_code_max": 9172.0,
+                "raw_code_min": 6473.0,
+                "raw_code_p99": 8832.32,
+                "white_rail_plateau": false
+              },
+              "G2": {
+                "effective_white_level": 16383.0,
+                "failures": [],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 50.26830917284193,
+                "quality": "accepted",
+                "raw_code_max": 9093.0,
+                "raw_code_min": 6898.0,
+                "raw_code_p99": 8838.0,
+                "white_rail_plateau": false
+              },
+              "R": {
+                "effective_white_level": 16383.0,
+                "failures": [],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 51.4190180947076,
+                "quality": "accepted",
+                "raw_code_max": 9456.0,
+                "raw_code_min": 5763.0,
+                "raw_code_p99": 9126.0,
+                "white_rail_plateau": false
+              }
+            },
+            "rejected_planes": {},
+            "shutter": 0.0098431332023037,
+            "status": "main_layer_valid",
+            "z": {
+              "log_B_over_G": -1.263961050490916,
+              "log_R_over_G": 0.023319649307188002
+            }
+          },
+          {
+            "capture_id": "001-strip-high_white_load-corrected-1over80",
+            "consistency_with_previous_stop": {
+              "consistent": true,
+              "dz": {
+                "log_B_over_G": 0.0029019755239283462,
+                "log_R_over_G": -0.0006226486565221942
+              }
+            },
+            "p99_values": {
+              "B": {
+                "margin_dn": 12879.0,
+                "p99": 3504.0,
+                "white_level": 16383.0
+              },
+              "G1": {
+                "margin_dn": 5416.0,
+                "p99": 10967.0,
+                "white_level": 16383.0
+              },
+              "G2": {
+                "margin_dn": 5403.0,
+                "p99": 10980.0,
+                "white_level": 16383.0
+              },
+              "R": {
+                "margin_dn": 5055.0,
+                "p99": 11328.0,
+                "white_level": 16383.0
+              }
+            },
+            "planes": {
+              "B": {
+                "effective_white_level": 16383.0,
+                "failures": [],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 14.20718267621875,
+                "quality": "accepted",
+                "raw_code_max": 3638.0,
+                "raw_code_min": 2705.0,
+                "raw_code_p99": 3504.0,
+                "white_rail_plateau": false
+              },
+              "G1": {
+                "effective_white_level": 16383.0,
+                "failures": [],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 50.10731135672437,
+                "quality": "accepted",
+                "raw_code_max": 11402.0,
+                "raw_code_min": 8020.0,
+                "raw_code_p99": 10967.0,
+                "white_rail_plateau": false
+              },
+              "G2": {
+                "effective_white_level": 16383.0,
+                "failures": [],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 50.17144931327984,
+                "quality": "accepted",
+                "raw_code_max": 11298.0,
+                "raw_code_min": 8625.0,
+                "raw_code_p99": 10980.0,
+                "white_rail_plateau": false
+              },
+              "R": {
+                "effective_white_level": 16383.0,
+                "failures": [],
+                "near_noise_fraction": 0.0,
+                "near_white_rail_fraction": 0.0,
+                "normalized_per_second": 51.29040689583469,
+                "quality": "accepted",
+                "raw_code_max": 11830.0,
+                "raw_code_min": 7167.0,
+                "raw_code_p99": 11328.0,
+                "white_rail_plateau": false
+              }
+            },
+            "rejected_planes": {},
+            "shutter": 0.0124015707185016,
+            "status": "main_layer_valid",
+            "z": {
+              "log_B_over_G": -1.2610590749669877,
+              "log_R_over_G": 0.022697000650665808
+            }
+          }
+        ],
+        "verdict": "qualified"
+      }
+    ],
+    "notes": "Ladder frames are diagnostics and are not independent model acceptance frames. near-noise rejections on dark planes of single-channel commands are recorded as stop status; the main layer requires all four block_06 planes accepted.",
+    "p99_margin_dn": 2.0,
+    "recovery_note": "engineering failure recovered without recapture; see recovery-note-20260930.md",
+    "run_root": "D:\\rgbww-optimizer\\guide12-batch1\\formal-b1-20260929-r1",
+    "schema": "guide12_b1_exposure_qualification_v1",
+    "steady_claim": false,
+    "white_anchor_correction": "formal-b1 anchored the white class on the C1 color tier (1/8); the W2 white line runs this command at 1/80 (recorded 0.0125 s, block max ~12042). The railed 1/10..1/20 stops are retained as the erroneous-anchor arm; qualification is evaluated on the corrected 1/100 + 1/80 arm (formal-b1-white-corrected-20260930-r1). No fixture brightness change occurred.",
+    "z_tolerance_adjacent_stop": 0.01
+  },
+  "long_original": {
+    "schema": "guide12_w12_4_order_reverification_analysis_v1",
+    "tolerances": {
+      "cct_K": 25.0,
+      "mired": 1.0,
+      "duv": 0.0005
+    },
+    "runs": [
+      "formal-w124-01-p3200100-long",
+      "formal-w124-02-p1800100-fast",
+      "formal-w124-03-p20000100-long",
+      "formal-w124-04-p5600100-fast",
+      "formal-w124-05-p3200100-fast",
+      "formal-w124-06-p1800100-long",
+      "formal-w124-07-p20000100-fast",
+      "formal-w124-08-p5600100-long"
+    ],
+    "execution_order": [
+      {
+        "position": 1,
+        "point": "3200/100",
+        "protocol": "long",
+        "run": "formal-w124-01-p3200100-long"
+      },
+      {
+        "position": 2,
+        "point": "1800/100",
+        "protocol": "fast",
+        "run": "formal-w124-02-p1800100-fast"
+      },
+      {
+        "position": 3,
+        "point": "20000/100",
+        "protocol": "long",
+        "run": "formal-w124-03-p20000100-long"
+      },
+      {
+        "position": 4,
+        "point": "5600/100",
+        "protocol": "fast",
+        "run": "formal-w124-04-p5600100-fast"
+      },
+      {
+        "position": 5,
+        "point": "3200/100",
+        "protocol": "fast",
+        "run": "formal-w124-05-p3200100-fast"
+      },
+      {
+        "position": 6,
+        "point": "1800/100",
+        "protocol": "long",
+        "run": "formal-w124-06-p1800100-long"
+      },
+      {
+        "position": 7,
+        "point": "20000/100",
+        "protocol": "fast",
+        "run": "formal-w124-07-p20000100-fast"
+      },
+      {
+        "position": 8,
+        "point": "5600/100",
+        "protocol": "long",
+        "run": "formal-w124-08-p5600100-long"
+      }
+    ],
+    "points": [
+      {
+        "point": "1800/100",
+        "white_points": {
+          "FAST": {
+            "ray": {
+              "cct_K": 1903.6490356008208,
+              "duv": -0.005188075650837951,
+              "mired": 525.306913878894
+            },
+            "strip": {
+              "cct_K": 1888.426613830877,
+              "duv": -0.0048378546672794955,
+              "mired": 529.5413614042392
+            }
+          },
+          "LONG": {
+            "ray": {
+              "cct_K": 1907.5924421598145,
+              "duv": -0.0051749416790903505,
+              "mired": 524.2209907624607
+            },
+            "strip": {
+              "cct_K": 1896.2312243391805,
+              "duv": -0.004871201355401073,
+              "mired": 527.3618465746397
+            }
+          }
+        },
+        "source_orders": {
+          "FAST": [
+            "ray",
+            "strip"
+          ],
+          "LONG": [
+            "strip",
+            "ray"
+          ]
+        },
+        "execution_positions": {
+          "LONG": 6,
+          "FAST": 2
+        },
+        "signed_errors": {
+          "FAST": {
+            "cct_K": -15.222421769943821,
+            "mired": 4.234447525345217,
+            "duv": 0.0003502209835584552
+          },
+          "LONG": {
+            "cct_K": -11.36121782063401,
+            "mired": 3.140855812178984,
+            "duv": 0.0003037403236892779
+          }
+        },
+        "Delta_protocol": {
+          "cct_K": 3.861203949309811,
+          "mired": -1.0935917131662336,
+          "duv": -4.6480659869177314e-05
+        },
+        "Delta_normalized": {
+          "cct_K": 0.1544,
+          "mired": 1.0936,
+          "duv": 0.093
+        },
+        "per_source": {
+          "ray_LONG_minus_FAST": {
+            "cct_K": 3.943406558993729,
+            "mired": -1.0859231164332641,
+            "duv": 1.3133971747600164e-05
+          },
+          "strip_LONG_minus_FAST": {
+            "cct_K": 7.80461050830354,
+            "mired": -2.1795148295994977,
+            "duv": -3.334668812157715e-05
+          }
+        }
+      },
+      {
+        "point": "3200/100",
+        "white_points": {
+          "FAST": {
+            "ray": {
+              "cct_K": 3286.792153532812,
+              "duv": -0.006996634143782285,
+              "mired": 304.24801852016986
+            },
+            "strip": {
+              "cct_K": 3252.1555871394717,
+              "duv": -0.006924421746160034,
+              "mired": 307.4883637038962
+            }
+          },
+          "LONG": {
+            "ray": {
+              "cct_K": 3291.3202571718875,
+              "duv": -0.006984208118919965,
+              "mired": 303.82944285685033
+            },
+            "strip": {
+              "cct_K": 3274.7138983456957,
+              "duv": -0.007117570177707767,
+              "mired": 305.37018837131853
+            }
+          }
+        },
+        "source_orders": {
+          "FAST": [
+            "strip",
+            "ray"
+          ],
+          "LONG": [
+            "ray",
+            "strip"
+          ]
+        },
+        "execution_positions": {
+          "LONG": 1,
+          "FAST": 5
+        },
+        "signed_errors": {
+          "FAST": {
+            "cct_K": -34.63656639334022,
+            "mired": 3.2403451837263333,
+            "duv": 7.221239762225141e-05
+          },
+          "LONG": {
+            "cct_K": -16.60635882619181,
+            "mired": 1.540745514468199,
+            "duv": -0.00013336205878780247
+          }
+        },
+        "Delta_protocol": {
+          "cct_K": 18.03020756714841,
+          "mired": -1.6995996692581343,
+          "duv": -0.00020557445641005388
+        },
+        "Delta_normalized": {
+          "cct_K": 0.7212,
+          "mired": 1.6996,
+          "duv": 0.4111
+        },
+        "per_source": {
+          "ray_LONG_minus_FAST": {
+            "cct_K": 4.528103639075653,
+            "mired": -0.41857566331952967,
+            "duv": 1.2426024862320813e-05
+          },
+          "strip_LONG_minus_FAST": {
+            "cct_K": 22.55831120622406,
+            "mired": -2.118175332577664,
+            "duv": -0.00019314843154773307
+          }
+        }
+      },
+      {
+        "point": "5600/100",
+        "white_points": {
+          "FAST": {
+            "ray": {
+              "cct_K": 5216.767239767516,
+              "duv": -0.004027970333038685,
+              "mired": 191.68959511495567
+            },
+            "strip": {
+              "cct_K": 5196.185743182064,
+              "duv": -0.00433684804764868,
+              "mired": 192.4488556461062
+            }
+          },
+          "LONG": {
+            "ray": {
+              "cct_K": 5218.804634914675,
+              "duv": -0.004116753126907136,
+              "mired": 191.61476045871365
+            },
+            "strip": {
+              "cct_K": 5200.236688477486,
+              "duv": -0.004272943539613279,
+              "mired": 192.29893943400063
+            }
+          }
+        },
+        "source_orders": {
+          "FAST": [
+            "strip",
+            "ray"
+          ],
+          "LONG": [
+            "ray",
+            "strip"
+          ]
+        },
+        "execution_positions": {
+          "LONG": 8,
+          "FAST": 4
+        },
+        "signed_errors": {
+          "FAST": {
+            "cct_K": -20.58149658545244,
+            "mired": 0.7592605311505451,
+            "duv": -0.00030887771460999525
+          },
+          "LONG": {
+            "cct_K": -18.567946437189676,
+            "mired": 0.6841789752869829,
+            "duv": -0.0001561904127061432
+          }
+        },
+        "Delta_protocol": {
+          "cct_K": 2.013550148262766,
+          "mired": -0.07508155586356224,
+          "duv": 0.00015268730190385205
+        },
+        "Delta_normalized": {
+          "cct_K": 0.0805,
+          "mired": 0.0751,
+          "duv": 0.3054
+        },
+        "per_source": {
+          "ray_LONG_minus_FAST": {
+            "cct_K": 2.037395147159259,
+            "mired": -0.07483465624201813,
+            "duv": -8.878279386845093e-05
+          },
+          "strip_LONG_minus_FAST": {
+            "cct_K": 4.050945295422025,
+            "mired": -0.14991621210558037,
+            "duv": 6.390450803540112e-05
+          }
+        }
+      },
+      {
+        "point": "20000/100",
+        "white_points": {
+          "FAST": {
+            "ray": {
+              "cct_K": 13861.637314108082,
+              "duv": 0.000741946164531359,
+              "mired": 72.14154990061824
+            },
+            "strip": {
+              "cct_K": 13466.86763803326,
+              "duv": 0.0005653526278648516,
+              "mired": 74.25631756978068
+            }
+          },
+          "LONG": {
+            "ray": {
+              "cct_K": 13755.871746919078,
+              "duv": 0.0005138494660802115,
+              "mired": 72.69622881036031
+            },
+            "strip": {
+              "cct_K": 13877.37182519202,
+              "duv": 4.7511497024686334e-05,
+              "mired": 72.05975400793609
+            }
+          }
+        },
+        "source_orders": {
+          "FAST": [
+            "ray",
+            "strip"
+          ],
+          "LONG": [
+            "strip",
+            "ray"
+          ]
+        },
+        "execution_positions": {
+          "LONG": 3,
+          "FAST": 7
+        },
+        "signed_errors": {
+          "FAST": {
+            "cct_K": -394.7696760748222,
+            "mired": 2.1147676691624326,
+            "duv": -0.0001765935366665074
+          },
+          "LONG": {
+            "cct_K": 121.50007827294212,
+            "mired": -0.6364748024242175,
+            "duv": -0.0004663379690555251
+          }
+        },
+        "Delta_protocol": {
+          "cct_K": 516.2697543477643,
+          "mired": -2.75124247158665,
+          "duv": -0.0002897444323890177
+        },
+        "Delta_normalized": {
+          "cct_K": 20.6508,
+          "mired": 2.7512,
+          "duv": 0.5795
+        },
+        "per_source": {
+          "ray_LONG_minus_FAST": {
+            "cct_K": -105.76556718900429,
+            "mired": 0.5546789097420657,
+            "duv": -0.0002280966984511475
+          },
+          "strip_LONG_minus_FAST": {
+            "cct_K": 410.50418715876003,
+            "mired": -2.1965635618445845,
+            "duv": -0.0005178411308401652
+          }
+        }
+      }
+    ],
+    "interpretation_caveats": [
+      "single DiD per point is one observation, not a repeated interval",
+      "order and period effects are not separated by this design; LONG occupied positions 1,3,6,8 and FAST 2,4,5,7",
+      "LONG is not claimed as steady state; no FAST fit feedback",
+      "20000/100 carries the documented Ray drift characteristic; its Ray LONG-FAST difference includes that device behavior"
+    ]
+  },
+  "limits": "All-off point ratios apply only to sampled exposure/settings/time; no replicated environment CI or global ambient guarantee. One DiD per node cannot separate source order and period from protocol; LONG is not steady truth."
+}

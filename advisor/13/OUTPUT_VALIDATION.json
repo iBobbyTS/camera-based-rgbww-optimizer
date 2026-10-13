@@ -1,0 +1,15 @@
+{
+  "scope": "Advisor deliverable sanity checks, not hardware certification",
+  "checks": {
+    "json_parse": true,
+    "python_compile": true,
+    "markdown_fences_and_placeholders": true,
+    "white_70_38_29_3": true,
+    "color_14_targets_3_confirmation_fullscale": true,
+    "primary_recovery_10_and_blue_6": true,
+    "interpolation_counterexample": true,
+    "noise_group_and_interval_sanity": true
+  },
+  "all_checks_pass": true,
+  "source_replay_note": "Source package strict replay locally 9/10, N2 floating tolerance failure disclosed in data/review_integrity.json."
+}

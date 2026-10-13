@@ -1,0 +1,3148 @@
+{
+  "components": [
+    "log_R_over_G",
+    "log_B_over_G"
+  ],
+  "adopted_target_count_including_S0": 14,
+  "reported_validated_samples": 17,
+  "actual_confirmed_discrete_target_count": 14,
+  "colors": [
+    {
+      "target": "0/0",
+      "actual_command": {
+        "cw": 4095,
+        "ww": 2240,
+        "r": 658,
+        "g": 1681,
+        "b": 1425
+      },
+      "total_observations_including_selection": 4,
+      "independent_confirmations": 3,
+      "independent_confirmation_blocks": 1,
+      "mean_dz_confirm_only": [
+        -0.00021787372389692194,
+        0.0022352763245851817
+      ],
+      "relative_ratio_error_percent": [
+        -0.02178499911407522,
+        0.22377764171610143
+      ],
+      "conditional_fixed_bracket_statistics": {
+        "n": 3,
+        "mean": [
+          -0.00021787372389692194,
+          0.0022352763245851817
+        ],
+        "min": [
+          -0.00027363568612104316,
+          0.002154801056067024
+        ],
+        "max": [
+          -0.0001817518442110977,
+          0.0023358448673459486
+        ],
+        "sd": [
+          4.898938387667578e-05,
+          9.217928266666675e-05
+        ],
+        "sd_ci95": [
+          [
+            2.5506727695873007e-05,
+            0.0003078852806091859
+          ],
+          [
+            4.799390553876706e-05,
+            0.0005793223360723342
+          ]
+        ],
+        "mean_ci95": [
+          [
+            -0.00033957009986038583,
+            -9.617734793345806e-05
+          ],
+          [
+            0.0020062902922708212,
+            0.002464262356899542
+          ]
+        ],
+        "next_pi95": [
+          [
+            -0.0004612664758238497,
+            2.5519028030005804e-05
+          ],
+          [
+            0.0017773042599564608,
+            0.0026932483892139025
+          ]
+        ],
+        "joint_mean_box95": [
+          [
+            -0.0003933859640439544,
+            -4.236148374988947e-05
+          ],
+          [
+            0.0019050294197312516,
+            0.002565523229439112
+          ]
+        ],
+        "joint_next_box95": [
+          [
+            -0.0005688982041909868,
+            0.00013315075639714296
+          ],
+          [
+            0.0015747825148773216,
+            0.0028957701342930417
+          ]
+        ],
+        "assumption": "conditional iid Gaussian independent cycles at same fixed source/protocol; not established across arbitrary sessions",
+        "df": 2
+      },
+      "shared_Ray_mean_covariance_working": [
+        [
+          3.980614964230765e-09,
+          6.983310938868936e-10
+        ],
+        [
+          6.983310938868936e-10,
+          2.941509687933552e-09
+        ]
+      ],
+      "shared_Ray_Welch_df": [
+        1.5182741607431605,
+        2.150756674622799
+      ],
+      "shared_Ray_mean_ci95_working": [
+        [
+          -0.0005911444646277379,
+          0.00015539701683389402
+        ],
+        [
+          0.0020169138606410297,
+          0.0024536387885293336
+        ]
+      ],
+      "shared_Ray_mean_joint95_working": [
+        [
+          -0.0008125397219591845,
+          0.00037679227416534064
+        ],
+        [
+          0.0019268593725375698,
+          0.0025436932766327936
+        ]
+      ],
+      "relative_ratio_ci95_working": [
+        [
+          -0.05909697731630344,
+          0.015540909157576598
+        ],
+        [
+          0.20189491995393766,
+          0.2456651423650527
+        ]
+      ],
+      "confirmation_identities": [
+        {
+          "run": "guide12-c122/formal-c122-s0-b5",
+          "strip_capture_id": "001-strip-guide12-c122-h0-s0-block5-refine1_confirm1",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h0-s0-block5-raybefore",
+            "004-ray-guide12-c122-h0-s0-block5-rayafter"
+          ],
+          "dz": [
+            -0.0001817518442110977,
+            0.0023358448673459486
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        },
+        {
+          "run": "guide12-c122/formal-c122-s0-b5",
+          "strip_capture_id": "002-strip-guide12-c122-h0-s0-block5-refine1_confirm2",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h0-s0-block5-raybefore",
+            "004-ray-guide12-c122-h0-s0-block5-rayafter"
+          ],
+          "dz": [
+            -0.00027363568612104316,
+            0.002154801056067024
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        },
+        {
+          "run": "guide12-c122/formal-c122-s0-b5",
+          "strip_capture_id": "003-strip-guide12-c122-h0-s0-block5-refine1_confirm3",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h0-s0-block5-raybefore",
+            "004-ray-guide12-c122-h0-s0-block5-rayafter"
+          ],
+          "dz": [
+            -0.00019823364135862498,
+            0.002215183050342573
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        }
+      ],
+      "Ray_groups": [
+        {
+          "run": "guide12-c122/formal-c122-s0-b5",
+          "n_strip": 3,
+          "n_ray": 2,
+          "ray_drift": [
+            0.00011279412017817236,
+            -2.0896854974195023e-05
+          ],
+          "ray_cov": [
+            [
+              6.361256773383995e-09,
+              -1.178521185652596e-09
+            ],
+            [
+              -1.178521185652596e-09,
+              2.1833927390626963e-10
+            ]
+          ],
+          "ray_z": [
+            [
+              -0.7335400883179752,
+              -0.37001511429452844
+            ],
+            [
+              -0.7334272941977971,
+              -0.37003601114950263
+            ]
+          ]
+        }
+      ],
+      "material58_relative_L2_descriptive": {
+        "values": [
+          0.1758571182953569,
+          0.1758419467646175,
+          0.1758748121265834
+        ],
+        "median": 0.1758571182953569
+      },
+      "qualifier": "Shared-Ray Welch intervals assume independent Gaussian resets and a stationary bracket within each block; not unconditional future sessions and not H/S mapping uncertainty. Fixed-bracket PI omits future reference/session variability.",
+      "H_S_ci": null,
+      "H_S_ci_reason": "global map failed; reported orthogonal tangent and long SAT secants have not been locally validated"
+    },
+    {
+      "target": "0/25",
+      "actual_command": {
+        "b": 1024,
+        "cw": 1575,
+        "g": 1024,
+        "r": 4095,
+        "ww": 2343
+      },
+      "total_observations_including_selection": 4,
+      "independent_confirmations": 3,
+      "independent_confirmation_blocks": 1,
+      "mean_dz_confirm_only": [
+        -0.0006810177842462064,
+        0.00843138935374299
+      ],
+      "relative_ratio_error_percent": [
+        -0.06807859442670128,
+        0.8467033623440136
+      ],
+      "conditional_fixed_bracket_statistics": {
+        "n": 3,
+        "mean": [
+          -0.0006810177842462064,
+          0.00843138935374299
+        ],
+        "min": [
+          -0.0007871994953897316,
+          0.008115449819854959
+        ],
+        "max": [
+          -0.0006265541976802624,
+          0.008763233124219172
+        ],
+        "sd": [
+          9.196630484263056e-05,
+          0.0003241843779538793
+        ],
+        "sd_ci95": [
+          [
+            4.7883016874059084e-05,
+            0.0005779838269520319
+          ],
+          [
+            0.0001687892763163011,
+            0.002037412808185276
+          ]
+        ],
+        "mean_ci95": [
+          [
+            -0.0009094747503161119,
+            -0.0004525608181763008
+          ],
+          [
+            0.007626070714907437,
+            0.009236707992578544
+          ]
+        ],
+        "next_pi95": [
+          [
+            -0.0011379317163860176,
+            -0.00022410385210639528
+          ],
+          [
+            0.006820752076071883,
+            0.010042026631414099
+          ]
+        ],
+        "joint_mean_box95": [
+          [
+            -0.0010105016622555382,
+            -0.0003515339062368746
+          ],
+          [
+            0.007269947386263026,
+            0.009592831321222956
+          ]
+        ],
+        "joint_next_box95": [
+          [
+            -0.0013399855402648699,
+            -2.205002822754283e-05
+          ],
+          [
+            0.0061085054187830605,
+            0.010754273288702921
+          ]
+        ],
+        "assumption": "conditional iid Gaussian independent cycles at same fixed source/protocol; not established across arbitrary sessions",
+        "df": 2
+      },
+      "shared_Ray_mean_covariance_working": [
+        [
+          3.617808555389399e-07,
+          -2.3892223379432254e-07
+        ],
+        [
+          -2.3892223379432254e-07,
+          1.826346135633104e-07
+        ]
+      ],
+      "shared_Ray_Welch_df": [
+        1.0157382608202825,
+        1.4890675227254395
+      ],
+      "shared_Ray_mean_ci95_working": [
+        [
+          -0.00804934431853367,
+          0.006687308750041258
+        ],
+        [
+          0.005833516369791301,
+          0.01102926233769468
+        ]
+      ],
+      "shared_Ray_mean_joint95_working": [
+        [
+          -0.015284761232032948,
+          0.013922725663540534
+        ],
+        [
+          0.004257811202061094,
+          0.012604967505424888
+        ]
+      ],
+      "relative_ratio_ci95_working": [
+        [
+          -0.8017035094030228,
+          0.670971872549145
+        ],
+        [
+          0.5850564460393409,
+          1.1090308877891548
+        ]
+      ],
+      "confirmation_identities": [
+        {
+          "run": "guide12-c122/formal-c122-h0s25-b2",
+          "strip_capture_id": "001-strip-guide12-c122-h0-s25-block2-pww_confirm1",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h0-s25-block2-raybefore",
+            "004-ray-guide12-c122-h0-s25-block2-rayafter"
+          ],
+          "dz": [
+            -0.0006265541976802624,
+            0.008415485117154842
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        },
+        {
+          "run": "guide12-c122/formal-c122-h0s25-b2",
+          "strip_capture_id": "002-strip-guide12-c122-h0-s25-block2-pww_confirm2",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h0-s25-block2-raybefore",
+            "004-ray-guide12-c122-h0-s25-block2-rayafter"
+          ],
+          "dz": [
+            -0.0007871994953897316,
+            0.008763233124219172
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        },
+        {
+          "run": "guide12-c122/formal-c122-h0s25-b2",
+          "strip_capture_id": "003-strip-guide12-c122-h0-s25-block2-pww_confirm3",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h0-s25-block2-raybefore",
+            "004-ray-guide12-c122-h0-s25-block2-rayafter"
+          ],
+          "dz": [
+            -0.0006292996596686251,
+            0.008115449819854959
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        }
+      ],
+      "Ray_groups": [
+        {
+          "run": "guide12-c122/formal-c122-h0s25-b2",
+          "n_strip": 3,
+          "n_ray": 2,
+          "ray_drift": [
+            0.0011982680642718818,
+            -0.0007683821356422316
+          ],
+          "ray_cov": [
+            [
+              7.179231769269413e-07,
+              -4.6036388714855565e-07
+            ],
+            [
+              -4.6036388714855565e-07,
+              2.9520555318705836e-07
+            ]
+          ],
+          "ray_z": [
+            [
+              -0.09286493170557335,
+              -0.47443217476986166
+            ],
+            [
+              -0.09166666364130147,
+              -0.4752005569055039
+            ]
+          ]
+        }
+      ],
+      "material58_relative_L2_descriptive": {
+        "values": [
+          0.17642352691607785,
+          0.17626225001938786,
+          0.17628991103158043
+        ],
+        "median": 0.17628991103158043
+      },
+      "qualifier": "Shared-Ray Welch intervals assume independent Gaussian resets and a stationary bracket within each block; not unconditional future sessions and not H/S mapping uncertainty. Fixed-bracket PI omits future reference/session variability.",
+      "H_S_ci": null,
+      "H_S_ci_reason": "global map failed; reported orthogonal tangent and long SAT secants have not been locally validated"
+    },
+    {
+      "target": "0/50",
+      "actual_command": {
+        "b": 480,
+        "cw": 282,
+        "g": 180,
+        "r": 4095,
+        "ww": 1818
+      },
+      "total_observations_including_selection": 4,
+      "independent_confirmations": 3,
+      "independent_confirmation_blocks": 2,
+      "mean_dz_confirm_only": [
+        -0.03124939796678126,
+        0.039763185577345185
+      ],
+      "relative_ratio_error_percent": [
+        -3.076618201287641,
+        4.056432437239263
+      ],
+      "conditional_fixed_bracket_statistics": {
+        "n": 3,
+        "mean": [
+          -0.03124939796678126,
+          0.039763185577345185
+        ],
+        "min": [
+          -0.03130724708404864,
+          0.039456802572293004
+        ],
+        "max": [
+          -0.03114237870742309,
+          0.0401030186622241
+        ],
+        "sd": [
+          9.278293246986355e-05,
+          0.00032440405299837
+        ],
+        "sd_ci95": [
+          [
+            4.8308200798992585e-05,
+            0.0005831161149350117
+          ],
+          [
+            0.00016890365194420262,
+            0.002038793407559339
+          ]
+        ],
+        "mean_ci95": [
+          [
+            -0.03147988354833643,
+            -0.03101891238522609
+          ],
+          [
+            0.03895732123544728,
+            0.04056904991924309
+          ]
+        ],
+        "next_pi95": [
+          [
+            -0.03171036912989161,
+            -0.030788426803670915
+          ],
+          [
+            0.03815145689354938,
+            0.04137491426114099
+          ]
+        ],
+        "joint_mean_box95": [
+          [
+            -0.03158180754282718,
+            -0.030916988390735343
+          ],
+          [
+            0.0386009565891658,
+            0.04092541456552457
+          ]
+        ],
+        "joint_next_box95": [
+          [
+            -0.0319142171188731,
+            -0.03058457881468942
+          ],
+          [
+            0.037438727600986405,
+            0.042087643553703966
+          ]
+        ],
+        "assumption": "conditional iid Gaussian independent cycles at same fixed source/protocol; not established across arbitrary sessions",
+        "df": 2
+      },
+      "shared_Ray_mean_covariance_working": [
+        [
+          9.77063616729434e-08,
+          -1.1256122260371331e-08
+        ],
+        [
+          -1.1256122260371331e-08,
+          1.3821601446255705e-08
+        ]
+      ],
+      "shared_Ray_Welch_df": [
+        1.9494125963880935,
+        1.230370456882564
+      ],
+      "shared_Ray_mean_ci95_working": [
+        [
+          -0.032628327010520985,
+          -0.029870468923041533
+        ],
+        [
+          0.03879217054256332,
+          0.04073420061212705
+        ]
+      ],
+      "shared_Ray_mean_joint95_working": [
+        [
+          -0.03325378048652829,
+          -0.029245015447034235
+        ],
+        [
+          0.038050380008819024,
+          0.041475991145871346
+        ]
+      ],
+      "relative_ratio_ci95_working": [
+        [
+          -3.2101765625528427,
+          -2.9428755454837128
+        ],
+        [
+          3.955441116857319,
+          4.1575218693379465
+        ]
+      ],
+      "confirmation_identities": [
+        {
+          "run": "guide12-c122/formal-c122-h0s50-b6",
+          "strip_capture_id": "002-strip-guide12-c122-h0-s50-block6-refine3_confirm1",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h0-s50-block6-raybefore",
+            "003-ray-guide12-c122-h0-s50-block6-rayafter"
+          ],
+          "dz": [
+            -0.03114237870742309,
+            0.0401030186622241
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        },
+        {
+          "run": "guide12-c122/formal-c122-h0s50-b7",
+          "strip_capture_id": "001-strip-guide12-c122-h0-s50-block7-refine3_confirm2",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h0-s50-block7-raybefore",
+            "003-ray-guide12-c122-h0-s50-block7-rayafter"
+          ],
+          "dz": [
+            -0.03129856810887205,
+            0.03972973549751846
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        },
+        {
+          "run": "guide12-c122/formal-c122-h0s50-b7",
+          "strip_capture_id": "002-strip-guide12-c122-h0-s50-block7-refine3_confirm3",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h0-s50-block7-raybefore",
+            "003-ray-guide12-c122-h0-s50-block7-rayafter"
+          ],
+          "dz": [
+            -0.03130724708404864,
+            0.039456802572293004
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        }
+      ],
+      "Ray_groups": [
+        {
+          "run": "guide12-c122/formal-c122-h0s50-b6",
+          "n_strip": 1,
+          "n_ray": 2,
+          "ray_drift": [
+            0.0012139924576041183,
+            -0.00012607952496335173
+          ],
+          "ray_cov": [
+            [
+              7.368888435598435e-07,
+              -7.652979618190958e-08
+            ],
+            [
+              -7.652979618190958e-08,
+              7.948023307492217e-09
+            ]
+          ],
+          "ray_z": [
+            [
+              0.48247381760819313,
+              -0.5856797908184426
+            ],
+            [
+              0.48368781006579725,
+              -0.5858058703434059
+            ]
+          ]
+        },
+        {
+          "run": "guide12-c122/formal-c122-h0s50-b7",
+          "n_strip": 2,
+          "n_ray": 2,
+          "ray_drift": [
+            0.0007147026279239466,
+            -9.317633205041531e-05
+          ],
+          "ray_cov": [
+            [
+              2.553999231806976e-07,
+              -3.329668468837304e-08
+            ],
+            [
+              -3.329668468837304e-08,
+              4.3409144271846256e-09
+            ]
+          ],
+          "ray_z": [
+            [
+              0.482882409149881,
+              -0.5855586701654907
+            ],
+            [
+              0.48359711177780496,
+              -0.5856518464975411
+            ]
+          ]
+        }
+      ],
+      "material58_relative_L2_descriptive": {
+        "values": [
+          0.1773730587126756,
+          0.17746708435458539,
+          0.17740856276580624
+        ],
+        "median": 0.17740856276580624
+      },
+      "qualifier": "Shared-Ray Welch intervals assume independent Gaussian resets and a stationary bracket within each block; not unconditional future sessions and not H/S mapping uncertainty. Fixed-bracket PI omits future reference/session variability.",
+      "H_S_ci": null,
+      "H_S_ci_reason": "global map failed; reported orthogonal tangent and long SAT secants have not been locally validated"
+    },
+    {
+      "target": "60/25",
+      "actual_command": {
+        "b": 1792,
+        "cw": 1575,
+        "g": 4095,
+        "r": 4095,
+        "ww": 1575
+      },
+      "total_observations_including_selection": 4,
+      "independent_confirmations": 3,
+      "independent_confirmation_blocks": 1,
+      "mean_dz_confirm_only": [
+        0.0011334253167596027,
+        0.011485573672392335
+      ],
+      "relative_ratio_error_percent": [
+        0.11340678859790805,
+        1.1551786126877792
+      ],
+      "conditional_fixed_bracket_statistics": {
+        "n": 3,
+        "mean": [
+          0.0011334253167596027,
+          0.011485573672392335
+        ],
+        "min": [
+          0.0007979963403380586,
+          0.011164344886082422
+        ],
+        "max": [
+          0.0016618477235171847,
+          0.011715632247799035
+        ],
+        "sd": [
+          0.00046313567252995706,
+          0.0002867288689933716
+        ],
+        "sd_ci95": [
+          [
+            0.00024113541650583857,
+            0.0029106848303291134
+          ],
+          [
+            0.00014928775594260114,
+            0.0018020148714466542
+          ]
+        ],
+        "mean_ci95": [
+          [
+            -1.706747302891525e-05,
+            0.0022839181065481204
+          ],
+          [
+            0.010773299675878381,
+            0.01219784766890629
+          ]
+        ],
+        "next_pi95": [
+          [
+            -0.0011675602628174327,
+            0.0034344108963366383
+          ],
+          [
+            0.010061025679364427,
+            0.012910121665420243
+          ]
+        ],
+        "joint_mean_box95": [
+          [
+            -0.0005258317088515337,
+            0.002792682342370739
+          ],
+          [
+            0.010458322008265743,
+            0.012512825336518927
+          ]
+        ],
+        "joint_next_box95": [
+          [
+            -0.0021850887344626695,
+            0.004451939367981875
+          ],
+          [
+            0.009431070344139151,
+            0.01354007700064552
+          ]
+        ],
+        "assumption": "conditional iid Gaussian independent cycles at same fixed source/protocol; not established across arbitrary sessions",
+        "df": 2
+      },
+      "shared_Ray_mean_covariance_working": [
+        [
+          8.688648989876411e-08,
+          -5.0987787777586934e-08
+        ],
+        [
+          -5.0987787777586934e-08,
+          3.050118764674514e-08
+        ]
+      ],
+      "shared_Ray_Welch_df": [
+        2.703119339022202,
+        2.415842198177643
+      ],
+      "shared_Ray_mean_ci95_working": [
+        [
+          0.00013428504676591866,
+          0.002132565586753287
+        ],
+        [
+          0.01084543668915774,
+          0.01212571065562693
+        ]
+      ],
+      "shared_Ray_mean_joint95_working": [
+        [
+          -0.0002037041812714168,
+          0.002470554814790622
+        ],
+        [
+          0.010607703601696458,
+          0.012363443743088212
+        ]
+      ],
+      "relative_ratio_ci95_working": [
+        [
+          0.01342940634064066,
+          0.21348411220327587
+        ],
+        [
+          1.090446162840158,
+          1.219952513436275
+        ]
+      ],
+      "confirmation_identities": [
+        {
+          "run": "guide12-c122/formal-c122-h60s25-b2",
+          "strip_capture_id": "001-strip-guide12-c122-h60-s25-block2-pb_confirm1",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h60-s25-block2-raybefore",
+            "004-ray-guide12-c122-h60-s25-block2-rayafter"
+          ],
+          "dz": [
+            0.0007979963403380586,
+            0.011715632247799035
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        },
+        {
+          "run": "guide12-c122/formal-c122-h60s25-b2",
+          "strip_capture_id": "002-strip-guide12-c122-h60-s25-block2-pb_confirm2",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h60-s25-block2-raybefore",
+            "004-ray-guide12-c122-h60-s25-block2-rayafter"
+          ],
+          "dz": [
+            0.000940431886423565,
+            0.011576743883295548
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        },
+        {
+          "run": "guide12-c122/formal-c122-h60s25-b2",
+          "strip_capture_id": "003-strip-guide12-c122-h60-s25-block2-pb_confirm3",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h60-s25-block2-raybefore",
+            "004-ray-guide12-c122-h60-s25-block2-rayafter"
+          ],
+          "dz": [
+            0.0016618477235171847,
+            0.011164344886082422
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        }
+      ],
+      "Ray_groups": [
+        {
+          "run": "guide12-c122/formal-c122-h60s25-b2",
+          "n_strip": 3,
+          "n_ray": 2,
+          "ray_drift": [
+            0.00024809895479160904,
+            -0.00011129611329552258
+          ],
+          "ray_cov": [
+            [
+              3.0776545684344436e-08,
+              -1.3806224690493827e-08
+            ],
+            [
+              -1.3806224690493827e-08,
+              6.193412417344899e-09
+            ]
+          ],
+          "ray_z": [
+            [
+              -0.6822349822066721,
+              -0.5589949141448607
+            ],
+            [
+              -0.6819868832518805,
+              -0.5591062102581562
+            ]
+          ]
+        }
+      ],
+      "material58_relative_L2_descriptive": {
+        "values": [
+          0.1756861398837208,
+          0.17588560509817386,
+          0.1758015435307665
+        ],
+        "median": 0.1758015435307665
+      },
+      "qualifier": "Shared-Ray Welch intervals assume independent Gaussian resets and a stationary bracket within each block; not unconditional future sessions and not H/S mapping uncertainty. Fixed-bracket PI omits future reference/session variability.",
+      "H_S_ci": null,
+      "H_S_ci_reason": "global map failed; reported orthogonal tangent and long SAT secants have not been locally validated"
+    },
+    {
+      "target": "60/50",
+      "actual_command": {
+        "b": 1024,
+        "cw": 1050,
+        "g": 4095,
+        "r": 4095,
+        "ww": 1818
+      },
+      "total_observations_including_selection": 4,
+      "independent_confirmations": 3,
+      "independent_confirmation_blocks": 1,
+      "mean_dz_confirm_only": [
+        0.003542403742953818,
+        -0.00352389891281768
+      ],
+      "relative_ratio_error_percent": [
+        0.3548685470374284,
+        -0.3517697267839164
+      ],
+      "conditional_fixed_bracket_statistics": {
+        "n": 3,
+        "mean": [
+          0.003542403742953818,
+          -0.00352389891281768
+        ],
+        "min": [
+          0.0032871081123410084,
+          -0.003704887935617296
+        ],
+        "max": [
+          0.0037676391358769656,
+          -0.003189301232458419
+        ],
+        "sd": [
+          0.00024167173927167805,
+          0.00029009330719014735
+        ],
+        "sd_ci95": [
+          [
+            0.00012582838887928042,
+            0.001518842764960684
+          ],
+          [
+            0.0001510394785025497,
+            0.0018231594729161114
+          ]
+        ],
+        "mean_ci95": [
+          [
+            0.0029420578615647498,
+            0.004142749624342887
+          ],
+          [
+            -0.004244530637135098,
+            -0.002803267188500262
+          ]
+        ],
+        "next_pi95": [
+          [
+            0.002341711980175681,
+            0.004743095505731956
+          ],
+          [
+            -0.004965162361452516,
+            -0.002082635464182844
+          ]
+        ],
+        "joint_mean_box95": [
+          [
+            0.0026765763945924004,
+            0.004408231091315236
+          ],
+          [
+            -0.004563204210569036,
+            -0.002484593615066324
+          ]
+        ],
+        "joint_next_box95": [
+          [
+            0.0018107490462309832,
+            0.0052740584396766535
+          ],
+          [
+            -0.005602509508320392,
+            -0.001445288317314968
+          ]
+        ],
+        "assumption": "conditional iid Gaussian independent cycles at same fixed source/protocol; not established across arbitrary sessions",
+        "df": 2
+      },
+      "shared_Ray_mean_covariance_working": [
+        [
+          2.2517935527497106e-08,
+          -9.952753896617343e-09
+        ],
+        [
+          -9.952753896617343e-09,
+          7.045016913216058e-08
+        ]
+      ],
+      "shared_Ray_Welch_df": [
+        2.550473925134664,
+        2.265178189097282
+      ],
+      "shared_Ray_mean_ci95_working": [
+        [
+          0.0030135111725070464,
+          0.0040712963134005905
+        ],
+        [
+          -0.004546909622790999,
+          -0.002500888202844361
+        ]
+      ],
+      "shared_Ray_mean_joint95_working": [
+        [
+          0.0028259274625095643,
+          0.004258880023398072
+        ],
+        [
+          -0.004949127061728318,
+          -0.002098670763907042
+        ]
+      ],
+      "relative_ratio_ci95_working": [
+        [
+          0.30180563618132583,
+          0.4079595298957313
+        ],
+        [
+          -0.45365880788669616,
+          -0.2497763587256981
+        ]
+      ],
+      "confirmation_identities": [
+        {
+          "run": "guide12-c122/formal-c122-h60s50-b2",
+          "strip_capture_id": "001-strip-guide12-c122-h60-s50-block2-pww_confirm1",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h60-s50-block2-raybefore",
+            "004-ray-guide12-c122-h60-s50-block2-rayafter"
+          ],
+          "dz": [
+            0.0032871081123410084,
+            -0.0036775075703773252
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        },
+        {
+          "run": "guide12-c122/formal-c122-h60s50-b2",
+          "strip_capture_id": "002-strip-guide12-c122-h60-s50-block2-pww_confirm2",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h60-s50-block2-raybefore",
+            "004-ray-guide12-c122-h60-s50-block2-rayafter"
+          ],
+          "dz": [
+            0.003572463980643481,
+            -0.003189301232458419
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        },
+        {
+          "run": "guide12-c122/formal-c122-h60s50-b2",
+          "strip_capture_id": "003-strip-guide12-c122-h60-s50-block2-pww_confirm3",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h60-s50-block2-raybefore",
+            "004-ray-guide12-c122-h60-s50-block2-rayafter"
+          ],
+          "dz": [
+            0.0037676391358769656,
+            -0.003704887935617296
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        }
+      ],
+      "Ray_groups": [
+        {
+          "run": "guide12-c122/formal-c122-h60s50-b2",
+          "n_strip": 3,
+          "n_ray": 2,
+          "ray_drift": [
+            0.00011044502113355392,
+            -0.0004118193463481523
+          ],
+          "ray_cov": [
+            [
+              6.099051346595586e-09,
+              -2.2741698205314022e-08
+            ],
+            [
+              -2.2741698205314022e-08,
+              8.479758701330972e-08
+            ]
+          ],
+          "ray_z": [
+            [
+              -0.6404628690732048,
+              -0.7917069027148304
+            ],
+            [
+              -0.6403524240520713,
+              -0.7921187220611785
+            ]
+          ]
+        }
+      ],
+      "material58_relative_L2_descriptive": {
+        "values": [
+          0.17697392344850618,
+          0.17684527741554595,
+          0.17681130200180029
+        ],
+        "median": 0.17684527741554595
+      },
+      "qualifier": "Shared-Ray Welch intervals assume independent Gaussian resets and a stationary bracket within each block; not unconditional future sessions and not H/S mapping uncertainty. Fixed-bracket PI omits future reference/session variability.",
+      "H_S_ci": null,
+      "H_S_ci_reason": "global map failed; reported orthogonal tangent and long SAT secants have not been locally validated"
+    },
+    {
+      "target": "60/100",
+      "actual_command": {
+        "b": 80,
+        "cw": 0,
+        "g": 3390,
+        "r": 4095,
+        "ww": 0
+      },
+      "total_observations_including_selection": 4,
+      "independent_confirmations": 3,
+      "independent_confirmation_blocks": 1,
+      "mean_dz_confirm_only": [
+        0.00774512226426068,
+        0.0007155727749112254
+      ],
+      "relative_ratio_error_percent": [
+        0.7775193308208849,
+        0.07158288581877535
+      ],
+      "conditional_fixed_bracket_statistics": {
+        "n": 3,
+        "mean": [
+          0.00774512226426068,
+          0.0007155727749112254
+        ],
+        "min": [
+          0.007304154225492465,
+          0.00011403112570618212
+        ],
+        "max": [
+          0.0080226373925385,
+          0.0016847866648503906
+        ],
+        "sd": [
+          0.00038612453404693315,
+          0.0008474699985208272
+        ],
+        "sd_ci95": [
+          [
+            0.00020103893062676473,
+            0.002426690256289012
+          ],
+          [
+            0.0004412422605091033,
+            0.0053261241039342586
+          ]
+        ],
+        "mean_ci95": [
+          [
+            0.0067859357478026695,
+            0.008704308780718692
+          ],
+          [
+            -0.0013896594079913583,
+            0.002820804957813809
+          ]
+        ],
+        "next_pi95": [
+          [
+            0.005826749231344659,
+            0.009663495297176701
+          ],
+          [
+            -0.003494891590893941,
+            0.004926037140716392
+          ]
+        ],
+        "joint_mean_box95": [
+          [
+            0.006361769860464233,
+            0.009128474668057128
+          ],
+          [
+            -0.0023206229501101213,
+            0.003751768499932572
+          ]
+        ],
+        "joint_next_box95": [
+          [
+            0.004978417456667786,
+            0.010511827071853575
+          ],
+          [
+            -0.0053568186751314665,
+            0.006787964224953918
+          ]
+        ],
+        "assumption": "conditional iid Gaussian independent cycles at same fixed source/protocol; not established across arbitrary sessions",
+        "df": 2
+      },
+      "shared_Ray_mean_covariance_working": [
+        [
+          1.5595204744830974e-07,
+          -1.704755548618736e-07
+        ],
+        [
+          -1.704755548618736e-07,
+          8.252517106674373e-07
+        ]
+      ],
+      "shared_Ray_Welch_df": [
+        1.941804605507798,
+        1.8313605891201379
+      ],
+      "shared_Ray_mean_ci95_working": [
+        [
+          0.005996227460951301,
+          0.00949401706757006
+        ],
+        [
+          -0.0035591120417639197,
+          0.004990257591586371
+        ]
+      ],
+      "shared_Ray_mean_joint95_working": [
+        [
+          0.0051998586658947125,
+          0.010290385862626648
+        ],
+        [
+          -0.005625244818248136,
+          0.007056390368070587
+        ]
+      ],
+      "relative_ratio_ci95_working": [
+        [
+          0.6014240818898997,
+          0.9539228212800498
+        ],
+        [
+          -0.3552785909863853,
+          0.5002729664657026
+        ]
+      ],
+      "confirmation_identities": [
+        {
+          "run": "guide12-c122/formal-c122-h60s100-b7",
+          "strip_capture_id": "001-strip-guide12-c122-h60-s100-block7-fin2_confirm1",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h60-s100-block7-raybefore",
+            "004-ray-guide12-c122-h60-s100-block7-rayafter"
+          ],
+          "dz": [
+            0.007304154225492465,
+            0.00011403112570618212
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        },
+        {
+          "run": "guide12-c122/formal-c122-h60s100-b7",
+          "strip_capture_id": "002-strip-guide12-c122-h60-s100-block7-fin2_confirm2",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h60-s100-block7-raybefore",
+            "004-ray-guide12-c122-h60-s100-block7-rayafter"
+          ],
+          "dz": [
+            0.007908575174751076,
+            0.00034790053417710354
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        },
+        {
+          "run": "guide12-c122/formal-c122-h60s100-b7",
+          "strip_capture_id": "003-strip-guide12-c122-h60-s100-block7-fin2_confirm3",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h60-s100-block7-raybefore",
+            "004-ray-guide12-c122-h60-s100-block7-rayafter"
+          ],
+          "dz": [
+            0.0080226373925385,
+            0.0016847866648503906
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        }
+      ],
+      "Ray_groups": [
+        {
+          "run": "guide12-c122/formal-c122-h60s100-b7",
+          "n_strip": 3,
+          "n_ray": 2,
+          "ray_drift": [
+            -0.0006519345432909329,
+            0.0015308166594378836
+          ],
+          "ray_cov": [
+            [
+              2.1250932436797864e-07,
+              -4.989961298663942e-07
+            ],
+            [
+              -4.989961298663942e-07,
+              1.1716998224062808e-06
+            ]
+          ],
+          "ray_z": [
+            [
+              -0.5342893424361483,
+              -1.325352477433411
+            ],
+            [
+              -0.5349412769794393,
+              -1.323821660773973
+            ]
+          ]
+        }
+      ],
+      "material58_relative_L2_descriptive": {
+        "values": [
+          0.17395190243236347,
+          0.17384240708520693,
+          0.17412484131208816
+        ],
+        "median": 0.17395190243236347
+      },
+      "qualifier": "Shared-Ray Welch intervals assume independent Gaussian resets and a stationary bracket within each block; not unconditional future sessions and not H/S mapping uncertainty. Fixed-bracket PI omits future reference/session variability.",
+      "H_S_ci": null,
+      "H_S_ci_reason": "global map failed; reported orthogonal tangent and long SAT secants have not been locally validated"
+    },
+    {
+      "target": "120/25",
+      "actual_command": {
+        "b": 1300,
+        "cw": 3343,
+        "g": 4095,
+        "r": 1759,
+        "ww": 1018
+      },
+      "total_observations_including_selection": 4,
+      "independent_confirmations": 3,
+      "independent_confirmation_blocks": 1,
+      "mean_dz_confirm_only": [
+        0.017630474516454348,
+        0.013800594269541685
+      ],
+      "relative_ratio_error_percent": [
+        1.7786808729663741,
+        1.3896262054809698
+      ],
+      "conditional_fixed_bracket_statistics": {
+        "n": 3,
+        "mean": [
+          0.017630474516454348,
+          0.013800594269541685
+        ],
+        "min": [
+          0.017573584474561366,
+          0.013673304201232583
+        ],
+        "max": [
+          0.017707229214167564,
+          0.013951490379220055
+        ],
+        "sd": [
+          6.90013225905437e-05,
+          0.00014058741514682264
+        ],
+        "sd_ci95": [
+          [
+            3.592610901991844e-05,
+            0.0004336550061881706
+          ],
+          [
+            7.319799989001174e-05,
+            0.0008835546058624309
+          ]
+        ],
+        "mean_ci95": [
+          [
+            0.017459065728846528,
+            0.01780188330406217
+          ],
+          [
+            0.013451355769777964,
+            0.014149832769305407
+          ]
+        ],
+        "next_pi95": [
+          [
+            0.01728765694123871,
+            0.017973292091669986
+          ],
+          [
+            0.013102117270014242,
+            0.014499071269069129
+          ]
+        ],
+        "joint_mean_box95": [
+          [
+            0.017383266330871505,
+            0.01787768270203719
+          ],
+          [
+            0.013296917549887174,
+            0.014304270989196196
+          ]
+        ],
+        "joint_next_box95": [
+          [
+            0.017136058145288666,
+            0.01812489088762003
+          ],
+          [
+            0.012793240830232661,
+            0.01480794770885071
+          ]
+        ],
+        "assumption": "conditional iid Gaussian independent cycles at same fixed source/protocol; not established across arbitrary sessions",
+        "df": 2
+      },
+      "shared_Ray_mean_covariance_working": [
+        [
+          9.555697517232253e-08,
+          -6.884949099780974e-08
+        ],
+        [
+          -6.884949099780974e-08,
+          5.2759065390847174e-08
+        ]
+      ],
+      "shared_Ray_Welch_df": [
+        1.0339158455506476,
+        1.2925890381035907
+      ],
+      "shared_Ray_mean_ci95_working": [
+        [
+          0.013994459202245728,
+          0.02126648983066297
+        ],
+        [
+          0.012060994267835445,
+          0.015540194271247925
+        ]
+      ],
+      "shared_Ray_mean_joint95_working": [
+        [
+          0.010508802807694367,
+          0.02475214622521433
+        ],
+        [
+          0.010811344187232232,
+          0.01678984435185114
+        ]
+      ],
+      "relative_ratio_ci95_working": [
+        [
+          1.4092840039595054,
+          2.149423319433653
+        ],
+        [
+          1.2134021356978588,
+          1.566157101456222
+        ]
+      ],
+      "confirmation_identities": [
+        {
+          "run": "guide12-c122/formal-c122-h120s25-b5",
+          "strip_capture_id": "001-strip-guide12-c122-h120-s25-block5-refine2_confirm1",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h120-s25-block5-raybefore",
+            "004-ray-guide12-c122-h120-s25-block5-rayafter"
+          ],
+          "dz": [
+            0.017573584474561366,
+            0.013951490379220055
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        },
+        {
+          "run": "guide12-c122/formal-c122-h120s25-b5",
+          "strip_capture_id": "002-strip-guide12-c122-h120-s25-block5-refine2_confirm2",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h120-s25-block5-raybefore",
+            "004-ray-guide12-c122-h120-s25-block5-rayafter"
+          ],
+          "dz": [
+            0.01761060986063412,
+            0.013776988228172415
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        },
+        {
+          "run": "guide12-c122/formal-c122-h120s25-b5",
+          "strip_capture_id": "003-strip-guide12-c122-h120-s25-block5-refine2_confirm3",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h120-s25-block5-raybefore",
+            "004-ray-guide12-c122-h120-s25-block5-rayafter"
+          ],
+          "dz": [
+            0.017707229214167564,
+            0.013673304201232583
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        }
+      ],
+      "Ray_groups": [
+        {
+          "run": "guide12-c122/formal-c122-h120s25-b5",
+          "n_strip": 3,
+          "n_ray": 2,
+          "ray_drift": [
+            -0.0006130902521899184,
+            0.00042974779406046437
+          ],
+          "ray_cov": [
+            [
+              1.8793982866514889e-07,
+              -1.317370917192956e-07
+            ],
+            [
+              -1.317370917192956e-07,
+              9.234158324991764e-08
+            ]
+          ],
+          "ray_z": [
+            [
+              -0.988449117824499,
+              -0.5878111055528596
+            ],
+            [
+              -0.9890622080766889,
+              -0.5873813577587992
+            ]
+          ]
+        }
+      ],
+      "material58_relative_L2_descriptive": {
+        "values": [
+          0.17275539612122234,
+          0.17263165992471863,
+          0.17269909286025642
+        ],
+        "median": 0.17269909286025642
+      },
+      "qualifier": "Shared-Ray Welch intervals assume independent Gaussian resets and a stationary bracket within each block; not unconditional future sessions and not H/S mapping uncertainty. Fixed-bracket PI omits future reference/session variability.",
+      "H_S_ci": null,
+      "H_S_ci_reason": "global map failed; reported orthogonal tangent and long SAT secants have not been locally validated"
+    },
+    {
+      "target": "120/50",
+      "actual_command": {
+        "b": 1024,
+        "cw": 282,
+        "g": 4095,
+        "r": 368,
+        "ww": 1818
+      },
+      "total_observations_including_selection": 4,
+      "independent_confirmations": 3,
+      "independent_confirmation_blocks": 1,
+      "mean_dz_confirm_only": [
+        0.0005404990915473343,
+        0.0021229675185240695
+      ],
+      "relative_ratio_error_percent": [
+        0.05406451875017074,
+        0.2125222609612437
+      ],
+      "conditional_fixed_bracket_statistics": {
+        "n": 3,
+        "mean": [
+          0.0005404990915473343,
+          0.0021229675185240695
+        ],
+        "min": [
+          0.0003712090876129004,
+          0.0020350428827391465
+        ],
+        "max": [
+          0.0006943375833232679,
+          0.0022407614416900534
+        ],
+        "sd": [
+          0.0001621174515775506,
+          0.00010606206730353098
+        ],
+        "sd_ci95": [
+          [
+            8.440779133999696e-05,
+            0.001018865172835221
+          ],
+          [
+            5.522209212474976e-05,
+            0.000666571954363469
+          ]
+        ],
+        "mean_ci95": [
+          [
+            0.00013777701635068286,
+            0.0009432211667439858
+          ],
+          [
+            0.0018594947373491665,
+            0.0023864402996989723
+          ]
+        ],
+        "next_pi95": [
+          [
+            -0.0002649450588459685,
+            0.0013459432419406373
+          ],
+          [
+            0.0015960219561742637,
+            0.0026499130808738756
+          ]
+        ],
+        "joint_mean_box95": [
+          [
+            -4.031239946737392e-05,
+            0.0011213105825620426
+          ],
+          [
+            0.001742983335135903,
+            0.002502951701912236
+          ]
+        ],
+        "joint_next_box95": [
+          [
+            -0.0006211238904820822,
+            0.001702122073576751
+          ],
+          [
+            0.001362999151747737,
+            0.002882935885300402
+          ]
+        ],
+        "assumption": "conditional iid Gaussian independent cycles at same fixed source/protocol; not established across arbitrary sessions",
+        "df": 2
+      },
+      "shared_Ray_mean_covariance_working": [
+        [
+          2.586367719878651e-07,
+          -1.716416700299077e-07
+        ],
+        [
+          -1.716416700299077e-07,
+          1.2670046791653938e-07
+        ]
+      ],
+      "shared_Ray_Welch_df": [
+        1.0706914305721928,
+        1.0614319797208875
+      ],
+      "shared_Ray_mean_ci95_working": [
+        [
+          -0.004995493330136646,
+          0.006076491513231315
+        ],
+        [
+          -0.001825801556712334,
+          0.0060717365937604725
+        ]
+      ],
+      "shared_Ray_mean_joint95_working": [
+        [
+          -0.010059545238259648,
+          0.011140543421354315
+        ],
+        [
+          -0.0054800451960442705,
+          0.00972598023309241
+        ]
+      ],
+      "relative_ratio_ci95_working": [
+        [
+          -0.4983036604459644,
+          0.6094990839137094
+        ],
+        [
+          -0.1824135794987766,
+          0.609020694984915
+        ]
+      ],
+      "confirmation_identities": [
+        {
+          "run": "guide12-c122/formal-c122-h120s50-b3",
+          "strip_capture_id": "001-strip-guide12-c122-h120-s50-block3-step1_confirm1",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h120-s50-block3-raybefore",
+            "004-ray-guide12-c122-h120-s50-block3-rayafter"
+          ],
+          "dz": [
+            0.0003712090876129004,
+            0.002093098231143009
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        },
+        {
+          "run": "guide12-c122/formal-c122-h120s50-b3",
+          "strip_capture_id": "002-strip-guide12-c122-h120-s50-block3-step1_confirm2",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h120-s50-block3-raybefore",
+            "004-ray-guide12-c122-h120-s50-block3-rayafter"
+          ],
+          "dz": [
+            0.0005559506037058348,
+            0.0020350428827391465
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        },
+        {
+          "run": "guide12-c122/formal-c122-h120s50-b3",
+          "strip_capture_id": "003-strip-guide12-c122-h120-s50-block3-step1_confirm3",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h120-s50-block3-raybefore",
+            "004-ray-guide12-c122-h120-s50-block3-rayafter"
+          ],
+          "dz": [
+            0.0006943375833232679,
+            0.0022407614416900534
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        }
+      ],
+      "Ray_groups": [
+        {
+          "run": "guide12-c122/formal-c122-h120s50-b3",
+          "n_strip": 3,
+          "n_ray": 2,
+          "ray_drift": [
+            -0.000999752134519749,
+            0.0007012866666624706
+          ],
+          "ray_cov": [
+            [
+              4.997521652383973e-07,
+              -3.505564209530224e-07
+            ],
+            [
+              -3.505564209530224e-07,
+              2.459014944192796e-07
+            ]
+          ],
+          "ray_z": [
+            [
+              -1.2697451731824325,
+              -0.7976492627253772
+            ],
+            [
+              -1.2707449253169523,
+              -0.7969479760587147
+            ]
+          ]
+        }
+      ],
+      "material58_relative_L2_descriptive": {
+        "values": [
+          0.1738278470848312,
+          0.17380579105125216,
+          0.1738858034326521
+        ],
+        "median": 0.1738278470848312
+      },
+      "qualifier": "Shared-Ray Welch intervals assume independent Gaussian resets and a stationary bracket within each block; not unconditional future sessions and not H/S mapping uncertainty. Fixed-bracket PI omits future reference/session variability.",
+      "H_S_ci": null,
+      "H_S_ci_reason": "global map failed; reported orthogonal tangent and long SAT secants have not been locally validated"
+    },
+    {
+      "target": "180/25",
+      "actual_command": {
+        "b": 2657,
+        "cw": 1575,
+        "g": 4095,
+        "r": 1507,
+        "ww": 2193
+      },
+      "total_observations_including_selection": 4,
+      "independent_confirmations": 3,
+      "independent_confirmation_blocks": 1,
+      "mean_dz_confirm_only": [
+        -0.004446567764575193,
+        -0.0031133193221592657
+      ],
+      "relative_ratio_error_percent": [
+        -0.4436696418755364,
+        -0.3108477969087653
+      ],
+      "conditional_fixed_bracket_statistics": {
+        "n": 3,
+        "mean": [
+          -0.004446567764575193,
+          -0.0031133193221592657
+        ],
+        "min": [
+          -0.004575625758281299,
+          -0.003280659725850399
+        ],
+        "max": [
+          -0.004360248144919643,
+          -0.0028050635833863358
+        ],
+        "sd": [
+          0.0001138718821601917,
+          0.0002672840650461332
+        ],
+        "sd_ci95": [
+          [
+            5.9288336791257405e-05,
+            0.0007156545687662517
+          ],
+          [
+            0.00013916365802313369,
+            0.0016798094374130892
+          ]
+        ],
+        "mean_ci95": [
+          [
+            -0.004729441201357315,
+            -0.004163694327793071
+          ],
+          [
+            -0.003777289747890293,
+            -0.002449348896428238
+          ]
+        ],
+        "next_pi95": [
+          [
+            -0.005012314638139437,
+            -0.0038808208910109496
+          ],
+          [
+            -0.004441260173621321,
+            -0.0017853784706972104
+          ]
+        ],
+        "joint_mean_box95": [
+          [
+            -0.004854531848753227,
+            -0.00403860368039716
+          ],
+          [
+            -0.004070906891130243,
+            -0.002155731753188288
+          ]
+        ],
+        "joint_next_box95": [
+          [
+            -0.00526249593293126,
+            -0.0036306395962191268
+          ],
+          [
+            -0.0050284944601012216,
+            -0.00119814418421731
+          ]
+        ],
+        "assumption": "conditional iid Gaussian independent cycles at same fixed source/protocol; not established across arbitrary sessions",
+        "df": 2
+      },
+      "shared_Ray_mean_covariance_working": [
+        [
+          4.0794735908198434e-08,
+          3.731873507568034e-09
+        ],
+        [
+          3.731873507568034e-09,
+          2.3836423545630697e-08
+        ]
+      ],
+      "shared_Ray_Welch_df": [
+        1.2423357633713172,
+        2.0038334549119408
+      ],
+      "shared_Ray_mean_ci95_working": [
+        [
+          -0.0060859205988758385,
+          -0.002807214930274548
+        ],
+        [
+          -0.0037763916520230758,
+          -0.0024502469922954555
+        ]
+      ],
+      "shared_Ray_mean_joint95_working": [
+        [
+          -0.007323128365993648,
+          -0.001570007163156739
+        ],
+        [
+          -0.004069060763425928,
+          -0.0021575778808926036
+        ]
+      ],
+      "relative_ratio_ci95_working": [
+        [
+          -0.6067438895840757,
+          -0.28032783868781896
+        ],
+        [
+          -0.3769270052538414,
+          -0.24472475873949026
+        ]
+      ],
+      "confirmation_identities": [
+        {
+          "run": "guide12-c122/formal-c122-h180s25-b4",
+          "strip_capture_id": "001-strip-guide12-c122-h180-s25-block4-refine1_confirm1",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h180-s25-block4-raybefore",
+            "004-ray-guide12-c122-h180-s25-block4-rayafter"
+          ],
+          "dz": [
+            -0.004575625758281299,
+            -0.003254234657241062
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        },
+        {
+          "run": "guide12-c122/formal-c122-h180s25-b4",
+          "strip_capture_id": "002-strip-guide12-c122-h180-s25-block4-refine1_confirm2",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h180-s25-block4-raybefore",
+            "004-ray-guide12-c122-h180-s25-block4-rayafter"
+          ],
+          "dz": [
+            -0.004403829390524638,
+            -0.0028050635833863358
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        },
+        {
+          "run": "guide12-c122/formal-c122-h180s25-b4",
+          "strip_capture_id": "003-strip-guide12-c122-h180-s25-block4-refine1_confirm3",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h180-s25-block4-raybefore",
+            "004-ray-guide12-c122-h180-s25-block4-rayafter"
+          ],
+          "dz": [
+            -0.004360248144919643,
+            -0.003280659725850399
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        }
+      ],
+      "Ray_groups": [
+        {
+          "run": "guide12-c122/formal-c122-h180s25-b4",
+          "n_strip": 3,
+          "n_ray": 2,
+          "ray_drift": [
+            -0.00038195532405049804,
+            -9.556792300524641e-06
+          ],
+          "ray_cov": [
+            [
+              7.294493478526048e-08,
+              1.825133850015097e-09
+            ],
+            [
+              1.825133850015097e-09,
+              4.566613953768353e-11
+            ]
+          ],
+          "ray_z": [
+            [
+              -0.9877745603602648,
+              -0.35876125531921776
+            ],
+            [
+              -0.9881565156843153,
+              -0.3587708121115183
+            ]
+          ]
+        }
+      ],
+      "material58_relative_L2_descriptive": {
+        "values": [
+          0.17491753464618626,
+          0.17486535322697433,
+          0.17471850224113697
+        ],
+        "median": 0.17486535322697433
+      },
+      "qualifier": "Shared-Ray Welch intervals assume independent Gaussian resets and a stationary bracket within each block; not unconditional future sessions and not H/S mapping uncertainty. Fixed-bracket PI omits future reference/session variability.",
+      "H_S_ci": null,
+      "H_S_ci_reason": "global map failed; reported orthogonal tangent and long SAT secants have not been locally validated"
+    },
+    {
+      "target": "180/50",
+      "actual_command": {
+        "b": 2388,
+        "cw": 1050,
+        "g": 4095,
+        "r": 920,
+        "ww": 1050
+      },
+      "total_observations_including_selection": 4,
+      "independent_confirmations": 3,
+      "independent_confirmation_blocks": 1,
+      "mean_dz_confirm_only": [
+        0.009987103910132836,
+        0.001008021425150903
+      ],
+      "relative_ratio_error_percent": [
+        1.003714147043292,
+        0.100852964950035
+      ],
+      "conditional_fixed_bracket_statistics": {
+        "n": 3,
+        "mean": [
+          0.009987103910132836,
+          0.001008021425150903
+        ],
+        "min": [
+          0.009884595365005078,
+          0.0007012899627226177
+        ],
+        "max": [
+          0.01006082115488316,
+          0.0012648395763089626
+        ],
+        "sd": [
+          9.157284798239194e-05,
+          0.00028507112397575194
+        ],
+        "sd_ci95": [
+          [
+            4.767816030718649e-05,
+            0.0005755110549709201
+          ],
+          [
+            0.0001484246372950987,
+            0.0017915963838164943
+          ]
+        ],
+        "mean_ci95": [
+          [
+            0.009759624345087396,
+            0.010214583475178276
+          ],
+          [
+            0.00029986549555168385,
+            0.0017161773547501222
+          ]
+        ],
+        "next_pi95": [
+          [
+            0.009532144780041956,
+            0.010442063040223716
+          ],
+          [
+            -0.00040829043404753507,
+            0.002424333284349341
+          ]
+        ],
+        "joint_mean_box95": [
+          [
+            0.009659029653749193,
+            0.010315178166516479
+          ],
+          [
+            -1.3291104440594104e-05,
+            0.0020293339547424
+          ]
+        ],
+        "joint_next_box95": [
+          [
+            0.009330955397365549,
+            0.010643252422900124
+          ],
+          [
+            -0.0010346036340320908,
+            0.0030506464843338965
+          ]
+        ],
+        "assumption": "conditional iid Gaussian independent cycles at same fixed source/protocol; not established across arbitrary sessions",
+        "df": 2
+      },
+      "shared_Ray_mean_covariance_working": [
+        [
+          3.6743938328874724e-08,
+          1.372091780196707e-08
+        ],
+        [
+          1.372091780196707e-08,
+          3.198288696334421e-08
+        ]
+      ],
+      "shared_Ray_Welch_df": [
+        1.1674933722246488,
+        2.617138164269125
+      ],
+      "shared_Ray_mean_ci95_working": [
+        [
+          0.00824010193341967,
+          0.011734105886846003
+        ],
+        [
+          0.0003887525796532138,
+          0.001627290270648592
+        ]
+      ],
+      "shared_Ray_mean_joint95_working": [
+        [
+          0.006813296539606374,
+          0.013160911280659299
+        ],
+        [
+          0.00017373536672684274,
+          0.0018423074835749631
+        ]
+      ],
+      "relative_ratio_ci95_working": [
+        [
+          0.8274145015267492,
+          1.1803220575804436
+        ],
+        [
+          0.03888281537301958,
+          0.16286150259507476
+        ]
+      ],
+      "confirmation_identities": [
+        {
+          "run": "guide12-c122/formal-c122-h180s50-b6",
+          "strip_capture_id": "001-strip-guide12-c122-h180-s50-block6-refine2_confirm1",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h180-s50-block6-raybefore",
+            "004-ray-guide12-c122-h180-s50-block6-rayafter"
+          ],
+          "dz": [
+            0.009884595365005078,
+            0.001057934736421129
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        },
+        {
+          "run": "guide12-c122/formal-c122-h180s50-b6",
+          "strip_capture_id": "002-strip-guide12-c122-h180-s50-block6-refine2_confirm2",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h180-s50-block6-raybefore",
+            "004-ray-guide12-c122-h180-s50-block6-rayafter"
+          ],
+          "dz": [
+            0.010015895210510273,
+            0.0007012899627226177
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        },
+        {
+          "run": "guide12-c122/formal-c122-h180s50-b6",
+          "strip_capture_id": "003-strip-guide12-c122-h180-s50-block6-refine2_confirm3",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h180-s50-block6-raybefore",
+            "004-ray-guide12-c122-h180-s50-block6-rayafter"
+          ],
+          "dz": [
+            0.01006082115488316,
+            0.0012648395763089626
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        }
+      ],
+      "Ray_groups": [
+        {
+          "run": "guide12-c122/formal-c122-h180s50-b6",
+          "n_strip": 3,
+          "n_ray": 2,
+          "ray_drift": [
+            -0.00036850369242658054,
+            -0.0001399195729230862
+          ],
+          "ray_cov": [
+            [
+              6.789748566601194e-08,
+              2.5780439632453734e-08
+            ],
+            [
+              2.5780439632453734e-08,
+              9.78874344348942e-09
+            ]
+          ],
+          "ray_z": [
+            [
+              -1.285576219452702,
+              -0.35020616558260603
+            ],
+            [
+              -1.2859447231451286,
+              -0.3503460851555291
+            ]
+          ]
+        }
+      ],
+      "material58_relative_L2_descriptive": {
+        "values": [
+          0.17705978433166938,
+          0.17666286284503527,
+          0.1771807332810852
+        ],
+        "median": 0.17705978433166938
+      },
+      "qualifier": "Shared-Ray Welch intervals assume independent Gaussian resets and a stationary bracket within each block; not unconditional future sessions and not H/S mapping uncertainty. Fixed-bracket PI omits future reference/session variability.",
+      "H_S_ci": null,
+      "H_S_ci_reason": "global map failed; reported orthogonal tangent and long SAT secants have not been locally validated"
+    },
+    {
+      "target": "240/25",
+      "actual_command": {
+        "b": 4095,
+        "cw": 3111,
+        "g": 2048,
+        "r": 542,
+        "ww": 2343
+      },
+      "total_observations_including_selection": 4,
+      "independent_confirmations": 3,
+      "independent_confirmation_blocks": 1,
+      "mean_dz_confirm_only": [
+        0.011075422473090532,
+        0.008427953748739113
+      ],
+      "relative_ratio_error_percent": [
+        1.1136982020657793,
+        0.8463568935004826
+      ],
+      "conditional_fixed_bracket_statistics": {
+        "n": 3,
+        "mean": [
+          0.011075422473090532,
+          0.008427953748739113
+        ],
+        "min": [
+          0.011063411837063608,
+          0.008392104101870683
+        ],
+        "max": [
+          0.011088017147383833,
+          0.00845926402112536
+        ],
+        "sd": [
+          1.2313047937496497e-05,
+          3.3809290573609764e-05
+        ],
+        "sd_ci95": [
+          [
+            6.410890196916375e-06,
+            7.738423959227201e-05
+          ],
+          [
+            1.7603086628372326e-05,
+            0.00021248242153152147
+          ]
+        ],
+        "mean_ci95": [
+          [
+            0.011044835166362408,
+            0.011106009779818656
+          ],
+          [
+            0.008343966815017683,
+            0.008511940682460542
+          ]
+        ],
+        "next_pi95": [
+          [
+            0.011014247859634282,
+            0.011136597086546782
+          ],
+          [
+            0.008259979881296255,
+            0.00859592761618197
+          ]
+        ],
+        "joint_mean_box95": [
+          [
+            0.011031309025328296,
+            0.011119535920852767
+          ],
+          [
+            0.008306826601247442,
+            0.008549080896230783
+          ]
+        ],
+        "joint_next_box95": [
+          [
+            0.010987195577566063,
+            0.011163649368615
+          ],
+          [
+            0.00818569945375577,
+            0.008670208043722455
+          ]
+        ],
+        "assumption": "conditional iid Gaussian independent cycles at same fixed source/protocol; not established across arbitrary sessions",
+        "df": 2
+      },
+      "shared_Ray_mean_covariance_working": [
+        [
+          7.79678463162919e-08,
+          4.253938329928052e-08
+        ],
+        [
+          4.253938329928052e-08,
+          2.3659886398694446e-08
+        ]
+      ],
+      "shared_Ray_Welch_df": [
+        1.0012974070651275,
+        1.0328650569604994
+      ],
+      "shared_Ray_mean_ci95_working": [
+        [
+          0.00753834919519729,
+          0.014612495750983773
+        ],
+        [
+          0.006614518337667671,
+          0.010241389159810554
+        ]
+      ],
+      "shared_Ray_mean_joint95_working": [
+        [
+          0.003996622012011083,
+          0.018154222934169982
+        ],
+        [
+          0.004873684603137451,
+          0.011982222894340774
+        ]
+      ],
+      "relative_ratio_ci95_working": [
+        [
+          0.7566834080843383,
+          1.4719780194561924
+        ],
+        [
+          0.6636442576857817,
+          1.0294011674903414
+        ]
+      ],
+      "confirmation_identities": [
+        {
+          "run": "guide12-c122/formal-c122-h240s25-b3",
+          "strip_capture_id": "001-strip-guide12-c122-h240-s25-block3-step1_confirm1",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h240-s25-block3-raybefore",
+            "004-ray-guide12-c122-h240-s25-block3-rayafter"
+          ],
+          "dz": [
+            0.011074838434824152,
+            0.008392104101870683
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        },
+        {
+          "run": "guide12-c122/formal-c122-h240s25-b3",
+          "strip_capture_id": "002-strip-guide12-c122-h240-s25-block3-step1_confirm2",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h240-s25-block3-raybefore",
+            "004-ray-guide12-c122-h240-s25-block3-rayafter"
+          ],
+          "dz": [
+            0.011063411837063608,
+            0.00845926402112536
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        },
+        {
+          "run": "guide12-c122/formal-c122-h240s25-b3",
+          "strip_capture_id": "003-strip-guide12-c122-h240-s25-block3-step1_confirm3",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h240-s25-block3-raybefore",
+            "004-ray-guide12-c122-h240-s25-block3-rayafter"
+          ],
+          "dz": [
+            0.011088017147383833,
+            0.008432493123221294
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        }
+      ],
+      "Ray_groups": [
+        {
+          "run": "guide12-c122/formal-c122-h240s25-b3",
+          "n_strip": 3,
+          "n_ray": 2,
+          "ray_drift": [
+            0.0005582734429164793,
+            0.0003051482504553976
+          ],
+          "ray_cov": [
+            [
+              1.5583461853290973e-07,
+              8.517808219083747e-08
+            ],
+            [
+              8.517808219083747e-08,
+              4.655772737799504e-08
+            ]
+          ],
+          "ray_z": [
+            [
+              -0.9173494175668324,
+              0.03609852206915594
+            ],
+            [
+              -0.9167911441239159,
+              0.036403670319611336
+            ]
+          ]
+        }
+      ],
+      "material58_relative_L2_descriptive": {
+        "values": [
+          0.1790872861299108,
+          0.1794190153448844,
+          0.1790870250600153
+        ],
+        "median": 0.1790872861299108
+      },
+      "qualifier": "Shared-Ray Welch intervals assume independent Gaussian resets and a stationary bracket within each block; not unconditional future sessions and not H/S mapping uncertainty. Fixed-bracket PI omits future reference/session variability.",
+      "H_S_ci": null,
+      "H_S_ci_reason": "global map failed; reported orthogonal tangent and long SAT secants have not been locally validated"
+    },
+    {
+      "target": "240/50",
+      "actual_command": {
+        "b": 4095,
+        "cw": 796,
+        "g": 2048,
+        "r": 1031,
+        "ww": 547
+      },
+      "total_observations_including_selection": 4,
+      "independent_confirmations": 3,
+      "independent_confirmation_blocks": 1,
+      "mean_dz_confirm_only": [
+        0.002061311511176426,
+        -0.0013785581309229318
+      ],
+      "relative_ratio_error_percent": [
+        0.2063437474255912,
+        -0.1377608356152809
+      ],
+      "conditional_fixed_bracket_statistics": {
+        "n": 3,
+        "mean": [
+          0.002061311511176426,
+          -0.0013785581309229318
+        ],
+        "min": [
+          0.0018936591817944048,
+          -0.0015129537903224022
+        ],
+        "max": [
+          0.002189963308451892,
+          -0.0013052252942925557
+        ],
+        "sd": [
+          0.00015195333164169157,
+          0.00011655163344673828
+        ],
+        "sd_ci95": [
+          [
+            7.91157582716737e-05,
+            0.0009549863756150892
+          ],
+          [
+            6.0683571451294665e-05,
+            0.0007324960946547622
+          ]
+        ],
+        "mean_ci95": [
+          [
+            0.0016838385096191954,
+            0.0024387845127336566
+          ],
+          [
+            -0.0016680884389340754,
+            -0.0010890278229117882
+          ]
+        ],
+        "next_pi95": [
+          [
+            0.0013063655080619648,
+            0.002816257514290887
+          ],
+          [
+            -0.0019576187469452187,
+            -0.0007994975149006446
+          ]
+        ],
+        "joint_mean_box95": [
+          [
+            0.0015169145924199957,
+            0.0026057084299328562
+          ],
+          [
+            -0.0017961228492408571,
+            -0.0009609934126050065
+          ]
+        ],
+        "joint_next_box95": [
+          [
+            0.0009725176736635657,
+            0.003150105348689286
+          ],
+          [
+            -0.0022136875675587823,
+            -0.0005434286942870814
+          ]
+        ],
+        "assumption": "conditional iid Gaussian independent cycles at same fixed source/protocol; not established across arbitrary sessions",
+        "df": 2
+      },
+      "shared_Ray_mean_covariance_working": [
+        [
+          5.730982742646139e-07,
+          3.8542852140538485e-07
+        ],
+        [
+          3.8542852140538485e-07,
+          2.59770222774751e-07
+        ]
+      ],
+      "shared_Ray_Welch_df": [
+        1.0273153855628523,
+        1.0356325297510665
+      ],
+      "shared_Ray_mean_ci95_working": [
+        [
+          -0.00697386936735315,
+          0.011096492389706001
+        ],
+        [
+          -0.007351088557887423,
+          0.00459397229604156
+        ]
+      ],
+      "shared_Ray_mean_joint95_working": [
+        [
+          -0.015710732360458977,
+          0.01983335538281183
+        ],
+        [
+          -0.013063833158593155,
+          0.01030671689674729
+        ]
+      ],
+      "relative_ratio_ci95_working": [
+        [
+          -0.694960837081082,
+          1.115828681700014
+        ],
+        [
+          -0.7324135391869978,
+          0.4604540764322585
+        ]
+      ],
+      "confirmation_identities": [
+        {
+          "run": "guide12-c122/formal-c122-h240s50-b4",
+          "strip_capture_id": "001-strip-guide12-c122-h240-s50-block4-refine1_confirm1",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h240-s50-block4-raybefore",
+            "004-ray-guide12-c122-h240-s50-block4-rayafter"
+          ],
+          "dz": [
+            0.0018936591817944048,
+            -0.0015129537903224022
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        },
+        {
+          "run": "guide12-c122/formal-c122-h240s50-b4",
+          "strip_capture_id": "002-strip-guide12-c122-h240-s50-block4-refine1_confirm2",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h240-s50-block4-raybefore",
+            "004-ray-guide12-c122-h240-s50-block4-rayafter"
+          ],
+          "dz": [
+            0.002189963308451892,
+            -0.0013174953081538376
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        },
+        {
+          "run": "guide12-c122/formal-c122-h240s50-b4",
+          "strip_capture_id": "003-strip-guide12-c122-h240-s50-block4-refine1_confirm3",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h240-s50-block4-raybefore",
+            "004-ray-guide12-c122-h240-s50-block4-rayafter"
+          ],
+          "dz": [
+            0.0021003120432829814,
+            -0.0013052252942925557
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        }
+      ],
+      "Ray_groups": [
+        {
+          "run": "guide12-c122/formal-c122-h240s50-b4",
+          "n_strip": 3,
+          "n_ray": 2,
+          "ray_drift": [
+            0.0015038639157392009,
+            0.0010104298656612443
+          ],
+          "ray_cov": [
+            [
+              1.1308033385312212e-06,
+              7.597745071765767e-07
+            ],
+            [
+              7.597745071765767e-07,
+              5.104842567101001e-07
+            ]
+          ],
+          "ray_z": [
+            [
+              -1.1634348521409248,
+              0.35244526442312746
+            ],
+            [
+              -1.1619309882251856,
+              0.3534556942887887
+            ]
+          ]
+        }
+      ],
+      "material58_relative_L2_descriptive": {
+        "values": [
+          0.1857012472868142,
+          0.18608242560987942,
+          0.18621137400437054
+        ],
+        "median": 0.18608242560987942
+      },
+      "qualifier": "Shared-Ray Welch intervals assume independent Gaussian resets and a stationary bracket within each block; not unconditional future sessions and not H/S mapping uncertainty. Fixed-bracket PI omits future reference/session variability.",
+      "H_S_ci": null,
+      "H_S_ci_reason": "global map failed; reported orthogonal tangent and long SAT secants have not been locally validated"
+    },
+    {
+      "target": "300/25",
+      "actual_command": {
+        "b": 4095,
+        "cw": 3111,
+        "g": 1804,
+        "r": 4095,
+        "ww": 4095
+      },
+      "total_observations_including_selection": 4,
+      "independent_confirmations": 3,
+      "independent_confirmation_blocks": 1,
+      "mean_dz_confirm_only": [
+        0.0038433534818971085,
+        0.04257988780812481
+      ],
+      "relative_ratio_error_percent": [
+        0.3850748635919042,
+        4.349941592504566
+      ],
+      "conditional_fixed_bracket_statistics": {
+        "n": 3,
+        "mean": [
+          0.0038433534818971085,
+          0.04257988780812481
+        ],
+        "min": [
+          0.0035379659412075326,
+          0.04252541511091464
+        ],
+        "max": [
+          0.004017439844929083,
+          0.04261415953375819
+        ],
+        "sd": [
+          0.00026533715444355027,
+          4.769646303388779e-05
+        ],
+        "sd_ci95": [
+          [
+            0.0001381499829233753,
+            0.001667573620798081
+          ],
+          [
+            2.4833557770888234e-05,
+            0.00029975961612870706
+          ]
+        ],
+        "mean_ci95": [
+          [
+            0.0031842194502153635,
+            0.004502487513578853
+          ],
+          [
+            0.04246140322558522,
+            0.042698372390664395
+          ]
+        ],
+        "next_pi95": [
+          [
+            0.002525085418533619,
+            0.005161621545260598
+          ],
+          [
+            0.04234291864304564,
+            0.042816856973203976
+          ]
+        ],
+        "joint_mean_box95": [
+          [
+            0.0028927410290469115,
+            0.0047939659347473055
+          ],
+          [
+            0.04240900766202537,
+            0.04275076795422424
+          ]
+        ],
+        "joint_next_box95": [
+          [
+            0.0019421285761967151,
+            0.005744578387597502
+          ],
+          [
+            0.042238127515925934,
+            0.04292164810032368
+          ]
+        ],
+        "assumption": "conditional iid Gaussian independent cycles at same fixed source/protocol; not established across arbitrary sessions",
+        "df": 2
+      },
+      "shared_Ray_mean_covariance_working": [
+        [
+          2.5739236840915704e-08,
+          2.9626736881907203e-08
+        ],
+        [
+          2.9626736881907203e-08,
+          4.660725138820663e-07
+        ]
+      ],
+      "shared_Ray_Welch_df": [
+        2.3616241371997355,
+        1.0032607020488784
+      ],
+      "shared_Ray_mean_ci95_working": [
+        [
+          0.0032450840935498697,
+          0.004441622870244347
+        ],
+        [
+          0.03397176487562075,
+          0.05118801074062886
+        ]
+      ],
+      "shared_Ray_mean_joint95_working": [
+        [
+          0.003018455426722494,
+          0.004668251537071723
+        ],
+        [
+          0.025375352896828348,
+          0.05978442271942126
+        ]
+      ],
+      "relative_ratio_ci95_working": [
+        [
+          0.32503550789917995,
+          0.4451501497402095
+        ],
+        [
+          3.4555395515459124,
+          5.252075988969156
+        ]
+      ],
+      "confirmation_identities": [
+        {
+          "run": "guide12-c122/formal-c122-h300s25-b4",
+          "strip_capture_id": "001-strip-guide12-c122-h300-s25-block4-refine1_confirm1",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h300-s25-block4-raybefore",
+            "004-ray-guide12-c122-h300-s25-block4-rayafter"
+          ],
+          "dz": [
+            0.0035379659412075326,
+            0.04261415953375819
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        },
+        {
+          "run": "guide12-c122/formal-c122-h300s25-b4",
+          "strip_capture_id": "002-strip-guide12-c122-h300-s25-block4-refine1_confirm2",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h300-s25-block4-raybefore",
+            "004-ray-guide12-c122-h300-s25-block4-rayafter"
+          ],
+          "dz": [
+            0.004017439844929083,
+            0.04252541511091464
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        },
+        {
+          "run": "guide12-c122/formal-c122-h300s25-b4",
+          "strip_capture_id": "003-strip-guide12-c122-h300-s25-block4-refine1_confirm3",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h300-s25-block4-raybefore",
+            "004-ray-guide12-c122-h300-s25-block4-rayafter"
+          ],
+          "dz": [
+            0.0039746546595547105,
+            0.04260008877970159
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        }
+      ],
+      "Ray_groups": [
+        {
+          "run": "guide12-c122/formal-c122-h300s25-b4",
+          "n_strip": 3,
+          "n_ray": 2,
+          "ray_drift": [
+            9.531635043052988e-05,
+            0.0013642788517798238
+          ],
+          "ray_cov": [
+            [
+              4.542603329697787e-09,
+              6.501904056060331e-08
+            ],
+            [
+              6.501904056060331e-08,
+              9.306283927068372e-07
+            ]
+          ],
+          "ray_z": [
+            [
+              -0.4125272532260511,
+              -0.09858264878311376
+            ],
+            [
+              -0.4124319368756206,
+              -0.09721836993133394
+            ]
+          ]
+        }
+      ],
+      "material58_relative_L2_descriptive": {
+        "values": [
+          0.18111678393106853,
+          0.18118301768710804,
+          0.18120369647594964
+        ],
+        "median": 0.18118301768710804
+      },
+      "qualifier": "Shared-Ray Welch intervals assume independent Gaussian resets and a stationary bracket within each block; not unconditional future sessions and not H/S mapping uncertainty. Fixed-bracket PI omits future reference/session variability.",
+      "H_S_ci": null,
+      "H_S_ci_reason": "global map failed; reported orthogonal tangent and long SAT secants have not been locally validated"
+    },
+    {
+      "target": "300/50",
+      "actual_command": {
+        "b": 4095,
+        "cw": 1818,
+        "g": 528,
+        "r": 4095,
+        "ww": 2586
+      },
+      "total_observations_including_selection": 4,
+      "independent_confirmations": 3,
+      "independent_confirmation_blocks": 1,
+      "mean_dz_confirm_only": [
+        -0.11406930807547098,
+        0.10469613172715812
+      ],
+      "relative_ratio_error_percent": [
+        -10.780388265635775,
+        11.037315191496269
+      ],
+      "conditional_fixed_bracket_statistics": {
+        "n": 3,
+        "mean": [
+          -0.11406930807547098,
+          0.10469613172715812
+        ],
+        "min": [
+          -0.11462735597650284,
+          0.10458454296426636
+        ],
+        "max": [
+          -0.11374795808653532,
+          0.10478886405617963
+        ],
+        "sd": [
+          0.00048513357790700774,
+          0.00010345748389500255
+        ],
+        "sd_ci95": [
+          [
+            0.00025258880779045837,
+            0.003048935829502266
+          ],
+          [
+            5.386599424179285e-05,
+            0.0006502028386460002
+          ]
+        ],
+        "mean_ci95": [
+          [
+            -0.11527444669158615,
+            -0.11286416945935582
+          ],
+          [
+            0.10443912908985174,
+            0.1049531343644645
+          ]
+        ],
+        "next_pi95": [
+          [
+            -0.11647958530770132,
+            -0.11165903084324065
+          ],
+          [
+            0.10418212645254536,
+            0.10521013700177088
+          ]
+        ],
+        "joint_mean_box95": [
+          [
+            -0.11580737608717225,
+            -0.11233124006376972
+          ],
+          [
+            0.10432547887706109,
+            0.10506678457725516
+          ]
+        ],
+        "joint_next_box95": [
+          [
+            -0.1175454440988735,
+            -0.11059317205206846
+          ],
+          [
+            0.10395482602696406,
+            0.10543743742735219
+          ]
+        ],
+        "assumption": "conditional iid Gaussian independent cycles at same fixed source/protocol; not established across arbitrary sessions",
+        "df": 2
+      },
+      "shared_Ray_mean_covariance_working": [
+        [
+          2.7960581130418843e-07,
+          3.4752952357261667e-07
+        ],
+        [
+          3.4752952357261667e-07,
+          6.081030535235515e-07
+        ]
+      ],
+      "shared_Ray_Welch_df": [
+        1.7955615969822973,
+        1.0118207133107813
+      ],
+      "shared_Ray_mean_ci95_working": [
+        [
+          -0.11661164782701187,
+          -0.1115269683239301
+        ],
+        [
+          0.09505711237662769,
+          0.11433515107768856
+        ]
+      ],
+      "shared_Ray_mean_joint95_working": [
+        [
+          -0.11786601123280295,
+          -0.11027260491813902
+        ],
+        [
+          0.08554207505900605,
+          0.1238501883953102
+        ]
+      ],
+      "relative_ratio_ci95_working": [
+        [
+          -11.006926740261335,
+          -10.553273120505354
+        ],
+        [
+          9.972166105027961,
+          12.112780911860112
+        ]
+      ],
+      "confirmation_identities": [
+        {
+          "run": "guide12-c122/formal-c122-h300s50-b3",
+          "strip_capture_id": "001-strip-guide12-c122-h300-s50-block3-step1_confirm1",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h300-s50-block3-raybefore",
+            "004-ray-guide12-c122-h300-s50-block3-rayafter"
+          ],
+          "dz": [
+            -0.11383261016337479,
+            0.10458454296426636
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        },
+        {
+          "run": "guide12-c122/formal-c122-h300s50-b3",
+          "strip_capture_id": "002-strip-guide12-c122-h300-s50-block3-step1_confirm2",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h300-s50-block3-raybefore",
+            "004-ray-guide12-c122-h300-s50-block3-rayafter"
+          ],
+          "dz": [
+            -0.11462735597650284,
+            0.1047149881610284
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        },
+        {
+          "run": "guide12-c122/formal-c122-h300s50-b3",
+          "strip_capture_id": "003-strip-guide12-c122-h300-s50-block3-step1_confirm3",
+          "Ray_capture_ids": [
+            "000-ray-guide12-c122-h300-s50-block3-raybefore",
+            "004-ray-guide12-c122-h300-s50-block3-rayafter"
+          ],
+          "dz": [
+            -0.11374795808653532,
+            0.10478886405617963
+          ],
+          "primary_valid": true,
+          "feature58_valid_count": 58
+        }
+      ],
+      "Ray_groups": [
+        {
+          "run": "guide12-c122/formal-c122-h300s50-b3",
+          "n_strip": 3,
+          "n_ray": 2,
+          "ray_drift": [
+            0.0008970045302744839,
+            0.0015550372812666025
+          ],
+          "ray_cov": [
+            [
+              4.023085636664737e-07,
+              6.974377430209297e-07
+            ],
+            [
+              6.974377430209297e-07,
+              1.2090704730645131e-06
+            ]
+          ],
+          "ray_z": [
+            [
+              -0.08456054944726268,
+              0.18451632272114096
+            ],
+            [
+              -0.0836635449169882,
+              0.18607136000240757
+            ]
+          ]
+        }
+      ],
+      "material58_relative_L2_descriptive": {
+        "values": [
+          0.2103195799268344,
+          0.21010899510243147,
+          0.2100596869864927
+        ],
+        "median": 0.21010899510243147
+      },
+      "qualifier": "Shared-Ray Welch intervals assume independent Gaussian resets and a stationary bracket within each block; not unconditional future sessions and not H/S mapping uncertainty. Fixed-bracket PI omits future reference/session variability.",
+      "H_S_ci": null,
+      "H_S_ci_reason": "global map failed; reported orthogonal tangent and long SAT secants have not been locally validated"
+    }
+  ]
+}

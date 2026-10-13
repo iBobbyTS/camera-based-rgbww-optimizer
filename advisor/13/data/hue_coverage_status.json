@@ -1,0 +1,98 @@
+{
+  "hues": [
+    {
+      "hue": 0,
+      "tested_confirmed_target_SAT": [
+        25,
+        50
+      ],
+      "max_Ray_equivalent_SAT": null,
+      "max_SAT_ci95": null,
+      "reason": "map_unqualified_and_bounded_search_not_physical_upper_bound",
+      "direct_observation_file": "color_confirmations.json",
+      "highest_request_search_file": "color_search_and_quality.json",
+      "next_experiment": "C13-A local two-column Ray Jacobian + C13-B valid-primary bounded face search + C13-C coverage",
+      "S100_primary_window": "existing_primary_valid_observations_available",
+      "do_not_interpret_as_zero_coverage": true
+    },
+    {
+      "hue": 60,
+      "tested_confirmed_target_SAT": [
+        25,
+        50,
+        100
+      ],
+      "max_Ray_equivalent_SAT": null,
+      "max_SAT_ci95": null,
+      "reason": "map_unqualified_and_bounded_search_not_physical_upper_bound",
+      "direct_observation_file": "color_confirmations.json",
+      "highest_request_search_file": "color_search_and_quality.json",
+      "next_experiment": "C13-A local two-column Ray Jacobian + C13-B valid-primary bounded face search + C13-C coverage",
+      "S100_primary_window": "existing_primary_valid_observations_available",
+      "do_not_interpret_as_zero_coverage": true
+    },
+    {
+      "hue": 120,
+      "tested_confirmed_target_SAT": [
+        25,
+        50
+      ],
+      "max_Ray_equivalent_SAT": null,
+      "max_SAT_ci95": null,
+      "reason": "map_unqualified_and_bounded_search_not_physical_upper_bound",
+      "direct_observation_file": "color_confirmations.json",
+      "highest_request_search_file": "color_search_and_quality.json",
+      "next_experiment": "C13-A local two-column Ray Jacobian + C13-B valid-primary bounded face search + C13-C coverage",
+      "S100_primary_window": "existing_primary_valid_observations_available",
+      "do_not_interpret_as_zero_coverage": true
+    },
+    {
+      "hue": 180,
+      "tested_confirmed_target_SAT": [
+        25,
+        50
+      ],
+      "max_Ray_equivalent_SAT": null,
+      "max_SAT_ci95": null,
+      "reason": "map_unqualified_and_bounded_search_not_physical_upper_bound",
+      "direct_observation_file": "color_confirmations.json",
+      "highest_request_search_file": "color_search_and_quality.json",
+      "next_experiment": "C13-A local two-column Ray Jacobian + C13-B valid-primary bounded face search + C13-C coverage",
+      "S100_primary_window": "existing_primary_valid_observations_available",
+      "do_not_interpret_as_zero_coverage": true
+    },
+    {
+      "hue": 240,
+      "tested_confirmed_target_SAT": [
+        25,
+        50
+      ],
+      "max_Ray_equivalent_SAT": null,
+      "max_SAT_ci95": null,
+      "reason": "map_unqualified_and_bounded_search_not_physical_upper_bound",
+      "direct_observation_file": "color_confirmations.json",
+      "highest_request_search_file": "color_search_and_quality.json",
+      "next_experiment": "C13-A local two-column Ray Jacobian + C13-B valid-primary bounded face search + C13-C coverage",
+      "S100_primary_window": "existing_primary_valid_observations_available",
+      "do_not_interpret_as_zero_coverage": true
+    },
+    {
+      "hue": 300,
+      "tested_confirmed_target_SAT": [
+        25,
+        50
+      ],
+      "max_Ray_equivalent_SAT": null,
+      "max_SAT_ci95": null,
+      "reason": "map_unqualified_and_bounded_search_not_physical_upper_bound",
+      "direct_observation_file": "color_confirmations.json",
+      "highest_request_search_file": "color_search_and_quality.json",
+      "next_experiment": "C13-A local two-column Ray Jacobian + C13-B valid-primary bounded face search + C13-C coverage",
+      "S100_primary_window": "existing_primary_valid_observations_available",
+      "do_not_interpret_as_zero_coverage": true
+    }
+  ],
+  "scope": "Ray INT100, actual strip max4095, camera/block06, FAST",
+  "current_direct_confirmed_targets_including_S0": 14,
+  "continuous_intervals_certified": []
+}

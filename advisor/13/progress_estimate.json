@@ -1,0 +1,85 @@
+{
+  "kind": "Advisor work-planning estimate; not a measured probability, color accuracy, gamut or statistical CI",
+  "white": {
+    "estimate_percent": 75,
+    "planning_range_percent": [
+      70,
+      80
+    ],
+    "total_milestones": 8,
+    "remaining_work_packages": 4,
+    "weights": [
+      5,
+      10,
+      10,
+      20,
+      20,
+      15,
+      10,
+      10
+    ],
+    "fraction_complete_percent": [
+      100,
+      100,
+      80,
+      85,
+      60,
+      40,
+      75,
+      80
+    ],
+    "weighted_point_estimate_before_rounding": 73.5,
+    "milestones": [
+      "设备与主量",
+      "有效测量",
+      "重复性与影响量",
+      "节点有界优化",
+      "独立验证与区间",
+      "实际连续模型",
+      "LONG使用范围",
+      "数值与采用交付"
+    ]
+  },
+  "color_fullscale_only": {
+    "estimate_percent": 60,
+    "planning_range_percent": [
+      55,
+      65
+    ],
+    "total_milestones": 8,
+    "remaining_work_packages": 5,
+    "weights": [
+      10,
+      15,
+      10,
+      25,
+      15,
+      10,
+      5,
+      10
+    ],
+    "fraction_complete_percent": [
+      95,
+      45,
+      85,
+      70,
+      25,
+      40,
+      50,
+      75
+    ],
+    "weighted_point_estimate_before_rounding": 60.0,
+    "milestones": [
+      "有效原生观测",
+      "Ray计量映射",
+      "真实S0",
+      "满幅节点有界求解",
+      "SAT覆盖与停止",
+      "实际周期/体验模型",
+      "跨会话预测",
+      "数值与采用交付"
+    ]
+  },
+  "steps_are_not_additional_Advisor_rounds": true,
+  "dimming_excluded": true
+}
