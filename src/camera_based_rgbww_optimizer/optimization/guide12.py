@@ -825,6 +825,7 @@ def build_guide12_w12_block_plan(
     predicted_raw_max: Mapping[str, float] | None = None,
     command_budget: Mapping[str, Any] | None = None,
     strip_shutter: str | None = None,
+    ray_shutter: str | None = None,
 ) -> dict[str, Any]:
     """One W12-1 local block: Ray before, strip candidates, Ray after.
 
@@ -835,7 +836,9 @@ def build_guide12_w12_block_plan(
     a brighter node (the override is frozen before the block runs - the
     white point is chromaticity from same-shutter plane ratios, so a faster
     stop changes exposure, not the measurand). Ray references reuse the
-    frozen W2 per-(cct, gm) shutter table.
+    frozen W2 per-(cct, gm) shutter table; ``ray_shutter`` supplies a
+    pre-resolved shutter for grid nodes outside that anchor table (the
+    W12-2 same-CCT nearest-gm transfer rule resolves it upstream).
     """
     import copy
 
@@ -852,8 +855,12 @@ def build_guide12_w12_block_plan(
             f"{len(candidates)}"
         )
     ray_key = f"ray-white-{cct}-gm{gm}"
-    if ray_key not in W12_RAY_SHUTTERS:
-        raise ValueError(f"GUIDE12 W12 lacks a frozen Ray shutter for {ray_key}")
+    if ray_shutter is None:
+        if ray_key not in W12_RAY_SHUTTERS:
+            raise ValueError(f"GUIDE12 W12 lacks a frozen Ray shutter for {ray_key}")
+        resolved_ray_shutter = W12_RAY_SHUTTERS[ray_key]
+    else:
+        resolved_ray_shutter = str(ray_shutter)
     ray_command = {
         "cct": cct, "gm": gm, "intensity_percent": 100.0, "mode": "cct",
     }
@@ -879,7 +886,7 @@ def build_guide12_w12_block_plan(
             "timing_acceptance": "observed_elapsed_record_only",
             "formal_measurement": True, "capture_role": "formal",
             "session_index": len(captures) + 1,
-            "nominal_shutter": W12_RAY_SHUTTERS[ray_key],
+            "nominal_shutter": resolved_ray_shutter,
             "exposure_cache_key": ray_key,
             "strip_zero_required": True,
             "ray_reference_position": position,
