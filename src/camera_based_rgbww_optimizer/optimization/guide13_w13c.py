@@ -24,7 +24,13 @@ from camera_based_rgbww_optimizer.optimization.guide12_w123 import (
 )
 
 W13C_EXPERIMENT_ID = "GUIDE13_W13_C_INTERPOLATION_DEV_REGRESSION_V1"
-W13C_AUTHORIZATION_SCHEMA = "direct_guide13_w13c_dev_regression_v1"
+# W13-C executes the exact W12-3 measurement contract (white FAST pairs,
+# Ray reference + fullscale strip, per-frame source isolation); the
+# frozen W12-3 execution schema is reused verbatim so the runner's
+# authorization, isolation, near-noise classification and post-capture
+# validation semantics are the ones the W12-3 holdout itself ran under.
+# The GUIDE13 scientific identity is carried by guide_experiment_id.
+W13C_AUTHORIZATION_SCHEMA = "direct_guide12_w123_interpolation_v1"
 W13C_REQUESTS: tuple[tuple[int, int], ...] = (
     (1850, 50), (2400, 50), (5350, 105), (6050, 160),
     (10500, 120), (17500, 30),
