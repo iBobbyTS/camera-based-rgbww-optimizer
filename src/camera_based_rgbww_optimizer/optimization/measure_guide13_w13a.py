@@ -66,6 +66,12 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--node", required=True, help="cct/gm, e.g. 6500/130")
     parser.add_argument("--block-index", type=int, default=1)
     parser.add_argument(
+        "--strip-shutter", default=None,
+        help="node-level strip shutter override (e.g. 1/160) when the "
+             "offline exposure pre-check trips the raw-max ceiling at the "
+             "frozen W12-2 table value",
+    )
+    parser.add_argument(
         "--candidates-json", type=Path,
         help="list of {tag, command, role, new_unique_command}; default "
              "builds the frozen W12-1 probe block for the node's base",
@@ -98,7 +104,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         w13a_strip_shutter,
     )
     cct, gm = (int(x) for x in args.node.split("/"))
-    shutter = w13a_strip_shutter(cct, gm)
+    shutter = args.strip_shutter or w13a_strip_shutter(cct, gm)
     predictions = predicted_raw_max_at_block_shutter(
         W122_ROOT / base["run"], base["capture_id"],
         row["command"], candidates,
@@ -116,6 +122,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                     W122_ROOT / base["run"] / "measurements"
                     / f"{base['capture_id']}.patch-statistics.json"),
             },
+            **({"strip_shutter_override": {
+                "shutter": args.strip_shutter,
+                "reason": "CLI override after pre-check ceiling trip"}}
+               if args.strip_shutter else {}),
         },
         predicted_raw_max=predictions,
         command_budget={
@@ -124,6 +134,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             "new_unique_commands_in_block": sum(
                 1 for c in candidates if c.get("new_unique_command", True)),
         },
+        strip_shutter=shutter,
     )
     if args.dry_run:
         root = (args.output_dir / args.run_name).resolve()

@@ -74,9 +74,11 @@ def build_guide13_w13a_block_plan(
     inputs_references: Mapping[str, Mapping[str, Any]] | None = None,
     predicted_raw_max: Mapping[str, float] | None = None,
     command_budget: Mapping[str, Any] | None = None,
+    strip_shutter: str | None = None,
 ) -> dict[str, Any]:
     """One W13-A correction block: the frozen W12-1 block contract with
-    GUIDE13 record identity."""
+    GUIDE13 record identity. ``strip_shutter`` overrides the frozen W12-2
+    node table when the offline pre-check trips the raw-max ceiling."""
     from camera_based_rgbww_optimizer.optimization.guide12_w123 import (
         resolve_w123_ray_shutter,
     )
@@ -89,7 +91,7 @@ def build_guide13_w13a_block_plan(
         inputs_references=inputs_references,
         predicted_raw_max=predicted_raw_max,
         command_budget=command_budget,
-        strip_shutter=w13a_strip_shutter(cct, gm),
+        strip_shutter=strip_shutter or w13a_strip_shutter(cct, gm),
         # W12-2 transfer rule for grid nodes outside the W2 anchor table
         ray_shutter=resolve_w123_ray_shutter(cct, gm),
     )
