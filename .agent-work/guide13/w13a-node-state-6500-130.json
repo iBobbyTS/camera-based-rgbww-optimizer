@@ -1,0 +1,62 @@
+{
+ "schema": "guide13_w13a_node_state_v1",
+ "node": "6500/130",
+ "status": "paused_one_step_from_gate_user_directed",
+ "history": [
+  {
+   "block": 1,
+   "best_tag": "u0_repeat",
+   "E": 11.859,
+   "eK": -296.46,
+   "command": {
+    "cw": 4095,
+    "ww": 0,
+    "r": 3,
+    "g": 165,
+    "b": 0
+   }
+  },
+  {
+   "block": 2,
+   "best_tag": "solver_full_step",
+   "E": 2.211,
+   "eK": -18.13,
+   "command": {
+    "cw": 4095,
+    "ww": 101,
+    "r": 0,
+    "g": 165,
+    "b": 161
+   }
+  },
+  {
+   "block": 3,
+   "best_tag": "solver_step_v2",
+   "E": 1.07,
+   "eK": 26.75,
+   "emired": -0.7738,
+   "eduv": -0.0002489,
+   "command": {
+    "cw": 4095,
+    "ww": 0,
+    "r": 0,
+    "g": 165,
+    "b": 128
+   }
+  }
+ ],
+ "best_command": {
+  "cw": 4095,
+  "ww": 0,
+  "r": 0,
+  "g": 165,
+  "b": 128
+ },
+ "best_E": 1.07,
+ "residual_binding_component": "cct_K (+26.75K vs 25K); mired/duv in gate",
+ "unique_commands_used": 7,
+ "expanded_cap": 12,
+ "g_axis_sensitivity_measured": "probe_g (+768): eK +138K, duv -1.575e-2 - strong, available for block 4",
+ "next_action_when_resumed": "one bounded step (small g or b trim) from the 1.070 base; then independent 3-confirmation per W13-B if qualified",
+ "pause_reason": "user directed: no next capture run after block 3; Feishu notification sent"
+}
