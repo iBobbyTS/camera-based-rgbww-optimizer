@@ -1,0 +1,65 @@
+{
+ "schema": "guide13_w13a_node_state_v1",
+ "node": "10000/0",
+ "status": "qualified",
+ "history": [
+  {
+   "block": 1,
+   "best_tag": "u0_repeat",
+   "E": 2.669,
+   "eK": -66.73,
+   "emired": 0.9239,
+   "eduv": -0.0002917,
+   "command": {
+    "b": 1891,
+    "cw": 4095,
+    "g": 83,
+    "r": 32,
+    "ww": 2014
+   },
+   "note": "close to W12-2 (-76.3K) - minimal session shift; b-axis secant ~13K/code"
+  },
+  {
+   "block": 2,
+   "best_tag": "solver_full_step",
+   "E": 1.045,
+   "eK": -26.12,
+   "emired": 0.3596,
+   "eduv": 4.296e-05,
+   "command": {
+    "b": 1907,
+    "cw": 4095,
+    "g": 83,
+    "r": 46,
+    "ww": 2012
+   }
+  },
+  {
+   "block": 3,
+   "best_tag": "close_r8",
+   "E": 0.181,
+   "eK": -4.52,
+   "emired": 0.0621,
+   "eduv": -4.753e-05,
+   "command": {
+    "b": 1907,
+    "cw": 4095,
+    "g": 83,
+    "r": 38,
+    "ww": 2012
+   }
+  }
+ ],
+ "best_command": {
+  "b": 1907,
+  "cw": 4095,
+  "g": 83,
+  "r": 38,
+  "ww": 2012
+ },
+ "best_E": 0.181,
+ "unique_commands_used": 7,
+ "cap": 8,
+ "strip_shutter": "1/125 (CLI override)",
+ "w13_b_confirmation_queue": true
+}
