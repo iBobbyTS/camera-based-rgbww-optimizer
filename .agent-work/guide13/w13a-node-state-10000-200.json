@@ -1,0 +1,50 @@
+{
+ "schema": "guide13_w13a_node_state_v1",
+ "node": "10000/200",
+ "status": "qualified",
+ "history": [
+  {
+   "block": 1,
+   "best_tag": "u0_repeat",
+   "E": 1.938,
+   "eK": -48.45,
+   "emired": 0.7292,
+   "eduv": -0.0004955,
+   "command": {
+    "b": 1109,
+    "cw": 4095,
+    "g": 1889,
+    "r": 0,
+    "ww": 0
+   },
+   "note": "close to W12-2 (-50.1K) - minimal session shift"
+  },
+  {
+   "block": 2,
+   "best_tag": "solver_full_step",
+   "E": 0.473,
+   "eK": -2.73,
+   "emired": 0.0409,
+   "eduv": 0.0002366,
+   "command": {
+    "b": 1138,
+    "cw": 4095,
+    "g": 1889,
+    "r": 0,
+    "ww": 27
+   }
+  }
+ ],
+ "best_command": {
+  "b": 1138,
+  "cw": 4095,
+  "g": 1889,
+  "r": 0,
+  "ww": 27
+ },
+ "best_E": 0.473,
+ "unique_commands_used": 5,
+ "cap": 8,
+ "strip_shutter": "1/125 (CLI override)",
+ "w13_b_confirmation_queue": true
+}
