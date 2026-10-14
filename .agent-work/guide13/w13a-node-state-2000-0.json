@@ -1,0 +1,51 @@
+{
+ "schema": "guide13_w13a_node_state_v1",
+ "node": "2000/0",
+ "status": "qualified",
+ "history": [
+  {
+   "block": 1,
+   "best_tag": "u0_repeat",
+   "E": 15.932,
+   "eK": -54.87,
+   "emired": 12.6837,
+   "eduv": -0.007966,
+   "command": {
+    "b": 0,
+    "cw": 30,
+    "g": 88,
+    "r": 3059,
+    "ww": 4095
+   },
+   "note": "warm-end structural residual EXACTLY reproduced (W12-2: E=15.85) - not session shift"
+  },
+  {
+   "block": 2,
+   "best_tag": "solver_full_step",
+   "E": 0.943,
+   "eK": -4.18,
+   "emired": 0.943,
+   "eduv": 6.027e-05,
+   "command": {
+    "b": 253,
+    "cw": 0,
+    "g": 88,
+    "r": 2939,
+    "ww": 4095
+   },
+   "note": "mired 0.943 close to limit - W13-B confirmations must test stability"
+  }
+ ],
+ "best_command": {
+  "b": 253,
+  "cw": 0,
+  "g": 88,
+  "r": 2939,
+  "ww": 4095
+ },
+ "best_E": 0.943,
+ "unique_commands_used": 5,
+ "cap": 8,
+ "strip_shutter": "1/100 (default)",
+ "w13_b_confirmation_queue": true
+}
