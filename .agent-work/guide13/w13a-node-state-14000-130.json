@@ -1,0 +1,55 @@
+{
+ "schema": "guide13_w13a_node_state_v1",
+ "node": "14000/130",
+ "status": "qualified",
+ "history": [
+  {
+   "block": 1,
+   "best_tag": "u0_repeat",
+   "E": 1.0032,
+   "eK": -22.73,
+   "emired": 0.2021,
+   "eduv": -0.0005016,
+   "command": {
+    "b": 4095,
+    "cw": 3704,
+    "g": 3701,
+    "r": 796,
+    "ww": 2252
+   },
+   "note": "W12-2 session baseline was eK -175K (E 7.01); today -22.7K - third large session-shift instance"
+  },
+  {
+   "block": 2,
+   "best_tag": "solver_full_step",
+   "E": 0.441,
+   "eK": -11.03,
+   "emired": 0.0981,
+   "eduv": -5.323e-05,
+   "command": {
+    "b": 4095,
+    "cw": 4095,
+    "g": 3701,
+    "r": 924,
+    "ww": 2050
+   },
+   "faces": [
+    "b",
+    "b+cw"
+   ],
+   "face_cap_note": "second face within the <=2 cap"
+  }
+ ],
+ "best_command": {
+  "b": 4095,
+  "cw": 4095,
+  "g": 3701,
+  "r": 924,
+  "ww": 2050
+ },
+ "best_E": 0.441,
+ "unique_commands_used": 5,
+ "cap": 8,
+ "strip_shutter": "1/200 (CLI override; 1/100 pre-check 25650 DN trip)",
+ "w13_b_confirmation_queue": true
+}
