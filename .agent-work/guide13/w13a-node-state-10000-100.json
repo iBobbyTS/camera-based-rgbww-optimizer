@@ -1,0 +1,73 @@
+{
+ "schema": "guide13_w13a_node_state_v1",
+ "node": "10000/100",
+ "status": "qualified",
+ "history": [
+  {
+   "block": 1,
+   "best_tag": "u0_repeat",
+   "E": 1.31,
+   "eK": -32.74,
+   "emired": 0.479,
+   "eduv": -0.0004538,
+   "command": {
+    "b": 4095,
+    "cw": 3853,
+    "g": 3735,
+    "r": 1613,
+    "ww": 2974
+   },
+   "note": "session-shifted from W12-2 (-70.2K)"
+  },
+  {
+   "block": 2,
+   "best_tag": "solver_half_step",
+   "E": 1.413,
+   "eK": 35.31,
+   "emired": -0.512,
+   "eduv": 2.683e-05,
+   "command": {
+    "b": 4095,
+    "cw": 3469,
+    "g": 3735,
+    "r": 1634,
+    "ww": 3007
+   },
+   "overshoot_record": {
+    "solver_full_step_eK": 113.6
+   },
+   "note": "base and half step bracket the zero point (-32.7 / +35.3)"
+  },
+  {
+   "block": 3,
+   "best_tag": "interp_pos",
+   "E": 0.397,
+   "eK": 8.43,
+   "emired": -0.1225,
+   "eduv": -0.0001987,
+   "command": {
+    "b": 4095,
+    "cw": 3623,
+    "g": 3735,
+    "r": 1626,
+    "ww": 2994
+   },
+   "bracket_hit": {
+    "interp_zero_eK": 0.05,
+    "note": "two-point linear interpolation hit the zero point (predicted +1.0, measured +0.05K)"
+   }
+  }
+ ],
+ "best_command": {
+  "b": 4095,
+  "cw": 3623,
+  "g": 3735,
+  "r": 1626,
+  "ww": 2994
+ },
+ "best_E": 0.397,
+ "unique_commands_used": 7,
+ "cap": 8,
+ "strip_shutter": "1/200 (CLI override)",
+ "w13_b_confirmation_queue": true
+}
