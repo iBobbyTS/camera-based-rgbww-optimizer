@@ -1,0 +1,51 @@
+{
+ "schema": "guide13_w13a_node_state_v1",
+ "node": "2300/70",
+ "status": "qualified",
+ "history": [
+  {
+   "block": 1,
+   "best_tag": "u0_repeat",
+   "E": 1.201,
+   "eK": -7.14,
+   "emired": 1.2007,
+   "eduv": -0.0003366,
+   "command": {
+    "b": 152,
+    "cw": 80,
+    "g": 1701,
+    "r": 4095,
+    "ww": 45
+   },
+   "note": "improved from W12-2 E=2.55"
+  },
+  {
+   "block": 2,
+   "best_tag": "solver_full_step",
+   "E": 0.15,
+   "eK": 0.61,
+   "emired": -0.1018,
+   "eduv": 7.482e-05,
+   "command": {
+    "b": 159,
+    "cw": 92,
+    "g": 1701,
+    "r": 4095,
+    "ww": 51
+   },
+   "note": "predicted 0.039 -> measured 0.150"
+  }
+ ],
+ "best_command": {
+  "b": 159,
+  "cw": 92,
+  "g": 1701,
+  "r": 4095,
+  "ww": 51
+ },
+ "best_E": 0.15,
+ "unique_commands_used": 5,
+ "cap": 8,
+ "strip_shutter": "1/100 (default)",
+ "w13_b_confirmation_queue": true
+}
