@@ -1,0 +1,36 @@
+{
+ "schema": "guide13_w13a_node_state_v1",
+ "node": "1800/100",
+ "status": "closure_point_no_active_search",
+ "history": [
+  {
+   "block": 1,
+   "best_tag": "u0_repeat",
+   "E": 3.037,
+   "eK": -10.97,
+   "emired": 3.0365,
+   "eduv": 0.0003131,
+   "command": {
+    "b": 0,
+    "cw": 0,
+    "g": 1197,
+    "r": 4095,
+    "ww": 0
+   },
+   "note": "closure-point retest: GUIDE13 stops active G search at 1800/100; residual mired-dominated"
+  }
+ ],
+ "best_command": {
+  "b": 0,
+  "cw": 0,
+  "g": 1197,
+  "r": 4095,
+  "ww": 0
+ },
+ "use_range_note": "standing residual E~3.0 (mired 3.04 over, eK -11.0 in gate, duv 3.1e-4 in gate); no correction attempted per GUIDE13 W13-A; use-range: requests near 1800/100 inherit this warm-end mired residual; today slightly better than W12-2 (E=3.99)",
+ "unique_commands_used": 0,
+ "cap": 0,
+ "strip_shutter": "1/100 (default)",
+ "w13_b_confirmation_queue": false,
+ "closure_rule": "GUIDE13 W13-A: 1800/100 stays stopped for active G search; repeat and use-range evaluation only"
+}
