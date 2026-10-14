@@ -1,0 +1,36 @@
+{
+ "schema": "guide13_w13a_node_state_v1",
+ "node": "10000/130",
+ "status": "qualified_original_command",
+ "history": [
+  {
+   "block": 1,
+   "best_tag": "u0_repeat",
+   "E": 0.959,
+   "eK": -23.77,
+   "emired": 0.3515,
+   "eduv": -0.0004796,
+   "command": {
+    "b": 1030,
+    "cw": 4095,
+    "g": 810,
+    "r": 1,
+    "ww": 189
+   },
+   "note": "W12-2 measured -33.0K (E=1.32); today -23.8K (E=0.959) - session shift moved it inside the gate with the ORIGINAL command; no new commands spent (0/8)"
+  }
+ ],
+ "best_command": {
+  "b": 1030,
+  "cw": 4095,
+  "g": 810,
+  "r": 1,
+  "ww": 189
+ },
+ "best_E": 0.959,
+ "unique_commands_used": 0,
+ "cap": 8,
+ "strip_shutter": "1/100 (default)",
+ "w13_b_confirmation_queue": true,
+ "note": "borderline (E=0.959); W13-B three-pair confirmation decides the stable classification"
+}
