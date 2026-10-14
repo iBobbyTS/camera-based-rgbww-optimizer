@@ -1,0 +1,51 @@
+{
+ "schema": "guide13_w13a_node_state_v1",
+ "node": "1800/0",
+ "status": "qualified",
+ "history": [
+  {
+   "block": 1,
+   "best_tag": "u0_repeat",
+   "E": 3.887,
+   "eK": -13.91,
+   "emired": 3.8867,
+   "eduv": -2.76e-05,
+   "command": {
+    "b": 82,
+    "cw": 105,
+    "g": 12,
+    "r": 4095,
+    "ww": 4090
+   },
+   "note": "mired-dominated, improved from W12-2 5.04"
+  },
+  {
+   "block": 2,
+   "best_tag": "solver_full_step",
+   "E": 0.345,
+   "eK": 1.24,
+   "emired": -0.3446,
+   "eduv": 2.544e-06,
+   "command": {
+    "b": 74,
+    "cw": 183,
+    "g": 12,
+    "r": 4095,
+    "ww": 4095
+   },
+   "note": "predicted 0.046 -> measured 0.345; faces r + r/ww dual (2nd face)"
+  }
+ ],
+ "best_command": {
+  "b": 74,
+  "cw": 183,
+  "g": 12,
+  "r": 4095,
+  "ww": 4095
+ },
+ "best_E": 0.345,
+ "unique_commands_used": 5,
+ "cap": 8,
+ "strip_shutter": "1/100 (default)",
+ "w13_b_confirmation_queue": true
+}
