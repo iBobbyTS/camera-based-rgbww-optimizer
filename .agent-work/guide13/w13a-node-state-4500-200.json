@@ -1,0 +1,51 @@
+{
+ "schema": "guide13_w13a_node_state_v1",
+ "node": "4500/200",
+ "status": "qualified",
+ "history": [
+  {
+   "block": 1,
+   "best_tag": "u0_repeat",
+   "E": 1.133,
+   "eK": -12.87,
+   "emired": 0.6929,
+   "eduv": -0.0005666,
+   "command": {
+    "b": 736,
+    "cw": 135,
+    "g": 4095,
+    "r": 3939,
+    "ww": 1436
+   },
+   "note": "duv-marginal, improved from W12-2 1.22"
+  },
+  {
+   "block": 2,
+   "best_tag": "solver_full_step",
+   "E": 0.232,
+   "eK": -2.35,
+   "emired": 0.1264,
+   "eduv": -0.0001161,
+   "command": {
+    "b": 763,
+    "cw": 139,
+    "g": 4095,
+    "r": 3939,
+    "ww": 1464
+   },
+   "note": "predicted 0.10 -> measured 0.232"
+  }
+ ],
+ "best_command": {
+  "b": 763,
+  "cw": 139,
+  "g": 4095,
+  "r": 3939,
+  "ww": 1464
+ },
+ "best_E": 0.232,
+ "unique_commands_used": 5,
+ "cap": 8,
+ "strip_shutter": "1/125 (CLI override)",
+ "w13_b_confirmation_queue": true
+}
