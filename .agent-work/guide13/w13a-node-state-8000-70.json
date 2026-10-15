@@ -1,0 +1,51 @@
+{
+ "schema": "guide13_w13a_node_state_v1",
+ "node": "8000/70",
+ "status": "qualified",
+ "history": [
+  {
+   "block": 1,
+   "best_tag": "u0_repeat",
+   "E": 1.5,
+   "eK": 37.5,
+   "emired": -0.7616,
+   "eduv": -0.0001594,
+   "command": {
+    "b": 663,
+    "cw": 4095,
+    "g": 70,
+    "r": 55,
+    "ww": 341
+   },
+   "note": "positive eK residual reproduced (W12-2 +38.5K) - structural, not session"
+  },
+  {
+   "block": 2,
+   "best_tag": "solver_full_step",
+   "E": 0.099,
+   "eK": 2.16,
+   "emired": -0.044,
+   "eduv": 4.946e-05,
+   "command": {
+    "b": 662,
+    "cw": 4095,
+    "g": 70,
+    "r": 68,
+    "ww": 345
+   },
+   "note": "predicted 0.022 -> measured 0.099 - best E of the campaign"
+  }
+ ],
+ "best_command": {
+  "b": 662,
+  "cw": 4095,
+  "g": 70,
+  "r": 68,
+  "ww": 345
+ },
+ "best_E": 0.099,
+ "unique_commands_used": 5,
+ "cap": 8,
+ "strip_shutter": "1/100 (default)",
+ "w13_b_confirmation_queue": true
+}
