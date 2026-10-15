@@ -1,39 +1,49 @@
 {
  "schema": "guide13_w13a_node_state_v1",
  "node": "20000/130",
- "status": "paused_pending_reanchor_user_directed",
+ "status": "reference_limited",
  "history": [
   {
    "block": 1,
    "best_tag": "u0_repeat",
    "E": 1.232,
    "eK": -30.8,
-   "emired": 0.1674,
-   "eduv": -4.395e-05,
-   "command": {
-    "b": 2152,
-    "cw": 4095,
-    "g": 1565,
-    "r": 61,
-    "ww": 214
-   },
-   "note": "ref compatible; close to W12-2 (-33.4K)"
+   "ref_compatible": true
   },
   {
    "block": 2,
    "reference_incompatible": true,
+   "ray_drift_K": 44.75,
    "nominal_uncertified": {
-    "solver_half_step_E": 1.005,
-    "eK": -25.13,
-    "solver_full_step_E": 1.578
+    "half_step_E": 1.005,
+    "full_step_E": 1.578
+   }
+  },
+  {
+   "block": 3,
+   "reference_incompatible": true,
+   "ray_drift_K": -41.67,
+   "nominal_uncertified": {
+    "u0_E": 0.947,
+    "half_step_E": 0.145,
+    "half_step_eK": 1.34
    },
-   "note": "2nd reference-drift event of the campaign (20000-family pattern); half step nominally 0.5% over gate"
+   "note": "consecutive drift events -> reference_limited closure per W13-A rule"
   }
  ],
- "best_command": null,
+ "best_command": {
+  "b": 2153,
+  "cw": 4095,
+  "g": 1565,
+  "r": 61,
+  "ww": 213
+ },
+ "nominal_best_E": 0.145,
+ "certified": false,
+ "closure_reason": "Ray reference drift exceeded the 25K gate in two consecutive blocks (44.8K, -41.7K); nominal values both in gate but uncertifiable",
  "unique_commands_used": 5,
  "cap": 8,
  "strip_shutter": "1/100 (default)",
- "resume_plan": "re-anchor block (0 new unique commands, 14000/100 precedent: drift did not recur and bracket interpolation closed the node); if drift recurs -> reference_limited closure",
- "pause_reason": "user directed: stop after this capture task, await user instruction"
+ "w13_d_note": "third drift event of the campaign; 20000-family references drift on this session",
+ "resume_note": "re-certify in W13-B era when reference stability allows; nominal E suggests the command is close"
 }
