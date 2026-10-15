@@ -1,0 +1,35 @@
+{
+ "schema": "guide13_w13a_node_state_v1",
+ "node": "5000/100",
+ "status": "qualified_original_command",
+ "history": [
+  {
+   "block": 1,
+   "best_tag": "u0_repeat",
+   "E": 0.798,
+   "eK": -17.89,
+   "emired": 0.7983,
+   "eduv": -0.0003422,
+   "command": {
+    "b": 104,
+    "cw": 4095,
+    "g": 4,
+    "r": 0,
+    "ww": 1302
+   },
+   "note": "W12-2 measured E=1.12 (eK -25.1); today 0.798 - session shift moved it inside the gate with the ORIGINAL command; 3rd such node; 0/8 commands spent"
+  }
+ ],
+ "best_command": {
+  "b": 104,
+  "cw": 4095,
+  "g": 4,
+  "r": 0,
+  "ww": 1302
+ },
+ "best_E": 0.798,
+ "unique_commands_used": 0,
+ "cap": 8,
+ "strip_shutter": "1/100 (default)",
+ "w13_b_confirmation_queue": true
+}
