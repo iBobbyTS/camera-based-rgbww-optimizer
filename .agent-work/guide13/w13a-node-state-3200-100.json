@@ -1,0 +1,53 @@
+{
+ "schema": "guide13_w13a_node_state_v1",
+ "node": "3200/100",
+ "status": "qualified",
+ "history": [
+  {
+   "block": 1,
+   "best_tag": "u0_repeat",
+   "E": 2.201,
+   "eK": -23.64,
+   "emired": 2.2006,
+   "eduv": -0.0001503,
+   "command": {
+    "b": 56,
+    "cw": 2272,
+    "g": 1941,
+    "r": 4095,
+    "ww": 480
+   },
+   "note": "mired-dominated, improved from W12-2 3.30"
+  },
+  {
+   "block": 2,
+   "best_tag": "solver_half_step",
+   "E": 0.387,
+   "eK": -3.61,
+   "emired": 0.3343,
+   "eduv": 0.0001937,
+   "command": {
+    "b": 49,
+    "cw": 2303,
+    "g": 1941,
+    "r": 4095,
+    "ww": 240
+   },
+   "overshoot_record": {
+    "solver_full_step_mired": -1.2126
+   }
+  }
+ ],
+ "best_command": {
+  "b": 49,
+  "cw": 2303,
+  "g": 1941,
+  "r": 4095,
+  "ww": 240
+ },
+ "best_E": 0.387,
+ "unique_commands_used": 5,
+ "cap": 8,
+ "strip_shutter": "1/100 (default)",
+ "w13_b_confirmation_queue": true
+}
