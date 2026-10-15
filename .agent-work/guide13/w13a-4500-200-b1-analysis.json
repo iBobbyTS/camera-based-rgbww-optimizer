@@ -1,0 +1,430 @@
+{
+  "base_error_normalized": {
+    "cct_K": -0.5148031829349565,
+    "duv": -1.1331581898713292,
+    "mired": 0.6928943469648914
+  },
+  "best_candidate": {
+    "E_normalized": 1.1331581898713292,
+    "tag": "u0_repeat"
+  },
+  "block_index": 1,
+  "block_reference_target": {
+    "cct_K": 4316.236541072127,
+    "duv": -0.027977710911466266,
+    "mired": 231.68331831044506
+  },
+  "candidates": [
+    {
+      "E_normalized": 1.1331581898713292,
+      "capture_id": "001-strip-guide12-w12-cct4500-gm200-block1-u0_repeat",
+      "command": {
+        "b": 736,
+        "cw": 135,
+        "g": 4095,
+        "r": 3939,
+        "ww": 1436
+      },
+      "signed_vs_block_reference": {
+        "cct_K": {
+          "abs_normalized_error": 0.5148031829349565,
+          "error_signed": -12.870079573373914,
+          "tolerance": 25.0
+        },
+        "duv": {
+          "abs_normalized_error": 1.1331581898713292,
+          "error_signed": -0.0005665790949356646,
+          "tolerance": 0.0005
+        },
+        "mired": {
+          "abs_normalized_error": 0.6928943469648914,
+          "error_signed": 0.6928943469648914,
+          "tolerance": 1.0
+        }
+      },
+      "tag": "u0_repeat",
+      "white_point": {
+        "cct_K": 4303.366461498753,
+        "duv": -0.02854429000640193,
+        "mired": 232.37621265740995
+      }
+    },
+    {
+      "E_normalized": 3.1844245714277974,
+      "capture_id": "002-strip-guide12-w12-cct4500-gm200-block1-probe_cw",
+      "command": {
+        "b": 736,
+        "cw": 903,
+        "g": 4095,
+        "r": 3939,
+        "ww": 1436
+      },
+      "signed_vs_block_reference": {
+        "cct_K": {
+          "abs_normalized_error": 2.4060904670803938,
+          "error_signed": 60.15226167700985,
+          "tolerance": 25.0
+        },
+        "duv": {
+          "abs_normalized_error": 2.759968927808505,
+          "error_signed": 0.0013799844639042526,
+          "tolerance": 0.0005
+        },
+        "mired": {
+          "abs_normalized_error": 3.1844245714277974,
+          "error_signed": -3.1844245714277974,
+          "tolerance": 1.0
+        }
+      },
+      "tag": "probe_cw",
+      "white_point": {
+        "cct_K": 4376.388802749137,
+        "duv": -0.026597726447562014,
+        "mired": 228.49889373901726
+      }
+    },
+    {
+      "E_normalized": 8.981909177615734,
+      "capture_id": "003-strip-guide12-w12-cct4500-gm200-block1-probe_ww",
+      "command": {
+        "b": 736,
+        "cw": 135,
+        "g": 4095,
+        "r": 3939,
+        "ww": 2204
+      },
+      "signed_vs_block_reference": {
+        "cct_K": {
+          "abs_normalized_error": 6.44348158710669,
+          "error_signed": -161.08703967766724,
+          "tolerance": 25.0
+        },
+        "duv": {
+          "abs_normalized_error": 3.157713732222643,
+          "error_signed": 0.0015788568661113216,
+          "tolerance": 0.0005
+        },
+        "mired": {
+          "abs_normalized_error": 8.981909177615734,
+          "error_signed": 8.981909177615734,
+          "tolerance": 1.0
+        }
+      },
+      "tag": "probe_ww",
+      "white_point": {
+        "cct_K": 4155.14950139446,
+        "duv": -0.026398854045354945,
+        "mired": 240.6652274880608
+      }
+    },
+    {
+      "E_normalized": 26.92346719414084,
+      "capture_id": "004-strip-guide12-w12-cct4500-gm200-block1-probe_b",
+      "command": {
+        "b": 1504,
+        "cw": 135,
+        "g": 4095,
+        "r": 3939,
+        "ww": 1436
+      },
+      "signed_vs_block_reference": {
+        "cct_K": {
+          "abs_normalized_error": 22.70133482394707,
+          "error_signed": 567.5333705986768,
+          "tolerance": 25.0
+        },
+        "duv": {
+          "abs_normalized_error": 25.889390688284262,
+          "error_signed": 0.01294469534414213,
+          "tolerance": 0.0005
+        },
+        "mired": {
+          "abs_normalized_error": 26.92346719414084,
+          "error_signed": -26.92346719414084,
+          "tolerance": 1.0
+        }
+      },
+      "tag": "probe_b",
+      "white_point": {
+        "cct_K": 4883.769911670804,
+        "duv": -0.015033015567324136,
+        "mired": 204.75985111630422
+      }
+    }
+  ],
+  "frames": [
+    {
+      "capture_id": "000-ray-guide12-w12-cct4500-gm200-block1-raybefore",
+      "command": {
+        "cct": 4500,
+        "gm": 200,
+        "intensity_percent": 100.0,
+        "mode": "cct"
+      },
+      "recorded_shutter": "1/3200",
+      "source_id": "ray",
+      "tag": "ray_before",
+      "white_point": {
+        "cct_K": 4316.524417802316,
+        "duv": -0.027967959611073692,
+        "mired": 231.66786590521195
+      }
+    },
+    {
+      "capture_id": "001-strip-guide12-w12-cct4500-gm200-block1-u0_repeat",
+      "command": {
+        "b": 736,
+        "cw": 135,
+        "g": 4095,
+        "r": 3939,
+        "ww": 1436
+      },
+      "recorded_shutter": "1/125",
+      "source_id": "strip",
+      "tag": "u0_repeat",
+      "white_point": {
+        "cct_K": 4303.366461498753,
+        "duv": -0.02854429000640193,
+        "mired": 232.37621265740995
+      }
+    },
+    {
+      "capture_id": "002-strip-guide12-w12-cct4500-gm200-block1-probe_cw",
+      "command": {
+        "b": 736,
+        "cw": 903,
+        "g": 4095,
+        "r": 3939,
+        "ww": 1436
+      },
+      "recorded_shutter": "1/125",
+      "source_id": "strip",
+      "tag": "probe_cw",
+      "white_point": {
+        "cct_K": 4376.388802749137,
+        "duv": -0.026597726447562014,
+        "mired": 228.49889373901726
+      }
+    },
+    {
+      "capture_id": "003-strip-guide12-w12-cct4500-gm200-block1-probe_ww",
+      "command": {
+        "b": 736,
+        "cw": 135,
+        "g": 4095,
+        "r": 3939,
+        "ww": 2204
+      },
+      "recorded_shutter": "1/125",
+      "source_id": "strip",
+      "tag": "probe_ww",
+      "white_point": {
+        "cct_K": 4155.14950139446,
+        "duv": -0.026398854045354945,
+        "mired": 240.6652274880608
+      }
+    },
+    {
+      "capture_id": "004-strip-guide12-w12-cct4500-gm200-block1-probe_b",
+      "command": {
+        "b": 1504,
+        "cw": 135,
+        "g": 4095,
+        "r": 3939,
+        "ww": 1436
+      },
+      "recorded_shutter": "1/125",
+      "source_id": "strip",
+      "tag": "probe_b",
+      "white_point": {
+        "cct_K": 4883.769911670804,
+        "duv": -0.015033015567324136,
+        "mired": 204.75985111630422
+      }
+    },
+    {
+      "capture_id": "005-ray-guide12-w12-cct4500-gm200-block1-rayafter",
+      "command": {
+        "cct": 4500,
+        "gm": 200,
+        "intensity_percent": 100.0,
+        "mode": "cct"
+      },
+      "recorded_shutter": "1/3200",
+      "source_id": "ray",
+      "tag": "ray_after",
+      "white_point": {
+        "cct_K": 4315.948664341938,
+        "duv": -0.027987462211858837,
+        "mired": 231.69877071567817
+      }
+    }
+  ],
+  "gate_E_pass": false,
+  "next_steps": {
+    "half_step": {
+      "active_bound_channels": [
+        "g"
+      ],
+      "command": {
+        "b": 750,
+        "cw": 137,
+        "g": 4095,
+        "r": 3939,
+        "ww": 1450
+      },
+      "delta": {
+        "b": 14.0,
+        "cw": 2.0,
+        "g": 0.0,
+        "r": 0.0,
+        "ww": 14.0
+      },
+      "face_channels": [
+        "g"
+      ],
+      "final_selection_requires_measured_gate": true,
+      "k_mired_note": "cct_K and mired along one temperature direction are not independent ranks; the surrogate solve uses mired only",
+      "method": "box_constrained_least_squares_active_set_enumeration",
+      "predicted_E": 0.5522022713311554,
+      "predicted_error_normalized": {
+        "cct_K": -0.19206070671363518,
+        "duv": -0.5522022713311554,
+        "mired": 0.33047573787224316
+      },
+      "scale": 0.5,
+      "solved_subspace": [
+        "mired",
+        "duv"
+      ],
+      "surrogate": true,
+      "unmodeled_locked_channels": [
+        "r"
+      ]
+    },
+    "step": {
+      "active_bound_channels": [
+        "g"
+      ],
+      "command": {
+        "b": 763,
+        "cw": 139,
+        "g": 4095,
+        "r": 3939,
+        "ww": 1464
+      },
+      "delta": {
+        "b": 27.0,
+        "cw": 4.0,
+        "g": 0.0,
+        "r": 0.0,
+        "ww": 28.0
+      },
+      "face_channels": [
+        "g"
+      ],
+      "final_selection_requires_measured_gate": true,
+      "k_mired_note": "cct_K and mired along one temperature direction are not independent ranks; the surrogate solve uses mired only",
+      "method": "box_constrained_least_squares_active_set_enumeration",
+      "predicted_E": 0.10045242314455849,
+      "predicted_error_normalized": {
+        "cct_K": 0.10045242314455849,
+        "duv": -0.006431963309413424,
+        "mired": 0.004015932869576355
+      },
+      "scale": 1.0,
+      "solved_subspace": [
+        "mired",
+        "duv"
+      ],
+      "surrogate": true,
+      "unmodeled_locked_channels": [
+        "r"
+      ]
+    }
+  },
+  "node": {
+    "cct": 4500,
+    "gm": 200
+  },
+  "reference_compatibility": {
+    "cct_K": {
+      "after": 4315.948664341938,
+      "before": 4316.524417802316,
+      "delta": -0.5757534603781096,
+      "tolerance": 25.0,
+      "within": true
+    },
+    "duv": {
+      "after": -0.027987462211858837,
+      "before": -0.027967959611073692,
+      "delta": -1.9502600785144958e-05,
+      "tolerance": 0.0005,
+      "within": true
+    },
+    "mired": {
+      "after": 231.69877071567817,
+      "before": 231.66786590521195,
+      "delta": 0.030904810466211075,
+      "tolerance": 1.0,
+      "within": true
+    }
+  },
+  "reference_compatible": true,
+  "run_root": "D:\\rgbww-optimizer\\guide13-w13a\\formal-w13a-4500-200-b1",
+  "schema": "guide12_w12_block_analysis_v1",
+  "secant_fit": {
+    "algebra": "A=u-u0, B=r(u)-r(u0), single frozen base observation",
+    "base_command": {
+      "blue": 736,
+      "cold_white": 135,
+      "green": 4095,
+      "red": 3939,
+      "warm_white": 1436
+    },
+    "base_repeats_same_command": 0,
+    "base_response": {
+      "cct_K": -0.5148031829349565,
+      "duv": -1.1331581898713292,
+      "mired": 0.6928943469648914
+    },
+    "command_delta_rank": 3,
+    "command_delta_singular_values": [
+      768.0,
+      768.0,
+      768.0
+    ],
+    "row_count": 3,
+    "sensitivity_rank": 3,
+    "status": "fitted"
+  },
+  "sensitivity_normalized": {
+    "cct_K": {
+      "blue": 0.030229346363127636,
+      "cold_white": 0.003803246940124154,
+      "green": 0.0,
+      "red": 0.0,
+      "warm_white": -0.007719633338765277
+    },
+    "duv": {
+      "blue": 0.035185610518431755,
+      "cold_white": 0.00506917593447895,
+      "green": 0.0,
+      "red": 0.0,
+      "warm_white": 0.005587072815226525
+    },
+    "mired": {
+      "blue": -0.03595880408998142,
+      "cold_white": -0.005048592341657146,
+      "green": 0.0,
+      "red": 0.0,
+      "warm_white": 0.010792988060743284
+    }
+  },
+  "sign_convention": "strip_minus_reference",
+  "tolerances": {
+    "cct_K": 25.0,
+    "duv": 0.0005,
+    "mired": 1.0
+  }
+}
