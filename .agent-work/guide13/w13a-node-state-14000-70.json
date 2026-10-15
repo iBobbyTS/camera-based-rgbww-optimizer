@@ -1,0 +1,54 @@
+{
+ "schema": "guide13_w13a_node_state_v1",
+ "node": "14000/70",
+ "status": "qualified",
+ "history": [
+  {
+   "block": 1,
+   "best_tag": "u0_repeat",
+   "E": 2.805,
+   "eK": -70.12,
+   "emired": 0.588,
+   "eduv": -0.0002831,
+   "command": {
+    "b": 1148,
+    "cw": 4095,
+    "g": 255,
+    "r": 18,
+    "ww": 4
+   },
+   "note": "worse than W12-2 (-44.4K) - session shift against"
+  },
+  {
+   "block": 2,
+   "best_tag": "solver_half_step",
+   "E": 0.546,
+   "eK": 13.65,
+   "emired": -0.1136,
+   "eduv": -0.000236,
+   "command": {
+    "b": 1154,
+    "cw": 4095,
+    "g": 255,
+    "r": 23,
+    "ww": 2
+   },
+   "overshoot_record": {
+    "solver_full_step_eK": 70.01
+   },
+   "note": "b-axis ~19.3K/code; half step landed, full step overshot symmetric"
+  }
+ ],
+ "best_command": {
+  "b": 1154,
+  "cw": 4095,
+  "g": 255,
+  "r": 23,
+  "ww": 2
+ },
+ "best_E": 0.546,
+ "unique_commands_used": 5,
+ "cap": 8,
+ "strip_shutter": "1/125",
+ "w13_b_confirmation_queue": true
+}
