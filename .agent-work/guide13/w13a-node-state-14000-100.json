@@ -1,0 +1,66 @@
+{
+ "schema": "guide13_w13a_node_state_v1",
+ "node": "14000/100",
+ "status": "qualified",
+ "history": [
+  {
+   "block": 1,
+   "best_tag": "u0_repeat",
+   "E": 9.05,
+   "eK": -226.25,
+   "emired": 1.9863,
+   "eduv": -0.0003599,
+   "command": {
+    "b": 1357,
+    "cw": 4095,
+    "g": 691,
+    "r": 75,
+    "ww": 69
+   },
+   "note": "large session shift against (W12-2 -35K -> -226K)"
+  },
+  {
+   "block": 2,
+   "reference_incompatible": true,
+   "ray_drift_K": 29.98,
+   "note": "full step nominal E=1.723 uncertifiable; first 14000-family drift event (W13-D record)"
+  },
+  {
+   "block": 3,
+   "reference_compatible": true,
+   "ray_drift_K": 2.77,
+   "certified_bracket": {
+    "u0_eK": -234.08,
+    "full_step_eK": 52.77
+   }
+  },
+  {
+   "block": 4,
+   "best_tag": "interp_pos",
+   "E": 0.262,
+   "eK": 2.49,
+   "emired": -0.0214,
+   "eduv": -0.0001309,
+   "command": {
+    "b": 1364,
+    "cw": 4095,
+    "g": 691,
+    "r": 106,
+    "ww": 7
+   },
+   "note": "bracket interpolation 2nd success (f=0.90)"
+  }
+ ],
+ "best_command": {
+  "b": 1364,
+  "cw": 4095,
+  "g": 691,
+  "r": 106,
+  "ww": 7
+ },
+ "best_E": 0.262,
+ "unique_commands_used": 7,
+ "cap": 8,
+ "strip_shutter": "1/100 (default)",
+ "w13_b_confirmation_queue": true
+}
