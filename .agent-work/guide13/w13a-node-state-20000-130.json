@@ -1,0 +1,39 @@
+{
+ "schema": "guide13_w13a_node_state_v1",
+ "node": "20000/130",
+ "status": "paused_pending_reanchor_user_directed",
+ "history": [
+  {
+   "block": 1,
+   "best_tag": "u0_repeat",
+   "E": 1.232,
+   "eK": -30.8,
+   "emired": 0.1674,
+   "eduv": -4.395e-05,
+   "command": {
+    "b": 2152,
+    "cw": 4095,
+    "g": 1565,
+    "r": 61,
+    "ww": 214
+   },
+   "note": "ref compatible; close to W12-2 (-33.4K)"
+  },
+  {
+   "block": 2,
+   "reference_incompatible": true,
+   "nominal_uncertified": {
+    "solver_half_step_E": 1.005,
+    "eK": -25.13,
+    "solver_full_step_E": 1.578
+   },
+   "note": "2nd reference-drift event of the campaign (20000-family pattern); half step nominally 0.5% over gate"
+  }
+ ],
+ "best_command": null,
+ "unique_commands_used": 5,
+ "cap": 8,
+ "strip_shutter": "1/100 (default)",
+ "resume_plan": "re-anchor block (0 new unique commands, 14000/100 precedent: drift did not recur and bracket interpolation closed the node); if drift recurs -> reference_limited closure",
+ "pause_reason": "user directed: stop after this capture task, await user instruction"
+}
