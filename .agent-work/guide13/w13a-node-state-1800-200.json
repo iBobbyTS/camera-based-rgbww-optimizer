@@ -1,0 +1,59 @@
+{
+ "schema": "guide13_w13a_node_state_v1",
+ "node": "1800/200",
+ "status": "qualified",
+ "history": [
+  {
+   "block": 1,
+   "best_tag": "u0_repeat",
+   "E": 3.767,
+   "eK": -13.06,
+   "emired": 3.7672,
+   "eduv": -0.0003426,
+   "command": {
+    "b": 0,
+    "cw": 1,
+    "g": 900,
+    "r": 4095,
+    "ww": 788
+   },
+   "note": "mired-dominated, close to W12-2 4.19"
+  },
+  {
+   "block": 2,
+   "best_tag": "solver_half_step",
+   "E": 1.008,
+   "eK": -3.51,
+   "emired": 1.0079,
+   "note": "both candidates marginal; mired bracket base(3.77) <-> full(-1.24)"
+  },
+  {
+   "block": 3,
+   "best_tag": "interp_zero",
+   "E": 0.229,
+   "eK": 0.8,
+   "emired": -0.2291,
+   "eduv": 6.226e-05,
+   "command": {
+    "b": 0,
+    "cw": 38,
+    "g": 900,
+    "r": 4095,
+    "ww": 784
+   },
+   "note": "bracket interpolation 3rd success (f=0.752)"
+  }
+ ],
+ "best_command": {
+  "b": 0,
+  "cw": 38,
+  "g": 900,
+  "r": 4095,
+  "ww": 784
+ },
+ "best_E": 0.229,
+ "unique_commands_used": 7,
+ "cap": 8,
+ "strip_shutter": "1/100 (default)",
+ "w13_b_confirmation_queue": true
+}
