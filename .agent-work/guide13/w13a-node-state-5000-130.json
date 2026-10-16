@@ -1,0 +1,35 @@
+{
+ "schema": "guide13_w13a_node_state_v1",
+ "node": "5000/130",
+ "status": "qualified_original_command",
+ "history": [
+  {
+   "block": 1,
+   "best_tag": "u0_repeat",
+   "E": 0.919,
+   "eK": 5.57,
+   "emired": -0.248,
+   "eduv": -0.0004593,
+   "command": {
+    "b": 21,
+    "cw": 4095,
+    "g": 674,
+    "r": 788,
+    "ww": 487
+   },
+   "note": "W12-2 measured E=1.14 (eK +12.5); today 0.919 all components in gate - 4th session-shift qualification with ORIGINAL command; 0/8 commands spent"
+  }
+ ],
+ "best_command": {
+  "b": 21,
+  "cw": 4095,
+  "g": 674,
+  "r": 788,
+  "ww": 487
+ },
+ "best_E": 0.919,
+ "unique_commands_used": 0,
+ "cap": 8,
+ "strip_shutter": "1/100 (default)",
+ "w13_b_confirmation_queue": true
+}
