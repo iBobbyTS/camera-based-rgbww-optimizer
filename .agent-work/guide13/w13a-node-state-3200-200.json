@@ -1,0 +1,51 @@
+{
+ "schema": "guide13_w13a_node_state_v1",
+ "node": "3200/200",
+ "status": "qualified",
+ "history": [
+  {
+   "block": 1,
+   "best_tag": "u0_repeat",
+   "E": 1.027,
+   "eK": -11.03,
+   "emired": 1.0272,
+   "eduv": -0.0003078,
+   "command": {
+    "b": 32,
+    "cw": 756,
+    "g": 2431,
+    "r": 4095,
+    "ww": 440
+   },
+   "note": "mired-marginal, improved from W12-2 1.73"
+  },
+  {
+   "block": 2,
+   "best_tag": "solver_full_step",
+   "E": 0.216,
+   "eK": 0.9,
+   "emired": -0.0835,
+   "eduv": -0.0001081,
+   "command": {
+    "b": 68,
+    "cw": 635,
+    "g": 2431,
+    "r": 4095,
+    "ww": 0
+   },
+   "note": "predicted 0.067 -> measured 0.216"
+  }
+ ],
+ "best_command": {
+  "b": 68,
+  "cw": 635,
+  "g": 2431,
+  "r": 4095,
+  "ww": 0
+ },
+ "best_E": 0.216,
+ "unique_commands_used": 5,
+ "cap": 8,
+ "strip_shutter": "1/100 (default)",
+ "w13_b_confirmation_queue": true
+}
