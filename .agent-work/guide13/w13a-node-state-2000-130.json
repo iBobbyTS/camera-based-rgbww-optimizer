@@ -1,0 +1,51 @@
+{
+ "schema": "guide13_w13a_node_state_v1",
+ "node": "2000/130",
+ "status": "qualified",
+ "history": [
+  {
+   "block": 1,
+   "best_tag": "u0_repeat",
+   "E": 2.683,
+   "eK": -12.27,
+   "emired": 2.6831,
+   "eduv": 5.143e-07,
+   "command": {
+    "b": 0,
+    "cw": 0,
+    "g": 1463,
+    "r": 4095,
+    "ww": 0
+   },
+   "note": "mired-dominated, improved from W12-2 3.81"
+  },
+  {
+   "block": 2,
+   "best_tag": "solver_full_step",
+   "E": 0.838,
+   "eK": 3.86,
+   "emired": -0.8382,
+   "eduv": 6.22e-05,
+   "command": {
+    "b": 0,
+    "cw": 7,
+    "g": 1463,
+    "r": 4095,
+    "ww": 62
+   },
+   "note": "mired -0.84 near limit - W13-B confirmations must test stability"
+  }
+ ],
+ "best_command": {
+  "b": 0,
+  "cw": 7,
+  "g": 1463,
+  "r": 4095,
+  "ww": 62
+ },
+ "best_E": 0.838,
+ "unique_commands_used": 5,
+ "cap": 8,
+ "strip_shutter": "1/100 (default)",
+ "w13_b_confirmation_queue": true
+}
