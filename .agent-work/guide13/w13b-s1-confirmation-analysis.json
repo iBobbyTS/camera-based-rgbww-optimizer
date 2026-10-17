@@ -1,0 +1,571 @@
+{
+ "schema": "guide13_w13b_confirmation_analysis_v1",
+ "tolerances": {
+  "cct_K": 25.0,
+  "mired": 1.0,
+  "duv": 0.0005
+ },
+ "run_root": "D:\\rgbww-optimizer\\guide13-w13b\\formal-w13b-s1",
+ "pairs": [
+  {
+   "node": "1800/0",
+   "pair_ordinal": 2,
+   "strip_capture_id": "001-strip-guide13-w13b-cct1800-gm0-p2-strip",
+   "reference_capture_ids": [
+    "000-ray-guide13-w13b-cct1800-gm0-p2-ray"
+   ],
+   "signed_errors": {
+    "cct_K": -0.3549007377905582,
+    "mired": 0.09853011741847695,
+    "duv": -1.5985141647555275e-05
+   },
+   "E_normalized": 0.09853011741847695,
+   "E_within_gate": true,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "1800/0",
+   "pair_ordinal": 3,
+   "strip_capture_id": "003-strip-guide13-w13b-cct1800-gm0-p3-strip",
+   "reference_capture_ids": [
+    "002-ray-guide13-w13b-cct1800-gm0-p3-ray"
+   ],
+   "signed_errors": {
+    "cct_K": 0.09984620671639277,
+    "mired": -0.027721266909338738,
+    "duv": 3.875021065255849e-06
+   },
+   "E_normalized": 0.027721266909338738,
+   "E_within_gate": true,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "1800/130",
+   "pair_ordinal": 2,
+   "strip_capture_id": "005-strip-guide13-w13b-cct1800-gm130-p2-strip",
+   "reference_capture_ids": [
+    "004-ray-guide13-w13b-cct1800-gm130-p2-ray"
+   ],
+   "signed_errors": {
+    "cct_K": -1.4423081863994867,
+    "mired": 0.41301476492401434,
+    "duv": 4.489644985601745e-05
+   },
+   "E_normalized": 0.41301476492401434,
+   "E_within_gate": true,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "1800/130",
+   "pair_ordinal": 3,
+   "strip_capture_id": "007-strip-guide13-w13b-cct1800-gm130-p3-strip",
+   "reference_capture_ids": [
+    "006-ray-guide13-w13b-cct1800-gm130-p3-ray"
+   ],
+   "signed_errors": {
+    "cct_K": -1.723913971224647,
+    "mired": 0.4936383298011151,
+    "duv": 2.9898779551128067e-05
+   },
+   "E_normalized": 0.4936383298011151,
+   "E_within_gate": true,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "1800/200",
+   "pair_ordinal": 2,
+   "strip_capture_id": "009-strip-guide13-w13b-cct1800-gm200-p2-strip",
+   "reference_capture_ids": [
+    "008-ray-guide13-w13b-cct1800-gm200-p2-ray"
+   ],
+   "signed_errors": {
+    "cct_K": 0.159731880352183,
+    "mired": -0.045677525160954247,
+    "duv": 9.53103360759387e-05
+   },
+   "E_normalized": 0.19062067215187742,
+   "E_within_gate": true,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "1800/200",
+   "pair_ordinal": 3,
+   "strip_capture_id": "011-strip-guide13-w13b-cct1800-gm200-p3-strip",
+   "reference_capture_ids": [
+    "010-ray-guide13-w13b-cct1800-gm200-p3-ray"
+   ],
+   "signed_errors": {
+    "cct_K": 0.8084097378039132,
+    "mired": -0.23124279717308127,
+    "duv": 8.068016048951888e-05
+   },
+   "E_normalized": 0.23124279717308127,
+   "E_within_gate": true,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "2000/0",
+   "pair_ordinal": 2,
+   "strip_capture_id": "013-strip-guide13-w13b-cct2000-gm0-p2-strip",
+   "reference_capture_ids": [
+    "012-ray-guide13-w13b-cct2000-gm0-p2-ray"
+   ],
+   "signed_errors": {
+    "cct_K": -4.787084625009356,
+    "mired": 1.0805988911956774,
+    "duv": 8.683365691147197e-05
+   },
+   "E_normalized": 1.0805988911956774,
+   "E_within_gate": false,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "2000/0",
+   "pair_ordinal": 3,
+   "strip_capture_id": "015-strip-guide13-w13b-cct2000-gm0-p3-strip",
+   "reference_capture_ids": [
+    "014-ray-guide13-w13b-cct2000-gm0-p3-ray"
+   ],
+   "signed_errors": {
+    "cct_K": -4.56231614708031,
+    "mired": 1.0296404458114239,
+    "duv": 6.174991312402067e-05
+   },
+   "E_normalized": 1.0296404458114239,
+   "E_within_gate": false,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "2000/130",
+   "pair_ordinal": 2,
+   "strip_capture_id": "017-strip-guide13-w13b-cct2000-gm130-p2-strip",
+   "reference_capture_ids": [
+    "016-ray-guide13-w13b-cct2000-gm130-p2-ray"
+   ],
+   "signed_errors": {
+    "cct_K": 3.6185020513516974,
+    "mired": -0.7849905396570307,
+    "duv": 7.627910450353197e-05
+   },
+   "E_normalized": 0.7849905396570307,
+   "E_within_gate": true,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "2000/130",
+   "pair_ordinal": 3,
+   "strip_capture_id": "019-strip-guide13-w13b-cct2000-gm130-p3-strip",
+   "reference_capture_ids": [
+    "018-ray-guide13-w13b-cct2000-gm130-p3-ray"
+   ],
+   "signed_errors": {
+    "cct_K": 4.104889608197482,
+    "mired": -0.8902977458810142,
+    "duv": 8.686288863518805e-05
+   },
+   "E_normalized": 0.8902977458810142,
+   "E_within_gate": true,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "2300/0",
+   "pair_ordinal": 2,
+   "strip_capture_id": "021-strip-guide13-w13b-cct2300-gm0-p2-strip",
+   "reference_capture_ids": [
+    "020-ray-guide13-w13b-cct2300-gm0-p2-ray"
+   ],
+   "signed_errors": {
+    "cct_K": 0.02612565490153429,
+    "mired": -0.004435576123739793,
+    "duv": -1.3830470257778296e-05
+   },
+   "E_normalized": 0.027660940515556592,
+   "E_within_gate": true,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "2300/0",
+   "pair_ordinal": 3,
+   "strip_capture_id": "023-strip-guide13-w13b-cct2300-gm0-p3-strip",
+   "reference_capture_ids": [
+    "022-ray-guide13-w13b-cct2300-gm0-p3-ray"
+   ],
+   "signed_errors": {
+    "cct_K": -0.6980569349311736,
+    "mired": 0.1185241242727102,
+    "duv": -1.1260381369693553e-05
+   },
+   "E_normalized": 0.1185241242727102,
+   "E_within_gate": true,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "2300/70",
+   "pair_ordinal": 2,
+   "strip_capture_id": "025-strip-guide13-w13b-cct2300-gm70-p2-strip",
+   "reference_capture_ids": [
+    "024-ray-guide13-w13b-cct2300-gm70-p2-ray"
+   ],
+   "signed_errors": {
+    "cct_K": -2.597606927913148,
+    "mired": 0.43632718978841467,
+    "duv": 5.187064122802367e-05
+   },
+   "E_normalized": 0.43632718978841467,
+   "E_within_gate": true,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "2300/70",
+   "pair_ordinal": 3,
+   "strip_capture_id": "027-strip-guide13-w13b-cct2300-gm70-p3-strip",
+   "reference_capture_ids": [
+    "026-ray-guide13-w13b-cct2300-gm70-p3-ray"
+   ],
+   "signed_errors": {
+    "cct_K": -1.9469855912566345,
+    "mired": 0.32694435343159967,
+    "duv": 5.132180830031167e-05
+   },
+   "E_normalized": 0.32694435343159967,
+   "E_within_gate": true,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "3200/100",
+   "pair_ordinal": 2,
+   "strip_capture_id": "029-strip-guide13-w13b-cct3200-gm100-p2-strip",
+   "reference_capture_ids": [
+    "028-ray-guide13-w13b-cct3200-gm100-p2-ray"
+   ],
+   "signed_errors": {
+    "cct_K": -5.582368955239872,
+    "mired": 0.5172925784308973,
+    "duv": 0.00019170186813278513
+   },
+   "E_normalized": 0.5172925784308973,
+   "E_within_gate": true,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "3200/100",
+   "pair_ordinal": 3,
+   "strip_capture_id": "031-strip-guide13-w13b-cct3200-gm100-p3-strip",
+   "reference_capture_ids": [
+    "030-ray-guide13-w13b-cct3200-gm100-p3-ray"
+   ],
+   "signed_errors": {
+    "cct_K": -8.129326127278546,
+    "mired": 0.7529378214800317,
+    "duv": 0.00022510826717045407
+   },
+   "E_normalized": 0.7529378214800317,
+   "E_within_gate": true,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "3200/200",
+   "pair_ordinal": 2,
+   "strip_capture_id": "033-strip-guide13-w13b-cct3200-gm200-p2-strip",
+   "reference_capture_ids": [
+    "032-ray-guide13-w13b-cct3200-gm200-p2-ray"
+   ],
+   "signed_errors": {
+    "cct_K": -0.22414321963742623,
+    "mired": 0.020764315994938443,
+    "duv": -9.513134393447642e-05
+   },
+   "E_normalized": 0.19026268786895284,
+   "E_within_gate": true,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "3200/200",
+   "pair_ordinal": 3,
+   "strip_capture_id": "035-strip-guide13-w13b-cct3200-gm200-p3-strip",
+   "reference_capture_ids": [
+    "034-ray-guide13-w13b-cct3200-gm200-p3-ray"
+   ],
+   "signed_errors": {
+    "cct_K": 0.5463153461969341,
+    "mired": -0.05058705333527769,
+    "duv": -9.77147692016074e-05
+   },
+   "E_normalized": 0.1954295384032148,
+   "E_within_gate": true,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "4500/200",
+   "pair_ordinal": 2,
+   "strip_capture_id": "037-strip-guide13-w13b-cct4500-gm200-p2-strip",
+   "reference_capture_ids": [
+    "036-ray-guide13-w13b-cct4500-gm200-p2-ray"
+   ],
+   "signed_errors": {
+    "cct_K": -4.677291852016424,
+    "mired": 0.25103960479037823,
+    "duv": 0.00010456422972369636
+   },
+   "E_normalized": 0.25103960479037823,
+   "E_within_gate": true,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "4500/200",
+   "pair_ordinal": 3,
+   "strip_capture_id": "039-strip-guide13-w13b-cct4500-gm200-p3-strip",
+   "reference_capture_ids": [
+    "038-ray-guide13-w13b-cct4500-gm200-p3-ray"
+   ],
+   "signed_errors": {
+    "cct_K": -5.3981868680448315,
+    "mired": 0.2897666120767042,
+    "duv": 0.00011360672161690732
+   },
+   "E_normalized": 0.2897666120767042,
+   "E_within_gate": true,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "5600/70",
+   "pair_ordinal": 2,
+   "strip_capture_id": "041-strip-guide13-w13b-cct5600-gm70-p2-strip",
+   "reference_capture_ids": [
+    "040-ray-guide13-w13b-cct5600-gm70-p2-ray"
+   ],
+   "signed_errors": {
+    "cct_K": -31.762985544697585,
+    "mired": 1.1614610685087996,
+    "duv": 0.0003421679947137818
+   },
+   "E_normalized": 1.2705194217879034,
+   "E_within_gate": false,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "5600/70",
+   "pair_ordinal": 3,
+   "strip_capture_id": "043-strip-guide13-w13b-cct5600-gm70-p3-strip",
+   "reference_capture_ids": [
+    "042-ray-guide13-w13b-cct5600-gm70-p3-ray"
+   ],
+   "signed_errors": {
+    "cct_K": -30.373938831404303,
+    "mired": 1.1102451251751688,
+    "duv": 0.0003339007961391735
+   },
+   "E_normalized": 1.214957553256172,
+   "E_within_gate": false,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "6500/70",
+   "pair_ordinal": 2,
+   "strip_capture_id": "045-strip-guide13-w13b-cct6500-gm70-p2-strip",
+   "reference_capture_ids": [
+    "044-ray-guide13-w13b-cct6500-gm70-p2-ray"
+   ],
+   "signed_errors": {
+    "cct_K": -7.262894758564471,
+    "mired": 0.20843990958275072,
+    "duv": -3.2656997435927086e-05
+   },
+   "E_normalized": 0.29051579034257885,
+   "E_within_gate": true,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "6500/70",
+   "pair_ordinal": 3,
+   "strip_capture_id": "047-strip-guide13-w13b-cct6500-gm70-p3-strip",
+   "reference_capture_ids": [
+    "046-ray-guide13-w13b-cct6500-gm70-p3-ray"
+   ],
+   "signed_errors": {
+    "cct_K": -13.164692626068245,
+    "mired": 0.37819882136281535,
+    "duv": 3.4626346189260693e-06
+   },
+   "E_normalized": 0.5265877050427298,
+   "E_within_gate": true,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  }
+ ],
+ "node_summary": [
+  {
+   "node": "1800/0",
+   "session_pairs": 2,
+   "valid_pairs": 2,
+   "E_values": [
+    0.0985,
+    0.0277
+   ],
+   "E_max": 0.0985,
+   "all_within_gate": true,
+   "note": "ordinals 2,3 this session; ordinal 1 = W13-A qualifying block; node confirmed at 3 pairs when both session pairs valid and within gate"
+  },
+  {
+   "node": "1800/130",
+   "session_pairs": 2,
+   "valid_pairs": 2,
+   "E_values": [
+    0.413,
+    0.4936
+   ],
+   "E_max": 0.4936,
+   "all_within_gate": true,
+   "note": "ordinals 2,3 this session; ordinal 1 = W13-A qualifying block; node confirmed at 3 pairs when both session pairs valid and within gate"
+  },
+  {
+   "node": "1800/200",
+   "session_pairs": 2,
+   "valid_pairs": 2,
+   "E_values": [
+    0.1906,
+    0.2312
+   ],
+   "E_max": 0.2312,
+   "all_within_gate": true,
+   "note": "ordinals 2,3 this session; ordinal 1 = W13-A qualifying block; node confirmed at 3 pairs when both session pairs valid and within gate"
+  },
+  {
+   "node": "2000/0",
+   "session_pairs": 2,
+   "valid_pairs": 2,
+   "E_values": [
+    1.0806,
+    1.0296
+   ],
+   "E_max": 1.0806,
+   "all_within_gate": false,
+   "note": "ordinals 2,3 this session; ordinal 1 = W13-A qualifying block; node confirmed at 3 pairs when both session pairs valid and within gate"
+  },
+  {
+   "node": "2000/130",
+   "session_pairs": 2,
+   "valid_pairs": 2,
+   "E_values": [
+    0.785,
+    0.8903
+   ],
+   "E_max": 0.8903,
+   "all_within_gate": true,
+   "note": "ordinals 2,3 this session; ordinal 1 = W13-A qualifying block; node confirmed at 3 pairs when both session pairs valid and within gate"
+  },
+  {
+   "node": "2300/0",
+   "session_pairs": 2,
+   "valid_pairs": 2,
+   "E_values": [
+    0.0277,
+    0.1185
+   ],
+   "E_max": 0.1185,
+   "all_within_gate": true,
+   "note": "ordinals 2,3 this session; ordinal 1 = W13-A qualifying block; node confirmed at 3 pairs when both session pairs valid and within gate"
+  },
+  {
+   "node": "2300/70",
+   "session_pairs": 2,
+   "valid_pairs": 2,
+   "E_values": [
+    0.4363,
+    0.3269
+   ],
+   "E_max": 0.4363,
+   "all_within_gate": true,
+   "note": "ordinals 2,3 this session; ordinal 1 = W13-A qualifying block; node confirmed at 3 pairs when both session pairs valid and within gate"
+  },
+  {
+   "node": "3200/100",
+   "session_pairs": 2,
+   "valid_pairs": 2,
+   "E_values": [
+    0.5173,
+    0.7529
+   ],
+   "E_max": 0.7529,
+   "all_within_gate": true,
+   "note": "ordinals 2,3 this session; ordinal 1 = W13-A qualifying block; node confirmed at 3 pairs when both session pairs valid and within gate"
+  },
+  {
+   "node": "3200/200",
+   "session_pairs": 2,
+   "valid_pairs": 2,
+   "E_values": [
+    0.1903,
+    0.1954
+   ],
+   "E_max": 0.1954,
+   "all_within_gate": true,
+   "note": "ordinals 2,3 this session; ordinal 1 = W13-A qualifying block; node confirmed at 3 pairs when both session pairs valid and within gate"
+  },
+  {
+   "node": "4500/200",
+   "session_pairs": 2,
+   "valid_pairs": 2,
+   "E_values": [
+    0.251,
+    0.2898
+   ],
+   "E_max": 0.2898,
+   "all_within_gate": true,
+   "note": "ordinals 2,3 this session; ordinal 1 = W13-A qualifying block; node confirmed at 3 pairs when both session pairs valid and within gate"
+  },
+  {
+   "node": "5600/70",
+   "session_pairs": 2,
+   "valid_pairs": 2,
+   "E_values": [
+    1.2705,
+    1.215
+   ],
+   "E_max": 1.2705,
+   "all_within_gate": false,
+   "note": "ordinals 2,3 this session; ordinal 1 = W13-A qualifying block; node confirmed at 3 pairs when both session pairs valid and within gate"
+  },
+  {
+   "node": "6500/70",
+   "session_pairs": 2,
+   "valid_pairs": 2,
+   "E_values": [
+    0.2905,
+    0.5266
+   ],
+   "E_max": 0.5266,
+   "all_within_gate": true,
+   "note": "ordinals 2,3 this session; ordinal 1 = W13-A qualifying block; node confirmed at 3 pairs when both session pairs valid and within gate"
+  }
+ ],
+ "summary": {
+  "pairs": 24,
+  "pairs_within_gate": 20,
+  "drift_gate_trips": 0,
+  "nodes": 12
+ }
+}
