@@ -1,0 +1,324 @@
+{
+ "schema": "guide13_w13c_dev_regression_v1",
+ "tolerances": {
+  "cct_K": 25.0,
+  "mired": 1.0,
+  "duv": 0.0005
+ },
+ "run_root": "D:\\rgbww-optimizer\\guide13-w13c\\formal-w13c-dev-v2",
+ "role": "development regression of the corrected interpolation; not independent holdouts",
+ "requests": [
+  {
+   "request": "1850/50",
+   "strip_capture_id": "001-strip-guide13-w13c-cct1850-gm50-strip",
+   "reference_capture_ids": [
+    "000-ray-guide13-w13c-cct1850-gm50-ray"
+   ],
+   "reference_note": "single ray frame",
+   "ray_reference_drift": null,
+   "strip_white_point": {
+    "cct_K": 1978.008480401541,
+    "duv": 0.000741655267763501,
+    "mired": 505.5590053875792
+   },
+   "reference_white_point": {
+    "cct_K": 1961.6822416207244,
+    "duv": -0.0003874504759941442,
+    "mired": 509.7665558586129
+   },
+   "signed_errors": {
+    "cct_K": 16.32623878081654,
+    "mired": -4.207550471033699,
+    "duv": 0.0011291057437576451
+   },
+   "node_bias_prediction": {
+    "cct_K": -6.8710669842695715,
+    "mired": 1.7465357241503918,
+    "duv": -0.0005439718692165401
+   },
+   "unexplained_error": {
+    "cct_K": 23.19730576508611,
+    "mired": -5.95408619518409,
+    "duv": 0.0016730776129741851
+   },
+   "E_normalized": 4.207550471033699,
+   "E_within_gate": false,
+   "qualities": {
+    "strip": "pass",
+    "refs": [
+     "pass"
+    ]
+   },
+   "corrected_command": {
+    "b": 45,
+    "cw": 87,
+    "g": 729,
+    "r": 4095,
+    "ww": 2101
+   }
+  },
+  {
+   "request": "2400/50",
+   "strip_capture_id": "003-strip-guide13-w13c-cct2400-gm50-strip",
+   "reference_capture_ids": [
+    "002-ray-guide13-w13c-cct2400-gm50-ray"
+   ],
+   "reference_note": "single ray frame",
+   "ray_reference_drift": null,
+   "strip_white_point": {
+    "cct_K": 2544.968755164875,
+    "duv": 0.0029255108372712915,
+    "mired": 392.9321324556754
+   },
+   "reference_white_point": {
+    "cct_K": 2531.437578550581,
+    "duv": 0.0023588993012242905,
+    "mired": 395.03245447299065
+   },
+   "signed_errors": {
+    "cct_K": 13.531176614294054,
+    "mired": -2.10032201731525,
+    "duv": 0.0005666115360470009
+   },
+   "node_bias_prediction": {
+    "cct_K": -11.308527688975321,
+    "mired": 1.8646968703341025,
+    "duv": -0.0001833257102131663
+   },
+   "unexplained_error": {
+    "cct_K": 24.839704303269375,
+    "mired": -3.9650188876493524,
+    "duv": 0.0007499372462601672
+   },
+   "E_normalized": 2.10032201731525,
+   "E_within_gate": false,
+   "qualities": {
+    "strip": "pass",
+    "refs": [
+     "pass"
+    ]
+   },
+   "corrected_command": {
+    "b": 369,
+    "cw": 292,
+    "g": 1351,
+    "r": 4095,
+    "ww": 3052
+   }
+  },
+  {
+   "request": "5350/105",
+   "strip_capture_id": "005-strip-guide13-w13c-cct5350-gm105-strip",
+   "reference_capture_ids": [
+    "004-ray-guide13-w13c-cct5350-gm105-ray"
+   ],
+   "reference_note": "single ray frame",
+   "ray_reference_drift": null,
+   "strip_white_point": {
+    "cct_K": 4986.675242177648,
+    "duv": -0.006373984561716998,
+    "mired": 200.53441450165633
+   },
+   "reference_white_point": {
+    "cct_K": 5013.123871902244,
+    "duv": -0.004334422522188537,
+    "mired": 199.47641940484252
+   },
+   "signed_errors": {
+    "cct_K": -26.448629724595776,
+    "mired": 1.057995096813812,
+    "duv": -0.0020395620395284603
+   },
+   "node_bias_prediction": {
+    "cct_K": -18.14867711580237,
+    "mired": 0.7274966445789165,
+    "duv": -0.0002691230884285226
+   },
+   "unexplained_error": {
+    "cct_K": -8.299952608793404,
+    "mired": 0.3304984522348956,
+    "duv": -0.0017704389510999378
+   },
+   "E_normalized": 4.07912407905692,
+   "E_within_gate": false,
+   "qualities": {
+    "strip": "pass",
+    "refs": [
+     "pass"
+    ]
+   },
+   "corrected_command": {
+    "b": 100,
+    "cw": 4095,
+    "g": 78,
+    "r": 126,
+    "ww": 734
+   }
+  },
+  {
+   "request": "6050/160",
+   "strip_capture_id": "007-strip-guide13-w13c-cct6050-gm160-strip",
+   "reference_capture_ids": [
+    "006-ray-guide13-w13c-cct6050-gm160-ray"
+   ],
+   "reference_note": "single ray frame",
+   "ray_reference_drift": null,
+   "strip_white_point": {
+    "cct_K": 5471.729444053465,
+    "duv": -0.021139810028928764,
+    "mired": 182.757574223041
+   },
+   "reference_white_point": {
+    "cct_K": 5504.963804732717,
+    "duv": -0.019480129866209683,
+    "mired": 181.65423706151927
+   },
+   "signed_errors": {
+    "cct_K": -33.23436067925195,
+    "mired": 1.103337161521722,
+    "duv": -0.0016596801627190814
+   },
+   "node_bias_prediction": {
+    "cct_K": -100.64911707921912,
+    "mired": 3.1194469523392323,
+    "duv": -0.0011859876549477264
+   },
+   "unexplained_error": {
+    "cct_K": 67.41475639996717,
+    "mired": -2.0161097908175103,
+    "duv": -0.0004736925077713551
+   },
+   "E_normalized": 3.3193603254381627,
+   "E_within_gate": false,
+   "qualities": {
+    "strip": "pass",
+    "refs": [
+     "pass"
+    ]
+   },
+   "corrected_command": {
+    "b": 72,
+    "cw": 4095,
+    "g": 636,
+    "r": 9,
+    "ww": 471
+   }
+  },
+  {
+   "request": "10500/120",
+   "strip_capture_id": "009-strip-guide13-w13c-cct10500-gm120-strip",
+   "reference_capture_ids": [
+    "008-ray-guide13-w13c-cct10500-gm120-ray"
+   ],
+   "reference_note": "single ray frame",
+   "ray_reference_drift": null,
+   "strip_white_point": {
+    "cct_K": 8739.665052691633,
+    "duv": -0.005093043493219187,
+    "mired": 114.42086097933708
+   },
+   "reference_white_point": {
+    "cct_K": 8552.961186542036,
+    "duv": -0.006083954843907728,
+    "mired": 116.91857102935133
+   },
+   "signed_errors": {
+    "cct_K": 186.70386614959716,
+    "mired": -2.4977100500142484,
+    "duv": 0.0009909113506885413
+   },
+   "node_bias_prediction": {
+    "cct_K": -59.24659256327999,
+    "mired": 0.7508203297591468,
+    "duv": -0.00022298941974845056
+   },
+   "unexplained_error": {
+    "cct_K": 245.95045871287715,
+    "mired": -3.248530379773395,
+    "duv": 0.001213900770436992
+   },
+   "E_normalized": 7.468154645983886,
+   "E_within_gate": false,
+   "qualities": {
+    "strip": "pass",
+    "refs": [
+     "pass"
+    ]
+   },
+   "corrected_command": {
+    "b": 2315,
+    "cw": 4095,
+    "g": 2001,
+    "r": 579,
+    "ww": 1203
+   }
+  },
+  {
+   "request": "17500/30",
+   "strip_capture_id": "011-strip-guide13-w13c-cct17500-gm30-strip",
+   "reference_capture_ids": [
+    "010-ray-guide13-w13c-cct17500-gm30-raybefore",
+    "012-ray-guide13-w13c-cct17500-gm30-rayafter"
+   ],
+   "reference_note": "mean(raybefore, rayafter)",
+   "ray_reference_drift": {
+    "cct_K": 2.858373949156885,
+    "mired": -0.015952076181903863,
+    "duv": -1.1103548409309438e-05
+   },
+   "strip_white_point": {
+    "cct_K": 16936.829472164343,
+    "duv": 0.017826486319077194,
+    "mired": 59.04292781854471
+   },
+   "reference_white_point": {
+    "cct_K": 13386.002985214662,
+    "mired": 74.70489977507003,
+    "duv": 0.015954402225836484
+   },
+   "signed_errors": {
+    "cct_K": 3550.8264869496816,
+    "mired": -15.66197195652532,
+    "duv": 0.0018720840932407098
+   },
+   "node_bias_prediction": {
+    "cct_K": -155.95327323401602,
+    "mired": 0.8221419476326457,
+    "duv": 0.00011240310495640407
+   },
+   "unexplained_error": {
+    "cct_K": 3706.7797601836974,
+    "mired": -16.484113904157965,
+    "duv": 0.0017596809882843057
+   },
+   "E_normalized": 142.03305947798725,
+   "E_within_gate": false,
+   "qualities": {
+    "strip": "pass",
+    "refs": [
+     "pass",
+     "pass"
+    ]
+   },
+   "corrected_command": {
+    "b": 3449,
+    "cw": 4095,
+    "g": 1438,
+    "r": 614,
+    "ww": 1982
+   }
+  }
+ ],
+ "summary": {
+  "requests": 6,
+  "E_within_gate": 0,
+  "E_values": {
+   "1850/50": 4.2076,
+   "2400/50": 2.1003,
+   "5350/105": 4.0791,
+   "6050/160": 3.3194,
+   "10500/120": 7.4682,
+   "17500/30": 142.0331
+  }
+ }
+}

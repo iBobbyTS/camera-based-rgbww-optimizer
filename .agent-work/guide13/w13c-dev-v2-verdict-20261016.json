@@ -1,0 +1,32 @@
+{
+ "schema": "guide13_w13c_dev_v2_result_v1",
+ "date": "2026-10-16",
+ "run": "formal-w13c-dev-v2 (13/13 pass, cleanup pass, corrected LUT v2 with 27 replaced nodes)",
+ "verdict": "0/6 within gate - VALID SCIENTIFIC NEGATIVE",
+ "attribution": {
+  "stale_prediction_note": "the predK column compares against W12-2-era node errors (stale); vs corrected nodes (near-zero in their sessions) the residuals belong to the interpolation step itself",
+  "warm_end": "mired -4.2/-2.1 at 1850/50, 2400/50 - bilinear PWM mixing introduces real mired curvature between corrected nodes",
+  "cold_end": "17500/30 unchanged +3551K with STABLE Ray (drift 2.9K) - structural face-mixing nonlinearity (b-dominant), confirmed twice",
+  "cross_session": "node corrections were validated in earlier sessions; today's session differs (documented drift up to -226K at 14000/100) - part of residual is cross-session node drift"
+ },
+ "implications": {
+  "continuous_interpolation_claim": "NOT supported outside direct-node lookup; runtime serves 70 node points directly (their photos remain valid per GUIDE13)",
+  "holdouts_20": "DEFERRED - dev arm failed per protocol; running them would repeat warm/cold-region failures",
+  "guide13_compliance": "outputs supported points and model regions instead of continuous rectangles; local patch option (<=6 knots) not applicable since all 70 knots already corrected - failure is BETWEEN knots"
+ },
+ "v1_vs_v2": {
+  "1850/50_eK": {
+   "v1": 10.96,
+   "v2": 16.33
+  },
+  "6050/160_unexplained_vs_stale": {
+   "v1": 0.22,
+   "v2": 67.41
+  },
+  "17500/30_eK": {
+   "v1": 3259.6,
+   "v2": 3550.8
+  },
+  "conclusion": "v1 proved interpolation mechanism correct (pure node-bias inheritance); v2 proves node corrections do not transfer through linear PWM mixing - the strip response between nodes is genuinely nonlinear"
+ }
+}
