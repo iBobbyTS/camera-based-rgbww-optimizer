@@ -1,0 +1,18 @@
+{
+ "schema": "guide13_pause_note_v1",
+ "timestamp_local": "2026-10-17 09:22",
+ "reason": "user-directed pause",
+ "stopped_run": {
+  "run": "guide13-w13b/formal-w13b-s2",
+  "accepted_frames": 7,
+  "planned_frames": 54,
+  "state": "preserved as-is (7 captures + physical returns intact); run.json frozen at running/pending - externally stopped, not a failure"
+ },
+ "cleanup_evidence": {
+  "esphome_strip": "all 5 channels readback 0 (ok)",
+  "ray120c": "intensity 0 (ok)",
+  "method": "manual bounded all_off + readback after TaskStop (runner auto-cleanup did not run)"
+ },
+ "resume_plan": "fresh W13-B session-2 run (same 11-node list, ordinals 2,3); already-captured ordinals in the partial root count as evidence, no re-shoot of those pairs",
+ "guide13_state": "W13-A complete 32/32; W13-C v2 negative closed; W13-B s1 complete (10/12 confirmed); remaining: W13-B s2+originals+gaps+20000/130 recert, W13-D, C13-B/C/D, C13-E package"
+}
