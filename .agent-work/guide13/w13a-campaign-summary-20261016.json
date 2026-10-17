@@ -2,7 +2,7 @@
  "schema": "guide13_w13a_campaign_summary_v1",
  "date": "2026-10-16",
  "queue_total": 32,
- "processed": 29,
+ "processed": 32,
  "counts": {
   "qualified": 23,
   "qualified_original_command": 4,
@@ -46,16 +46,24 @@
  "reference_limited": [
   "20000/130"
  ],
- "unprocessed": [
-  "20000/100",
-  "20000/200",
-  "20000/0"
- ],
+ "unprocessed": [],
  "unprocessed_note": "three 20000-family reference-limited state discriminations from the frozen queue rules; each gets one discrimination block (drift-gate retry rule), not active search",
  "methods_proven": {
   "bracket_interpolation": "3 successes (10000/100, 14000/100, 1800/200) - two measured points bracketing zero",
   "k_row_pessimism": "solver K-row extrapolation pessimistic in 5+ instances - measured gate always decides",
   "session_shift": "4 nodes qualified with ORIGINAL commands via session shift (10000/130, 2300/100, 5000/100, 5000/130)",
   "reference_drift_events": "3 events at 14000/100 (recovered via re-anchor) and 20000/130 x2 (closed reference_limited)"
+ },
+ "final_counts": {
+  "qualified": 23,
+  "qualified_original_command": 4,
+  "closure_point_no_active_search": 1,
+  "reference_limited": 2,
+  "discrimination_complete_measured_exceeds": 2
+ },
+ "discrimination_results": {
+  "20000/0": "reference_limited confirmed (drift 29.6K)",
+  "20000/100": "certified exceeds E=18.98 (eK -474K real; ref compatible 15.9K)",
+  "20000/200": "certified exceeds E=5.80 (eK -145K real; ref compatible 11.8K)"
  }
 }

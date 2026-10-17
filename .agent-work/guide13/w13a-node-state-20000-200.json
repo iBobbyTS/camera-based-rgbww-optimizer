@@ -1,0 +1,38 @@
+{
+ "schema": "guide13_w13a_node_state_v1",
+ "node": "20000/200",
+ "status": "discrimination_complete_measured_exceeds",
+ "history": [
+  {
+   "block": 1,
+   "reference_compatible": true,
+   "ray_drift_K": 11.78,
+   "certified": {
+    "u0_E": 5.8,
+    "eK": -145.0,
+    "emired": 0.8781,
+    "eduv": -0.000584
+   },
+   "command": {
+    "b": 3098,
+    "cw": 4095,
+    "g": 3786,
+    "r": 398,
+    "ww": 86
+   },
+   "note": "certified measurement (W12-2 was reference-limited nominal -147K); error is REAL and moderate; no active search per frozen rule"
+  }
+ ],
+ "best_command": {
+  "b": 3098,
+  "cw": 4095,
+  "g": 3786,
+  "r": 398,
+  "ww": 86
+ },
+ "certified_E": 5.8,
+ "certified": true,
+ "unique_commands_used": 0,
+ "cap": 0,
+ "strip_shutter": "1/160 (CLI override)"
+}
