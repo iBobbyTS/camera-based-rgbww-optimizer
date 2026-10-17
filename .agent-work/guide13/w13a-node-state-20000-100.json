@@ -1,0 +1,38 @@
+{
+ "schema": "guide13_w13a_node_state_v1",
+ "node": "20000/100",
+ "status": "discrimination_complete_measured_exceeds",
+ "history": [
+  {
+   "block": 1,
+   "reference_compatible": true,
+   "ray_drift_K": 15.88,
+   "certified": {
+    "u0_E": 18.978,
+    "eK": -474.45,
+    "emired": 2.5358,
+    "eduv": -0.0005653
+   },
+   "command": {
+    "b": 3581,
+    "cw": 0,
+    "g": 4095,
+    "r": 3214,
+    "ww": 181
+   },
+   "note": "FIRST certified measurement of this node (W12-2 was reference-limited, nominal -461K); today reference compatible and the error is REAL: eK -474K certified. Discrimination rule (one block, no active G search) honored; correction deferred to W13-B-era decision"
+  }
+ ],
+ "best_command": {
+  "b": 3581,
+  "cw": 0,
+  "g": 4095,
+  "r": 3214,
+  "ww": 181
+ },
+ "certified_E": 18.978,
+ "certified": true,
+ "unique_commands_used": 0,
+ "cap": 0,
+ "strip_shutter": "1/125 (W122 table)"
+}
