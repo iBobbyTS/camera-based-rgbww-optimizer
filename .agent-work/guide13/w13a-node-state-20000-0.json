@@ -1,0 +1,39 @@
+{
+ "schema": "guide13_w13a_node_state_v1",
+ "node": "20000/0",
+ "status": "reference_limited",
+ "history": [
+  {
+   "block": 1,
+   "reference_incompatible": true,
+   "ray_drift_K": 29.59,
+   "nominal_uncertified": {
+    "u0_E": 6.013,
+    "eK": 150.32,
+    "emired": -0.6122,
+    "eduv": -9.517e-05
+   },
+   "command": {
+    "b": 1964,
+    "cw": 4095,
+    "g": 59,
+    "r": 37,
+    "ww": 987
+   },
+   "note": "state discrimination: drift gate tripped again (4th 20000-family drift event); nominal eK +150K vs W12-2 +28K - large session shift AND reference unstable; discrimination complete, no further blocks per rule"
+  }
+ ],
+ "best_command": {
+  "b": 1964,
+  "cw": 4095,
+  "g": 59,
+  "r": 37,
+  "ww": 987
+ },
+ "nominal_best_E": 6.013,
+ "certified": false,
+ "unique_commands_used": 0,
+ "cap": 0,
+ "strip_shutter": "1/125 (W122 table)",
+ "w13_d_note": "4th drift event; 20000-family references systematically unstable this session"
+}
