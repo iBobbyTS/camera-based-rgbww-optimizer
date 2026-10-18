@@ -1,0 +1,19 @@
+{
+ "schema": "guide13_w13d_closure_v1",
+ "date": "2026-10-18",
+ "work_package": "W13-D noise transfer / short sequences / LONG contrasts",
+ "closure_basis": "GUIDE13 made the 24-pair transfer check and <=12-frame short sequences conditional on \"if the variation would change adoption conclusions\"; LONG contrasts conditional on \"only for states that would change the use decision\"",
+ "findings_from_w13b_that_answer_it": [
+  "Variance DOES NOT transfer across sessions: same command, stable reference, E moves 0.5-15 across days depending on family (w13b-cross-session-drift-finding-20261018.json)",
+  "The between-session component dominates the within-session component everywhere it was measured (block-local pairs agree within-session; across days they diverge)",
+  "Therefore modeled intervals from one session cannot be extrapolated to future sessions for any family - the W13-D transfer check would measure this same fact at 24 more pairs",
+  "LONG protocol-associated shifts (W12-4 DiD, e.g. 20000/100 +516K) are within the same magnitude as the session drift now documented - separating them requires thermal instrumentation absent from this stage per GUIDE (no temperature measurement -> no temperature attribution)"
+ ],
+ "disposition": {
+  "transfer_check_24_pairs": "answered by W13-B finding; no additional captures justified (GUIDE13: only if it would change adoption - it already has)",
+  "short_sequences_80_100_120s": "the 40s-burst trend data (W12-2 era) plus the documented session drift bound the repeat-vs-trend question for the adoption decisions taken; no remaining adoption decision hinges on finer separation",
+  "LONG_opposite_order": "no adoption decision remains that a LONG contrast would change (cold-family commands are per-session by the finding; warm commands adopted on within-session evidence + cross-session confirmations)",
+  "status": "closed_by_evidence"
+ },
+ "honest_limits": "no temperature attribution claimed; session drift mechanism (ambient/thermal/aging) unidentified; future low-brightness stage should instrument this"
+}
