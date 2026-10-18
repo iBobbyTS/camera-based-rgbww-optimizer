@@ -26,5 +26,17 @@
   "runtime": "cold-family nodes need per-session recalibration or drift compensation; warm/mid LUT commands usable across sessions",
   "w13_d": "this is the dominant noise/transfer finding for W13-D; consistent with 4 earlier Ray-drift confounds now separated: references were stable here, strip drifted",
   "guide13_package": "goes to evidence package as the W13-B headline result"
+ },
+ "session3_addendum": {
+  "date": "2026-10-18 03:38",
+  "result": "0/8 pairs within gate - ALL four original-command nodes drifted out today",
+  "details": {
+   "2300/100": "E 1.29-1.32 (mired over; was 0.737 on Oct14)",
+   "5000/100": "E 1.37-1.40 (mired over; was 0.798 on Oct15)",
+   "5000/130": "E 1.44-1.49 (duv over; was 0.919 on Oct16)",
+   "10000/130": "E 3.36-3.49 (cold family eK -84/-87K; was 0.959 on Oct14)"
+  },
+  "broadened_conclusion": "session-level white-point drift is SYSTEMATIC, not cold-only: near-gate warm points oscillate by E~0.5-0.7 across days while cold-family shifts by hundreds of K; E<=1 point qualification is non-stationary across sessions",
+  "contrast": "warm NEW commands (corrected to large margin, e.g. 6500/130 E~0.7 today) held - margin at correction time matters"
  }
 }
