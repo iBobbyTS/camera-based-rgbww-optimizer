@@ -1,0 +1,582 @@
+{
+ "schema": "guide13_w13b_s2_combined_analysis_v1",
+ "tolerances": {
+  "cct_K": 25.0,
+  "mired": 1.0,
+  "duv": 0.0005
+ },
+ "roots": [
+  "D:\\rgbww-optimizer\\guide13-w13b\\formal-w13b-s2",
+  "D:\\rgbww-optimizer\\guide13-w13b\\formal-w13b-s2r-a",
+  "D:\\rgbww-optimizer\\guide13-w13b\\formal-w13b-s2r-b"
+ ],
+ "frames_total": 55,
+ "pairs": [
+  {
+   "node": "10000/0",
+   "pair_ordinal": 2,
+   "strip_capture_id": "005-strip-guide13-w13b-cct10000-gm0-p2-strip",
+   "reference_capture_ids": [
+    "004-ray-guide13-w13b-cct10000-gm0-p2-ray"
+   ],
+   "signed_errors": {
+    "cct_K": -52.874588576913084,
+    "mired": 0.7206894934999184,
+    "duv": 0.0003271814750993758
+   },
+   "E_normalized": 2.1149835430765234,
+   "E_within_gate": false,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "10000/0",
+   "pair_ordinal": 3,
+   "strip_capture_id": "007-strip-guide13-w13b-cct10000-gm0-p3-strip",
+   "reference_capture_ids": [
+    "006-ray-guide13-w13b-cct10000-gm0-p3-ray"
+   ],
+   "signed_errors": {
+    "cct_K": -53.940556019000724,
+    "mired": 0.7359120812856617,
+    "duv": 0.00030506367376226945
+   },
+   "E_normalized": 2.1576222407600287,
+   "E_within_gate": false,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "10000/100",
+   "pair_ordinal": 2,
+   "strip_capture_id": "009-strip-guide13-w13b-cct10000-gm100-p2-strip",
+   "reference_capture_ids": [
+    "008-ray-guide13-w13b-cct10000-gm100-p2-ray"
+   ],
+   "signed_errors": {
+    "cct_K": -1271.8457423903574,
+    "mired": 21.684570351556516,
+    "duv": 0.04022977973674726
+   },
+   "E_normalized": 80.45955947349452,
+   "E_within_gate": false,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "10000/100",
+   "pair_ordinal": 3,
+   "strip_capture_id": "011-strip-guide13-w13b-cct10000-gm100-p3-strip",
+   "reference_capture_ids": [
+    "010-ray-guide13-w13b-cct10000-gm100-p3-ray"
+   ],
+   "signed_errors": {
+    "cct_K": -1283.4010497145046,
+    "mired": 21.909887303471663,
+    "duv": 0.04028042107777304
+   },
+   "E_normalized": 80.56084215554608,
+   "E_within_gate": false,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "10000/200",
+   "pair_ordinal": 2,
+   "strip_capture_id": "013-strip-guide13-w13b-cct10000-gm200-p2-strip",
+   "reference_capture_ids": [
+    "012-ray-guide13-w13b-cct10000-gm200-p2-ray"
+   ],
+   "signed_errors": {
+    "cct_K": -31.35975766671072,
+    "mired": 0.46792312861322216,
+    "duv": 0.0007847009589640186
+   },
+   "E_normalized": 1.5694019179280372,
+   "E_within_gate": false,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "10000/200",
+   "pair_ordinal": 3,
+   "strip_capture_id": "015-strip-guide13-w13b-cct10000-gm200-p3-strip",
+   "reference_capture_ids": [
+    "014-ray-guide13-w13b-cct10000-gm200-p3-ray"
+   ],
+   "signed_errors": {
+    "cct_K": -29.164242052046575,
+    "mired": 0.4352094978355723,
+    "duv": 0.0007278522900595746
+   },
+   "E_normalized": 1.4557045801191493,
+   "E_within_gate": false,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "14000/100",
+   "pair_ordinal": 2,
+   "strip_capture_id": "023-strip-guide13-w13b-cct14000-gm100-p2-strip",
+   "reference_capture_ids": [
+    "022-ray-guide13-w13b-cct14000-gm100-p2-raybefore",
+    "024-ray-guide13-w13b-cct14000-gm100-p2-rayafter"
+   ],
+   "signed_errors": {
+    "cct_K": 128.49602024368505,
+    "mired": -1.0765811351616321,
+    "duv": 7.941492319816322e-05
+   },
+   "E_normalized": 5.139840809747402,
+   "E_within_gate": false,
+   "ray_drift": {
+    "cct_K": 8.22217458868181,
+    "mired": -0.0697021993713065,
+    "duv": 2.4735769198391803e-05
+   },
+   "ray_drift_within_gate": true
+  },
+  {
+   "node": "14000/100",
+   "pair_ordinal": 3,
+   "strip_capture_id": "026-strip-guide13-w13b-cct14000-gm100-p3-strip",
+   "reference_capture_ids": [
+    "025-ray-guide13-w13b-cct14000-gm100-p3-raybefore",
+    "027-ray-guide13-w13b-cct14000-gm100-p3-rayafter"
+   ],
+   "signed_errors": {
+    "cct_K": 126.29523122321916,
+    "mired": -1.0578311794244541,
+    "duv": 5.4990480913602635e-05
+   },
+   "E_normalized": 5.051809248928766,
+   "E_within_gate": false,
+   "ray_drift": {
+    "cct_K": 13.308432319216081,
+    "mired": -0.11276179518733898,
+    "duv": 2.6807261706598754e-05
+   },
+   "ray_drift_within_gate": true
+  },
+  {
+   "node": "14000/130",
+   "pair_ordinal": 2,
+   "strip_capture_id": "029-strip-guide13-w13b-cct14000-gm130-p2-strip",
+   "reference_capture_ids": [
+    "028-ray-guide13-w13b-cct14000-gm130-p2-raybefore",
+    "030-ray-guide13-w13b-cct14000-gm130-p2-rayafter"
+   ],
+   "signed_errors": {
+    "cct_K": -1026.856716224711,
+    "mired": 9.88361026363279,
+    "duv": 0.03356989249597801
+   },
+   "E_normalized": 67.13978499195602,
+   "E_within_gate": false,
+   "ray_drift": {
+    "cct_K": 12.129283006766855,
+    "mired": -0.10556230056359084,
+    "duv": 4.058671759796413e-05
+   },
+   "ray_drift_within_gate": true
+  },
+  {
+   "node": "14000/130",
+   "pair_ordinal": 3,
+   "strip_capture_id": "032-strip-guide13-w13b-cct14000-gm130-p3-strip",
+   "reference_capture_ids": [
+    "031-ray-guide13-w13b-cct14000-gm130-p3-raybefore",
+    "033-ray-guide13-w13b-cct14000-gm130-p3-rayafter"
+   ],
+   "signed_errors": {
+    "cct_K": -1032.5729010875475,
+    "mired": 9.94282168203641,
+    "duv": 0.03358613596494764
+   },
+   "E_normalized": 67.17227192989527,
+   "E_within_gate": false,
+   "ray_drift": {
+    "cct_K": 2.2438865389485727,
+    "mired": -0.01952557924508369,
+    "duv": 2.8834220521510925e-05
+   },
+   "ray_drift_within_gate": true
+  },
+  {
+   "node": "14000/200",
+   "pair_ordinal": 2,
+   "strip_capture_id": "035-strip-guide13-w13b-cct14000-gm200-p2-strip",
+   "reference_capture_ids": [
+    "034-ray-guide13-w13b-cct14000-gm200-p2-raybefore",
+    "036-ray-guide13-w13b-cct14000-gm200-p2-rayafter"
+   ],
+   "signed_errors": {
+    "cct_K": -14.990775461201338,
+    "mired": 0.13950263863189605,
+    "duv": 0.0009606545044449875
+   },
+   "E_normalized": 1.9213090088899751,
+   "E_within_gate": false,
+   "ray_drift": {
+    "cct_K": 1.4825792225783516,
+    "mired": -0.013776843521469573,
+    "duv": -1.2956726601173058e-05
+   },
+   "ray_drift_within_gate": true
+  },
+  {
+   "node": "14000/200",
+   "pair_ordinal": 3,
+   "strip_capture_id": "038-strip-guide13-w13b-cct14000-gm200-p3-strip",
+   "reference_capture_ids": [
+    "037-ray-guide13-w13b-cct14000-gm200-p3-raybefore",
+    "039-ray-guide13-w13b-cct14000-gm200-p3-rayafter"
+   ],
+   "signed_errors": {
+    "cct_K": -18.332019143035723,
+    "mired": 0.1705392093485898,
+    "duv": 0.000927369749592892
+   },
+   "E_normalized": 1.854739499185784,
+   "E_within_gate": false,
+   "ray_drift": {
+    "cct_K": 11.580379415428979,
+    "mired": -0.10755864494818468,
+    "duv": 1.1423744329663865e-06
+   },
+   "ray_drift_within_gate": true
+  },
+  {
+   "node": "14000/70",
+   "pair_ordinal": 2,
+   "strip_capture_id": "017-strip-guide13-w13b-cct14000-gm70-p2-strip",
+   "reference_capture_ids": [
+    "016-ray-guide13-w13b-cct14000-gm70-p2-raybefore",
+    "018-ray-guide13-w13b-cct14000-gm70-p2-rayafter"
+   ],
+   "signed_errors": {
+    "cct_K": -69.11313500559663,
+    "mired": 0.5733583117007583,
+    "duv": 7.701654786654039e-05
+   },
+   "E_normalized": 2.7645254002238655,
+   "E_within_gate": false,
+   "ray_drift": {
+    "cct_K": 4.4676389533178735,
+    "mired": -0.0368309195694394,
+    "duv": 3.541950328302297e-06
+   },
+   "ray_drift_within_gate": true
+  },
+  {
+   "node": "14000/70",
+   "pair_ordinal": 3,
+   "strip_capture_id": "020-strip-guide13-w13b-cct14000-gm70-p3-strip",
+   "reference_capture_ids": [
+    "019-ray-guide13-w13b-cct14000-gm70-p3-raybefore",
+    "021-ray-guide13-w13b-cct14000-gm70-p3-rayafter"
+   ],
+   "signed_errors": {
+    "cct_K": -80.2149347405375,
+    "mired": 0.6644153391467569,
+    "duv": 6.585477125635193e-05
+   },
+   "E_normalized": 3.2085973896215,
+   "E_within_gate": false,
+   "ray_drift": {
+    "cct_K": 4.710457268241953,
+    "mired": -0.038732869760238486,
+    "duv": 4.129720431855343e-05
+   },
+   "ray_drift_within_gate": true
+  },
+  {
+   "node": "20000/70",
+   "pair_ordinal": 2,
+   "strip_capture_id": "041-strip-guide13-w13b-cct20000-gm70-p2-strip",
+   "reference_capture_ids": [
+    "040-ray-guide13-w13b-cct20000-gm70-p2-raybefore",
+    "042-ray-guide13-w13b-cct20000-gm70-p2-rayafter"
+   ],
+   "signed_errors": {
+    "cct_K": -371.2327412927989,
+    "mired": 1.80420197251604,
+    "duv": 0.00016453999858071118
+   },
+   "E_normalized": 14.849309651711955,
+   "E_within_gate": false,
+   "ray_drift": {
+    "cct_K": 20.044492449145764,
+    "mired": -0.0949298216223724,
+    "duv": 5.1557454814812366e-05
+   },
+   "ray_drift_within_gate": true
+  },
+  {
+   "node": "20000/70",
+   "pair_ordinal": 3,
+   "strip_capture_id": "044-strip-guide13-w13b-cct20000-gm70-p3-strip",
+   "reference_capture_ids": [
+    "043-ray-guide13-w13b-cct20000-gm70-p3-raybefore",
+    "045-ray-guide13-w13b-cct20000-gm70-p3-rayafter"
+   ],
+   "signed_errors": {
+    "cct_K": -388.1308040256481,
+    "mired": 1.8859246445331763,
+    "duv": 0.0001566170342792118
+   },
+   "E_normalized": 15.525232161025924,
+   "E_within_gate": false,
+   "ray_drift": {
+    "cct_K": 12.08911028604416,
+    "mired": -0.057173365716082,
+    "duv": 3.648214260174292e-05
+   },
+   "ray_drift_within_gate": true
+  },
+  {
+   "node": "6500/130",
+   "pair_ordinal": 2,
+   "strip_capture_id": "001-strip-guide13-w13b-cct6500-gm130-p2-strip",
+   "reference_capture_ids": [
+    "000-ray-guide13-w13b-cct6500-gm130-p2-ray"
+   ],
+   "signed_errors": {
+    "cct_K": 6.161062005911845,
+    "mired": -0.17838431526718068,
+    "duv": -0.0003456919567138717
+   },
+   "E_normalized": 0.6913839134277434,
+   "E_within_gate": true,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "6500/130",
+   "pair_ordinal": 3,
+   "strip_capture_id": "003-strip-guide13-w13b-cct6500-gm130-p3-strip",
+   "reference_capture_ids": [
+    "002-ray-guide13-w13b-cct6500-gm130-p3-ray"
+   ],
+   "signed_errors": {
+    "cct_K": 5.461063245324112,
+    "mired": -0.15810764880041006,
+    "duv": -0.0003527117956648087
+   },
+   "E_normalized": 0.7054235913296174,
+   "E_within_gate": true,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "8000/200",
+   "pair_ordinal": 2,
+   "strip_capture_id": "001-strip-guide13-w13b-cct8000-gm200-p2-strip",
+   "reference_capture_ids": [
+    "000-ray-guide13-w13b-cct8000-gm200-p2-ray"
+   ],
+   "signed_errors": {
+    "cct_K": -12.980565845355159,
+    "mired": 0.2742573527240211,
+    "duv": 0.0005747157763566872
+   },
+   "E_normalized": 1.1494315527133745,
+   "E_within_gate": false,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "8000/200",
+   "pair_ordinal": 3,
+   "strip_capture_id": "003-strip-guide13-w13b-cct8000-gm200-p3-strip",
+   "reference_capture_ids": [
+    "002-ray-guide13-w13b-cct8000-gm200-p3-ray"
+   ],
+   "signed_errors": {
+    "cct_K": -6.255816780824716,
+    "mired": 0.13222895022809666,
+    "duv": 0.0005632482341081033
+   },
+   "E_normalized": 1.1264964682162064,
+   "E_within_gate": false,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "8000/70",
+   "pair_ordinal": 2,
+   "strip_capture_id": "005-strip-guide13-w13b-cct8000-gm70-p2-strip",
+   "reference_capture_ids": [
+    "004-ray-guide13-w13b-cct8000-gm70-p2-ray"
+   ],
+   "signed_errors": {
+    "cct_K": -16.014571232228263,
+    "mired": 0.32747850020649594,
+    "duv": 6.93951930395148e-06
+   },
+   "E_normalized": 0.6405828492891306,
+   "E_within_gate": true,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  },
+  {
+   "node": "8000/70",
+   "pair_ordinal": 3,
+   "strip_capture_id": "001-strip-guide13-w13b-cct8000-gm70-p3-strip",
+   "reference_capture_ids": [
+    "006-ray-guide13-w13b-cct8000-gm70-p3-ray",
+    "000-ray-guide13-w13b-cct8000-gm70-p3-ray"
+   ],
+   "signed_errors": {
+    "cct_K": -3.672721338811243,
+    "mired": 0.07494401838408749,
+    "duv": 0.0001919667902596893
+   },
+   "E_normalized": 0.3839335805193786,
+   "E_within_gate": true,
+   "ray_drift": null,
+   "ray_drift_within_gate": null
+  }
+ ],
+ "node_summary": [
+  {
+   "node": "6500/130",
+   "session_pairs": 2,
+   "valid_pairs": 2,
+   "E_values": [
+    0.6914,
+    0.7054
+   ],
+   "E_max": 0.7054,
+   "all_within_gate": true,
+   "confirmed_3_pairs": true
+  },
+  {
+   "node": "8000/70",
+   "session_pairs": 2,
+   "valid_pairs": 2,
+   "E_values": [
+    0.6406,
+    0.3839
+   ],
+   "E_max": 0.6406,
+   "all_within_gate": true,
+   "confirmed_3_pairs": true
+  },
+  {
+   "node": "8000/200",
+   "session_pairs": 2,
+   "valid_pairs": 2,
+   "E_values": [
+    1.1494,
+    1.1265
+   ],
+   "E_max": 1.1494,
+   "all_within_gate": false,
+   "confirmed_3_pairs": false
+  },
+  {
+   "node": "10000/0",
+   "session_pairs": 2,
+   "valid_pairs": 2,
+   "E_values": [
+    2.115,
+    2.1576
+   ],
+   "E_max": 2.1576,
+   "all_within_gate": false,
+   "confirmed_3_pairs": false
+  },
+  {
+   "node": "10000/100",
+   "session_pairs": 2,
+   "valid_pairs": 2,
+   "E_values": [
+    80.4596,
+    80.5608
+   ],
+   "E_max": 80.5608,
+   "all_within_gate": false,
+   "confirmed_3_pairs": false
+  },
+  {
+   "node": "10000/200",
+   "session_pairs": 2,
+   "valid_pairs": 2,
+   "E_values": [
+    1.5694,
+    1.4557
+   ],
+   "E_max": 1.5694,
+   "all_within_gate": false,
+   "confirmed_3_pairs": false
+  },
+  {
+   "node": "14000/70",
+   "session_pairs": 2,
+   "valid_pairs": 2,
+   "E_values": [
+    2.7645,
+    3.2086
+   ],
+   "E_max": 3.2086,
+   "all_within_gate": false,
+   "confirmed_3_pairs": false
+  },
+  {
+   "node": "14000/100",
+   "session_pairs": 2,
+   "valid_pairs": 2,
+   "E_values": [
+    5.1398,
+    5.0518
+   ],
+   "E_max": 5.1398,
+   "all_within_gate": false,
+   "confirmed_3_pairs": false
+  },
+  {
+   "node": "14000/130",
+   "session_pairs": 2,
+   "valid_pairs": 2,
+   "E_values": [
+    67.1398,
+    67.1723
+   ],
+   "E_max": 67.1723,
+   "all_within_gate": false,
+   "confirmed_3_pairs": false
+  },
+  {
+   "node": "14000/200",
+   "session_pairs": 2,
+   "valid_pairs": 2,
+   "E_values": [
+    1.9213,
+    1.8547
+   ],
+   "E_max": 1.9213,
+   "all_within_gate": false,
+   "confirmed_3_pairs": false
+  },
+  {
+   "node": "20000/70",
+   "session_pairs": 2,
+   "valid_pairs": 2,
+   "E_values": [
+    14.8493,
+    15.5252
+   ],
+   "E_max": 15.5252,
+   "all_within_gate": false,
+   "confirmed_3_pairs": false
+  }
+ ],
+ "summary": {
+  "pairs": 22,
+  "pairs_within_gate": 4,
+  "drift_gate_trips": 0,
+  "nodes": 11,
+  "nodes_confirmed_3_pairs": 2
+ }
+}

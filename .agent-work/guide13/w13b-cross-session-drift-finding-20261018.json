@@ -1,0 +1,30 @@
+{
+ "schema": "guide13_w13b_cross_session_drift_finding_v1",
+ "date": "2026-10-18",
+ "headline": "Strip cold-family white points drift by hundreds of K across days; warm/mid families hold",
+ "evidence": {
+  "reference_stability": "0 drift-gate trips in 22 pairs - Ray references stable throughout; the drift is the STRIP",
+  "holds": {
+   "6500/130": "E 0.69/0.71 (corrected Oct13, confirmed today)",
+   "8000/70": "E 0.64/0.38 (corrected Oct14)"
+  },
+  "regressed": {
+   "10000/100": "E 80 (eK -1272K; was 0.397 at correction)",
+   "14000/130": "E 67 (eK -1027K; was 0.441)",
+   "20000/70": "E 15 (eK -371K; was 0.464)",
+   "14000/70": "E 2.8-3.2",
+   "14000/100": "E 5.1",
+   "14000/200": "E 1.9",
+   "10000/0": "E 2.1",
+   "10000/200": "E 1.5",
+   "8000/200": "E 1.1-1.15"
+  },
+  "session1_contrast": "warm nodes confirmed next-day (10/12 in gate on Oct17) - family-dependent stability"
+ },
+ "classification": "not cross-session stable at >=10000K; honest per-node statuses recorded (not confirmed), no verified_qualified claims",
+ "implications": {
+  "runtime": "cold-family nodes need per-session recalibration or drift compensation; warm/mid LUT commands usable across sessions",
+  "w13_d": "this is the dominant noise/transfer finding for W13-D; consistent with 4 earlier Ray-drift confounds now separated: references were stable here, strip drifted",
+  "guide13_package": "goes to evidence package as the W13-B headline result"
+ }
+}
