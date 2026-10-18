@@ -1,0 +1,22 @@
+{
+ "schema": "guide13_w13b_campaign_summary_v1",
+ "date": "2026-10-18",
+ "sessions": {
+  "s1 (Oct16-17)": "48/48 pass; 10/12 warm new-command nodes confirmed at 3 pairs; 2000/0 + 5600/70 cross-session marginal",
+  "s2 (Oct17-18, 3 roots 55 frames)": "2/11 confirmed (6500/130, 8000/70); cold family >=10000K drifted 370-1280K with STABLE references (0 drift trips)",
+  "s3 (Oct18)": "0/8 - original-command nodes all drifted out incl. warm (2300/100, 5000/100, 5000/130): session drift SYSTEMATIC",
+  "s4 (Oct18)": "8/13 gap-node 3rd pairs PASS (2000/70,2000/200,2700/100,3200/0,3200/70,3800/0,4500/70,5600/0 -> 3-pair confirmed); FAIL: 1800/70 1.31, 2000/100 1.08 (marginal band), 8000/0 2.40 (mid-cold drift), 10000/70 3.34, 14000/0 8.31 (cold family)",
+  "20000/130 recert": "reference STABLE (6.6K) but strip drifted: certified E=10.5 (eK -263K) - re-classified from reference_limited-nominal to certified exceeds today"
+ },
+ "final_node_statuses": {
+  "confirmed_3_pairs_new_command": 12,
+  "confirmed_3_pairs_unchanged_w12_2": 8,
+  "cross_session_marginal_or_drifted": "rest - honest per-node statuses in ledgers"
+ },
+ "headline_finding": "Session-level white-point drift is systematic and family-scaled: warm mostly holds (margin-dependent), a marginal band oscillates E~0.5-1.5, mid-cold 8000K drifts ~-60K, cold >=10000K drifts hundreds of K over days - all with stable Ray references. E<=1 point qualification is non-stationary across sessions.",
+ "implications": {
+  "runtime": "warm LUT usable cross-session with margin; cold family needs per-session recal or drift compensation",
+  "w13_d": "the variance-transfer question is ANSWERED (negatively) by this finding; LONG/short-sequence budgets were conditional on adoption decisions this already changes",
+  "package": "goes to C13-E evidence package as the white-noise chapter"
+ }
+}
