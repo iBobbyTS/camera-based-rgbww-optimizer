@@ -1,0 +1,15 @@
+{
+  "block_index": 1,
+  "direct_quality_histogram": {
+    "pass": 5
+  },
+  "formal_frames": 5,
+  "frames": 5,
+  "guide_experiment_id": "GUIDE12_C12_2_COLOR_FULLSCALE_SOLVING_V1",
+  "request": {
+    "hue": 300,
+    "sat": 50
+  },
+  "schema": "guide12_c122_block_quality_v1",
+  "status": "pass"
+}
