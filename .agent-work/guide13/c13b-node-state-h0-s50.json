@@ -1,0 +1,49 @@
+{
+ "schema": "guide13_c13b_node_state_v1",
+ "node": "H0/S50",
+ "status": "qualified_pending_3_confirmations",
+ "history": [
+  {
+   "block": 1,
+   "direction": "warm white shift ww+100",
+   "best_dz_worst": 0.0266,
+   "improvement": "matched -> expand to 12"
+  },
+  {
+   "block": 2,
+   "direction": "ww+200",
+   "best_dz_worst": 0.0188,
+   "dH": 2.58,
+   "dS": -1.04,
+   "note": "Hue slightly over 2deg gate"
+  },
+  {
+   "block": 3,
+   "direction": "ww150 midpoint",
+   "best_dz_worst": 0.02289,
+   "dH": 0.41,
+   "dS": -1.05,
+   "verdict": "IN GATE"
+  }
+ ],
+ "best_command": {
+  "cw": 132,
+  "ww": 1968,
+  "r": 4095,
+  "g": 180,
+  "b": 480
+ },
+ "best_dz": [
+  -0.02289,
+  0.00261
+ ],
+ "hs_estimate": {
+  "dH_deg": 0.41,
+  "dS_pp": -1.05,
+  "tolerance": "Hue+-2deg, SAT+-2pp"
+ },
+ "unique_commands_used": 8,
+ "cap": 12,
+ "method_note": "warm-white-shift direction found empirically (J-theory direction wrong, same as H300/S50); monotone improvement through 3 blocks",
+ "w13b_equivalent_confirmation_queue": "3 independent confirmations needed (new session preferred)"
+}
