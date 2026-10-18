@@ -1,0 +1,34 @@
+{
+ "schema": "guide13_c13b_node_state_v1",
+ "node": "H300/S50",
+ "status": "bounded_search_exhausted_no_improvement",
+ "history": [
+  {
+   "block": 1,
+   "direction": "r-down (break r face)",
+   "result": "dz worsened (-0.158 to -0.203 vs -0.114)",
+   "verdict": "wrong direction"
+  },
+  {
+   "block": 2,
+   "direction": "g-up (J-theory: decrease z_r)",
+   "result": "dz also worsened (-0.161 to -0.203 vs -0.114)",
+   "verdict": "J-theory direction also wrong in practice"
+  }
+ ],
+ "best_command": {
+  "cw": 1818,
+  "ww": 2586,
+  "r": 4095,
+  "g": 528,
+  "b": 4095
+ },
+ "best_dz": [
+  -0.114,
+  0.105
+ ],
+ "unique_commands_used": 6,
+ "cap": 8,
+ "closure_reason": "two blocks with different J-guided directions both worsened; no measured improvement -> expand-to-12 NOT triggered; bounded_search_exhausted",
+ "scientific_note": "the local J measured at C13-A predicts the wrong correction direction at H300/S50; the strip response surface near this target is either non-monotonic or the J measurement captured a different local structure than the correction block; the adopted command remains the best available"
+}
