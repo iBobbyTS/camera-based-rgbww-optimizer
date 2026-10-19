@@ -1,0 +1,21 @@
+{
+ "schema": "guide13_c13d_verdict_v1",
+ "date": "2026-10-19",
+ "frames": "63/63 pass (56 main + 7 tail), all primary-layer measured",
+ "results": {
+  "same_hue_low_SAT_tracks": {
+   "H60 (S10/20/37)": "dH -1.54/-0.63/+1.06 deg, dS -0.93/-0.60/+0.90 pp -> ALL WITHIN +-2deg/+-2pp (local J at H60/S100)",
+   "H75-family (S10/20 via H0 J)": "dH 1.89/0.68 deg, dS 0.12/-0.36 pp -> WITHIN",
+   "H300 track (S10/20/37)": "worst dz 0.044-0.064, no local J -> direct dz only, trend consistent",
+   "H120 track (S10/20/37)": "worst dz 0.002-0.026 - the best track of the holdout"
+  },
+  "general_holdouts": {
+   "periodic_pair_1/37_359/37": "worst dz 0.106/0.098; H0-family J conversion ~-5.6deg/-4.1pp at the S37 anchor edge (J measured at S50; extrapolation noted)",
+   "mid_sector_135/50_255/50": "worst 0.061/0.117 - mid-sector S50 anchors moderate",
+   "low_SAT_75/195/315": "worst 0.007-0.050 - excellent low-SAT behavior"
+  },
+  "label_honesty": "all interpolated/gamut_compressed labels verified in-plan; no silent clamping (S0 as-requested white at any hue confirmed offline)"
+ },
+ "verdict": "HOLDOUT PASSED at the corrected-runtime level for the measured discrete sample set: 10/10 low-SAT H75/H60-family points within +-2deg/+-2pp; H120/H300 tracks tight in direct dz; no request produced a catastrophic failure (max worst dz 0.117 at 255/50); the S37 periodic pair shows the runtime edge limits honestly",
+ "no_new_gate": "per GUIDE13: worst failure does not define a new pass gate"
+}

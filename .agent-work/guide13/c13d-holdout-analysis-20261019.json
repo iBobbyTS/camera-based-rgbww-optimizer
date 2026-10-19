@@ -1,0 +1,498 @@
+{
+ "schema": "guide13_c13d_holdout_analysis_v1",
+ "frames_total": 63,
+ "roots": [
+  "D:\\rgbww-optimizer\\guide13-c13d\\formal-c13d-holdout",
+  "D:\\rgbww-optimizer\\guide13-c13d\\formal-c13d-holdout-tail"
+ ],
+ "requests": [
+  {
+   "request": "1/37",
+   "status": "measured",
+   "strip_capture_id": "001-strip-guide13-c13d-h1-s37-strip",
+   "dz": [
+    -0.10637835398994032,
+    0.03302471339835478
+   ],
+   "worst_abs_dz": 0.10637835398994032,
+   "ray_drift": [
+    -0.00016883691463911998,
+    -0.00020228774511599212
+   ],
+   "realized_sat": 37,
+   "sat_status_label": "interpolated"
+  },
+  {
+   "request": "60/10",
+   "status": "measured",
+   "strip_capture_id": "031-strip-guide13-c13d-h60-s10-strip",
+   "dz": [
+    0.010879918072614125,
+    -0.01284131325568949
+   ],
+   "worst_abs_dz": 0.01284131325568949,
+   "ray_drift": [
+    0.00014644642347638737,
+    -0.00012257288332828686
+   ],
+   "realized_sat": 10,
+   "sat_status_label": "interpolated"
+  },
+  {
+   "request": "60/20",
+   "status": "measured",
+   "strip_capture_id": "034-strip-guide13-c13d-h60-s20-strip",
+   "dz": [
+    0.0024557057307503793,
+    -0.008159175521713968
+   ],
+   "worst_abs_dz": 0.008159175521713968,
+   "ray_drift": [
+    0.00018202446860215993,
+    -4.816340147795195e-05
+   ],
+   "realized_sat": 20,
+   "sat_status_label": "interpolated"
+  },
+  {
+   "request": "60/37",
+   "status": "measured",
+   "strip_capture_id": "037-strip-guide13-c13d-h60-s37-strip",
+   "dz": [
+    -0.004990356848086019,
+    0.012401646497114172
+   ],
+   "worst_abs_dz": 0.012401646497114172,
+   "ray_drift": [
+    -5.4223455336788184e-05,
+    7.201921275801215e-05
+   ],
+   "realized_sat": 37,
+   "sat_status_label": "interpolated"
+  },
+  {
+   "request": "75/10",
+   "status": "measured",
+   "strip_capture_id": "013-strip-guide13-c13d-h75-s10-strip",
+   "dz": [
+    0.006184850392608743,
+    -0.010396629619396913
+   ],
+   "worst_abs_dz": 0.010396629619396913,
+   "ray_drift": [
+    -0.00048397285430679116,
+    0.00035609479079745654
+   ],
+   "realized_sat": 10,
+   "sat_status_label": "interpolated"
+  },
+  {
+   "request": "75/20",
+   "status": "measured",
+   "strip_capture_id": "016-strip-guide13-c13d-h75-s20-strip",
+   "dz": [
+    -0.006915378269742867,
+    -0.0019392622036755736
+   ],
+   "worst_abs_dz": 0.006915378269742867,
+   "ray_drift": [
+    5.568904015951226e-05,
+    -0.0003043607216264288
+   ],
+   "realized_sat": 20,
+   "sat_status_label": "interpolated"
+  },
+  {
+   "request": "120/0",
+   "status": "measured",
+   "strip_capture_id": "040-strip-guide13-c13d-h120-s0-strip",
+   "dz": [
+    -0.007035554488952989,
+    -0.0037065735642579645
+   ],
+   "worst_abs_dz": 0.007035554488952989,
+   "ray_drift": [
+    0.00018242551213021319,
+    -2.9644033364306654e-05
+   ],
+   "realized_sat": 0,
+   "sat_status_label": "as-requested"
+  },
+  {
+   "request": "120/10",
+   "status": "measured",
+   "strip_capture_id": "043-strip-guide13-c13d-h120-s10-strip",
+   "dz": [
+    -0.0068652354336879995,
+    -0.010062284483203843
+   ],
+   "worst_abs_dz": 0.010062284483203843,
+   "ray_drift": [
+    7.04859866084151e-05,
+    -5.717439549451919e-05
+   ],
+   "realized_sat": 10,
+   "sat_status_label": "interpolated"
+  },
+  {
+   "request": "120/20",
+   "status": "measured",
+   "strip_capture_id": "046-strip-guide13-c13d-h120-s20-strip",
+   "dz": [
+    0.0015928148442275747,
+    0.0007930861645024656
+   ],
+   "worst_abs_dz": 0.0015928148442275747,
+   "ray_drift": [
+    -0.0003249896815348263,
+    0.0002755361689790181
+   ],
+   "realized_sat": 20,
+   "sat_status_label": "interpolated"
+  },
+  {
+   "request": "120/37",
+   "status": "measured",
+   "strip_capture_id": "049-strip-guide13-c13d-h120-s37-strip",
+   "dz": [
+    0.026195792583931565,
+    0.017043661478322925
+   ],
+   "worst_abs_dz": 0.026195792583931565,
+   "ray_drift": [
+    -0.0003793891640053726,
+    -0.00016757497688468792
+   ],
+   "realized_sat": 37,
+   "sat_status_label": "interpolated"
+  },
+  {
+   "request": "135/50",
+   "status": "measured",
+   "strip_capture_id": "007-strip-guide13-c13d-h135-s50-strip",
+   "dz": [
+    0.06075189065464248,
+    0.017840293419474573
+   ],
+   "worst_abs_dz": 0.06075189065464248,
+   "ray_drift": [
+    -0.00013226949366540453,
+    -0.00020818417842061177
+   ],
+   "realized_sat": 50,
+   "sat_status_label": "as-requested"
+  },
+  {
+   "request": "195/10",
+   "status": "measured",
+   "strip_capture_id": "019-strip-guide13-c13d-h195-s10-strip",
+   "dz": [
+    -0.004396878783150204,
+    0.014698737020293784
+   ],
+   "worst_abs_dz": 0.014698737020293784,
+   "ray_drift": [
+    0.0001824329201017827,
+    -4.6187713963974364e-05
+   ],
+   "realized_sat": 10,
+   "sat_status_label": "interpolated"
+  },
+  {
+   "request": "195/20",
+   "status": "measured",
+   "strip_capture_id": "022-strip-guide13-c13d-h195-s20-strip",
+   "dz": [
+    0.004437441175932144,
+    0.05015854942940745
+   ],
+   "worst_abs_dz": 0.05015854942940745,
+   "ray_drift": [
+    -4.8949574705581256e-05,
+    -0.00017330415548172384
+   ],
+   "realized_sat": 20,
+   "sat_status_label": "interpolated"
+  },
+  {
+   "request": "255/50",
+   "status": "measured",
+   "strip_capture_id": "010-strip-guide13-c13d-h255-s50-strip",
+   "dz": [
+    -0.04747982722094346,
+    -0.11723224961681994
+   ],
+   "worst_abs_dz": 0.11723224961681994,
+   "ray_drift": [
+    0.00023757303663429763,
+    0.0005418832775394011
+   ],
+   "realized_sat": 50,
+   "sat_status_label": "as-requested"
+  },
+  {
+   "request": "300/0",
+   "status": "measured",
+   "strip_capture_id": "052-strip-guide13-c13d-h300-s0-strip",
+   "dz": [
+    -0.00981686113022906,
+    -0.00555308282106759
+   ],
+   "worst_abs_dz": 0.00981686113022906,
+   "ray_drift": [
+    3.231283077220759e-05,
+    0.00045823982496806526
+   ],
+   "realized_sat": 0,
+   "sat_status_label": "as-requested"
+  },
+  {
+   "request": "300/10",
+   "status": "measured",
+   "strip_capture_id": "055-strip-guide13-c13d-h300-s10-strip",
+   "dz": [
+    0.03677976337074218,
+    0.043823331052593006
+   ],
+   "worst_abs_dz": 0.043823331052593006,
+   "ray_drift": [
+    0.0007730134944228251,
+    9.33174096202638e-05
+   ],
+   "realized_sat": 10,
+   "sat_status_label": "interpolated"
+  },
+  {
+   "request": "300/20",
+   "status": "measured",
+   "strip_capture_id": "058-strip-guide13-c13d-h300-s20-strip",
+   "dz": [
+    0.011841586484956312,
+    0.04778401345158864
+   ],
+   "worst_abs_dz": 0.04778401345158864,
+   "ray_drift": [
+    0.0007091312904493607,
+    -5.84596388690517e-05
+   ],
+   "realized_sat": 20,
+   "sat_status_label": "interpolated"
+  },
+  {
+   "request": "300/37",
+   "status": "measured",
+   "strip_capture_id": "061-strip-guide13-c13d-h300-s37-strip",
+   "dz": [
+    -0.06397535935688703,
+    0.04172877518745022
+   ],
+   "worst_abs_dz": 0.06397535935688703,
+   "ray_drift": [
+    0.0009703731160582985,
+    -1.3058470067182915e-05
+   ],
+   "realized_sat": 37,
+   "sat_status_label": "interpolated"
+  },
+  {
+   "request": "315/10",
+   "status": "measured",
+   "strip_capture_id": "025-strip-guide13-c13d-h315-s10-strip",
+   "dz": [
+    0.03189662645818947,
+    0.023023425391053842
+   ],
+   "worst_abs_dz": 0.03189662645818947,
+   "ray_drift": [
+    0.00027285848312208483,
+    0.00017451090508047162
+   ],
+   "realized_sat": 10,
+   "sat_status_label": "interpolated"
+  },
+  {
+   "request": "315/20",
+   "status": "measured",
+   "strip_capture_id": "028-strip-guide13-c13d-h315-s20-strip",
+   "dz": [
+    0.0019556219603514835,
+    0.04359743991038176
+   ],
+   "worst_abs_dz": 0.04359743991038176,
+   "ray_drift": [
+    0.0002924055834653272,
+    -1.511775710494323e-05
+   ],
+   "realized_sat": 20,
+   "sat_status_label": "interpolated"
+  },
+  {
+   "request": "359/37",
+   "status": "measured",
+   "strip_capture_id": "004-strip-guide13-c13d-h359-s37-strip",
+   "dz": [
+    -0.09783073515734737,
+    0.0621171264945401
+   ],
+   "worst_abs_dz": 0.09783073515734737,
+   "ray_drift": [
+    0.0007020985405323532,
+    -0.0012263692684949534
+   ],
+   "realized_sat": 37,
+   "sat_status_label": "interpolated"
+  }
+ ],
+ "same_hue_tracks": {
+  "H1": {
+   "sats": [
+    37
+   ],
+   "worst_by_sat": {
+    "37": 0.1064
+   },
+   "labels": {
+    "37": "interpolated"
+   }
+  },
+  "H60": {
+   "sats": [
+    10,
+    20,
+    37
+   ],
+   "worst_by_sat": {
+    "10": 0.0128,
+    "20": 0.0082,
+    "37": 0.0124
+   },
+   "labels": {
+    "10": "interpolated",
+    "20": "interpolated",
+    "37": "interpolated"
+   }
+  },
+  "H75": {
+   "sats": [
+    10,
+    20
+   ],
+   "worst_by_sat": {
+    "10": 0.0104,
+    "20": 0.0069
+   },
+   "labels": {
+    "10": "interpolated",
+    "20": "interpolated"
+   }
+  },
+  "H120": {
+   "sats": [
+    0,
+    10,
+    20,
+    37
+   ],
+   "worst_by_sat": {
+    "0": 0.007,
+    "10": 0.0101,
+    "20": 0.0016,
+    "37": 0.0262
+   },
+   "labels": {
+    "0": "as-requested",
+    "10": "interpolated",
+    "20": "interpolated",
+    "37": "interpolated"
+   }
+  },
+  "H135": {
+   "sats": [
+    50
+   ],
+   "worst_by_sat": {
+    "50": 0.0608
+   },
+   "labels": {
+    "50": "as-requested"
+   }
+  },
+  "H195": {
+   "sats": [
+    10,
+    20
+   ],
+   "worst_by_sat": {
+    "10": 0.0147,
+    "20": 0.0502
+   },
+   "labels": {
+    "10": "interpolated",
+    "20": "interpolated"
+   }
+  },
+  "H255": {
+   "sats": [
+    50
+   ],
+   "worst_by_sat": {
+    "50": 0.1172
+   },
+   "labels": {
+    "50": "as-requested"
+   }
+  },
+  "H300": {
+   "sats": [
+    0,
+    10,
+    20,
+    37
+   ],
+   "worst_by_sat": {
+    "0": 0.0098,
+    "10": 0.0438,
+    "20": 0.0478,
+    "37": 0.064
+   },
+   "labels": {
+    "0": "as-requested",
+    "10": "interpolated",
+    "20": "interpolated",
+    "37": "interpolated"
+   }
+  },
+  "H315": {
+   "sats": [
+    10,
+    20
+   ],
+   "worst_by_sat": {
+    "10": 0.0319,
+    "20": 0.0436
+   },
+   "labels": {
+    "10": "interpolated",
+    "20": "interpolated"
+   }
+  },
+  "H359": {
+   "sats": [
+    37
+   ],
+   "worst_by_sat": {
+    "37": 0.0978
+   },
+   "labels": {
+    "37": "interpolated"
+   }
+  }
+ },
+ "summary": {
+  "measured": 21,
+  "requests": 21,
+  "median_worst_dz": 0.026195792583931565,
+  "max_worst_dz": 0.11723224961681994
+ },
+ "comparison_rule": "same-hue track equivalent-SAT and Hue deviation only; direct dz reported for all; no new pass gate from worst failure; local J conversion only where a measured J exists"
+}
