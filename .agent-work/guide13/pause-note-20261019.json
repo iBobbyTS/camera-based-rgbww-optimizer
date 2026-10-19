@@ -1,0 +1,18 @@
+{
+ "schema": "guide13_pause_note_v1",
+ "timestamp_local": "2026-10-19 10:14",
+ "reason": "user-directed pause",
+ "stopped_run": {
+  "run": "guide13-c13d/formal-c13d-holdout",
+  "accepted_frames": 56,
+  "planned_frames": 63,
+  "state": "preserved as-is (56 captures intact); remaining 7 frames of the 21-request holdout deferred"
+ },
+ "cleanup_evidence": {
+  "esphome_strip": "all 5 channels readback 0 (ok)",
+  "ray120c": "intensity 0 (ok)",
+  "method": "manual bounded all_off + readback after TaskStop"
+ },
+ "resume_plan": "fresh run with the 7 remaining requests only (~21 min); 56 frames count as evidence, no re-shoot",
+ "guide13_state": "offline corrections, W13-A 32/32, W13-C v1+v2, C13-A, W13-B complete, W13-D closed, C13-B 7/7, C13-C report; C13-D 56/63; remaining: C13-D tail + C13-E package"
+}
