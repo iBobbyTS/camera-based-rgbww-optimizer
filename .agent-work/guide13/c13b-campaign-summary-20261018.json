@@ -1,0 +1,26 @@
+{
+ "schema": "guide13_c13b_campaign_summary_v1",
+ "date": "2026-10-18",
+ "targets": {
+  "H300/S50": "bounded_search_exhausted (2 blocks, J-theory direction wrong)",
+  "H0/S50": "QUALIFIED pending 3 confirmations (ww150: dH 0.41deg dS -1.05pp; warm-shift found empirically)",
+  "H120/S100": "bounded_search_exhausted (3 blocks 4 directions; Ray reference target-level offset)",
+  "H0/S100": "reference_drifted (z_b +1.2-1.6 all candidates)",
+  "H180/S100": "bounded_probe_exhausted (0.32-0.42 all)",
+  "H240/S100": "bounded_probe_exhausted_closest (worst 0.197 r300+g1000; needs local J for HS)",
+  "H300/S100": "reference_drifted (z_r -0.6/-0.8 all)"
+ },
+ "counts": {
+  "qualified": 1,
+  "exhausted": 3,
+  "reference_drifted": 2,
+  "closest_probe": 1
+ },
+ "method_findings": [
+  "J-theory correction direction systematically WRONG at color targets (H300/S50 + H0/S50 both)",
+  "warm-white-shift lesson target-specific (worked H0/S50, catastrophic at pure-G H120)",
+  "primary-layer recovery rule applied throughout (58-rejected frames with valid block_06)",
+  "third polarity of session drift: color-target Ray references drift too"
+ ],
+ "budgets": "H300/S50 6/8, H0/S50 8/12 (expanded on measured improvement), H120/S100 8/8, 4 probes 3/8 each"
+}
