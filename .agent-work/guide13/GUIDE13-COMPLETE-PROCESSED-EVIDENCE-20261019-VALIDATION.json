@@ -1,0 +1,14 @@
+{
+ "schema": "guide13_package_validation_v1",
+ "checks": {
+  "crc_all_members": "PASS",
+  "member_count": 2158,
+  "sample_run_ledger_roundtrip": "PASS (6500/130 b1: 6 captures + statistics + quality)",
+  "raw_index_hash_coverage": "626/626",
+  "run_index_non_formal_included": true,
+  "raw_payloads_excluded": true,
+  "base_packages_referenced_not_copied": true,
+  "final_report_included": true
+ },
+ "limitations": "full multi-package external replay (DATA_PACKAGE_REQUIREMENTS 5) deferred to advisor environment; in-place verification above is the local pass"
+}

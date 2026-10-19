@@ -1,0 +1,27 @@
+{
+ "schema": "guide13_complete_evidence_manifest_v1",
+ "created_at_local": "2026-10-19T19:44:25.904669+00:00",
+ "zip": {
+  "path": "D:\\rgbww-optimizer\\guide13\\package\\GUIDE13-COMPLETE-PROCESSED-EVIDENCE-20261019.zip",
+  "byte_count": 26045475,
+  "sha256": "919ef2ad47dd1b919190526fefc4fb570a7e743c13b9672684ba885e49fe3ab3",
+  "members": 2158
+ },
+ "totals": {
+  "runs": 88,
+  "observations": 626,
+  "raw_referenced": 626
+ },
+ "base_packages": {
+  "GUIDE12-COMPLETE-PROCESSED-EVIDENCE-20261012.zip": {
+   "sha256": "3ed20b169cb2cc60470702a05c0e0bfb96f38aa24010b7948e664d271f53d500",
+   "bytes": 37300305,
+   "members": 1115
+  },
+  "GUIDE12-EVIDENCE-COMPLETION-20261012.zip": {
+   "sha256": "85a61c4ee3a46c28f5922804dcd3f69590c82069477f1f9ad8924627cb52b4bc",
+   "bytes": 15417622,
+   "members": 4999
+  }
+ }
+}
