@@ -1,0 +1,81 @@
+{
+ "schema": "guide13_c13c_sat_coverage_v1",
+ "date": "2026-10-18",
+ "definition": "s_best_tested = max measured-and-repeated Ray-equivalent SAT with valid primary layer per hue; empirical lower bound on max achievable SAT",
+ "per_hue": {
+  "H0": {
+   "confirmed_sats": [
+    0,
+    25,
+    50
+   ],
+   "s100_status": "reference_drifted (C13-B)",
+   "s_best_tested": 50,
+   "s_best_is_lower_bound": true,
+   "note": "S0 counted via white anchor"
+  },
+  "H60": {
+   "confirmed_sats": [
+    0,
+    25,
+    50,
+    100
+   ],
+   "s100_status": "in C124 anchors, C13-A confirmed gate",
+   "s_best_tested": 100,
+   "s_best_is_lower_bound": true,
+   "note": "S0 counted via white anchor"
+  },
+  "H120": {
+   "confirmed_sats": [
+    0,
+    25,
+    50
+   ],
+   "s100_status": "bounded_search_exhausted (C13-B, Ray drift)",
+   "s_best_tested": 50,
+   "s_best_is_lower_bound": true,
+   "note": "S0 counted via white anchor"
+  },
+  "H180": {
+   "confirmed_sats": [
+    0,
+    25,
+    50
+   ],
+   "s100_status": "probe_exhausted worst 0.32 (C13-B)",
+   "s_best_tested": 50,
+   "s_best_is_lower_bound": true,
+   "note": "S0 counted via white anchor"
+  },
+  "H240": {
+   "confirmed_sats": [
+    0,
+    25,
+    50
+   ],
+   "s100_status": "closest probe 0.197 (C13-B); needs local J",
+   "s_best_tested": 50,
+   "s_best_is_lower_bound": true,
+   "note": "S0 counted via white anchor"
+  },
+  "H300": {
+   "confirmed_sats": [
+    0,
+    25,
+    50
+   ],
+   "s100_status": "reference_drifted (C13-B)",
+   "s_best_tested": 50,
+   "s_best_is_lower_bound": true,
+   "note": "S0 counted via white anchor"
+  }
+ },
+ "interval_policy": "per GUIDE13 C13-C: no continuous coverage claim without runtime support in the interval + model-error assumption; report discrete samples only",
+ "monotonicity_check": "within measured ranges, SAT ladder monotonicity assumed from anchor design but not separately tested this stage; no bisect to S12/S10/S5 attempted",
+ "summary": {
+  "hues_with_s100": 1,
+  "hues_at_s50": 5,
+  "coverage_statement": "discrete confirmed samples: 6 hues at S0/S25/S50 + H60 at S100; no continuous-interval certification (runtime interpolation untested at color targets this session)"
+ }
+}
