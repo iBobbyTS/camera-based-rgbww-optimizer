@@ -1,0 +1,7 @@
+{
+ "status": "reference_drifted",
+ "best_worst": 0.629,
+ "note": "z_r -0.6/-0.8 all candidates; dual-face target offset",
+ "schema": "guide13_c13b_node_state_v1",
+ "node": "H300/S100"
+}

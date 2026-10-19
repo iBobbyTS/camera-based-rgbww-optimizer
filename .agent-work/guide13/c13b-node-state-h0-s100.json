@@ -1,0 +1,7 @@
+{
+ "status": "reference_drifted",
+ "best_worst": 1.198,
+ "note": "z_b +1.2-1.6 all candidates; R-face target offset (Ray drift pattern)",
+ "schema": "guide13_c13b_node_state_v1",
+ "node": "H0/S100"
+}

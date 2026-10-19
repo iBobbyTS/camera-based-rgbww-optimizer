@@ -1,0 +1,7 @@
+{
+ "status": "bounded_probe_exhausted",
+ "best_worst": 0.316,
+ "note": "all dz 0.32-0.42 consistent z_b -0.3/-0.4; no gate entry; one block probe budget spent",
+ "schema": "guide13_c13b_node_state_v1",
+ "node": "H180/S100"
+}
