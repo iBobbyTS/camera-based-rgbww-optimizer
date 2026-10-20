@@ -1,0 +1,87 @@
+{
+ "checks": {
+  "D1_cr3_rehash": {
+   "inputs": "RAW_INDEX.jsonl (original package) + local CR3 payloads",
+   "result": "626/626 hash match, 0 missing, 0 read errors",
+   "status": "PASS"
+  },
+  "D1_iso_aperture": {
+   "reason": "no numeric ISO/aperture ever recorded; plan is implicit-auto, sidecar records shutter seconds only; no EXIF parser in frozen env; no new acquisition",
+   "status": "NOT_APPLICABLE"
+  },
+  "D1_matrix_extraction": {
+   "inputs": "626 CR3 via rawpy 0.27.1 (rgb_xyz_matrix[:3,:3])",
+   "result": "1 distinct matrix (mtx_d7f573d010a0e041); all 626 frames bit-identical to GUIDE12 matrices/mtx_d7f573d010a0e041.json (now proven per frame, not assumed)",
+   "status": "PASS"
+  },
+  "D2_interruptions": {
+   "result": "W13-B s2(7)->s2r-a(2, false start)->s2r-b(46) gaps 19249.9s/737.1s; C13-D main(56)->tail(7) gap 7505.2s; clock domains documented (returned_at UTC vs per-process monotonic)",
+   "status": "PASS"
+  },
+  "D2_pairings": {
+   "result": "316 strip frames paired (w13a/c13b block brackets, w13b adjacent-pair, w13c bracket-or-adjacent, c13d per-request sandwich); cross-root/pause flags set",
+   "status": "PASS"
+  },
+  "D2_run_census": {
+   "result": "134 roots: 86 formal + 2 interrupted-partial + 46 plan-dry; discovery did not use captures.jsonl presence; zero-capture roots not reconstructed",
+   "status": "PASS"
+  },
+  "D2_small_files": {
+   "result": "input-checkpoint.json 88/88, thermal-covariates.jsonl 88/88, plan-dry specs 46, launch logs + checklists + result notes exported under runs/<campaign>/_meta",
+   "status": "PASS"
+  },
+  "D3_c13b_hs": {
+   "result": "H0/S50 dH/dS reproduces exactly (0.4064/-1.0493 vs 0.41/-1.05); qualified command has exactly 1 physical observation (development frame) -> confirmations not_acquired",
+   "status": "PASS"
+  },
+  "D3_c13d_gate": {
+   "result": "5 verdict H/S values reproduce (max diff 0.0057); 10/10 membership NOT reproducible from retained records (5/7 J-points within gate, periodic pair exceeds and was disclosed by the verdict itself); unused 300/50 J variant computed and flagged - H300 track would exceed the 2deg/2pp gate at S20/S37 under the H75-style transfer",
+   "status": "PASS_WITH_DISCLOSURE",
+   "terminal_states": [
+    "original_generator_not_retained (verdict H/S step)",
+    "not_calculated (CI/PI)",
+    "transfer_validation_not_performed (all cross-anchor J uses)"
+   ]
+  },
+  "D3_lut_v2_rebuild": {
+   "result": "rebuilt identical to retained v2 (commands and w13a_update labels); 70-node white reference table emitted with evidence pointers",
+   "status": "PASS"
+  },
+  "D3_w13b_counts": {
+   "result": "20 nodes 3-pair confirmed recomputed exactly (s1=10, s2=2, s4=8); count calibers annotated (report figures preserved, never rewritten)",
+   "status": "PASS"
+  },
+  "D3_w13c_v2_generator": {
+   "reason": "retained analyzer hard-codes the v1 LUT; the v2 invocation was inline and not retained; v2 output retained and command identity verified in replay",
+   "status": "NOT_EVALUABLE"
+  },
+  "D4_source_binding": {
+   "result": "39 modules bound across 79 run commits; versions absent from all packages copied to increment source/",
+   "status": "PASS"
+  },
+  "frame_identity": {
+   "result": "626/626 CR3 hash match; sidecar references and capture/physical record hashes present",
+   "status": "PASS"
+  },
+  "replay_items": {
+   "1_package_identities": "PASS",
+   "2_frame_root_reconciliation": "PASS",
+   "3_w13a_blocks_white_points": "PASS",
+   "4_w13b_pairs": "PASS",
+   "5_w13c_command_identity": "PASS",
+   "6_c13a_jacobians_c13b_dz": "PASS",
+   "7_c13d_requests": "PASS_WITH_DISCLOSURE",
+   "8_c13c_levels": "PASS",
+   "9_ci_pi": "NOT_APPLICABLE"
+  }
+ },
+ "generated_at_local": "2026-10-20T20:50:54.124065+00:00",
+ "identity": "validation (GUIDE13 evidence completion 20261020)",
+ "schema": "guide13_completion_validation_v1",
+ "status_vocabulary": [
+  "PASS",
+  "FAIL",
+  "NOT_EVALUABLE",
+  "NOT_APPLICABLE"
+ ]
+}

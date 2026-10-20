@@ -1,0 +1,40 @@
+{
+ "base_packages": {
+  "GUIDE12-COMPLETE-PROCESSED-EVIDENCE-20261012.zip": {
+   "bytes": 37300305,
+   "local_path": "C:/Users/iBobb/Projects/WLED-RGBWW/.agent-work/guide12/GUIDE12-COMPLETE-PROCESSED-EVIDENCE-20261012.zip",
+   "members": 1115,
+   "role": "base package",
+   "sha256": "3ed20b169cb2cc60470702a05c0e0bfb96f38aa24010b7948e664d271f53d500"
+  },
+  "GUIDE12-EVIDENCE-COMPLETION-20261012.zip": {
+   "bytes": 15417622,
+   "local_path": "C:/Users/iBobb/Projects/WLED-RGBWW/.agent-work/guide12/GUIDE12-EVIDENCE-COMPLETION-20261012.zip",
+   "members": 4999,
+   "role": "base package",
+   "sha256": "85a61c4ee3a46c28f5922804dcd3f69590c82069477f1f9ad8924627cb52b4bc"
+  },
+  "GUIDE13-COMPLETE-PROCESSED-EVIDENCE-20261019.zip": {
+   "bytes": 26045475,
+   "local_path": "D:\\rgbww-optimizer\\guide13\\package\\GUIDE13-COMPLETE-PROCESSED-EVIDENCE-20261019.zip",
+   "members": 2158,
+   "role": "original GUIDE13 package",
+   "sha256": "919ef2ad47dd1b919190526fefc4fb570a7e743c13b9672684ba885e49fe3ab3"
+  }
+ },
+ "companion_files": [
+  "GUIDE13-EVIDENCE-COMPLETION-20261020-MANIFEST.json (this file)",
+  "GUIDE13-EVIDENCE-COMPLETION-20261020-VALIDATION.json",
+  "GUIDE13-EVIDENCE-COMPLETION-20261020-EXPORT-RESULT.md"
+ ],
+ "crc_test": "PASS",
+ "created_at_local": "2026-10-20T20:51:13.352598+00:00",
+ "roundtrip_replay_report_read": true,
+ "schema": "guide13_completion_package_manifest_v1",
+ "zip": {
+  "byte_count": 1034922,
+  "members": 360,
+  "path": "D:\\rgbww-optimizer\\guide13\\package\\GUIDE13-EVIDENCE-COMPLETION-20261020.zip",
+  "sha256": "8e8c5234c71e7c919cfcdf3348439efa9fa3c0838acf1268bc6b4a33af89d1ce"
+ }
+}
